@@ -79,10 +79,10 @@ namespace Orts.Simulation.AIs
 #endif
             if (simulator.Activity != null && simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
             {
-                foreach (var sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
+                var activityFile = simulator.Activity.Tr_Activity.Tr_Activity_File;
+                foreach (var sd in activityFile.Traffic_Definition.ServiceDefinitionList)
                 {
-                    AITrain train = CreateAITrain(sd,
-                    simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.TrafficFile.TrafficDefinition, simulator.TimetableMode);
+                    AITrain train = CreateAITrain(sd, activityFile.Traffic_Definition.TrafficFile.TrafficDefinition, simulator.TimetableMode);
                     if (cancellation.IsCancellationRequested) // ping loader watchdog
                         return;
                 }
@@ -418,9 +418,17 @@ namespace Orts.Simulation.AIs
                 // player train is extracted from pool
                 else if (!String.IsNullOrEmpty(playerTrain.CreateFromPool))
                 {
-                    TimetablePool thisPool = Simulator.PoolHolder.Pools[playerTrain.CreateFromPool];
-                    int presentTime = Convert.ToInt32(Math.Floor(clockTime));
-                    TimetablePool.TrainFromPool extractResult = thisPool.ExtractTrain(ref playerTrain, presentTime);
+                    TimetablePool.TrainFromPool extractResult = TimetablePool.TrainFromPool.Failed;
+                    if (Simulator.PoolHolder.Pools.ContainsKey(playerTrain.CreateFromPool))
+                    {
+                        TimetablePool thisPool = Simulator.PoolHolder.Pools[playerTrain.CreateFromPool];
+                        int presentTime = Convert.ToInt32(Math.Floor(clockTime));
+                        extractResult = thisPool.ExtractTrain(ref playerTrain, presentTime);
+                    }
+                    else
+                    {
+                        Trace.TraceError("Player train {0} : Invalid pool definition : {1} : pool not found", playerTrain.Name, playerTrain.CreateFromPool);
+                    }
 
                     // switch on outcome
                     switch (extractResult)
@@ -456,7 +464,7 @@ namespace Orts.Simulation.AIs
                     }
                     else if (OrgTrain != null)
                     {
-                        Trace.TraceInformation("Player train start delayed as incoming train {0} has not yet arrived", OrgTrain.Name);
+                        Trace.TraceInformation("Player train start delayed as incoming train {0} [{1}] has not yet arrived", OrgTrain.Name, OrgTrain.Number);
                         if (OrgTrain.Delay.HasValue)
                         {
                             Trace.TraceInformation("Last Reported delay : {0}", OrgTrain.Delay.Value.ToString());
@@ -537,6 +545,8 @@ namespace Orts.Simulation.AIs
                         Simulator.Signals.Update(true);
                         clockTime = runTime;
                         runTime += deltaTime;
+                        if (cancellation.IsCancellationRequested) // ping loader watchdog
+                            return;
 
                         int fullsec = Convert.ToInt32(runTime);
                         if (fullsec % 3600 == 0) Trace.Write(" " + (fullsec / 3600).ToString("00") + ":00 ");
@@ -571,6 +581,11 @@ namespace Orts.Simulation.AIs
                             PlayTrain = Simulator.Trains.GetAITrainByNumber(0) as TTTrain;
                             // train exists - set as player train
                             playerTrainStarted = (PlayTrain != null);
+
+                            if (playerTrain.LeadLocomotive == null)
+                            {
+                                playerTrainStarted = false;
+                            }
                         }
                         else
                         {
@@ -578,13 +593,9 @@ namespace Orts.Simulation.AIs
                         }
                     }
 
-                    if (playerTrain.LeadLocomotive == null)
-                    {
-                        playerTrainStarted = false;
-                    }
-
                     TimeSpan delayedStart = new TimeSpan((long)(Math.Pow(10, 7) * (clockTime - Simulator.ClockTime)));
                     Trace.TraceInformation("Start delayed by : {0}", delayedStart.ToString());
+                    StartList.RemovePlayerTrain();
                     TTTrain playerTTTrain = playerTrain as TTTrain;
                     playerTTTrain.InitalizePlayerTrain();
                     Simulator.ClockTime = runTime;
@@ -721,7 +732,7 @@ namespace Orts.Simulation.AIs
                 }
             }
 
-            if (activeTrains)
+            if (activeTrains || TrainsToAdd.Count > 0)
             {
                 if (preUpdate)
                 {
@@ -890,7 +901,7 @@ namespace Orts.Simulation.AIs
 
                 if (!File.Exists(wagonFilePath))
                 {
-                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonFilePath, consistFileName);
+                    Trace.TraceWarning($"Ignored missing {(wagon.IsEngine ? "engine" : "wagon")} {wagonFilePath} in consist {consistFileName}");
                     continue;
                 }
 
@@ -925,8 +936,10 @@ namespace Orts.Simulation.AIs
                         car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                         car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
                     }
+
                     // associate location events
                     Simulator.ActivityRun.AssociateEvents(train);
+
                 }
                 catch (Exception error)
                 {
@@ -954,7 +967,7 @@ namespace Orts.Simulation.AIs
             train.BrakeLine3PressurePSI = 0;
 
             // Compute length of path to evaluate possibility of activity randomization
-            if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0 && Simulator.ActivityRun != null)
+            if (Simulator.Settings.ActRandomizationLevel > 0 && Simulator.ActivityRun != null)
                 train.PathLength = train.ComputePathLength();
 
             return train;
@@ -1124,24 +1137,26 @@ namespace Orts.Simulation.AIs
                 int presentTime = Convert.ToInt32(Math.Floor(clockTime));
                 TimetablePool thisPool = Simulator.PoolHolder.Pools[thisTrain.CreateInPool];
 
-                thisTrain.TCRoute.TCRouteSubpaths[0] = thisPool.SetPoolExit(thisTrain, out thisTrain.PoolIndex, false);
+                int PoolStorageState = (int)TTTrain.PoolAccessState.PoolInvalid;
+                thisTrain.TCRoute.TCRouteSubpaths[0] = thisPool.CreateInPool(thisTrain, out PoolStorageState, false);
                 thisTrain.ValidRoute[0] = new Train.TCSubpathRoute(thisTrain.TCRoute.TCRouteSubpaths[0]);
                 thisTrain.TCRoute.activeSubpath = 0;
 
                 // if no storage available - abondone train
-                if (thisTrain.PoolIndex < 0)
+                if (PoolStorageState < 0)
                 {
                     Trace.TraceInformation("Train : " + thisTrain.Name + " : no storage room available in pool : " + thisPool.PoolName + " ; engine not created");
                     return (endPreRun);
                 }
 
                 // use stored traveller
-                thisTrain.RearTDBTraveller = new Traveller(thisPool.StoragePool[thisTrain.PoolIndex].StoragePathTraveller);
+                thisTrain.PoolStorageIndex = PoolStorageState;
+                thisTrain.RearTDBTraveller = new Traveller(thisPool.StoragePool[thisTrain.PoolStorageIndex].StoragePathTraveller);
 
                 // if storage available check for other engines on storage track
-                if (thisPool.StoragePool[thisTrain.PoolIndex].StoredUnits.Count > 0)
+                if (thisPool.StoragePool[thisTrain.PoolStorageIndex].StoredUnits.Count > 0)
                 {
-                    int lastTrainNumber = thisPool.StoragePool[thisTrain.PoolIndex].StoredUnits[thisPool.StoragePool[thisTrain.PoolIndex].StoredUnits.Count - 1];
+                    int lastTrainNumber = thisPool.StoragePool[thisTrain.PoolStorageIndex].StoredUnits[thisPool.StoragePool[thisTrain.PoolStorageIndex].StoredUnits.Count - 1];
                     TTTrain lastTrain = thisTrain.GetOtherTTTrainByNumber(lastTrainNumber);
                     if (lastTrain == null)
                     {
@@ -1167,7 +1182,7 @@ namespace Orts.Simulation.AIs
                     thisTrain.UpdateTrainPosition();
 
                     // add unit to pool
-                    thisPool.AddUnit(thisTrain);
+                    thisPool.AddUnit(thisTrain, false);
                     validPosition = thisTrain.PostInit(false); // post init train but do not activate
                 }
             }

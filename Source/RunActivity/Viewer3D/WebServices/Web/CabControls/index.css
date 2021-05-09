@@ -1,0 +1,8 @@
+/* index.css */
+table { margin: auto; }
+div, th { text-align: center; }
+div#menu { text-align: left; }
+tr td { text-align: right;}
+td { padding: 2px; }
+.scale { width: 100px; background-color: lightgray; }
+.gauge { margin: 0px; background-color: gold; }

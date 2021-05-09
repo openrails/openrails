@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -17,6 +17,14 @@
 
 // This file is the responsibility of the 3D & Environment Team.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Management;
+using System.Threading;
+using System.Windows.Forms;
 using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -32,16 +40,9 @@ using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.Processes;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
+using ORTS.Common.Input;
+using ORTS.Scripting.Api;
 using ORTS.Settings;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Management;
-using System.Threading;
-using System.Windows.Forms;
 using Event = Orts.Common.Event;
 
 namespace Orts.Viewer3D
@@ -52,6 +53,7 @@ namespace Orts.Viewer3D
         public static Random Random { get; private set; }
         // User setups.
         public UserSettings Settings { get; private set; }
+        private readonly SavingProperty<bool> Use3DCabProperty;
         // Multi-threaded processes
         public LoaderProcess LoaderProcess { get; private set; }
         public UpdaterProcess UpdaterProcess { get; private set; }
@@ -68,6 +70,7 @@ namespace Orts.Viewer3D
         public Orts.Viewer3D.Processes.Game Game { get; private set; }
         public Simulator Simulator { get; private set; }
         public World World { get; private set; }
+        private SoundSource ViewerSounds { get; set; }
         /// <summary>
         /// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
         /// </summary>
@@ -105,7 +108,14 @@ namespace Orts.Viewer3D
         // Cameras
         public Camera Camera { get; set; } // Current camera
         public Camera AbovegroundCamera { get; private set; } // Previous camera for when automatically switching to cab.
-        public CabCamera CabCamera { get; private set; } // Camera 1
+        /// <summary>
+        /// Camera #1, 2D cab. Swaps with <see cref="ThreeDimCabCamera"/> with Alt+1.
+        /// </summary>
+        private readonly CabCamera CabCamera;
+        /// <summary>
+        /// Camera #1, 3D cab. Swaps with <see cref="CabCamera"/> with Alt+1.
+        /// </summary>
+        private readonly ThreeDimCabCamera ThreeDimCabCamera;
         public HeadOutCamera HeadOutForwardCamera { get; private set; } // Camera 1+Up
         public HeadOutCamera HeadOutBackCamera { get; private set; } // Camera 2+Down
         public TrackingCamera FrontCamera { get; private set; } // Camera 2
@@ -116,7 +126,27 @@ namespace Orts.Viewer3D
         public BrakemanCamera BrakemanCamera { get; private set; } // Camera 6
         public List<FreeRoamCamera> FreeRoamCameraList = new List<FreeRoamCamera>();
         public FreeRoamCamera FreeRoamCamera { get { return FreeRoamCameraList[0]; } } // Camera 8
-        public ThreeDimCabCamera ThreeDimCabCamera; //Camera 0
+
+        /// <summary>
+        /// Activate the 2D or 3D cab camera depending on the current player preference.
+        /// </summary>
+        public void ActivateCabCamera()
+        {
+            if (Settings.Use3DCab && ThreeDimCabCamera.IsAvailable)
+                ThreeDimCabCamera.Activate();
+            else
+                CabCamera.Activate();
+        }
+
+        /// <summary>
+        /// Toggle the 2D/3D cab preference and, if already in the cab camera, switch modes.
+        /// </summary>
+        public void ToggleCabCameraView()
+        {
+            Use3DCabProperty.Value = !Use3DCabProperty.Value;
+            if (Camera == CabCamera || Camera == ThreeDimCabCamera)
+                ActivateCabCamera();
+        }
 
         List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
 
@@ -142,9 +172,9 @@ namespace Orts.Viewer3D
         public Cursor ActualCursor = Cursors.Default;
         public static Viewport DefaultViewport;
 
-        CabViewDiscreteRenderer MouseChangingControl;
-        CabViewDiscreteRenderer MousePickedControl;
-        CabViewDiscreteRenderer OldMousePickedControl;
+        ICabViewMouseControlRenderer MouseChangingControl;
+        ICabViewMouseControlRenderer MousePickedControl;
+        ICabViewMouseControlRenderer OldMousePickedControl;
 
         public bool SaveScreenshot { get; set; }
         public bool SaveActivityThumbnail { get; private set; }
@@ -169,9 +199,10 @@ namespace Orts.Viewer3D
 
         // MSTS cab views are images with aspect ratio 4:3.
         // OR can use cab views with other aspect ratios where these are available.
-        // On screen with other aspect ratios (e.g. 16:9), two approaches are possible:
+        // On screen with other aspect ratios (e.g. 16:9), three approaches are possible:
         //   1) stretch the width to fit the screen. This gives flattened controls, most noticeable with round dials.
         //   2) clip the image losing a slice off top and bottom.
+        //   3) letterbox the image by drawing black bars in the unfilled spaces.
         // Setting.Cab2DStretch controls the amount of stretch and clip. 0 is entirely clipped and 100 is entirely stretched.
         // No difference is seen on screens with 4:3 aspect ratio.
         // This adjustment assumes that the cab view is 4:3. Where the cab view matches the aspect ratio of the screen, use an adjustment of 100.
@@ -181,6 +212,8 @@ namespace Orts.Viewer3D
         public int CabXOffsetPixels { get; set; }
         public int CabExceedsDisplay; // difference between cabview texture vertical resolution and display vertical resolution
         public int CabExceedsDisplayHorizontally; // difference between cabview texture horizontal resolution and display vertical resolution
+        public int CabYLetterboxPixels { get; set; } // offset the cab when drawing it if it is smaller than the display; both coordinates should always be >= 0
+        public int CabXLetterboxPixels { get; set; }
         public float CabTextureInverseRatio = 0.75f; // default of inverse of cab texture ratio 
 
         public CommandLog Log { get { return Simulator.Log; } }
@@ -238,6 +271,7 @@ namespace Orts.Viewer3D
             Simulator = simulator;
             Game = game;
             Settings = simulator.Settings;
+            Use3DCabProperty = Settings.GetSavingProperty<bool>("Use3DCab");
 
             RenderProcess = game.RenderProcess;
             UpdaterProcess = game.UpdaterProcess;
@@ -381,11 +415,12 @@ namespace Orts.Viewer3D
         internal void Initialize()
         {
             GraphicsDevice = RenderProcess.GraphicsDevice;
-            UpdateAdapterInformation(GraphicsDevice.CreationParameters.Adapter);
+            UpdateAdapterInformation(GraphicsDevice.Adapter);
             DefaultViewport = GraphicsDevice.Viewport;
 
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;
+            PlayerTrain.InitializePlayerTrainData();
             if (PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
             {
                 Simulator.Trains[0].LeadLocomotive = null;
@@ -428,6 +463,14 @@ namespace Orts.Viewer3D
 
             World = new World(this, Simulator.ClockTime);
 
+            ViewerSounds = new SoundSource(this, soundSource => new[]
+            {
+                new SoundStream(soundSource, soundStream => new[]
+                {
+                    new ORTSDiscreteTrigger(soundStream, Event.TakeScreenshot, ORTSSoundCommand.Precompiled(Path.Combine(ContentPath, "TakeScreenshot.wav"), soundStream)),
+                }),
+            });
+            SoundProcess.AddSoundSource(this, ViewerSounds);
             Simulator.Confirmer.PlayErrorSound += (s, e) =>
             {
                 if (World.GameSounds != null)
@@ -435,9 +478,10 @@ namespace Orts.Viewer3D
             };
             Simulator.Confirmer.DisplayMessage += (s, e) => MessagesWindow.AddMessage(e.Key, e.Text, e.Duration);
 
-            if (Simulator.PlayerLocomotive.HasFront3DCab || Simulator.PlayerLocomotive.HasRear3DCab) ThreeDimCabCamera.Activate();
-            else if (Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab) CabCamera.Activate();
-            else CameraActivate();
+            if (CabCamera.IsAvailable || ThreeDimCabCamera.IsAvailable)
+                ActivateCabCamera();
+            else
+                CameraActivate();
 
             // Prepare the world to be loaded and then load it from the correct thread for debugging/tracing purposes.
             // This ensures that a) we have all the required objects loaded when the 3D view first appears and b) that
@@ -469,19 +513,25 @@ namespace Orts.Viewer3D
             ContinuousThrottleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             TrainBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             EngineBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BrakemanBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             DynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             InitializeBrakesCommand.Receiver = PlayerLocomotive.Train;
             EmergencyPushButtonCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             HandbrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BailOffCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            QuickReleaseCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BrakeOverchargeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             RetainersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BrakeHoseConnectCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleWaterScoopCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             if (PlayerLocomotive is MSTSSteamLocomotive)
             {
                 ContinuousReverserCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousSmallEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousLargeEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ToggleInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleBlowdownValveCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousBlowerCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousDamperCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousFiringRateCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
@@ -506,6 +556,7 @@ namespace Orts.Viewer3D
             if (PlayerLocomotive is MSTSDieselLocomotive)
             {
                 TogglePlayerEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
+                VacuumExhausterCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
             }
 
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
@@ -534,6 +585,10 @@ namespace Orts.Viewer3D
             UseCameraCommand.Receiver = this;
             MoveCameraCommand.Receiver = this;
             ToggleHelpersEngineCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            TCSButtonCommand.Receiver = ((MSTSLocomotive)PlayerLocomotive).TrainControlSystem;
+            TCSSwitchCommand.Receiver = ((MSTSLocomotive)PlayerLocomotive).TrainControlSystem;
+            ToggleBatteryCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            TogglePowerKeyCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
         }
 
         public void ChangeToPreviousFreeRoamCamera()
@@ -614,28 +669,41 @@ namespace Orts.Viewer3D
             }
             int unstretchedCabHeightPixels = (int)(CabTextureInverseRatio * windowWidth);
             int unstretchedCabWidthPixels = (int)(windowHeight / CabTextureInverseRatio);
-            if (((float)windowHeight / windowWidth) < CabTextureInverseRatio)
+            float windowInverseRatio = (float)windowHeight / windowWidth;
+            if (Settings.Letterbox2DCab)
             {
-                // screen is wide-screen, so can choose between vertical scroll or horizontal stretch
-                CabExceedsDisplay = (int)((unstretchedCabHeightPixels - windowHeight) * ((100 - Settings.Cab2DStretch) / 100f));
-                CabExceedsDisplayHorizontally = 0;
-            }
-            else if (((float)windowHeight / windowWidth) > CabTextureInverseRatio)
-            {
-                // must scroll horizontally
-                CabExceedsDisplay = 0;
-                CabExceedsDisplayHorizontally = unstretchedCabWidthPixels - windowWidth;
+                CabWidthPixels = Math.Min((int)Math.Round(windowHeight / CabTextureInverseRatio), windowWidth);
+                CabHeightPixels = Math.Min((int)Math.Round(windowWidth * CabTextureInverseRatio), windowHeight);
+                CabXLetterboxPixels = (windowWidth - CabWidthPixels) / 2;
+                CabYLetterboxPixels = (windowHeight - CabHeightPixels) / 2;
+                CabExceedsDisplay = CabExceedsDisplayHorizontally = CabXOffsetPixels = CabYOffsetPixels = 0;
             }
             else
             {
-                // nice, window aspect ratio and cabview aspect ratio are identical
-                CabExceedsDisplay = 0;
-                CabExceedsDisplayHorizontally = 0;
+                if (windowInverseRatio == CabTextureInverseRatio)
+                {
+                    // nice, window aspect ratio and cabview aspect ratio are identical
+                    CabExceedsDisplay = 0;
+                    CabExceedsDisplayHorizontally = 0;
+                }
+                else if (windowInverseRatio < CabTextureInverseRatio)
+                {
+                    // screen is wide-screen, so can choose between vertical scroll or horizontal stretch
+                    CabExceedsDisplay = (int)((unstretchedCabHeightPixels - windowHeight) * ((100 - Settings.Cab2DStretch) / 100f));
+                    CabExceedsDisplayHorizontally = 0;
+                }
+                else
+                {
+                    // must scroll horizontally
+                    CabExceedsDisplay = 0;
+                    CabExceedsDisplayHorizontally = unstretchedCabWidthPixels - windowWidth;
+                }
+                CabHeightPixels = windowHeight + CabExceedsDisplay;
+                CabYOffsetPixels = -CabExceedsDisplay / 2; // Initial value is halfway. User can adjust with arrow keys.
+                CabWidthPixels = windowWidth + CabExceedsDisplayHorizontally;
+                CabXOffsetPixels = CabExceedsDisplayHorizontally / 2;
+                CabXLetterboxPixels = CabYLetterboxPixels = 0;
             }
-            CabHeightPixels = windowHeight + CabExceedsDisplay;
-            CabYOffsetPixels = -CabExceedsDisplay / 2; // Initial value is halfway. User can adjust with arrow keys.
-            CabWidthPixels = windowWidth + CabExceedsDisplayHorizontally;
-            CabXOffsetPixels = CabExceedsDisplayHorizontally / 2;
             if (CabCamera.IsAvailable) CabCamera.Initialize();
         }
 
@@ -647,7 +715,8 @@ namespace Orts.Viewer3D
             if (cabTexture != SharedMaterialManager.MissingTexture)
             {
                 cabTextureInverseRatio = (float)cabTexture.Height / cabTexture.Width;
-                if (cabTextureInverseRatio == 1 && cabTexture.Width == 1024) cabTextureInverseRatio = 0.75f;
+                // if square cab texture files with dimension of at least 1024 pixels are used, they are considered as stretched 4 : 3 ones
+                if (cabTextureInverseRatio == 1 && cabTexture.Width >= 1024) cabTextureInverseRatio = 0.75f; 
             }
             return cabTextureInverseRatio;
         }
@@ -702,6 +771,12 @@ namespace Orts.Viewer3D
 
             HandleUserInput(elapsedTime);
             UserInput.Handled();
+            // We need to do it also here, because passing from manual to auto a ReverseFormation may be needed
+            if (Camera is TrackingCamera && Camera.AttachedCar != null && Camera.AttachedCar.Train != null && Camera.AttachedCar.Train.FormationReversed)
+            {
+                Camera.AttachedCar.Train.FormationReversed = false;
+                (Camera as TrackingCamera).SwapCameras();
+            }
             Simulator.Update(elapsedTime.ClockSeconds);
             if (PlayerLocomotive.Train.BrakingTime == -2) // We just had a wagon with stuck brakes
             {
@@ -787,12 +862,12 @@ namespace Orts.Viewer3D
             {
                 // The AbovegroundCamera.Update() has been creating an odd sound issue when the locomotive is in the tunnel.
                 // Allowing the update to take place when only in cab view solved the issue.
-                if (Camera == CabCamera)
+                if (Camera == CabCamera || Camera == ThreeDimCabCamera)
                     AbovegroundCamera.Update(elapsedTime);
                 if (!AbovegroundCamera.IsUnderground)
                 {
                     // But only if the user hasn't selected another camera!
-                    if (Camera == CabCamera)
+                    if (Camera == CabCamera || Camera == ThreeDimCabCamera)
                         AbovegroundCamera.Activate();
                     AbovegroundCamera = null;
                 }
@@ -844,7 +919,7 @@ namespace Orts.Viewer3D
                 FarPoint = DefaultViewport.Unproject(farsource, Camera.XnaProjection, Camera.XnaView, world);
             }
 
-            if (UserInput.IsPressed(UserCommands.CameraReset))
+            if (UserInput.IsPressed(UserCommand.CameraReset))
                 Camera.Reset();
 
             Camera.HandleUserInput(elapsedTime);
@@ -856,38 +931,38 @@ namespace Orts.Viewer3D
             WindowManager.HandleUserInput(elapsedTime);
 
             // Check for game control keys
-            if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GameMultiPlayerTexting))
+            if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GameMultiPlayerTexting))
             {
                 if (ComposeMessageWindow == null) ComposeMessageWindow = new ComposeMessage(WindowManager);
                 ComposeMessageWindow.InitMessage();
             }
-            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GamePauseMenu)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
-            if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GamePauseMenu)) { if (Simulator.Confirmer != null) Simulator.Confirmer.Information(Viewer.Catalog.GetString("In MP, use Alt-F4 to quit directly")); }
+            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GamePauseMenu)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
+            if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GamePauseMenu)) { if (Simulator.Confirmer != null) Simulator.Confirmer.Information(Viewer.Catalog.GetString("In MP, use Alt-F4 to quit directly")); }
 
-            if (UserInput.IsPressed(UserCommands.GameFullscreen)) { RenderProcess.ToggleFullScreen(); }
-            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GamePause)) Simulator.Paused = !Simulator.Paused;
-            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.DebugSpeedUp))
+            if (UserInput.IsPressed(UserCommand.GameFullscreen)) { RenderProcess.ToggleFullScreen(); }
+            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GamePause)) Simulator.Paused = !Simulator.Paused;
+            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.DebugSpeedUp))
             {
                 Simulator.GameSpeed *= 1.5f;
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.SimulationSpeed, CabSetting.Increase, Simulator.GameSpeed * 100);
             }
-            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.DebugSpeedDown))
+            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.DebugSpeedDown))
             {
                 Simulator.GameSpeed /= 1.5f;
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.SimulationSpeed, CabSetting.Decrease, Simulator.GameSpeed * 100);
             }
-            if (UserInput.IsPressed(UserCommands.DebugSpeedReset))
+            if (UserInput.IsPressed(UserCommand.DebugSpeedReset))
             {
                 Simulator.GameSpeed = 1;
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.SimulationSpeed, CabSetting.Off, Simulator.GameSpeed * 100);
             }
-            if (UserInput.IsPressed(UserCommands.GameSave)) { GameStateRunActivity.Save(); }
-            if (UserInput.IsPressed(UserCommands.DisplayHelpWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DisplayHUD)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HUDWindow.TabAction(); else HUDWindow.Visible = !HUDWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DisplayStationLabels))
+            if (UserInput.IsPressed(UserCommand.GameSave)) { GameStateRunActivity.Save(); }
+            if (UserInput.IsPressed(UserCommand.DisplayHelpWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayHUD)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) HUDWindow.TabAction(); else HUDWindow.Visible = !HUDWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayStationLabels))
             {
-                if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) OSDLocations.TabAction(); else OSDLocations.Visible = !OSDLocations.Visible;
+                if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) OSDLocations.TabAction(); else OSDLocations.Visible = !OSDLocations.Visible;
                 if (OSDLocations.Visible)
                 {
                     switch (OSDLocations.CurrentDisplayState)
@@ -911,9 +986,9 @@ namespace Orts.Viewer3D
                     MessagesWindow.AddMessage(Catalog.GetString("Platform and siding labels hidden."), 5);
                 }
             }
-            if (UserInput.IsPressed(UserCommands.DisplayCarLabels))
+            if (UserInput.IsPressed(UserCommand.DisplayCarLabels))
             {
-                if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) OSDCars.TabAction(); else OSDCars.Visible = !OSDCars.Visible;
+                if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) OSDCars.TabAction(); else OSDCars.Visible = !OSDCars.Visible;
                 if (OSDCars.Visible)
                 {
                     switch (OSDCars.CurrentDisplayState)
@@ -931,17 +1006,17 @@ namespace Orts.Viewer3D
                     MessagesWindow.AddMessage(Catalog.GetString("Train and car labels hidden."), 5);
                 }
             }
-            if (UserInput.IsPressed(UserCommands.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else { TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible; if (!TrainOperationsWindow.Visible) CarOperationsWindow.Visible = false; }
-            if (UserInput.IsPressed(UserCommands.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DisplayCompassWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DebugTracks)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DisplayBasicHUDToggle)) HUDWindow.ToggleBasicHUD();
-            if (UserInput.IsPressed(UserCommands.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else { TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible; if (!TrainOperationsWindow.Visible) CarOperationsWindow.Visible = false; }
+            if (UserInput.IsPressed(UserCommand.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayCompassWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DebugTracks)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DebugSignalling)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayBasicHUDToggle)) HUDWindow.ToggleBasicHUD();
+            if (UserInput.IsPressed(UserCommand.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
 
 
-            if (UserInput.IsPressed(UserCommands.GameChangeCab))
+            if (UserInput.IsPressed(UserCommand.GameChangeCab))
             {
                 if (PlayerLocomotive.ThrottlePercent >= 1
                     || Math.Abs(PlayerLocomotive.SpeedMpS) > 1
@@ -955,45 +1030,45 @@ namespace Orts.Viewer3D
                 }
             }
 
-            if (UserInput.IsPressed(UserCommands.CameraCab))
+            if (UserInput.IsPressed(UserCommand.CameraCab))
             {
-                if (CabCamera.IsAvailable)
+                if (CabCamera.IsAvailable || ThreeDimCabCamera.IsAvailable)
                 {
                     new UseCabCameraCommand(Log);
-                }
-                else if (ThreeDimCabCamera.IsAvailable)
-                {
-                    new Use3DCabCameraCommand(Log);
                 }
                 else
                 {
                     Simulator.Confirmer.Warning(Viewer.Catalog.GetString("Cab view not available"));
                 }
             }
-            if (UserInput.IsPressed(UserCommands.CameraThreeDimensionalCab))
+            if (UserInput.IsPressed(UserCommand.CameraToggleThreeDimensionalCab))
             {
-                if (ThreeDimCabCamera.IsAvailable)
+                if (!CabCamera.IsAvailable)
                 {
-                    new Use3DCabCameraCommand(Log);
+                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("This car doesn't have a 2D cab"));
+                }
+                else if (!ThreeDimCabCamera.IsAvailable)
+                {
+                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("This car doesn't have a 3D cab"));
                 }
                 else
                 {
-                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("3D Cab view not available"));
+                    new ToggleThreeDimensionalCabCameraCommand(Log);
                 }
             }
-            if (UserInput.IsPressed(UserCommands.CameraOutsideFront))
+            if (UserInput.IsPressed(UserCommand.CameraOutsideFront))
             {
                 CheckReplaying();
                 new UseFrontCameraCommand(Log);
             }
-            if (UserInput.IsPressed(UserCommands.CameraOutsideRear))
+            if (UserInput.IsPressed(UserCommand.CameraOutsideRear))
             {
                 CheckReplaying();
                 new UseBackCameraCommand(Log);
             }
-            if (UserInput.IsPressed(UserCommands.CameraJumpingTrains)) RandomSelectTrain(); //hit Alt-9 key, random selected train to have 2 and 3 camera attached to
+            if (UserInput.IsPressed(UserCommand.CameraJumpingTrains)) RandomSelectTrain(); //hit Alt-9 key, random selected train to have 2 and 3 camera attached to
 
-            if (UserInput.IsPressed(UserCommands.CameraVibrate))
+            if (UserInput.IsPressed(UserCommand.CameraVibrate))
             {
                 Program.Simulator.CarVibrating = (Program.Simulator.CarVibrating + 1) % 4;
                 Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetStringFmt("Vibrating at level {0}", Program.Simulator.CarVibrating));
@@ -1001,41 +1076,52 @@ namespace Orts.Viewer3D
                 Settings.Save("CarVibratingLevel");
             }
 
+            if (UserInput.IsPressed(UserCommand.DebugToggleConfirmations))
+            {
+                Simulator.Settings.SuppressConfirmations = !Simulator.Settings.SuppressConfirmations;
+                if (Simulator.Settings.SuppressConfirmations)
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Confirmations suppressed"));
+                else
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Confirmations visible"));
+                Settings.SuppressConfirmations = Simulator.Settings.SuppressConfirmations;
+                Settings.Save();
+            }
+
             //hit 9 key, get back to player train
-            if (UserInput.IsPressed(UserCommands.CameraJumpBackPlayer))
+            if (UserInput.IsPressed(UserCommand.CameraJumpBackPlayer))
             {
                 SelectedTrain = PlayerTrain;
                 CameraActivate();
             }
-            if (UserInput.IsPressed(UserCommands.CameraTrackside))
+            if (UserInput.IsPressed(UserCommand.CameraTrackside))
             {
                 CheckReplaying();
                 new UseTracksideCameraCommand(Log);
             }
-            if (UserInput.IsPressed(UserCommands.CameraSpecialTracksidePoint))
+            if (UserInput.IsPressed(UserCommand.CameraSpecialTracksidePoint))
             {
                 CheckReplaying();
                 new UseSpecialTracksideCameraCommand(Log);
             }
             // Could add warning if PassengerCamera not available.
-            if (UserInput.IsPressed(UserCommands.CameraPassenger) && PassengerCamera.IsAvailable)
+            if (UserInput.IsPressed(UserCommand.CameraPassenger) && PassengerCamera.IsAvailable)
             {
                 CheckReplaying();
                 new UsePassengerCameraCommand(Log);
             }
-            if (UserInput.IsPressed(UserCommands.CameraBrakeman))
+            if (UserInput.IsPressed(UserCommand.CameraBrakeman))
             {
                 CheckReplaying();
                 new UseBrakemanCameraCommand(Log);
             }
-            if (UserInput.IsPressed(UserCommands.CameraFree))
+            if (UserInput.IsPressed(UserCommand.CameraFree))
             {
                 CheckReplaying();
                 new UseFreeRoamCameraCommand(Log);
                 Simulator.Confirmer.Message(ConfirmLevel.None, Catalog.GetPluralStringFmt(
                     "{0} viewpoint stored. Use Shift+8 to restore viewpoints.", "{0} viewpoints stored. Use Shift+8 to restore viewpoints.", FreeRoamCameraList.Count - 1));
             }
-            if (UserInput.IsPressed(UserCommands.CameraPreviousFree))
+            if (UserInput.IsPressed(UserCommand.CameraPreviousFree))
             {
                 if (FreeRoamCameraList.Count > 0)
                 {
@@ -1043,75 +1129,69 @@ namespace Orts.Viewer3D
                     new UsePreviousFreeRoamCameraCommand(Log);
                 }
             }
-            if (UserInput.IsPressed(UserCommands.CameraHeadOutForward) && HeadOutForwardCamera.IsAvailable)
+            if (UserInput.IsPressed(UserCommand.CameraHeadOutForward) && HeadOutForwardCamera.IsAvailable)
             {
                 CheckReplaying();
                 new UseHeadOutForwardCameraCommand(Log);
             }
-            if (UserInput.IsPressed(UserCommands.CameraHeadOutBackward) && HeadOutBackCamera.IsAvailable)
+            if (UserInput.IsPressed(UserCommand.CameraHeadOutBackward) && HeadOutBackCamera.IsAvailable)
             {
                 CheckReplaying();
                 new UseHeadOutBackCameraCommand(Log);
             }
-            if (UserInput.IsPressed(UserCommands.GameSwitchAhead))
+            if (UserInput.IsPressed(UserCommand.GameSwitchAhead))
             {
                 if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL || PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
                     new ToggleSwitchAheadCommand(Log);
                 else
                     Simulator.Confirmer.Warning(CabControl.SwitchAhead, CabSetting.Warn1);
             }
-            if (UserInput.IsPressed(UserCommands.GameSwitchBehind))
+            if (UserInput.IsPressed(UserCommand.GameSwitchBehind))
             {
                 if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL || PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
                     new ToggleSwitchBehindCommand(Log);
                 else
                     Simulator.Confirmer.Warning(CabControl.SwitchBehind, CabSetting.Warn1);
             }
-            if (UserInput.IsPressed(UserCommands.GameClearSignalForward)) PlayerTrain.RequestSignalPermission(Direction.Forward);
-            if (UserInput.IsPressed(UserCommands.GameClearSignalBackward)) PlayerTrain.RequestSignalPermission(Direction.Reverse);
-            if (UserInput.IsPressed(UserCommands.GameResetSignalForward)) PlayerTrain.RequestResetSignal(Direction.Forward);
-            if (UserInput.IsPressed(UserCommands.GameResetSignalBackward)) PlayerTrain.RequestResetSignal(Direction.Reverse);
+            if (UserInput.IsPressed(UserCommand.GameClearSignalForward)) PlayerTrain.RequestSignalPermission(Direction.Forward);
+            if (UserInput.IsPressed(UserCommand.GameClearSignalBackward)) PlayerTrain.RequestSignalPermission(Direction.Reverse);
+            if (UserInput.IsPressed(UserCommand.GameResetSignalForward)) PlayerTrain.RequestResetSignal(Direction.Forward);
+            if (UserInput.IsPressed(UserCommand.GameResetSignalBackward)) PlayerTrain.RequestResetSignal(Direction.Reverse);
 
-            if (UserInput.IsPressed(UserCommands.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
+            if (UserInput.IsPressed(UserCommand.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
 
-            if (UserInput.IsPressed(UserCommands.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
-            if (UserInput.IsPressed(UserCommands.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
+            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
+            if (UserInput.IsPressed(UserCommand.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
 
-            if (UserInput.IsPressed(UserCommands.CameraJumpSeeSwitch))
+            if (UserInput.IsPressed(UserCommand.CameraJumpSeeSwitch))
             {
                 if (Program.DebugViewer != null && Program.DebugViewer.Enabled && (Program.DebugViewer.switchPickedItem != null || Program.DebugViewer.signalPickedItem != null))
                 {
                     WorldLocation wos;
-                    try
+                    TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem?.Item?.TrJunctionNode;
+                    if (nextSwitchTrack != null)
                     {
-                        if (Program.DebugViewer.switchPickedItem != null)
-                        {
-                            TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem.Item.TrJunctionNode;
-                            wos = new WorldLocation(nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.X, nextSwitchTrack.TN.UiD.Y + 8, nextSwitchTrack.TN.UiD.Z);
-                        }
-                        else
-                        {
-                            var s = Program.DebugViewer.signalPickedItem.Item;
-                            wos = new WorldLocation(s.TileX, s.TileZ, s.X, s.Y + 8, s.Z);
-                        }
-                        if (FreeRoamCameraList.Count == 0)
-                        {
-                            new UseFreeRoamCameraCommand(Log);
-                        }
-                        FreeRoamCamera.SetLocation(wos);
-                        //FreeRoamCamera
-                        FreeRoamCamera.Activate();
+                        wos = new WorldLocation(nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.X, nextSwitchTrack.TN.UiD.Y + 8, nextSwitchTrack.TN.UiD.Z);
                     }
-                    catch { }
-
-
+                    else
+                    {
+                        var s = Program.DebugViewer.signalPickedItem.Item;
+                        wos = new WorldLocation(s.TileX, s.TileZ, s.X, s.Y + 8, s.Z);
+                    }
+                    if (FreeRoamCameraList.Count == 0)
+                    {
+                        new UseFreeRoamCameraCommand(Log);
+                    }
+                    FreeRoamCamera.SetLocation(wos);
+                    //FreeRoamCamera
+                    FreeRoamCamera.Activate();
                 }
             }
 
             // Turntable commands
             if (Simulator.MovingTables != null)
             {
-                if (UserInput.IsPressed(UserCommands.ControlTurntableClockwise))
+                if (UserInput.IsPressed(UserCommand.ControlTurntableClockwise))
                 {
                     Simulator.ActiveMovingTable = FindActiveMovingTable();
                     if (Simulator.ActiveMovingTable != null)
@@ -1120,13 +1200,13 @@ namespace Orts.Viewer3D
                         new TurntableClockwiseCommand(Log);
                     }
                 }
-                else if (UserInput.IsReleased(UserCommands.ControlTurntableClockwise) && Simulator.ActiveMovingTable != null)
+                else if (UserInput.IsReleased(UserCommand.ControlTurntableClockwise) && Simulator.ActiveMovingTable != null)
                 {
                     TurntableClockwiseTargetCommand.Receiver = Simulator.ActiveMovingTable;
                     new TurntableClockwiseTargetCommand(Log);
                 }
 
-                if (UserInput.IsPressed(UserCommands.ControlTurntableCounterclockwise))
+                if (UserInput.IsPressed(UserCommand.ControlTurntableCounterclockwise))
                 {
                     Simulator.ActiveMovingTable = FindActiveMovingTable();
                     if (Simulator.ActiveMovingTable != null)
@@ -1136,14 +1216,14 @@ namespace Orts.Viewer3D
                     }
                 }
 
-                else if (UserInput.IsReleased(UserCommands.ControlTurntableCounterclockwise) && Simulator.ActiveMovingTable != null)
+                else if (UserInput.IsReleased(UserCommand.ControlTurntableCounterclockwise) && Simulator.ActiveMovingTable != null)
                 {
                     TurntableCounterclockwiseTargetCommand.Receiver = Simulator.ActiveMovingTable;
                     new TurntableCounterclockwiseTargetCommand(Log);
                 }
             }
 
-            if (UserInput.IsPressed(UserCommands.GameAutopilotMode))
+            if (UserInput.IsPressed(UserCommand.GameAutopilotMode))
             {
                 if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
                 {
@@ -1177,7 +1257,7 @@ namespace Orts.Viewer3D
                 train.DbfEvalValueChanged = true;
                 DbfEvalIniAutoPilotTimeS = Simulator.ClockTime;//Debrief eval
             }
-            if (UserInput.IsPressed(UserCommands.DebugDumpKeymap))
+            if (UserInput.IsPressed(UserCommand.DebugDumpKeymap))
             {
                 var textPath = Path.Combine(Settings.LoggingPath, "OpenRailsKeyboard.txt");
                 Settings.Input.DumpToText(textPath);
@@ -1192,7 +1272,7 @@ namespace Orts.Viewer3D
             // <Rob Roeterdink (roeter)>
             // code not yet activated - requires changes in output file selection
             // TODO : get proper output file path
-            //if (UserInput.IsPressed(UserCommands.PrintTrainPosition))
+            //if (UserInput.IsPressed(UserCommand.PrintTrainPosition))
             //{
             //    if (SelectedTrain != null)
             //    {
@@ -1244,7 +1324,7 @@ namespace Orts.Viewer3D
                 }
             }
 
-            if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
+            if (!Simulator.Paused && UserInput.IsDown(UserCommand.GameSwitchWithMouse))
             {
                 ForceMouseVisible = true;
                 if (UserInput.IsMouseLeftButtonPressed)
@@ -1253,7 +1333,7 @@ namespace Orts.Viewer3D
                     UserInput.Handled();
                 }
             }
-            else if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameUncoupleWithMouse))
+            else if (!Simulator.Paused && UserInput.IsDown(UserCommand.GameUncoupleWithMouse))
             {
                 ForceMouseVisible = true;
                 if (UserInput.IsMouseLeftButtonPressed)
@@ -1279,10 +1359,9 @@ namespace Orts.Viewer3D
                 {
                     foreach (var controlRenderer in (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.ControlMap.Values)
                     {
-                        CabViewDiscreteRenderer discreteRenderer = controlRenderer as CabViewDiscreteRenderer;
-                        if (discreteRenderer != null && discreteRenderer.IsMouseWithin())
+                        if (controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
                         {
-                            MouseChangingControl = discreteRenderer;
+                            MouseChangingControl = mouseRenderer;
                             break;
                         }
                     }
@@ -1308,17 +1387,16 @@ namespace Orts.Viewer3D
                 {
                     foreach (var controlRenderer in (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.ControlMap.Values)
                     {
-                        CabViewDiscreteRenderer discreteRenderer = controlRenderer as CabViewDiscreteRenderer;
-                        if (discreteRenderer != null && discreteRenderer.IsMouseWithin())
+                        if (controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
                         {
-                            MousePickedControl = discreteRenderer;
+                            MousePickedControl = mouseRenderer;
                             break;
                         }
                     }
                     if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
                     {
                         // say what control you have here
-                        Simulator.Confirmer.Message(ConfirmLevel.None, MousePickedControl.GetControlType().ToString());
+                        Simulator.Confirmer.Message(ConfirmLevel.None, MousePickedControl.GetControlName());
                     }
                     if (MousePickedControl != null) ActualCursor = Cursors.Hand;
                     else if (ActualCursor == Cursors.Hand) ActualCursor = Cursors.Default;
@@ -1441,7 +1519,7 @@ namespace Orts.Viewer3D
                     if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
                     {
                         // say what control you have here
-                        Simulator.Confirmer.Message(ConfirmLevel.None, MousePickedControl.GetControlType().ToString());
+                        Simulator.Confirmer.Message(ConfirmLevel.None, MousePickedControl.GetControlName());
                     }
                     if (MousePickedControl != null)
                     {
@@ -1514,7 +1592,9 @@ namespace Orts.Viewer3D
             PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
             if (PlayerLocomotiveViewer is MSTSLocomotiveViewer && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer)
                 AdjustCabHeight(DisplaySize.X, DisplaySize.Y);
-            Camera.Activate(); // If you need anything else here the cameras should check for it.        
+            if (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab)
+                CabCamera.Activate(); // If you need anything else here the cameras should check for it.
+            else ThreeDimCabCamera.Activate();
             SetCommandReceivers();
             ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
@@ -1725,7 +1805,7 @@ namespace Orts.Viewer3D
             if (frame.IsScreenChanged)
             {
                 WindowManager.ScreenChanged();
-                AdjustCabHeight(RenderProcess.GraphicsDeviceManager.PreferredBackBufferWidth, RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight);
+                AdjustCabHeight(DisplaySize.X, DisplaySize.Y);
             }
 
             MaterialManager.UpdateShaders();
@@ -1750,11 +1830,11 @@ namespace Orts.Viewer3D
                 // Hide MessageWindow
                 MessagesWindow.Visible = false;
                 // Audible confirmation that screenshot taken
-                if (World.GameSounds != null) World.GameSounds.HandleEvent(Event.ControlError);
+                ViewerSounds.HandleEvent(Event.TakeScreenshot);
             }
 
             // Use IsDown() not IsPressed() so users can take multiple screenshots as fast as possible by holding down the key.
-            if (UserInput.IsDown(UserCommands.GameScreenshot)
+            if (UserInput.IsDown(UserCommand.GameScreenshot)
                 && Visibility == VisibilityState.Visible) // Ensure we only get one screenshot.
                 new SaveScreenshotCommand(Log);
 
@@ -1773,8 +1853,12 @@ namespace Orts.Viewer3D
         [CallOnThread("Render")]
         void SaveScreenshotToFile(GraphicsDevice graphicsDevice, string fileName, bool silent)
         {
-            var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color);
-            graphicsDevice.ResolveBackBuffer(screenshot);
+            var width = graphicsDevice.PresentationParameters.BackBufferWidth;
+            var height = graphicsDevice.PresentationParameters.BackBufferHeight;
+            var data = new uint[width * height];
+
+            graphicsDevice.GetBackBufferData(data);
+
             new Thread(() =>
             {
                 try
@@ -1782,15 +1866,19 @@ namespace Orts.Viewer3D
                     // Unfortunately, the back buffer includes an alpha channel. Although saving this might seem okay,
                     // it actually ruins the picture - nothing in the back buffer is seen on-screen according to its
                     // alpha, it's only used for blending (if at all). We'll remove the alpha here.
-                    var data = new uint[screenshot.Width * screenshot.Height];
-                    screenshot.GetData(data);
                     for (var i = 0; i < data.Length; i++)
                         data[i] |= 0xFF000000;
-                    screenshot.SetData(data);
 
-                    // Now save the modified image.
-                    screenshot.Save(fileName, ImageFileFormat.Png);
-                    screenshot.Dispose();
+                    using (var screenshot = new Texture2D(graphicsDevice, width, height))
+                    {
+                        screenshot.SetData(data);
+
+                        // Now save the modified image.
+                        using (var stream = File.OpenWrite(fileName))
+                        {
+                            screenshot.SaveAsPng(stream, width, height);
+                        }
+                    }
 
                     if (!silent)
                         MessagesWindow.AddMessage(String.Format("Saving screenshot to '{0}'.", fileName), 10);

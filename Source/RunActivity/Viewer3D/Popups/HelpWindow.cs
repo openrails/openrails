@@ -17,19 +17,19 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Simulation;
-using Orts.Simulation.AIs;
-using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks;
-using ORTS.Common;
-using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Simulation;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using ORTS.Common;
+using ORTS.Common.Input;
+using ORTS.Settings;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -66,6 +66,9 @@ namespace Orts.Viewer3D.Popups
         List<TabData> Tabs = new List<TabData>();
         int ActiveTab;
 
+        private enum FuelTypes { Coal, DieselOil, Kwhr }
+        private FuelTypes FuelType;
+
         public void LogSeparator(int nCols)
         {
             if (!lDebriefEvalFile) wDbfEval.WriteLine(new String('-', nCols));
@@ -84,13 +87,13 @@ namespace Orts.Viewer3D.Popups
                 }, (keyBox, keyScanCode, keyName) =>
                 {
                     var color = Owner.Viewer.Settings.Input.GetScanCodeColor(keyScanCode);
-                    if (color == Color.TransparentBlack)
+                    if (color == Color.Transparent)
                         color = Color.Black;
 
                     InputSettings.Scale(ref keyBox, keyWidth, keyHeight);
                     scrollbox.Add(new Key(keyBox.Left - scrollbox.CurrentLeft, keyBox.Top - scrollbox.CurrentTop, keyBox.Width - 1, keyBox.Height - 1, keyName, color));
                 });
-                foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+                foreach (UserCommand command in Enum.GetValues(typeof(UserCommand)))
                 {
                     var line = scrollbox.AddLayoutHorizontalLineOfText();
                     var width = line.RemainingWidth / 2;
@@ -379,7 +382,7 @@ namespace Orts.Viewer3D.Popups
                             //Station stops remaining
                             foreach (var item in DbfEvalActArrive)
                             {
-                              if (item.Value == "")
+                                if (item.Value == "")
                                     dbfstationstopsremaining++;
                             }
                             if (!actualStatusVisible)
@@ -725,51 +728,48 @@ namespace Orts.Viewer3D.Popups
                             float nDieselburned = 0, nCoalburned = 0;
                             float nCoalBurnedPerc = 0, nWaterBurnedPerc = 0;
                             List<string> cEnginetype = new List<string>();
-                            bool lDiesel = false;
-                            bool lSteam = false;
-                            bool lElectric = false;
                             foreach (var item in cars)//Consist engines
                             {
-                                if (item.EngineType.ToString() == Viewer.Catalog.GetString("Diesel"))
+                                if (item.EngineType == TrainCar.EngineTypes.Diesel)
                                 {//Fuel Diesel
                                     nDieselvolume = nDieselvolume + (item as MSTSDieselLocomotive).MaxDieselLevelL;
                                     nDiesellevel = nDiesellevel + (item as MSTSDieselLocomotive).DieselLevelL;
                                     nDieselburned = nDieselvolume - nDiesellevel;
-                                    cEnginetype.Add(Viewer.Catalog.GetString("Diesel"));
-                                    lDiesel = true;
+                                    cEnginetype.Add("Diesel");
+                                    FuelType = FuelTypes.DieselOil;
                                 }
 
-                                if (item.EngineType.ToString() == Viewer.Catalog.GetString("Steam") && item.AuxWagonType.ToString() == Viewer.Catalog.GetString("Engine"))
+                                if (item.EngineType == TrainCar.EngineTypes.Steam && item.AuxWagonType == "Engine")
                                 {//Fuel Steam
                                     nCoalvolume = nCoalvolume + (item as MSTSSteamLocomotive).MaxTenderCoalMassKG;
                                     nCoallevel = nCoallevel + (item as MSTSSteamLocomotive).TenderCoalMassKG;
                                     nCoalburned = nCoalvolume - nCoallevel;
                                     nCoalBurnedPerc = 1 - ((item as MSTSSteamLocomotive).TenderCoalMassKG / (item as MSTSSteamLocomotive).MaxTenderCoalMassKG);
-                                    cEnginetype.Add(Viewer.Catalog.GetString("Steam"));
+                                    cEnginetype.Add("Steam");
 
                                     nWaterBurnedPerc = 1 - ((item as MSTSSteamLocomotive).CombinedTenderWaterVolumeUKG / (item as MSTSSteamLocomotive).MaxTotalCombinedWaterVolumeUKG);
-                                    lSteam = true;
+                                    FuelType = FuelTypes.Coal;
                                 }
-                                if (item.EngineType.ToString() == Viewer.Catalog.GetString("Electric"))
+                                if (item.EngineType == TrainCar.EngineTypes.Electric)
                                 {
-                                    cEnginetype.Add(Viewer.Catalog.GetString("Electric"));
-                                    lElectric = true;
+                                    cEnginetype.Add("Electric");
+                                    FuelType = FuelTypes.Kwhr;
                                 }
                             }
                             //Consist engine type  
-                            int ncountdiesel = cEnginetype.Where(s => s == Viewer.Catalog.GetString("Diesel")).Count();
-                            int ncountsteam = cEnginetype.Where(s => s == Viewer.Catalog.GetString("Steam")).Count();
-                            int ncountelectric = cEnginetype.Where(s => s == Viewer.Catalog.GetString("Electric")).Count();
-                            labeltext = "  Consist engine=" + (ncountdiesel > 0 ? ncountdiesel + Viewer.Catalog.GetString(" Diesel. ") : "") + (ncountsteam > 0 ? ncountsteam + Viewer.Catalog.GetString(" Steam.") : "") + (ncountelectric > 0 ? ncountelectric + Viewer.Catalog.GetString(" Electric.") : "");
+                            int ncountdiesel = cEnginetype.Where(s => s == "Diesel").Count();
+                            int ncountsteam = cEnginetype.Where(s => s == "Steam").Count();
+                            int ncountelectric = cEnginetype.Where(s => s == "Electric").Count();
+                            labeltext = "  Consist engine=" + (ncountdiesel > 0 ? ncountdiesel + " " + Viewer.Catalog.GetString("Diesel.") + " " : "") + (ncountsteam > 0 ? ncountsteam + " " + Viewer.Catalog.GetString("Steam.") + " " : "") + (ncountelectric > 0 ? ncountelectric + " " + Viewer.Catalog.GetString("Electric.") : "");
                             outmesssage(labeltext, colWidth * 3, true, 0);
 
-                            if (lDiesel)//Fuel Diesel
+                            if (FuelType == FuelTypes.DieselOil)
                             {
                                 labeltext = "  Burned Diesel=" + FormatStrings.FormatFuelVolume(nDieselburned, ismetric, isuk);
                                 outmesssage(labeltext, colWidth * 3, true, 0);
                             }
 
-                            if (lSteam)//Fuel Steam
+                            if (FuelType == FuelTypes.Coal)
                             {
                                 labeltext = "  Burned Coal=" + FormatStrings.FormatMass(nCoalburned, ismetric) + " (" + nCoalBurnedPerc.ToString("0.##%") + ")";
                                 outmesssage(labeltext, colWidth * 3, true, 0);
@@ -1046,18 +1046,29 @@ namespace Orts.Viewer3D.Popups
                         }
                     }
                 }));
-                Tabs.Add(new TabData(Tab.LocomotiveProcedures, Viewer.Catalog.GetString("Procedures"), (cl) =>
+            }
+            if (owner.Viewer.Simulator.TimetableMode)
+            {
+                Tabs.Add(new TabData(Tab.TimetableBriefing, Viewer.Catalog.GetString("Briefing"), (cl) =>
                 {
+                    var tTTrain = owner.Viewer.SelectedTrain as Orts.Simulation.Timetables.TTTrain;
                     var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
-                    if (owner.Viewer.Simulator.PlayerLocomotive != null &&
-                        owner.Viewer.Simulator.PlayerLocomotive is MSTSLocomotive &&
-                        ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures != null &&
-                        ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures.Length > 0)
-                    {
-                        scrollbox.Add(new TextFlow(scrollbox.RemainingWidth, ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures));
-                    }
+                    var briefing = tTTrain?.Briefing ?? "";
+                    var textFlow = new TextFlow(scrollbox.RemainingWidth, briefing);
+                    scrollbox.Add(textFlow);
                 }));
             }
+            Tabs.Add(new TabData(Tab.LocomotiveProcedures, Viewer.Catalog.GetString("Procedures"), (cl) =>
+            {
+                var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
+                if (owner.Viewer.Simulator.PlayerLocomotive != null &&
+                    owner.Viewer.Simulator.PlayerLocomotive is MSTSLocomotive &&
+                    ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures != null &&
+                    ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures.Length > 0)
+                {
+                    scrollbox.Add(new TextFlow(scrollbox.RemainingWidth, ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures));
+                }
+            }));
         }
 
         private void status_Click(Control arg1, Point arg2)
@@ -1205,6 +1216,7 @@ namespace Orts.Viewer3D.Popups
             ActivityTimetable,
             ActivityWorkOrders,
             ActivityEvaluation,
+            TimetableBriefing,
             LocomotiveProcedures,
         }
 

@@ -50,6 +50,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
@@ -73,12 +74,13 @@ namespace Orts.Simulation.RollingStocks
         public bool MirrorOpen;
         public bool UnloadingPartsOpen;
         public bool WaitForAnimationReady; // delay counter to start loading/unliading is on;
-        public bool IsRollerBearing; // Has roller bearings
-        public bool IsLowTorqueRollerBearing; // Has low torque roller bearings
-        public bool IsFrictionBearing; //Has friction (or solid bearings)
+        public bool IsRollerBearing = false; // Has roller bearings
+        public bool IsLowTorqueRollerBearing = false; // Has low torque roller bearings
+        public bool IsFrictionBearing = false; //Has oil based friction (or solid bearings)
+        public bool IsGreaseFrictionBearing = false; // Has grease based friction (or solid bearings)
         public bool IsStandStill = true;  // Used for MSTS type friction
         public bool IsDavisFriction = true; // Default to new Davis type friction
-        public bool IsLowSpeed = true; // set indicator for low speed operation  0 - 5mph
+        public bool IsBelowMergeSpeed = true; // set indicator for low speed operation as per given speed
 
         Interpolator BrakeShoeFrictionFactor;  // Factor of friction for wagon brake shoes
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
@@ -101,17 +103,25 @@ namespace Orts.Simulation.RollingStocks
         public string InteriorSoundFileName;
         public string Cab3DSoundFileName;
         public float ExternalSoundPassThruPercent = -1;
-        public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
-        protected float StaticFrictionFactorLb;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
-        float FrictionLowSpeedN;
+        public float WheelRadiusM = Me.FromIn(18.0f);  // Provide some defaults in case it's missing from the wag - Wagon wheels could vary in size from approx 10" to 25".
+        protected float StaticFrictionFactorN;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
+        float FrictionLowSpeedN; // Davis low speed value 0 - 5 mph
+        float FrictionBelowMergeSpeedN; // Davis low speed value for defined speed
         public float Friction0N;        // static friction
         protected float Friction5N;               // Friction at 5mph
+        public float StandstillFrictionN;
+        public float MergeSpeedFrictionN;
+        public float MergeSpeedMpS = MpS.FromMpH(5f);
         public float DavisAN;           // davis equation constant
         public float DavisBNSpM;        // davis equation constant for speed
         public float DavisCNSSpMM;      // davis equation constant for speed squared
         public float DavisDragConstant; // Drag coefficient for wagon
         public float WagonFrontalAreaM2; // Frontal area of wagon
         public float TrailLocoResistanceFactor; // Factor to reduce base and wind resistance if locomotive is not leading - based upon original Davis drag coefficients
+
+        bool TenderWeightInitialize = true;
+        float TenderWagonMaxCoalMassKG;
+        float TenderWagonMaxWaterMassKG;
 
         // Wind Impacts
         float WagonDirectionDeg;
@@ -139,7 +149,6 @@ namespace Orts.Simulation.RollingStocks
         public float WheelSpeedMpS;
         public float WheelSpeedSlipMpS; // speed of wheel if locomotive is slipping
         public float SlipWarningThresholdPercent = 70;
-        public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
         public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
 
@@ -153,6 +162,31 @@ namespace Orts.Simulation.RollingStocks
         public float HeatingHoseSteamVelocityMpS;
         public float HeatingHoseSteamVolumeM3pS;
 
+        // Wagon heating compartment steamtrap leaks
+        public float HeatingCompartmentSteamTrapParticleDurationS;
+        public float HeatingCompartmentSteamTrapVelocityMpS;
+        public float HeatingCompartmentSteamTrapVolumeM3pS;
+
+        // Wagon heating steamtrap leaks
+        public float HeatingMainPipeSteamTrapDurationS;
+        public float HeatingMainPipeSteamTrapVelocityMpS;
+        public float HeatingMainPipeSteamTrapVolumeM3pS;
+
+        // Steam Brake leaks
+        public float SteamBrakeLeaksDurationS;
+        public float SteamBrakeLeaksVelocityMpS;
+        public float SteamBrakeLeaksVolumeM3pS;
+
+        // Water Scoop Spray
+        public float WaterScoopParticleDurationS;
+        public float WaterScoopWaterVelocityMpS;
+        public float WaterScoopWaterVolumeM3pS;
+
+        // Tender Water overflow
+        public float TenderWaterOverflowParticleDurationS;
+        public float TenderWaterOverflowVelocityMpS;
+        public float TenderWaterOverflowVolumeM3pS;
+
         // Wagon Power Generator
         public float WagonGeneratorDurationS = 1.5f;
         public float WagonGeneratorVolumeM3pS = 2.0f;
@@ -161,7 +195,8 @@ namespace Orts.Simulation.RollingStocks
         // Heating Steam Boiler
         public float HeatingSteamBoilerDurationS;
         public float HeatingSteamBoilerVolumeM3pS;
-        public Color HeatingSteamBoilerSteadyColor = Color.Aqua;
+        public Color HeatingSteamBoilerSteadyColor = Color.LightSlateGray;
+        public bool HeatingBoilerSet = false;
 
         // Wagon Smoke
         public float WagonSmokeVolumeM3pS;
@@ -171,6 +206,14 @@ namespace Orts.Simulation.RollingStocks
         public float WagonSmokeVelocityMpS = 15.0f;
         public Color WagonSmokeSteadyColor = Color.Gray;
 
+        float TrueCouplerCount = 0;
+        int CouplerCountLocation;
+
+        // Bearing Hot Box Smoke
+        public float BearingHotBoxSmokeVolumeM3pS;
+        public float BearingHotBoxSmokeDurationS;
+        public float BearingHotBoxSmokeVelocityMpS = 15.0f;
+        public Color BearingHotBoxSmokeSteadyColor = Color.Gray;
 
         /// <summary>
         /// True if vehicle is equipped with an additional emergency brake reservoir
@@ -188,6 +231,21 @@ namespace Orts.Simulation.RollingStocks
         /// Number of available retainer positions. (Used on freight cars, mostly.) Might be 0, 3 or 4.
         /// </summary>
         public int RetainerPositions;
+
+         /// <summary>
+        /// Indicates whether a brake is present or not when Manual Braking is selected.
+        /// </summary>
+        public bool ManualBrakePresent;
+
+        /// <summary>
+        /// Indicates whether a non auto (straight) brake is present or not when braking is selected.
+        /// </summary>
+        public bool NonAutoBrakePresent;
+
+        /// <summary>
+        /// Indicates whether an auxiliary reservoir is present on the wagon or not.
+        /// </summary>
+        public bool AuxiliaryReservoirPresent;
 
         /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
@@ -263,7 +321,11 @@ namespace Orts.Simulation.RollingStocks
             public static bool Unload { get; set; }
         }
 
-        public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
+        public MSTSBrakeSystem MSTSBrakeSystem
+        {
+            get { return (MSTSBrakeSystem)base.BrakeSystem; }
+            set { base.BrakeSystem = value; } // value needs to be set to allow trailing cars to have same brake system as locomotive when in simple brake mode
+        }
 
         public MSTSWagon(Simulator simulator, string wagFilePath)
             : base(simulator, wagFilePath)
@@ -346,6 +408,18 @@ namespace Orts.Simulation.RollingStocks
                 InteriorShapeFileName = null;
             }
 
+            if (FrontCouplerShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCouplerShapeFileName))
+            {
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCouplerShapeFileName);
+                FrontCouplerShapeFileName = null;
+            }
+
+            if (RearCouplerShapeFileName != null && !File.Exists(wagonFolderSlash + RearCouplerShapeFileName))
+            {
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCouplerShapeFileName);
+                RearCouplerShapeFileName = null;
+            }
+
             // If trailing loco resistance constant has not been  defined in WAG/ENG file then assign default value based upon orig Davis values
             if (TrailLocoResistanceFactor == 0)
             {
@@ -363,6 +437,45 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Ensure Drive Axles is set to a default if no OR value added to WAG file
+            if (WagonNumAxles == 0)
+            {
+                if (MSTSWagonNumWheels != 0 && MSTSWagonNumWheels < 6)
+                {
+                    WagonNumAxles = (int) MSTSWagonNumWheels;
+                }
+                else
+                {
+                    WagonNumAxles = 4; // Set 4 axles as default
+                }
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0}", WagonNumAxles);
+                }
+            }
+
+            // Initialise steam heat parameters
+            if (TrainHeatBoilerWaterUsageGalukpH == null) // If no table entered in WAG file, then use the default table
+            {
+                TrainHeatBoilerWaterUsageGalukpH = SteamHeatBoilerWaterUsageGalukpH();
+            }
+
+            if (TrainHeatBoilerFuelUsageGalukpH == null) // If no table entered in WAG file, then use the default table
+            {
+                TrainHeatBoilerFuelUsageGalukpH = SteamHeatBoilerFuelUsageGalukpH();
+            }
+            MaximumSteamHeatingBoilerSteamUsageRateLbpS = TrainHeatBoilerWaterUsageGalukpH.MaxX(); // Find maximum steam capacity of the generator based upon the information in the water usage table
+            CurrentSteamHeatBoilerFuelCapacityL = MaximiumSteamHeatBoilerFuelTankCapacityL;
+
+            if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
+            {
+                CurrentCarSteamHeatBoilerWaterCapacityL = MaximumSteamHeatBoilerWaterTankCapacityL;
+            }
+            else
+            {
+                CurrentCarSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
+            }
 
             // If Drag constant not defined in WAG/ENG file then assign default value based upon orig Davis values
             if (DavisDragConstant == 0)
@@ -749,6 +862,9 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
+            // Determine whether or not to use the Davis friction model. Must come after freight animations are initialized.
+            IsDavisFriction = DavisAN != 0 && DavisBNSpM != 0 && DavisCNSSpMM != 0;
+
             if (BrakeSystem == null)
                 BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
         }
@@ -765,7 +881,7 @@ namespace Orts.Simulation.RollingStocks
             Pantographs.Initialize();
 
             base.Initialize();
-
+                       
             if (UnbalancedSuperElevationM == 0 || UnbalancedSuperElevationM > 0.5) // If UnbalancedSuperElevationM > 18", or equal to zero, then set a default value
             {
                 switch (WagonType)
@@ -807,6 +923,18 @@ namespace Orts.Simulation.RollingStocks
                     catch
                     {
                         STFException.TraceWarning(stf, "Skipped unknown wagon type " + wagonType);
+                    }
+                    break;
+                case "wagon(ortswagonspecialtype":
+                    stf.MustMatch("(");
+                    var wagonspecialType = stf.ReadString();
+                    try
+                    {
+                        WagonSpecialType = (WagonSpecialTypes)Enum.Parse(typeof(WagonSpecialTypes), wagonspecialType);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Assumed unknown engine type " + wagonspecialType);
                     }
                     break;
                 case "wagon(freightanim":
@@ -863,7 +991,20 @@ namespace Orts.Simulation.RollingStocks
                     }
                     break;
                 case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortstenderwagoncoalmass": TenderWagonMaxCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortstenderwagonwatermass": TenderWagonMaxWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortsheatingwindowderatingfactor": WindowDeratingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; // Temperature conversion is incorrect - to be checked!!!
+                case "wagon(ortsheatingcompartmentpipeareafactor": CompartmentHeatingPipeAreaFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsheatingtrainpipeouterdiameter": MainSteamHeatPipeOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsheatingtrainpipeinnerdiameter": MainSteamHeatPipeInnerDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsheatingconnectinghoseinnerdiameter": CarConnectSteamHoseInnerDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsheatingconnectinghoseouterdiameter": CarConnectSteamHoseOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(mass": InitialMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (InitialMassKG < 0.1f) InitialMassKG = 0.1f; break;
+                case "wagon(ortsheatingboilerwatertankcapacity": MaximumSteamHeatBoilerWaterTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "wagon(ortsheatingboilerfueltankcapacity": MaximiumSteamHeatBoilerFuelTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "wagon(ortsheatingboilerwaterusage": TrainHeatBoilerWaterUsageGalukpH = new Interpolator(stf); break;
+                case "wagon(ortsheatingboilerfuelusage": TrainHeatBoilerFuelUsageGalukpH = new Interpolator(stf); break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
@@ -876,6 +1017,8 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsdavisdragconstant": DavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortswagonfrontalarea": WagonFrontalAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "wagon(ortstraillocomotiveresistancefactor": TrailLocoResistanceFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsstandstillfriction": StandstillFrictionN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(ortsmergespeed": MergeSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, MergeSpeedMpS); break;
                 case "wagon(effects(specialeffects": ParseEffects(lowercasetoken, stf); break;
                 case "wagon(ortsbearingtype":
                     stf.MustMatch("(");
@@ -883,6 +1026,7 @@ namespace Orts.Simulation.RollingStocks
                     IsRollerBearing = String.Compare(typeString2, "Roller") == 0;
                     IsLowTorqueRollerBearing = String.Compare(typeString2, "Low") == 0;
                     IsFrictionBearing = String.Compare(typeString2, "Friction") == 0;
+                    IsGreaseFrictionBearing = String.Compare(typeString2, "Grease") == 0;
                     break;
                 case "wagon(friction":
                     stf.MustMatch("(");
@@ -906,43 +1050,152 @@ namespace Orts.Simulation.RollingStocks
                             case "graduated_release_triple_valve": DistributorPresent = true; break;
                             case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
                             case "handbrake": HandBrakePresent = true; break;
+                            case "auxiliary_reservoir": AuxiliaryReservoirPresent = true; break;
+                            case "manual_brake": ManualBrakePresent = true; break;
                             case "retainer_3_position": RetainerPositions = 3; break;
                             case "retainer_4_position": RetainerPositions = 4; break;
                         }
                     }
                     break;
                 case "wagon(coupling":
-                    Couplers.Add(new MSTSCoupling());
+                    Couplers.Add(new MSTSCoupling()); // Adds a new coupler every time "Coupler" parameters found in WAG and INC file
+                    CouplerCountLocation = 0;
+                    TrueCouplerCount += 1;
+                    // it is possible for there to be more then two couplers per car if the coupler details are added via an INC file. Therefore the couplers need to be adjusted appropriately.
+                    // Front coupler stored in slot 0, and rear coupler stored in slot 1
+                    if (Couplers.Count > 2 && TrueCouplerCount == 3)  // If front coupler has been added via INC file
+                    {
+                        Couplers.RemoveAt(0);  // Remove old front coupler
+                        CouplerCountLocation = 0;  // Write info to old front coupler location. 
+                    }
+                    else if (Couplers.Count > 2 && TrueCouplerCount == 4)  // If rear coupler has been added via INC file
+                    {
+                        Couplers.RemoveAt(1);  // Remove old rear coupler
+                        CouplerCountLocation = 1;  // Write info to old rear coupler location. 
+                    }
+                    else
+                    {
+                        CouplerCountLocation = Couplers.Count - 1;  // By default write info into 0 and 1 slots as required.
+                    };
                     break;
-                case "wagon(coupling(couplinghasrigidconnection":
-                    Couplers[Couplers.Count - 1].Rigid = stf.ReadBoolBlock(true);
-                    break;
-                case "wagon(coupling(spring(stiffness":
-                    stf.MustMatch("(");
-                    Couplers[Couplers.Count - 1].SetStiffness(stf.ReadFloat(STFReader.UNITS.Stiffness, null), stf.ReadFloat(STFReader.UNITS.Stiffness, null));
-                    stf.SkipRestOfBlock();
-                    break;
-                case "wagon(coupling(spring(damping":
-                    stf.MustMatch("(");
-                    Couplers[Couplers.Count - 1].SetDamping(stf.ReadFloat(STFReader.UNITS.Resistance, null), stf.ReadFloat(STFReader.UNITS.Resistance, null));
-                    stf.SkipRestOfBlock();
-                    break;
-                case "wagon(coupling(spring(ortsslack":
-                    stf.MustMatch("(");
-                     // IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.  Temporarily disabled for v1.3 release
-                    Couplers[Couplers.Count - 1].SetSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
-                    stf.SkipRestOfBlock();
-                    break;
+
+                // Used for simple or legacy coupler
                 case "wagon(coupling(spring(break":
                     stf.MustMatch("(");
-                    Couplers[Couplers.Count - 1].SetBreak(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
+                    Couplers[CouplerCountLocation].SetSimpleBreak(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(coupling(spring(r0":
                     stf.MustMatch("(");
-                    Couplers[Couplers.Count - 1].SetR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    Couplers[CouplerCountLocation].SetSimpleR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
+
+                case "wagon(coupling(spring(stiffness":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetSimpleStiffness(stf.ReadFloat(STFReader.UNITS.Stiffness, null), stf.ReadFloat(STFReader.UNITS.Stiffness, null));
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(coupling(spring(ortsslack":
+                    stf.MustMatch("(");
+                    // IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.  Temporarily disabled for v1.3 release
+                    Couplers[CouplerCountLocation].SetSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+
+                // Used for advanced coupler
+
+                case "wagon(coupling(frontcoupleranim":
+                    stf.MustMatch("(");
+                    FrontCouplerShapeFileName = stf.ReadString();
+                    FrontCouplerAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontCouplerAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontCouplerAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+
+                case "wagon(coupling(rearcoupleranim":
+                    stf.MustMatch("(");
+                    RearCouplerShapeFileName = stf.ReadString();
+                    RearCouplerAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearCouplerAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearCouplerAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+
+               case "wagon(coupling(spring(ortstensionstiffness":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetTensionStiffness(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
+                    stf.SkipRestOfBlock();
+                    break;
+
+               case "wagon(coupling(frontcoupleropenanim":
+                    stf.MustMatch("(");
+                    FrontCouplerOpenFitted = true;
+                    FrontCouplerOpenShapeFileName = stf.ReadString();
+                    FrontCouplerOpenAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontCouplerOpenAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontCouplerOpenAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                    
+               case "wagon(coupling(rearcoupleropenanim":
+                    stf.MustMatch("(");
+                    RearCouplerOpenFitted = true;
+                    RearCouplerOpenShapeFileName = stf.ReadString();
+                    RearCouplerOpenAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearCouplerOpenAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearCouplerOpenAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+
+                case "wagon(coupling(spring(ortscompressionstiffness":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetCompressionStiffness(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
+                    stf.SkipRestOfBlock();
+                    break;
+
+                case "wagon(coupling(spring(ortstensionslack":
+                    stf.MustMatch("(");
+                    IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.
+                    Couplers[CouplerCountLocation].SetTensionSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+               case "wagon(coupling(spring(ortscompressionslack":
+                    stf.MustMatch("(");
+                    IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.
+                    Couplers[CouplerCountLocation].SetCompressionSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+                // This is for the advanced coupler and is designed to be used instead of the MSTS parameter Break
+
+                case "wagon(coupling(spring(ortsbreak":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetAdvancedBreak(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
+                    stf.SkipRestOfBlock();
+                    break;
+                    
+                    // This is for the advanced coupler and is designed to be used instead of the MSTS parameter R0
+               case "wagon(coupling(spring(ortstensionr0":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetTensionR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+               case "wagon(coupling(spring(ortscompressionr0":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetCompressionR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+
+
+                // Used for both coupler types
+                case "wagon(coupling(couplinghasrigidconnection":
+                    Couplers[CouplerCountLocation].Rigid = false;
+                    Couplers[CouplerCountLocation].Rigid = stf.ReadBoolBlock(true);
+                    break;
+               
+
+
                 case "wagon(adheasion":
                     stf.MustMatch("(");
                     Adhesion1 = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -985,7 +1238,8 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(inside": HasInsideView = true; ParseWagonInside(stf); break;
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
-                case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
+                case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
+                case "wagon(ortsnumberaxles": WagonNumAxles = stf.ReadIntBlock(null); break;
                 case "wagon(ortspantographs":
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
@@ -1021,10 +1275,29 @@ namespace Orts.Simulation.RollingStocks
             MainShapeFileName = copy.MainShapeFileName;
             HasPassengerCapacity = copy.HasPassengerCapacity;
             WagonType = copy.WagonType;
+            WagonSpecialType = copy.WagonSpecialType;
             FreightShapeFileName = copy.FreightShapeFileName;
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
             FreightAnimFlag = copy.FreightAnimFlag;
+            FrontCouplerShapeFileName = copy.FrontCouplerShapeFileName;
+            FrontCouplerAnimWidthM = copy.FrontCouplerAnimWidthM;
+            FrontCouplerAnimHeightM = copy.FrontCouplerAnimHeightM;
+            FrontCouplerAnimLengthM = copy.FrontCouplerAnimLengthM;
+            FrontCouplerOpenShapeFileName = copy.FrontCouplerOpenShapeFileName;
+            FrontCouplerOpenAnimWidthM = copy.FrontCouplerOpenAnimWidthM;
+            FrontCouplerOpenAnimHeightM = copy.FrontCouplerOpenAnimHeightM;
+            FrontCouplerOpenAnimLengthM = copy.FrontCouplerOpenAnimLengthM;
+            FrontCouplerOpenFitted = copy.FrontCouplerOpenFitted;
+            RearCouplerShapeFileName = copy.RearCouplerShapeFileName;
+            RearCouplerAnimWidthM = copy.RearCouplerAnimWidthM;
+            RearCouplerAnimHeightM = copy.RearCouplerAnimHeightM;
+            RearCouplerAnimLengthM = copy.RearCouplerAnimLengthM;
+            RearCouplerOpenShapeFileName = copy.RearCouplerOpenShapeFileName;
+            RearCouplerOpenAnimWidthM = copy.RearCouplerOpenAnimWidthM;
+            RearCouplerOpenAnimHeightM = copy.RearCouplerOpenAnimHeightM;
+            RearCouplerOpenAnimLengthM = copy.RearCouplerOpenAnimLengthM;
+            RearCouplerOpenFitted = copy.RearCouplerOpenFitted;
             CarWidthM = copy.CarWidthM;
             CarHeightM = copy.CarHeightM;
             CarLengthM = copy.CarLengthM;
@@ -1034,6 +1307,10 @@ namespace Orts.Simulation.RollingStocks
             UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
+            TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
+            TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
+            WagonNumAxles = copy.WagonNumAxles;
+            MSTSWagonNumWheels = copy.MSTSWagonNumWheels;
             MassKG = copy.MassKG;
             InitialMassKG = copy.InitialMassKG;
             WheelRadiusM = copy.WheelRadiusM;
@@ -1044,6 +1321,17 @@ namespace Orts.Simulation.RollingStocks
             InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
             MaxHandbrakeForceN = copy.MaxHandbrakeForceN;
+            WindowDeratingFactor = copy.WindowDeratingFactor;
+            DesiredCompartmentTempSetpointC = copy.DesiredCompartmentTempSetpointC;
+            CompartmentHeatingPipeAreaFactor = copy.CompartmentHeatingPipeAreaFactor;
+            MainSteamHeatPipeOuterDiaM = copy.MainSteamHeatPipeOuterDiaM;
+            MainSteamHeatPipeInnerDiaM = copy.MainSteamHeatPipeInnerDiaM;
+            CarConnectSteamHoseInnerDiaM = copy.CarConnectSteamHoseInnerDiaM;
+            CarConnectSteamHoseOuterDiaM = copy.CarConnectSteamHoseOuterDiaM;
+            MaximumSteamHeatBoilerWaterTankCapacityL = copy.MaximumSteamHeatBoilerWaterTankCapacityL;
+            MaximiumSteamHeatBoilerFuelTankCapacityL = copy.MaximiumSteamHeatBoilerFuelTankCapacityL;
+            TrainHeatBoilerWaterUsageGalukpH = new Interpolator(copy.TrainHeatBoilerWaterUsageGalukpH);
+            TrainHeatBoilerFuelUsageGalukpH = new Interpolator(copy.TrainHeatBoilerFuelUsageGalukpH);
             DavisAN = copy.DavisAN;
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
@@ -1056,15 +1344,22 @@ namespace Orts.Simulation.RollingStocks
             FrictionC2 = copy.FrictionC2;
             FrictionE2 = copy.FrictionE2;
             EffectData = copy.EffectData;
+            IsBelowMergeSpeed = copy.IsBelowMergeSpeed;
+            StandstillFrictionN = copy.StandstillFrictionN;
+            MergeSpeedFrictionN = copy.MergeSpeedFrictionN;
+            MergeSpeedMpS = copy.MergeSpeedMpS;
             IsDavisFriction = copy.IsDavisFriction;
             IsRollerBearing = copy.IsRollerBearing;
             IsLowTorqueRollerBearing = copy.IsLowTorqueRollerBearing;
             IsFrictionBearing = copy.IsFrictionBearing;
+            IsGreaseFrictionBearing = copy.IsGreaseFrictionBearing;
             CarBrakeSystemType = copy.CarBrakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
             EmergencyReservoirPresent = copy.EmergencyReservoirPresent;
             DistributorPresent = copy.DistributorPresent;
             HandBrakePresent = copy.HandBrakePresent;
+            ManualBrakePresent = copy.ManualBrakePresent;
+            AuxiliaryReservoirPresent = copy.AuxiliaryReservoirPresent;
             RetainerPositions = copy.RetainerPositions;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
@@ -1213,6 +1508,10 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(DavisAN);
             outf.Write(DavisBNSpM);
             outf.Write(DavisCNSSpMM);
+            outf.Write(StandstillFrictionN);
+            outf.Write(MergeSpeedFrictionN);
+            outf.Write(IsBelowMergeSpeed);
+            outf.Write(MergeSpeedMpS);
             outf.Write(MassKG);
             outf.Write(MaxBrakeForceN);
             outf.Write(MaxHandbrakeForceN);
@@ -1230,6 +1529,10 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else outf.Write(false);
             }
+            outf.Write(CurrentSteamHeatBoilerFuelCapacityL);
+            outf.Write(CarCurrentCarriageHeatTempC);
+            outf.Write(CurrentCarSteamHeatBoilerWaterCapacityL);
+
             base.Save(outf);
         }
 
@@ -1250,15 +1553,14 @@ namespace Orts.Simulation.RollingStocks
             DavisAN = inf.ReadSingle();
             DavisBNSpM = inf.ReadSingle();
             DavisCNSSpMM = inf.ReadSingle();
+            StandstillFrictionN = inf.ReadSingle();
+            MergeSpeedFrictionN = inf.ReadSingle();
+            IsBelowMergeSpeed = inf.ReadBoolean();
+            MergeSpeedMpS = inf.ReadSingle();
             MassKG = inf.ReadSingle();
             MaxBrakeForceN = inf.ReadSingle();
             MaxHandbrakeForceN = inf.ReadSingle();
-            int n = inf.ReadInt32();
-            for (int i = 0; i < n; i++)
-            {
-                Couplers.Add(new MSTSCoupling());
-                Couplers[i].Restore(inf);
-            }
+            Couplers = ReadCouplersFromSave(inf).ToList();
             Pantographs.Restore(inf);
             if (FreightAnimations != null)
             {
@@ -1270,11 +1572,33 @@ namespace Orts.Simulation.RollingStocks
                     WeightLoadController.Restore(inf);
                 }
             }
+            CurrentSteamHeatBoilerFuelCapacityL = inf.ReadSingle();
+            CarCurrentCarriageHeatTempC = inf.ReadSingle();
+            CurrentCarSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
 
             base.Restore(inf);
 
             // always set aux power on due to error in PowerSupplyClass
             AuxPowerOn = true;
+        }
+
+        /// <summary>
+        /// Read the coupler state(s) from a save stream.
+        /// </summary>
+        /// <remarks>
+        /// Has no side effects besides advancing the save stream, thus avoiding any shared-state pitfalls.
+        /// </remarks>
+        /// <param name="inf">The save stream.</param>
+        /// <returns>A list of newly restored <see cref="MSTSCoupling"/> instances.</returns>
+        private static IEnumerable<MSTSCoupling> ReadCouplersFromSave(BinaryReader inf)
+        {
+            var n = inf.ReadInt32();
+            foreach (int _ in Enumerable.Range(0, n))
+            {
+                var coupler = new MSTSCoupling();
+                coupler.Restore(inf);
+                yield return coupler;
+            }
         }
 
         public override void Update(float elapsedClockSeconds)
@@ -1283,11 +1607,47 @@ namespace Orts.Simulation.RollingStocks
 
             ConfirmSteamLocomotiveTender(); // Confirms that a tender is connected to the steam locomotive
 
+            // Adjusts water and coal mass based upon values assigned to the tender found in the WAG file rather then those defined in ENG file.
+            if (WagonType == WagonTypes.Tender && TenderWeightInitialize && TenderWagonMaxCoalMassKG != 0 && TenderWagonMaxWaterMassKG != 0)
+            {
+
+                // Find the associated steam locomotive for this tender
+                if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
+
+                // If no locomotive is found to be associated with this tender, then OR crashes, ie TendersSteamLocomotive is still null. 
+                // This message will provide the user with information to correct the problem
+                if (TendersSteamLocomotive == null)
+                {
+                    Trace.TraceInformation("Tender @ position {0} does not have a locomotive associated with. Check that it is preceeded by a steam locomotive.", CarID);
+                }
+
+                if (TendersSteamLocomotive != null)
+                {
+                    if (TendersSteamLocomotive.IsTenderRequired == 1)
+                    {
+                        TendersSteamLocomotive.MaxTenderCoalMassKG = TenderWagonMaxCoalMassKG;
+
+                        // Combined total water found by taking the current combined water (which may have extra water added via the auxiliary tender), and subtracting the 
+                        // amount of water defined in the ENG file, and adding the water defiend in the WAG file.
+                        float TempMaxCombinedWater = TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG;
+                        TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG = (TempMaxCombinedWater - (Kg.ToLb(TendersSteamLocomotive.MaxLocoTenderWaterMassKG) / WaterLBpUKG)) + (Kg.ToLb(TenderWagonMaxWaterMassKG) / WaterLBpUKG);
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Fuel and Water Masses adjusted to Tender Values Specified in WAG File - Coal mass {0} kg, Water Mass {1}", FormatStrings.FormatMass(TendersSteamLocomotive.MaxTenderCoalMassKG, IsMetric), FormatStrings.FormatFuelVolume(L.FromGUK(TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG), IsMetric, IsUK));
+                        }
+                    }
+                }
+
+                // Rest flag so that this loop is not executed again
+                TenderWeightInitialize = false;
+            }
+
             UpdateTenderLoad(); // Updates the load physics characteristics of tender and aux tender
 
             UpdateLocomotiveLoadPhysics(); // Updates the load physics characteristics of locomotives
 
-            UpdateSpecialEffects(elapsedClockSeconds); // Updates the special effects
+            UpdateSpecialEffects(elapsedClockSeconds); // Updates the wagon special effects
 
             // Update Aux Tender Information
 
@@ -1313,10 +1673,7 @@ namespace Orts.Simulation.RollingStocks
 
             UpdateWindForce();
 
-            //            Trace.TraceInformation("Coupler - ID {0} GetSlack1 {1:N4} GetSlack2 {2:N4} GetStiff {3:N3} GetZero {4:N3}", CarID, GetMaximumCouplerSlack1M(), GetMaximumCouplerSlack2M(), GetCouplerStiffnessNpM(), GetCouplerZeroLengthM());
-
-            // Get Coupler HUD Indication
-            HUDCouplerRigidIndication = GetCouplerRigidIndication();
+            UpdateWheelBearingTemperature(elapsedClockSeconds);
 
             foreach (MSTSCoupling coupler in Couplers)
             {
@@ -1324,7 +1681,7 @@ namespace Orts.Simulation.RollingStocks
                 // Test to see if coupler forces have exceeded the Proof (or safety limit). Exceeding this limit will provide an indication only
                 if (IsPlayerTrain)
                 {
-                    if (-CouplerForceU > coupler.Break1N)  // break couplers if forces exceeded
+                    if (Math.Abs(CouplerForceU) > GetCouplerBreak1N() || Math.Abs(ImpulseCouplerForceUN) > GetCouplerBreak1N())  // break couplers if either static or impulse forces exceeded
                     {
                         CouplerOverloaded = true;
                     }
@@ -1341,9 +1698,19 @@ namespace Orts.Simulation.RollingStocks
                 // Test to see if coupler forces have been exceeded, and coupler has broken. Exceeding this limit will break the coupler
                 if (IsPlayerTrain) // Only break couplers on player trains
                 {
-                    if (-CouplerForceU > coupler.Break2N )  // break couplers if forces exceeded
+                    if (Math.Abs(CouplerForceU) > GetCouplerBreak2N() || Math.Abs(ImpulseCouplerForceUN) > GetCouplerBreak2N())  // break couplers if either static or impulse forces exceeded
                     {
                         CouplerExceedBreakLimit = true;
+
+                        if (Math.Abs(CouplerForceU) > GetCouplerBreak2N())
+                        {
+                            Trace.TraceInformation("Coupler on CarID {0} has broken due to excessive static coupler force {1}", CarID, CouplerForceU);
+
+                        }
+                        else if (Math.Abs(ImpulseCouplerForceUN) > GetCouplerBreak2N())
+                        {
+                            Trace.TraceInformation("Coupler on CarID {0} has broken due to excessive impulse coupler force {1}", CarID, ImpulseCouplerForceUN);
+                        }
                     }
                     else
                     {
@@ -1491,7 +1858,7 @@ namespace Orts.Simulation.RollingStocks
                     if (DieselLocomotiveIdentification != null)
                     {
 
-                        MassKG = LoadEmptyMassKg + (DieselLocomotiveIdentification.DieselLevelL * DieselLocomotiveIdentification.DieselWeightKgpL);
+                        MassKG = LoadEmptyMassKg + (DieselLocomotiveIdentification.DieselLevelL * DieselLocomotiveIdentification.DieselWeightKgpL) + DieselLocomotiveIdentification.CurrentLocomotiveSteamHeatBoilerWaterCapacityL;
                         MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values  
                         // Adjust drive wheel weight
                         DieselLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * DieselLocomotiveIdentification.InitialDrvWheelWeightKg;
@@ -1526,302 +1893,741 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-
         private void UpdateTrainBaseResistance()
         {
+            IsBelowMergeSpeed = AbsSpeedMpS < MergeSpeedMpS;
+            IsStandStill = AbsSpeedMpS < 0.1f;
+            bool isStartingFriction = StandstillFrictionN != 0;
 
-            if (IsDavisFriction == true) // test to see if OR thinks that Davis Values have been entered in WG file.
+            if (IsDavisFriction) // If set to use next Davis friction then do so
             {
-                if (DavisAN == 0 || DavisBNSpM == 0 || DavisCNSSpMM == 0) // If Davis parameters are not defined in WAG file, then set falg to use default friction values
-                    IsDavisFriction = false; // set to false - indicating that Davis friction is not used
+                if (isStartingFriction && IsBelowMergeSpeed) // Davis formulas only apply above merge speed, so different treatment required for low speed
+                    UpdateTrainBaseResistance_StartingFriction();
+                else if (IsBelowMergeSpeed)
+                    UpdateTrainBaseResistance_DavisLowSpeed();
+                else
+                    UpdateTrainBaseResistance_DavisHighSpeed();
+            }
+            else if (isStartingFriction && IsBelowMergeSpeed)
+            {
+                UpdateTrainBaseResistance_StartingFriction();
+            }
+            else
+            {
+                UpdateTrainBaseResistance_ORTS();
+            }
+        }
+
+        /// <summary>
+        /// Update train base resistance with the conventional Open Rails algorithm.
+        /// </summary>
+        /// <remarks>
+        /// For all speeds.
+        /// </remarks>
+        private void UpdateTrainBaseResistance_ORTS()
+        {
+            if (FrictionV2 < 0 || FrictionV2 > 4.4407f) // > 10 mph
+            {   // not fcalc ignore friction and use default davis equation
+                // Starting Friction 
+                //
+                //                      Above Freezing   Below Freezing
+                //    Journal Bearing      25 lb/ton        35 lb/ton   (short ton)
+                //     Roller Bearing       5 lb/ton        15 lb/ton
+                //
+                // [2009-10-25 from http://www.arema.org/publications/pgre/ ]
+                //Friction0N = MassKG * 30f /* lb/ton */ * 4.84e-3f;  // convert lbs/short-ton to N/kg 
+                DavisAN = 6.3743f * MassKG / 1000 + 128.998f * 4;
+                DavisBNSpM = .49358f * MassKG / 1000;
+                DavisCNSSpMM = .11979f * 100 / 10.76f;
+                Friction0N = DavisAN * 2.0f;            //More firendly to high load trains and the new physics
+            }
+            else
+            {   // probably fcalc, recover approximate davis equation
+                float mps1 = FrictionV2;
+                float mps2 = 80 * .44704f;
+                float s = mps2 - mps1;
+                float x1 = mps1 * mps1;
+                float x2 = mps2 * mps2;
+                float sx = (x2 - x1) / 2;
+                float y0 = FrictionC1 * (float)Math.Pow(mps1, FrictionE1) + FrictionC2 * mps1;
+                float y1 = FrictionC2 * (float)Math.Pow(mps1, FrictionE2) * mps1;
+                float y2 = FrictionC2 * (float)Math.Pow(mps2, FrictionE2) * mps2;
+                float sy = y0 * (mps2 - mps1) + (y2 - y1) / (1 + FrictionE2);
+                y1 *= mps1;
+                y2 *= mps2;
+                float syx = y0 * (x2 - x1) / 2 + (y2 - y1) / (2 + FrictionE2);
+                x1 *= mps1;
+                x2 *= mps2;
+                float sx2 = (x2 - x1) / 3;
+                y1 *= mps1;
+                y2 *= mps2;
+                float syx2 = y0 * (x2 - x1) / 3 + (y2 - y1) / (3 + FrictionE2);
+                x1 *= mps1;
+                x2 *= mps2;
+                float sx3 = (x2 - x1) / 4;
+                x1 *= mps1;
+                x2 *= mps2;
+                float sx4 = (x2 - x1) / 5;
+                float s1 = syx - sy * sx / s;
+                float s2 = sx * sx2 / s - sx3;
+                float s3 = sx2 - sx * sx / s;
+                float s4 = syx2 - sy * sx2 / s;
+                float s5 = sx2 * sx2 / s - sx4;
+                float s6 = sx3 - sx * sx2 / s;
+                DavisCNSSpMM = (s1 * s6 - s3 * s4) / (s3 * s5 - s2 * s6);
+                DavisBNSpM = (s1 + DavisCNSSpMM * s2) / s3;
+                DavisAN = (sy - DavisBNSpM * sx - DavisCNSSpMM * sx2) / s;
+                Friction0N = FrictionC1;
+                if (FrictionE1 < 0)
+                    Friction0N *= (float)Math.Pow(.0025 * .44704, FrictionE1);
             }
 
-            if (IsDavisFriction == false)    // If Davis parameters are not defined in WAG file, then use default methods
+            if (IsStandStill)
             {
+                FrictionForceN = Friction0N;
+            }
+            else
+            {
+                FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM);
 
-                if (FrictionV2 < 0 || FrictionV2 > 4.4407f) // > 10 mph
-                {   // not fcalc ignore friction and use default davis equation
-                    // Starting Friction 
-                    //
-                    //                      Above Freezing   Below Freezing
-                    //    Journal Bearing      25 lb/ton        35 lb/ton   (short ton)
-                    //     Roller Bearing       5 lb/ton        15 lb/ton
-                    //
-                    // [2009-10-25 from http://www.arema.org/publications/pgre/ ]
-                    //Friction0N = MassKG * 30f /* lb/ton */ * 4.84e-3f;  // convert lbs/short-ton to N/kg 
-                    DavisAN = 6.3743f * MassKG / 1000 + 128.998f * 4;
-                    DavisBNSpM = .49358f * MassKG / 1000;
-                    DavisCNSSpMM = .11979f * 100 / 10.76f;
-                    Friction0N = DavisAN * 2.0f;            //More firendly to high load trains and the new physics
-                }
-                else
-                {   // probably fcalc, recover approximate davis equation
-                    float mps1 = FrictionV2;
-                    float mps2 = 80 * .44704f;
-                    float s = mps2 - mps1;
-                    float x1 = mps1 * mps1;
-                    float x2 = mps2 * mps2;
-                    float sx = (x2 - x1) / 2;
-                    float y0 = FrictionC1 * (float)Math.Pow(mps1, FrictionE1) + FrictionC2 * mps1;
-                    float y1 = FrictionC2 * (float)Math.Pow(mps1, FrictionE2) * mps1;
-                    float y2 = FrictionC2 * (float)Math.Pow(mps2, FrictionE2) * mps2;
-                    float sy = y0 * (mps2 - mps1) + (y2 - y1) / (1 + FrictionE2);
-                    y1 *= mps1;
-                    y2 *= mps2;
-                    float syx = y0 * (x2 - x1) / 2 + (y2 - y1) / (2 + FrictionE2);
-                    x1 *= mps1;
-                    x2 *= mps2;
-                    float sx2 = (x2 - x1) / 3;
-                    y1 *= mps1;
-                    y2 *= mps2;
-                    float syx2 = y0 * (x2 - x1) / 3 + (y2 - y1) / (3 + FrictionE2);
-                    x1 *= mps1;
-                    x2 *= mps2;
-                    float sx3 = (x2 - x1) / 4;
-                    x1 *= mps1;
-                    x2 *= mps2;
-                    float sx4 = (x2 - x1) / 5;
-                    float s1 = syx - sy * sx / s;
-                    float s2 = sx * sx2 / s - sx3;
-                    float s3 = sx2 - sx * sx / s;
-                    float s4 = syx2 - sy * sx2 / s;
-                    float s5 = sx2 * sx2 / s - sx4;
-                    float s6 = sx3 - sx * sx2 / s;
-                    DavisCNSSpMM = (s1 * s6 - s3 * s4) / (s3 * s5 - s2 * s6);
-                    DavisBNSpM = (s1 + DavisCNSSpMM * s2) / s3;
-                    DavisAN = (sy - DavisBNSpM * sx - DavisCNSSpMM * sx2) / s;
-                    Friction0N = FrictionC1;
-                    if (FrictionE1 < 0)
-                        Friction0N *= (float)Math.Pow(.0025 * .44704, FrictionE1);
-                }
+                // if this car is a locomotive, but not the lead one then recalculate the resistance with lower value as drag will not be as high on trailing locomotives
+                // Only the drag (C) factor changes if a trailing locomotive, so only running resistance, and not starting resistance needs to be corrected
+                if (WagonType == WagonTypes.Engine && Train.LeadLocomotive != this)
+                    FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * (TrailLocoResistanceFactor * DavisCNSSpMM));
 
-                if (AbsSpeedMpS > 0.1)
-                    IsStandStill = false;
-                if (AbsSpeedMpS == 0.0)
-                    IsStandStill = true;
-
-                if (IsStandStill)
-                    FrictionForceN = Friction0N;
-                else
+                // Test to identify whether a tender is attached to the leading engine, if not then the resistance should also be derated as for the locomotive
+                bool IsLeadTender = false;
+                if (WagonType == WagonTypes.Tender)
                 {
-                    FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM);
-
-                    // if this car is a locomotive, but not the lead one then recalculate the resistance with lower value as drag will not be as high on trailing locomotives
-                    // Only the drag (C) factor changes if a trailing locomotive, so only running resistance, and not starting resistance needs to be corrected
-                    if (WagonType == WagonTypes.Engine && Train.LeadLocomotive != this)
+                    bool PrevCarLead = false;
+                    foreach (var car in Train.Cars)
                     {
+                        // If this car is a tender and the previous car is the lead locomotive then set the flag so that resistance will be reduced
+                        if (car == this && PrevCarLead)
+                        {
+                            IsLeadTender = true;
+                            break;  // If the tender has been identified then break out of the loop, otherwise keep going until whole train is done.
+                        }
+                        // Identify whether car is a lead locomotive or not. This is kept for when the next iteration (next car) is checked.
+                        PrevCarLead = Train.LeadLocomotive == car;
+                    }
+
+                    // If tender is coupled to a trailing locomotive then reduce resistance
+                    if (!IsLeadTender)
                         FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * (TrailLocoResistanceFactor * DavisCNSSpMM));
-                    }
-
-                    // Test to identify whether a tender is attached to the leading engine, if not then the resistance should also be derated as for the locomotive
-                    bool IsLeadTender = false;
-                    if (WagonType == WagonTypes.Tender)
-                    {
-                        bool PrevCarLead = false;
-                        foreach (var car in Train.Cars)
-                        {
-                            // If this car is a tender and the previous car is the lead locomotive then set the flag so that resistance will be reduced
-                            if (car == this && PrevCarLead)
-                            {
-                                IsLeadTender = true;
-                                break;  // If the tender has been identified then break out of the loop, otherwise keep going until whole train is done.
-                            }
-                            // Identify whether car is a lead locomotive or not. This is kept for when the next iteration (next car) is checked.
-                            if (Train.LeadLocomotive == car)
-                            {
-                                PrevCarLead = true;
-                            }
-                            else
-                            {
-                                PrevCarLead = false;
-                            }
-
-                        }
-
-                        // If tender is coupled to a trailing locomotive then reduce resistance
-                        if (!IsLeadTender)
-                        {
-                            FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * (TrailLocoResistanceFactor * DavisCNSSpMM));
-                        }
-
-                    }
-
                 }
+            }
+        }
 
+        /// <summary>
+        /// Update train base resistance with a manually specified starting friction.
+        /// </summary>
+        /// <remarks>
+        /// For speeds slower than the merge speed.
+        /// </remarks>
+        private void UpdateTrainBaseResistance_StartingFriction()
+        {
+            // Dtermine the starting friction factor based upon the type of bearing
+            float StartFrictionLoadN = StandstillFrictionN;  // Starting friction
+
+            // Determine the starting resistance due to wheel bearing temperature
+            // Note reference values in lbf and US tons - converted to metric values as appropriate
+            // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+            // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+            const float RunGrad = -0.0085714285714286f;
+            const float RunIntersect = 1.2142857142857f;
+            if (WheelBearingTemperatureDegC < -10) // Set to snowing (frozen value)
+                StartFrictionLoadN = 1.2f;  // Starting friction, snowing
+            else if (WheelBearingTemperatureDegC > 25) // Set to normal temperature value
+                StartFrictionLoadN = 1.0f;  // Starting friction, not snowing
+            else // Set to variable value as bearing heats and cools
+                StartFrictionLoadN = RunGrad * WheelBearingTemperatureDegC + RunIntersect;
+            StaticFrictionFactorN = StartFrictionLoadN;
+
+            // Determine the running resistance due to wheel bearing temperature
+            float WheelBearingTemperatureResistanceFactor = 0;
+
+            // Assume the running resistance is impacted by wheel bearing temperature, ie gets higher as tmperature decreasses. This will only impact the A parameter as it is related to
+            // bearing. Assume that resistance will increase by 30% as temperature drops below 0 DegC.
+            // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+            // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+
+            if (WheelBearingTemperatureDegC < -10) // Set to snowing (frozen value)
+                WheelBearingTemperatureResistanceFactor = 1.3f;
+            else if (WheelBearingTemperatureDegC > 25) // Set to normal temperature value
+                WheelBearingTemperatureResistanceFactor = 1.0f;
+            else // Set to variable value as bearing heats and cools
+                WheelBearingTemperatureResistanceFactor = RunGrad * WheelBearingTemperatureDegC + RunIntersect;
+            // If hot box has been initiated, then increase friction on the wagon significantly
+            if (HotBoxActivated && ActivityElapsedDurationS > HotBoxStartTimeS)
+            {
+                WheelBearingTemperatureResistanceFactor = 2.0f;
+                StaticFrictionFactorN *= 2.0f;
+            }
+            // Calculation of resistance @ low speeds
+            // Wind resistance is not included at low speeds, as it does not have a significant enough impact
+            MergeSpeedFrictionN = DavisAN * WheelBearingTemperatureResistanceFactor + (MergeSpeedMpS) * (DavisBNSpM + (MergeSpeedMpS) * DavisCNSSpMM); // Calculate friction @ merge speed
+            Friction0N = StandstillFrictionN * StaticFrictionFactorN; // Static friction x external resistance as this matches reference value
+            FrictionBelowMergeSpeedN = ((1.0f - (AbsSpeedMpS / (MergeSpeedMpS))) * (Friction0N - MergeSpeedFrictionN)) + MergeSpeedFrictionN; // Calculate friction below merge speed - decreases linearly with speed
+            FrictionForceN = FrictionBelowMergeSpeedN; // At low speed use this value
+        }
+
+        /// <summary>
+        /// Update train base resistance with the Davis function.
+        /// </summary>
+        /// <remarks>
+        /// For speeds slower than the "slow" speed.
+        /// Based upon the article "Carriage and Wagon Tractive Resistance" by L. I. Sanders and printed "The Locomotive" of June 15, 1938.
+        /// It is suggested that Rs (Starting Resistance) = Rin (Internal resistance of wagon - typically journal resistance) + Rt (Track resistance - due to weight of car depressing track).
+        /// 
+        /// Rt = 1120 x weight on axle x tan (angle of track depression) lbs/ton (UK). Typical depression angles for wagons would be 1 in 800, and locomotives 1 in 400.
+        /// 
+        /// This article suggests the following values for Rin Internal Starting Resistance:
+        /// 
+        ///                            Above Freezing
+        ///    Journal (Oil) Bearing      17.5 lb/ton   (long (UK) ton)
+        ///    Journal (Grease) Bearing   30 lb/ton     (long (UK) ton)
+        ///    Roller Bearing             4.5 lb/ton    (long (UK) ton)
+        /// 
+        /// AREMA suggests the following figures for Starting Resistance:
+        /// 
+        ///                       Above Freezing   Below Freezing                       Above Freezing   Below Freezing
+        ///    Journal Bearing      25 lb/ton        35 lb/ton   (short (US) ton)           29.75 lb/ton    41.65 lb/ton   (long (UK) ton)
+        ///    Roller Bearing        5 lb/ton        15 lb/ton                              5.95 lb/ton     17.85 lb/ton
+        ///    
+        /// Davis suggests, "After a long stop in cold weather, the tractive effort at the instant of starting may reach 15 to 25 pounds per ton (us),
+        /// diminishing rapidly to a minimum at 5 to 10 miles per hour".
+        /// 
+        /// AREMA suggests - "The starting resistance of roller bearings is essentially the same as when they are in motion". Hence the starting resistance should not be less 
+        /// then the A value in the Davis formula.
+        /// 
+        /// This model uses the following criteria:
+        /// i) Fixed journal resistance based upon UK figures (never is less then the A Davis value). This value is also varied with different wheel diameters. Reference wheel diameter = 37" (uk wheel).
+        /// ii) Track resistance which varies depending upon the axle weight
+        /// 
+        /// </remarks>
+        private void UpdateTrainBaseResistance_DavisLowSpeed()
+        {
+            // Determine the internal starting friction factor based upon the type of bearing
+
+            float StartFrictionInternalFactorN = 0.0f;  // Internal starting friction
+            float StartFrictionTrackN = 0.0f;
+            float AxleLoadKg = 0;
+            float ResistanceGrade = 0;
+            float ReferenceWheelDiameterIn = 37.0f;
+            float wheelvariationfactor = 1;
+
+            // Find the variation in journal resistance due to wheel size. Steam locomotive don't have any variation at this time.
+            if (WagonType == WagonTypes.Engine)
+            {
+                if (EngineType != EngineTypes.Steam)
+                {
+                    float wheeldiamM = 2.0f * DriverWheelRadiusM;
+                    wheelvariationfactor = Me.ToIn(wheeldiamM) / ReferenceWheelDiameterIn;
+                }
+            }
+            else
+            {
+                float wheeldiamM = 2.0f * WheelRadiusM;
+                wheelvariationfactor = Me.ToIn(wheeldiamM) / ReferenceWheelDiameterIn;
             }
 
-            if (IsDavisFriction)  // If set to use next Davis friction then do so
+            if (IsRollerBearing)
             {
-                // Davis formulas only apply above about 5mph, so different treatment required for low speed < 5mph.
-                if (AbsSpeedMpS > MpS.FromMpH(5))     // if speed above 5 mph then turn off low speed calculations
-                    IsLowSpeed = false;
-                if (AbsSpeedMpS == 0.0)
-                    IsLowSpeed = true;
+                // Determine the starting resistance due to wheel bearing temperature
+                // Note reference values in lbf and US tons - converted to metric values as appropriate
+                // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+                // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+                float LowTemperature = -10.0f;
+                float HighTemeprature = 25.0f;
+                float LowTemperatureResistanceN = N.FromLbf( 12.0f ) * wheelvariationfactor;
+                float HighTemperatureResistanceN = N.FromLbf( 4.5f) * wheelvariationfactor;
 
-                if (IsLowSpeed)
+                float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
+                float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
+
+                if (WheelBearingTemperatureDegC < -10)
                 {
-                    // If weather is freezing, then starting friction will be greater until bearings have warmed up.
-                    // Chwck whether weather is snowing
-
-                    int FrictionWeather = (int)Simulator.WeatherType;
-                    bool IsSnowing = false;
-
-                    if (FrictionWeather == 1)
-                    {
-                        IsSnowing = true;  // Weather snowing - freezing conditions
-                    }
-
-                    // Dtermine the starting friction factor based upon the type of bearing
-
-                    float StartFrictionLow = 0.0f;
-                    float StartFrictionHigh = 0.0f;
-
-                    if (IsRollerBearing)
-                    {
-                        if (!IsSnowing)
-                        {
-                            StartFrictionLow = 4.257f;  // Starting friction for a 10 ton(US) car with standard roller bearings, not snowing
-                            StartFrictionHigh = 15.93f;  // Starting friction for a 100 ton(US) car with standard roller bearings, not snowing
-                        }
-                        else
-                        {
-                            StartFrictionLow = 12.771f;  // Starting friction for a 10 ton(US) car with standard roller bearings, snowing
-                            StartFrictionHigh = 30.0f;  // Starting friction for a 100 ton(US) car with standard roller bearings, snowing
-                        }
-                        if (Kg.ToTUS(MassKG) < 10.0)
-                        {
-                            StaticFrictionFactorLb = StartFrictionLow;  // Starting friction for a < 10 ton(US) car with standard roller bearings
-                        }
-                        else if (Kg.ToTUS(MassKG) > 100.0)
-                        {
-                            StaticFrictionFactorLb = StartFrictionHigh;  // Starting friction for a > 100 ton(US) car with standard roller bearings
-                        }
-                        else
-                        {
-                            StaticFrictionFactorLb = (((Kg.ToTUS(MassKG) - 10.0f) / 90.0f) * (StartFrictionHigh - StartFrictionLow)) + StartFrictionLow;
-                        }
-                    }
-                    else if (IsLowTorqueRollerBearing)
-                    {
-                        if (!IsSnowing)
-                        {
-                            StartFrictionLow = 2.66f;  // Starting friction for a 10 ton(US) car with Low troque bearings, not snowing
-                            StartFrictionHigh = 7.714f;  // Starting friction for a 100 ton(US) car with low torque bearings, not snowing
-                        }
-                        else
-                        {
-                            StartFrictionLow = 7.98f;  // Starting friction for a 10 ton(US) car with Low troque bearings, not snowing
-                            StartFrictionHigh = 23.142f;  // Starting friction for a 100 ton(US) car with low torque bearings, not snowing
-                        }
-                        if (Kg.ToTUS(MassKG) < 10.0)
-                        {
-                            StaticFrictionFactorLb = StartFrictionLow;  // Starting friction for a < 10 ton(US) car with Low troque bearings
-                        }
-                        else if (Kg.ToTUS(MassKG) > 100.0)
-                        {
-                            StaticFrictionFactorLb = StartFrictionHigh;  // Starting friction for a > 100 ton(US) car with low torque bearings
-                        }
-                        else
-                        {
-                            StaticFrictionFactorLb = (((Kg.ToTUS(MassKG) - 10.0f) / 90.0f) * (StartFrictionHigh - StartFrictionLow)) + StartFrictionLow;
-                        }
-                    }
-                    else  // default to friction (solid - journal) bearing
-                    {
-
-                        if (!IsSnowing)
-                        {
-                            StartFrictionLow = 10.0f; // Starting friction for a < 10 ton(US) car with friction (journal) bearings - ton (US)
-                            StartFrictionHigh = 20.0f; // Starting friction for a > 100 ton(US) car with friction (journal) bearings - ton (US)
-                        }
-                        else
-                        {
-                            StartFrictionLow = 15.0f; // Starting friction for a < 10 ton(US) car with friction (journal) bearings - ton (US)
-                            StartFrictionHigh = 35.0f; // Starting friction for a > 100 ton(US) car with friction (journal) bearings - ton (US)
-                        }
-
-                        if (Kg.ToTUS(MassKG) < 10.0)
-                        {
-                            StaticFrictionFactorLb = StartFrictionLow;  // Starting friction for a < 10 ton(US) car with friction (journal) bearings
-                        }
-                        else if (Kg.ToTUS(MassKG) > 100.0)
-                        {
-                            StaticFrictionFactorLb = StartFrictionHigh;  // Starting friction for a > 100 ton(US) car with friction (journal) bearings
-                        }
-                        else
-                        {
-                            StaticFrictionFactorLb = (((Kg.ToTUS(MassKG) - 10.0f) / 90.0f) * (StartFrictionHigh - StartFrictionLow)) + StartFrictionLow;
-                        }
-
-                    }
-
-                    // Calculation of resistance @ low speeds
-                    // Wind resistance is not included at low speeds, as it does not have a significant enough impact
-                    const float speed5 = 2.2352f; // 5 mph
-                    Friction5N = DavisAN + speed5 * (DavisBNSpM + speed5 * DavisCNSSpMM); // Calculate friction @ 5 mph
-                    Friction0N = N.FromLbf(Kg.ToTUS(MassKG) * StaticFrictionFactorLb); // Static friction is journal or roller bearing friction x factor
-                    FrictionLowSpeedN = ((1.0f - (AbsSpeedMpS / speed5)) * (Friction0N - Friction5N)) + Friction5N; // Calculate friction below 5mph - decreases linearly with speed
-                    FrictionForceN = FrictionLowSpeedN; // At low speed use this value
-
+                    // Set to snowing (frozen value)
+                    StartFrictionInternalFactorN = LowTemperatureResistanceN;  // Starting friction for car with standard roller bearings, snowing
+                }
+                else if (WheelBearingTemperatureDegC > 25)
+                {
+                    // Set to normal temperature value
+                    StartFrictionInternalFactorN = HighTemperatureResistanceN;  // Starting friction for car with standard roller bearings, not snowing
                 }
                 else
                 {
-
-                    FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
-
-                    // if this car is a locomotive, but not the lead one then recalculate the resistance with lower value as drag will not be as high on trailing locomotives
-                    // Only the drag (C) factor changes if a trailing locomotive, so only running resistance, and not starting resistance needs to be corrected
-                    if (WagonType == WagonTypes.Engine && Train.LeadLocomotive != this)
-                    {
-                             FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * (TrailLocoResistanceFactor * DavisCNSSpMM));
-                    }
-
-                    // Test to identify whether a tender is attached to the leading engine, if not then the resistance should also be derated as for the locomotive
-                    bool IsLeadTender = false;
-                    if (WagonType == WagonTypes.Tender)
-                    {
-                        bool PrevCarLead = false;
-                        foreach (var car in Train.Cars)
-                        {
-                            // If this car is a tender and the previous car is the lead locomotive then set the flag so that resistance will be reduced
-                            if (car == this && PrevCarLead)
-                            {
-                                IsLeadTender = true;
-                                break;  // If the tender has been identified then break out of the loop, otherwise keep going until whole train is done.
-                            }
-                            // Identify whether car is a lead locomotive or not. This is kept for when the next iteration (next car) is checked.
-                            if (Train.LeadLocomotive == car)
-                            {
-                                PrevCarLead = true;
-                            }
-                            else
-                            {
-                                PrevCarLead = false;
-                            }
-
-                        }
-
-                        // If tender is coupled to a trailing locomotive then reduce resistance
-                        if (!IsLeadTender)
-                        {
-                            FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * (TrailLocoResistanceFactor * DavisCNSSpMM));
-                        }
-
-                    }
-
+                    // Set to variable value as bearing heats and cools
+                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
                 }
+            }
+            else if (IsLowTorqueRollerBearing)
+            {
+                // Determine the starting resistance due to wheel bearing temperature
+                // Note reference values in lbf and US tons - converted to metric values as appropriate
+                // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+                // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+                float LowTemperature = -10.0f;
+                float HighTemeprature = 25.0f;
+                float LowTemperatureResistanceN = N.FromLbf(7.5f) * wheelvariationfactor;
+                float HighTemperatureResistanceN = N.FromLbf(2.5f) * wheelvariationfactor;
 
+                float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
+                float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
+
+                if (WheelBearingTemperatureDegC < -10)
+                {
+                    // Set to snowing (frozen value)
+                    StartFrictionInternalFactorN = LowTemperatureResistanceN;  // Starting friction for car with Low torque bearings, snowing
+                }
+                else if (WheelBearingTemperatureDegC > 25)
+                {
+                    // Set to normal temperature value
+                    StartFrictionInternalFactorN = HighTemperatureResistanceN;  // Starting friction for car with Low troque bearings, not snowing
+                }
+                else
+                {
+                    // Set to variable value as bearing heats and cools
+                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
+                }
+            }
+            else if (IsGreaseFrictionBearing)
+            {
+                // Determine the starting resistance due to wheel bearing temperature
+                // Note reference values in lbf and US tons - converted to metric values as appropriate
+                // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+                // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+                float LowTemperature = -10.0f;
+                float HighTemeprature = 25.0f;
+                float LowTemperatureResistanceN = N.FromLbf(45.0f) * wheelvariationfactor;
+                float HighTemperatureResistanceN = N.FromLbf(30.0f) * wheelvariationfactor;
+
+                float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
+                float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
+
+                if (WheelBearingTemperatureDegC < -10)
+                {
+                    // Set to snowing (frozen value)
+                    StartFrictionInternalFactorN = LowTemperatureResistanceN;  // Starting friction car with Low torque bearings, snowing
+                }
+                else if (WheelBearingTemperatureDegC > 25)
+                {
+                    // Set to normal temperature value
+                    StartFrictionInternalFactorN = HighTemperatureResistanceN;  // Starting friction for car with Low troque bearings, not snowing
+                }
+                else
+                {
+                    // Set to variable value as bearing heats and cools
+                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
+                }
+            }
+            else  // default to friction (solid - oil journal) bearing
+            {
+
+                // Determine the starting resistance due to wheel bearing temperature
+                // Note reference values in lbf and US tons - converted to metric values as appropriate
+                // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+                // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+                float LowTemperature = -10.0f;
+                float HighTemeprature = 25.0f;
+                float LowTemperatureResistanceN = N.FromLbf(30.0f) * wheelvariationfactor;
+                float HighTemperatureResistanceN = N.FromLbf(20.0f) * wheelvariationfactor;
+
+                float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
+                float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
+
+                if (WheelBearingTemperatureDegC < -10)
+                {
+                    // Set to snowing (frozen value)
+                    StartFrictionInternalFactorN = LowTemperatureResistanceN; // Starting friction for car with friction (journal) bearings - ton (US), snowing
+                }
+                else if (WheelBearingTemperatureDegC > 25)
+                {
+                    // Set to normal temperature value
+                    StartFrictionInternalFactorN = HighTemperatureResistanceN; // Starting friction for car with friction (journal) bearings - ton (US), not snowing
+                }
+                else
+                {
+                    // Set to variable value as bearing heats and cools
+                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
+                }
+            }
+
+            // Determine the track starting resistance, based upon the axle loading of the wagon
+            float LowLoadGrade = 800.0f;
+            float HighLoadGrade = 400.0f;
+            float LowLoadKg = Kg.FromTUK(5.0f); // Low value is determined by average weight of passenger car with 6 axles = approx 30/6 = 5 tons uk
+            float HighLoadKg = Kg.FromTUK(26.0f); // High value is determined by average maximum axle loading for PRR K2 locomotive - used for deflection tests 
+
+            float TrackGrad = (LowLoadGrade - HighLoadGrade) / (LowLoadKg - HighLoadKg);
+            float TrackIntersect = LowLoadGrade - (TrackGrad * LowLoadKg);
+
+            // Determine Axle loading of Car
+            if (WagonType == WagonTypes.Engine && IsPlayerTrain && Simulator.PlayerLocomotive is MSTSLocomotive locoParameters)
+            {
+                AxleLoadKg = locoParameters.DrvWheelWeightKg / locoParameters.LocoNumDrvAxles;
+            }
+            else
+            {
+                AxleLoadKg = MassKG / WagonNumAxles;
+            }
+
+            // Calculate the track gradient based on wagon axle loading
+            ResistanceGrade = TrackGrad * AxleLoadKg + TrackIntersect;
+
+            ResistanceGrade = MathHelper.Clamp(ResistanceGrade, 100, ResistanceGrade); // Clamp gradient so it doesn't go below 1 in 100
+
+            const float trackfactor = 1120.0f;
+            StartFrictionTrackN = N.FromLbf(trackfactor * (1 / ResistanceGrade) * Kg.ToTUK(AxleLoadKg));
+
+            // Determine the running resistance due to wheel bearing temperature
+            float WheelBearingTemperatureResistanceFactor = 0;
+
+            // This section temperature compensates the running friction only - for comparion of merge point of running and starting friction.
+            // Assume the running resistance is impacted by wheel bearing temperature, ie gets higher as tmperature decreasses. This will only impact the A parameter as it is related to
+            // bearing. Assume that resistance will increase by 30% as temperature drops below 0 DegC.
+            // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+            // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+            float MotionLowTemperature = -10.0f;
+            float MotionHighTemeprature = 25.0f;
+            float MotionLowTemperatureResistance = 1.3f;
+            float MotionHighTemperatureResistance = 1.0f;
+
+            float RunGrad = (MotionLowTemperatureResistance - MotionHighTemperatureResistance) / (MotionLowTemperature - MotionHighTemeprature);
+            float RunIntersect = MotionLowTemperatureResistance - (RunGrad * MotionLowTemperature);
+
+            if (WheelBearingTemperatureDegC < -10)
+            {
+                // Set to snowing (frozen value)
+                WheelBearingTemperatureResistanceFactor = 1.3f;
+            }
+            else if (WheelBearingTemperatureDegC > 25)
+            {
+                // Set to normal temperature value
+                WheelBearingTemperatureResistanceFactor = 1.0f;
+            }
+            else
+            {
+                // Set to variable value as bearing heats and cools
+                WheelBearingTemperatureResistanceFactor = RunGrad * WheelBearingTemperatureDegC + RunIntersect;
+
+            }
+
+
+            Friction0N = ( Kg.ToTonne(MassKG) * StartFrictionInternalFactorN) + StartFrictionTrackN; // Static friction is journal or roller bearing friction x weight + track resistance. Mass value must be in tons uk to match reference used for starting resistance
+
+            float Friction0DavisN = DavisAN * WheelBearingTemperatureResistanceFactor; // Calculate the starting firction if Davis formula was extended to zero
+
+            // if the starting friction is less then the zero davis value, then set it higher then the zero davis value.
+            if (Friction0N < Friction0DavisN)
+            {
+                Friction0N = Friction0DavisN * 1.2f;
+            }
+
+            // Calculation of resistance @ low speeds
+            // Wind resistance is not included at low speeds, as it does not have a significant enough impact
+            float speed5 = MpS.FromMpH(5); // 5 mph
+            Friction5N = DavisAN * WheelBearingTemperatureResistanceFactor + speed5 * (DavisBNSpM + speed5 * DavisCNSSpMM); // Calculate friction @ 5 mph using "running" Davis values
+            FrictionLowSpeedN = ((1.0f - (AbsSpeedMpS / speed5)) * (Friction0N - Friction5N)) + Friction5N; // Calculate friction below 5mph - decreases linearly with speed
+            FrictionForceN = FrictionLowSpeedN; // At low speed use this value
 
 #if DEBUG_FRICTION
 
-                Trace.TraceInformation("========================== Debug Friction in MSTSWagon.cs ==========================================");
-                Trace.TraceInformation("Stationary - CarID {0} Force0N {1} Force5N {2} Speed {3} Factor {4}", CarID, Friction0N, Friction5N, AbsSpeedMpS, StaticFrictionFactorLb);
-                Trace.TraceInformation("Stationary - Mass {0} Mass (US-tons) {1}", MassKG, Kg.ToTUS(MassKG));
-                Trace.TraceInformation("Stationary - Weather Type (1 for Snow) {0}", (int)Simulator.WeatherType);
-                Trace.TraceInformation("Stationary - Force0 lbf {0} Force5 lbf {1}", N.ToLbf(Friction0N), N.ToLbf(Friction5N));
+            Trace.TraceInformation("========================== Debug Stationary Friction in MSTSWagon.cs ==========================================");
+            Trace.TraceInformation("Stationary - CarID {0} Bearing - Roller: {1}, Low: {2}, Grease: {3}, Friction(Oil) {4}", CarID, IsRollerBearing, IsLowTorqueRollerBearing, IsGreaseFrictionBearing, IsFrictionBearing);
+            Trace.TraceInformation("Stationary - Mass {0}, Mass (UK-tons) {1}, AxleLoad {2}, BearingTemperature {3}", MassKG, Kg.ToTUK(MassKG), Kg.ToTUK(AxleLoadKg), WheelBearingTemperatureDegC);
 
+            Trace.TraceInformation("Stationary - Weather Type (1 for Snow) {0}", (int)Simulator.WeatherType);
+            Trace.TraceInformation("Stationary - StartFrictionInternal {0}", N.ToLbf(StartFrictionInternalFactorN));
+            Trace.TraceInformation("Stationary - StartFrictionTrack: {0}, ResistanceGrade: {1}", N.ToLbf(StartFrictionTrackN), ResistanceGrade);
+            Trace.TraceInformation("Stationary - Force0N {0}, FrictionDavis0N {1}, Force5N {2}, Speed {3}, TemperatureFactor {4}", N.ToLbf(Friction0N), N.ToLbf(Friction0DavisN), N.ToLbf(Friction5N), AbsSpeedMpS, WheelBearingTemperatureResistanceFactor);
+
+            Trace.TraceInformation("=============================================================================================================");
 #endif
+        }
 
+
+
+
+        /// <summary>
+        /// Update train base resistance with the Davis function.
+        /// </summary>
+        /// <remarks>
+        /// For speeds faster than the "slow" speed.
+        /// </remarks>
+        private void UpdateTrainBaseResistance_DavisHighSpeed()
+        {
+            // Determine the running resistance due to wheel bearing temperature
+            float WheelBearingTemperatureResistanceFactor = 0;
+
+            // Assume the running resistance is impacted by wheel bearing temperature, ie gets higher as tmperature decreasses. This will only impact the A parameter as it is related to
+            // bearing. Assume that resisnce will increase by 30% as temperature drops below 0 DegC.
+            // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+            // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+            const float RunGrad = -0.0085714285714286f;
+            const float RunIntersect = 1.2142857142857f;
+
+            if (WheelBearingTemperatureDegC < -10)
+            {
+                // Set to snowing (frozen value)
+                WheelBearingTemperatureResistanceFactor = 1.3f;
+            }
+            else if (WheelBearingTemperatureDegC > 25)
+            {
+                // Set to normal temperature value
+                WheelBearingTemperatureResistanceFactor = 1.0f;
+            }
+            else
+            {
+                // Set to variable value as bearing heats and cools
+                WheelBearingTemperatureResistanceFactor = RunGrad * WheelBearingTemperatureDegC + RunIntersect;
+
+            }
+
+            // If hot box has been initiated, then increase friction on the wagon significantly
+            if (HotBoxActivated && ActivityElapsedDurationS > HotBoxStartTimeS)
+            {
+                WheelBearingTemperatureResistanceFactor = 2.0f;
+            }
+
+            FrictionForceN = DavisAN * WheelBearingTemperatureResistanceFactor + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
+
+            // if this car is a locomotive, but not the lead one then recalculate the resistance with lower value as drag will not be as high on trailing locomotives
+            // Only the drag (C) factor changes if a trailing locomotive, so only running resistance, and not starting resistance needs to be corrected
+            if (WagonType == WagonTypes.Engine && Train.LeadLocomotive != this)
+            {
+                FrictionForceN = DavisAN * WheelBearingTemperatureResistanceFactor + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * (TrailLocoResistanceFactor * DavisCNSSpMM));
+            }
+
+            // Test to identify whether a tender is attached to the leading engine, if not then the resistance should also be derated as for the locomotive
+            bool IsLeadTender = false;
+            if (WagonType == WagonTypes.Tender)
+            {
+                bool PrevCarLead = false;
+                foreach (var car in Train.Cars)
+                {
+                    // If this car is a tender and the previous car is the lead locomotive then set the flag so that resistance will be reduced
+                    if (car == this && PrevCarLead)
+                    {
+                        IsLeadTender = true;
+                        break;  // If the tender has been identified then break out of the loop, otherwise keep going until whole train is done.
+                    }
+                    // Identify whether car is a lead locomotive or not. This is kept for when the next iteration (next car) is checked.
+                    if (Train.LeadLocomotive == car)
+                    {
+                        PrevCarLead = true;
+                    }
+                    else
+                    {
+                        PrevCarLead = false;
+                    }
+
+                }
+
+                // If tender is coupled to a trailing locomotive then reduce resistance
+                if (!IsLeadTender)
+                {
+                    FrictionForceN = DavisAN * WheelBearingTemperatureResistanceFactor + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * (TrailLocoResistanceFactor * DavisCNSSpMM));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the temperature of the wheel bearing on each wagon.
+        /// </summary>
+        private void UpdateWheelBearingTemperature(float elapsedClockSeconds)
+        {
+            // Increased bearing temperature impacts the train physics model in two ways - it reduces the starting friction, and also a hot box failure, can result in failure of the train.
+            // This is a "representative" model of bearing heat based upon the information described in the following publications- 
+            // PRR Report (Bulletin #26) - Train Resistance and Tonnage Rating
+            // Illinois Test Report (Bulletin #59) - The Effects of Cold Weather upon Train Resistance and Tonnage Rating
+            // This information is for plain (friction) type bearings, and there are many variables that effect bearing heating and cooling, however it is considered a "close approximation" 
+            // for the purposes it serves, ie to simulate resistance variation with temperature.
+            // The model uses the Newton Law of Heating and cooling to model the time taken for temperature rise and fall - ie of the form T(t) = Ts + (T0 - Ts)exp(kt)
+
+            // Keep track of Activity details if an activity, setup random wagon, and start time for hotbox
+            if (Simulator.ActivityRun != null && IsPlayerTrain)
+            {
+                if (ActivityElapsedDurationS<HotBoxStartTimeS)
+                {
+                    ActivityElapsedDurationS += elapsedClockSeconds;
+                }
+
+                // Determine whether car will be activated with a random hot box, only tested once at start of activity
+                if (!HotBoxHasBeenInitialized) // If already initialised then skip
+                {
+                    // Activity randomizatrion needs to be active in Options menu, and HotBox will not be applied to a locomotive or tender.
+                    if (Simulator.Settings.ActRandomizationLevel > 0 && WagonType != WagonTypes.Engine && WagonType != WagonTypes.Tender)
+                    {                        
+                        var HotboxRandom = Simulator.Random.Next(100) / Simulator.Settings.ActRandomizationLevel;
+                        float PerCentRandom = 0.66f; // Set so that random time is always in first 66% of activity duration
+                        var RawHotBoxTimeRandomS = Simulator.Random.Next(Train.ActivityDurationS);
+                        if (!Train.HotBoxSetOnTrain) // only allow one hot box to be set per train 
+                        {
+                            if (HotboxRandom< 10)
+                            {
+                                HotBoxActivated = true;
+                                Train.HotBoxSetOnTrain = true;
+                                HotBoxStartTimeS = PerCentRandom* RawHotBoxTimeRandomS;
+
+                                Trace.TraceInformation("Hotbox Bearing Activated on CarID {0}. Hotbox to start from {1:F1} minutes into activity", CarID, S.ToM(HotBoxStartTimeS));
+                            }
+                        }
+
+                                            
+                    }
+                }
+
+                HotBoxHasBeenInitialized = true; // Only allow to loop once at first pass
+            }
+            
+
+            float BearingSpeedMaximumTemperatureDegC = 0;
+            float MaximumNormalBearingTemperatureDegC = 90.0f;
+            float MaximumHotBoxBearingTemperatureDegC = 120.0f;
+
+            // K values calculated based on data in PRR report
+            float CoolingKConst = -0.0003355569417321907f; // Time = 1380s, amb = -9.4. init = 56.7C, final = 32.2C
+            float HeatingKConst = -0.000790635114477831f;  // Time = 3600s, amb = -9.4. init = 56.7C, final = 12.8C
+
+            // Empty wagons take longer for hot boxes to heat up, this section looks at the load on a wagon, and assigns a K value to suit loading.
+            // Guesstimated K values for Hotbox
+            float HotBoxKConst = 0;
+            float HotBoxKConstHighLoad = -0.002938026821980944f;  // Time = 600s, amb = -9.4. init = 120.0C, final = 12.8C
+            float HotBoxKConstLowLoad = -0.001469013410990472f;  // Time = 1200s, amb = -9.4. init = 120.0C, final = 12.8C
+
+            // Aligns to wagon weights used in friction calculations, ie < 10 tonsUS, and > 100 tonsUS either the low or high value used rspectively. In between these two values KConst scaled.
+            if (MassKG < Kg.FromTUS(10)) // Lightly loaded wagon
+            {
+                HotBoxKConst = -0.001469013410990472f;
+            }
+            else if (MassKG > Kg.FromTUS(100)) // Heavily loaded wagon
+            {
+                HotBoxKConst = -0.002938026821980944f;
+            }
+            else
+            {
+                // Scaled between light and heavy loads
+                var HotBoxScaleFactor = (MassKG - Kg.FromTUS(10)) / (Kg.FromTUS(100) - Kg.FromTUS(10));
+                HotBoxKConst = HotBoxKConstLowLoad - ((float)Math.Abs(HotBoxKConstHighLoad - HotBoxKConstLowLoad)) * HotBoxScaleFactor;
+            }
+
+
+            if (elapsedClockSeconds > 0) // Prevents zero values resetting temperature
+            {
+                
+                // Keep track of wheel bearing temperature until activtaion time reached
+                if (ActivityElapsedDurationS<HotBoxStartTimeS) 
+                {
+                   InitialHotBoxRiseTemperatureDegS = WheelBearingTemperatureDegC;
+                }
+
+                // Calculate Hot box bearing temperature
+                if (HotBoxActivated && ActivityElapsedDurationS > HotBoxStartTimeS && AbsSpeedMpS > 7.0)
+                {
+
+                    if (!HotBoxSoundActivated)
+                    {
+                        SignalEvent(Event.HotBoxBearingOn);
+                        HotBoxSoundActivated = true;
+                    }
+
+                    HotBoxTemperatureRiseTimeS += elapsedClockSeconds;
+
+                    // Calculate predicted bearing temperature based upon elapsed time
+                    WheelBearingTemperatureDegC = MaximumHotBoxBearingTemperatureDegC + (InitialHotBoxRiseTemperatureDegS - MaximumHotBoxBearingTemperatureDegC) * (float) (Math.Exp(HotBoxKConst* HotBoxTemperatureRiseTimeS));
+
+                    // Reset temperature decline values in preparation for next cylce
+                    WheelBearingTemperatureDeclineTimeS = 0;
+                    InitialWheelBearingDeclineTemperatureDegC = WheelBearingTemperatureDegC;
+
+                }
+                // Normal bearing temperature operation
+                else if (AbsSpeedMpS > 7.0) // If train is moving calculate heating temperature
+                {
+                    // Calculate maximum bearing temperature based on current speed using approximated linear graph y = 0.25x + 55
+                    const float MConst = 0.25f;
+                    const float BConst = 55;
+                    BearingSpeedMaximumTemperatureDegC = MConst* AbsSpeedMpS + BConst;
+
+                    WheelBearingTemperatureRiseTimeS += elapsedClockSeconds;
+
+                    // Calculate predicted bearing temperature based upon elapsed time
+                    WheelBearingTemperatureDegC = MaximumNormalBearingTemperatureDegC + (InitialWheelBearingRiseTemperatureDegC - MaximumNormalBearingTemperatureDegC) * (float) (Math.Exp(HeatingKConst* WheelBearingTemperatureRiseTimeS));
+
+                    // Cap bearing temperature depending upon speed
+                    if (WheelBearingTemperatureDegC > BearingSpeedMaximumTemperatureDegC)
+                    {
+                        WheelBearingTemperatureDegC = BearingSpeedMaximumTemperatureDegC;
+                    }
+
+                    // Reset Decline values in preparation for next cylce
+                    WheelBearingTemperatureDeclineTimeS = 0;
+                    InitialWheelBearingDeclineTemperatureDegC = WheelBearingTemperatureDegC;
+
+                }
+                // Calculate cooling temperature if train stops or slows down 
+                else
+                {
+                    if (WheelBearingTemperatureDegC > CarOutsideTempC)
+                    {
+                        WheelBearingTemperatureDeclineTimeS += elapsedClockSeconds;
+                        WheelBearingTemperatureDegC = CarOutsideTempC + (InitialWheelBearingDeclineTemperatureDegC - CarOutsideTempC) * (float) (Math.Exp(CoolingKConst* WheelBearingTemperatureDeclineTimeS));
+                    }
+
+                    WheelBearingTemperatureRiseTimeS = 0;
+                    InitialWheelBearingRiseTemperatureDegC = WheelBearingTemperatureDegC;
+
+                }
+
+                WheelBearingTemperatureRiseTimeS = 0;
+                InitialWheelBearingRiseTemperatureDegC = WheelBearingTemperatureDegC;
+                
+                // Turn off Hotbox sounds
+                SignalEvent(Event.HotBoxBearingOff);
+                HotBoxSoundActivated = false;
+
+            }
+
+            // Set warning messages for hot bearing and failed bearings
+            if (WheelBearingTemperatureDegC > 115)
+            {
+                var hotboxfailuremessage = "CarID" + CarID + "has experienced a failure due to a hot wheel bearing";
+                Simulator.Confirmer.Message(ConfirmLevel.Warning, hotboxfailuremessage);
+                WheelBearingFailed = true;
+            }
+            else if (WheelBearingTemperatureDegC > 100 && WheelBearingTemperatureDegC <= 115)
+            {
+                if (!WheelBearingHot)
+                {
+                    var hotboxmessage = "CarID" + CarID + "is experiencing a hot wheel bearing";
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, hotboxmessage);
+                    WheelBearingHot = true;
+                }
+            }
+            else
+            {
+                WheelBearingHot = false;
+            }
+
+            // Assume following limits for HUD - Normal operation: 50 - 90, Cool: < 50, Warm: 90 - 100, Hot: 100 - 115, Fail: > 115 - Set up text for HUD
+            DisplayWheelBearingTemperatureStatus = WheelBearingTemperatureDegC > 115 ? "Fail" + "!!!" : WheelBearingTemperatureDegC > 100 && WheelBearingTemperatureDegC <= 115 ? "Hot" + "!!!"
+                : WheelBearingTemperatureDegC > 90 && WheelBearingTemperatureDegC <= 100 ? "Warm" + "???" : WheelBearingTemperatureDegC <= 50 ? "Cool" + "%%%" : "Norm" + "";
+
+            if (WheelBearingTemperatureDegC > 90)
+            {
+                // Turn on smoke effects for bearing hot box
+                BearingHotBoxSmokeDurationS = 1;
+                BearingHotBoxSmokeVelocityMpS = 10.0f;
+                BearingHotBoxSmokeVolumeM3pS = 1.5f;
+            }
+            else if (WheelBearingTemperatureDegC < 50)
+            {
+                // Turn off smoke effects for hot boxs
+                BearingHotBoxSmokeDurationS = 0;
+                BearingHotBoxSmokeVelocityMpS = 0;
+                BearingHotBoxSmokeVolumeM3pS = 0;
             }
 
         }
@@ -2052,13 +2858,44 @@ namespace Orts.Simulation.RollingStocks
         // This section updates the special effects
         {
 
-            // Update Steam Leaks Information
-            if (Train.CarSteamHeatOn)
+            var LocomotiveParameters = Simulator.PlayerLocomotive as MSTSLocomotive;
+
+            // if this is a heating steam boiler car then adjust steam pressure
+            // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, steam heating shouldn't already be present on diesel or steam locomotive
+            if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler && !LocomotiveParameters.IsSteamHeatFitted && LocomotiveParameters.SteamHeatController.CurrentValue > 0.05 && CurrentCarSteamHeatBoilerWaterCapacityL > 0 && CurrentSteamHeatBoilerFuelCapacityL > 0 && !IsSteamHeatBoilerLockedOut)
+            {
+                //   LocomotiveParameters.CurrentSteamHeatPressurePSI = LocomotiveParameters.SteamHeatController.CurrentValue * 100;
+                LocomotiveParameters.CurrentSteamHeatPressurePSI = 60.0f;
+                Train.CarSteamHeatOn = true; // turn on steam effects on wagons
+            }
+            else if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
+            {
+                LocomotiveParameters.CurrentSteamHeatPressurePSI = 0.0f;
+                Train.CarSteamHeatOn = false; // turn off steam effects on wagons
+                SteamHeatingBoilerOn = false;
+            }
+
+            // Turn on Heating steam boiler
+            if (Train.CarSteamHeatOn && LocomotiveParameters.SteamHeatController.CurrentValue > 0)
+            {
+                // Turn heating boiler on 
+                HeatingSteamBoilerDurationS = 1.0f * LocomotiveParameters.SteamHeatController.CurrentValue;
+                HeatingSteamBoilerVolumeM3pS = 1.5f * LocomotiveParameters.SteamHeatController.CurrentValue;
+            }
+            else
+            {
+                // Turn heating boiler off 
+                HeatingSteamBoilerVolumeM3pS = 0.0f;
+                HeatingSteamBoilerDurationS = 0.0f;
+            }
+
+            // Update Heating hose steam leaks Information
+            if (Train.CarSteamHeatOn && CarSteamHeatMainPipeSteamPressurePSI > 0)
             {
                 // Turn wagon steam leaks on 
                 HeatingHoseParticleDurationS = 0.75f;
                 HeatingHoseSteamVelocityMpS = 15.0f;
-                HeatingHoseSteamVolumeM3pS = 4.0f;
+                HeatingHoseSteamVolumeM3pS = 4.0f * SteamHoseLeakRateRandom;
             }
             else
             {
@@ -2068,18 +2905,184 @@ namespace Orts.Simulation.RollingStocks
                 HeatingHoseSteamVolumeM3pS = 0.0f;
             }
 
-            // Decrease wagon smoke as speed increases, smoke completely dissappears when wagon reaches 5MpS.
-            float WagonSmokeMaxRise = -1.0f;
-            float WagonSmokeMaxRun = 5.0f;
-            float WagonSmokeGrad = WagonSmokeMaxRise / WagonSmokeMaxRun;
+            // Update Heating main pipe steam trap leaks Information
+            if (Train.CarSteamHeatOn && CarSteamHeatMainPipeSteamPressurePSI > 0)
+            {
+                // Turn wagon steam leaks on 
+                HeatingMainPipeSteamTrapDurationS = 0.75f;
+                HeatingMainPipeSteamTrapVelocityMpS = 15.0f;
+                HeatingMainPipeSteamTrapVolumeM3pS = 8.0f;
+            }
+            else
+            {
+                // Turn wagon steam leaks off 
+                HeatingMainPipeSteamTrapDurationS = 0.0f;
+                HeatingMainPipeSteamTrapVelocityMpS = 0.0f;
+                HeatingMainPipeSteamTrapVolumeM3pS = 0.0f;
+            }
 
-            float WagonSmokeRatio = (WagonSmokeGrad * AbsSpeedMpS) + 1.0f;
-         //   WagonSmokeDurationS = InitialWagonSmokeDurationS * WagonSmokeRatio;
-         //   WagonSmokeVolumeM3pS = InitialWagonSmokeVolumeM3pS * WagonSmokeRatio;
+            // Update Heating compartment steam trap leaks Information
+            if (SteamHeatingCompartmentSteamTrapOn)
+            {
+                // Turn wagon steam leaks on 
+                HeatingCompartmentSteamTrapParticleDurationS = 0.75f;
+                HeatingCompartmentSteamTrapVelocityMpS = 15.0f;
+                HeatingCompartmentSteamTrapVolumeM3pS = 4.0f;
+            }
+            else
+            {
+                // Turn wagon steam leaks off 
+                HeatingCompartmentSteamTrapParticleDurationS = 0.0f;
+                HeatingCompartmentSteamTrapVelocityMpS = 0.0f;
+                HeatingCompartmentSteamTrapVolumeM3pS = 0.0f;
+            }
+
+            // Update Water Scoop Spray Information when scoop is down and filling from trough
+
+            bool ProcessWaterEffects = false; // Initialise test flag to see whether this wagon will have water sccop effects active
+            var LocomotiveIdentification = Simulator.PlayerLocomotive as MSTSLocomotive;
+
+            if (WagonType == WagonTypes.Tender || WagonType == WagonTypes.Engine)
+            {
+
+                if (WagonType == WagonTypes.Tender)
+                {
+                    // Find the associated steam locomotive for this tender
+                    if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
+
+                    if (TendersSteamLocomotive == LocomotiveIdentification && TendersSteamLocomotive.HasWaterScoop)
+                    {
+                        ProcessWaterEffects = true; // Set flag if this tender is attached to player locomotive
+                    }
+
+                }
+                else if (Simulator.PlayerLocomotive == this && LocomotiveIdentification.HasWaterScoop)
+                {
+                    ProcessWaterEffects = true; // Allow water effects to be processed
+                }
+                else
+                {
+                    ProcessWaterEffects = false; // Default off
+                }
+
+                // Tender Water overflow control
+                if (LocomotiveIdentification.RefillingFromTrough && ProcessWaterEffects)
+                {
+                    float SpeedRatio = AbsSpeedMpS / MpS.FromMpH(100); // Ratio to reduce water disturbance with speed - an arbitary value of 100mph has been chosen as the reference
+
+                    // Turn tender water overflow on if water level is greater then 100% nominally and minimum water scoop speed is reached
+                    if (LocomotiveIdentification.TenderWaterLevelFraction >= 0.9999 && AbsSpeedMpS > LocomotiveIdentification.WaterScoopMinSpeedMpS)
+                    {
+                        float InitialTenderWaterOverflowParticleDurationS = 1.25f;
+                        float InitialTenderWaterOverflowVelocityMpS = 50.0f;
+                        float InitialTenderWaterOverflowVolumeM3pS = 10.0f;
+
+                        // Turn tender water overflow on - changes due to speed of train
+                        TenderWaterOverflowParticleDurationS = InitialTenderWaterOverflowParticleDurationS * SpeedRatio;
+                        TenderWaterOverflowVelocityMpS = InitialTenderWaterOverflowVelocityMpS * SpeedRatio;
+                        TenderWaterOverflowVolumeM3pS = InitialTenderWaterOverflowVolumeM3pS * SpeedRatio;
+                    }
+                }
+                else
+                {
+                    // Turn tender water overflow off 
+                    TenderWaterOverflowParticleDurationS = 0.0f;
+                    TenderWaterOverflowVelocityMpS = 0.0f;
+                    TenderWaterOverflowVolumeM3pS = 0.0f;
+                }
+
+                // Water scoop spray effects control - always on when scoop over trough, regardless of whether above minimum speed or not
+                if (ProcessWaterEffects && LocomotiveIdentification.IsWaterScoopDown && IsOverTrough() && AbsSpeedMpS > 0.1)
+                {
+                    float SpeedRatio = AbsSpeedMpS / MpS.FromMpH(100); // Ratio to reduce water disturbance with speed - an arbitary value of 100mph has been chosen as the reference
+
+                    float InitialWaterScoopParticleDurationS = 1.25f;
+                    float InitialWaterScoopWaterVelocityMpS = 50.0f;
+                    float InitialWaterScoopWaterVolumeM3pS = 10.0f;
+
+                    // Turn water scoop spray effects on
+                    if (AbsSpeedMpS <= MpS.FromMpH(10))
+                    {
+                        float SprayDecay = (MpS.FromMpH(25) / MpS.FromMpH(100)) / MpS.FromMpH(10); // Linear decay factor - based upon previous level starts @ a value @ 25mph
+                        SpeedRatio = (SprayDecay * AbsSpeedMpS) / MpS.FromMpH(100); // Decrease the water scoop spray effect to minimum level of visibility
+                        WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
+                        WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
+                        WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
+
+                    }
+                    // Below 25mph effect does not vary, above 25mph effect varies according to speed
+                    else if (AbsSpeedMpS < MpS.FromMpH(25) && AbsSpeedMpS > MpS.FromMpH(10))
+                    {
+                        SpeedRatio = MpS.FromMpH(25) / MpS.FromMpH(100); // Hold the water scoop spray effect to a minimum level of visibility
+                        WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
+                        WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
+                        WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
+                    }
+                    else
+                    {
+                        // Allow water sccop spray effect to vary with speed
+                        WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
+                        WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
+                        WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
+                    }
+                }
+                else
+                {
+                    // Turn water scoop spray effects off 
+                    WaterScoopParticleDurationS = 0.0f;
+                    WaterScoopWaterVelocityMpS = 0.0f;
+                    WaterScoopWaterVolumeM3pS = 0.0f;
+
+                }
+
+                // Update Steam Brake leaks Information
+                if (LocomotiveIdentification.EngineBrakeFitted && LocomotiveIdentification.SteamEngineBrakeFitted && (WagonType == WagonTypes.Tender || WagonType == WagonTypes.Engine))
+                {
+                    // Find the steam leakage rate based upon valve opening and current boiler pressure
+                    float SteamBrakeLeakRate = LocomotiveIdentification.EngineBrakeController.CurrentValue * (LocomotiveIdentification.BoilerPressurePSI / LocomotiveIdentification.MaxBoilerPressurePSI);
+
+                    if (Simulator.PlayerLocomotive == this && LocomotiveIdentification.EngineBrakeController.CurrentValue > 0)
+                    {
+                        // Turn steam brake leaks on 
+                        SteamBrakeLeaksDurationS = 0.75f;
+                        SteamBrakeLeaksVelocityMpS = 15.0f;
+                        SteamBrakeLeaksVolumeM3pS = 4.0f * SteamBrakeLeakRate;
+                    }
+                    else
+                    {
+                        // Turn steam brake leaks off 
+                        SteamBrakeLeaksDurationS = 0.0f;
+                        SteamBrakeLeaksVelocityMpS = 0.0f;
+                        SteamBrakeLeaksVolumeM3pS = 0.0f;
+                    }
+
+                    if (WagonType == WagonTypes.Tender)
+                    {
+                        // Find the associated steam locomotive for this tender
+                        if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
+
+                        // Turn steam brake effect on or off
+                        if (TendersSteamLocomotive == LocomotiveIdentification && LocomotiveIdentification.EngineBrakeController.CurrentValue > 0)
+                        {
+                            // Turn steam brake leaks on 
+                            SteamBrakeLeaksDurationS = 0.75f;
+                            SteamBrakeLeaksVelocityMpS = 15.0f;
+                            SteamBrakeLeaksVolumeM3pS = 4.0f * SteamBrakeLeakRate;
+                        }
+                        else
+                        {
+                            // Turn steam brake leaks off 
+                            SteamBrakeLeaksDurationS = 0.0f;
+                            SteamBrakeLeaksVelocityMpS = 0.0f;
+                            SteamBrakeLeaksVolumeM3pS = 0.0f;
+                        }
+                    }
+                }
+            }
+
             WagonSmokeDurationS = InitialWagonSmokeDurationS;
             WagonSmokeVolumeM3pS = InitialWagonSmokeVolumeM3pS;
         }
-
 
         public override void SignalEvent(Event evt)
         {
@@ -2113,8 +3116,15 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // TODO: This should be moved to TrainCar probably.
-            foreach (var eventHandler in EventHandlers) // e.g. for HandleCarEvent() in Sounds.cs
-                eventHandler.HandleEvent(evt);
+            try
+            {
+                foreach (var eventHandler in EventHandlers) // e.g. for HandleCarEvent() in Sounds.cs
+                    eventHandler.HandleEvent(evt);
+            }
+            catch (Exception error)
+            {
+                Trace.TraceInformation("Sound event skipped due to thread safety problem " + error.Message);
+            }
 
             base.SignalEvent(evt);
         }
@@ -2261,6 +3271,9 @@ namespace Orts.Simulation.RollingStocks
                 TendersSteamLocomotive = null;
         }
 
+         /// <summary>
+        /// This function checks each steam locomotive to see if it has a tender attached.
+        /// </summary>
         public void ConfirmSteamLocomotiveTender()
         {
             
@@ -2306,9 +3319,11 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
+        /// <summary>
+        /// This function finds the steam locomotive associated with this wagon aux tender, this allows parameters processed in the steam loocmotive module to be used elsewhere.
+        /// </summary>
         public void FindAuxTendersSteamLocomotive()
         {
-            // Find the steam locomotive associated with this wagon aux tender, this allows parameters processed in the steam loocmotive module to be used elsewhere
             if (Train == null || Train.Cars == null || Train.Cars.Count == 1)
             {
                 AuxTendersSteamLocomotive = null;
@@ -2362,46 +3377,44 @@ namespace Orts.Simulation.RollingStocks
 
         public MSTSCoupling Coupler
         {
-            get
+            get  // This determines which coupler to use from WAG file, typically it will be the first one as by convention the rear coupler is always read first.
             {
                 if (Couplers.Count == 0) return null;
                 if (Flipped && Couplers.Count > 1) return Couplers[1];
-                return Couplers[0];
+                return Couplers[0]; // defaults to the rear coupler (typically the first read)
             }
         }
         public override float GetCouplerZeroLengthM()
         {
-            if (Simulator.UseAdvancedAdhesion && IsAdvancedCoupler)
+            if (IsPlayerTrain && Simulator.UseAdvancedAdhesion && IsAdvancedCoupler)
             {
                 float zerolength;
                 if (Coupler != null)
                 {
-                   zerolength = Coupler.CouplerSlackAM;
+                   zerolength = Coupler.R0X;
                 }
                 else
                 {
                    zerolength = base.GetCouplerZeroLengthM();
                 }
 
-                // Ensure zerolength doesn't go higher then 0.15
+                // Ensure zerolength doesn't go higher then 0.5
                 if (zerolength > 0.5)
                 {
                    zerolength = 0.5f;
                 }
 
                 return zerolength;
-
             }
             else
             {
                return Coupler != null ? Coupler.R0X : base.GetCouplerZeroLengthM();
             } 
-
         }
 
-        public override float GetCouplerStiffnessNpM()
+        public override float GetSimpleCouplerStiffnessNpM()
         {
-            return Coupler != null && Coupler.R0X == 0 ? 7 * (Coupler.Stiffness1NpM + Coupler.Stiffness2NpM) : base.GetCouplerStiffnessNpM();
+            return Coupler != null && Coupler.R0X == 0 ? 7 * (Coupler.Stiffness1NpM + Coupler.Stiffness2NpM) : base.GetSimpleCouplerStiffnessNpM();
         }
 
         public override float GetCouplerStiffness1NpM()
@@ -2422,24 +3435,6 @@ namespace Orts.Simulation.RollingStocks
             return Coupler.Rigid? 10 * Coupler.Stiffness1NpM : Coupler.Stiffness2NpM;
         }
 
-        public override float GetCouplerDamping1NMpS()
-        {
-            if (Coupler == null)
-            {
-                return base.GetCouplerDamping1NMpS();
-            }
-            return Coupler.Damping1NMps;
-        }
-
-        public override float GetCouplerDamping2NMpS()
-        {
-            if (Coupler == null)
-            {
-                return base.GetCouplerDamping2NMpS();
-            }
-            return Coupler.Damping2NMps;
-        }
-
         public override float GetCouplerSlackAM()
         {
             if (Coupler == null)
@@ -2458,13 +3453,13 @@ namespace Orts.Simulation.RollingStocks
             return Coupler.CouplerSlackBM;
         }
 
-        public override int GetCouplerRigidIndication()
+        public override bool GetCouplerRigidIndication()
         {
             if (Coupler == null)
             {
                  return base.GetCouplerRigidIndication();   // If no coupler defined
             }
-            return Coupler.Rigid ? 1 : 2; // Return whether coupler Rigid or Flexible
+            return Coupler.Rigid ? true : false; // Return whether coupler Rigid or Flexible
         }
 
         public override bool GetAdvancedCouplerFlag()
@@ -2476,74 +3471,254 @@ namespace Orts.Simulation.RollingStocks
             return IsAdvancedCoupler;
         }
 
-        public override float GetMaximumCouplerSlack0M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
+        public override float GetMaximumSimpleCouplerSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
+        {
+
+                if (Coupler == null)
+                    return base.GetMaximumSimpleCouplerSlack1M();
+                return Coupler.Rigid ? 0.0001f : Coupler.R0Diff;
+
+        }
+
+        public override float GetMaximumSimpleCouplerSlack2M() // This limits the slack due to draft forces (?) and should be marginally greater then GetMaximumCouplerSlack1M
+        {
+
+                if (Coupler == null)
+                    return base.GetMaximumSimpleCouplerSlack2M();
+                return Coupler.Rigid ? 0.0002f : base.GetMaximumSimpleCouplerSlack2M(); //  GetMaximumCouplerSlack2M > GetMaximumCouplerSlack1M
+
+        }
+
+        // Advanced coupler parameters
+
+        public override float GetCouplerTensionStiffness1N()
         {
             if (Coupler == null)
-                return base.GetMaximumCouplerSlack0M();
-            return Coupler.Rigid ? 0.0001f : Coupler.CouplerSlackBM;
+            {
+                return base.GetCouplerTensionStiffness1N();
+            }
+            return Coupler.Rigid ? 10 * Coupler.TensionStiffness1N : Coupler.TensionStiffness1N;
         }
 
-        public override float GetMaximumCouplerSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
+        public override float GetCouplerTensionStiffness2N()
         {
-            if (Simulator.UseAdvancedAdhesion && IsAdvancedCoupler)
+            if (Coupler == null)
             {
-                if (Coupler == null)
-                    return base.GetMaximumCouplerSlack1M();
-                return Coupler.Rigid ? 0.0001f : Coupler.CouplerSlackBM + Coupler.R0X;
-
+                return base.GetCouplerTensionStiffness2N();
             }
-            else
-            {
-                if (Coupler == null)
-                    return base.GetMaximumCouplerSlack1M();
-                return Coupler.Rigid ? 0.0001f : Coupler.R0Diff;
-            }
-
-
+            return Coupler.Rigid ? 10 * Coupler.TensionStiffness2N : Coupler.TensionStiffness2N;
         }
 
-        public override float GetMaximumCouplerSlack2M() // This limits the slack due to draft forces (?) and should be marginally greater then GetMaximumCouplerSlack1M
+        public override float GetCouplerCompressionStiffness1N()
         {
-            if (Simulator.UseAdvancedAdhesion && IsAdvancedCoupler) // for Advanced coupler
+            if (Coupler == null)
             {
-                if (Coupler == null)
-                    return base.GetMaximumCouplerSlack2M();
-                return Coupler.Rigid ? 0.0002f : Coupler.CouplerSlackBM + Coupler.R0Y; //  GetMaximumCouplerSlack2M > GetMaximumCouplerSlack1M
+                return base.GetCouplerCompressionStiffness1N();
             }
-            else  // for simple coupler
+            return Coupler.Rigid ? 10 * Coupler.CompressionStiffness1N : Coupler.CompressionStiffness1N;
+        }
+
+        public override float GetCouplerCompressionStiffness2N()
+        {
+            if (Coupler == null)
             {
-                if (Coupler == null)
-                    return base.GetMaximumCouplerSlack2M();
-                return Coupler.Rigid ? 0.0002f : base.GetMaximumCouplerSlack2M(); //  GetMaximumCouplerSlack2M > GetMaximumCouplerSlack1M
+                return base.GetCouplerCompressionStiffness2N();
+            }
+            return Coupler.Rigid ? 10 * Coupler.CompressionStiffness2N : Coupler.CompressionStiffness2N;
+        }
+
+        public override float GetCouplerTensionSlackAM()
+        {
+            if (Coupler == null)
+            {
+
+                return base.GetCouplerTensionSlackAM();
             }
 
+            return Coupler.CouplerTensionSlackAM;
+        }
 
+        public override float GetCouplerTensionSlackBM()
+        {
+            if (Coupler == null)
+            {
+
+                return base.GetCouplerTensionSlackBM();
+            }
+
+            return Coupler.CouplerTensionSlackBM;
+        }
+
+        public override float GetCouplerCompressionSlackAM()
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerCompressionSlackAM();
+            }
+            return Coupler.CouplerCompressionSlackAM;
+        }
+
+        public override float GetCouplerCompressionSlackBM()
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerCompressionSlackBM();
+            }
+            return Coupler.CouplerCompressionSlackBM;
+        }
+
+        public override float GetMaximumCouplerTensionSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
+        {
+            if (Coupler == null)
+                return base.GetMaximumCouplerTensionSlack1M();
+
+            if (Coupler.TensionR0Y == 0)
+            {
+                Coupler.TensionR0Y = GetCouplerTensionR0Y(); // if no value present, default value to tension value
+            }
+            return Coupler.Rigid ? 0.00001f : Coupler.TensionR0Y;
+        }
+        public override float GetMaximumCouplerTensionSlack2M()
+        {
+
+            // Zone 2 limit - ie Zone 1 + 2
+            if (Coupler == null)
+                return base.GetMaximumCouplerTensionSlack2M();
+
+            return Coupler.Rigid? 0.0001f : Coupler.TensionR0Y + GetCouplerTensionSlackAM();
+        }
+
+        public override float GetMaximumCouplerTensionSlack3M() // This limits the slack due to draft forces (?) and should be marginally greater then GetMaximumCouplerSlack2M
+        {
+            if (Coupler == null)
+
+            {
+                return base.GetMaximumCouplerTensionSlack3M();
+            }
+            float Coupler2MTemporary = GetCouplerTensionSlackBM();
+            if (Coupler2MTemporary == 0)
+            {
+                Coupler2MTemporary = 0.1f; // make sure that SlackBM is always > 0
+            }
+            return Coupler.Rigid ? 0.0002f : Coupler.TensionR0Y + GetCouplerTensionSlackAM() + Coupler2MTemporary; //  GetMaximumCouplerSlack3M > GetMaximumCouplerSlack2M
+        }
+
+        public override float GetMaximumCouplerCompressionSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
+        {
+            if (Coupler == null)
+                return base.GetMaximumCouplerCompressionSlack1M();
+            if (Coupler.CompressionR0Y == 0)
+            {
+                Coupler.CompressionR0Y = GetCouplerCompressionR0Y(); // if no value present, default value to compression value
+            }
+            return Coupler.Rigid ? 0.00005f : Coupler.CompressionR0Y;
+        }
+
+        public override float GetMaximumCouplerCompressionSlack2M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
+        {
+            if (Coupler == null)
+                return base.GetMaximumCouplerCompressionSlack2M();
+
+            return Coupler.Rigid ? 0.0001f : Coupler.CompressionR0Y + GetCouplerCompressionSlackAM();
+        }
+
+        public override float GetMaximumCouplerCompressionSlack3M() // This limits the slack due to draft forces (?) and should be marginally greater then GetMaximumCouplerSlack1M
+        {
+            if (Coupler == null)
+            {
+                return base.GetMaximumCouplerCompressionSlack3M();
+            }
+            float Coupler2MTemporary = GetCouplerCompressionSlackBM();
+            if (Coupler2MTemporary == 0)
+            {
+                Coupler2MTemporary = 0.1f; // make sure that SlackBM is always > 0
+            }
+            return Coupler.Rigid ? 0.0002f : Coupler.CompressionR0Y + GetCouplerCompressionSlackAM() + Coupler2MTemporary; //  GetMaximumCouplerSlack3M > GetMaximumCouplerSlack2M
+        }
+
+        public override float GetCouplerBreak1N() 
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerBreak1N();
+            }
+            return Coupler.Break1N;
+        }
+
+        public override float GetCouplerBreak2N() 
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerBreak2N();
+            }
+            return Coupler.Break2N;
+        }
+
+        public override float GetCouplerTensionR0Y() 
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerTensionR0Y();
+            }
+            return Coupler.TensionR0Y;
+        }
+
+        public override float GetCouplerCompressionR0Y()
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerCompressionR0Y();
+            }
+            return Coupler.CompressionR0Y;
         }
 
 
         // TODO: This code appears to be being called by ReverseCars (in Trains.cs). 
         // Reverse cars moves the couplers along by one car, however this may be encountering a null coupler at end of train. 
-        // Thus all coupler parameters need to be tested for null coupler and defasult values inserted (To be confirmed)
+        // Thus all coupler parameters need to be tested for null coupler and default values inserted (To be confirmed)
         public override void CopyCoupler(TrainCar other)
         {
             base.CopyCoupler(other);
             MSTSCoupling coupler = new MSTSCoupling();
+            // Simple Coupler parameters
             coupler.R0X = other.GetCouplerZeroLengthM();
             coupler.R0Y = other.GetCouplerZeroLengthM();
-            coupler.R0Diff = other.GetMaximumCouplerSlack1M();
-            coupler.Rigid = coupler.R0Diff < .0002f;
-            coupler.Stiffness1NpM = other.GetCouplerStiffnessNpM() / 7;
+            coupler.R0Diff = other.GetMaximumSimpleCouplerSlack1M();
+            coupler.Stiffness1NpM = other.GetSimpleCouplerStiffnessNpM() / 7;
             coupler.Stiffness2NpM = 0;
-            coupler.Damping1NMps = other.GetCouplerDamping1NMpS();
-            coupler.Damping2NMps = other.GetCouplerDamping2NMpS();
             coupler.CouplerSlackAM = other.GetCouplerSlackAM();
             coupler.CouplerSlackBM = other.GetCouplerSlackBM();
+
+            // Common simple and advanced parameters
+            coupler.Rigid = other.GetCouplerRigidIndication();
+            coupler.Break1N = other.GetCouplerBreak1N();
+            coupler.Break2N = other.GetCouplerBreak2N();
+
+            // ADvanced coupler parameters
+            IsAdvancedCoupler = other.GetAdvancedCouplerFlag();
+
+            coupler.TensionR0X = other.GetCouplerZeroLengthM();
+            coupler.TensionR0Y = other.GetCouplerTensionR0Y();
+            coupler.CouplerTensionSlackAM = other.GetCouplerTensionSlackAM();
+            coupler.CouplerTensionSlackBM = other.GetCouplerTensionSlackBM();
+            coupler.TensionStiffness1N = other.GetCouplerTensionStiffness1N();
+            coupler.TensionStiffness2N = other.GetCouplerTensionStiffness2N();
+
+            coupler.CompressionR0X = GetCouplerZeroLengthM();
+            coupler.CompressionR0Y = other.GetCouplerCompressionR0Y();
+            coupler.CouplerCompressionSlackAM = other.GetCouplerCompressionSlackAM();
+            coupler.CouplerCompressionSlackBM = other.GetCouplerCompressionSlackBM();
+            coupler.CompressionStiffness1N = other.GetCouplerCompressionStiffness1N();
+            coupler.CompressionStiffness2N = other.GetCouplerCompressionStiffness2N();
+
+
             if (Couplers.Count == 0)
                 Couplers.Add(coupler);
             else
                 Couplers[0] = coupler;
             if (Couplers.Count > 1)
                 Couplers.RemoveAt(1);
+
         }
 
         public void SetWagonHandbrake(bool ToState)
@@ -2690,15 +3865,26 @@ namespace Orts.Simulation.RollingStocks
         public bool Rigid;
         public float R0X;
         public float R0Y;
-        public float R0Diff = .012f;
+        public float R0Diff = 0.012f;
         public float Stiffness1NpM = 1e7f;
         public float Stiffness2NpM = 2e7f;
-        public float Damping1NMps = 1e7f;
-        public float Damping2NMps = 2e7f;
         public float Break1N = 1e10f;
         public float Break2N = 1e10f;
         public float CouplerSlackAM;
         public float CouplerSlackBM;
+        public float CouplerTensionSlackAM;
+        public float CouplerTensionSlackBM;
+        public float TensionStiffness1N = 1e7f;
+        public float TensionStiffness2N = 2e7f;
+        public float TensionR0X;
+        public float TensionR0Y;
+        public float CompressionR0X;
+        public float CompressionR0Y;
+        public float CompressionStiffness1N;
+        public float CompressionStiffness2N;
+        public float CouplerCompressionSlackAM;
+        public float CouplerCompressionSlackBM;
+
 
         public MSTSCoupling()
         {
@@ -2713,12 +3899,22 @@ namespace Orts.Simulation.RollingStocks
             Break2N = copy.Break2N;
             Stiffness1NpM = copy.Stiffness1NpM;
             Stiffness2NpM = copy.Stiffness2NpM;
-            Damping1NMps = copy.Damping1NMps;
-            Damping2NMps = copy.Damping2NMps;
             CouplerSlackAM = copy.CouplerSlackAM;
             CouplerSlackBM = copy.CouplerSlackBM;
+            TensionStiffness1N = copy.TensionStiffness1N;
+            TensionStiffness2N = copy.TensionStiffness2N;
+            CouplerTensionSlackAM = copy.CouplerTensionSlackAM;
+            CouplerTensionSlackBM = copy.CouplerTensionSlackBM;
+            TensionR0X = copy.TensionR0X;
+            TensionR0Y = copy.TensionR0Y;
+            CompressionR0X = copy.CompressionR0X;
+            CompressionR0Y = copy.CompressionR0Y;
+            CompressionStiffness1N = copy.CompressionStiffness1N;
+            CompressionStiffness2N = copy.CompressionStiffness2N;
+            CouplerCompressionSlackAM = copy.CouplerCompressionSlackAM;
+            CouplerCompressionSlackBM = copy.CouplerCompressionSlackBM;
         }
-        public void SetR0(float a, float b)
+        public void SetSimpleR0(float a, float b)
         {
                 R0X = a;
                 R0Y = b;
@@ -2735,7 +3931,7 @@ namespace Orts.Simulation.RollingStocks
                 R0Diff = 0.1f;
 
         }
-        public void SetStiffness(float a, float b)
+        public void SetSimpleStiffness(float a, float b)
         {
             if (a + b < 0)
                 return;
@@ -2744,14 +3940,73 @@ namespace Orts.Simulation.RollingStocks
             Stiffness2NpM = b;
         }
 
-        public void SetDamping(float a, float b)
+        public void SetTensionR0(float a, float b)
         {
-            if (a + b< 0)
+            TensionR0X = a;
+            TensionR0Y = b;
+        }
+
+        public void SetCompressionR0(float a, float b)
+        {
+            CompressionR0X = a;
+            CompressionR0Y = b;
+        }
+
+public void SetTensionStiffness(float a, float b)
+        {
+            if (a + b < 0)
                 return;
 
-            Damping1NMps = a;
-            Damping2NMps = b;
+            TensionStiffness1N = a;
+            TensionStiffness2N = b;
         }
+
+        public void SetCompressionStiffness(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+
+            CompressionStiffness1N = a;
+            CompressionStiffness2N = b;
+        }
+
+        public void SetTensionSlack(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+
+            CouplerTensionSlackAM = a;
+            CouplerTensionSlackBM = b;
+        }
+
+        public void SetCompressionSlack(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+
+            CouplerCompressionSlackAM = a;
+            CouplerCompressionSlackBM = b;
+        }
+
+        public void SetAdvancedBreak(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+
+            Break1N = a;
+
+            // Check if b = 0, as some stock has a zero value, set a default
+            if (b == 0)
+            {
+                Break2N = 2e7f;
+            }
+            else
+            {
+                Break2N = b;
+            }
+
+        }
+
 
         public void SetSlack(float a, float b)
         {
@@ -2762,7 +4017,7 @@ namespace Orts.Simulation.RollingStocks
             CouplerSlackBM = b;
         }
 
-        public void SetBreak(float a, float b)
+        public void SetSimpleBreak(float a, float b)
         {
             if (a + b < 0)
                 return;
@@ -2793,8 +4048,6 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(R0Diff);
             outf.Write(Stiffness1NpM);
             outf.Write(Stiffness2NpM);
-            outf.Write(Damping1NMps);
-            outf.Write(Damping2NMps);
             outf.Write(CouplerSlackAM);
             outf.Write(CouplerSlackBM);
             outf.Write(Break1N);
@@ -2813,8 +4066,6 @@ namespace Orts.Simulation.RollingStocks
             R0Diff = inf.ReadSingle();
             Stiffness1NpM = inf.ReadSingle();
             Stiffness2NpM = inf.ReadSingle();
-            Damping1NMps = inf.ReadSingle();
-            Damping2NMps = inf.ReadSingle();
             CouplerSlackAM = inf.ReadSingle();
             CouplerSlackBM = inf.ReadSingle();
             Break1N = inf.ReadSingle();

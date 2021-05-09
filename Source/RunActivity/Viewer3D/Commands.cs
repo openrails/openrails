@@ -290,28 +290,20 @@ namespace Orts.Viewer3D
             Redo();
         }
 
-        public override void Redo()
-        {
-            Receiver.CabCamera.Activate();
-            // Report();
-        }
+        public override void Redo() => Receiver.ActivateCabCamera();
     }
 
 	[Serializable()]
-	public sealed class Use3DCabCameraCommand : UseCameraCommand
+	public sealed class ToggleThreeDimensionalCabCameraCommand : UseCameraCommand
 	{
 
-		public Use3DCabCameraCommand(CommandLog log)
+		public ToggleThreeDimensionalCabCameraCommand(CommandLog log)
 			: base(log)
 		{
 			Redo();
 		}
 
-		public override void Redo()
-		{
-			Receiver.ThreeDimCabCamera.Activate();
-			// Report();
-		}
+        public override void Redo() => Receiver.ToggleCabCameraView();
 	}
 	
 	[Serializable()]

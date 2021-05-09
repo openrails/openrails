@@ -17,6 +17,8 @@
 
 using ORTS.Common;
 using System;
+using System.IO;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -432,7 +434,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                return (axleSpeedMpS - TrainSpeedMpS);
+                if (AxleForceN == 0 && BrakeRetardForceN == 0)
+                {
+                    return 0.0f; // Assume slip will not occur if no braking force or motive force are applied to the axle - To be confirmed???
+                }
+                else
+                {
+                    return (axleSpeedMpS - TrainSpeedMpS);
+                }
             }
         }
 
@@ -444,7 +453,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                return SlipSpeedMpS / WheelSlipThresholdMpS * 100.0f;
+                var temp = SlipSpeedMpS / WheelSlipThresholdMpS * 100.0f;
+                if (float.IsNaN(temp)) temp = 0;//avoid NaN on HuD display when first starting OR
+                return temp;
             }
         }
 
@@ -573,6 +584,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     totalInertiaKgm2 = inertiaKgm2;
                     break;
             }
+        }
+
+        /// <summary>
+        /// A constructor that restores the game state.
+        /// </summary>
+        /// <param name="inf">The save stream to read from.</param>
+        public Axle(BinaryReader inf) : this()
+        {
+            previousSlipPercent = inf.ReadSingle();
+            previousSlipSpeedMpS = inf.ReadSingle();
+        }
+
+        /// <summary>
+        /// Save the game state.
+        /// </summary>
+        /// <param name="outf">The save stream to write to.</param>
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(previousSlipPercent);
+            outf.Write(previousSlipSpeedMpS);
         }
 
         /// <summary>

@@ -61,12 +61,14 @@ namespace ORTS
         public List<Consist> Consists = new List<Consist>();
         List<Path> Paths = new List<Path>();
         List<TimetableInfo> TimetableSets = new List<TimetableInfo>();
+        List<WeatherFileInfo> TimetableWeatherFileSet = new List<WeatherFileInfo>();
         Task<List<Folder>> FolderLoader;
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
         Task<List<Consist>> ConsistLoader;
         Task<List<Path>> PathLoader;
         Task<List<TimetableInfo>> TimetableSetLoader;
+        Task<List<WeatherFileInfo>> TimetableWeatherFileLoader;
         readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
         readonly Image ElevationIcon;
@@ -82,7 +84,7 @@ namespace ORTS
                 return programNormal;
             }
         }
-        
+
         // Base items
         public Folder SelectedFolder { get { return (Folder)comboBoxFolder.SelectedItem; } }
         public Route SelectedRoute { get { return (Route)comboBoxRoute.SelectedItem; } }
@@ -98,6 +100,7 @@ namespace ORTS
         public TimetableFileLite SelectedTimetable { get { return (TimetableFileLite)comboBoxTimetable.SelectedItem; } }
         public TimetableFileLite.TrainInformation SelectedTimetableTrain { get { return (TimetableFileLite.TrainInformation)comboBoxTimetableTrain.SelectedItem; } }
         public int SelectedTimetableDay { get { return (comboBoxTimetableDay.SelectedItem as KeyedComboBoxItem).Key; } }
+        public WeatherFileInfo SelectedWeatherFile { get { return (WeatherFileInfo)comboBoxTimetableWeatherFile.SelectedItem; } }
         public Consist SelectedTimetableConsist;
         public Path SelectedTimetablePath;
 
@@ -213,7 +216,8 @@ namespace ORTS
                             Process.Start("cmd", "/k \"" + toolPath + "\"");
                         else
                             Process.Start(toolPath);
-                    }) { Tag = executable });
+                    })
+                    { Tag = executable });
                 }
                 // Add all the tools in alphabetical order.
                 contextMenuStripTools.Items.AddRange((from tool in tools
@@ -228,21 +232,18 @@ namespace ORTS
                 var path = dir + @"\Documentation\";
                 if (Directory.Exists(path))
                 {
-                    foreach (string entry in Directory.GetFiles(path))
+                    // Load English documents
+                    LoadDocuments(docs, path);
+
+                    // Find any non-English documents by looking in \Documentation\<language code>\, e.g. \Documentation\es\
+                    foreach (var codePath in Directory.GetDirectories(path))
                     {
-                        // These are the following formats that can be selected.
-                        if (entry.Contains(".pdf") || entry.Contains(".doc") || entry.Contains(".docx") || entry.Contains(".pptx") || entry.Contains(".txt"))
-                        {
-                            var i = entry.LastIndexOf("\\");
-                            docs.Add(new ToolStripMenuItem(entry.Substring(i + 1), null, (Object sender2, EventArgs e2) =>
-                            {
-                                var docPath = (sender2 as ToolStripItem).Tag as string;
-                                Process.Start(docPath);
-                             }) { Tag = entry });
-                        }
-                        contextMenuStripDocuments.Items.AddRange((from tool in docs
-                                                                  orderby tool.Text
-                                                                  select tool).ToArray());
+                        // Extract the last folder in the path - the language code, e.g. "es"
+                        var code = System.IO.Path.GetFileName(codePath);
+
+                        // include any non-English documents that match the chosen language
+                        if (code == Settings.Language)
+                            LoadDocuments(docs, codePath, code);
                     }
                 }
                 else
@@ -261,6 +262,29 @@ namespace ORTS
             }
         }
 
+        private void LoadDocuments(List<ToolStripItem> docs, string folderPath, string code = null)
+        {
+            foreach (var filePath in Directory.GetFiles(folderPath))
+            {
+                var ext = System.IO.Path.GetExtension(filePath);
+                var name = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                // These are the formats that can be selected.
+                if (new[] { ".pdf", ".doc", ".docx", ".pptx", ".txt" }.Contains(ext.ToLowerInvariant()))
+                {
+                    var codeLabel = string.IsNullOrEmpty(code) ? "" : $" [{code}]";
+                    docs.Add(new ToolStripMenuItem($"{name}{ext}{codeLabel}", null, (object sender2, EventArgs e2) =>
+                    {
+                        var docPath = (sender2 as ToolStripItem).Tag as string;
+                        Process.Start(docPath);
+                    })
+                    { Tag = filePath });
+                }
+                contextMenuStripDocuments.Items.AddRange((from tool in docs
+                                                          orderby tool.Text
+                                                          select tool).ToArray());
+            }
+        }
+
         void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             SaveOptions();
@@ -274,6 +298,8 @@ namespace ORTS
                 PathLoader.Cancel();
             if (TimetableSetLoader != null)
                 TimetableSetLoader.Cancel();
+            if (TimetableWeatherFileLoader != null)
+                TimetableWeatherFileLoader.Cancel();
 
             // Remove any deleted saves
             if (Directory.Exists(UserSettings.DeletedSaveFolder))
@@ -322,7 +348,7 @@ namespace ORTS
             {
                 try
                 {
-                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(Settings.Language);
+                    CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(Settings.Language);
                 }
                 catch { }
             }
@@ -474,6 +500,11 @@ namespace ORTS
         {
             UpdateTimetableSet();
         }
+
+        void comboBoxTimetableWeatherFile_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateTimetableWeatherSet();
+        }
         #endregion
 
         #region Multiplayer
@@ -583,7 +614,7 @@ namespace ORTS
             OpenResumeForm(true);
         }
 
-        void OpenResumeForm (bool multiplayer)
+        void OpenResumeForm(bool multiplayer)
         {
             if (radioButtonModeTimetable.Checked)
             {
@@ -622,7 +653,7 @@ namespace ORTS
         {
             if (CheckUserName(textBoxMPUser.Text) == false) return;
             SaveOptions();
-            SelectedAction = radioButtonMPClient.Checked? UserAction.MultiplayerClient : UserAction.MultiplayerServer;
+            SelectedAction = radioButtonMPClient.Checked ? UserAction.MultiplayerClient : UserAction.MultiplayerServer;
             DialogResult = DialogResult.OK;
         }
 
@@ -637,6 +668,8 @@ namespace ORTS
             checkDebriefActivityEval.Checked = Settings.DebriefActivityEval;
             //TO DO: Debrief TTactivity evaluation
             //checkDebriefTTActivityEval.Checked = Settings.DebriefTTActivityEval;
+            radioButtonModeActivity.Checked = Settings.IsModeActivity;
+            radioButtonModeTimetable.Checked = !Settings.IsModeActivity;
 
             textBoxMPUser.Text = Settings.Multiplayer_User;
             textBoxMPHost.Text = Settings.Multiplayer_Host + ":" + Settings.Multiplayer_Port;
@@ -651,6 +684,7 @@ namespace ORTS
             Settings.DebriefActivityEval = checkDebriefActivityEval.Checked;
             //TO DO: Debrief TTactivity evaluation
             //Settings.DebriefTTActivityEval = checkDebriefTTActivityEval.Checked;
+            Settings.IsModeActivity = radioButtonModeActivity.Checked;
 
             var mpHost = textBoxMPHost.Text.Split(':');
             Settings.Multiplayer_Host = mpHost[0];
@@ -710,6 +744,7 @@ namespace ORTS
             comboBoxStartTime.DropDownStyle = SelectedActivity is ExploreActivity ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
             comboBoxTimetable.Enabled = comboBoxTimetableSet.Items.Count > 0;
             comboBoxTimetableTrain.Enabled = comboBoxTimetable.Items.Count > 0;
+            comboBoxTimetableWeatherFile.Enabled = comboBoxTimetableWeatherFile.Items.Count > 0;
             //Avoid to Start with a non valid Activity/Locomotive/Consist.
             buttonResume.Enabled = buttonStart.Enabled = radioButtonModeActivity.Checked && !comboBoxActivity.Text.StartsWith("<") && !comboBoxLocomotive.Text.StartsWith("<") ?
                 SelectedActivity != null && (!(SelectedActivity is ExploreActivity) || (comboBoxConsist.Items.Count > 0 && comboBoxHeadTo.Items.Count > 0)) :
@@ -999,6 +1034,8 @@ namespace ORTS
         {
             if (TimetableSetLoader != null)
                 TimetableSetLoader.Cancel();
+            if (TimetableWeatherFileLoader != null)
+                TimetableWeatherFileLoader.Cancel();
 
             TimetableSets.Clear();
             ShowTimetableSetList();
@@ -1008,6 +1045,12 @@ namespace ORTS
             {
                 TimetableSets = timetableSets;
                 ShowTimetableSetList();
+            });
+
+            TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
+            {
+                TimetableWeatherFileSet = timetableWeatherFileSet;
+                ShowTimetableWeatherSet();
             });
         }
 
@@ -1029,6 +1072,22 @@ namespace ORTS
                 SelectedTimetableSet.Weather = SelectedStartWeather;
             }
         }
+
+        void ShowTimetableWeatherSet()
+        {
+            comboBoxTimetableWeatherFile.Items.Clear();
+            foreach (var weatherFile in TimetableWeatherFileSet)
+            {
+                comboBoxTimetableWeatherFile.Items.Add(weatherFile);
+                UpdateEnabled();
+            }
+        }
+
+        void UpdateTimetableWeatherSet()
+        {
+            SelectedTimetableSet.WeatherFile = SelectedWeatherFile.GetFullName();
+        }
+
         #endregion
 
         #region Timetable list
@@ -1100,33 +1159,47 @@ namespace ORTS
             if (radioButtonModeTimetable.Checked)
             {
                 if (SelectedTimetableSet != null)
-                {
                     ShowDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
-                }
+                    // Description not shown as no description is available for a timetable set.
+
                 if (SelectedTimetable != null)
-                {
-                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), new string[0]);
-                }
+                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
+
                 if (SelectedTimetableTrain != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), SelectedTimetableTrain.ToInfo());
+                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
+
                     if (SelectedTimetableConsist != null)
                     {
                         ShowDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
                         if (SelectedTimetableConsist.Locomotive != null && SelectedTimetableConsist.Locomotive.Description != null)
-                        {
                             ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
-                        }
                     }
                     if (SelectedTimetablePath != null)
-                    {
                         ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
-                    }
                 }
             }
 
             FlowDetails();
             Win32.LockWindowUpdate(IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// Change
+        ///     "Start time: 10:30$$create=00:04/ahead=0040ElghLE70F363U"
+        /// to
+        ///     "Start time: 10:30"
+        /// for higher-level presentation
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        private string[] HideStartParameters(string [] info)
+        {
+            var fullStartTime = info[0].TrimStart();
+            var startTimeArray = fullStartTime.Split('$');
+            var shortStartTime = startTimeArray[0];
+            info[0] = shortStartTime;
+            return info;
         }
 
         List<Detail> Details = new List<Detail>();

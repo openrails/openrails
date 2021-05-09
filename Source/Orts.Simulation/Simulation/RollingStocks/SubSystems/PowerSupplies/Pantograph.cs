@@ -19,6 +19,7 @@ using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Event = Orts.Common.Event;
@@ -27,6 +28,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
     public class Pantographs
     {
+        public static readonly int MinPantoID = 1; // minimum value of PantoID, applies to Pantograph 1
+        public static readonly int MaxPantoID = 4; // maximum value of PantoID, applies to Pantograph 4
         readonly MSTSWagon Wagon;
 
         public List<Pantograph> List = new List<Pantograph>();
@@ -359,9 +362,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (soundEvent != Event.None)
             {
-                foreach (var eventHandler in Wagon.EventHandlers)
+                try
                 {
-                    eventHandler.HandleEvent(soundEvent);
+                    foreach (var eventHandler in Wagon.EventHandlers)
+                    {
+                        eventHandler.HandleEvent(soundEvent);
+                    }
+                }
+                catch (Exception error)
+                {
+                    Trace.TraceInformation("Sound event skipped due to thread safety problem " + error.Message);
                 }
             }
         }

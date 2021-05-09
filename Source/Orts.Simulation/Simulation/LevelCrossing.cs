@@ -117,7 +117,6 @@ namespace Orts.Simulation
                 var totalMaxDist = predictedDist + maxPredictedDist + minimumDist + 1;
 
                 var reqDist = 0f; // actual used distance
-                var hornReqDist = 0f; // used distance for horn blow
                 var adjustDist = 0f;
 
 
@@ -147,14 +146,12 @@ namespace Orts.Simulation
                 {
                     validTrain = true;
                     reqDist = totalDist;
-                    hornReqDist = Math.Min(totalDist, 80.0f);
                 }
 
                 else if ((train.TrainType != Train.TRAINTYPE.STATIC) && WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalMaxDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalMaxDist))
                 {
                     validTrain = true;
                     reqDist = totalMaxDist;
-                    hornReqDist = Math.Min(totalMaxDist, 80.0f);
                 }
 
                 if ((train.TrainType == Train.TRAINTYPE.STATIC) && !validStaticConsist && !crossing.StaticConsists.Contains(train))
@@ -182,10 +179,10 @@ namespace Orts.Simulation
 
                 var rearDist = -frontDist - train.Length;
 
-                if (train is AITrain && frontDist <= hornReqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
+                if (train is AITrain aiTrain && (aiTrain.LevelCrossingHornPattern?.ShouldActivate(crossing.CrossingGroup, absSpeedMpS, Math.Min(frontDist, Math.Abs(rearDist))) ?? false))
                 {
                     //  Add generic actions if needed
-                    ((AITrain)train).AuxActionsContain.CheckGenActions(this.GetType(), crossing.Location, rearDist, frontDist, crossing.TrackIndex);
+                    aiTrain.AuxActionsContain.CheckGenActions(this.GetType(), crossing.Location, rearDist, frontDist, crossing.TrackIndex, aiTrain.LevelCrossingHornPattern);
                 }
 
                 // The tests below is to allow the crossings operate like the crossings under MSTS
@@ -248,7 +245,7 @@ namespace Orts.Simulation
                 }
 
                 // Train is stopped.
-                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER) && speedMpS == 0 && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
+                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.REMOTE) && Math.Abs(speedMpS) <= Simulator.MaxStoppedMpS && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
                     // First test is to simulate a timeout if a train comes to a stop before minimumDist
                     if (frontDist > minimumDist && Simulator.Trains.Contains(train))
@@ -261,7 +258,7 @@ namespace Orts.Simulation
                 }
 
                 // Train is travelling toward crossing below 11.1mph.
-                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.STATIC) && speedMpS > 0 && speedMpS <= minCrossingActivationSpeed && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
+                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.STATIC || train.TrainType == Train.TRAINTYPE.REMOTE) && speedMpS > 0 && speedMpS <= minCrossingActivationSpeed && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
                     // This will allow a slow train to approach to the crossing's minmum distance without activating the crossing.
                     if (frontDist <= minimumDist + 65f) // Not all crossing systems operate the same so adding an additional 65 meters is only an option to improve operation.
@@ -281,13 +278,13 @@ namespace Orts.Simulation
                 }
 
                 // Checking for reverse movement through crossing when train is travelling above 11.1mph.
-                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER) && speedMpS < 0 && absSpeedMpS > minCrossingActivationSpeed && rearDist <= reqDist && (train.ReservedTrackLengthM <= 0 || rearDist < train.ReservedTrackLengthM) && frontDist <= minimumDist)
+                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.REMOTE) && speedMpS < 0 && absSpeedMpS > minCrossingActivationSpeed && rearDist <= reqDist && (train.ReservedTrackLengthM <= 0 || rearDist < train.ReservedTrackLengthM) && frontDist <= minimumDist)
                 {
                     crossing.AddTrain(train);
                 }
 
                 // Player train travelling in forward direction above 11.1mph will activate the crossing.  
-                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER) && speedMpS > 0 && speedMpS > minCrossingActivationSpeed && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
+                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.REMOTE) && speedMpS > 0 && speedMpS > minCrossingActivationSpeed && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
                     crossing.AddTrain(train);
                 }

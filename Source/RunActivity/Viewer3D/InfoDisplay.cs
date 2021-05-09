@@ -29,14 +29,15 @@
 // Analyse the data using a spreadsheet and graph with an XY chart.
 
 
-using Orts.Simulation.RollingStocks;
-using ORTS.Common;
-using ORTS.Settings;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Orts.Simulation.RollingStocks;
+using ORTS.Common;
+using ORTS.Common.Input;
+using ORTS.Settings;
 
 namespace Orts.Viewer3D
 {
@@ -103,7 +104,7 @@ namespace Orts.Viewer3D
 
         public void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.DebugLogger))
+            if (UserInput.IsPressed(UserCommand.DebugLogger))
             {
                 Viewer.Settings.DataLogger = !Viewer.Settings.DataLogger;
                 if (Viewer.Settings.DataLogger)
@@ -267,24 +268,31 @@ namespace Orts.Viewer3D
                         Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.AxleForceN.ToString("F2"));
                         Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.SlipSpeedPercent.ToString("F1"));
 
-                        switch (Viewer.Settings.DataLogSpeedUnits)
+                        void logSpeed(float speedMpS)
                         {
-                            case "route":
-                                Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
-                                break;
-                            case "mps":
-                                Logger.Data(Viewer.PlayerLocomotive.SpeedMpS.ToString("F1"));
-                                break;
-                            case "mph":
-                                Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, false).ToString("F1"));
-                                break;
-                            case "kmph":
-                                Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, true).ToString("F1"));
-                                break;
-                            default:
-                                Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
-                                break;
+                            string result;
+                            switch (Viewer.Settings.DataLogSpeedUnits)
+                            {
+                                case "route":
+                                    result = FormatStrings.FormatSpeed(speedMpS, Viewer.MilepostUnitsMetric);
+                                    break;
+                                case "mps":
+                                    result = speedMpS.ToString("F1");
+                                    break;
+                                case "mph":
+                                    result = MpS.FromMpS(speedMpS, false).ToString("F1");
+                                    break;
+                                case "kmph":
+                                    result = MpS.FromMpS(speedMpS, true).ToString("F1");
+                                    break;
+                                default:
+                                    result = FormatStrings.FormatSpeed(speedMpS, Viewer.MilepostUnitsMetric);
+                                    break;
+                            }
+                            Logger.Data(result);
                         }
+                        logSpeed(Viewer.PlayerLocomotive.SpeedMpS);
+                        logSpeed(Viewer.PlayerTrain.AllowedMaxSpeedMpS);
 
                         Logger.Data((Viewer.PlayerLocomotive.DistanceM.ToString("F0")));
                         Logger.Data((Viewer.PlayerLocomotive.GravityForceN.ToString("F0")));
@@ -296,6 +304,11 @@ namespace Orts.Viewer3D
 
                         if ((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeController != null)
                             Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeController.CurrentValue.ToString("F2"));
+                        else
+                            Logger.Data("null");
+
+                        if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakemanBrakeController != null)
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).BrakemanBrakeController.CurrentValue.ToString("F2"));
                         else
                             Logger.Data("null");
 
@@ -436,7 +449,8 @@ namespace Orts.Viewer3D
                                 "Player Brake Force [N]",
                                 "Player Axle Force [N]",
                                 "Player Wheelslip",
-                                "Player Speed [" + settings.DataLogSpeedUnits + "]",
+                                $"Player Speed [{settings.DataLogSpeedUnits}]",
+                                $"Speed Limit [{settings.DataLogSpeedUnits}]",
                                 "Distance [m]",
                                 "Player Gravity Force [N]",
                                 "Train Brake",

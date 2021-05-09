@@ -101,16 +101,16 @@ float4 PSPopupWindowGlass(in VERTEX_OUTPUT In) : COLOR
 {
 	float4 Color = tex2D(WindowSampler, In.TexCoords_Pos.xy);
 	float Mask = tex2D(WindowSampler, In.TexCoords_Pos.xy + float2(0.5, 0.0)).r;
-	float3 ScreenColor = tex2D(ScreenSampler, In.TexCoords_Pos.zw);
-	float3 ScreenColor1 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x, +1 / ScreenSize.y));
-	float3 ScreenColor2 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x,  0 / ScreenSize.y));
-	float3 ScreenColor3 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x, -1 / ScreenSize.y));
-	float3 ScreenColor4 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x, +1 / ScreenSize.y));
-	float3 ScreenColor5 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x,  0 / ScreenSize.y));
-	float3 ScreenColor6 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x, -1 / ScreenSize.y));
-	float3 ScreenColor7 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x, +1 / ScreenSize.y));
-	float3 ScreenColor8 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x,  0 / ScreenSize.y));
-	float3 ScreenColor9 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x, -1 / ScreenSize.y));
+	float3 ScreenColor = (float3)tex2D(ScreenSampler, In.TexCoords_Pos.zw);
+	float3 ScreenColor1 = (float3)tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x, +1 / ScreenSize.y));
+	float3 ScreenColor2 = (float3)tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x,  0 / ScreenSize.y));
+	float3 ScreenColor3 = (float3)tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x, -1 / ScreenSize.y));
+	float3 ScreenColor4 = (float3)tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x, +1 / ScreenSize.y));
+	float3 ScreenColor5 = (float3)tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x,  0 / ScreenSize.y));
+	float3 ScreenColor6 = (float3)tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x, -1 / ScreenSize.y));
+	float3 ScreenColor7 = (float3)tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x, +1 / ScreenSize.y));
+	float3 ScreenColor8 = (float3)tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x,  0 / ScreenSize.y));
+	float3 ScreenColor9 = (float3)tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x, -1 / ScreenSize.y));
 	ScreenColor = lerp(ScreenColor, (22 * GlassColor + ScreenColor + ScreenColor1 + ScreenColor2 + ScreenColor3 + ScreenColor4 + ScreenColor5 + ScreenColor6 + ScreenColor7 + ScreenColor8 + ScreenColor9) / 32, Mask);
 	return float4(lerp(ScreenColor, Color.rgb, Color.a), 1);
 }
@@ -119,14 +119,14 @@ float4 PSPopupWindowGlass(in VERTEX_OUTPUT In) : COLOR
 
 technique PopupWindow {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSPopupWindow();
-		PixelShader = compile ps_2_0 PSPopupWindow();
+		VertexShader = compile vs_4_0_level_9_1 VSPopupWindow();
+		PixelShader = compile ps_4_0_level_9_1 PSPopupWindow();
 	}
 }
 
 technique PopupWindowGlass {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSPopupWindowGlass();
-		PixelShader = compile ps_2_0 PSPopupWindowGlass();
+		VertexShader = compile vs_4_0_level_9_1 VSPopupWindowGlass();
+		PixelShader = compile ps_4_0_level_9_1 PSPopupWindowGlass();
 	}
 }

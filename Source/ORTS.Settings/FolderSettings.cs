@@ -53,10 +53,10 @@ namespace ORTS.Settings
                 Folders.Remove(name);
         }
 
-        protected override void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary)
+        protected override void Load(Dictionary<string, string> optionsDictionary)
         {
             foreach (var name in SettingStore.GetUserNames())
-                Load(allowUserSettings, optionsDictionary, name, typeof(string));
+                Load(optionsDictionary, name, typeof(string));
         }
 
         public override void Save()
