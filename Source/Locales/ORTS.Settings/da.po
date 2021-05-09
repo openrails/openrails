@@ -1,0 +1,33 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ORTS.Settings\n"
+"POT-Creation-Date: 2019-05-19 00:50:57+0200\n"
+"PO-Revision-Date: 2019-05-19 02:05+0200\n"
+"Last-Translator: Zepder <admin@tog-sim.dk>\n"
+"Language-Team: \n"
+"Language: da\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.2\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../ORTS.Settings/InputSettings.cs:504
+#, csharp-format
+msgid "{0} requires and is modified by Shift"
+msgstr "{0} kræves og styres af Skift"
+
+#: ../../ORTS.Settings/InputSettings.cs:506
+#, csharp-format
+msgid "{0} requires and is modified by Control"
+msgstr "{0} kræves og styres af Control"
+
+#: ../../ORTS.Settings/InputSettings.cs:508
+#, csharp-format
+msgid "{0} requires and is modified by Alt"
+msgstr "{0} kræves og styres af Alt"
+
+#: ../../ORTS.Settings/InputSettings.cs:539
+#, csharp-format
+msgid "{0} and {1} both match {2}"
+msgstr "{0} og {1} stemmer overens med {2}"

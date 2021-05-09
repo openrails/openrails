@@ -1,0 +1,33 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ORTS.Settings\n"
+"POT-Creation-Date: 2019-05-19 00:50:57+0200\n"
+"PO-Revision-Date: 2019-05-19 02:11+0200\n"
+"Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
+"Language-Team: Open Rails Dev Team\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.2\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../ORTS.Settings/InputSettings.cs:504
+#, csharp-format
+msgid "{0} requires and is modified by Shift"
+msgstr "A {0} parancs eleve használja a Shift-et, nem lehet módosítani is vele"
+
+#: ../../ORTS.Settings/InputSettings.cs:506
+#, csharp-format
+msgid "{0} requires and is modified by Control"
+msgstr "A {0} parancs eleve használja a Control-t, nem lehet módosítani is vele"
+
+#: ../../ORTS.Settings/InputSettings.cs:508
+#, csharp-format
+msgid "{0} requires and is modified by Alt"
+msgstr "A {0} parancs eleve használja az Alt-ot, nem lehet módosítani is vele"
+
+#: ../../ORTS.Settings/InputSettings.cs:539
+#, csharp-format
+msgid "{0} and {1} both match {2}"
+msgstr "{0} és {1} is ehhez rendelve: {2}"

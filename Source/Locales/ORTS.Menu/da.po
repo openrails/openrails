@@ -1,0 +1,67 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ORTS.Menu\n"
+"POT-Creation-Date: 2015-04-08 11:02:16+0200\n"
+"PO-Revision-Date: 2015-04-08 11:08+0100\n"
+"Last-Translator: Zepder <admin@tog-sim.dk>\n"
+"Language-Team: \n"
+"Language: da\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../ORTS.Menu/Activities.cs:46
+msgid "- Explore Route -"
+msgstr "- Udforsk Rute -"
+
+#: ../../ORTS.Menu/Activities.cs:75 ../../ORTS.Menu/Consists.cs:47
+#: ../../ORTS.Menu/Consists.cs:71 ../../ORTS.Menu/Consists.cs:199
+#: ../../ORTS.Menu/ORTimetables.cs:55 ../../ORTS.Menu/ORTimetables.cs:77
+#: ../../ORTS.Menu/Paths.cs:63 ../../ORTS.Menu/Routes.cs:47
+msgid "load error:"
+msgstr "indlæsningsfejl:"
+
+#: ../../ORTS.Menu/Activities.cs:78 ../../ORTS.Menu/Consists.cs:50
+#: ../../ORTS.Menu/Consists.cs:74 ../../ORTS.Menu/Consists.cs:202
+#: ../../ORTS.Menu/Paths.cs:65 ../../ORTS.Menu/Paths.cs:66
+#: ../../ORTS.Menu/Paths.cs:67 ../../ORTS.Menu/Routes.cs:49
+msgid "unnamed:"
+msgstr "unavngivet:"
+
+#: ../../ORTS.Menu/Activities.cs:84 ../../ORTS.Menu/Consists.cs:54
+#: ../../ORTS.Menu/Consists.cs:78 ../../ORTS.Menu/Consists.cs:207
+#: ../../ORTS.Menu/ORTimetables.cs:60 ../../ORTS.Menu/ORTimetables.cs:82
+#: ../../ORTS.Menu/Paths.cs:71 ../../ORTS.Menu/Routes.cs:54
+msgid "missing:"
+msgstr "mangler:"
+
+#: ../../ORTS.Menu/Activities.cs:77
+#, csharp-format
+msgid "Activity '{0}' is excluded."
+msgstr "Aktivitet '{0}' er udelukket."
+
+#: ../../ORTS.Menu/Consists.cs:185
+msgid "- Any Locomotive -"
+msgstr "- Alle lokomotiver -"
+
+#: ../../ORTS.Menu/Consists.cs:201
+#, csharp-format
+msgid "Locomotive '{0}' is excluded."
+msgstr "Lokomotiv '{0}' er udelukket."
+
+#: ../../ORTS.Menu/Paths.cs:150
+#, csharp-format
+msgid "Path Name: {0}"
+msgstr "Sti Navn: {0}"
+
+#: ../../ORTS.Menu/Paths.cs:151
+#, csharp-format
+msgid "Start at: {0}"
+msgstr "Start i: {0}"
+
+#: ../../ORTS.Menu/Paths.cs:152
+#, csharp-format
+msgid "Heading to: {0}"
+msgstr "Retning mod: {0}"

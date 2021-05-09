@@ -1,0 +1,1689 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Contrib\n"
+"POT-Creation-Date: 2015-10-25 09:17+0100\n"
+"PO-Revision-Date: 2015-10-25 09:18+0100\n"
+"Last-Translator: Altmann <altmann@bk.ru>\n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.4\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:89
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:555
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:287
+msgid "Activity Editor"
+msgstr "Editor aktivit"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:18
+msgid "0.1"
+msgstr "0.1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:19
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:136
+msgid "Copyright by Open Rails project"
+msgstr "Chráněno autorským právem Open Rails projektu"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:20
+msgid "OR"
+msgstr "OR"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:21
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:125
+msgid ""
+"Tool intended for the creation of activities for the Open simulator Rail."
+msgstr "Nástroj určený pro vytváření aktivit pro Open Rails."
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:111
+msgid "&OK"
+msgstr "&OK"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:148
+msgid "Version 0.1"
+msgstr "Verze 0.1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:166
+msgid "AboutActEdit"
+msgstr "O Editoru aktivit"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:47
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:41
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:44
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:162
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:390
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:56
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:519
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:110
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:48
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:42
+msgid "OK"
+msgstr "OK"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:74
+msgid "ActionDuration"
+msgstr "Délka akce"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:85
+msgid "Pre-delay :"
+msgstr "Zpoždění:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:100
+msgid "ControlStartProperties"
+msgstr "Kontrola počátečních vlastností"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:75
+msgid ""
+"ActionDuration:\r\n"
+"How long does the action takes.  With a minimum of 10sec and a maximum of "
+"25sec.\r\n"
+msgstr ""
+"Délka akce:\r\n"
+"Jak dlouho akce trvá. Nejméně 10 s a maximálně 25 s.\r\n"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:86
+msgid ""
+"Pre-Delay:\r\n"
+"Define the advance period for this action before the end of caller.\r\n"
+"Minimum 1sec, maximu 20sec, and not over the ActionDuration\r\n"
+msgstr ""
+"Zpoždění:\r\n"
+"Definovat předběžnou dobu zpoždění před koncem volání.\r\n"
+"Min. 1 s, max. 20 s a nepřekročit délku akce\r\n"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:52
+msgid "No Parameter to set"
+msgstr "Žádný parametr pro nastavení"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:62
+msgid "ControlStoppedProperties"
+msgstr "Kontrola zastavených vlastností"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:55
+msgid "Delay :"
+msgstr "Zpoždění:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:72
+msgid "Required Trigger Distance :"
+msgstr "Požadovaná vzdálenost spouštění:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:93
+msgid "HornProperties"
+msgstr "Vlastnosti houkačky"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:100
+msgid "Activiti Description"
+msgstr "Popis aktivity"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:111
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:339
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:92
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:92
+msgid "Activity Description"
+msgstr "Popis aktivity"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:123
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:351
+msgid "Path Events"
+msgstr "Události cesty"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:131
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:257
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:359
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:295
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:82
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:76
+msgid "Remove"
+msgstr "Odstranit"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:140
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:273
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:368
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:199
+msgid "Edit"
+msgstr "Editovat"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:179
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:406
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:96
+msgid "Description"
+msgstr "Popis"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:195
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:283
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:422
+msgid "Consist :"
+msgstr "Sestava:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:212
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:329
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:439
+msgid "Description :"
+msgstr "Popis:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:228
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:320
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:455
+msgid "Activity Name : "
+msgstr "Název aktivity:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:238
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:249
+msgid "Traffic Description"
+msgstr "Popis dopravy"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:464
+msgid "StartActivity"
+msgstr "Začátek aktivity"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:67
+msgid "Give your description :"
+msgstr "Vložte svůj popis:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:76
+msgid "Environment"
+msgstr "Prostředí"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:105
+msgid "Place Name : "
+msgstr "Název lokality: "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:115
+msgid "WAIT Activity Description"
+msgstr "Popis čekací aktivity"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:127
+msgid "WaitActivity"
+msgstr "Čekací aktivita"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:530
+msgid "NoMoreAct"
+msgstr "Žádné další aktivity"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:106
+msgid "menuStrip1"
+msgstr "menuStrip1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:119
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:62
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
+msgid "File"
+msgstr "Soubor"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:128
+msgid "New"
+msgstr "Nový"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:135
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:292
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:117
+msgid "Activity"
+msgstr "Aktivita"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:143
+msgid "Traffic"
+msgstr "Doprava"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:154
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:68
+msgid "Save"
+msgstr "Uložit"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:161
+msgid "Metadata"
+msgstr "Metadata"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:169
+msgid "Save As"
+msgstr "Uložit jako"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:176
+msgid "Load Activity"
+msgstr "Nahrát aktivitu"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:184
+msgid "Load Metada"
+msgstr "Nahrát metada"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:192
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:83
+msgid "Quit"
+msgstr "Skončit"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:208
+msgid "Tools"
+msgstr "Nástroje"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:214
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:532
+msgid "Options"
+msgstr "Možnosti"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:221
+msgid "Import"
+msgstr "Importovat"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:229
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:140
+msgid "Help"
+msgstr "Nápověda"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:235
+msgid "About Activity Editor"
+msgstr "O editoru aktivit"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:246
+msgid "statusStrip1"
+msgstr "statusStrip1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:252
+msgid "Status"
+msgstr "Stav"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2025
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2127
+msgid "v"
+msgstr "v"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:312
+msgid "Edit Description"
+msgstr "Editovat popis"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:370
+msgid "Add Station Area"
+msgstr "Přidat plochu stanice"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:380
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:273
+msgid "Station Configuration"
+msgstr "Konfigurace stanice"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:389
+msgid "Add Tag"
+msgstr "Přidat značku"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:399
+msgid "Add Station"
+msgstr "Přidat stanici"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:409
+msgid "Edit MetaSegment"
+msgstr "Editovat segment metadat"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:431
+msgid "Move"
+msgstr "Přesunout"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:441
+msgid "Rotate"
+msgstr "Otočit"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:468
+msgid "Activity Start"
+msgstr "Začátek aktivity"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:478
+msgid "Activity Stop"
+msgstr "Konec aktivity"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:488
+msgid "Waiting Point"
+msgstr "Bod čekání"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:498
+msgid "Action Point"
+msgstr "Bod akce"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:508
+msgid "Action Check"
+msgstr "Kontrola akce"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:518
+msgid "toolStripButton10"
+msgstr "toolStripButton10"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:136
+msgid "Click to start new Activity Description (not ready)"
+msgstr "Kliknutím začít nový Popis aktivity (není připraveno)"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:144
+msgid "Click to create new Traffic description (not ready)"
+msgstr "Kliknutím vytvořit nový Popis dopravy (není připraveno)"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:177
+msgid "Click to load an existing OR Activity (not ready)"
+msgstr "Kliknutím nahrát existující OR aktivitu (není připraveno)"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:185
+msgid "Click to Edit Metadata for a specified route"
+msgstr "Kliknutím editovat metadata pro zvolenou trať"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:85
+msgid "Form1"
+msgstr "Form1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
+msgid "Route MetaData"
+msgstr "Metadata tratě"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2003
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2092
+msgid "Display"
+msgstr "Displej"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2014
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2116
+msgid "x"
+msgstr "x"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
+msgid "Tag"
+msgstr "Značka"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2106
+msgid "Station"
+msgstr "Stanice"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:107
+msgid "Center view"
+msgstr "Centrovat pohled"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:114
+msgid "Editor Options"
+msgstr "Nastavení editoru"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:124
+msgid "Show Platform Label"
+msgstr "Zobrazit označení nástupišť"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:190
+msgid "Zoom level :"
+msgstr "Úroveň zooomu:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:200
+msgid "Size of snap circle :"
+msgstr "Velikost uchopovací kružnice:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:209
+msgid "Show Snap circle"
+msgstr "Zobrazit uchopovací kružnici"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:220
+msgid "Show all Signal"
+msgstr "Zobrazit všechna návěstidla"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:232
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:435
+msgid "Editor Preference"
+msgstr "Nastavení editoru"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:250
+msgid "Path Options"
+msgstr "Možnosti cest"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:261
+msgid "Please, configure your paths"
+msgstr "Prosím nakonfigurujte svoje cesty"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:305
+msgid "Add"
+msgstr "Přidat"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:316
+msgid "Route Paths"
+msgstr "Cesty tratě"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:324
+msgid "Browse"
+msgstr "Procházet"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:342
+msgid "MSTS Path :"
+msgstr "MSTS cesta:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:358
+msgid "Debug Options"
+msgstr "Nastavení ladění"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:368
+msgid "Show Snap Track Info"
+msgstr "Zobrazit uchopovací informace o trati"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:379
+msgid "Show Snap Info"
+msgstr "Zobrazit uchopovací informace"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:390
+msgid "Show Snap Line"
+msgstr "Zobrazit uchopovací čáru"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:401
+msgid "Show Ruler"
+msgstr "Zobrazit pravítko"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:412
+msgid "Show Track Info"
+msgstr "Zobrazit informace o trati"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:423
+msgid "Show Tiles"
+msgstr "Zobrazit dlaždice"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:451
+msgid "Actions Configuration"
+msgstr "Konfigurace akcí"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:468
+msgid "< remove"
+msgstr "< odstranit"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:478
+msgid "Add >"
+msgstr "Přidat >"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:511
+msgid "Configuration for Generic Auxiliary Actions"
+msgstr "Konfigurace generických pomocných akcí"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:34
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:58
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:29
+msgid "Please, give a name"
+msgstr "Prosím zadejte jméno"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:56
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:104
+msgid "TC Section : "
+msgstr "TC sekce: "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:73
+msgid "Buffer Label : "
+msgstr "Značka zarážedla: "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:93
+msgid "Buffer Direction : "
+msgstr "Směr zarážedla: "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:128
+msgid "BufferInterface"
+msgstr "Rozhraní zarážedla"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:49
+msgid "Not yet implemented"
+msgstr "Zatím není implementováno"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:67
+msgid "Connection Direction : "
+msgstr "Směr připojení: "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:87
+msgid "Connection Label : "
+msgstr "Značka připojení: "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:130
+msgid "Station Route Interface"
+msgstr "Rozhraní stanice tratě"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:39
+msgid "Please Load Paths:"
+msgstr "Prosím nahrajte cesty:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:43
+msgid "List of Paths seems OK:"
+msgstr "Seznam cest vypadá OK:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:120
+msgid "###"
+msgstr "###"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:162
+msgid "Loaded:"
+msgstr "Nahráno:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:94
+msgid "Station :"
+msgstr "Stanice:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:163
+msgid "From"
+msgstr "Z"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:174
+msgid " To "
+msgstr " Do "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:185
+msgid "Max. Platform Length"
+msgstr "Max. délka nástupiště"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:196
+msgid "Max. Siding Length"
+msgstr "Max. délka vedlejší koleje"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:207
+msgid "Number of Platform"
+msgstr "Počet nástupišť"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:218
+msgid "Number of Siding"
+msgstr "Počet vedlejších kolejí"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:229
+msgid "Max. Passing Length"
+msgstr "Max. alternativní délka"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:248
+msgid "Load Paths"
+msgstr "Nahrát cesty"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:260
+msgid "label7"
+msgstr "label7"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:60
+msgid "Segment Label : "
+msgstr "Značka segmentu: "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:71
+msgid "TrackSegmentInterface"
+msgstr "Rozhraní segmentu tratě"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:108
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:108
+msgid "Activity Name"
+msgstr "Název aktivity"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:124
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:69
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:69
+msgid "Route Path"
+msgstr "Cesta tratě"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:141
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:141
+msgid "Activity Editor: Create new activity"
+msgstr "Editor aktivit: Vytvořit novou aktivitu"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:48
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:48
+msgid "Route Configuration: Select Route"
+msgstr "Konfigurace tratě: zvolte trať"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:175
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:139
+msgid "Activity Editor: Specify Train Info"
+msgstr "Editor aktivit: zadejte informace o vlaku"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:194
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:158
+msgid "Select Train Consist"
+msgstr "Vybrat vlakovou sestavu"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:211
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:175
+msgid "Train Name (Opt.)"
+msgstr "Jméno vlaku (volitelné)"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:192
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:192
+msgid "< &Back"
+msgstr "< &Zpět"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:201
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:201
+msgid "&Next >"
+msgstr "&Další >"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:211
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:211
+#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
+msgid "Cancel"
+msgstr "Storno"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:220
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:220
+msgid "&Finish"
+msgstr "&Dokončit"
+
+#: ../../Contrib/ActivityEditor/AEWizard/ExteriorWizardPage.cs:72
+msgid "Welcome to the Sample Setup Wizard"
+msgstr "Vítejte v Průvodci příkladů nastavení"
+
+#: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:105
+msgid "Sample Header Title"
+msgstr "Příklad názvu záhlaví"
+
+#: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:114
+msgid ""
+"Sample header subtitle will help a user complete a certain task in the "
+"Sample wizard by clarifying the task in some way."
+msgstr ""
+"Příklad názvu záhlaví pomůže uživateli dokončit daný úkol v Průvodci "
+"příkladů nastavení vysvětlením úkolu konkrétním způsobem."
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:65
+msgid "Loading..."
+msgstr "Nahrávám..."
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:91
+msgid "Open Rails Content Manager"
+msgstr "Správce obsahu Open Rails"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:561
+msgid "The path you are working on has un-saved changes.\n"
+msgstr "Cesta, na které pracujete má neuložené změny.\n"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:563
+msgid "Do you really want to Quit?"
+msgstr "Opravdu chcete odejít?"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:649
+msgid ""
+"Directory is not a valid install directory.\n"
+"The install directory needs to contain ROUTES, GLOBAL, ..."
+msgstr ""
+"Adresář není platným instalačním adresářem.\n"
+"Je třeba, aby obsahoval podadresáře ROUTES, GLOBAL..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:723
+msgid "Loading route..."
+msgstr "Nahrávám trať..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:745
+msgid "Route cannot be loaded. Sorry"
+msgstr "Trať nelze načíst, je nám líto"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:816
+msgid "Loading .pat file ..."
+msgstr "Nahrávám soubor .pat..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:819
+msgid "Processing .pat file ..."
+msgstr "Zpracovávám soubor .pat..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:847
+msgid "Path has been modified. Loading a new path will discard changes."
+msgstr "Cesta byla změněna. Načtení nové cesty zruší změny."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:848
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:88
+msgid "Do you want to continue?"
+msgstr "Chcete pokračovat?"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:849
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:74
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:91
+msgid "Trackviewer Path Editor"
+msgstr "Trackviewer editor cest"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:83
+msgid "Select broken path color"
+msgstr "Vybrat barvu pro vadnou cestu"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:89
+msgid "Select path color (main)"
+msgstr "Vybrat barvu cesty (hlavní)"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:99
+msgid "Select path color (siding)"
+msgstr "Vybrat barvu cesty (vedlejší)"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:137
+msgid "Select color for multi-colored straight tracks"
+msgstr "Vybrat barvu pro vícebarevné rovné tratě"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:138
+msgid "Select color for multi-colored curved tracks"
+msgstr "Vybrat barvu pro vícebarevné zahnuté tratě"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:139
+msgid "Select color for mono-colored tracks"
+msgstr "Vybrat barvu pro jednobarevné tratě"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:140
+msgid "Select color for tracks on terrain"
+msgstr "Vybrat barvu pro tratě v terénu"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:142
+msgid "Select color for multi-colored straight roads"
+msgstr "Vybrat barvu pro vícebarevné rovné silnice"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:143
+msgid "Select color for multi-colored curved roads"
+msgstr "Vybrat barvu pro vícebarevné zahnuté silnice"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:144
+msgid "Select color for mono-colored roads"
+msgstr "Vybrat barvu pro jednobarevné silnice"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:145
+msgid "Select color for roads on terrain"
+msgstr "Vybrat barvu pro silnice v terénu"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:153
+msgid "Select background color"
+msgstr "Vybrat barvu pozadí"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:168
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:180
+msgid "Select text color"
+msgstr "Vybrat barvu textu"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:185
+msgid "Select junction color"
+msgstr "Vybrat barvu uzlů"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:190
+msgid "Select endnode color"
+msgstr "Vybrat barvu koncového uzlu"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:195
+msgid "Select siding color"
+msgstr "Vybrat barvu vedlejších kolejí"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:200
+msgid "Select crossing color"
+msgstr "Vybrat barvu křížení"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:205
+msgid "Select road crossing color"
+msgstr "Vybrat barvu křížení se silnicí"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:210
+msgid "Select speedpost color"
+msgstr "Vybrat barvu rychlostních limitů"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:289
+msgid "Select other-paths color"
+msgstr "Vybrat barvu dalších cest"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:590
+#, csharp-format
+msgid "Loading terrain ace-files {0}-{1}"
+msgstr "Nahrávám ace soubory terénu {0}-{1}"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:60
+msgid "Loading trackfile .trk ..."
+msgstr "Nahrávám soubor tratě .trk..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:64
+msgid "Loading track database .tdb ..."
+msgstr "Nahrávám databázi tratě .tdb..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:68
+msgid "Loading tsection.dat ..."
+msgstr "Nahrávám tsection.dat..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:80
+msgid "Loading road track database .rdb ..."
+msgstr "Nahrávám databázi tratí a silnic .rdb ..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:263
+msgid "Finding the angles to draw signals, endnodes, ..."
+msgstr "Hledám úhly k vykreslení návěstidel, koncových uzlů atd..."
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:168
+msgid "Place start point"
+msgstr "Umístit výchozí bod"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:200
+msgid "Remove start point"
+msgstr "Odstranit výchozí bod"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:227
+msgid "Clear path (keep tail)"
+msgstr "Vyčistit cestu (zachovat konec)"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:251
+msgid "Change start direction"
+msgstr "Změnit výchozí orientaci"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:279
+msgid "Place end point"
+msgstr "Umístit koncový bod"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:317
+msgid "Remove end point"
+msgstr "Odstranit koncový bod"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:343
+msgid "Place reversal point"
+msgstr "Umístit bod obrácení"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:379
+msgid "Remove reversal point"
+msgstr "Odstranit bod obrácení"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:433
+msgid "Place wait point"
+msgstr "Umístit bod čekání"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:460
+msgid "Edit wait point"
+msgstr "Editovat bod čekání"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:484
+msgid "Remove wait point"
+msgstr "Odstranit bod čekání"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:687
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1257
+msgid "Take other exit"
+msgstr "Použít jiný výjezd"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:734
+msgid "Add passing path"
+msgstr "Přidat alternativní trasu"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:774
+msgid "Start passing path"
+msgstr "Začátek alternativní trasy"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:839
+msgid "Remove passing path"
+msgstr "Odstranit alternativní trasu"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:879
+msgid "Fix invalid point"
+msgstr "Opravit neplatný bod"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:903
+msgid "Delete rest of path"
+msgstr "Smazat zbytek cesty"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:932
+msgid "Cut path here and store its tail"
+msgstr "Rozříznout cestu zde a ponechat její konec"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:986
+msgid "Auto-fix broken points"
+msgstr "Automaticky opravit vadné body"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1094
+msgid "Reconnect to tail"
+msgstr "Připojit na konec"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1155
+msgid "Reconnect passing path"
+msgstr "Připojit alternativní trasu hlavního tahu"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1927
+msgid "Draw path until here"
+msgstr "Nakreslit cestu až sem"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1958
+msgid "Draw path until next broken point"
+msgstr "Nakreslit cestu do dalšího vadného bodu"
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:712
+msgid "Reversing broken paths is not supported"
+msgstr "Reverzní vadné cesty nejsou podporovány"
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:717
+msgid "Reversing a path without start node is not supported"
+msgstr "Obrácení cesty bez výchozího uzlu není podporováno."
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:722
+msgid "Reversing a path without end node is not supported"
+msgstr "Obrácení cesty bez koncového uzlu není podporováno."
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:73
+msgid ""
+"Path does not even have a start node.\n"
+"Saving is not possible."
+msgstr ""
+"Cesta neobsahuje výchozí uzel.\n"
+"Nelze ji uložit."
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:80
+msgid "* The path does not have a well-defined end-point"
+msgstr "* Cesta nemá správně nadefinovaný koncový bod"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:82
+msgid "* The path has a stored and not-yet reconnected tail"
+msgstr "* Cesta obsahuje uložený a zatím nepřipojený konec"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:86
+msgid "The current path is not finished:"
+msgstr "Aktuální cesta není dokončena:"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:99
+msgid "Saving broken paths might not always work correctly."
+msgstr "Uložení vadných cest nemusí vždy fungovat správně."
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:100
+msgid "The MSTS format for defining broken paths is not understood very well."
+msgstr "Formát MSTS pro definici vadných cest není ještě zcela pochopen."
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:101
+msgid "Reopening it in TrackViewer, however, is likely to work."
+msgstr "Opětovné načtení do TrackVieweru pravděpodobně bude fungovat."
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:269
+msgid "Set as invalid in .pat file"
+msgstr "Nastavit jako neplatné v .pat souboru"
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:271
+msgid "Closest junction is too far away"
+msgstr "Nejbližší uzel je příliš daleko"
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:273
+msgid "Not able to place node on track"
+msgstr "Není možné umístit uzel na trať"
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:275
+msgid "Dangling siding node"
+msgstr "Pendlující uzel vedlejší koleje"
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:277
+msgid "Unknown"
+msgstr "Neznámé"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:52
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:53
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:54
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:55
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:58
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:143
+msgid "1"
+msgstr "1"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:148
+msgid "10"
+msgstr "10"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:269
+msgid "99"
+msgstr "99"
+
+#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:75
+msgid "Please restart TrackViewer in order to load the new language."
+msgstr "Pro změnu jazyka prosím restartujte TrackViewer."
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:378
+msgid "<Select path>"
+msgstr "<Vybrat cestu>"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:392
+msgid "<Select station>"
+msgstr "<Vybrat stanici>"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:405
+msgid "<Select platform>"
+msgstr "<Vybrat nástupiště>"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:418
+msgid "<Select siding>"
+msgstr "<Vybrat vedlejší kolej>"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:512
+msgid "left  arrow:  Shift left\n"
+msgstr "šipka doleva:  posunout vlevo\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:513
+msgid "down  arrow:  Shift down\n"
+msgstr "šipka dolů:  posunout dolů\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:514
+msgid "right arrow:  Shift right\n"
+msgstr "šipka doprava:  posunout vpravo\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:515
+msgid "up    arrow:  Shift up\n"
+msgstr "šipka nahoru:  posunout nahoru\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:516
+msgid "C:  Shift to center of current path node\n"
+msgstr "C:  posun do středu aktuálního uzlu cesty\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:517
+msgid "shift-C:  Shift to center of current mouse location\n"
+msgstr "shift-C:  posun do středu aktuálního umístění myši\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:518
+msgid "PgUp:  Show more of the path\n"
+msgstr "PgUp:  zobrazit více cesty\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:519
+msgid "PgDn:  Show less of the path\n"
+msgstr "PgDn:  zobrazit méně cesty\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:520
+msgid "shift-PgUp:  Show the full path\n"
+msgstr "shift-PgUp:  zobrazit celou cestu\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:521
+msgid "shift-PgDn:  Show only start point of path\n"
+msgstr "shift-PgDn:  zobrazit pouze výchozí bod cesty\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:522
+msgid "ctrl-Z: Undo in path editor\n"
+msgstr "ctrl-Z: krok zpět v editoru cesty\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:523
+msgid "ctrl-Y: Redo in path editor\n"
+msgstr "ctrl-Y: znovu v editoru cesty\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:530
+msgid "This is ORTS TrackViewer, version "
+msgstr "Toto je ORTS TrackViewer, verze "
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:533
+msgid "It is a 'Contribution' to ORTS, and as such\n"
+msgstr "Toto je 'příspěvek' do ORTS a jako takový\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:534
+msgid "not an integral part of ORTS."
+msgstr "není součástí ORTS."
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:541
+msgid "Documentation is available"
+msgstr "Dokumentace je dostupná"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:542
+msgid "Right column → OR_Trackviewer"
+msgstr "Pravý sloupec → OR_Trackviewer"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:4
+msgid "Path metadata"
+msgstr "Metadata cesty"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:7
+msgid "Path ID"
+msgstr "ID cesty"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:11
+msgid "Path name"
+msgstr "Název cesty"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:15
+msgid "Path start"
+msgstr "Začátek cesty"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:19
+msgid "Path end"
+msgstr "Konec cesty"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:22
+msgid "Player path"
+msgstr "Cesta hráče"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:57
+msgid " OK "
+msgstr " OK "
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:58
+msgid " Cancel "
+msgstr " Storno "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:4
+msgid "(Un)couple Point"
+msgstr "Připojovací/odpoj. bod"
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:7
+msgid "Uncouple  "
+msgstr "Rozpojit  "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:8
+msgid "Couple  "
+msgstr "Spojit  "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:10
+msgid "cars, wait for "
+msgstr "vozidla, čekající na "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:12
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:12
+msgid "seconds"
+msgstr "sekund"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:4
+msgid "Wait Point"
+msgstr "Bod čekání"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:8
+msgid "Wait time: "
+msgstr "Doba čekání:"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:10
+msgid "minutes"
+msgstr "minut"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:15
+msgid "Openrails advanced shunting options:"
+msgstr "Pokročilé možnosti posunování v Openrails:"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:19
+msgid "Wait until:  "
+msgstr "Čekat dokud:"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:21
+msgid ":"
+msgstr ":"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:23
+msgid "HH:MM"
+msgstr "HH:MM"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:27
+msgid "Uncouple: keep "
+msgstr "Rozpojit: zachovat "
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:29
+msgid " cars, and wait"
+msgstr " vozů a čekat"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
+msgid "seconds. "
+msgstr "sekund. "
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:32
+msgid "Keep rear"
+msgstr "Zachovat zadní"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:36
+msgid "Join and split"
+msgstr "Připojit a rozdělit"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
+msgid "AI train request to pass red signal"
+msgstr "AI vlaku požaduje projet červenou na návěstidle"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:44
+msgid "Blow horn for"
+msgstr "Zahoukat na"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:50
+msgid "Wait time code as decimal ="
+msgstr "Kód doby čekání decimálně ="
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:51
+msgid "00000"
+msgstr "00000"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:52
+msgid "hexadecimal ="
+msgstr "hexadecimálně ="
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
+msgid "0000"
+msgstr "0000"
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:6
+msgid "Charting the path"
+msgstr "Vytvářím schéma trasy"
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
+msgid ""
+"Save the data of the chart in json format into a .js file.The saved data can "
+"then be used to show the chart on an HTML5 canvas."
+msgstr ""
+"Uložit data schématu do souboru .js ve formátu json. Uložená data mohou být "
+"později použita pro zobrazení schématu v HTML5 canvasu."
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
+msgid "Save json"
+msgstr "Uložit json"
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:66
+msgid "Save the data of the chart in json format into a .js file."
+msgstr "Uložit data schématu do souboru .js ve formátu json."
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:67
+msgid "The saved data can then be used to show the chart on an HTML5 canvas."
+msgstr ""
+"Uložená data mohou být později použita pro zobrazení schématu v HTML5 "
+"canvasu."
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
+msgid "(Re)load route"
+msgstr "Nahrát trať"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:10
+msgid "Select install folder"
+msgstr "Vybrat instalační adresář"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:11
+msgid "Select route"
+msgstr "Vybrat trať"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:13
+msgid "Search by index"
+msgstr "Hledat podle indexu"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:14
+msgid "Search trackNode"
+msgstr "Hledat uzel trati"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:15
+msgid "Search trackNode for roads"
+msgstr "Hledat uzel trati pro silnice"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:16
+msgid "Search trackItem"
+msgstr "Hledat položku trati"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:17
+msgid "Search trackItem for roads"
+msgstr "Hledat položku trati pro silnice"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:20
+msgid "Quit (Q)"
+msgstr "Ukončit"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:22
+msgid "View"
+msgstr "Zobrazit"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:23
+msgid "Center around station"
+msgstr "Centrovat okolo stanice"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:26
+msgid "Center around platform"
+msgstr "Centrovat okolo nástupiště"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:29
+msgid "Center around siding"
+msgstr "Centrovat okolo vedlejší koleje"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:33
+msgid "Paths"
+msgstr "Cesty"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:34
+msgid "Show path (F11)"
+msgstr "Zobrazit cestu (F11)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:35
+msgid "Show raw path from .pat file (shift F11)"
+msgstr "Zobrazit náhled cesty ze souboru .pat (shift F11)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:37
+msgid "Track Coloring"
+msgstr "Bravy tratě"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:38
+msgid "Color tracks"
+msgstr "Barevné tratě"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:39
+msgid "Highlight tracks (F10)"
+msgstr "Zvýraznit tratě (F10)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:41
+msgid "Additional views"
+msgstr "Další pohledy"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:42
+msgid "Show inset"
+msgstr "Zobrazit náhled mapy"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:43
+msgid "Show world tiles"
+msgstr "Zobrazit dlaždice světa"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:44
+msgid "Show grid lines"
+msgstr "Zobrazit mřížku"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:45
+msgid "Show scale ruler"
+msgstr "Zobrazit stupnici pravítka"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:46
+msgid "Show longitude/latitude"
+msgstr "Zobrazit délku/šířku"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:49
+msgid "Save current zoom"
+msgstr "Uložit aktuální zoom"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:50
+msgid "Restore saved zoom"
+msgstr "Načíst uložený zoom"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:52
+msgid "Zoom in (=)"
+msgstr "Zoom přiblížit (=)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:53
+msgid "Zoom out (-)"
+msgstr "Zoom oddálit (-)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
+msgid "Zoom to tile (z)"
+msgstr "Zoom na dlaždice (z)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:55
+msgid "Zoom reset (r)"
+msgstr "Zoom resetovat (r)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
+msgid "Anti aliasing (needs restart)"
+msgstr "Vyhlazování hran (je nutný restart)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:59
+msgid "Track items"
+msgstr "Položky trati"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
+msgid "Show all items"
+msgstr "Zobrazovat všechny položky"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
+msgid "Show no items"
+msgstr "Nezobrazovat žádné položky"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
+msgid "Highlight items (shift-F10)"
+msgstr "Zvýraznit položky (shift-F10)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
+msgid "Junctions/ends"
+msgstr "Uzly/konce"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
+msgid "Show junctions"
+msgstr "Zobrazit uzly"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
+msgid "Show end nodes"
+msgstr "Zobrazit koncové uzly"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
+msgid "Show crossovers"
+msgstr "Zobrazit křížení"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
+msgid "Sidings"
+msgstr "Vedlejší koleje"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
+msgid "Show siding markers (F9)"
+msgstr "Zobrazit značky vedlejších kolejí (F9)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:70
+msgid "Show siding names (shift-F9)"
+msgstr "Zobrazit názvy vedlejších kolejí (shift-F9)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:72
+msgid "Platforms"
+msgstr "Nástupiště"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
+msgid "Show platform markers (F8)"
+msgstr "Zobrazit značky nástupišť (F8)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:74
+msgid "Show platform names (shift-F8)"
+msgstr "Zobrazit názvy nástupišť (shift-F8)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:75
+msgid "Show station names (shift-F8)"
+msgstr "Zobrazit názvy stanic (shift-F8)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
+msgid "Interactives"
+msgstr "Interaktivní"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
+msgid "Show signals (F7)"
+msgstr "Zobrazit návěstidla (F7)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:79
+msgid "Show also other signals"
+msgstr "Zobrazit více signálů (polohu přepínačů atd.)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:80
+msgid "Show level crossings"
+msgstr "Zobrazit úrovňové přejezdy"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:81
+msgid "Show hazards"
+msgstr "Zobrazit nebezpečí"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
+msgid "Show fuel/pickups"
+msgstr "Zobrazit doplnění paliva"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:83
+msgid "Show sound regions"
+msgstr "Zobrazit zvukové regiony"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:85
+msgid "Posts"
+msgstr "Značky"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:86
+msgid "Show speed limits (F5)"
+msgstr "Zobrazit rychlostní limity (F5)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:87
+msgid "Show mileposts (shift F5)"
+msgstr "Zobrazit milníky (shift F5)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:89
+msgid "Roads"
+msgstr "Silnice"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
+msgid "Draw roads"
+msgstr "Nakreslit silnice"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:91
+msgid "Show car spawners"
+msgstr "Zobrazit silniční provoz"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
+msgid "Show road crossings"
+msgstr "Zobrazit křižovatky silnic"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:95
+msgid "Statusbar"
+msgstr "Stavový řádek"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
+msgid "Show vector section info"
+msgstr "Zobrazit informace o vektorové sekci"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:98
+msgid "Show PAT file info"
+msgstr "Zobrazit informace o PAT souboru"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
+msgid "Show Path info"
+msgstr "Zobrazit informace o cestě"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:102
+msgid "Show terrain info"
+msgstr "Zobrazit informace o terénu"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
+msgid "Show signal info"
+msgstr "Zobrazit informace o návěstidle"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:107
+msgid "Preferences"
+msgstr "Nastavení"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:108
+msgid "Zooming is centered on mouse (m)"
+msgstr "Zoomování je centrováno na myš (m)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:110
+msgid "Use miles i.s.o. meters"
+msgstr "Použít míle místo metrů"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:111
+msgid "Select language"
+msgstr "Nastavit jazyk"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:116
+msgid "Path-Editor"
+msgstr "Editor cest"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:117
+msgid "==Supporting MSTS paths only=="
+msgstr "==Podpora cest pouze z MSTS=="
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:118
+msgid "Load path"
+msgstr "Nahrát cestu"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:122
+msgid "Show other paths"
+msgstr "Zobrazit další cesty"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:124
+msgid "Save path"
+msgstr "Uložit cestu"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:125
+msgid "Save visited stations"
+msgstr "Uložit navštívené stanice"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
+msgid "Show chart (in development)"
+msgstr "Zobrazit schéma (ve vývoji)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:128
+msgid "Enable editing"
+msgstr "Povolit editaci"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
+msgid "New path"
+msgstr "Nová cesta"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:131
+msgid "Edit path metadata"
+msgstr "Editovat metadata cesty"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:132
+msgid "Reverse path"
+msgstr "Reverzní cesta"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:134
+msgid "Terrain"
+msgstr "Terén"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:135
+msgid "Show terrain textures (F6)"
+msgstr "Zobrazit textury terénu (F6)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:136
+msgid "Show DM terrain textures (ctrl-F6)"
+msgstr "Zobrazit DM textury terénu (ctrl-F6)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:137
+msgid "Show patch lines (shift-F6)"
+msgstr "Zobrazit linie trasy (shift-F6)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:141
+msgid "Shortcuts"
+msgstr "Zkratky"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:142
+msgid "Documentation"
+msgstr "Dokumentace"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:143
+msgid "About"
+msgstr "O programu"
+
+#: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:8
+msgid "Paths to draw"
+msgstr "Cesty k nakreslení"
+
+#: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:27
+msgid "Clear all"
+msgstr "Vyčistit vše"
+
+#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:4
+#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:13
+msgid "Search"
+msgstr "Hledat"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
+msgid "Shows tileX and tileZ of the world location at the mouse pointer"
+msgstr ""
+"Zobrazit X dlaždice a Z dlaždice polohy v daném světě na ukazateli myši"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:41
+msgid "Shows X-coordinate (without tileX) at the mouse pointer"
+msgstr "Zobrazit souřadnici X (bez X dlaždice) na ukazateli myši"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:48
+msgid "Shows Z-coordinate (without tileZ) at the mouse pointer"
+msgstr "Zobrazit souřadnici Z (bez Z dlaždice) na ukazateli myši"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:54
+msgid "Trackindex"
+msgstr "Index tratě"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:60
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:79
+msgid "Index in the Track DataBase (.tdb) file"
+msgstr "Index v souboru databáze tratě (.tdb)"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:66
+msgid "Item"
+msgstr "Položka"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:99
+msgid "Any other relevant information. Make your choice via Statusbar menu"
+msgstr "Další důležitá informace. Zvolte možnost z menu ze stavové lišty"
+
+#~ msgid "Loading terrain data ..."
+#~ msgstr "Nahrávám údaje terénu..."
+
+#~ msgid "Not to be used, template only"
+#~ msgstr "Nesmí být použito, pouze šablona"
+
+#~ msgid "Fix invalid node"
+#~ msgstr "Opravit neplatný uzel"
+
+#~ msgid "Auto-fix broken nodes"
+#~ msgstr "Atomaticky opravit vadné uzly"
+
+#~ msgid "Saving broken paths might not always work correctly.\n"
+#~ msgstr "Uložení vadných cest nemusí vždy fungovat správně.\n"
+
+#~ msgid ""
+#~ "Currently all intended and planned editor features have been implemented."
+#~ msgstr ""
+#~ "Aktuálně jsou všechny zamýšlené a plánované funkce editoru implementovány."
+
+#~ msgid "Known limitations"
+#~ msgstr "Známá omezení:"
+
+#~ msgid "* The saved-paths have not been tested with MSTS or ORTS."
+#~ msgstr "* Uložené cesty nebyly v MSTS nebo ORTS testovány."
+
+#~ msgid ""
+#~ "* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) "
+#~ "might not work."
+#~ msgstr ""
+#~ "* Pravděpodobně nestandardní uzly (> 1 příchozí nebo > 2 odchozí tratě) "
+#~ "nemusí fungovat."
+
+#~ msgid "Feedback is appreciated."
+#~ msgstr "Zpětná vazba je vítána."
+
+#~ msgid "Saving broken paths is not supported"
+#~ msgstr "Uložení vadných cest není podporováno"
+
+#~ msgid "Wait time = "
+#~ msgstr "Doba čekání = "

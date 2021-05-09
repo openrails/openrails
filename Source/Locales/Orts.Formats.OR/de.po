@@ -1,0 +1,18 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ORTS.Formats\n"
+"POT-Creation-Date: 2015-04-28 11:53:42+0200\n"
+"PO-Revision-Date: 2015-04-28 12:39+0100\n"
+"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
+"Language-Team: Open Rails Dev Team\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../ORTS.Formats/ORTimetableFile.cs:289
+#, csharp-format
+msgid "Start time: {0}"
+msgstr "Startzeit: {0}"

@@ -1,0 +1,22 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ORTS.Formats\n"
+"POT-Creation-Date: 2015-04-05 18:18:51+0200\n"
+"PO-Revision-Date: 2015-04-05 18:24+0100\n"
+"Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
+"field@libero.it>\n"
+"Language-Team: Open Rails Dev Team\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../ORTS.Formats/ORTimetableFile.cs:289
+#, csharp-format
+msgid "Start time: {0}"
+msgstr "Orario di partenza: {0}"
+
+#~ msgid "Selected train: {0}"
+#~ msgstr "Treno selezionato: {0}"

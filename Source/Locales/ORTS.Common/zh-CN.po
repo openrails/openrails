@@ -1,0 +1,787 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2019-05-19 00:50:56+0200\n"
+"PO-Revision-Date: 2019-05-19 02:16+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.2\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../../ORTS.Common/Conversions.cs:524
+msgid "m"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:525
+msgid "km"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:526
+msgid "mm"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:527
+msgid "mi"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:528
+msgid "ft"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:529
+msgid "yd"
+msgstr "码"
+
+#: ../../ORTS.Common/Conversions.cs:530
+msgid "m²"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:531
+msgid "ft²"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:532
+msgid "m³"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:533
+msgid "ft³"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:534
+msgid "km/h"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:535
+msgid "mph"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:536
+msgid "kPa"
+msgstr "千帕"
+
+#: ../../ORTS.Common/Conversions.cs:537
+msgid "bar"
+msgstr "巴"
+
+#: ../../ORTS.Common/Conversions.cs:538
+msgid "psi"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:539
+msgid "inHg"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:540
+msgid "kgf/cm²"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:541
+msgid "kg"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:542
+msgid "t"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:543
+msgid "t-uk"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:544
+msgid "t-us"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:545
+msgid "lb"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:546
+msgid "s"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:547
+msgid "min"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:548
+msgid "h"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:549
+msgid "L"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:550
+msgid "g-uk"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:551
+msgid "g-us"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:552
+msgid "rpm"
+msgstr "转/分钟"
+
+#: ../../ORTS.Common/Conversions.cs:553
+msgid "kW"
+msgstr "千瓦"
+
+#: ../../ORTS.Common/Conversions.cs:554
+msgid "hp"
+msgstr "马力"
+
+#: ../../ORTS.Common/Conversions.cs:555
+msgid "bhp"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:556
+msgid "kJ"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:557
+msgid "MJ"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:558
+msgid "BTU"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:559
+msgid "°C"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:560
+msgid "°F"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:561
+msgid "N"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:562
+msgid "kN"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:563
+msgid "lbf"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:564
+msgid "klbf"
+msgstr ""
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:27
+msgctxt "Reverser"
+msgid "Forward"
+msgstr "向前"
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:28
+msgctxt "Reverser"
+msgid "Reverse"
+msgstr "倒车"
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:29
+msgctxt "Reverser"
+msgid "N"
+msgstr "空档"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:11
+msgid "Game Pause Menu"
+msgstr "游戏 暂停菜单"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:12
+msgid "Game Save"
+msgstr "游戏 保存游戏"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:13
+msgid "Game Quit"
+msgstr "游戏 退出游戏"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:14
+msgid "Game Pause"
+msgstr "游戏 游戏暂停"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:15
+msgid "Game Screenshot"
+msgstr "游戏 截图"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:16
+msgid "Game Fullscreen"
+msgstr "游戏 全屏幕"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:17
+msgid "Game Switch Ahead"
+msgstr "游戏 扳前道岔"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:18
+msgid "Game Switch Behind"
+msgstr "游戏 扳后道岔"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:19
+msgid "Game Switch Picked"
+msgstr "游戏 选择道岔"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:20
+msgid "Game Signal Picked"
+msgstr "游戏 选择信号"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:21
+msgid "Game Switch With Mouse"
+msgstr "游戏 用鼠标扳道岔"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:22
+msgid "Game Uncouple With Mouse"
+msgstr "游戏 用鼠标解挂"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:23
+msgid "Game Change Cab"
+msgstr "游戏 换驾驶室"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:24
+msgid "Game Request Control"
+msgstr "游戏 请求控制本列车"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:25
+msgid "Game Multi Player Dispatcher"
+msgstr "游戏 联控窗口"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:26
+msgid "Game Multi Player Texting"
+msgstr "游戏 联控短信"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:27
+msgid "Game Switch Manual Mode"
+msgstr "游戏 非自动扳道岔"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:28
+msgid "Game Clear Signal Forward"
+msgstr "游戏 请求前方信号"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:29
+msgid "Game Clear Signal Backward"
+msgstr "游戏 请求后方信号"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:30
+msgid "Game Reset Signal Forward"
+msgstr "游戏 重置前方信号"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:31
+msgid "Game Reset Signal Backward"
+msgstr "游戏 重置后方信号"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:32
+msgid "Game Autopilot Mode"
+msgstr "游戏 自动驾驶模式"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:35
+msgid "Display Next Window Tab"
+msgstr "显示下个窗口"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:36
+msgid "Display Help Window"
+msgstr "显示帮助窗口"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:37
+msgid "Display Track Monitor Window"
+msgstr "显示线路状况窗口"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:38
+msgid "Display HUD"
+msgstr "显示提示信息"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:39
+msgid "Display Car Labels"
+msgstr "显示车辆编号"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:40
+msgid "Display Station Labels"
+msgstr "显示站线名称"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:41
+msgid "Display Switch Window"
+msgstr "显示道岔窗口"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:42
+msgid "Display Train Operations Window"
+msgstr "显示列车操作窗口"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:43
+msgid "Display Next Station Window"
+msgstr "显示停站窗口"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:44
+msgid "Display Compass Window"
+msgstr "显示指南针"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:45
+msgid "Display Basic HUD Toggle"
+msgstr "显示 提示窗口转换"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:48
+msgid "Debug Speed Up"
+msgstr "游戏时间加速"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:49
+msgid "Debug Speed Down"
+msgstr "游戏时间减速"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:50
+msgid "Debug Speed Reset"
+msgstr "游戏时间重置"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:51
+msgid "Debug Overcast Increase"
+msgstr "云量增加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:52
+msgid "Debug Overcast Decrease"
+msgstr "云量减少"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:53
+msgid "Debug Fog Increase"
+msgstr "雾量增加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:54
+msgid "Debug Fog Decrease"
+msgstr "雾量减少"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:55
+msgid "Debug Precipitation Increase"
+msgstr "降水量增加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:56
+msgid "Debug Precipitation Decrease"
+msgstr "降水量减少"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:59
+msgid "Debug Weather Change"
+msgstr "天气变化"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:60
+msgid "Debug Clock Forwards"
+msgstr "前置时间"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:61
+msgid "Debug Clock Backwards"
+msgstr "后置时间"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:62
+msgid "Debug Logger"
+msgstr "记录数据"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:63
+msgid "Debug Lock Shadows"
+msgstr "锁定阴影"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:64
+msgid "Debug Dump Keyboard Map"
+msgstr "保存按键图"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:65
+msgid "Debug Log Render Frame"
+msgstr "记录显示帧"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:66
+msgid "Debug Tracks"
+msgstr "线路"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:67
+msgid "Debug Signalling"
+msgstr "信号"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:68
+msgid "Debug Reset Wheel Slip"
+msgstr "重置轮滑"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:69
+msgid "Debug Toggle Advanced Adhesion"
+msgstr "切换高级粘着"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:70
+msgid "Debug Sound Form"
+msgstr "声音模式"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:71
+msgid "Debug Physics Form"
+msgstr "物理模式"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:73
+msgid "Camera Cab"
+msgstr "视角 驾驶室视角"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:75
+msgid "Camera 3D Cab"
+msgstr "视角 三维驾驶室"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:76
+msgid "Camera Toggle Show Cab"
+msgstr "视角 切换显示驾驶室"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:77
+msgid "Camera Head Out Forward"
+msgstr "视角 了望前方"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:78
+msgid "Camera Head Out Backward"
+msgstr "视角 了望后方"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:79
+msgid "Camera Outside Front"
+msgstr "视角 前外视角"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:80
+msgid "Camera Outside Rear"
+msgstr "视角 后外视角"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:81
+msgid "Camera Trackside"
+msgstr "视角 路边视角"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:83
+msgid "Camera Passenger"
+msgstr "视角 乘客视角"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:84
+msgid "Camera Brakeman"
+msgstr "视角 调车视角"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:85
+msgid "Camera Free"
+msgstr "视角 自由视角"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:86
+msgid "Camera Previous Free"
+msgstr "视角 保存的自由视角"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:87
+msgid "Camera Reset"
+msgstr "视角 重置视角"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:88
+msgid "Camera Move Fast"
+msgstr "视角 快速移动"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:89
+msgid "Camera Move Slow"
+msgstr "视角 慢速移动"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:90
+msgid "Camera Pan (Rotate) Left"
+msgstr "视角 向左移动或旋转"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:91
+msgid "Camera Pan (Rotate) Right"
+msgstr "视角 向右移动或旋转"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:92
+msgid "Camera Pan (Rotate) Up"
+msgstr "视角 向上移动或旋转"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:93
+msgid "Camera Pan (Rotate) Down"
+msgstr "视角 向下移动或旋转"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:94
+msgid "Camera Zoom In (Move Z)"
+msgstr "视角 放大或轴向移动"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:95
+msgid "Camera Zoom Out (Move Z)"
+msgstr "视角 缩小或轴向移动"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:96
+msgid "Camera Rotate (Pan) Left"
+msgstr "视角 向左旋转或移动"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:97
+msgid "Camera Rotate (Pan) Right"
+msgstr "视角 向右旋转或移动"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:98
+msgid "Camera Rotate (Pan) Up"
+msgstr "视角 向上旋转或移动"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:99
+msgid "Camera Rotate (Pan) Down"
+msgstr "视角 向下旋转或移动"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:100
+msgid "Camera Car Next"
+msgstr "视角 选择下节车厢"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:101
+msgid "Camera Car Previous"
+msgstr "视角 选择上节车厢"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:102
+msgid "Camera Car First"
+msgstr "视角 第一车"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:103
+msgid "Camera Car Last"
+msgstr "视角 最后车"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:104
+msgid "Camera Jumping Trains"
+msgstr "视角 跳转列车"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:105
+msgid "Camera Jump Back Player"
+msgstr "视角 回到玩家列车"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:106
+msgid "Camera Jump See Switch"
+msgstr "视角 看道岔信号"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:107
+msgid "Camera Vibrate"
+msgstr "视角 列车震动"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:113
+msgid "Control Forwards"
+msgstr "控制 机车向前"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:114
+msgid "Control Backwards"
+msgstr "控制 倒退"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:115
+msgid "Control Throttle Increase"
+msgstr "控制 加功率"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:116
+msgid "Control Throttle Decrease"
+msgstr "控制 减功率"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:118
+msgid "Control Gear Up"
+msgstr "控制 加档"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:119
+msgid "Control Gear Down"
+msgstr "控制 减档"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:120
+msgid "Control Train Brake Increase"
+msgstr "控制 大闸(列车)制动减"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:121
+msgid "Control Train Brake Decrease"
+msgstr "控制 大闸(列车)制动减"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:123
+msgid "Control Engine Brake Increase"
+msgstr "控制 小闸(机车制动)加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:124
+msgid "Control Engine Brake Decrease"
+msgstr "控制 小闸(机车制动)减"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:125
+msgid "Control Dynamic Brake Increase"
+msgstr "控制 电阻制动加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:126
+msgid "Control Dynamic Brake Decrease"
+msgstr "控制 电阻制动减"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:127
+msgid "Control Bail Off"
+msgstr "控制 制动缓解"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:128
+msgid "Control Initialize Brakes"
+msgstr "控制 制动缓解"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:129
+msgid "Control Handbrake Full"
+msgstr "控制 手制动全"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:130
+msgid "Control Handbrake None"
+msgstr "控制 手制动无"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:131
+msgid "Control Odometer Show/Hide"
+msgstr "控制 显示/隐藏里程表"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:132
+msgid "Control Odometer Reset"
+msgstr "控制 重置里程表"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:133
+msgid "Control Odometer Direction"
+msgstr "控制 里程表方向"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:134
+msgid "Control Retainers On"
+msgstr "控制 保压阀开"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:135
+msgid "Control Retainers Off"
+msgstr "控制 保压阀关"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:136
+msgid "Control Brake Hose Connect"
+msgstr "控制 连接制动管"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:137
+msgid "Control Brake Hose Disconnect"
+msgstr "控制 断开制动管"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:138
+msgid "Control Alerter"
+msgstr "控制 警报"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:139
+msgid "Control Emergency Push Button"
+msgstr "控制 紧急制动按钮(backspace键)"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:140
+msgid "Control Sander"
+msgstr "控制 加沙"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:141
+msgid "Control Sander Toggle"
+msgstr "控制 切换加沙"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:142
+msgid "Control Wiper"
+msgstr "控制 雨刷"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:143
+msgid "Control Horn"
+msgstr "控制 鸣笛"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:144
+msgid "Control Bell"
+msgstr "控制 车钟"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:145
+msgid "Control Bell Toggle"
+msgstr "控制 切换车钟"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:146
+msgid "Control Door Left"
+msgstr "控制 左边车门"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:147
+msgid "Control Door Right"
+msgstr "控制 右边车门"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:148
+msgid "Control Mirror"
+msgstr "控制 倒车镜"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:149
+msgid "Control Light"
+msgstr "控制 车灯"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:150
+msgid "Control Pantograph 1"
+msgstr "控制 后弓"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:151
+msgid "Control Pantograph 2"
+msgstr "控制 前弓"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:157
+msgid "Control Diesel Player"
+msgstr "控制 本务机柴油机"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:158
+msgid "Control Diesel Helper"
+msgstr "控制 补机柴油机"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:159
+msgid "Control Headlight Increase"
+msgstr "控制 车灯亮度加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:160
+msgid "Control Headlight Decrease"
+msgstr "控制 车灯亮度减"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:161
+msgid "Control Injector 1 Increase"
+msgstr "控制 注水器1加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:162
+msgid "Control Injector 1 Decrease"
+msgstr "控制 注水器1减"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:163
+msgid "Control Injector 1"
+msgstr "控制 注水器1"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:164
+msgid "Control Injector 2 Increase"
+msgstr "控制 注水器2加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:165
+msgid "Control Injector 2 Decrease"
+msgstr "控制 注水器2减"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:166
+msgid "Control Injector 2"
+msgstr "控制 注水器2"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:167
+msgid "Control Blower Increase"
+msgstr "控制 鼓风机加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:168
+msgid "Control Blower Decrease"
+msgstr "控制 鼓风机减"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:171
+msgid "Control Damper Increase"
+msgstr "控制 阻尼器增加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:172
+msgid "Control Damper Decrease"
+msgstr "控制 阻尼器减少"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:173
+msgid "Control Firebox Open"
+msgstr "控制 火室门开"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:174
+msgid "Control Firebox Close"
+msgstr "控制 火室门关"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:175
+msgid "Control Firing Rate Increase"
+msgstr "控制 火量加"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:176
+msgid "Control Firing Rate Decrease"
+msgstr "控制 火量减"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:177
+msgid "Control Fire Shovel Full"
+msgstr "控制 加满一锹煤"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:178
+msgid "Control Cylinder Cocks"
+msgstr "控制 汽缸通汽阀门"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:181
+msgid "Control Cylinder Compound"
+msgstr "控制 汽缸通汽复合"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:182
+msgid "Control Firing"
+msgstr "控制 火量"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:183
+msgid "Control Refill"
+msgstr "控制 加油、水"
