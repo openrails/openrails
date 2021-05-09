@@ -144,16 +144,21 @@ namespace Orts.Simulation.AIs
             {
 
                 if (ThisTrain is AITrain && ((aiTrain.MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && aiTrain.nextActionInfo != null &&
-                aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION && aiTrain.nextActionInfo != null && aiTrain.nextActionInfo is AuxActionWPItem)
+                aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION && aiTrain.nextActionInfo is AuxActionWPItem)
                 || ( aiTrain.AuxActionsContain.SpecAuxActions.Count > 0 &&
                 aiTrain.AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
                 (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)))
                 // WP is running
                 {
-                    int remainingDelay;                  
-                    if (aiTrain.nextActionInfo != null && aiTrain.nextActionInfo is AuxActionWPItem) remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
-                    else remainingDelay = ((AIActionWPRef)SpecAuxActions[0]).keepIt.ActualDepart - currentClock;
-                    ((AIActionWPRef)SpecAuxActions[0]).SetDelay(remainingDelay);
+                    // Do nothing if it is an absolute WP
+                    if (!(aiTrain.AuxActionsContain.SpecAuxActions.Count > 0 && aiTrain.AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && 
+                        (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay >= 30000 && (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay < 40000))
+                    {
+                        int remainingDelay;
+                        if (aiTrain.nextActionInfo != null && aiTrain.nextActionInfo is AuxActionWPItem) remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
+                        else remainingDelay = ((AIActionWPRef)SpecAuxActions[0]).keepIt.ActualDepart - currentClock;
+                        ((AIActionWPRef)SpecAuxActions[0]).SetDelay(remainingDelay);
+                    }
                 }
             }
             foreach (var action in SpecAuxActions)
@@ -242,9 +247,11 @@ namespace Orts.Simulation.AIs
             {
                 loaded = ConvertActions(thisTrain, orRouteConfig.ActionContainer);
             }
-            if (!thisTrain.Simulator.TimetableMode && thisTrain.Simulator.Activity.Tr_Activity.Tr_Activity_File.ORTSAIHornAtCrossings > 0 && SpecAuxActions.Count == 0)
+
+            var activity = thisTrain.Simulator.Activity;
+            if (activity != null && activity.Tr_Activity.Tr_Activity_File.AIBlowsHornAtLevelCrossings && SpecAuxActions.Count == 0)
             {
-                AuxActionHorn auxActionHorn = new AuxActionHorn(true);
+                AuxActionHorn auxActionHorn = new AuxActionHorn(isGeneric: true, hornPattern: activity.Tr_Activity.Tr_Activity_File.AILevelCrossingHornPattern);
                 AIActionHornRef horn = new AIActionHornRef(thisTrain, auxActionHorn, 0);
                 List<KeyValuePair<System.Type, AuxActionRef>> listInfo = horn.GetCallFunction();
                 foreach (var function in listInfo)
@@ -937,7 +944,7 @@ namespace Orts.Simulation.AIs
             AIActionItem newAction = null;
             int SpeedMps = (int)thisTrain.SpeedMpS;
             TrainCar locomotive = thisTrain.FindLeadLocomotive();
-            if (SpeedMps == 0)   //  We call the handler to generate an actionRef
+            if (Math.Abs(SpeedMps) <= Simulator.MaxStoppedMpS)   //  We call the handler to generate an actionRef
             {
                 newAction = Handler(0f, 0f, thisTrain.DistanceTravelledM, thisTrain.DistanceTravelledM);
 
@@ -1068,16 +1075,30 @@ namespace Orts.Simulation.AIs
 
     public class AIActionHornRef : AIAuxActionsRef
     {
-        public AIActionHornRef(Train thisTrain, float distance, float requiredSpeedMpS, int subrouteIdx, int routeIdx, int sectionIdx, int dir)
+        /// <summary>
+        /// The duration of the horn blast, if specified by an activity event.
+        /// </summary>
+        private int? DurationS { get; }
+
+        /// <summary>
+        /// The horn pattern to use.
+        /// </summary>
+        private AILevelCrossingHornPattern HornPattern { get; set; }
+
+        public AIActionHornRef(Train thisTrain, float distance, float requiredSpeedMpS, int subrouteIdx, int routeIdx, int sectionIdx, int dir, int? durationS, AILevelCrossingHornPattern hornPattern)
             : base(thisTrain, distance, requiredSpeedMpS, subrouteIdx, routeIdx, sectionIdx, dir, AUX_ACTION.SOUND_HORN)
         {
+            DurationS = durationS;
+            HornPattern = hornPattern;
             NextAction = AUX_ACTION.SOUND_HORN;
         }
 
         public AIActionHornRef(Train thisTrain, BinaryReader inf)
             : base(thisTrain, inf, AUX_ACTION.SOUND_HORN)
         {
-            Delay = inf.ReadInt32();
+            if (inf.ReadBoolean())
+                DurationS = inf.ReadInt32();
+            HornPattern = AILevelCrossingHornPattern.Restore(inf);
             NextAction = AUX_ACTION.SOUND_HORN;
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "\tRestore one WPAuxAction" +
@@ -1090,10 +1111,10 @@ namespace Orts.Simulation.AIs
         public AIActionHornRef(Train thisTrain, AuxActionHorn myBase, int nop = 0)
             : base(thisTrain, 0f, 0f, 0, 0, 0, 0, myBase.ActionType)
         {
-            Delay = myBase.Delay;
+            DurationS = myBase.Delay;
             NextAction = AUX_ACTION.SOUND_HORN;
             IsGeneric = myBase.IsGeneric;
-            RequiredDistance = myBase.RequiredDistance;
+            HornPattern = AILevelCrossingHornPattern.CreateInstance(myBase.Pattern);
         }
 
         public override void save(BinaryWriter outf, int cnt)
@@ -1105,7 +1126,10 @@ namespace Orts.Simulation.AIs
                 " Delay: " + Delay + "\n");
 #endif
             base.save(outf, cnt);
-            outf.Write(Delay);
+            outf.Write(DurationS.HasValue);
+            if (DurationS.HasValue)
+                outf.Write(DurationS.Value);
+            HornPattern.Save(outf);
         }
 
 
@@ -1115,10 +1139,8 @@ namespace Orts.Simulation.AIs
             if (!LinkedAuxAction || IsGeneric)
             {
                 LinkedAuxAction = true;
-                info = new AuxActionHornItem(this, AIActionItem.AI_ACTION_TYPE.AUX_ACTION);
+                info = new AuxActionHornItem(this, AIActionItem.AI_ACTION_TYPE.AUX_ACTION, DurationS, HornPattern);
                 info.SetParam((float)list[0], (float)list[1], (float)list[2], (float)list[3]);
-                ((AuxActionHornItem)info).SetDelay(Delay);
-//                ((AuxActionHornItem)info).RequiredDistance = RequiredDistance;
             }
             return (AIActionItem)info;
         }
@@ -1140,9 +1162,7 @@ namespace Orts.Simulation.AIs
 #endif
             if (distances[0] >= -minDist)   //  We call the handler to generate an actionRef
             {
-                //Pseudorandom value between 2 and 5
-                int Rand = (DateTime.Now.Millisecond % 10) / 3 + 2;
-                this.Delay = Rand;
+                HornPattern = (AILevelCrossingHornPattern)list[3];
                 newAction = Handler(distances[0] + thisTrain.DistanceTravelledM, thisTrain.SpeedMpS, distances[0] + thisTrain.DistanceTravelledM, thisTrain.DistanceTravelledM);
                 Register(thisTrain.Number, location);
 #if WITH_PATH_DEBUG
@@ -1159,17 +1179,6 @@ namespace Orts.Simulation.AIs
             List<KeyValuePair<System.Type, AuxActionRef>> listInfo = new List<KeyValuePair<System.Type, AuxActionRef>>();
             listInfo.Add(info);
             return listInfo;
-        }
-
-        //================================================================================================//
-        /// <summary>
-        /// SetDelay
-        /// To fullfill the waiting delay.
-        /// </summary>
-
-        public void SetDelay(int delay)
-        {
-            Delay = delay;
         }
 
         //  Start horn whatever the speed.
@@ -1280,7 +1289,7 @@ namespace Orts.Simulation.AIs
             {
                 return null;
             }
-            if (SpeedMps == 0 && (int)list[0] >= Delay)   //  We call the handler to generate an actionRef
+            if (Math.Abs(SpeedMps) <= Simulator.MaxStoppedMpS && (int)list[0] >= Delay)   //  We call the handler to generate an actionRef
             {
                 newAction = Handler(thisTrain.SpeedMpS, (int)list[0]);
                 
@@ -1702,7 +1711,7 @@ namespace Orts.Simulation.AIs
             }
             else
             {
-                if (thisTrain.SpeedMpS == 0f && distancesM[1] <= thisTrain.DistanceTravelledM)
+                if (Math.Abs(thisTrain.SpeedMpS) <= 0.1f && distancesM[1] <= thisTrain.DistanceTravelledM)
                 {
                     return true;
                 }
@@ -1840,7 +1849,7 @@ namespace Orts.Simulation.AIs
                                 movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
                             }
                         }
-                        else if (distanceToGoM < AITrain.signalApproachDistanceM && aiTrain.SpeedMpS == 0)
+                        else if (distanceToGoM < AITrain.signalApproachDistanceM && Math.Abs(aiTrain.SpeedMpS) <= 0.1f)
                         {
                             aiTrain.AdjustControlsBrakeMore(aiTrain.MaxDecelMpSS, elapsedClockSeconds, 100);
                             movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
@@ -1897,11 +1906,15 @@ namespace Orts.Simulation.AIs
 
     public class AuxActionHornItem : AuxActionItem
     {
-        [JsonProperty("Delay")]
-        int Delay;
+        [JsonProperty("DurationS")]
+        private int? DurationS { get; }
         [JsonIgnore]
-        public int ActualDepart;
-        
+        private AILevelCrossingHornPattern HornPattern { get; }
+        [JsonIgnore]
+        private int NextStepTimeS { get; set; }
+        [JsonIgnore]
+        private IEnumerator<int> Execution { get; set; }
+
 
         //================================================================================================//
         /// <summary>
@@ -1909,10 +1922,11 @@ namespace Orts.Simulation.AIs
         /// The specific constructor for horn action
         /// </summary>
 
-        public AuxActionHornItem(AuxActionRef thisItem, AI_ACTION_TYPE thisAction) :
+        public AuxActionHornItem(AuxActionRef thisItem, AI_ACTION_TYPE thisAction, int? durationS, AILevelCrossingHornPattern hornPattern) :
             base(thisItem, thisAction)
         {
-            ActualDepart = 0;
+            DurationS = durationS;
+            HornPattern = hornPattern;
         }
 
         //================================================================================================//
@@ -1943,11 +1957,6 @@ namespace Orts.Simulation.AIs
             return false;
         }
 
-        public void SetDelay(int delay)
-        {
-            Delay = delay;
-        }
-
         public override bool ValidAction(Train thisTrain)
         {
             bool actionValid = CanActivate(thisTrain, thisTrain.SpeedMpS, true);
@@ -1976,40 +1985,40 @@ namespace Orts.Simulation.AIs
 #endif
             Processing = true;
             int correctedTime = presentTime;
-            ActualDepart = correctedTime + Delay;
+            if (!Triggered)
+            {
+                NextStepTimeS = correctedTime;
+                var locomotive = (MSTSLocomotive)thisTrain.FindLeadLocomotive();
+                Execution = HornPattern.Execute(locomotive, DurationS);
+#if WITH_PATH_DEBUG
+                    File.AppendAllText(@"C:\temp\checkpath.txt", "Do Horn for AITRain " + thisTrain.Number + " , mvt state " + movementState.ToString() + " at " + presentTime + "\n");
+#endif
+                Triggered = true;
+            }
             return AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
         }
 
         public override AITrain.AI_MOVEMENT_STATE HandleAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
-            if (ActualDepart >= presentTime)
+            if (Triggered && presentTime > NextStepTimeS)
             {
-                if (!Triggered)
+                // Advance to the next step.
+                if (Execution.MoveNext())
                 {
-#if WITH_PATH_DEBUG
-                    File.AppendAllText(@"C:\temp\checkpath.txt", "Do Horn for AITRain " + thisTrain.Number + " , mvt state " + movementState.ToString() + " at " + presentTime + "\n");
-#endif
-                    TrainCar locomotive = thisTrain.FindLeadLocomotive();
-                    ((MSTSLocomotive)locomotive).ManualHorn = true;
-                    Triggered = true;
+                    NextStepTimeS = presentTime + Execution.Current;
+                    return AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
                 }
-                movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
+                else
+                {
+                    thisTrain.AuxActionsContain.Remove(this);
+                    Triggered = false;
+                    return currentMvmtState;    //  Restore previous MovementState
+                }
             }
             else
             {
-                thisTrain.AuxActionsContain.Remove(this);
-
-                if (Triggered)
-                {
-#if WITH_PATH_DEBUG
-                File.AppendAllText(@"C:\temp\checkpath.txt", "Stop Horn for AITRain " + thisTrain.Number + " : mvt state " + movementState.ToString() + " at " + presentTime + "\n");
-#endif
-                    TrainCar locomotive = thisTrain.FindLeadLocomotive();
-                    ((MSTSLocomotive)locomotive).ManualHorn = false;
-                }
-                return currentMvmtState;    //  Restore previous MovementState
+                return movementState;
             }
-            return movementState;
         }
 
         public override AITrain.AI_MOVEMENT_STATE ProcessAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
@@ -2606,7 +2615,7 @@ namespace Orts.Simulation.AIs
                 }
             }
 
-            if (!reschedule && distancesM[1] < thisTrain.DistanceTravelledM && (thisTrain.SpeedMpS == 0f ||
+            if (!reschedule && distancesM[1] < thisTrain.DistanceTravelledM && (Math.Abs(thisTrain.SpeedMpS) <= 0.1f ||
                 (thisTrain.IsPlayerDriven && currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)))
             {
                 return true;

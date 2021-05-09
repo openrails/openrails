@@ -33,7 +33,8 @@ namespace Orts.Viewer3D.Processes
         public GameStateViewer3D(Viewer viewer)
         {
             Viewer = viewer;
-            Viewer.Simulator.Paused = false;
+            Viewer.Simulator.Paused = true;
+            Viewer.QuitWindow.Visible = true;
         }
 
         internal override void BeginRender(RenderFrame frame)
@@ -129,7 +130,7 @@ namespace Orts.Viewer3D.Processes
         internal override void Dispose()
         {
             Viewer.Terminate();
-            if (MPManager.Server != null)
+           if (MPManager.Server != null)
                 MPManager.Server.Stop();
             if (MPManager.Client != null)
                 MPManager.Client.Stop();

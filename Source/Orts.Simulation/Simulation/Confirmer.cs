@@ -50,11 +50,13 @@ namespace Orts.Simulation
       , PlayerDiesel
       , HelperDiesel
       , DieselFuel
+      , SteamHeatBoilerWater
       // Steam power
       , SteamLocomotiveReverser
       , Regulator
       , Injector1
       , Injector2
+      , BlowdownValve
       , Blower
       , SteamHeat
       , Damper
@@ -64,12 +66,17 @@ namespace Orts.Simulation
       , FireShovelfull
       , CylinderCocks
       , CylinderCompound
+      , LargeEjector
       , SmallEjector
+      , VacuumExhauster
       , TenderCoal
       , TenderWater
+      // General
+      , WaterScoop
       // Braking
       , TrainBrake
       , EngineBrake
+      , BrakemanBrake
       , DynamicBrake
       , EmergencyBrake
       , BailOff
@@ -77,6 +84,8 @@ namespace Orts.Simulation
       , Handbrake
       , Retainers
       , BrakeHose
+      , QuickRelease
+      , Overcharge
       // Cab Devices
       , Sander
       , Alerter
@@ -88,6 +97,8 @@ namespace Orts.Simulation
       , Wipers
       , ChangeCab
       , Odometer
+      , Battery
+      , PowerKey
       // Train Devices
       , DoorsLeft
       , DoorsRight
@@ -163,6 +174,7 @@ namespace Orts.Simulation
             Func<string, string> GetString = (value) => Simulator.Catalog.GetString(value);
             Func<string, string, string> GetParticularString = (context, value) => Simulator.Catalog.GetParticularString(context, value);
 
+            // The following list needs to be in the same order as the list above under CabControl
             ConfirmText = new string[][] {
                 new string [] { GetString("<none>") } 
                 // Power
@@ -181,12 +193,14 @@ namespace Orts.Simulation
                 // Diesel power
                 , new string [] { GetString("Player Diesel Power"), GetString("off"), null, GetString("on"), null, null, GetString("locked. Close throttle then re-try.") }
                 , new string [] { GetString("Helper Diesel Power"), GetString("off"), null, GetString("on") }
-                , new string [] { GetString("Diesel Tank"), null, null, GetString("re-fueled"), null, GetString("level") } 
+                , new string [] { GetString("Diesel Tank"), null, null, GetString("re-fueled"), null, GetString("level") }
+                , new string [] { GetString("Boiler Water Tank"), null, null, GetString("re-fueled"), null, GetString("level") }
                 // Steam power
                 , new string [] { GetParticularString("Steam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
                 , new string [] { GetString("Regulator"), null, null, null, GetString("close"), GetString("open") }    // Throttle for steam locomotives
                 , new string [] { GetString("Injector 1"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") } 
-                , new string [] { GetString("Injector 2"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") } 
+                , new string [] { GetString("Injector 2"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") }
+                , new string [] { GetString("Blowdown Valve"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("Blower"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("SteamHeat"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Damper"), null, null, null, GetString("close"), GetString("open") } 
@@ -195,20 +209,27 @@ namespace Orts.Simulation
                 , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") } 
                 , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") } 
-                , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") } 
-                , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") } 
+                , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("LargeEjector"), null, null, null, GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("VacuumExhauster"), GetString("normal"), null, GetString("fast") }
                 , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 
-                , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") } 
+                , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") }
+                // General
+                , new string [] { GetString("Water Scoop"), GetString("up"), null, GetString("down") }
                 // Braking
                 , new string [] { GetString("Train Brake"), null, null, null, GetString("release"), GetString("apply") } 
-                , new string [] { GetString("Engine Brake"), null, null, null, GetString("release"), GetString("apply") } 
+                , new string [] { GetString("Engine Brake"), null, null, null, GetString("release"), GetString("apply") }
+                , new string [] { GetString("Brakeman Brake"), null, null, null, GetString("release"), GetString("apply") }
                 , new string [] { GetString("Dynamic Brake"), GetString("off"), null, GetString("setup"), GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("Emergency Brake"), GetString("release"), null, GetString("apply") } 
                 , new string [] { GetString("Bail Off"), GetString("disengage"), null, GetString("engage") } 
                 , new string [] { GetString("Brakes"), GetString("initialize"), null, null, null, null, GetString("cannot initialize. Stop train then re-try.") } 
                 , new string [] { GetString("Handbrake"), GetString("none"), null, GetString("full") } 
                 , new string [] { GetString("Retainers"), GetString("off"), null, GetString("on"), null, null, null, null, GetString("Exhaust"), GetString("High Pressure"), GetString("Low Pressure"), GetString("Slow Direct") } 
-                , new string [] { GetString("Brake Hose"), GetString("disconnect"), null, GetString("connect") } 
+                , new string [] { GetString("Brake Hose"), GetString("disconnect"), null, GetString("connect") }
+                , new string [] { GetString("Quick Release"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("Overcharge"), GetString("off"), null, GetString("on") }
                 // Cab Devices
                 , new string [] { GetString("Sander"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Alerter"), GetString("acknowledge"), null, GetParticularString("Alerter", "sound") } 
@@ -220,6 +241,8 @@ namespace Orts.Simulation
                 , new string [] { GetString("Wipers"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Cab"), null, null, GetParticularString("Cab", "change"), null, null, GetString("changing is not available"), GetString("changing disabled. Close throttle, set reverser to neutral, stop train then re-try.") } 
                 , new string [] { GetString("Odometer"), null, null, GetParticularString("Odometer", "reset"), GetParticularString("Odometer", "counting down"), GetParticularString("Odometer", "counting up") }
+                , new string [] { GetString("Battery"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("PowerKey"), GetString("off"), null, GetString("on")}
                 // Train Devices
                 , new string [] { GetString("Doors Left"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("Doors Right"), GetString("close"), null, GetString("open") } 

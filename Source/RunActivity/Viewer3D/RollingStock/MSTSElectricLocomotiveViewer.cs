@@ -17,11 +17,12 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Orts.Simulation.RollingStocks;
-using Orts.Common;
-using ORTS.Common;
-using ORTS.Settings;
 using System;
+using Orts.Common;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using ORTS.Common;
+using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.RollingStock
 {
@@ -34,10 +35,39 @@ namespace Orts.Viewer3D.RollingStock
             : base(viewer, car)
         {
             ElectricLocomotive = car;
+            if (ElectricLocomotive.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
+                ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
+                (car.Train.MUDirection != Direction.N && ElectricLocomotive.PowerOn))))
+                // following reactivates the sound triggers related to certain states
+                // for pantos the sound trigger related to the raised panto must be reactivated, else SignalEvent() would raise also another panto
+            {
+                var iPanto = 0;
+                Event evt;
+                foreach (var panto in ElectricLocomotive.Pantographs.List)
+                {
+                    if (panto.State == ORTS.Scripting.Api.PantographState.Up)
+                    {
+                        switch (iPanto)
+                        {
+                            case 0: evt = Event.Pantograph1Up; break;
+                            case 1: evt = Event.Pantograph2Up; break;
+                            case 2: evt = Event.Pantograph3Up; break;
+                            case 3: evt = Event.Pantograph4Up; break;
+                            default: evt = Event.Pantograph1Up; break;
+                        }
+                        ElectricLocomotive.SignalEvent(evt);
+                    }
+                    iPanto++;
+                }
+                ElectricLocomotive.SignalEvent(Event.EnginePowerOn);
+                ElectricLocomotive.SignalEvent(Event.ReverserToForwardBackward);
+                ElectricLocomotive.SignalEvent(Event.ReverserChange);
+            }
         }
 
+
         /// <summary>
-        /// A keyboard or mouse click has occured. Read the UserInput
+        /// A keyboard or mouse click has occurred. Read the UserInput
         /// structure to determine what was pressed.
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -47,15 +77,15 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void InitializeUserInputCommands()
         {
-            UserInputCommands.Add(UserCommands.ControlCircuitBreakerClosingOrder, new Action[] {
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingOrder, new Action[] {
                 () => new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, false),
                 () => {
                     new CircuitBreakerClosingOrderCommand(Viewer.Log, !ElectricLocomotive.PowerSupply.CircuitBreaker.DriverClosingOrder);
                     new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, true);
                 }
             });
-            UserInputCommands.Add(UserCommands.ControlCircuitBreakerOpeningOrder, new Action[] { () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, false), () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, true)});
-            UserInputCommands.Add(UserCommands.ControlCircuitBreakerClosingAuthorization, new Action[] { Noop, () => new CircuitBreakerClosingAuthorizationCommand(Viewer.Log, !ElectricLocomotive.PowerSupply.CircuitBreaker.DriverClosingAuthorization) });
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerOpeningOrder, new Action[] { () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, false), () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, true)});
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingAuthorization, new Action[] { Noop, () => new CircuitBreakerClosingAuthorizationCommand(Viewer.Log, !ElectricLocomotive.PowerSupply.CircuitBreaker.DriverClosingAuthorization) });
             base.InitializeUserInputCommands();
         }
 

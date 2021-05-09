@@ -1,0 +1,1498 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2020-01-28 07:10:16-0300\n"
+"PO-Revision-Date: 2020-01-29 14:48-0300\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.4\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: pt_BR\n"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:598
+msgid "Free"
+msgstr "Livre"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:985
+msgid "Outside Front"
+msgstr "Visão do lado de fora"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:985
+msgid "Outside Rear"
+msgstr "Visão do lado de fora"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1241
+msgid "Brakeman"
+msgstr "Freio manual"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1432
+msgid "Passenger"
+msgstr "Passageiro"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1465
+msgid "Head out"
+msgstr "Cabeça para fora"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1509
+msgid "Cab"
+msgstr "Cabine"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1684
+msgid "Trackside"
+msgstr "Trackside"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1840
+msgid "3D Cab"
+msgstr "Cabine 3D"
+
+#: ../../RunActivity/Viewer3D/Materials.cs:170
+#, csharp-format
+msgid "{0:F0} texture"
+msgid_plural "{0:F0} textures"
+msgstr[0] "{0:F0} textura"
+msgstr[1] "{0:F0} texturas"
+
+#: ../../RunActivity/Viewer3D/Materials.cs:396
+#, csharp-format
+msgid "{0:F0} material"
+msgid_plural "{0:F0} materials"
+msgstr[0] "{0:F0} material"
+msgstr[1] "{0:F0} materials"
+
+#: ../../RunActivity/Viewer3D/Shapes.cs:110
+#, csharp-format
+msgid "{0:F0} shape"
+msgid_plural "{0:F0} shapes"
+msgstr[0] "{0:F0} objeto"
+msgstr[1] "{0:F0} objetos"
+
+#: ../../RunActivity/Viewer3D/Terrain.cs:127
+#, csharp-format
+msgid "{0:F0} tile"
+msgid_plural "{0:F0} tiles"
+msgstr[0] "{0:F0} terreno"
+msgstr[1] "{0:F0} terrenos"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:657
+#: ../../RunActivity/Viewer3D/Viewer.cs:783
+msgid "Cab view not available"
+msgstr "Visão da cabine não está disponível"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:722
+msgid "In MP, use Alt-F4 to quit directly"
+msgstr "No MP, use Alt-F4 para sair"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:794
+msgid "3D Cab view not available"
+msgstr "Visão da cabine 3D não está disponível"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:959
+msgid "Switched to player control"
+msgstr "Mudou para o controle do jogador"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:964
+msgid "You can't switch from manual to autopilot mode"
+msgstr "Você não pode alternar do modo manual para o piloto automático"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:968
+msgid "Switched to autopilot"
+msgstr "Comutado para piloto automático"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:1362
+msgid "Game saved"
+msgstr "Jogo salvo"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:268
+#, csharp-format
+msgid "Allowed speed raised to {0}"
+msgstr "VMA aumentada para {0}"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:812
+#, csharp-format
+msgid "Vibrating at level {0}"
+msgstr "Vibração do trem no nível {0}"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:977
+#, csharp-format
+msgid "Keyboard map list saved to '{0}'."
+msgstr "Lista de comandos do teclado salvas em '{0}'."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:981
+#, csharp-format
+msgid "Keyboard map image saved to '{0}'."
+msgstr "Keyboard map image saved to '{0}'."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:843
+#, csharp-format
+msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
+msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
+msgstr[0] ""
+"Ponto de vista {0} armazenado. Use Shift + 8 para restaurar pontos de vista."
+msgstr[1] "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:1974
+msgid "Switching Request Sent to the Server"
+msgstr "Solicitação de comutação enviada ao servidor"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:176
+msgid "View Self"
+msgstr "Visão automatica"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:563
+msgid "MSG to Server"
+msgstr "MSG para o servidor"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:567
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:227
+msgid "MSG to All"
+msgstr "MSG para todos"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:93
+msgid "View Train"
+msgstr "Visão do trem"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:138
+msgid "m"
+msgstr "m"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:159
+msgid "Remove"
+msgstr "Remover"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:174
+msgid "Auto Switch"
+msgstr "AMV's automáticos"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:189
+msgid "Show Avatars"
+msgstr "Mostrar nomes"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:215
+msgid "MSG to Selected"
+msgstr "MSG para o selecionado"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:238
+#: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:88
+msgid "Compose MSG"
+msgstr "Compor MSG"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:251
+msgid "Res"
+msgstr "Res"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:261
+msgid "Reply to Selected"
+msgstr "Responder para o selecionado"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:276
+msgid "Draw Path"
+msgstr "Traçar caminho"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:326
+msgid "Pick Signals"
+msgstr "Escolher sinais"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:340
+msgid "Pick Switches"
+msgstr "Escolher AMV's"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:354
+msgid "Can Join"
+msgstr "Pode juntar"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:378
+msgid "Assist"
+msgstr "Assist"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:390
+msgid "Normal"
+msgstr "Normal"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:403
+msgid "Follow"
+msgstr "Segue"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:418
+msgid "Penalty"
+msgstr "Penalidade"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:433
+msgid "Prefer Green"
+msgstr "Prefere verde"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:447
+msgid "See in Game"
+msgstr "Veja no jogo"
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:486
+msgid "DispatchViewer"
+msgstr "Visualizador de Dispachador"
+
+#: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:46
+msgid "Clear All"
+msgstr "Limpar tudo"
+
+#: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:57
+msgid "Reply Selected"
+msgstr "Resposta selecionada"
+
+#: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:102
+msgid "MessageViewer"
+msgstr "Visualizador de mensagens"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:180
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:213
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:214
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:215
+msgid "-"
+msgstr "-"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:212
+msgid "0"
+msgstr "0"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:149
+msgid "Active sounds"
+msgstr "Sons ativos"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:160
+msgid "Inactive sounds"
+msgstr "Sons inativos"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:192
+msgid "Sound cache"
+msgstr "Cachê de som"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:204
+msgid "Selected sound"
+msgstr "Som selecionado"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:216
+msgid "3D"
+msgstr "3D"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:284
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:394
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:771
+msgid "Speed"
+msgstr "Velocidade"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:312
+msgid "Variable 2"
+msgstr "Variável 2"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:331
+msgid "Variable 3"
+msgstr "Variável 3"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:341
+msgid "Variable 1"
+msgstr "Variável 1"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:351
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:777
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:779
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
+msgid "Distance"
+msgstr "Distância"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:361
+msgid "Volume"
+msgstr "Volume"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:429
+msgid "WavCache"
+msgstr "WavCache"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:484
+msgid "AL Sources"
+msgstr "Fontes de AL"
+
+#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:513
+msgid "Sound Debug"
+msgstr "Depuração de som"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:45
+msgid "Activity Events"
+msgstr "Eventos de atividade"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:169
+msgid "without success"
+msgstr "sem sucesso"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:284
+msgid "Resume"
+msgstr "Continuar"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:284
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:314
+msgid "Pause"
+msgstr "Pausa"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:285
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:306
+msgid "Resume and close box"
+msgstr "Retomar e fechar caixa"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:285
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:297
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:315
+msgid "Close box"
+msgstr "Fechar caixa"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:286
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:298
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:316
+msgid "Quit activity"
+msgstr "Sair da atividade"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:287
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:308
+msgid "Status: Activity paused"
+msgstr "Atividade pausada"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:287
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:299
+msgid "Status: Activity resumed"
+msgstr "Atividade retomada"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:307
+msgid "End Activity"
+msgstr "Fim da atividade"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:317
+msgid "Status: Activity running"
+msgstr "Atividade em execução"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:168
+#, csharp-format
+msgid ""
+"This activity has ended {0}.\n"
+"For a detailed evaluation, see the Help Window (F1)."
+msgstr ""
+"Esta atividade terminou {0}.\n"
+"Para uma avaliação detalhada, consulte a Janela de Ajuda (F1)."
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:323
+#, csharp-format
+msgid "Event: {0}"
+msgstr "Evento: {0}"
+
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:331
+#, csharp-format
+msgid "Train: {0}"
+msgstr "Trem: {0}"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:41
+msgid "Car Operation Menu"
+msgstr "Menu de operações"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:51
+msgid "Car ID"
+msgstr "ID"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:54
+msgid "Toggle Handbrake"
+msgstr "Apertar / Aliviar freio manual"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:56
+msgid "Toggle Power"
+msgstr "Ligar / Desligar locomotiva"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:58
+msgid "Toggle MU Connection"
+msgstr "Conectar / Desconectar cabo jumper/locotrol"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:60
+msgid "Toggle Brake Hose Connection"
+msgstr "Conexão - Líder / Comandada"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:62
+msgid "Open/Close Front Angle Cock"
+msgstr "Abrir / Fechar torneira frontal"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:64
+msgid "Open/Close Rear Angle Cock"
+msgstr "Abrir / Fechar torneira traseira"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:66
+msgid "Open/Close Bleed Off Valve"
+msgstr "Abrir / Fechar válvula de purga"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:68
+msgid "Close window"
+msgstr "Fechar janela"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:100
+msgid "Handbrake set"
+msgstr "Freio manual apertado"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:102
+msgid "Handbrake off"
+msgstr "Freio manual solto"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:116
+msgid "Power OFF command sent"
+msgstr "Parando motor"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:118
+msgid "Power ON command sent"
+msgstr "Dando partida no motor"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:121
+msgid "No power command for this type of car!"
+msgstr "Não há comando de energia para este tipo de vagão!"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:137
+msgid "MU signal connected"
+msgstr "Sinal MU conectado"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:139
+msgid "MU signal disconnected"
+msgstr "Sinal MU desconectado"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:142
+msgid "No MU command for this type of car!"
+msgstr "Não há comando MU para este tipo de vagão!"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:151
+msgid "Front brake hose connected"
+msgstr "Mangueira do freio dianteiro conectada"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:153
+msgid "Front brake hose disconnected"
+msgstr "Mangueira do freio dianteiro desconectada"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:160
+msgid "Front angle cock opened"
+msgstr "Abrir torneira frontal"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:162
+msgid "Front angle cock closed"
+msgstr "Fechar torneira frontal"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:169
+msgid "Rear angle cock opened"
+msgstr "Abrir torneira traseira"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:171
+msgid "Rear angle cock closed"
+msgstr "Fechar torneira traseira"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:181
+msgid "Bleed off valve opened"
+msgstr "Válvula de purga aberta"
+
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:183
+msgid "Bleed off valve closed"
+msgstr "Válvula de purga fechada"
+
+#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:35
+msgid "Compass"
+msgstr "Bússola"
+
+#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:46
+msgid "Lat:"
+msgstr "Lat:"
+
+#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:49
+msgid "Lon:"
+msgstr "Lon:"
+
+#: ../../RunActivity/Viewer3D/Popups/ComposeMessage.cs:31
+msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
+msgstr ""
+"Escrever mensagem (por exemplo, receptor1, receptor2: corpo da mensagem)"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:41
+msgid "Help"
+msgstr "Ajuda"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:43
+msgid "Key Commands"
+msgstr "Comando"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:69
+msgid "Briefing"
+msgstr "Instruções"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:80
+msgid "Timetable"
+msgstr "Horário"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
+msgid "Station"
+msgstr "Estação"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:75
+msgid "Arrive"
+msgstr "Previsto"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:76
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:78
+msgid "Actual"
+msgstr "Real"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:77
+msgid "Depart"
+msgstr "Saída"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:206
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:282
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:285
+msgid "(missed)"
+msgstr "(perdido)"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:113
+msgid "Work Orders"
+msgstr "Trabalho"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
+msgid "Task"
+msgstr "Tarefa"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
+msgid "Car(s)"
+msgstr "Vagões"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
+msgid "Location"
+msgstr "Localização"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
+msgid "Status"
+msgstr "Status"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:141
+msgid "Assemble Train"
+msgstr "Montar trem"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:145
+msgid "At Location"
+msgstr "No local"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:149
+msgid "Drop Off"
+msgstr "Deixar"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:153
+msgid "Pick Up"
+msgstr "Recolher"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:242
+msgid "Done"
+msgstr "Feito"
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:255
+msgid "Procedures"
+msgstr "Procedimentos"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:128
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:397
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:556
+msgid "Throttle"
+msgstr "Acelerador"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:129
+msgid "Power In/Out"
+msgstr "Força In/Out"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:133
+msgid "Motive force"
+msgstr "Força motriz"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:135
+msgid "Num of substeps"
+msgstr "Número de subetapas"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:138
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:893
+msgid "Memory"
+msgstr "Memória"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:139
+msgid "GCs"
+msgstr "GCs"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:140
+msgid "Frame time"
+msgstr "Tempo de quadros"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:141
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:907
+msgid "Render process"
+msgstr "Proc. de renderização"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:142
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:908
+msgid "Updater process"
+msgstr "Proc. de atualização"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:143
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:909
+msgid "Loader process"
+msgstr "Proc. de carregamento"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:144
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:910
+msgid "Sound process"
+msgstr "Processo de som"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:383
+msgid "Version"
+msgstr "Versão"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:387
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:389
+msgid "Time"
+msgstr "Horário"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:392
+msgid "Replay"
+msgstr "Replay"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:395
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:734
+msgid "Gradient"
+msgstr "Elevação"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:396
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:554
+msgid "Direction"
+msgstr "Direção"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:397
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:556
+msgid "Regulator"
+msgstr "Regulador"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:398
+msgid "Train brake"
+msgstr "Freio do trem"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:400
+msgid "Retainers"
+msgstr "Retentores"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:402
+msgid "Engine brake"
+msgstr "Freio independente"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:404
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:557
+msgid "Dynamic brake"
+msgstr "Freio dinâmico"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:418
+msgid "FPS"
+msgstr "FPS"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:422
+msgid "Autopilot"
+msgstr "Piloto automatico"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:425
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:695
+msgid "Wheel slip"
+msgstr "Patinação"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:427
+msgid "Wheel slip warning"
+msgstr "Aviso de deslizamento da roda"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:430
+msgid "Wheel skid"
+msgstr "Patinação"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:436
+msgid "Sander blocked"
+msgstr "Areia bloqueada"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:438
+msgid "Sander on"
+msgstr "Realizando aplicação de areia"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:451
+msgid "Doors open"
+msgstr "Porta (s) aberta (s)"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:457
+msgid "MultiPlayerStatus: "
+msgstr "Modo multiplayer - status: "
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:458
+msgid "Dispatcher"
+msgstr "Controlador"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:459
+msgid "Helper"
+msgstr "Ajuda"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:460
+msgid "Client"
+msgstr "Modo jogador"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:469
+msgid "CONSIST INFORMATION"
+msgstr "INFORMAÇÃO DA COMPOSIÇÃO"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:481
+msgid "Player"
+msgstr "Jogador"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:482
+msgid "Tilted"
+msgstr "Inclinado"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:483
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:505
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:643
+msgid "Type"
+msgstr "Tipo"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:484
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:506
+msgid "Length"
+msgstr "Compri"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:485
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:507
+msgid "Weight"
+msgstr "Peso"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:486
+msgid "Tonnage"
+msgstr "Tonelagem"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:487
+msgid "Control Mode"
+msgstr "Modo de controle"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:488
+msgid "Out of Control"
+msgstr "Fora de controle"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:489
+msgid "Cab Aspect"
+msgstr "Aspecto da cabine"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:491
+msgid "R"
+msgstr "R"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:491
+msgid "F"
+msgstr "F"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:492
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:514
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:600
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:759
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:891
+msgid "Yes"
+msgstr "Sim"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:492
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:514
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:600
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:891
+msgid "No"
+msgstr "Não"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:493
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:515
+msgid "Freight"
+msgstr "Carga"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:493
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:515
+msgid "Pass"
+msgstr "Passageiro"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:503
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:642
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:724
+msgid "Car"
+msgstr "Vagão"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:504
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:760
+msgid "Flipped"
+msgstr "Virado"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:508
+msgid "Drv/Cabs"
+msgstr "Drv/Cabine"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:509
+msgid "Wheels"
+msgstr "Rodas"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:548
+msgid "LOCOMOTIVE INFORMATION"
+msgstr "INFORMAÇÃO DA LOCOMOTIVA"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:561
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:587
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:589
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:598
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:611
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:621
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:636
+msgid "off"
+msgstr "desligado"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:570
+msgid "BRAKE INFORMATION"
+msgstr "INFORMAÇÃO DO SISTEMA DE FREIOS"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:585
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:596
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:607
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:617
+msgid "PlayerLoco"
+msgstr "Locomotiva"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:586
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:597
+msgid "Large Ejector"
+msgstr "Ejetor grande"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:587
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:589
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:598
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:611
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:621
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:636
+msgid "on"
+msgstr "ligado"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:588
+msgid "Small Ejector"
+msgstr "Ejetor pequeno"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:590
+msgid "Pressure"
+msgstr "Pressão"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:599
+msgid "Vacuum Pump"
+msgstr "Bomba de vácuo"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:608
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:618
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:633
+msgid "Main reservoir"
+msgstr "Reservatório principal"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:610
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:620
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:635
+msgid "Compressor"
+msgstr "Compressor"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:631
+msgid "Loco"
+msgstr "Loco"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:644
+msgid "BrkCyl"
+msgstr "CF"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:645
+msgid "BrkPipe"
+msgstr "EG"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:646
+msgid "AuxRes"
+msgstr "AuxRes"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:647
+msgid "ErgRes"
+msgstr "ErgRes"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:648
+msgid "MRPipe"
+msgstr "MRPipe"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:649
+msgid "RetValve"
+msgstr "RetValvula"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:650
+msgid "TripleValve"
+msgstr "TripleValvula"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:652
+msgid "Handbrk"
+msgstr "FreioManual"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:653
+msgid "Conn"
+msgstr "Conn"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:654
+msgid "AnglCock"
+msgstr "Toneira"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:655
+msgid "BleedOff"
+msgstr "BleedOff"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:671
+msgid "FORCE INFORMATION"
+msgstr "INFORMAÇÃO DE FORÇA"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:685
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:694
+msgid "(Advanced adhesion model)"
+msgstr "(Modo de adesão avançado)"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:686
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:706
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:714
+msgid "Loco Adhesion"
+msgstr "Adesão da locomotiva"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:687
+msgid "Wag Adhesion"
+msgstr "Adesão do vagão"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:688
+msgid "Tang. Force"
+msgstr "Tang. Força"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:689
+msgid "Static Force"
+msgstr "Statica Força"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:696
+msgid "Conditions"
+msgstr "Condições"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:697
+msgid "Axle drive force"
+msgstr "Força de acion. do eixo"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:698
+msgid "Axle brake force"
+msgstr "Força do freio do eixo"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:699
+msgid "Number of substeps"
+msgstr "Número de subetapas"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:701
+msgid "Solver"
+msgstr "Solver"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:702
+msgid "Stability correction"
+msgstr "Correção de estab"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:703
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:713
+msgid "Axle out force"
+msgstr "Força de saída do eixo"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:707
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:715
+msgid "Wagon Adhesion"
+msgstr "Adesão de vagão"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:712
+msgid "(Simple adhesion model)"
+msgstr "(Modelo de adesão simples)"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:725
+msgid "Total"
+msgstr "Total"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:726
+msgid "Motive"
+msgstr "Motivo"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:727
+msgid "Brake"
+msgstr "Freio"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:728
+msgid "Friction"
+msgstr "Atrito"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:729
+msgid "Gravity"
+msgstr "Gravidade"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:730
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:735
+msgid "Curve"
+msgstr "Curva"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:731
+msgid "Tunnel"
+msgstr "Tunel"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:732
+msgid "Coupler"
+msgstr "Engate"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:733
+msgid "Mass"
+msgstr "Peso"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:736
+msgid "Brk Frict."
+msgstr "Freio fricção."
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:737
+msgid "Brk Slide"
+msgstr "Freio deslizar"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:767
+msgid "DISPATCHER INFORMATION"
+msgstr "INFORMAÇÃO DO DESPACHADOR"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:769
+msgid "Train"
+msgstr "Trem"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:770
+msgid "Travelled"
+msgstr "Percorrido"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:772
+msgid "Max"
+msgstr "Max"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:773
+msgid "AI mode"
+msgstr "AI modo"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:774
+msgid "AI data"
+msgstr "AI data"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:775
+msgid "Mode"
+msgstr "Modo"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:776
+msgid "Auth"
+msgstr "Auth"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:778
+msgid "Signal"
+msgstr "Sinal"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:780
+msgid "Consist"
+msgstr "Trem"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
+msgid "Path"
+msgstr "Caminho"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:885
+msgid "DEBUG INFORMATION"
+msgstr "INFORMAÇÃO DE DEPURAÇÃO"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:891
+msgid "Logging enabled"
+msgstr "Log ativado"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:892
+msgid "Build"
+msgstr "Construir"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:894
+msgid "CPU"
+msgstr "CPU"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:895
+msgid "GPU"
+msgstr "GPU"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:896
+msgid "Adapter"
+msgstr "Placa de vídeo"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:901
+msgid "Shadow maps"
+msgstr "Sombras"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:903
+msgid "Shadow primitives"
+msgstr "Primitivas de sombra"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:906
+msgid "Render primitives"
+msgstr "Renderizar primitivas"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:907
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:908
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:909
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:910
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:911
+msgid "wait"
+msgstr "aguarde"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:911
+msgid "Total process"
+msgstr "Processo total"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:912
+msgid "Camera"
+msgstr "Câmera"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:700
+#, csharp-format
+msgid "filtered by {0:F0}"
+msgstr "filtrado por {0: F0}"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:893
+#, csharp-format
+msgid ""
+"{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, "
+"{2:F0}/{3:F0}/{4:F0} GCs)"
+msgstr ""
+"{0: F0} MB ({5}, {6}, {7}, {8}, {1: F0} MB gerenciados, {9: F0} kB / quadro "
+"alocado, {2: F0} / {3: F0} / {4: F0} GCs)"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:894
+#, csharp-format
+msgid "{0:F0}% ({1})"
+msgstr "{0:F0}% ({1})"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:895
+#, csharp-format
+msgid ""
+"{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, shader "
+"model {4})"
+msgstr ""
+"{0: F0} FPS (percentis 50/95/99) {1: F1} / {2: F1} / {3: F1} ms, modelo de "
+"sombreamento {4})"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:896
+#, csharp-format
+msgid "{0} ({1:F0} MB)"
+msgstr "{0} ({1:F0} MB)"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:899
+#, csharp-format
+msgid "{0}/{1}"
+msgstr "{0}/{1}"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:900
+#, csharp-format
+msgid "({0}x{0})"
+msgstr "({0}x{0})"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:903
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:906
+#, csharp-format
+msgid "{0:F0}"
+msgstr "{0:F0}"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:907
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:908
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:909
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:910
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:911
+#, csharp-format
+msgid "{0:F0}% ({1:F0}% {2})"
+msgstr "{0:F0}% ({1:F0}% {2})"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:894
+#, csharp-format
+msgid "{0} logical processor"
+msgid_plural "{0} logical processors"
+msgstr[0] "{0} processador lógico"
+msgstr[1] "{0} processadores lógicos"
+
+#. Context: Steam
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:555
+msgctxt "Steam"
+msgid "Reverser"
+msgstr "Atrás"
+
+#. Context: NonSteam
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:555
+msgctxt "NonSteam"
+msgid "Reverser"
+msgstr "Atras"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:56
+msgid "Next Station"
+msgstr "Próxima estação"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:227
+msgid "No more stations."
+msgstr "Não há mais estações."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:362
+msgid "Activity completed."
+msgstr "Atividade concluída."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:126
+#, csharp-format
+msgid "Current Delay: {0} minute"
+msgid_plural "Current Delay: {0} minutes"
+msgstr[0] "Atraso atual: {0} minuto"
+msgstr[1] "Atraso atual: {0} minutos"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:166
+msgid "Train not active."
+msgstr "Trem inativo."
+
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:96
+#, csharp-format
+msgid "Odometer {0}"
+msgstr "Odômetro {0}"
+
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:106
+#, csharp-format
+msgid "Camera: {0}"
+msgstr "Câmera: {0}"
+
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:111
+#, csharp-format
+msgid "FOV: {0:F0}°"
+msgstr "Zoom: {0:F0}°"
+
+#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
+msgid "Pause Menu"
+msgstr "Pausado"
+
+#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
+#, csharp-format
+msgid "Quit {1} ({0})"
+msgstr "Sair {1} ({0})"
+
+#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
+#, csharp-format
+msgid "Save your game ({0})"
+msgstr "Salve seu jogo ({0})"
+
+#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:59
+#, csharp-format
+msgid "Continue playing ({0})"
+msgstr "Continue jogando ({0})"
+
+#: ../../RunActivity/Viewer3D/Popups/SwitchWindow.cs:46
+msgid "Switch"
+msgstr "AMV"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:73
+msgid "Track Monitor"
+msgstr "Monitor de via"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:77
+msgid "Auto Signal"
+msgstr "Sinal automático"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:78
+msgid "Node"
+msgstr "Node"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:79
+msgid "Manual"
+msgstr "Manual"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:80
+msgid "Explorer"
+msgstr "Explorador"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:81
+msgid "OutOfControl : "
+msgstr "Fora de controle : "
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:82
+msgid "Inactive"
+msgstr "Inativo"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:83
+msgid "Turntable"
+msgstr "Rotunda"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
+msgid "Unknown"
+msgstr "Desconhecido"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:93
+msgid "Speed:"
+msgstr "Velocidade:"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:98
+msgid "Projected:"
+msgstr "Acelerômetro:"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:103
+msgid "Limit:"
+msgstr "VMA:"
+
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:116
+msgid " Milepost   Limit     Dist"
+msgstr " Km   Limit     Dist"
+
+#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:33
+msgid "Train List"
+msgstr "Lista de trens"
+
+#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:45
+msgid "Number"
+msgstr "Número"
+
+#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:46
+msgid "Service Name"
+msgstr "Nome do serviço"
+
+#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:47
+msgid "Viewed"
+msgstr "Visão"
+
+#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:166
+msgid "Train in turntable not aligned to a track can't be selected"
+msgstr ""
+"O trem na plataforma giratória não alinhado a uma pista não pode ser "
+"selecionado"
+
+#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:171
+msgid "Player train can't be switched when in turntable not aligned to a track"
+msgstr ""
+"O trem do jogador não pode ser trocado quando a mesa giratória não está "
+"alinhada a uma pista"
+
+#: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:39
+msgid "Train Operations"
+msgstr "Operações do trem"
+
+#: ../../RunActivity/Viewer3D/Popups/WindowText.cs:152
+msgid ""
+"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \",.-+|!$%&/"
+"()=?;:'_[]"
+msgstr ""
+"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \",.-+|!$%&/"
+"()=?;:'_[]"
+
+#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1083
+#, csharp-format
+msgid "Activity Save file '*.save' not found in folder {0}"
+msgstr ""
+"O arquivo de salvamento de atividade '* .save' não foi encontrado na pasta "
+"{0}"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:334
+msgid "freight-grain"
+msgstr "freight-grain"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:335
+msgid "freight-coal"
+msgstr "freight-coal"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:336
+msgid "freight-gravel"
+msgstr "freight-gravel"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:337
+msgid "freight-sand"
+msgstr "freight-sand"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:338
+msgid "water"
+msgstr "água"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:339
+msgid "coal"
+msgstr "carvão"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:340
+msgid "diesel oil"
+msgstr "óleo diesel"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:341
+msgid "wood"
+msgstr "madeira"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:469
+msgid "Refill: Immediate refill process selected, refilling immediately."
+msgstr ""
+"Recarga: Processo de recarga imediata selecionado, recarregando "
+"imediatamente."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:490
+msgid "Refill: Electric loco and no pickup. Command rejected"
+msgstr "Recarga: Loco elétrico e sem coleta. Comando rejeitado"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:606
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
+msgid "Incompatible pickup type"
+msgstr "Tipo de recebimento incompatível"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:611
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:629
+msgid "Starting refill"
+msgstr "Iniciando carregamento"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:497
+#, csharp-format
+msgid "Refill: Distance to {0} supply is {1}."
+msgstr "Recarga: a distância até o suprimento {0} é {1}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:505
+#, csharp-format
+msgid "Refill: Loco must be stationary to refill {0}."
+msgstr "Recarga: A locomotiva deve estar estacionária para reabastecer {0}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:511
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:235
+#, csharp-format
+msgid "Refill: Loco speed must exceed {0}."
+msgstr "Recarga: a velocidade da locomotiva deve exceder {0}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:518
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:241
+#, csharp-format
+msgid "Refill: Loco speed must not exceed {0}."
+msgstr "Recarga: a velocidade da locomotiva não deve exceder {0}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:536
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:557
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:248
+#, csharp-format
+msgid "Refill: {0} supply now replenished."
+msgstr "Recarga: {0} suprimento agora reabastecido."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:563
+#, csharp-format
+msgid "Refill: {0} fuel or freight now unloaded."
+msgstr "Recarga: {0} suprimento agora reabastecido."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:498
+#, csharp-format
+msgid "{0} meter"
+msgid_plural "{0} meters"
+msgstr[0] "{0} metro"
+msgstr[1] "{0} metros"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:219
+msgid "No scoop in this loco"
+msgstr "Nenhuma informação neste loco"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:224
+msgid "Scoop is broken, can't refill"
+msgstr "O furo está quebrado, não é possível reabastecer"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:230
+msgid "Scoop broken because activated outside through"
+msgstr "Scoop quebrado porque ativado do lado de fora"

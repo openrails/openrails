@@ -20,18 +20,18 @@
 // Debug for Sound Variables
 //#define DEBUG_WHEEL_ANIMATION 
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Viewer3D.RollingStock.SubSystems;
 using ORTS.Common;
-using ORTS.Settings;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.RollingStock
 {
@@ -40,11 +40,15 @@ namespace Orts.Viewer3D.RollingStock
         protected PoseableShape TrainCarShape;
         protected AnimatedShape FreightShape;
         protected AnimatedShape InteriorShape;
+        protected AnimatedShape FrontCouplerShape;
+        protected AnimatedShape FrontCouplerOpenShape;
+        protected AnimatedShape RearCouplerShape;
+        protected AnimatedShape RearCouplerOpenShape;
         public static readonly Action Noop = () => { };
         /// <summary>
         /// Dictionary of built-in locomotive control keyboard commands, Action[] is in the order {KeyRelease, KeyPress}
         /// </summary>
-        public Dictionary<UserCommands, Action[]> UserInputCommands = new Dictionary<UserCommands, Action[]>();
+        public Dictionary<UserCommand, Action[]> UserInputCommands = new Dictionary<UserCommand, Action[]>();
 
         // Wheels are rotated by hand instead of in the shape file.
         float WheelRotationR;
@@ -60,6 +64,7 @@ namespace Orts.Viewer3D.RollingStock
         AnimatedPart RightDoor;
         AnimatedPart Mirrors;
         protected AnimatedPart Wipers;
+        protected AnimatedPart Bell;
         AnimatedPart UnloadingParts;
 
         public Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
@@ -69,15 +74,22 @@ namespace Orts.Viewer3D.RollingStock
 
         // Create viewers for special steam/smoke effects on car
         List<ParticleEmitterViewer> HeatingHose = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> HeatingCompartmentSteamTrap = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> HeatingMainPipeSteamTrap = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> WaterScoop = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> WaterScoopReverse = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> TenderWaterOverflow = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> WagonSmoke = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> HeatingSteamBoiler = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> BearingHotBox = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SteamBrake = new List<ParticleEmitterViewer>();
 
         // Create viewers for special steam effects on car
         List<ParticleEmitterViewer> WagonGenerator = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> DieselLocoGenerator = new List<ParticleEmitterViewer>();
 
         bool HasFirstPanto;
-        int numBogie1, numBogie2, numBogie, bogie1Axles, bogie2Axles = 0;
+        int numBogie1, numBogie2, bogie1Axles, bogie2Axles = 0;
         int bogieMatrix1, bogieMatrix2 = 0;
         FreightAnimationsViewer FreightAnimations;
 
@@ -101,7 +113,15 @@ namespace Orts.Viewer3D.RollingStock
 
                 // Exhaust for steam heating boiler
                 if (emitter.Key.ToLowerInvariant() == "heatingsteamboilerfx")
+                {
                     HeatingSteamBoiler.AddRange(emitter.Value);
+                    // set flag to indicate that heating boiler is active on this car only - only sets first boiler steam effect found in the train
+                    if (!car.IsTrainHeatingBoilerInitialised && !car.HeatingBoilerSet)
+                    {
+                        car.HeatingBoilerSet = true;
+                        car.IsTrainHeatingBoilerInitialised = true;
+                    }
+                }
 
                 foreach (var drawer in HeatingSteamBoiler)
                 {
@@ -126,12 +146,79 @@ namespace Orts.Viewer3D.RollingStock
                     drawer.Initialize(steamTexture);
                 }
 
+                // Smoke for bearing hot box
+                if (emitter.Key.ToLowerInvariant() == "bearinghotboxfx")
+                    BearingHotBox.AddRange(emitter.Value);
+
+                foreach (var drawer in BearingHotBox)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
                 // Steam leak in heating hose 
 
                 if (emitter.Key.ToLowerInvariant() == "heatinghosefx")
                     HeatingHose.AddRange(emitter.Value);
 
                 foreach (var drawer in HeatingHose)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                // Steam leak in heating compartment steam trap
+
+                if (emitter.Key.ToLowerInvariant() == "heatingcompartmentsteamtrapfx")
+                    HeatingCompartmentSteamTrap.AddRange(emitter.Value);
+
+                foreach (var drawer in HeatingCompartmentSteamTrap)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                // Steam leak in heating steam trap
+
+                if (emitter.Key.ToLowerInvariant() == "heatingmainpipesteamtrapfx")
+                    HeatingMainPipeSteamTrap.AddRange(emitter.Value);
+
+                foreach (var drawer in HeatingMainPipeSteamTrap)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                // Water spray for when water scoop is in use (use steam effects for the time being) 
+                // Forward motion
+                if (emitter.Key.ToLowerInvariant() == "waterscoopfx")
+                    WaterScoop.AddRange(emitter.Value);
+
+                foreach (var drawer in WaterScoop)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                // Reverse motion
+
+                if (emitter.Key.ToLowerInvariant() == "waterscoopreversefx")
+                    WaterScoopReverse.AddRange(emitter.Value);
+
+                foreach (var drawer in WaterScoopReverse)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                // Water overflow when tender is over full during water trough filling (use steam effects for the time being) 
+
+                if (emitter.Key.ToLowerInvariant() == "tenderwateroverflowfx")
+                    TenderWaterOverflow.AddRange(emitter.Value);
+
+                foreach (var drawer in TenderWaterOverflow)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                if (emitter.Key.ToLowerInvariant() == "steambrakefx")
+                    SteamBrake.AddRange(emitter.Value);
+
+                foreach (var drawer in SteamBrake)
                 {
                     drawer.Initialize(steamTexture);
                 }
@@ -168,6 +255,27 @@ namespace Orts.Viewer3D.RollingStock
                 }
             }
 
+            // Initialise Coupler shapes 
+            if (car.FrontCouplerShapeFileName != null)
+            {
+                FrontCouplerShape = new AnimatedShape(viewer, wagonFolderSlash + car.FrontCouplerShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+            }
+
+            if (car.FrontCouplerOpenShapeFileName != null)
+            {
+                FrontCouplerOpenShape = new AnimatedShape(viewer, wagonFolderSlash + car.FrontCouplerOpenShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+            }
+
+            if (car.RearCouplerShapeFileName != null)
+            {
+                RearCouplerShape = new AnimatedShape(viewer, wagonFolderSlash + car.RearCouplerShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+            }
+
+            if (car.RearCouplerOpenShapeFileName != null)
+            {
+                RearCouplerOpenShape = new AnimatedShape(viewer, wagonFolderSlash + car.RearCouplerOpenShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+            }
+
 
             if (car.InteriorShapeFileName != null)
                 InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.Interior, 30.0f);
@@ -182,6 +290,7 @@ namespace Orts.Viewer3D.RollingStock
             Mirrors = new AnimatedPart(TrainCarShape);
             Wipers = new AnimatedPart(TrainCarShape);
             UnloadingParts = new AnimatedPart(TrainCarShape);
+            Bell = new AnimatedPart(TrainCarShape);
 
             if (car.FreightAnimations != null)
                 FreightAnimations = new FreightAnimationsViewer(viewer, car, wagonFolderSlash);
@@ -256,7 +365,7 @@ namespace Orts.Viewer3D.RollingStock
             car.SetUpWheels();
 
             // If we have two pantographs, 2 is the forwards pantograph, unlike when there's only one.
-            if (!car.Flipped && !Pantograph1.Empty() && !Pantograph2.Empty())
+            if (!(car.Flipped ^ (car.Train.IsActualPlayerTrain && Viewer.PlayerLocomotive.Flipped)) && !Pantograph1.Empty() && !Pantograph2.Empty())
                 AnimatedPart.Swap(ref Pantograph1, ref Pantograph2);
 
             Pantograph1.SetState(MSTSWagon.Pantographs[1].CommandUp);
@@ -407,6 +516,10 @@ namespace Orts.Viewer3D.RollingStock
                     else Pantograph2.AddMatrix(matrix);
                 }
             }
+            else if (matrixName.StartsWith("ORTSBELL")) // wipers
+            {
+                Bell.AddMatrix(matrix);
+            }
             else
             {
                 if (matrixAnimated && matrix != 0)
@@ -420,13 +533,13 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void InitializeUserInputCommands()
         {
-            UserInputCommands.Add(UserCommands.ControlPantograph1, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 1, !MSTSWagon.Pantographs[1].CommandUp) });
-            UserInputCommands.Add(UserCommands.ControlPantograph2, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 2, !MSTSWagon.Pantographs[2].CommandUp) });
-            if (MSTSWagon.Pantographs.List.Count > 2) UserInputCommands.Add(UserCommands.ControlPantograph3, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 3, !MSTSWagon.Pantographs[3].CommandUp) });
-            if (MSTSWagon.Pantographs.List.Count > 3) UserInputCommands.Add(UserCommands.ControlPantograph4, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 4, !MSTSWagon.Pantographs[4].CommandUp) });
-            UserInputCommands.Add(UserCommands.ControlDoorLeft, new Action[] { Noop, () => new ToggleDoorsLeftCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlDoorRight, new Action[] { Noop, () => new ToggleDoorsRightCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlMirror, new Action[] { Noop, () => new ToggleMirrorsCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlPantograph1, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 1, !MSTSWagon.Pantographs[1].CommandUp) });
+            UserInputCommands.Add(UserCommand.ControlPantograph2, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 2, !MSTSWagon.Pantographs[2].CommandUp) });
+            if (MSTSWagon.Pantographs.List.Count > 2) UserInputCommands.Add(UserCommand.ControlPantograph3, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 3, !MSTSWagon.Pantographs[3].CommandUp) });
+            if (MSTSWagon.Pantographs.List.Count > 3) UserInputCommands.Add(UserCommand.ControlPantograph4, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 4, !MSTSWagon.Pantographs[4].CommandUp) });
+            UserInputCommands.Add(UserCommand.ControlDoorLeft, new Action[] { Noop, () => new ToggleDoorsLeftCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlDoorRight, new Action[] { Noop, () => new ToggleDoorsRightCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlMirror, new Action[] { Noop, () => new ToggleMirrorsCommand(Viewer.Log) });
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -460,6 +573,18 @@ namespace Orts.Viewer3D.RollingStock
                 drawer.SetOutput(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
             }
 
+            // Steam leak in heating compartment steamtrap
+            foreach (var drawer in HeatingCompartmentSteamTrap)
+            {
+                drawer.SetOutput(car.HeatingCompartmentSteamTrapVelocityMpS, car.HeatingCompartmentSteamTrapVolumeM3pS, car.HeatingCompartmentSteamTrapParticleDurationS);
+            }
+
+            // Steam leak in heating main pipe steamtrap
+            foreach (var drawer in HeatingMainPipeSteamTrap)
+            {
+                drawer.SetOutput(car.HeatingMainPipeSteamTrapVelocityMpS, car.HeatingMainPipeSteamTrapVolumeM3pS, car.HeatingMainPipeSteamTrapDurationS);
+            }
+
             // Heating Steam Boiler Exhaust
             foreach (var drawer in HeatingSteamBoiler)
             {
@@ -469,14 +594,51 @@ namespace Orts.Viewer3D.RollingStock
             // Exhaust for HEP/Electrical Generator
             foreach (var drawer in WagonGenerator)
             {
-               drawer.SetOutput(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
+                drawer.SetOutput(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
             }
 
             // Wagon fire smoke
             foreach (var drawer in WagonSmoke)
             {
-                  drawer.SetOutput(car.WagonSmokeVelocityMpS, car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
-               // drawer.SetOutput(car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
+                drawer.SetOutput(car.WagonSmokeVelocityMpS, car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
+            }
+
+            if (car.Train != null) // only process this visual feature if this is a valid car in the train
+            {
+                // Water spray for water scoop (uses steam effects currently) - Forward direction
+                if (car.Direction == Direction.Forward)
+                {
+                    foreach (var drawer in WaterScoop)
+                    {
+                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
+                    }
+                }
+                // If travelling in reverse turn on rearward facing effect
+                else if (car.Direction == Direction.Reverse)
+                {
+                    foreach (var drawer in WaterScoopReverse)
+                    {
+                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
+                    }
+                }
+            }
+
+            // Water overflow from tender (uses steam effects currently)
+            foreach (var drawer in TenderWaterOverflow)
+            {
+                drawer.SetOutput(car.TenderWaterOverflowVelocityMpS, car.TenderWaterOverflowVolumeM3pS, car.TenderWaterOverflowParticleDurationS);
+            }
+
+            // Bearing Hot box smoke
+            foreach (var drawer in BearingHotBox)
+            {
+                drawer.SetOutput(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeVolumeM3pS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
+            }
+
+            // Steam Brake effects
+            foreach (var drawer in SteamBrake)
+            {
+                drawer.SetOutput(car.SteamBrakeLeaksVelocityMpS, car.SteamBrakeLeaksVolumeM3pS, car.SteamBrakeLeaksDurationS);
             }
 
             foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)
@@ -585,6 +747,186 @@ namespace Orts.Viewer3D.RollingStock
                 TrainCarShape.XNAMatrices[p.iMatrix] = Car.VibrationInverseMatrix * m;
             }
 
+            // Display rear coupler in sim if open coupler shape is configured, otherwise skip to next section, and just display closed (default) coupler if configured
+            if (FrontCouplerOpenShape != null && Car.IsAdvancedCoupler && Car.FrontCouplerOpenFitted && Car.FrontCouplerOpen && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
+            {
+                // The following locates the coupler at the end of the car.
+                // Suitable for development but, for release, would be better to implement as a sub-object of the car object.
+
+                // Place the coupler in the centre of the car
+                var p = Car.WorldPosition; // abbreviation
+                FrontCouplerOpenShape.Location.Location = new Vector3(p.Location.X, p.Location.Y, p.Location.Z);
+                FrontCouplerOpenShape.Location.TileX = p.TileX;
+                FrontCouplerOpenShape.Location.TileZ = p.TileZ;
+
+                // Get the movement that would be needed to locate the coupler on the car if they were pointing in the default direction.
+                Vector3 displacement;
+                displacement.X = Car.FrontCouplerOpenAnimWidthM;
+                displacement.Y = Car.FrontCouplerOpenAnimHeightM;
+                displacement.Z = (Car.FrontCouplerOpenAnimLengthM + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM);
+
+                // Get the orientation of the car as a quaternion
+                p.XNAMatrix.Decompose(out Vector3 scale, out Quaternion quaternion, out Vector3 translation);
+
+                // Reverse the y axis (plan view) component - perhaps because XNA is opposite to MSTS
+                var quaternionReversed = new Quaternion(quaternion.X, -quaternion.Y, quaternion.Z, quaternion.W);
+
+                // Rotate the displacement to match the orientation of the car
+                var rotatedDisplacement = Vector3.Transform(displacement, quaternionReversed);
+
+                // Apply the rotation to the coupler displacement to keep it in place with the wagon
+                FrontCouplerOpenShape.Location.Location += rotatedDisplacement;
+
+                // Keep the coupler shape aligned with the wagon
+                FrontCouplerOpenShape.Location.XNAMatrix.M11 = Car.WorldPosition.XNAMatrix.M11;
+                FrontCouplerOpenShape.Location.XNAMatrix.M12 = Car.WorldPosition.XNAMatrix.M12;
+                FrontCouplerOpenShape.Location.XNAMatrix.M13 = Car.WorldPosition.XNAMatrix.M13;
+                FrontCouplerOpenShape.Location.XNAMatrix.M21 = Car.WorldPosition.XNAMatrix.M21;
+                FrontCouplerOpenShape.Location.XNAMatrix.M22 = Car.WorldPosition.XNAMatrix.M22;
+                FrontCouplerOpenShape.Location.XNAMatrix.M23 = Car.WorldPosition.XNAMatrix.M23;
+                FrontCouplerOpenShape.Location.XNAMatrix.M31 = Car.WorldPosition.XNAMatrix.M31;
+                FrontCouplerOpenShape.Location.XNAMatrix.M32 = Car.WorldPosition.XNAMatrix.M32;
+                FrontCouplerOpenShape.Location.XNAMatrix.M33 = Car.WorldPosition.XNAMatrix.M33;
+
+                // Display Animation Shape                    
+                FrontCouplerOpenShape.PrepareFrame(frame, elapsedTime);
+            }
+
+            // Display rear default coupler in sim, by default it will always be closed position
+            else if (FrontCouplerShape != null && Car.IsAdvancedCoupler && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
+            {
+                // The following locates the coupler at the end of the car.
+                // Suitable for development but, for release, would be better to implement as a sub-object of the car object.
+
+                // Place the coupler in the centre of the car
+                var p = Car.WorldPosition; // abbreviation
+                FrontCouplerShape.Location.Location = new Vector3(p.Location.X, p.Location.Y, p.Location.Z);
+                FrontCouplerShape.Location.TileX = p.TileX;
+                FrontCouplerShape.Location.TileZ = p.TileZ;
+
+                // Get the movement that would be needed to locate the coupler on the car if they were pointing in the default direction.
+                Vector3 displacement;
+                displacement.X = Car.FrontCouplerAnimWidthM;
+                displacement.Y = Car.FrontCouplerAnimHeightM;
+                displacement.Z = (Car.FrontCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM);
+
+                // Get the orientation of the car as a quaternion
+                p.XNAMatrix.Decompose(out Vector3 scale, out Quaternion quaternion, out Vector3 translation);
+
+                // Reverse the y axis (plan view) component - perhaps because XNA is opposite to MSTS
+                var quaternionReversed = new Quaternion(quaternion.X, -quaternion.Y, quaternion.Z, quaternion.W);
+
+                // Rotate the displacement to match the orientation of the car
+                var rotatedDisplacement = Vector3.Transform(displacement, quaternionReversed);
+
+                // Apply the rotation to the coupler displacement to keep it in place with the wagon
+                FrontCouplerShape.Location.Location += rotatedDisplacement;
+
+                // Keep the coupler shape aligned with the wagon
+                FrontCouplerShape.Location.XNAMatrix.M11 = Car.WorldPosition.XNAMatrix.M11;
+                FrontCouplerShape.Location.XNAMatrix.M12 = Car.WorldPosition.XNAMatrix.M12;
+                FrontCouplerShape.Location.XNAMatrix.M13 = Car.WorldPosition.XNAMatrix.M13;
+                FrontCouplerShape.Location.XNAMatrix.M21 = Car.WorldPosition.XNAMatrix.M21;
+                FrontCouplerShape.Location.XNAMatrix.M22 = Car.WorldPosition.XNAMatrix.M22;
+                FrontCouplerShape.Location.XNAMatrix.M23 = Car.WorldPosition.XNAMatrix.M23;
+                FrontCouplerShape.Location.XNAMatrix.M31 = Car.WorldPosition.XNAMatrix.M31;
+                FrontCouplerShape.Location.XNAMatrix.M32 = Car.WorldPosition.XNAMatrix.M32;
+                FrontCouplerShape.Location.XNAMatrix.M33 = Car.WorldPosition.XNAMatrix.M33;
+
+                // Display Animation Shape                    
+                FrontCouplerShape.PrepareFrame(frame, elapsedTime);
+            }
+
+            // Display rear coupler in sim if open coupler shape is configured, otherwise skip to next section, and just display closed (default) coupler if configured
+            if (RearCouplerOpenShape != null && Car.IsAdvancedCoupler && Car.RearCouplerOpenFitted && Car.RearCouplerOpen && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
+            {
+                // The following locates the coupler at the end of the car.
+                // Suitable for development but, for release, would be better to implement as a sub-object of the car object.
+
+                // Place the coupler in the centre of the car
+                var p = Car.WorldPosition; // abbreviation
+                RearCouplerOpenShape.Location.Location = new Vector3(p.Location.X, p.Location.Y, p.Location.Z);
+                RearCouplerOpenShape.Location.TileX = p.TileX;
+                RearCouplerOpenShape.Location.TileZ = p.TileZ;
+
+                // Get the movement that would be needed to locate the coupler on the car if they were pointing in the default direction.
+                Vector3 displacement;
+                displacement.X = Car.RearCouplerOpenAnimWidthM;
+                displacement.Y = Car.RearCouplerOpenAnimHeightM;
+                displacement.Z = -(Car.RearCouplerOpenAnimLengthM + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM);  // Reversed as this is the rear coupler of the wagon
+
+                // Get the orientation of the car as a quaternion
+                p.XNAMatrix.Decompose(out Vector3 scale, out Quaternion quaternion, out Vector3 translation);
+
+                // Reverse the y axis (plan view) component - perhaps because XNA is opposite to MSTS
+                var quaternionReversed = new Quaternion(quaternion.X, -quaternion.Y, quaternion.Z, quaternion.W);
+
+                // Rotate the displacement to match the orientation of the car
+                var rotatedDisplacement = Vector3.Transform(displacement, quaternionReversed);
+
+                // Apply the rotation to the coupler displacement to keep it in place with the wagon
+                RearCouplerOpenShape.Location.Location += rotatedDisplacement;
+
+                // Keep the coupler shape aligned with the wagon
+                RearCouplerOpenShape.Location.XNAMatrix.M11 = Car.WorldPosition.XNAMatrix.M11;
+                RearCouplerOpenShape.Location.XNAMatrix.M12 = Car.WorldPosition.XNAMatrix.M12;
+                RearCouplerOpenShape.Location.XNAMatrix.M13 = Car.WorldPosition.XNAMatrix.M13;
+                RearCouplerOpenShape.Location.XNAMatrix.M21 = Car.WorldPosition.XNAMatrix.M21;
+                RearCouplerOpenShape.Location.XNAMatrix.M22 = Car.WorldPosition.XNAMatrix.M22;
+                RearCouplerOpenShape.Location.XNAMatrix.M23 = Car.WorldPosition.XNAMatrix.M23;
+                RearCouplerOpenShape.Location.XNAMatrix.M31 = Car.WorldPosition.XNAMatrix.M31;
+                RearCouplerOpenShape.Location.XNAMatrix.M32 = Car.WorldPosition.XNAMatrix.M32;
+                RearCouplerOpenShape.Location.XNAMatrix.M33 = Car.WorldPosition.XNAMatrix.M33;
+
+                // Display Animation Shape                    
+                RearCouplerOpenShape.PrepareFrame(frame, elapsedTime);
+            }
+
+            // Display rear default coupler in sim, by default it will always be closed position
+            else if (RearCouplerShape != null && Car.IsAdvancedCoupler && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
+            {
+                // The following locates the coupler at the end of the car.
+                // Suitable for development but, for release, would be better to implement as a sub-object of the car object.
+
+                // Place the coupler in the centre of the car
+                var p = Car.WorldPosition; // abbreviation
+                RearCouplerShape.Location.Location = new Vector3(p.Location.X, p.Location.Y, p.Location.Z);
+                RearCouplerShape.Location.TileX = p.TileX;
+                RearCouplerShape.Location.TileZ = p.TileZ;
+
+                // Get the movement that would be needed to locate the coupler on the car if they were pointing in the default direction.
+                Vector3 displacement;
+                displacement.X = Car.RearCouplerAnimWidthM;
+                displacement.Y = Car.RearCouplerAnimHeightM;
+                displacement.Z = -(Car.RearCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM);  // Reversed as this is the rear coupler of the wagon
+
+                // Get the orientation of the car as a quaternion
+                p.XNAMatrix.Decompose(out Vector3 scale, out Quaternion quaternion, out Vector3 translation);
+
+                // Reverse the y axis (plan view) component - perhaps because XNA is opposite to MSTS
+                var quaternionReversed = new Quaternion(quaternion.X, -quaternion.Y, quaternion.Z, quaternion.W);
+
+                // Rotate the displacement to match the orientation of the car
+                var rotatedDisplacement = Vector3.Transform(displacement, quaternionReversed);
+
+                // Apply the rotation to the coupler displacement to keep it in place with the wagon
+                RearCouplerShape.Location.Location += rotatedDisplacement;
+
+                // Keep the coupler shape aligned with the wagon
+                RearCouplerShape.Location.XNAMatrix.M11 = Car.WorldPosition.XNAMatrix.M11;
+                RearCouplerShape.Location.XNAMatrix.M12 = Car.WorldPosition.XNAMatrix.M12;
+                RearCouplerShape.Location.XNAMatrix.M13 = Car.WorldPosition.XNAMatrix.M13;
+                RearCouplerShape.Location.XNAMatrix.M21 = Car.WorldPosition.XNAMatrix.M21;
+                RearCouplerShape.Location.XNAMatrix.M22 = Car.WorldPosition.XNAMatrix.M22;
+                RearCouplerShape.Location.XNAMatrix.M23 = Car.WorldPosition.XNAMatrix.M23;
+                RearCouplerShape.Location.XNAMatrix.M31 = Car.WorldPosition.XNAMatrix.M31;
+                RearCouplerShape.Location.XNAMatrix.M32 = Car.WorldPosition.XNAMatrix.M32;
+                RearCouplerShape.Location.XNAMatrix.M33 = Car.WorldPosition.XNAMatrix.M33;
+
+                // Display Animation Shape                    
+                RearCouplerShape.PrepareFrame(frame, elapsedTime);
+            }
+
 
             // Applies MSTS style freight animation for coal load on the locomotive, crews, and other static animations.
             // Takes the form of FreightAnim ( A B C )
@@ -592,7 +934,7 @@ namespace Orts.Viewer3D.RollingStock
             // It appears that only one MSTS type FA can be used per vehicle (to be confirmed?)
             // For coal load variation, C should be absent (set to 1 when read in WAG file) or >0 - sets FreightAnimFlag; and A > B
             // To disable coal load variation and insert a static (crew) shape on the tender breech, one of the conditions indicated above
-            if (FreightShape != null)
+            if (FreightShape != null && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
             {
                 // Define default position of shape
                 FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
@@ -649,6 +991,16 @@ namespace Orts.Viewer3D.RollingStock
             {
                 foreach (var freightAnim in FreightAnimations.Animations)
                 {
+                    if (freightAnim.Animation is FreightAnimationStatic)
+                    {
+                        var animation = freightAnim.Animation as FreightAnimationStatic;
+                        if (!((animation.Visibility[(int)FreightAnimationStatic.VisibleFrom.Cab3D] &&
+                            Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab) ||
+                            (animation.Visibility[(int)FreightAnimationStatic.VisibleFrom.Cab2D] &&
+                            Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.Cab) ||
+                            (animation.Visibility[(int)FreightAnimationStatic.VisibleFrom.Outside] && (Viewer.Camera.AttachedCar != this.MSTSWagon ||
+                            (Viewer.Camera.Style != Camera.Styles.ThreeDimCab && Viewer.Camera.Style != Camera.Styles.Cab))))) continue;
+                    }
                     if (freightAnim.FreightShape != null && !((freightAnim.Animation is FreightAnimationContinuous) && (freightAnim.Animation as FreightAnimationContinuous).LoadPerCent == 0))
                     {
                         freightAnim.FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
@@ -677,7 +1029,8 @@ namespace Orts.Viewer3D.RollingStock
                 }
             }
 
-
+            // Get the current height above "sea level" for the relevant car
+            Car.CarHeightAboveSeaLevelM = Viewer.Tiles.GetElevation(Car.WorldPosition.WorldLocation);
 
             // Control visibility of passenger cabin when inside it
             if (Viewer.Camera.AttachedCar == this.MSTSWagon
@@ -692,9 +1045,9 @@ namespace Orts.Viewer3D.RollingStock
             }
             else
             {
-                // Skip drawing if CAB view - draw 2D view instead - by GeorgeS
+                // Skip drawing if 2D or 3D Cab view - Cab view already drawn - by GeorgeS changed by DennisAT
                 if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
-                    Viewer.Camera.Style == Camera.Styles.Cab)
+                    (Viewer.Camera.Style == Camera.Styles.Cab || Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
                     return;
 
                 // We are outside the passenger cabin

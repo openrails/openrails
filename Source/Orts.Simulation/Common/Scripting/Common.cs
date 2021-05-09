@@ -21,6 +21,9 @@ using Orts.Simulation;
 
 namespace ORTS.Scripting.Api
 {
+    /// <summary>
+    /// Base class for all scripts. Contains information about the simulation.
+    /// </summary>
     public abstract class AbstractScriptClass
     {
         /// <summary>
@@ -31,10 +34,21 @@ namespace ORTS.Scripting.Api
         /// Clock value (in seconds) for the simulation. Starts with a value = 0.
         /// </summary>
         public Func<float> GameTime;
+    }
+    /// <summary>
+    /// Base class for scripts related to train subsystems.
+    /// Provides train specific features such as speed and travelled distance.
+    /// </summary>
+    public abstract class AbstractTrainScriptClass : AbstractScriptClass
+    {
         /// <summary>
         /// Running total of distance travelled - always positive, updated by train physics.
         /// </summary>
         public Func<float> DistanceM;
+        /// <summary>
+        /// Train's actual absolute speed.
+        /// </summary>
+        public Func<float> SpeedMpS;
         /// <summary>
         /// Confirms a command done by the player with a pre-set message on the screen.
         /// </summary>
@@ -80,9 +94,27 @@ namespace ORTS.Scripting.Api
 
     public class OdoMeter : Counter
     {
-        public OdoMeter(AbstractScriptClass asc)
+        public OdoMeter(AbstractTrainScriptClass asc)
         {
             CurrentValue = asc.DistanceM;
+        }
+    }
+
+    public class Blinker
+    {
+        float StartValue;
+        protected Func<float> CurrentValue;
+
+        public float FrequencyHz { get; private set; }
+        public bool Started { get; private set; }
+        public void Setup(float frequencyHz) { FrequencyHz = frequencyHz; }
+        public void Start() { StartValue = CurrentValue(); Started = true; }
+        public void Stop() { Started = false; }
+        public bool On { get { return Started && ((CurrentValue() - StartValue) % (1f / FrequencyHz)) * FrequencyHz * 2f < 1f; } }
+
+        public Blinker(AbstractScriptClass asc)
+        {
+            CurrentValue = asc.GameTime;
         }
     }
 }

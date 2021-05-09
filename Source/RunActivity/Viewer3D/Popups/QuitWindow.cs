@@ -17,12 +17,12 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Viewer3D.Processes;
-using ORTS.Settings;
-using System;
-using System.Windows.Forms;
+using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -43,12 +43,12 @@ namespace Orts.Viewer3D.Popups
 			else heightForLabels = (vbox.RemainingHeight - 2 * ControlLayout.SeparatorSize) / 2;
             var spacing = (heightForLabels - Owner.TextFontDefault.Height) / 2;
             vbox.AddSpace(0, spacing);
-            vbox.Add(buttonQuit = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetStringFmt("Quit {1} ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommands.GameQuit], Application.ProductName), LabelAlignment.Center));
+            vbox.Add(buttonQuit = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetStringFmt("Quit {1} ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommand.GameQuit], Application.ProductName), LabelAlignment.Center));
             vbox.AddSpace(0, spacing);
             vbox.AddHorizontalSeparator();
 			if (!Orts.MultiPlayer.MPManager.IsMultiPlayer())
 			{
-                buttonSave = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetStringFmt("Save your game ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommands.GameSave]), LabelAlignment.Center);
+                buttonSave = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetStringFmt("Save your game ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommand.GameSave]), LabelAlignment.Center);
 				vbox.AddSpace(0, spacing);
 				vbox.Add(buttonSave);
 				vbox.AddSpace(0, spacing);
@@ -56,7 +56,7 @@ namespace Orts.Viewer3D.Popups
 				buttonSave.Click += new Action<Control, Point>(buttonSave_Click);
 			}
             vbox.AddSpace(0, spacing);
-            vbox.Add(buttonContinue = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetStringFmt("Continue playing ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommands.GamePauseMenu]), LabelAlignment.Center));
+            vbox.Add(buttonContinue = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetStringFmt("Continue playing ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommand.GamePauseMenu]), LabelAlignment.Center));
             buttonQuit.Click += new Action<Control, Point>(buttonQuit_Click);
             buttonContinue.Click += new Action<Control, Point>(buttonContinue_Click);
             return vbox;

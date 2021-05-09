@@ -609,6 +609,18 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
+        /// Construct a SoundSource that has no specific location and a set of programmatically defined <see cref="SoundStream"/>s.
+        /// </summary>
+        /// <param name="viewer">The <see cref="Viewer"/> to attach this SoundSource to.</param>
+        /// <param name="makeStreams">A generator function to create the attached SoundStreams.</param>
+        public SoundSource(Viewer viewer, Func<SoundSource, IEnumerable<SoundStream>> makeStreams)
+        {
+            IsUnattenuated = true;
+            Initialize(viewer);
+            SoundStreams.AddRange(makeStreams(this));
+        }
+
+        /// <summary>
         /// Stop the streams, free up OpenAL sound source IDs and try to unload wave data from memory
         /// </summary>
         public override void Uninitialize()
@@ -803,6 +815,32 @@ namespace Orts.Viewer3D
             }
         }
 
+        private void Initialize(Viewer viewer)
+        {
+            Viewer = viewer;
+            WorldLocation = WorldLocation.None;
+
+            ActivationConditions = new Activation()
+            {
+                TrackType = -1,
+                Distance = 1000,
+                CabCam = true,
+                ExternalCam = true,
+                PassengerCam = true,
+            };
+            DeactivationConditions = new Deactivation()
+            {
+                TrackType = -1,
+                Distance = 1000,
+                CabCam = false,
+                ExternalCam = false,
+                PassengerCam = false,
+            };
+
+            Volume = 1.0f;
+            SetRolloffFactor();
+        }
+
         private void SetRolloffFactor()
         {
             var deactivationDistance = DeactivationConditions != null && DeactivationConditions.Distance != 0 ? DeactivationConditions.Distance : MaxDistanceM;
@@ -868,6 +906,7 @@ namespace Orts.Viewer3D
 
                             released |= trigger.Signaled &&
                                 (trigger.SoundCommand is ORTSReleaseLoopRelease || trigger.SoundCommand is ORTSReleaseLoopReleaseWithJump);
+                            if (trigger is ORTSDiscreteTrigger) trigger.Signaled = false;
                         }
 
                         if (!released && !stream.ALSoundSource.isPlaying)
@@ -1197,8 +1236,15 @@ namespace Orts.Viewer3D
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Discrete_Trigger) && soundSource.Car != null)
                     {
                         ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (Orts.Formats.Msts.Discrete_Trigger)trigger, settings);
-                        Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
-                        SoundSource.Car.EventHandlers.Add(ortsTrigger);  // tell the simulator to call us when the event occurs
+                        Triggers.Add(ortsTrigger);  // list them here so we can enable and disable
+                        try
+                        {
+                            SoundSource.Car.EventHandlers.Add(ortsTrigger);  // tell the simulator to call us when the event occurs
+                        }
+                        catch (Exception error)
+                        {
+                            Trace.TraceInformation("Sound event skipped due to thread safety problem " + error.Message);
+                        }
                     }
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Discrete_Trigger))
                     {
@@ -1230,6 +1276,20 @@ namespace Orts.Viewer3D
             _InitialTrigger = new ORTSInitialTrigger(this, wavFileName);
             Triggers.Add(_InitialTrigger);
 
+        }
+
+        /// <summary>
+        /// Create a sound stream with an arbitrary set of triggers.
+        /// </summary>
+        /// <param name="soundSource">The parent sound source.</param>
+        /// <param name="makeTriggers">A generator function to create the triggers.</param>
+        public SoundStream(SoundSource soundSource, Func<SoundStream, IEnumerable<ORTSTrigger>> makeTriggers)
+        {
+            SoundSource = soundSource;
+            Volume = 1.0f;
+
+            ALSoundSource = new ALSoundSource(soundSource.IsEnvSound, soundSource.RolloffFactor);
+            Triggers.AddRange(makeTriggers(this));
         }
 
         /// <summary>
@@ -1543,6 +1603,19 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
+        /// Construct a discrete sound trigger with an arbitrary event trigger and sound command.
+        /// </summary>
+        /// <param name="soundStream">The parent sound stream.</param>
+        /// <param name="triggerID">The trigger to activate this event.</param>
+        /// <param name="soundCommand">The command to run when activated.</param>
+        public ORTSDiscreteTrigger(SoundStream soundStream, Event triggerID, ORTSSoundCommand soundCommand)
+        {
+            TriggerID = triggerID;
+            SoundCommand = soundCommand;
+            SoundStream = soundStream;
+        }
+
+        /// <summary>
         /// Check if this trigger listens to an event
         /// </summary>
         /// <param name="eventID">Occured event</param>
@@ -1586,6 +1659,7 @@ namespace Orts.Viewer3D
                 SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
                 SoundCommand.Run();
                 SoundStream.LastTriggered = this;
+                Signaled = true;
 #if DEBUGSCR
                 if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
                     Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", SoundStream.ALSoundSource.SoundSourceID, TriggerID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);

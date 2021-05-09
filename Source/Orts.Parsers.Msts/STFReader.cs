@@ -101,8 +101,8 @@ namespace Orts.Parsers.Msts
     // (constant or block) will not be processed.
     //  
     // NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy 
-    // "#\u00b6" is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be 
-    // ignored).
+    // {STFReader.EndBlockCommentSentinel}, is returned, so if EndOFBlock() returns false, you always get an
+    // {item} (which can then just be ignored).
     // 
     // Here are two examples which use different techniques to read the same STF file:
     // Example 1:
@@ -163,6 +163,11 @@ namespace Orts.Parsers.Msts
     /// </exception>
     public class STFReader : IDisposable
     {
+        /// <summary>
+        /// Returned in lieu of an item for a comment that is the last item in a block.
+        /// </summary>
+        public const string EndBlockCommentSentinel = "#\u00b6";
+
         /// <summary>Open a file, reader the header line, and prepare for STF parsing
         /// </summary>
         /// <param name="filename">Filename of the STF file to be opened and parsed.</param>
@@ -272,7 +277,7 @@ namespace Orts.Parsers.Msts
         /// <summary>Returns the next whitespace delimited {item} from the STF file skipping comments, etc.
         /// </summary>
         /// <remarks>
-        /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
+        /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy <see cref="EndBlockCommentSentinel"/> is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
         /// </remarks>
         /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
         public string ReadItem()
@@ -283,7 +288,7 @@ namespace Orts.Parsers.Msts
         /// <summary>This is an internal function in STFReader, it returns the next whitespace delimited {item} from the STF file.
         /// </summary>
         /// <remarks>
-        /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
+        /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy <see cref="EndBlockCommentSentinel"/> is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
         /// </remarks>
         /// <param name="string_mode">When true normal comment processing is disabled.</param>
         /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
@@ -529,6 +534,8 @@ namespace Orts.Parsers.Msts
                 return defaultValue.Value;
             }
 
+            if (item.Length == 0)
+                return 0x0;
             uint val;
             if (uint.TryParse(item, parseHex, parseNFI, out val)) return val;
             STFException.TraceWarning(this, "Cannot parse the constant hex string " + item);
@@ -749,7 +756,7 @@ namespace Orts.Parsers.Msts
             /// </summary>
             Resistance = 1 << 18,
 
-            /// <summary>Valid Units: psi, bar, inhg, kpa
+            /// <summary>Valid Units: psi, bar, inhg, cmhg, kpa
             /// <para>Scaled to pounds per square inch.</para>
             /// </summary>
             PressureDefaultPSI = 1 << 19,
@@ -795,6 +802,12 @@ namespace Orts.Parsers.Msts
             /// <para>Scaled to N/m/s^2.</para>
             /// </summary>            
             ResistanceDavisC = 1 << 26,
+
+            /// <summary>
+            /// Valid Units: degc, degf
+            /// <para>Scaled to Deg Celsius</para>
+            /// </summary>            
+            Temperature = 1 << 27,    // "Temperature", note above TemperatureDifference, is different
 
             // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values.
             // or interpreting locomotive cab attributes from the ORTSExtendedCVF experimental mechanism.
@@ -1042,6 +1055,7 @@ namespace Orts.Parsers.Msts
                     case "psi": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "bar": return 14.5037738;
                     case "inhg": return 0.4911542;
+                    case "cmhg": return 0.1933672;
                     case "kpa": return 0.145037738;
                 }
             if ((validUnits & UNITS.PressureDefaultInHg) > 0)
@@ -1059,15 +1073,17 @@ namespace Orts.Parsers.Msts
                     case "": return 1.0;
                     case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "inhg/s": return 0.4911542;
+                    case "cmhg/s": return 0.1933672;
                     case "bar/s": return 14.5037738;
                     case "kpa/s": return 0.145;
                 }
             if ((validUnits & UNITS.PressureRateDefaultInHgpS) > 0)
                 switch (suffix)
                 {
-                    case "": return 0.4911542;
+                    case "": return 0.4911542; // <PNComment> Is this correct? - It appears to hold inHg values, yet it does no conversion on psi values, and a conversion on inHg values 
                     case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "inhg/s": return 0.4911542;
+                    case "cmhg/s": return 0.1933672;
                     case "bar/s": return 14.5037738;
                     case "kpa/s": return 0.145;
                 }
@@ -1098,7 +1114,20 @@ namespace Orts.Parsers.Msts
                     case "Nm/s^2": return 1;
                     case "lbf/mph^2": return 22.42849;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps +> 4.4822162 / (0.44704 * 0.44704) = 22.42849
                 }
+            if ((validUnits & UNITS.Temperature) > 0)
+            {
+                switch (suffix)
+                {
 
+                    case "": return 1.0;
+                    case "degc": return 1;
+                    case "degf":  // For degF we have a complex calculation process that require conversion from a string, calculation of equivalent degC, and then conversion back to a string
+                        float TempConstant = Convert.ToSingle(constant);
+                        float Temperature = (TempConstant - 32f) * (100f / 180f);
+                        constant = Convert.ToString(Temperature);
+                        return 1;
+                }
+            }
             STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + validUnits.ToString() + " unit");
             return 1;
         }
@@ -1129,7 +1158,7 @@ namespace Orts.Parsers.Msts
                     return (defaultValue != null) ? defaultValue : "";
                 }
                 SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
-                if (result == "#\u00b6")
+                if (result == EndBlockCommentSentinel)
                 {
                     STFException.TraceWarning(this, "Found a comment when an {constant item} was expected.");
                     return (defaultValue != null) ? defaultValue : result;
@@ -1448,7 +1477,7 @@ namespace Orts.Parsers.Msts
         /// <summary>Parse an STF file until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda
         /// </summary>
         /// <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
-        public void ParseBlock(TokenProcessor[] processors)
+        public void ParseBlock(IEnumerable<TokenProcessor> processors)
         { // Press F10 'Step Over' to jump to the next token
 #line hidden
             while (!EndOfBlock())
@@ -1660,9 +1689,7 @@ namespace Orts.Parsers.Msts
                 //this correctly when using 'tree'
                 int c2 = PeekPastWhitespace();
                 if (c2 == ')')
-                {
-                    return "#\u00b6";
-                }
+                    return EndBlockCommentSentinel;
                 string item = ReadItem(skip_mode, string_mode);
                 return item; // Now move on to the next token after the commented area
             }
@@ -1778,9 +1805,7 @@ namespace Orts.Parsers.Msts
                             //this correctly when using 'tree'
                             int c2 = PeekPastWhitespace();
                             if (c2 == ')')
-                            {
-                                return "#\u00b6";
-                            }
+                                return EndBlockCommentSentinel;
                             string item = ReadItem(skip_mode, string_mode);
                             return item; // Now move on to the next token after the commented area
                         }

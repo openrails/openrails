@@ -23,7 +23,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Color = Microsoft.Xna.Framework.Graphics.Color;
 
 using System.Windows.Forms;
 using System.Reflection;
@@ -156,7 +155,7 @@ namespace ORTS.TrackViewer
             SetAliasing();
             graphics.IsFullScreen = false;
             Window.AllowUserResizing = true;
-            Window.ClientSizeChanged += new System.EventHandler(Window_ClientSizeChanged);
+            Window.ClientSizeChanged += new System.EventHandler<System.EventArgs>(Window_ClientSizeChanged);
 
             //we do not a very fast behaviour, but we do need to get all key presses
             IsFixedTimeStep = true;
@@ -1134,8 +1133,8 @@ namespace ORTS.TrackViewer
 
         void CalculateFPS(GameTime gameTime)
         {
-            float elapsedRealTime = (float)gameTime.ElapsedRealTime.TotalSeconds;
-            FrameRate.Update(elapsedRealTime, 1f / elapsedRealTime);
+            float elapsedTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            FrameRate.Update(elapsedTime, 1f / elapsedTime);
         }
 
         #endregion

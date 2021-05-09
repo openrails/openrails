@@ -196,6 +196,21 @@ Trigger       Function
 143           BrakePipePressureStoppedChanging : for rolling stock equipped with train brakes, triggered when brake pipe/brakeline pressure stops changing
 =========     ============================================================================================================================================================================
 
+=========     =====================================
+Trigger       Function
+=========     =====================================
+145           WaterScoopRaiseLower
+146           WaterScoopBroken
+=========     =====================================
+
+=========     ======================================================================
+Trigger       Function
+=========     ======================================================================
+147           SteamGearLeverToggle : Toggles when steam gear lever is moved.
+148           AIFiremanSoundOn : AI fireman mode is on.
+149           AIFiremanSoundOff : AI fireman mode is off, ie in Manual Firing mode.
+=========     ======================================================================
+
 Triggers from 150 to 158 are used for the circuit breaker sounds.
 
 The following triggers are activated when the state of the circuit breaker changes:
@@ -256,8 +271,81 @@ Trigger       Function
 172           Pantograph4Down
 =========     =====================================
 
+Additional triggers:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+173           HotBoxBearingOn
+174           HotBoxBearingOff
+175           BoilerBlowdownOn
+176           BoilerBlowdownOff
+177           BatteryOn
+178           BatteryOff
+179           PowerKeyOn
+180           PowerKeyOff
+=========     =====================================
+
+
+
+The following triggers are used to activate the gear positions:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+200           GearPosition0
+201           GearPosition1
+202           GearPosition2
+203           GearPosition3
+204           GearPosition4
+205           GearPosition5
+206           GearPosition6
+207           GearPosition7
+208           GearPosition8
+=========     =====================================
+
+Additional triggers for vacuum brakes:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+210           LargeEjectorOn
+211           LargeEjectorOff
+212           SmallEjectorOn
+213           SmallEjectorOff
+=========     =====================================
+
+
 Variable Triggers
 -----------------
+
+ORTS
+^^^^
+
+The sound objects attached to a vehicle (wagon or loco) can respond in volume and frequency to changes in the vehicle's properties.
+There are 7 properties:
+
+- distance squared from a sound source (m\ :sup:`2`)
+
+- speed (m/s)	
+
+- pressure in the brake cylinder (psi)	
+
+- centrifugal force due to traversing a curve (N)	
+
+- 3 variables in range 0 - 1:
+
+  - Variable1 reflects the throttle
+
+  - Variable2 reflects the engine's RPM (diesel) or Tractive Force (electric) or cylinder pressure (steam)
+
+  - Variable3 reflects the dynamic brake (diesel | electric) or fuel rate (steam)
+		
+Note: Separately, for a whole route, sounds for all curves below a certain radius can be automatically triggered as vehicles pass - see :ref:`sound-curve` below.		
+
+
+Comparison with MSTS
+^^^^^^^^^^^^^^^^^^^^
 
 OR manages all of the variable triggers managed by MSTS. There can be some 
 difference in the relationship between physical locomotive variables (e.g. 
@@ -302,6 +390,8 @@ Testing Sound Files at Runtime
 
 The :ref:`sound debug window <driving-sound-debug>` is a useful tool for 
 testing.
+
+.. _sound-curve:
 
 Automatic switch and curve squeal track sound
 =============================================
@@ -352,10 +442,15 @@ To enable this feature steps here below must be followed:
      TrackType ( "Concrete Bridge" "EuropeSteamTrack7In.sms" "EuropeSteamTrack7Ex.sms" )
      TrackType ( "Crossing Platform" "EuropeSteamTrack8In.sms" "EuropeSteamTrack8Ex.sms" )
      TrackType ( "Wooden Bridge" "EuropeSteamTrack9In.sms" "EuropeSteamTrack9Ex.sms" )
-     TrackType ( "Switch" "switchtrack7in.sms" "switchtrack7ex.sms" )
      TrackType ( "Switch" "DemoAutoSound/switchtrackin.sms" "DemoAutoSound/switchtrackex.sms"     )
      TrackType ( "Squeal Curve" "DemoAutoSound/curvesquealtrackin.sms" "DemoAutoSound/curvesquealtrackex.sms"   )
      TrackType ( "Squeal Switch" "DemoAutoSound/curveswitchtrackin.sms" "DemoAutoSound/curveswitchtrackex.sms"   )
+
+.. index::
+   single: ORTSSwitchSMSNumber
+   single: ORTSCurveSMSNumber
+   single: ORTSCurveSwitchSMSNumber
+   single: ORTSDefaultTurntableSMS
 
 3. For every route you must tell OR which of the ttype sound files are those related to 
    automatic sounds. This is done by inserting following line in the route's ``.trk`` file::
@@ -370,20 +465,20 @@ To enable this feature steps here below must be followed:
    the base .trk file is named ``ITALIA13.trk``::
 
 
-        
+       -> BLANK LINE HERE <- 
        include ( "../ITALIA13.trk" )
           ORTSDefaultTurntableSMS ( turntable.sms )
           ORTSSwitchSMSNumber ( 10 )
           ORTSCurveSMSNumber ( 11 )       
           ORTSCurveSwitchSMSNumber ( 12 )  
 
-      
-   Note that the above the ``include`` line a blank line must be present.
-   Note also that with the same integration ``.trk`` file also the default turntable sound 
-   is defined, in case this route has turntables or transfertables.                  
+Note that a blank line must be present above the ``include`` line, but that is difficult to reproduce in this manual.
+
+Note also that with the same integration ``.trk`` file also the default turntable sound 
+is defined, in case this route has turntables or transfertables.                  
  
-   As already stated, you can also define in ``ttype.dat`` and in the ``.trk`` file only 
-   one or only two types of automatic sounds.
+As already stated, you can also define in ``ttype.dat`` and in the ``.trk`` file only 
+one or only two types of automatic sounds.
 
 .. _sound-external:   
 
@@ -393,6 +488,10 @@ Override % of external sound heard internally for a specific trainset
 External sounds are reproduced at a lower volume when heard within a cab or 
 passenger view. The % of external sound heard internally is defined in the 
 ``Audio Options`` menu window.
+
+.. index::
+   single: ORTSExternalSoundPassedThroughPercent
+
 This percentage may be overridden for any trainset inserting in the Wagon 
 section of any .eng or .wag file (or in their "include" file as explained 
 :ref:`here <physics-inclusions>`) following line::

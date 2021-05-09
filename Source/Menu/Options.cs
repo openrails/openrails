@@ -15,18 +15,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
-using MSTS;
-using ORTS.Settings;
-using ORTS.Updater;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
+using MSTS;
+using ORTS.Common.Input;
+using ORTS.Settings;
+using ORTS.Updater;
 
 namespace ORTS
 {
@@ -64,6 +67,8 @@ namespace ORTS
             Settings = settings;
             UpdateManager = updateManager;
 
+            InitializeHelpIcons();
+
             // Collect all the available language codes by searching for
             // localisation files, but always include English (base language).
             var languageCodes = new List<string> { "en" };
@@ -95,16 +100,16 @@ namespace ORTS
             comboLanguage.SelectedValue = Settings.Language;
             if (comboLanguage.SelectedValue == null) comboLanguage.SelectedIndex = 0;
 
-            comboBoxOtherUnits.DataSource = new[] {
+            comboOtherUnits.DataSource = new[] {
                 new ComboBoxMember { Code = "Route", Name = catalog.GetString("Route") },
                 new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Player's location") },
                 new ComboBoxMember { Code = "Metric", Name = catalog.GetString("Metric") },
                 new ComboBoxMember { Code = "US", Name = catalog.GetString("Imperial US") },
                 new ComboBoxMember { Code = "UK", Name = catalog.GetString("Imperial UK") },
             }.ToList();
-            comboBoxOtherUnits.DisplayMember = "Name";
-            comboBoxOtherUnits.ValueMember = "Code";
-            comboBoxOtherUnits.SelectedValue = Settings.Units;
+            comboOtherUnits.DisplayMember = "Name";
+            comboOtherUnits.ValueMember = "Code";
+            comboOtherUnits.SelectedValue = Settings.Units;
 
             comboPressureUnit.DataSource = new[] {
                 new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Automatic") },
@@ -136,20 +141,22 @@ namespace ORTS
             checkAlerter.Checked = Settings.Alerter;
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
-            checkSpeedControl.Checked = Settings.SpeedControl;
-            checkConfirmations.Checked = !Settings.SuppressConfirmations;
-            checkViewDispatcher.Checked = Settings.ViewDispatcher;
+            checkOverspeedMonitor.Checked = Settings.SpeedControl;
+            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
+            checkViewMapWindow.Checked = Settings.ViewDispatcher;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
             checkRetainers.Checked = Settings.RetainersOnAllCars;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
             comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
-            comboBoxOtherUnits.Text = settings.Units;
+            comboOtherUnits.Text = settings.Units;
             checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
-
+            checkEnableWebServer.Checked = Settings.WebServer;
+            numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
+
             checkMSTSBINSound.Checked = Settings.MSTSBINSound;
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
             numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
@@ -174,9 +181,13 @@ namespace ORTS
             comboWindowSize.Text = Settings.WindowSize;
             trackDayAmbientLight.Value = Settings.DayAmbientLight;
             trackDayAmbientLight_ValueChanged(null, null);
+            trackAntiAliasing.Value = Settings.AntiAliasing;
+            trackAntiAliasing_ValueChanged(null, null);
             checkDoubleWire.Checked = Settings.DoubleWire;
 
             // Simulation tab
+
+            checkSimpleControlsPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
             numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
@@ -188,9 +199,7 @@ namespace ORTS
             checkWindResistanceDependent.Checked = Settings.WindResistanceDependent;
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkHotStart.Checked = Settings.HotStart;
-            checkAutopilot.Checked = Settings.Autopilot;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
-            checkExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
 
             // Keyboard tab
@@ -220,6 +229,7 @@ namespace ORTS
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
             checkDataLogMisc.Checked = Settings.DataLogMisc;
             checkDataLogSteamPerformance.Checked = Settings.DataLogSteamPerformance;
+            checkVerboseConfigurationMessages.Checked = Settings.VerboseConfigurationMessages;
 
             // Evaluation tab
             checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
@@ -358,14 +368,14 @@ namespace ORTS
             var columnWidth = (panelKeys.ClientSize.Width - 20) / 2;
 
             var tempLabel = new Label();
-            var tempKIC = new KeyInputControl(Settings.Input.Commands[(int)UserCommands.GameQuit], InputSettings.DefaultCommands[(int)UserCommands.GameQuit]);
+            var tempKIC = new KeyInputControl(Settings.Input.Commands[(int)UserCommand.GameQuit], InputSettings.DefaultCommands[(int)UserCommand.GameQuit]);
             var rowTop = Math.Max(tempLabel.Margin.Top, tempKIC.Margin.Top);
             var rowHeight = tempKIC.Height;
             var rowSpacing = rowHeight + tempKIC.Margin.Vertical;
 
             var lastCategory = "";
             var i = 0;
-            foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+            foreach (UserCommand command in Enum.GetValues(typeof(UserCommand)))
             {
                 var name = InputSettings.GetPrettyLocalizedName(command);
                 var category = ParseCategoryFrom(name);
@@ -424,17 +434,18 @@ namespace ORTS
             // General tab
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
-            Settings.SpeedControl = checkSpeedControl.Checked;
-            Settings.SuppressConfirmations = !checkConfirmations.Checked;
-            Settings.ViewDispatcher = checkViewDispatcher.Checked;
+            Settings.SpeedControl = checkOverspeedMonitor.Checked;
+            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
+            Settings.ViewDispatcher = checkViewMapWindow.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
             Settings.RetainersOnAllCars = checkRetainers.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
             Settings.Language = comboLanguage.SelectedValue.ToString();
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
-            Settings.Units = comboBoxOtherUnits.SelectedValue.ToString();
+            Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
+            Settings.WebServer = checkEnableWebServer.Checked;
 
             // Audio tab
             Settings.MSTSBINSound = checkMSTSBINSound.Checked;
@@ -456,11 +467,14 @@ namespace ORTS
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
             Settings.ViewingFOV = (int)numericViewingFOV.Value;
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
-            Settings.WindowSize = comboWindowSize.Text;
+            Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
+
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
+            Settings.AntiAliasing = trackAntiAliasing.Value;
 
             // Simulation tab
+            Settings.SimpleControlPhysics = checkSimpleControlsPhysics.Checked;
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
@@ -470,9 +484,7 @@ namespace ORTS
             Settings.WindResistanceDependent = checkWindResistanceDependent.Checked;
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.HotStart = checkHotStart.Checked;
-            Settings.Autopilot = checkAutopilot.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
-            Settings.ExtendedAIShunting = checkExtendedAIShunting.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
 
             // Keyboard tab
@@ -486,6 +498,7 @@ namespace ORTS
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;
             Settings.DataLogMisc = checkDataLogMisc.Checked;
             Settings.DataLogSteamPerformance = checkDataLogSteamPerformance.Checked;
+            Settings.VerboseConfigurationMessages = checkVerboseConfigurationMessages.Checked;
 
             // Evaluation tab
             Settings.DataLogTrainSpeed = checkDataLogTrainSpeed.Checked;
@@ -530,6 +543,19 @@ namespace ORTS
             Settings.ActWeatherRandomizationLevel = (int)numericActWeatherRandomizationLevel.Value;
 
             Settings.Save();
+        }
+
+        /// <summary>
+        /// Returns user's [width]x[height] if expression is valid and values are sane, else returns previous value of setting.
+        /// </summary>
+        private string GetValidWindowSize(string text)
+        {
+            var match = Regex.Match(text, @"^\s*([1-9]\d{2,3})\s*[Xx]\s*([1-9]\d{2,3})\s*$");//capturing 2 groups of 3-4digits, separated by X or x, ignoring whitespace in beginning/end and in between
+            if (match.Success)
+            {
+                return $"{match.Groups[1]}x{match.Groups[2]}";
+            }
+            return Settings.WindowSize; // i.e. no change or message. Just ignore non-numeric entries
         }
 
         void buttonDefaultKeys_Click(object sender, EventArgs e)
@@ -604,6 +630,36 @@ namespace ORTS
         private void trackDayAmbientLight_ValueChanged(object sender, EventArgs e)
         {
             labelDayAmbientLight.Text = catalog.GetStringFmt("{0}%", trackDayAmbientLight.Value * 5);
+        }
+
+        private void trackAntiAliasing_ValueChanged(object sender, EventArgs e)
+        {
+            string method;
+            switch ((UserSettings.AntiAliasingMethod)trackAntiAliasing.Value)
+            {
+                case UserSettings.AntiAliasingMethod.None:
+                    method = "Disabled";
+                    break;
+                case UserSettings.AntiAliasingMethod.MSAA2x:
+                    method = "2x MSAA";
+                    break;
+                case UserSettings.AntiAliasingMethod.MSAA4x:
+                    method = "4x MSAA";
+                    break;
+                case UserSettings.AntiAliasingMethod.MSAA8x:
+                    method = "8x MSAA";
+                    break;
+                case UserSettings.AntiAliasingMethod.MSAA16x:
+                    method = "16x MSAA";
+                    break;
+                case UserSettings.AntiAliasingMethod.MSAA32x:
+                    method = "32x MSAA";
+                    break;
+                default:
+                    method = "";
+                    break;
+            }
+            labelAntiAliasingValue.Text = method;
         }
 
         private void trackLODBias_ValueChanged(object sender, EventArgs e)
@@ -738,5 +794,161 @@ namespace ORTS
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
+
+
+        #region Help for General Options
+        /// <summary>
+        /// Allows multiple controls to change a single help icon with their hover events.
+        /// </summary>
+        private class HelpIconHover
+        {
+            private readonly PictureBox Icon;
+            private int HoverCount = 0;
+
+            public HelpIconHover(PictureBox pb)
+            {
+                Icon = pb;
+            }
+
+            public void Enter()
+            {
+                HoverCount++;
+                SetImage();
+            }
+
+            public void Leave()
+            {
+                HoverCount--;
+                SetImage();
+            }
+
+            private void SetImage()
+            {
+                Icon.Image = HoverCount > 0 ? Properties.Resources.info_18_hover : Properties.Resources.info_18;
+            }
+        }
+
+        private readonly IDictionary<Control, HelpIconHover> ToHelpIcon = new Dictionary<Control, HelpIconHover>();
+
+        private void InitializeHelpIcons()
+        {
+            // static mapping of picture boxes to controls
+            var helpIconControls = new (PictureBox, Control[])[]
+            {
+                (pbAlerter, new[] { checkAlerter }),
+                (pbControlConfirmations, new[] { checkControlConfirmations }),
+                (pbMapWindow, new[] { checkViewMapWindow }),
+                (pbLAA, new[] { checkUseLargeAddressAware }),
+                (pbRetainers, new[] { checkRetainers }),
+                (pbGraduatedRelease, new[] { checkGraduatedRelease }),
+                (pbBrakePipeChargingRate, new[] { lBrakePipeChargingRate }),
+                (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
+                (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
+                (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
+                (pbDisableTcsScripts, new[] { checkDisableTCSScripts }),
+                (pbEnableWebServer, new[] { checkEnableWebServer }),
+                (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
+            };
+            foreach ((PictureBox pb, Control[] controls) in helpIconControls)
+            {
+                var hover = new HelpIconHover(pb);
+                ToHelpIcon[pb] = hover;
+                foreach (Control control in controls)
+                    ToHelpIcon[control] = hover;
+            }
+        }
+
+        /// <summary>
+        /// Loads a relevant page from the manual maintained by James Ross's automatic build.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HelpIcon_Click(object sender, EventArgs _)
+        {
+            const string baseUrl = "https://open-rails.readthedocs.io/en/latest";
+            var urls = new Dictionary<object, string>
+            {
+                {
+                    pbAlerter,
+                    baseUrl + "/options.html#alerter-in-cab"
+                },
+                {
+                    pbControlConfirmations,
+                    baseUrl + "/options.html#control-confirmations"
+                },
+                {
+                    pbMapWindow,
+                    // This URL is temporary, waiting for https://open-rails.readthedocs.io to be updated to match the Manual in PDF format.
+                    baseUrl + "/options.html#dispatcher-window"
+                },
+                {
+                    pbLAA,
+                    baseUrl + "/options.html#large-address-aware-binaries"
+                },
+                {
+                    pbRetainers,
+                    baseUrl + "/options.html#retainer-valve-on-all-cars"
+                },
+                {
+                    pbGraduatedRelease,
+                    baseUrl + "/options.html#graduated-release-air-brakes"
+                },
+                {
+                    pbBrakePipeChargingRate,
+                    baseUrl + "/options.html#brake-pipe-charging-rate"
+                },
+                {
+                    pbLanguage,
+                    baseUrl + "/options.html#language"
+                },
+                {
+                    pbPressureUnit,
+                    baseUrl + "/options.html#pressure-unit"
+                },
+                {
+                    pbOtherUnits,
+                    baseUrl + "/options.html#other-units"
+                },
+                {
+                    pbDisableTcsScripts,
+                    baseUrl + "/options.html#disable-tcs-scripts"
+                },
+                {
+                    pbEnableWebServer,
+                    baseUrl + "/options.html#enable-web-server"
+                },
+                {
+                    pbOverspeedMonitor,
+                    baseUrl + "/options.html#overspeed-monitor"
+                },
+            };
+            if (urls.TryGetValue(sender, out var url))
+            {
+                // This method is also compatible with .NET Core 3
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+            }
+        }
+
+        /// <summary>
+        /// Highlight the Help Icon if the user mouses over the icon or its control.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="_"></param>
+        private void HelpIcon_MouseEnter(object sender, EventArgs _)
+        {
+            if (sender is Control control && ToHelpIcon.TryGetValue(control, out var hover))
+                hover.Enter();
+        }
+
+        private void HelpIcon_MouseLeave(object sender, EventArgs _)
+        {
+            if (sender is Control control && ToHelpIcon.TryGetValue(control, out var hover))
+                hover.Leave();
+        }
+        #endregion
     }
 }

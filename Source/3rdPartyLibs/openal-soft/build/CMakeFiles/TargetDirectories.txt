@@ -1,5 +1,0 @@
-D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/ALL_BUILD.dir
-D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/OpenAL32.dir
-D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/ZERO_CHECK.dir
-D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/makehrtf.dir
-D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/openal-info.dir

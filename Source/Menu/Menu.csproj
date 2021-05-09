@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ORTS</RootNamespace>
     <AssemblyName>Menu</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +23,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>6</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <DebugType>pdbonly</DebugType>
@@ -34,7 +36,8 @@
     <DocumentationFile>..\..\Program\Menu.xml</DocumentationFile>
     <PlatformTarget>x86</PlatformTarget>
     <NoWarn>1591</NoWarn>
-    <LangVersion>6</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>..\Launcher\app.manifest</ApplicationManifest>
@@ -48,24 +51,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="MonoGame.Framework">
+      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="KeyInputEditControl.cs">
@@ -154,6 +147,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Expander-closed.png" />
     <None Include="Expander-closed-disabled.png" />
     <None Include="Expander-open.png" />
@@ -193,6 +187,12 @@
       <Name>ORTS.Updater</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\info-18-2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\info-18-hover-2.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -206,6 +206,13 @@
     </PreBuildEvent>
     <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
 date /t&gt;&gt;Revision.txt
-time /t&gt;&gt;Revision.txt</PostBuildEvent>
+time /t&gt;&gt;Revision.txt
+
+REM Copy Spanish manual until we can make its RST files part of the build.
+CD ..\
+IF EXIST "Program\Documentation\es" RMDIR "Program\Documentation\es" /S /Q
+IF NOT EXIST "Program\Documentation\es" MKDIR "Program\Documentation\es"
+COPY "Source\Documentation\Manual\es\Manual.pdf" "Program\Documentation\es\"
+</PostBuildEvent>
   </PropertyGroup>
 </Project>
