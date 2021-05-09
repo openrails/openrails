@@ -766,6 +766,9 @@
     <Content Include="Viewer3D\WebServices\Web\APISample\index.html" />
     <Content Include="Viewer3D\WebServices\Web\APISample\index.js" />
     <Content Include="Viewer3D\WebServices\Web\APISample\or_logo.png" />
+    <Content Include="Viewer3D\WebServices\Web\CabControls\index.css" />
+    <Content Include="Viewer3D\WebServices\Web\CabControls\index.html" />
+    <Content Include="Viewer3D\WebServices\Web\CabControls\index.js" />
     <Content Include="Viewer3D\WebServices\Web\HUD\index.css" />
     <Content Include="Viewer3D\WebServices\Web\HUD\index.html" />
     <Content Include="Viewer3D\WebServices\Web\HUD\index.js" />
