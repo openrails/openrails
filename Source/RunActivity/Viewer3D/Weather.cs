@@ -640,7 +640,7 @@ namespace Orts.Viewer3D
                     {
                         fogDistanceIncreasing = true;
                         fogChangeRate = -fogChangeRate;
-                        ORTSFog = weatherControl.Weather.FogDistance;
+                        if (fogTimer > 0) ORTSFog = weatherControl.Weather.FogDistance;
                     }
                     wChangeOn = true;
                 }
