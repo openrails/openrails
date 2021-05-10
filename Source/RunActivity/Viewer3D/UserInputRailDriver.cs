@@ -23,7 +23,6 @@ using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Common.Input;
-
 using RailDriver;
 
 namespace Orts.Viewer3D
