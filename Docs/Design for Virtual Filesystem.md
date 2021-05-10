@@ -14,10 +14,10 @@ The name of the zip file would not be significant.
 Packages contain one of two possible organisations for folders: "OR" and "MSTS".
 In the MSTS organisation, the content is organised using the conventional folders GLOBAL, ROUTES, SOUND, TRAINS, etc.
 In the OR organisation, the content is organised in folders by usage: Shapes, Textures etc.
-In this organisation, there are no folders called Global or Common.cab shared by using paths such as "..\..\".
+In this organisation, there are no folders called Global or Common.cab shared by using paths such as "..\\..\\".
 
 ### Path Delimiter
-"/" is used to avoid confusion with the "\" escape character and also to differentiate this filesystem from the Windows filesystem.
+"/" is used to avoid confusion with the "\\" escape character and also to differentiate this filesystem from the Windows filesystem.
 
 ## Assembling a Virtual Filesystem
 Open Rails provides access to the files from multiple content packages as in these examples:
