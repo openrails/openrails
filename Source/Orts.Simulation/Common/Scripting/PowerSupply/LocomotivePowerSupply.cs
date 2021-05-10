@@ -36,6 +36,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<PowerSupplyState> CurrentCabPowerSupplyState;
         /// <summary>
+        /// Current availability of the dynamic brake
+        /// </summary>
+        public Func<bool> CurrentDynamicBrakeAvailability;
+        /// <summary>
         /// Main supply power on delay
         /// </summary>
         public Func<float> PowerOnDelayS;
@@ -75,6 +79,10 @@ namespace ORTS.Scripting.Api
         /// ETS is used by the systems of the cars (such as air conditionning)
         /// </summary>
         public Action<PowerSupplyState> SetCurrentElectricTrainSupplyState;
+        /// <summary>
+        /// Sets the current availability of the dynamic brake
+        /// </summary>
+        public Action<bool> SetCurrentDynamicBrakeAvailability;
         /// <summary>
         /// Sends an event to the master switch
         /// </summary>
