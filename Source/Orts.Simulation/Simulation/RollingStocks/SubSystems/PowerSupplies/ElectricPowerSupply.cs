@@ -244,6 +244,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
             }
 
+            // By default, on electric locomotives, dynamic brake is always available (rheostatic brake is always available).
+            SetCurrentDynamicBrakeAvailability(true);
+
             if (ElectricTrainSupplyUnfitted())
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.Unavailable);
