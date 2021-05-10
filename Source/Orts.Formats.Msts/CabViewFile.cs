@@ -15,21 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Microsoft.Xna.Framework;
+using Orts.Parsers.Msts;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
 
-	// TODO - this is an incomplete parse of the cvf file.
-	public class CabViewFile
-	{
+    // TODO - this is an incomplete parse of the cvf file.
+    public class CabViewFile
+    {
         public List<Vector3> Locations = new List<Vector3>();   // Head locations for front, left and right views
         public List<Vector3> Directions = new List<Vector3>();  // Head directions for each view
         public List<string> TwoDViews = new List<string>();     // 2D CAB Views - by GeorgeS
@@ -38,7 +37,7 @@ namespace Orts.Formats.Msts
         public CabViewControls CabViewControls;                 // Controls in CAB - by GeorgeS
 
         public CabViewFile(string filePath, string basePath)
-		{
+        {
             using (STFReader stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("tr_cabviewfile", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -1274,6 +1273,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
                 new STFReader.TokenProcessor("parameters", ()=>{ ParseCustomParameters(stf); }),
+                new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
             });
         }
         protected void ParseCustomParameters(STFReader stf)
