@@ -42,6 +42,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public PowerSupplyState MainPowerSupplyState { get; protected set; } = PowerSupplyState.PowerOff;
         public bool MainPowerSupplyOn => MainPowerSupplyState == PowerSupplyState.PowerOn;
+        public bool DynamicBrakeAvailable { get; protected set; } = false;
 
         public PowerSupplyState AuxiliaryPowerSupplyState { get; protected set; } = PowerSupplyState.PowerOff;
         public bool AuxiliaryPowerSupplyOn => AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
@@ -277,6 +278,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AbstractScript.CurrentLowVoltagePowerSupplyState = () => LowVoltagePowerSupplyState;
             AbstractScript.CurrentBatteryState = () => BatteryState;
             AbstractScript.CurrentCabPowerSupplyState = () => CabPowerSupplyState;
+            AbstractScript.CurrentDynamicBrakeAvailability = () => DynamicBrakeAvailable;
             AbstractScript.PowerOnDelayS = () => PowerOnDelayS;
             AbstractScript.AuxPowerOnDelayS = () => AuxPowerOnDelayS;
             AbstractScript.BatterySwitchOn = () => BatterySwitch.On;
@@ -291,6 +293,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AbstractScript.SetCurrentLowVoltagePowerSupplyState = (value) => LowVoltagePowerSupplyState = value;
             AbstractScript.SetCurrentBatteryState = (value) => BatteryState = value;
             AbstractScript.SetCurrentCabPowerSupplyState = (value) => CabPowerSupplyState = value;
+            AbstractScript.SetCurrentDynamicBrakeAvailability = (value) => DynamicBrakeAvailable = value;
             AbstractScript.SignalEventToBatterySwitch = (evt) => BatterySwitch.HandleEvent(evt);
             AbstractScript.SignalEventToMasterKey = (evt) => MasterKey.HandleEvent(evt);
             AbstractScript.SignalEventToElectricTrainSupplySwitch = (evt) => ElectricTrainSupplySwitch.HandleEvent(evt);

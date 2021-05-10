@@ -20,6 +20,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public PowerSupplyState MainPowerSupplyState => PowerSupplyState.PowerOn;
         public bool MainPowerSupplyOn => true;
+        public bool DynamicBrakeAvailable => false;
 
         public PowerSupplyState AuxiliaryPowerSupplyState => PowerSupplyState.PowerOn;
         public bool AuxiliaryPowerSupplyOn => true;
