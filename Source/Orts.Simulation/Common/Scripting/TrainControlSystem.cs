@@ -118,6 +118,12 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<string, int, float, SignalFeatures> NextGenericSignalFeatures;
         /// <summary>
+        /// Features of next speed post
+        /// int: position of speed post in the speed post sequence along the train route, starting from train front; 0 for first speed post;
+        /// float: max testing distance
+        /// </summary>
+        public Func<int, float, SpeedPostFeatures> NextSpeedPostFeatures;
+        /// <summary>
         /// Next normal signal has a repeater head
         /// </summary>
         public Func<bool> DoesNextNormalSignalHaveRepeaterHead;
@@ -687,6 +693,24 @@ namespace ORTS.Scripting.Api
             SpeedLimitMpS = speedLimitMpS;
             AltitudeM = altitudeM;
             TextAspect = textAspect;
+        }
+    }
+
+    public struct SpeedPostFeatures
+    {
+        public readonly string SpeedPostTypeName;
+        public readonly bool IsWarning;
+        public readonly float DistanceM;
+        public readonly float SpeedLimitMpS;
+        public readonly float AltitudeM;
+
+        public SpeedPostFeatures(string speedPostTypeName, bool isWarning, float distanceM, float speedLimitMpS, float altitudeM)
+        {
+            SpeedPostTypeName = speedPostTypeName;
+            IsWarning = isWarning;
+            DistanceM = distanceM;
+            SpeedLimitMpS = speedLimitMpS;
+            AltitudeM = altitudeM;
         }
     }
 

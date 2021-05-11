@@ -3293,6 +3293,7 @@ namespace Orts.Simulation.Physics
                         firstObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
                         firstObject.speed_reset = thisSpeed == null ? 0 : thisSpeed.speed_reset;
                         firstObject.speed_noSpeedReductionOrIsTempSpeedReduction = thisSpeed == null ? 0 : thisSpeed.speed_noSpeedReductionOrIsTempSpeedReduction;
+                        firstObject.speed_isWarning = thisSpeed?.speed_isWarning ?? false;
                     }
                 }
 
@@ -3331,6 +3332,7 @@ namespace Orts.Simulation.Physics
                             nextObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
                             nextObject.speed_reset = thisSpeed == null ? 0 : thisSpeed.speed_reset;
                             nextObject.speed_noSpeedReductionOrIsTempSpeedReduction = thisSpeed == null ? 0 : thisSpeed.speed_noSpeedReductionOrIsTempSpeedReduction;
+                            nextObject.speed_isWarning = thisSpeed?.speed_isWarning ?? false;
                         }
                     }
 
@@ -3420,6 +3422,7 @@ namespace Orts.Simulation.Physics
                                 nextObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
                                 nextObject.speed_reset = thisSpeed == null ? 0 : thisSpeed.speed_reset;
                                 nextObject.speed_noSpeedReductionOrIsTempSpeedReduction = thisSpeed == null ? 0 : thisSpeed.speed_noSpeedReductionOrIsTempSpeedReduction;
+                                nextObject.speed_isWarning = thisSpeed?.speed_isWarning ?? false;
                             }
                         }
 
@@ -3622,6 +3625,7 @@ namespace Orts.Simulation.Physics
                 }
                 else if (Simulator.TimetableMode)
                 {
+                    if (!thisObject.speed_isWarning)
                     {
                         if (actualSpeedMpS > 998f)
                         {
@@ -3645,67 +3649,71 @@ namespace Orts.Simulation.Physics
 
                 else  // Enhanced Compatibility on & SpeedLimit
                 {
-                    if (actualSpeedMpS > 998f)
+                    if (!thisObject.speed_isWarning)
                     {
-                        actualSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
-                    }
 
-                    if (actualSpeedMpS > 0)
-                    {
-                        var tempValidSpeedSignalMpS = validSpeedSignalMpS == -1 ? 999 : validSpeedSignalMpS;
-                        if (thisObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0)
+                        if (actualSpeedMpS > 998f)
                         {
-                            validSpeedLimitMpS = actualSpeedMpS;
-                            if (actualSpeedMpS > Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS))
+                            actualSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
+                        }
+
+                        if (actualSpeedMpS > 0)
+                        {
+                            var tempValidSpeedSignalMpS = validSpeedSignalMpS == -1 ? 999 : validSpeedSignalMpS;
+                            if (thisObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0)
                             {
-                                if (validSpeedMpS < Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS))
+                                validSpeedLimitMpS = actualSpeedMpS;
+                                if (actualSpeedMpS > Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS))
                                 {
-                                    actualSpeedMpS = Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS);
+                                    if (validSpeedMpS < Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS))
+                                    {
+                                        actualSpeedMpS = Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS);
+                                    }
+                                    else
+                                    {
+                                        actualSpeedMpS = -1;
+                                    }
                                 }
-                                else
+                            }
+                            else
+                            {
+                                validTempSpeedLimitMpS = actualSpeedMpS;
+                                if (actualSpeedMpS > Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS))
                                 {
-                                    actualSpeedMpS = -1;
+                                    if (validSpeedMpS < Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS))
+                                    {
+                                        actualSpeedMpS = Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS);
+                                    }
+                                    else
+                                    {
+                                        actualSpeedMpS = -1;
+                                    }
                                 }
                             }
                         }
-                        else
+                        else if (actualSpeedMpS < 0 && thisObject.speed_reset == 0)
                         {
-                            validTempSpeedLimitMpS = actualSpeedMpS;
-                            if (actualSpeedMpS > Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS))
+                            float newSpeedMpS1 = Math.Min(validSpeedSignalMpS, Math.Min(validSpeedLimitMpS, validTempSpeedLimitMpS));
+
+                            if (newSpeedMpS1 != validSpeedMpS)
                             {
-                                if (validSpeedMpS < Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS))
-                                {
-                                    actualSpeedMpS = Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS);
-                                }
-                                else
-                                {
-                                    actualSpeedMpS = -1;
-                                }
+                                actualSpeedMpS = newSpeedMpS1;
+                            }
+                            else
+                            {
+                                actualSpeedMpS = -1;
                             }
                         }
-                    }
-                    else if (actualSpeedMpS < 0 && thisObject.speed_reset == 0)
-                    {
-                        float newSpeedMpS1 = Math.Min(validSpeedSignalMpS, Math.Min(validSpeedLimitMpS, validTempSpeedLimitMpS));
-
-                        if (newSpeedMpS1 != validSpeedMpS)
+                        else if (thisObject.speed_reset == 1)
                         {
-                            actualSpeedMpS = newSpeedMpS1;
+                            actualSpeedMpS = validSpeedLimitMpS;
                         }
-                        else
-                        {
-                            actualSpeedMpS = -1;
-                        }
-                    }
-                    else if (thisObject.speed_reset == 1)
-                    {
-                        actualSpeedMpS = validSpeedLimitMpS;
-                    }
 
-                    thisObject.actual_speed = actualSpeedMpS;
-                    if (actualSpeedMpS > 0)
-                    {
-                        validSpeedMpS = actualSpeedMpS;
+                        thisObject.actual_speed = actualSpeedMpS;
+                        if (actualSpeedMpS > 0)
+                        {
+                            validSpeedMpS = actualSpeedMpS;
+                        }
                     }
                 }
             }
@@ -14106,7 +14114,10 @@ namespace Orts.Simulation.Physics
                         }
                         else if (signalObjectItem.ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit && signalObjectItem.actual_speed > 0)
                         {
-                            thisItem = new TrainObjectItem(signalObjectItem.actual_speed, signalObjectItem.distance_to_train,
+                            thisItem = new TrainObjectItem(signalObjectItem.actual_speed,
+                                signalObjectItem.speed_isWarning,
+                                signalObjectItem.distance_to_train,
+                                signalObjectItem.ObjectDetails,
                                 (TrainObjectItem.SpeedItemType)(signalObjectItem.speed_noSpeedReductionOrIsTempSpeedReduction));
                             PlayerTrainSpeedposts[dir].Add(thisItem);
                         }
@@ -14187,7 +14198,11 @@ namespace Orts.Simulation.Physics
                                 if (thisSpeedInfo != null && thisSpeedInfo.speed_reset == 1)
                                     validSpeed = progressiveMaxSpeedLimitMpS;
                                 else progressiveMaxSpeedLimitMpS = validSpeed;
-                                thisItem = new TrainObjectItem(validSpeed, thisSpeeditem.SignalLocation + sectionDistanceToTrainM, (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
+                                thisItem = new TrainObjectItem(validSpeed,
+                                    thisSpeedInfo.speed_isWarning,
+                                    thisSpeeditem.SignalLocation + sectionDistanceToTrainM,
+                                    thisSpeedpost,
+                                    (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
                                 PlayerTrainSpeedposts[dir].Add(thisItem);
                             }
                         }
@@ -20652,6 +20667,7 @@ namespace Orts.Simulation.Physics
             public END_AUTHORITY AuthorityType;
             public TrackMonitorSignalAspect SignalState;
             public float AllowedSpeedMpS;
+            public bool IsWarning;
             public float DistanceToTrainM;
             public bool Enabled;
             public int StationPlatformLength;
@@ -20670,6 +20686,7 @@ namespace Orts.Simulation.Physics
             //
             // if ItemType == SPEEDPOST :
             //      AllowedSpeedMpS
+            //      IsWarning
             //      DistanceToTrainM
             //
             // if ItemType == STATION :
@@ -20707,13 +20724,15 @@ namespace Orts.Simulation.Physics
             }
 
             // Constructor for Speedpost
-            public TrainObjectItem(float thisSpeedMpS, float thisDistanceM, SpeedItemType speedObjectType = SpeedItemType.Standard)
+            public TrainObjectItem(float thisSpeedMpS, bool isWarning, float thisDistanceM, SignalObject signalObject, SpeedItemType speedObjectType = SpeedItemType.Standard)
             {
                 ItemType = TRAINOBJECTTYPE.SPEEDPOST;
                 AuthorityType = END_AUTHORITY.NO_PATH_RESERVED;
                 SignalState = TrackMonitorSignalAspect.Clear_2;
                 AllowedSpeedMpS = thisSpeedMpS;
+                IsWarning = isWarning;
                 DistanceToTrainM = thisDistanceM;
+                SignalObject = signalObject;
                 SpeedObjectType = speedObjectType;
             }
 
