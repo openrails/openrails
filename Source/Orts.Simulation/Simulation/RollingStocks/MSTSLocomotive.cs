@@ -1697,7 +1697,7 @@ namespace Orts.Simulation.RollingStocks
 
 
 
-                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics) 
+                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics) // SimpleControlPhysics will "disable" advanced adhesion if set.
                     {
                         AdvancedAdhesion(elapsedClockSeconds); // Use advanced adhesion model
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use

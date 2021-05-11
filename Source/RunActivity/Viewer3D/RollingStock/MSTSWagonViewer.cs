@@ -656,7 +656,7 @@ namespace Orts.Viewer3D.RollingStock
             float AnimationWheelRadiusM = 0.0f; // Radius of non driven wheels
             float AnimationDriveWheelRadiusM = 0.0f; // Radius of driven wheels
 
-            if (MSTSWagon.IsDriveable && MSTSWagon.Simulator.UseAdvancedAdhesion)
+            if (MSTSWagon.IsDriveable && MSTSWagon.Simulator.UseAdvancedAdhesion && !MSTSWagon.Simulator.Settings.SimpleControlPhysics)
             {
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
