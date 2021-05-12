@@ -33,7 +33,7 @@ using System.Linq;
 
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
-    public class ScriptedTrainControlSystem : ISubSystem<ScriptedTrainControlSystem>
+    public class ScriptedTrainControlSystem
     {
         public class MonitoringDevice
         {
@@ -265,8 +265,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         );
                 };
                 Script.IsSpeedControlEnabled = () => Simulator.Settings.SpeedControl;
-                Script.IsLowVoltagePowerSupplyOn = () => Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn;
-                Script.IsCabPowerSupplyOn = () => Locomotive.LocomotivePowerSupply.CabPowerSupplyOn;
                 Script.AlerterSound = () => Locomotive.AlerterSnd;
                 Script.TrainSpeedLimitMpS = () => Math.Min(Locomotive.Train.AllowedMaxSpeedMpS, Locomotive.Train.TrainMaxSpeedMpS);
                 Script.TrainMaxSpeedMpS = () => Locomotive.Train.TrainMaxSpeedMpS; // max speed for train in a specific section, independently from speedpost and signal limits
@@ -748,7 +746,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             return (currentSpeedMpS - targetSpeedMpS) * (currentSpeedMpS + targetSpeedMpS) / (2 * distanceM);
         }
 
-        public void Update(float elapsedClockSeconds)
+        public void Update()
         {
             switch (Locomotive.Train.TrainType)
             {
@@ -818,23 +816,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public void HandleEvent(TCSEvent evt, string message)
         {
-            Script?.HandleEvent(evt, message);
+            if (Script != null)
+                Script.HandleEvent(evt, message);
         }
 
         public void HandleEvent(TCSEvent evt, int eventIndex)
         {
-            var message = eventIndex.ToString();
-            Script?.HandleEvent(evt, message);
-        }
-
-        public void HandleEvent(PowerSupplyEvent evt)
-        {
-            HandleEvent(evt, String.Empty);
-        }
-
-        public void HandleEvent(PowerSupplyEvent evt, string message)
-        {
-            Script?.HandleEvent(evt, message);
+            if (Script != null)
+            {
+                var message = eventIndex.ToString();
+                Script.HandleEvent(evt, message);
+            }
         }
 
         private T LoadParameter<T>(string sectionName, string keyName, T defaultValue)

@@ -186,16 +186,6 @@ namespace Orts.Formats.Msts
         Rear,
         Both,
     }
-
-    /// <summary>
-    /// Specifies if the light must be illuminated on if low voltage power supply is on or off.
-    /// </summary>
-    public enum LightBatteryCondition
-    {
-        Ignore,
-        On,
-        Off,
-    }
     #endregion
 
     /// <summary>
@@ -214,7 +204,6 @@ namespace Orts.Formats.Msts
         public LightTimeOfDayCondition TimeOfDay;
         public LightWeatherCondition Weather;
         public LightCouplingCondition Coupling;
-        public LightBatteryCondition Battery;
         public bool Cycle;
         public float FadeIn;
         public float FadeOut;
@@ -235,7 +224,6 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("timeofday", ()=>{ TimeOfDay = (LightTimeOfDayCondition)stf.ReadIntBlock(null); }),
                     new STFReader.TokenProcessor("weather", ()=>{ Weather = (LightWeatherCondition)stf.ReadIntBlock(null); }),
                     new STFReader.TokenProcessor("coupling", ()=>{ Coupling = (LightCouplingCondition)stf.ReadIntBlock(null); }),
-                    new STFReader.TokenProcessor("ortsbattery", ()=>{ Battery = (LightBatteryCondition)stf.ReadIntBlock(null); }),
                 });}),
                 new STFReader.TokenProcessor("cycle", ()=>{ Cycle = 0 != stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("fadein", ()=>{ FadeIn = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
@@ -269,7 +257,6 @@ namespace Orts.Formats.Msts
             TimeOfDay = light.TimeOfDay;
             Weather = light.Weather;
             Coupling = light.Coupling;
-            Battery = light.Battery;
             Cycle = light.Cycle;
             FadeIn = light.FadeIn;
             FadeOut = light.FadeOut;

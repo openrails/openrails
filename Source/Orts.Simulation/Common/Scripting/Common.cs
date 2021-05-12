@@ -18,7 +18,6 @@
 using System;
 using Orts.Common;
 using Orts.Simulation;
-using Orts.Simulation.RollingStocks;
 
 namespace ORTS.Scripting.Api
 {
@@ -91,11 +90,6 @@ namespace ORTS.Scripting.Api
         {
             CurrentValue = asc.GameTime;
         }
-
-        public Timer(TrainCar car)
-        {
-            CurrentValue = () => (float)car.Simulator.GameTime;
-        }
     }
 
     public class OdoMeter : Counter
@@ -103,11 +97,6 @@ namespace ORTS.Scripting.Api
         public OdoMeter(AbstractTrainScriptClass asc)
         {
             CurrentValue = asc.DistanceM;
-        }
-
-        public OdoMeter(TrainCar car)
-        {
-            CurrentValue = () => (float)car.DistanceM;
         }
     }
 
@@ -126,11 +115,6 @@ namespace ORTS.Scripting.Api
         public Blinker(AbstractScriptClass asc)
         {
             CurrentValue = asc.GameTime;
-        }
-
-        public Blinker(TrainCar car)
-        {
-            CurrentValue = () => (float)car.Simulator.GameTime;
         }
     }
 }

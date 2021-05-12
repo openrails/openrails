@@ -251,8 +251,6 @@ namespace ORTS.Settings
         public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]
         public bool HotStart { get; set; }
-        [Default(false)]
-        public bool NoDieselEngineStart { get; set; }
 
         // Data logger settings:
         [Default("comma")]

@@ -2,15 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2018-10-06 15:03:13+0200\n"
-"PO-Revision-Date: 2018-10-06 15:17+0200\n"
-"Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
-"field@libero.it>\n"
+"PO-Revision-Date: 2021-05-12 18:53+0200\n"
+"Last-Translator: Roberto Ceccarelli\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
@@ -66,9 +65,8 @@ msgid "OK"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:74
-#, fuzzy
 msgid "ActionDuration"
-msgstr "Punto di attività"
+msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:85
 msgid "Pre-delay :"
@@ -166,7 +164,7 @@ msgstr "Descrizione:"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:320
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:455
 msgid "Activity Name : "
-msgstr "Nome Activity:"
+msgstr "Nome Activity: "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:238
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:249
@@ -187,7 +185,7 @@ msgstr "Ambiente"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:105
 msgid "Place Name : "
-msgstr "Nome Luogo:"
+msgstr "Nome Luogo: "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:115
 msgid "WAIT Activity Description"
@@ -239,7 +237,7 @@ msgstr "Salva come"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:176
 msgid "Load Activity"
-msgstr "carica Activity"
+msgstr "Carica Activity"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:184
 msgid "Load Metada"
@@ -470,9 +468,8 @@ msgid "Show Tiles"
 msgstr "Mostra tiles"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:451
-#, fuzzy
 msgid "Actions Configuration"
-msgstr "Punto di attività"
+msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:468
 msgid "< remove"
@@ -547,11 +544,11 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:163
 msgid "From"
-msgstr ""
+msgstr "Da"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:174
 msgid " To "
-msgstr ""
+msgstr " A "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:185
 msgid "Max. Platform Length"
@@ -1002,10 +999,8 @@ msgid ""
 msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/PathEditor.cs:800
-#, fuzzy
-#| msgid "* The path has a stored and not-yet reconnected tail"
 msgid "The selected path has been added as tail and then reconnected."
-msgstr "* Il path ha una coda memorizzata ma non connessa"
+msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/PathEditor.cs:804
 msgid ""
@@ -1100,7 +1095,7 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/Languages.cs:91
 msgid "Please restart TrackViewer in order to load the new language."
-msgstr "Riavvia TrackViewer per utilizzare la nuova lingua"
+msgstr "Riavvia TrackViewer per utilizzare la nuova lingua."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:403
 msgid "<Select path>"
@@ -1143,30 +1138,24 @@ msgid "shift--\tZoom-out\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:565
-#, fuzzy
-#| msgid "Zoom to tile (z)"
 msgid "Z\tZoom to tile\n"
-msgstr "Zooma al tile (w)"
+msgstr "Z\tZooma al tile\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:566
 msgid "M\tToggle zoom center\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:567
-#, fuzzy
-#| msgid "Zoom reset (r)"
 msgid "R\tZoom reset\n"
-msgstr "Reset Zoom (r)"
+msgstr "R\tReset Zoom\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:568
 msgid "L\tAdd label\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:570
-#, fuzzy
-#| msgid "shift-C:  Shift to center of current mouse location\n"
 msgid "shift-C\t\tShift center to current mouse location\n"
-msgstr "shift-C:  Centra alla posizione del mouse\n"
+msgstr "shift-C:\t\t Centra alla posizione del mouse\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:571
 msgid "left arrow\tShift left\n"
@@ -1185,20 +1174,16 @@ msgid "up arrow\t\tShift up\n"
 msgstr "freccia in su: \tShift up\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:576
-#, fuzzy
-#| msgid "Show speed limits (F5)"
 msgid "F5\tShow speed-limits\n"
-msgstr "Mostra limiti di velocità (F5)"
+msgstr "F5\tMostra limiti di velocità\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:577
 msgid "shift-F5\tShow mileposts\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:578
-#, fuzzy
-#| msgid "Show terrain info"
 msgid "F6\tShow terrain\n"
-msgstr "Mostra informazioni terreno"
+msgstr "F6\tMostra terreno\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:579
 msgid "ctrl-F6\tShow DM terrain\n"
@@ -1209,108 +1194,77 @@ msgid "shift-F6\tShow terrain patch lines\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:581
-#, fuzzy
-#| msgid "Show signals (F7)"
 msgid "F7\tshow signals\n"
-msgstr "Mostra i segnali (F7)"
+msgstr "F7\tMostra i segnali\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:582
-#, fuzzy
-#| msgid "Show Platform Label"
 msgid "F8\tShow platforms\n"
-msgstr "Mostra i marcatori dei marciapiedi"
+msgstr "F8\tMostra i marciapiedi\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:583
-#, fuzzy
-#| msgid "Show platform names (shift-F8)"
 msgid "shift-F8\tShow platform-names\n"
-msgstr "Mostra i nomi dei marciapiedi (shift-F8)"
+msgstr "shift-F8\tMostra i nomi dei marciapiedi\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:584
-#, fuzzy
-#| msgid "Show grid lines"
 msgid "F9\tShow sidings\n"
-msgstr "Mostra griglia"
+msgstr "F9\tMostra banchine\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:585
 msgid "shift-F9\tShow siding-names\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:586
-#, fuzzy
-#| msgid "Highlight tracks (F10)"
 msgid "F10\tHighlight tracks\n"
-msgstr "Evidenzia tracce (F10)"
+msgstr "F10\tEvidenzia tracce\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:587
 msgid "shift-F10\tHighlight items\n"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:588
-#, fuzzy
-#| msgid "Show path (F11)"
 msgid "F11\tShow path\n"
-msgstr "Mostra il path (F11)"
+msgstr "F11\tMostra il path\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:589
 #, fuzzy
-#| msgid "shift-PgUp:  Show the full path\n"
 msgid "shift-F11\tShow raw path\n"
-msgstr "shift-PgUp: Mostra tutto il path\n"
+msgstr "\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:591
-#, fuzzy
-#| msgid "C:  Shift to center of current path node\n"
 msgid "C\t\tShift to center of current path node\n"
-msgstr "C:  Centra sul nodo corrente\n"
+msgstr "C: \t\tCentra sul nodo corrente\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:592
-#, fuzzy
-#| msgid "PgUp:  Show more of the path\n"
 msgid "PgUp\t\tShow more of the path\n"
-msgstr "PgUp:  Mostra una sezione in più del path\n"
+msgstr "PgUp:\t\t Mostra una sezione in più del path\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:593
-#, fuzzy
-#| msgid "PgDn:  Show less of the path\n"
 msgid "PgDn\t\tShow less of the path\n"
-msgstr "PgDn:  Mostra una sezione in meno del path\n"
+msgstr "PgDn: \t\tMostra una sezione in meno del path\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:594
-#, fuzzy
-#| msgid "shift-PgUp:  Show the full path\n"
 msgid "shift-PgUp\tShow the full path\n"
-msgstr "shift-PgUp: Mostra tutto il path\n"
+msgstr "shift-PgUp:\tMostra tutto il path\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:595
-#, fuzzy
-#| msgid "shift-PgDn:  Show only start point of path\n"
 msgid "shift-PgDn\tShow only start point of path\n"
-msgstr "shift-PgDn:  Mostra solo il punto di partenza del path\n"
+msgstr "shift-PgDn:\tMostra solo il punto di partenza del path\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:596
-#, fuzzy
-#| msgid "Place end point"
 msgid "E\t\tPlace end-point\n"
-msgstr "Piazza il punto di arrivo"
+msgstr "E\t\tPiazza il punto di arrivo\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:597
-#, fuzzy
-#| msgid "Place wait point"
 msgid "W\t\tPlace a wait-point\n"
-msgstr "Piazza punto di attesa"
+msgstr "W\t\tPiazza punto di attesa\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:598
-#, fuzzy
-#| msgid "ctrl-Z: Undo in path editor\n"
 msgid "ctrl-Z\t\tUndo in path editor\n"
-msgstr "ctrl-Z: Annulla comando\n"
+msgstr "ctrl-Z:\t\tAnnulla comando\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:599
-#, fuzzy
-#| msgid "ctrl-Y: Redo in path editor\n"
 msgid "ctrl-Y\t\tRedo in path editor\n"
-msgstr "ctrl-Y: Ripristina\n"
+msgstr "ctrl-Y:\t\tRipristina\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:601
 msgid "alt-?\t\tVarious keys to open submenus\n"
@@ -1322,7 +1276,7 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:608
 msgid "This is ORTS TrackViewer, version "
-msgstr "Questo è ORTS TrackViewer, versione"
+msgstr "Questo è ORTS TrackViewer, versione "
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:611
 msgid "It is a 'Contribution' to ORTS, and as such\n"
@@ -1337,16 +1291,12 @@ msgid "Documentation is available"
 msgstr "La documentazione è disponibile"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:624
-#, fuzzy
-#| msgid "Right column → OR_Trackviewer"
 msgid "Right column → Open Rails Trackviewer"
 msgstr "Colonna a destra → OR_Trackviewer"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:626
-#, fuzzy
-#| msgid "Do you want to continue?"
 msgid "Do you want to go to the website?"
-msgstr "Vuoi continuare?"
+msgstr "Vuoi andare al sito?"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:628
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:174
@@ -1427,11 +1377,11 @@ msgstr "Punto di aggancio / sgancio"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:7
 msgid "Uncouple  "
-msgstr "Sgancio"
+msgstr "Sgancio "
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:8
 msgid "Couple  "
-msgstr "Aggancio"
+msgstr "Aggancio "
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:10
 msgid "cars, wait for "
@@ -1448,7 +1398,7 @@ msgstr "Punto di attesa"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:8
 msgid "Wait time: "
-msgstr "Attesa:"
+msgstr "Attesa: "
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:10
 msgid "minutes"
@@ -1460,7 +1410,7 @@ msgstr "Funzioni di aggancio avanzate di OpenRails:"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:19
 msgid "Wait until:  "
-msgstr "Attendi le:"
+msgstr "Attendi le: "
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:21
 msgid ":"
@@ -1542,10 +1492,8 @@ msgid "_File"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
-#, fuzzy
-#| msgid "(Re)load route"
 msgid "(Re)load route (ctrl-R)"
-msgstr "(Ri)carica route"
+msgstr "(Ri)carica route (ctrl-R)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:10
 msgid "Select install folder"
@@ -1580,8 +1528,6 @@ msgid "Quit (Q)"
 msgstr "Esci (Q)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:22
-#, fuzzy
-#| msgid "View"
 msgid "_View"
 msgstr "Visualizza"
 
@@ -1606,10 +1552,8 @@ msgid "Show path (F11)"
 msgstr "Mostra il path (F11)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:35
-#, fuzzy
-#| msgid "Show platform names (shift-F8)"
 msgid "Show raw path from .pat file (shift-F11)"
-msgstr "Mostra i nomi dei marciapiedi (shift-F8)"
+msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:37
 msgid "Track Coloring"
@@ -1684,24 +1628,18 @@ msgid "Zoom out (-)"
 msgstr "Diminuisci Zoom (')"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:59
-#, fuzzy
-#| msgid "Zoom to tile (z)"
 msgid "Zoom to tile (Z)"
-msgstr "Zooma al tile (w)"
+msgstr "Zooma al tile (W)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
-#, fuzzy
-#| msgid "Zoom reset (r)"
 msgid "Zoom reset (R)"
-msgstr "Reset Zoom (r)"
+msgstr "Reset Zoom (R)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
 msgid "Anti aliasing (needs restart)"
 msgstr "Anti aliasing (necessita riavvio)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
-#, fuzzy
-#| msgid "Track items"
 msgid "Track _items"
 msgstr "Elementi delle tracce"
 
@@ -1818,8 +1756,6 @@ msgid "Show road crossings"
 msgstr "Mostra attraversamenti stradali"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
-#, fuzzy
-#| msgid "Statusbar"
 msgid "_Statusbar"
 msgstr "Barra di stato"
 
@@ -1848,8 +1784,6 @@ msgid "Show platform/station names"
 msgstr "Mostra i nomi dei marciapiedi / stazioni"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:114
-#, fuzzy
-#| msgid "Preferences"
 msgid "_Preferences"
 msgstr "Preferenze"
 
@@ -1877,17 +1811,13 @@ msgstr "Abilita modifica"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:125
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:152
-#, fuzzy
-#| msgid "Show junctions"
 msgid "Show current mouse action"
-msgstr "Mostra gli incroci"
+msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:153
-#, fuzzy
-#| msgid "shift-PgUp:  Show the full path\n"
 msgid "Shift-PgUp also extends path"
-msgstr "shift-PgUp: Mostra tutto il path\n"
+msgstr "shift-PgUp: estende il path"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
 msgid "Path-_Editor"
@@ -1914,20 +1844,16 @@ msgid "Save visited stations"
 msgstr "Salva le stazioni visitate"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:139
-#, fuzzy
-#| msgid "Show hazards"
 msgid "Show chart"
-msgstr "Mostra ostacoli"
+msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:141
 msgid "New path"
 msgstr "Nuovo path"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:143
-#, fuzzy
-#| msgid "Show other paths"
 msgid "Extend with other path"
-msgstr "Mostra altri path"
+msgstr "Estendi con altro path"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:147
 msgid "Edit path metadata"
@@ -1938,20 +1864,14 @@ msgid "Reverse path"
 msgstr "Inverti il path"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:155
-#, fuzzy
-#| msgid "Auto-fix broken nodes"
 msgid "Auto-fix all broken nodes"
 msgstr "Sistema automaticamente i nodi interrotti"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:156
-#, fuzzy
-#| msgid "Auto-fix broken points"
 msgid "Auto-fix all broken paths"
-msgstr "Ripara automaticamente i punti errati"
+msgstr "Ripara automaticamente i path interrotti"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:158
-#, fuzzy
-#| msgid "Terrain"
 msgid "_Terrain"
 msgstr "Terreno"
 
@@ -1972,10 +1892,8 @@ msgid "Memory reduction options"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:164
-#, fuzzy
-#| msgid "Show junctions"
 msgid "No reduction"
-msgstr "Mostra gli incroci"
+msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:165
 msgid "Automatic reduction"
@@ -1998,8 +1916,6 @@ msgid "Reduce by linear factor 16"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:172
-#, fuzzy
-#| msgid "Help"
 msgid "_Help"
 msgstr "Aiuto"
 

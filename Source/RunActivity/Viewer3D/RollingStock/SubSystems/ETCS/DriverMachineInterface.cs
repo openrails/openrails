@@ -765,32 +765,28 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if ((!Control.DisabledIfLowVoltagePowerSupplyOff || Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn) &&
-                (!Control.DisabledIfCabPowerSupplyOff || Locomotive.LocomotivePowerSupply.CabPowerSupplyOn))
+            base.PrepareFrame(frame, elapsedTime);
+            var xScale = Viewer.CabWidthPixels / 640f;
+            var yScale = Viewer.CabHeightPixels / 480f;
+            DrawPosition.X = (int)(Position.X * xScale) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
+            DrawPosition.Y = (int)(Position.Y * yScale) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
+            DrawPosition.Width = (int)(Control.Width * xScale);
+            DrawPosition.Height = (int)(Control.Height * yScale);
+            if (Zoomed)
             {
-                base.PrepareFrame(frame, elapsedTime);
-                var xScale = Viewer.CabWidthPixels / 640f;
-                var yScale = Viewer.CabHeightPixels / 480f;
-                DrawPosition.X = (int)(Position.X * xScale) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
-                DrawPosition.Y = (int)(Position.Y * yScale) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
-                DrawPosition.Width = (int)(Control.Width * xScale);
-                DrawPosition.Height = (int)(Control.Height * yScale);
-                if (Zoomed)
-                {
-                    DrawPosition.Width = 640;
-                    DrawPosition.Height = 480;
-                    DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
-                    DrawPosition.X -= 320;
-                    DrawPosition.Y -= 240;
-                    DMI.ETCSDefaultWindow.BackgroundColor = ColorBackground;
-                }
-                else
-                {
-                    DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
-                    DMI.ETCSDefaultWindow.BackgroundColor = Color.Transparent;
-                }
-                DMI.PrepareFrame(elapsedTime.ClockSeconds);
+                DrawPosition.Width = 640;
+                DrawPosition.Height = 480;
+                DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
+                DrawPosition.X -= 320;
+                DrawPosition.Y -= 240;
+                DMI.ETCSDefaultWindow.BackgroundColor = ColorBackground;
             }
+            else
+            {
+                DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
+                DMI.ETCSDefaultWindow.BackgroundColor = Color.Transparent;
+            }
+            DMI.PrepareFrame(elapsedTime.ClockSeconds);
         }
 
         public bool IsMouseWithin()
