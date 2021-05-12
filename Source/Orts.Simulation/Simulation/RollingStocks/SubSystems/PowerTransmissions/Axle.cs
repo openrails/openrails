@@ -277,12 +277,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// Curtius-Kniffler equation A parameter
         /// </summary>
         public float CurtiusKnifflerA { set; get; }
-
         /// <summary>
         /// Curtius-Kniffler equation B parameter
         /// </summary>
         public float CurtiusKnifflerB { set; get; }
-
         /// <summary>
         /// Curtius-Kniffler equation C parameter
         /// </summary>
@@ -321,16 +319,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         public float AxleSpeedMpS
         {
-            get
-            {
-                return axleSpeedMpS;
-            }
-
             set // used in initialisation at speed > = 0
             {
                 axleSpeedMpS = value;
             }
-
+            get
+            {
+                return axleSpeedMpS;
+            }
         }
 
         /// <summary>
@@ -387,12 +383,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 if (AdhesionK == 0.0f)
                     AdhesionK = 1.0f;
-                float A = 2.0f*AdhesionK*AdhesionConditions*AdhesionConditions;
-                float B = AdhesionConditions*AdhesionConditions;
-                float C = AdhesionK*AdhesionK;
-                float a = -2.0f*A*B;
-                float b = A*B;
-                float c = A*C;
+                float A = 2.0f * AdhesionK * AdhesionConditions * AdhesionConditions;
+                float B = AdhesionConditions * AdhesionConditions;
+                float C = AdhesionK * AdhesionK;
+                float a = -2.0f * A * B;
+                float b = A * B;
+                float c = A * C;
                 return ((-b - (float)Math.Sqrt(b * b - 4.0f * a * c)) / (2.0f * a));
             }
         }
@@ -617,6 +613,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="timeSpan"></param>
         public virtual void Update(float timeSpan)
         {
+
             //Update axle force ( = k * loadTorqueNm)
             axleForceN = AxleWeightN * SlipCharacteristics(AxleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionConditions, Adhesion2);
 
@@ -702,7 +699,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         //Reset(TrainSpeedMpS);
                         //axleForceN = driveForceN - brakeRetardForceN;
                         //axleSpeedMpS = AxleRevolutionsInt.Value;
-                        
                     }
                     break;
                 default:

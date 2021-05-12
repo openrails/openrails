@@ -1152,8 +1152,9 @@ namespace Orts.Simulation.RollingStocks
             ScoopIsBroken = inf.ReadBoolean();
             IsWaterScoopDown = inf.ReadBoolean();
             CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
-            SaveAdhesionFilter = inf.ReadSingle();
 
+            SaveAdhesionFilter = inf.ReadSingle();
+            
             AdhesionFilter.Reset(SaveAdhesionFilter);
 
             base.Restore(inf);
