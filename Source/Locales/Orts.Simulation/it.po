@@ -2,15 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orts.Simulation\n"
 "POT-Creation-Date: 2018-04-27 18:14+0200\n"
-"PO-Revision-Date: 2018-10-28 16:55+0100\n"
-"Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
-"field@libero.it>\n"
+"PO-Revision-Date: 2021-05-12 18:56+0200\n"
+"Last-Translator: Roberto Ceccarelli\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:227
@@ -163,7 +162,7 @@ msgstr "Chiuso"
 #: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:124
 #: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:136
 msgid "Connection to the server is lost, will play as single mode"
-msgstr "Connessione al server perduta, giocherai singolarmente."
+msgstr "Connessione al server perduta, giocherai singolarmente"
 
 #: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:153
 msgid "Alt-E to gain control of your train"
@@ -230,7 +229,7 @@ msgstr "Il nuovo DCO è {0}"
 #: ../../Orts.Simulation/MultiPlayer/OnlinePlayer.cs:144
 #, csharp-format
 msgid "{0} quit."
-msgstr "{0} è uscito"
+msgstr "{0} è uscito."
 
 #: ../../Orts.Simulation/MultiPlayer/Message.cs:2080
 #, csharp-format
@@ -369,7 +368,7 @@ msgstr "terminato"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:169
 msgid "occurring. Tractive power greatly reduced."
-msgstr "in corso. La potenza di trazione è fortemente ridotta"
+msgstr "in corso. La potenza di trazione è fortemente ridotta."
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:169
 msgid "warning"
@@ -809,7 +808,7 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:230
 msgid "Overriding camera replay. Press Escape to resume camera replay."
-msgstr "Salta il replay. Premi Esc per riprendere il replay"
+msgstr "Salta il replay. Premi Esc per riprendere il replay."
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:231
 msgid "Gearbox"
@@ -841,7 +840,7 @@ msgstr "automatico"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:232
 msgid "locked. Stop train, then re-try."
-msgstr "bloccato. Ferma il treno e riprova"
+msgstr "bloccato. Ferma il treno e riprova."
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:234
 msgid "Wagon"
@@ -853,7 +852,7 @@ msgstr "Carro completamente scaricato"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:234
 msgid "Wagon fully loaded"
-msgstr "carro completamente caricato"
+msgstr "Carro completamente caricato"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:234
 msgid "Freight load"
@@ -1062,11 +1061,11 @@ msgstr "Gancio sovraccarico!"
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:2010
 msgid "Carriage temperature is too hot, the passengers are sweating."
-msgstr "Temperatura eccessiva della carrozza, i passeggeri stanno sudando"
+msgstr "Temperatura eccessiva della carrozza, i passeggeri stanno sudando."
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:2027
 msgid "Carriage temperature is too cold, the passengers are freezing."
-msgstr "Troppo freddo in carrozza, i passeggeri gelano"
+msgstr "Troppo freddo in carrozza, i passeggeri gelano."
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:5497
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:5502
@@ -1130,12 +1129,12 @@ msgstr "Non si può aprire il segnale dietro al treno in modalità AUTO"
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:14290
 msgid "Car "
-msgstr "Carro"
+msgstr "Carro "
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:14364
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:14369
 msgid "Locomotive "
-msgstr "Locomotiva"
+msgstr "Locomotiva "
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:9308
 #, csharp-format
@@ -1249,15 +1248,15 @@ msgstr "Bocchettone rotto perché attivato fuori posto."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2136
 msgid "Tender coal supply is empty. Your loco will fail."
-msgstr "Carbone esaurito nel tender. La tua locomotiva è fuori servizio"
+msgstr "Carbone esaurito nel tender. La tua locomotiva è fuori servizio."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2232
 msgid "Tender water supply is empty. Your loco will fail."
-msgstr "Acqua esaurita nel tender. La tua locomotiva è fuori servizio"
+msgstr "Acqua esaurita nel tender. La tua locomotiva è fuori servizio."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2358
 msgid "Fire has dropped too far. Your loco will fail."
-msgstr "Il fuoco si è spento. La tua locomotiva è fuori servizio"
+msgstr "Il fuoco si è spento. La tua locomotiva è fuori servizio."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2440
 msgid ""
@@ -1273,11 +1272,11 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2902
 msgid "Grate limit exceeded - boiler heat rate cannot increase."
 msgstr ""
-"Limite di fuoco superato - la temperatura della caldaia non può crescere"
+"Limite di fuoco superato - la temperatura della caldaia non può crescere."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2910
 msgid "Grate limit return to normal."
-msgstr "Limite del fuoco tornato normale"
+msgstr "Limite del fuoco tornato normale."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4940
 msgid "Water level dropped too far. Plug has fused and loco has failed."
@@ -1285,11 +1284,11 @@ msgstr "La caldaia è vuota. Hai fuso la locomotiva."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4947
 msgid "Boiler overfull and priming."
-msgstr "Caldaia sovraccarica"
+msgstr "Caldaia sovraccarica."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:4953
 msgid "Boiler no longer priming."
-msgstr "Sovraccarico caldaia terminato"
+msgstr "Sovraccarico caldaia terminato."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5519
 msgid "Fixed gear"
@@ -1532,9 +1531,8 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5688
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5703
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5723
-#, fuzzy
 msgid "Rel"
-msgstr "Scala"
+msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5690
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5705
@@ -1618,9 +1616,8 @@ msgid "Prime"
 msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5740
-#, fuzzy
 msgid "Comp"
-msgstr "Bussola"
+msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5741
 msgid "Off"
@@ -1906,9 +1903,8 @@ msgid "Slip"
 msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6012
-#, fuzzy
 msgid "WheelM"
-msgstr "Slittamento ruote"
+msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6014
 msgid "FoA"
@@ -2010,7 +2006,7 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6252
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6309
 msgid "Gears can't be changed unless throttle is at zero."
-msgstr "Non si cambia marcia a meno che l'acceleratore sia a 0"
+msgstr "Non si cambia marcia a meno che l'acceleratore sia a 0."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6883
 msgid "AI Fireman has started adding fuel to fire"
@@ -2125,7 +2121,7 @@ msgstr "Spegnimento"
 
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:9472
 msgid "Held for connecting train : "
-msgstr "Fermato per agganciare il treno:"
+msgstr "Fermato per agganciare il treno: "
 
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:9480
 msgid "Waiting for train to attach : "
