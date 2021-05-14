@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2017-08-18 20:02:47+0200\n"
-"PO-Revision-Date: 2021-05-14 17:17+0200\n"
+"PO-Revision-Date: 2021-05-14 19:18+0200\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -511,7 +511,7 @@ msgstr "Anzeige"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2014
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2116
 msgid "x"
-msgstr ""
+msgstr "x"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
@@ -1380,7 +1380,7 @@ msgstr " OK "
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:58
 msgid " Cancel "
-msgstr " Abbrechen"
+msgstr " Abbrechen "
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:4
 msgid "(Un)couple Point"
@@ -1388,11 +1388,11 @@ msgstr "An- / Abkuppelpunkt"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:7
 msgid "Uncouple  "
-msgstr " Abkuppeln"
+msgstr "Abkuppeln "
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:8
 msgid "Couple  "
-msgstr " Ankuppeln"
+msgstr "Ankuppeln "
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:10
 msgid "cars, wait for "
