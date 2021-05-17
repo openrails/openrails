@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2017-08-18 20:02:47+0200\n"
-"PO-Revision-Date: 2021-05-14 19:18+0200\n"
+"PO-Revision-Date: 2021-05-18 01:03+0200\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -1458,7 +1458,7 @@ msgstr "KI-Anfrage für Signalfreigabe"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:44
 msgid "Blow horn for"
-msgstr "Horn betätigen wegen"
+msgstr "Horn betätigen für"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:50
 msgid "Wait time code as decimal ="
