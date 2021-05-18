@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orts.Simulation\n"
 "POT-Creation-Date: 2020-06-10 18:27:49+0200\n"
-"PO-Revision-Date: 2020-06-10 18:53+0200\n"
+"PO-Revision-Date: 2021-05-17 19:17+0200\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:229
@@ -1135,15 +1135,13 @@ msgstr "Drehscheibe beginnt Drehung mit Zug"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:729
 #: ../../Orts.Simulation/Simulation/Turntables.cs:760
-#, fuzzy
 msgid "Turntable forward connected"
-msgstr "Drehscheibe vorne verbunden"
+msgstr "Drehscheibe verriegelt"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:742
 #: ../../Orts.Simulation/Simulation/Turntables.cs:773
-#, fuzzy
 msgid "Turntable backward connected"
-msgstr "Drehscheibe hinten verbunden"
+msgstr "Drehscheibe verriegelt"
 
 #: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:4975
 #, fuzzy, csharp-format
