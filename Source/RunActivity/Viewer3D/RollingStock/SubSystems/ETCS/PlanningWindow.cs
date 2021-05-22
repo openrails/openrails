@@ -193,7 +193,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             var gradientText = new List<TextPrimitive>();
             var gradientRectangles = new Dictionary<Point, bool>();
-            foreach (int i in Enumerable.Range(0, GradientProfile.Count - 1))
+            for (int i = 0; i + 1 < GradientProfile.Count; i++)
             {
                 GradientProfileElement e = GradientProfile[i];
                 if (e.DistanceToTrainM > MaxViewingDistanceM) break;
@@ -234,7 +234,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             bool oth2 = false;
             float widthFactor = 1;
             float allowedSpeedMpS = prev_pasp.TargetSpeedMpS;
-            foreach (int i in Enumerable.Range(1, SpeedTargets.Count - 1))
+            for (int i = 1; i < SpeedTargets.Count; i++)
             {
                 PlanningTarget cur = SpeedTargets[i];
                 PlanningTarget prev = SpeedTargets[i - 1];
@@ -279,11 +279,11 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             var speedTargetText = new List<TextPrimitive>(speedTargets.Count);
             var speedTargetTextures = new List<LocatedTexture>(speedTargets.Count);
-            int ld = 0;
-            foreach (int i in Enumerable.Range(1, speedTargets.Count - 1))
+            int ld = 0; 
+            for (int i = 1; i < speedTargets.Count; i++)
             {
                 bool overlap = false;
-                foreach (int j in Enumerable.Range(1, speedTargets.Count - 1))
+                for (int j = 1; j < speedTargets.Count; j++)
                 {
                     if (i != j && CheckTargetOverlap(speedTargets[i], speedTargets[j]))
                     {
