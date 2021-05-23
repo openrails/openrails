@@ -47,6 +47,14 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> IsSpeedControlEnabled;
         /// <summary>
+        /// True if low voltage power supply is switched on.
+        /// </summary>
+        public Func<bool> IsLowVoltagePowerSupplyOn;
+        /// <summary>
+        /// True if cab power supply is switched on.
+        /// </summary>
+        public Func<bool> IsCabPowerSupplyOn;
+        /// <summary>
         /// True if alerter sound rings, otherwise false
         /// </summary>
         public Func<bool> AlerterSound;
@@ -492,7 +500,7 @@ namespace ORTS.Scripting.Api
         public abstract void Initialize();
         /// <summary>
         /// Called once at initialization time if the train speed is greater than 0.
-        /// Set at virtual to keep compatibility with scripts not providing this method.
+        /// Set as virtual to keep compatibility with scripts not providing this method.
         /// </summary>
         public virtual void InitializeMoving() { }
         /// <summary>
@@ -500,11 +508,18 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public abstract void Update();
         /// <summary>
-        /// Called when an event happens (like the alerter button pressed)
+        /// Called when a TCS event happens (like the alerter button pressed)
         /// </summary>
         /// <param name="evt">The event happened</param>
         /// <param name="message">The message the event wants to communicate. May be empty.</param>
         public abstract void HandleEvent(TCSEvent evt, string message);
+        /// <summary>
+        /// Called when a power supply event happens (like the circuit breaker closed)
+        /// Set at virtual to keep compatibility with scripts not providing this method.
+        /// </summary>
+        /// <param name="evt">The event happened</param>
+        /// <param name="message">The message the event wants to communicate. May be empty.</param>
+        public virtual void HandleEvent(PowerSupplyEvent evt, string message) { }
         /// <summary>
         /// Called by signalling code externally to stop the train in certain circumstances.
         /// </summary>
@@ -623,6 +638,14 @@ namespace ORTS.Scripting.Api
         /// Circuit breaker has been opened.
         /// </summary>
         CircuitBreakerOpen,
+        /// <summary>
+        /// Traction cut-off relay has been closed.
+        /// </summary>
+        TractionCutOffRelayClosed,
+        /// <summary>
+        /// Traction cut-off relay has been opened.
+        /// </summary>
+        TractionCutOffRelayOpen,
     }
 
     /// <summary>

@@ -217,6 +217,17 @@ namespace ORTS.Common
     }
 
     /// <summary>
+    /// Energy conversions from and to Joule
+    /// </summary>
+    public static class J
+    {
+        /// <summary>Convert from kiloJoules to Joules</summary>
+        public static float FromKJ(float kiloJoules) { return kiloJoules * 1000f; }
+        /// <summary>Convert from Joules to kileJoules</summary>
+        public static float ToKJ(float joules) { return joules * (1.0f / 1000f); }
+    }
+
+    /// <summary>
     /// Power conversions from and to Watts
     /// </summary>
     public static class W
