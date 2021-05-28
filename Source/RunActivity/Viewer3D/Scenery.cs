@@ -51,6 +51,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Orts.Viewer3D
 {
@@ -327,7 +328,6 @@ namespace Orts.Viewer3D
 
                 var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
                 var animated = (worldObject.StaticFlags & (uint)StaticFlag.Animate) != 0;
-                var isAnimatedClock = false; //Declare and preset shape is not an animated clock 
                 var global = (worldObject is TrackObj) || (worldObject is HazardObj) || (worldObject.StaticFlags & (uint)StaticFlag.Global) != 0;
 
                 // TransferObj have a FileName but it is not a shape, so we need to avoid sanity-checking it as if it was.
@@ -480,27 +480,10 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(StaticObj))
                     {
-                        isAnimatedClock = false;                                                              //Preset
                         //          preTestShape for lookup if it is an animated clock shape with subobjects named as clock hands 
                         StaticShape preTestShape = (new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
-                        if (preTestShape.SharedShape.Animations != null)                                      // shape has an Animation at all
-                        {
-                            if (preTestShape.SharedShape.Animations[0].anim_nodes.Count > 1)                  // shape has more than 1 anim node
-                            {
-                                //lookup in all anim nodes of the shape for subobjects named as clock hands
-                                foreach (var animNodes in preTestShape.SharedShape.Animations[0].anim_nodes)
-                                {
-                                    if (animNodes.Name.ToLowerInvariant().IndexOf("hand_clock") == 6)        //Shape anim node name contains "hand_clock"
-                                    {
-                                        if (animNodes.Name.ToLowerInvariant().IndexOf("orts_") == 0)         //Shape anim node name begins with "ORTS_"
-                                        {
-                                            isAnimatedClock = true;                                          //Shape is animated clock
-                                            break;                                                           //Exit because of find a clock hand subobject
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        var animNodes = preTestShape.SharedShape.Animations?[0]?.anim_nodes ?? new List<anim_node>();
+                        var isAnimatedClock = animNodes.Exists(node => Regex.IsMatch(node.Name, @"^orts_[hmsc]hand_clock", RegexOptions.IgnoreCase));
                         if (isAnimatedClock)
                         {
                             sceneryObjects.Add(new AnalogClockShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
