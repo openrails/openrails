@@ -344,6 +344,7 @@ namespace Orts.Simulation.Physics
         }
 
         public TRAIN_CONTROL ControlMode = TRAIN_CONTROL.UNDEFINED;     // train control mode
+        public TRAIN_CONTROL PreviousControlMode = TRAIN_CONTROL.UNDEFINED; // set when train is out of control
 
         public enum OUTOFCONTROL
         {
@@ -1498,6 +1499,12 @@ namespace Orts.Simulation.Physics
         /// </summary>
 
         public void SignalEvent(Event evt)
+        {
+            foreach (TrainCar car in Cars)
+                car.SignalEvent(evt);
+        }
+
+        public void SignalEvent(TCSEvent evt)
         {
             foreach (TrainCar car in Cars)
                 car.SignalEvent(evt);
@@ -2825,12 +2832,11 @@ namespace Orts.Simulation.Physics
 
         public void UpdateTurntable(float elapsedClockSeconds)
         {
-            //           UpdateTrainPosition();                                                                // position update                  //
-            if (LeadLocomotive != null && (LeadLocomotive.ThrottlePercent >= 1 || Math.Abs(LeadLocomotive.SpeedMpS) > 0.05 || !(LeadLocomotive.Direction == Direction.N
-            || Math.Abs(MUReverserPercent) <= 1)) || ControlMode != TRAIN_CONTROL.TURNTABLE)
+            if (LeadLocomotive is MSTSLocomotive locomotive && (LeadLocomotive.ThrottlePercent >= 1 || Math.Abs(LeadLocomotive.SpeedMpS) > 0.05 || !(LeadLocomotive.Direction == Direction.N
+            || Math.Abs(MUReverserPercent) <= 1)))
             // Go to emergency.
             {
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, "TRAIN_ON_MOVING_TURNTABLE");
             }
         }
 
@@ -3642,7 +3648,7 @@ namespace Orts.Simulation.Physics
             {
                 DistanceToSignal = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
             }
-            else if (ControlMode != TRAIN_CONTROL.AUTO_NODE)
+            else if (ControlMode != TRAIN_CONTROL.AUTO_NODE && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
             {
                 bool validModeSwitch = true;
 
@@ -7261,28 +7267,28 @@ namespace Orts.Simulation.Physics
         {
             switch (ControlMode)
             {
-                case (TRAIN_CONTROL.AUTO_SIGNAL):
+                case TRAIN_CONTROL.AUTO_SIGNAL:
+                    UpdateSignalMode(signalObjectIndex, backward, elapsedClockSeconds);
+                    break;
+
+                case TRAIN_CONTROL.AUTO_NODE:
+                    UpdateNodeMode();
+                    break;
+
+                case TRAIN_CONTROL.OUT_OF_CONTROL:
+                    UpdateOutOfControl();
+                    if (LeadLocomotive is MSTSLocomotive locomotive)
                     {
-                        UpdateSignalMode(signalObjectIndex, backward, elapsedClockSeconds);
-                        break;
+                        if (!locomotive.TrainControlSystem.SimulatorEmergencyBraking)
+                        {
+                            locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, OutOfControlReason.ToString());
+                        }
                     }
-                case (TRAIN_CONTROL.AUTO_NODE):
-                    {
-                        UpdateNodeMode();
-                        break;
-                    }
-                case (TRAIN_CONTROL.OUT_OF_CONTROL):
-                    {
-                        UpdateOutOfControl();
-                        if (LeadLocomotive != null)
-                            ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
-                        break;
-                    }
-                case (TRAIN_CONTROL.UNDEFINED):
-                    {
-                        SwitchToNodeControl(-1);
-                        break;
-                    }
+                    break;
+
+                case TRAIN_CONTROL.UNDEFINED:
+                    SwitchToNodeControl(-1);
+                    break;
 
                 // other modes are processed directly
                 default:
@@ -9735,8 +9741,10 @@ namespace Orts.Simulation.Physics
 
         public void ToggleToExplorerMode()
         {
-            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+            }
 
             // set track occupation (using present route)
             UpdateSectionStateExplorer();
@@ -9778,6 +9786,7 @@ namespace Orts.Simulation.Physics
             // set explorer mode
 
             ControlMode = TRAIN_CONTROL.EXPLORER;
+            PreviousControlMode = TRAIN_CONTROL.UNDEFINED;
 
             // reset routes and check sections either end of train
 
@@ -9816,6 +9825,7 @@ namespace Orts.Simulation.Physics
             // in auto mode, use forward direction only
 
             ControlMode = TRAIN_CONTROL.AUTO_SIGNAL;
+            PreviousControlMode = TRAIN_CONTROL.UNDEFINED;
             thisSignal.requestClearSignal(ValidRoute[0], routedForward, 0, false, null);
 
             // enable any none-NORMAL signals between front of train and first NORMAL signal
@@ -9891,6 +9901,7 @@ namespace Orts.Simulation.Physics
             int endListIndex = -1;
 
             ControlMode = TRAIN_CONTROL.AUTO_NODE;
+            PreviousControlMode = TRAIN_CONTROL.UNDEFINED;
             EndAuthorityType[0] = END_AUTHORITY.NO_PATH_RESERVED;
             IndexNextSignal = -1; // no next signal in Node Control
 
@@ -9984,10 +9995,10 @@ namespace Orts.Simulation.Physics
             }
             else if (ControlMode == TRAIN_CONTROL.EXPLORER)
             {
-                if (LeadLocomotive != null &&
-                    (((MSTSLocomotive)LeadLocomotive).TrainBrakeController.TCSEmergencyBraking || ((MSTSLocomotive)LeadLocomotive).TrainBrakeController.TCSFullServiceBraking))
+                if (LeadLocomotive is MSTSLocomotive locomotive &&
+                    (locomotive.TrainBrakeController.TCSEmergencyBraking || locomotive.TrainBrakeController.TCSFullServiceBraking))
                 {
-                    ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+                    locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
                     ResetExplorerMode();
                     return;
                 }
@@ -10008,8 +10019,10 @@ namespace Orts.Simulation.Physics
 
         public void ToggleToManualMode()
         {
-            if (LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+            if (LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+            }
 
             // set track occupation (using present route)
             UpdateSectionStateManual();
@@ -10051,6 +10064,7 @@ namespace Orts.Simulation.Physics
             // set manual mode
 
             ControlMode = TRAIN_CONTROL.MANUAL;
+            PreviousControlMode = TRAIN_CONTROL.UNDEFINED;
 
             // reset routes and check sections either end of train
 
@@ -10135,8 +10149,10 @@ namespace Orts.Simulation.Physics
 
         public void ResetExplorerMode()
         {
-            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+            }
 
             // set track occupation (using present route)
             UpdateSectionStateExplorer();
@@ -10491,8 +10507,8 @@ namespace Orts.Simulation.Physics
 
                 // set control state and issue warning
 
-                if (ControlMode != TRAIN_CONTROL.EXPLORER)
-                    ControlMode = TRAIN_CONTROL.OUT_OF_CONTROL;
+                PreviousControlMode = ControlMode;
+                ControlMode = TRAIN_CONTROL.OUT_OF_CONTROL;
 
                 var report = string.Format("Train {0} is out of control and will be stopped. Reason : ", Number.ToString());
 
@@ -10500,25 +10516,25 @@ namespace Orts.Simulation.Physics
 
                 switch (reason)
                 {
-                    case (OUTOFCONTROL.SPAD):
+                    case OUTOFCONTROL.SPAD:
                         report = String.Concat(report, " train passed signal at Danger");
                         break;
-                    case (OUTOFCONTROL.SPAD_REAR):
+                    case OUTOFCONTROL.SPAD_REAR:
                         report = String.Concat(report, " train passed signal at Danger at rear of train");
                         break;
-                    case (OUTOFCONTROL.OUT_OF_AUTHORITY):
+                    case OUTOFCONTROL.OUT_OF_AUTHORITY:
                         report = String.Concat(report, " train passed limit of authority");
                         break;
-                    case (OUTOFCONTROL.OUT_OF_PATH):
+                    case OUTOFCONTROL.OUT_OF_PATH:
                         report = String.Concat(report, " train has ran off its allocated path");
                         break;
-                    case (OUTOFCONTROL.SLIPPED_INTO_PATH):
+                    case OUTOFCONTROL.SLIPPED_INTO_PATH:
                         report = String.Concat(report, " train slipped back into path of another train");
                         break;
-                    case (OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK):
+                    case OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK:
                         report = String.Concat(report, " train slipped of the end of track");
                         break;
-                    case (OUTOFCONTROL.OUT_OF_TRACK):
+                    case OUTOFCONTROL.OUT_OF_TRACK:
                         report = String.Concat(report, " train has moved off the track");
                         break;
                 }
@@ -10531,8 +10547,10 @@ namespace Orts.Simulation.Physics
                     File.AppendAllText(@"C:\temp\checktrain.txt", report + "\n");
                 }
 
-                if (LeadLocomotive != null)
-                    ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
+                if (LeadLocomotive is MSTSLocomotive locomotive)
+                {
+                    locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, OutOfControlReason.ToString());
+                }
             }
             // the AI train is now out of path. Instead of killing him, we give him a chance on a new path
             else
@@ -10545,6 +10563,52 @@ namespace Orts.Simulation.Physics
                 }
                 // reset actions to recalculate distances
                 if (TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING) ((AITrain)this).ResetActions(true);
+            }
+        }
+
+        public void ManualResetOutOfControlMode()
+        {
+            if (LeadLocomotive is MSTSLocomotive locomotive && locomotive.TrainControlSystem.SimulatorEmergencyBraking)
+            {
+                if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL)
+                {
+                    switch (OutOfControlReason)
+                    {
+                        case OUTOFCONTROL.SPAD:
+                        case OUTOFCONTROL.SPAD_REAR:
+                        case OUTOFCONTROL.MISALIGNED_SWITCH:
+                            switch (PreviousControlMode)
+                            {
+                                case TRAIN_CONTROL.AUTO_NODE:
+                                    SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
+                                    locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+                                    break;
+
+                                case TRAIN_CONTROL.AUTO_SIGNAL:
+                                    // It is impossible to go back directly to auto signal mode since we are no longer on a valid route, switching to manual mode.
+                                    ToggleToManualMode();
+                                    break;
+
+                                case TRAIN_CONTROL.EXPLORER:
+                                    ToggleToExplorerMode();
+                                    break;
+
+                                case TRAIN_CONTROL.MANUAL:
+                                    ToggleToManualMode();
+                                    break;
+                            }
+
+                            if (ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+                            {
+                                Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Out of control mode reset"));
+                            }
+                            break;
+
+                        default:
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You can only reset if you passed a signal at danger or if you passed a misaligned switch."));
+                            break;
+                    }
+                }
             }
         }
 
@@ -10849,8 +10913,10 @@ namespace Orts.Simulation.Physics
 
             }
 
-            if (LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
+            if (LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, "OTHER_TRAIN_IN_PATH");
+            }
         }
 
         //================================================================================================//
