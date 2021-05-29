@@ -5,7 +5,7 @@ namespace Orts.Simulation.Signalling
 {
     public class SpeedPostWorldObject
     {
-        public string SFileName;
+        public string SFileName { get; }
 
         public SpeedPostWorldObject(SpeedPostObj speedPostItem)
         {
