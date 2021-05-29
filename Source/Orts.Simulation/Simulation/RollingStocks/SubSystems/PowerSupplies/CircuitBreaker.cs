@@ -91,10 +91,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (lowercasetoken)
             {
                 case "engine(ortscircuitbreaker":
-                    if (Locomotive.Train as AITrain == null)
-                    {
-                        ScriptName = stf.ReadStringBlock(null);
-                    }
+                    ScriptName = stf.ReadStringBlock(null);
                     break;
 
                 case "engine(ortscircuitbreakerclosingdelay":
