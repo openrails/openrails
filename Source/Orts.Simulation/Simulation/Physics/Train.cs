@@ -3789,73 +3789,69 @@ namespace Orts.Simulation.Physics
                     }
                 }
 
-                else  // Enhanced Compatibility on & SpeedLimit
+                else if (!thisObject.speed_isWarning) // Enhanced Compatibility on & SpeedLimit
                 {
-                    if (!thisObject.speed_isWarning)
+                    if (actualSpeedMpS > 998f)
                     {
+                        actualSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
+                    }
 
-                        if (actualSpeedMpS > 998f)
+                    if (actualSpeedMpS > 0)
+                    {
+                        var tempValidSpeedSignalMpS = validSpeedSignalMpS == -1 ? 999 : validSpeedSignalMpS;
+                        if (thisObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0)
                         {
-                            actualSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
-                        }
-
-                        if (actualSpeedMpS > 0)
-                        {
-                            var tempValidSpeedSignalMpS = validSpeedSignalMpS == -1 ? 999 : validSpeedSignalMpS;
-                            if (thisObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0)
+                            validSpeedLimitMpS = actualSpeedMpS;
+                            if (actualSpeedMpS > Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS))
                             {
-                                validSpeedLimitMpS = actualSpeedMpS;
-                                if (actualSpeedMpS > Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS))
+                                if (validSpeedMpS < Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS))
                                 {
-                                    if (validSpeedMpS < Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS))
-                                    {
-                                        actualSpeedMpS = Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS);
-                                    }
-                                    else
-                                    {
-                                        actualSpeedMpS = -1;
-                                    }
+                                    actualSpeedMpS = Math.Min(tempValidSpeedSignalMpS, validTempSpeedLimitMpS);
                                 }
-                            }
-                            else
-                            {
-                                validTempSpeedLimitMpS = actualSpeedMpS;
-                                if (actualSpeedMpS > Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS))
+                                else
                                 {
-                                    if (validSpeedMpS < Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS))
-                                    {
-                                        actualSpeedMpS = Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS);
-                                    }
-                                    else
-                                    {
-                                        actualSpeedMpS = -1;
-                                    }
+                                    actualSpeedMpS = -1;
                                 }
                             }
                         }
-                        else if (actualSpeedMpS < 0 && thisObject.speed_reset == 0)
+                        else
                         {
-                            float newSpeedMpS1 = Math.Min(validSpeedSignalMpS, Math.Min(validSpeedLimitMpS, validTempSpeedLimitMpS));
-
-                            if (newSpeedMpS1 != validSpeedMpS)
+                            validTempSpeedLimitMpS = actualSpeedMpS;
+                            if (actualSpeedMpS > Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS))
                             {
-                                actualSpeedMpS = newSpeedMpS1;
-                            }
-                            else
-                            {
-                                actualSpeedMpS = -1;
+                                if (validSpeedMpS < Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS))
+                                {
+                                    actualSpeedMpS = Math.Min(tempValidSpeedSignalMpS, validSpeedLimitMpS);
+                                }
+                                else
+                                {
+                                    actualSpeedMpS = -1;
+                                }
                             }
                         }
-                        else if (thisObject.speed_reset == 1)
-                        {
-                            actualSpeedMpS = validSpeedLimitMpS;
-                        }
+                    }
+                    else if (actualSpeedMpS < 0 && thisObject.speed_reset == 0)
+                    {
+                        float newSpeedMpS1 = Math.Min(validSpeedSignalMpS, Math.Min(validSpeedLimitMpS, validTempSpeedLimitMpS));
 
-                        thisObject.actual_speed = actualSpeedMpS;
-                        if (actualSpeedMpS > 0)
+                        if (newSpeedMpS1 != validSpeedMpS)
                         {
-                            validSpeedMpS = actualSpeedMpS;
+                            actualSpeedMpS = newSpeedMpS1;
                         }
+                        else
+                        {
+                            actualSpeedMpS = -1;
+                        }
+                    }
+                    else if (thisObject.speed_reset == 1)
+                    {
+                        actualSpeedMpS = validSpeedLimitMpS;
+                    }
+
+                    thisObject.actual_speed = actualSpeedMpS;
+                    if (actualSpeedMpS > 0)
+                    {
+                        validSpeedMpS = actualSpeedMpS;
                     }
                 }
             }
