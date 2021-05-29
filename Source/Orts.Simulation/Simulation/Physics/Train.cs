@@ -14252,11 +14252,11 @@ namespace Orts.Simulation.Physics
                         }
                         else if (signalObjectItem.ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit && signalObjectItem.actual_speed > 0)
                         {
-                            thisItem = new TrainObjectItem(signalObjectItem.actual_speed,
-                                signalObjectItem.speed_isWarning,
-                                signalObjectItem.distance_to_train,
-                                signalObjectItem.ObjectDetails,
-                                (TrainObjectItem.SpeedItemType)(signalObjectItem.speed_noSpeedReductionOrIsTempSpeedReduction));
+                            thisItem = new TrainObjectItem(thisSpeedMpS: signalObjectItem.actual_speed,
+                                isWarning: signalObjectItem.speed_isWarning,
+                                thisDistanceM: signalObjectItem.distance_to_train,
+                                signalObject: signalObjectItem.ObjectDetails,
+                                speedObjectType: (TrainObjectItem.SpeedItemType)signalObjectItem.speed_noSpeedReductionOrIsTempSpeedReduction);
                             PlayerTrainSpeedposts[dir].Add(thisItem);
                         }
                     }
@@ -14336,11 +14336,11 @@ namespace Orts.Simulation.Physics
                                 if (thisSpeedInfo != null && thisSpeedInfo.speed_reset == 1)
                                     validSpeed = progressiveMaxSpeedLimitMpS;
                                 else progressiveMaxSpeedLimitMpS = validSpeed;
-                                thisItem = new TrainObjectItem(validSpeed,
-                                    thisSpeedInfo.speed_isWarning,
-                                    thisSpeeditem.SignalLocation + sectionDistanceToTrainM,
-                                    thisSpeedpost,
-                                    (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
+                                thisItem = new TrainObjectItem(thisSpeedMpS: validSpeed,
+                                    isWarning: thisSpeedInfo.speed_isWarning,
+                                    thisDistanceM: thisSpeeditem.SignalLocation + sectionDistanceToTrainM,
+                                    signalObject: thisSpeedpost,
+                                    speedObjectType: (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
                                 PlayerTrainSpeedposts[dir].Add(thisItem);
                             }
                         }
