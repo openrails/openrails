@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2017-08-18 20:02:47+0200\n"
-"PO-Revision-Date: 2017-08-18 20:50+0100\n"
+"PO-Revision-Date: 2021-05-18 01:03+0200\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 # AE
@@ -511,7 +511,7 @@ msgstr "Anzeige"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2014
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2116
 msgid "x"
-msgstr ""
+msgstr "x"
 
 # AE
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
@@ -945,7 +945,7 @@ msgstr "Lade Route ..."
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:745
 msgid "Route cannot be loaded. Sorry"
-msgstr "Die Route konnte leider nicht geladen werden."
+msgstr "Die Route kann leider nicht geladen werden."
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:816
 msgid "Loading .pat file ..."
@@ -1173,15 +1173,15 @@ msgstr "Fahrstraße bis zum nächsten ungültigen Punkt anzeigen"
 
 #: ../../Contrib/TrackViewer/Editing/PathEditor.cs:712
 msgid "Reversing broken paths is not supported"
-msgstr "Unterbrochenen Fahrstraßen können nicht umgekehrt werden."
+msgstr "Unterbrochenen Fahrstraßen können nicht umgekehrt werden"
 
 #: ../../Contrib/TrackViewer/Editing/PathEditor.cs:717
 msgid "Reversing a path without start node is not supported"
-msgstr "Fahrstraßen ohne Startpunkt können nicht umgekehrt werden."
+msgstr "Fahrstraßen ohne Startpunkt können nicht umgekehrt werden"
 
 #: ../../Contrib/TrackViewer/Editing/PathEditor.cs:722
 msgid "Reversing a path without end node is not supported"
-msgstr "Fahrstraßen ohne Endpunkt können nicht umgekehrt werden."
+msgstr "Fahrstraßen ohne Endpunkt können nicht umgekehrt werden"
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:73
 msgid ""
@@ -1193,12 +1193,12 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:80
 msgid "* The path does not have a well-defined end-point"
-msgstr "* Die Fahrstraße hat keinen genau definierten Endpunkt."
+msgstr "* Die Fahrstraße hat keinen genau definierten Endpunkt"
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:82
 msgid "* The path has a stored and not-yet reconnected tail"
 msgstr ""
-"* Die Fahrstraße hat ein gespeichertes, aber nicht wieder verbundenes Ende."
+"* Die Fahrstraße hat ein gespeichertes, aber nicht wieder verbundenes Ende"
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:86
 msgid "The current path is not finished:"
@@ -1328,7 +1328,7 @@ msgstr "Strg Y: Wiederholen\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:530
 msgid "This is ORTS TrackViewer, version "
-msgstr "Open Rails Trackviewer Version"
+msgstr "Open Rails Trackviewer Version "
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:533
 msgid "It is a 'Contribution' to ORTS, and as such\n"
@@ -1352,19 +1352,19 @@ msgstr "Fahrstraßenbeschreibung"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:7
 msgid "Path ID"
-msgstr "Dateiname:"
+msgstr "Fahrstrassen ID"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:11
 msgid "Path name"
-msgstr "Name der Fahrstraße:"
+msgstr "Name der Fahrstraße"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:15
 msgid "Path start"
-msgstr "Startpunkt:"
+msgstr "Startpunkt"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:19
 msgid "Path end"
-msgstr "Endpunkt:"
+msgstr "Fahrstrassen-Ende"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:22
 msgid "Player path"
@@ -1380,7 +1380,7 @@ msgstr " OK "
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:58
 msgid " Cancel "
-msgstr "Abbrechen"
+msgstr " Abbrechen "
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:4
 msgid "(Un)couple Point"
@@ -1388,11 +1388,11 @@ msgstr "An- / Abkuppelpunkt"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:7
 msgid "Uncouple  "
-msgstr "Abkuppeln"
+msgstr "Abkuppeln "
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:8
 msgid "Couple  "
-msgstr "Ankuppel"
+msgstr "Ankuppeln "
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:10
 msgid "cars, wait for "
@@ -1409,7 +1409,7 @@ msgstr "Wartepunkt"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:8
 msgid "Wait time: "
-msgstr "Wartezeit:"
+msgstr "Wartezeit: "
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:10
 msgid "minutes"
@@ -1442,7 +1442,7 @@ msgstr "Waggns, warte"
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
 msgid "seconds. "
-msgstr "Sekunden"
+msgstr "Sekunden. "
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:32
 msgid "Keep rear"
@@ -1458,7 +1458,7 @@ msgstr "KI-Anfrage für Signalfreigabe"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:44
 msgid "Blow horn for"
-msgstr "Horn betätigen:"
+msgstr "Horn betätigen für"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:50
 msgid "Wait time code as decimal ="
@@ -1478,7 +1478,7 @@ msgstr "0000"
 
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:6
 msgid "Charting the path"
-msgstr "Diagramm der Fahstraße wird erstellt ..."
+msgstr "Fahstraßen-Diagramm wird erstellt ..."
 
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
 msgid ""

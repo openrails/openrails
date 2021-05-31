@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2020-05-26 20:01:11+0200\n"
-"PO-Revision-Date: 2020-05-26 23:15+0200\n"
+"PO-Revision-Date: 2021-05-14 21:29+0200\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Bookmarks: 189,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
@@ -689,17 +689,14 @@ msgid "General"
 msgstr "Allgemein"
 
 #: ../../Menu/Options.Designer.cs:389
-#, fuzzy
 msgid "Port Number"
 msgstr "Port-Nummer"
 
 #: ../../Menu/Options.Designer.cs:420
-#, fuzzy
 msgid "Enable WebServer"
 msgstr "Webserver aktivieren"
 
 #: ../../Menu/Options.Designer.cs:430
-#, fuzzy
 msgid "Speed control"
 msgstr "Geschwindigkeitskontrolle"
 
@@ -847,7 +844,6 @@ msgid "Steam locomotive hot start"
 msgstr "Dampflokomotiven starten vorgeheizt"
 
 #: ../../Menu/Options.Designer.cs:1075
-#, fuzzy
 msgid "Simple Control and Physics"
 msgstr "Vereinfachtes Steuerungs- und Physikmodell"
 
@@ -932,10 +928,8 @@ msgid "Log Steam performance data"
 msgstr "Leistungsdaten für Dampfloks im Log protokollieren"
 
 #: ../../Menu/Options.Designer.cs:1371
-#, fuzzy
 msgid "Verbose ENG/WAG configuration messages"
-msgstr ""
-"Erweiterte Benachrichtigungen zur Konfiguration von ENG- & WAG- Dateien"
+msgstr "Ausführliche Konfigurationmeldungen von ENG- & WAG- Dateien"
 
 #: ../../Menu/Options.Designer.cs:1386
 msgid "Evaluation"
@@ -991,7 +985,7 @@ msgstr "Suche nach Updates der Kategorie:"
 
 #: ../../Menu/Options.Designer.cs:1714
 msgid "Experimental"
-msgstr "Experimente"
+msgstr "Experimental"
 
 #: ../../Menu/Options.Designer.cs:1725 ../../Menu/Options.Designer.cs:1769
 #: ../../Menu/Options.Designer.cs:2232
@@ -1003,9 +997,8 @@ msgid "Activity weather randomization"
 msgstr "Generiertes Wetter in Aufgaben"
 
 #: ../../Menu/Options.Designer.cs:1759
-#, fuzzy
 msgid "Activity randomization"
-msgstr "Aufgabenereignisse"
+msgstr "Zufällige Aufgabe"
 
 #: ../../Menu/Options.Designer.cs:1792
 msgid "Correct questionable braking parameters"
@@ -1044,7 +1037,6 @@ msgid "Load day/night textures only when needed"
 msgstr "Tag- / Nachttexturen nur laden, wenn benötigt"
 
 #: ../../Menu/Options.Designer.cs:2013
-#, fuzzy
 msgid "Level:"
 msgstr "Stufe:"
 
