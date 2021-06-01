@@ -323,14 +323,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     LocomotiveSteamBrakeFitted = true;
 
-                    // Steam brake operation is impacted by boiler pressure, a drop in boile rpressure will reduce the force applied
+                    // Steam brake operation is impacted by boiler pressure, a drop in boiler pressure will reduce the force applied
                     SteamBrakeCompensation = lead.BoilerPressurePSI / lead.MaxBoilerPressurePSI;
 
                     float SteamBrakeDesiredFraction;
-                    float MaximumVacuumPressureValue = Vac.ToPress(lead.TrainBrakeController.MaxPressurePSI); // As model uses air pressure this equates to minimum vacuum pressure
-                    float MinimumVacuumPressureValue = Vac.ToPress(0); // As model uses air pressure this equates to maximum vacuum pressure
+
+                    float MaximumVacuumPressureValue = OneAtmospherePSI - lead.TrainBrakeController.MaxPressurePSI; // As model uses air pressure this equates to minimum air pressure
+                    float MinimumVacuumPressureValue = OneAtmospherePSI; // As model uses air pressure this equates to maximum air pressure
                     float EngineBrakePipeFraction = (lead.BrakeSystem.BrakeLine3PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
                     EngineBrakePipeFraction = MathHelper.Clamp(EngineBrakePipeFraction, 0.0f, 1.0f); // Keep fraction within bounds
+
                     float TrainBrakePipeFraction = (lead.BrakeSystem.BrakeLine1PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
                     TrainBrakePipeFraction = MathHelper.Clamp(TrainBrakePipeFraction, 0.0f, 1.0f); // Keep fraction within bounds
 
