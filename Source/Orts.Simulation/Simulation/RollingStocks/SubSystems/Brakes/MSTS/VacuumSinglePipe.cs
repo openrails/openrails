@@ -159,6 +159,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
                 };
             }
             else
@@ -177,6 +178,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 HandbrakePercent > 0 ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
                 };
             }
         }
@@ -481,7 +483,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {
-                if (BrakeLine1PressurePSI < VacResPressurePSIA)
+
+                if (BleedOffValveOpen)
+                {
+                    // the following reduces the brake cylinder and vacuum reservoir to 0inHg if the bleed valve is operated
+                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+                    VacResPressurePSIA += dp;
+                    if (VacResPressurePSIA > OneAtmospherePSI)
+                    {
+                        VacResPressurePSIA = OneAtmospherePSI;
+                    }
+
+                    CylPressurePSIA += dp;
+                    if (CylPressurePSIA > OneAtmospherePSI)
+                    {
+                        CylPressurePSIA = OneAtmospherePSI;
+                    }
+
+                }
+                else if (BrakeLine1PressurePSI < VacResPressurePSIA)
                 {
                     float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (NumBrakeCylinders * BrakeCylVolM3) / VacResVolM3;
                     float vr = VacResVolM3 / BrakePipeVolumeM3;
