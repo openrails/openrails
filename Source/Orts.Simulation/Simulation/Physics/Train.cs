@@ -5591,19 +5591,22 @@ namespace Orts.Simulation.Physics
                 car.DistanceM += Math.Abs(car.SpeedMpS * elapsedTime);
 
                 // Identify links to cars ahead and behind for use when animating couplers
-                if (j == 0)
+                if (j == 0) // typically the locomotive
                 {
                     car.CarAhead = null;
                     if (Cars.Count > j) // if not a single loco
                     {
-                        car.CarBehind = Cars[j + 1];
+                        if (j != Cars.Count - 1) // if so, this is the last car, and hence no cars behind it
+                        {
+                            car.CarBehind = Cars[j + 1];
+                        }
                     }
                     else // if a single loco
                     {
                         car.CarBehind = null;
                     }
                 }
-                else if (j == Cars.Count - 1)
+                else if (j == Cars.Count - 1) // last car in train
                 {
                     Cars[j].CarAhead = Cars[j - 1];
                     Cars[j].CarBehind = null;
