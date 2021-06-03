@@ -5596,9 +5596,13 @@ namespace Orts.Simulation.Physics
                     car.CarAhead = null;
                     if (Cars.Count > j) // if not a single loco
                     {
-                        if (j != Cars.Count - 1) // if so, this is the last car, and hence no cars behind it
+                        if (j < Cars.Count - 1) // if > then or =, this is the last car, and hence no further cars behind it
                         {
                             car.CarBehind = Cars[j + 1];
+                        }
+                        else
+                        {
+                            car.CarBehind = null;
                         }
                     }
                     else // if a single loco
