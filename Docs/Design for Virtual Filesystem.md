@@ -141,22 +141,29 @@ This example has a base package for the Kuju stock stuff, an XTracks package and
                     ...
 
 ## Paths and References
-Files in a package can contain references to files in the same or other packages. For example:
+Files in a package can contain references to files in the same or other packages. For example,
+a reference from one OR content package to another:
 
-    /OR/SomePackage/Shapes/bungalow.s
+    /OR/SomePackage/Shapes/bungalow.shape-or
 
-refers to file
+which might refer to physical file:
 
-    C:\Users\Ryan\Open Rails\SomePackage.zip\SomePackage\Shapes\bungalow.s
+    C:\Users\Ryan\Open Rails\SomePackage.zip\SomePackage\Shapes\bungalow.shape-or
 
-Files in the MSTS-organised packages can continue to use legacy references such as:
+A reference from one MSTS content package to another:
+
+    /MSTS/SomePackage/Shapes/bungalow.s
+
+This also works as a reference from an OR content package to an MSTS one.
+
+References from one MSTS content package to another may also use a legacy reference such as:
 
     ..\..\SomePackage\Shapes\bungalow.s
 
-but files in the OR-organised packages must start from the /OR root and may not use ".."
+but files in the OR content packages must start from the /OR root and may not use ".."
 
 
 ### For OR assets that are inextricably linked with other assets (paths and activities vis-a-vis routes)
-An activity must be linked to a route. In OR packages, this will be achieved with a more restrictive reference:
+An activity must be linked to a route. In OR packages, this constraint will be achieved with a more restrictive reference, such as:
 
     "Route": "/OR/SomePackage/Routes/SomeRoute.route-or"
