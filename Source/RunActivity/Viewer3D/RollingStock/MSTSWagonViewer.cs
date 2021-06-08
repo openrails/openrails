@@ -1004,6 +1004,8 @@ namespace Orts.Viewer3D.RollingStock
             {
                 p.XNAMatrix.M11 *= -1;
                 p.XNAMatrix.M13 *= -1;
+                p.XNAMatrix.M21 *= -1;
+                p.XNAMatrix.M23 *= -1;
                 p.XNAMatrix.M31 *= -1;
                 p.XNAMatrix.M33 *= -1;
             }
@@ -1054,6 +1056,8 @@ namespace Orts.Viewer3D.RollingStock
             {
                 p.XNAMatrix.M11 *= -1;
                 p.XNAMatrix.M13 *= -1;
+                p.XNAMatrix.M21 *= -1;
+                p.XNAMatrix.M23 *= -1;
                 p.XNAMatrix.M31 *= -1;
                 p.XNAMatrix.M33 *= -1;
             }
