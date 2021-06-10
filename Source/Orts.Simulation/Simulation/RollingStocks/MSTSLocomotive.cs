@@ -2366,10 +2366,9 @@ namespace Orts.Simulation.RollingStocks
 
                 //Set axle model parameters
 
-                //LocomotiveAxle.BrakeForceN = FrictionForceN;
-                //  LocomotiveAxle.BrakeRetardForceN = BrakeForceN;
+                // Braking force is calculated externally to the axle model so braking input to axis model should be set to zero. If set to non-zero then braking force will be treated twice.
+                LocomotiveAxle.BrakeRetardForceN = 0; 
 
-                LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;   //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;  //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
