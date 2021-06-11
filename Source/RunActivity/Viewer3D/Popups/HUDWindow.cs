@@ -864,6 +864,7 @@ namespace Orts.Viewer3D.Popups
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.LocomotiveAxle.AdhesionConditions * 100.0f);
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Axle drive force"), "{0} ({1})", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.DriveForceN, mstsLocomotive.IsMetric),
                         FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeRetardForceN, mstsLocomotive.IsMetric));
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Number of substeps"), "{0:F0} ({1})", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS,
                         Viewer.Catalog.GetStringFmt("filtered by {0:F0}", mstsLocomotive.LocomotiveAxle.FilterMovingAverage.Size));
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Solver"), "{0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.Method.ToString());
