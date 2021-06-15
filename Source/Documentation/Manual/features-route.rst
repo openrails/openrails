@@ -830,10 +830,6 @@ You will need:
 
    For each shape of clock in the route, a reference to the shape file in the reference file.
 
-#. Animated Clocks List File
-
-   A file listing the shape file for each clock that Open Rails is to animate.
-
 #. World File
  
    The location of each clock in the world must be given in the world file.
@@ -897,26 +893,6 @@ Details
 	    Align       ( None )
 	    Description ( "ChurchClock" )
     )	
-
-#. Animated Clocks List File
-
-   Create a file ROUTES\\<route_name>\\animated.clocks-or file the file for each shape of clock that Open Rails will animate.
-   The type parameter is always "analog" as "digital" types are not yet supported.::		
-   
-      [
-         {
-            "Name": "Clock01.s",
-            "ClockType": "analog"
-         },
-         {
-            "Name": "ChurchClock.s",
-            "ClockType": "analog"
-         },
-         {
-            "Name": "PlatformClock.s",
-            "ClockType": "analog"
-         }
-      ]
 
 #. World File
 
