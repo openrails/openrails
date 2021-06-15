@@ -2,27 +2,27 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orts.Simulation\n"
 "POT-Creation-Date: 2015-10-25 09:21+0100\n"
-"PO-Revision-Date: 2015-10-25 10:36+0100\n"
-"Last-Translator: Altmann <altmann@bk.ru>\n"
+"PO-Revision-Date: 2021-05-07 21:35+0100\n"
+"Last-Translator: Howky\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.4\n"
+"X-Generator: Poedit 1.6.9\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
 #: ../../RunActivity/AI/AITrain.cs:6100
 #: ../../RunActivity/Simulator/Activity.cs:891
 #: ../../RunActivity/Timetable/TTTrain.cs:5792
 msgid "Passenger boarding completed. Waiting for signal ahead to clear."
-msgstr "Nástup cestujících dokončen. Čekáme na návěstí volno před vlakem."
+msgstr "Nástup cestujících ukončen. Čekáme na návěst volno."
 
 #: ../../RunActivity/AI/AITrain.cs:6106
 #: ../../RunActivity/Simulator/Activity.cs:896
 #: ../../RunActivity/Timetable/TTTrain.cs:5797
 msgid "Passenger boarding completed. You may depart now."
-msgstr "Nástup ukončen. Souhlas k odjezdu!"
+msgstr "Nástup ukončen. Odjezd!"
 
 #: ../../RunActivity/AI/AITrain.cs:4144
 #: ../../RunActivity/Simulator/Simulator.cs:582
@@ -143,7 +143,7 @@ msgstr "Zap"
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:86
 msgctxt "Pantograph"
 msgid "Down"
-msgstr "Dole"
+msgstr "Stažen"
 
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:87
@@ -161,25 +161,25 @@ msgstr "Zvedání"
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:89
 msgctxt "Pantograph"
 msgid "Up"
-msgstr "Nahoře"
+msgstr "Zvednut"
 
 #. Context: CircuitBraker
 #: ../../RunActivity/Common/Scripting/PowerSupply/CircuitBreaker.cs:79
 msgctxt "CircuitBraker"
 msgid "Open"
-msgstr "Otevřeno"
+msgstr "Vypnut"
 
 #. Context: CircuitBraker
 #: ../../RunActivity/Common/Scripting/PowerSupply/CircuitBreaker.cs:80
 msgctxt "CircuitBraker"
 msgid "Closing"
-msgstr "Uzavíráno"
+msgstr "Zapínám"
 
 #. Context: CircuitBraker
 #: ../../RunActivity/Common/Scripting/PowerSupply/CircuitBreaker.cs:81
 msgctxt "CircuitBraker"
 msgid "Closed"
-msgstr "Uzavřeno"
+msgstr "Zapnut"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:1956
 msgid "Switching Request Sent to the Server"
@@ -220,7 +220,7 @@ msgstr "Zobrazit avatary"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
 msgid "MSG to Selected"
-msgstr "Zpráva zvoleným"
+msgstr "Zpráva vybraným"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:88
@@ -261,7 +261,7 @@ msgstr "Normální"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
 msgid "Follow"
-msgstr "Následovat"
+msgstr "Sledovat"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
 msgid "Penalty"
@@ -363,7 +363,7 @@ msgstr "Připojení k serveru bylo ztraceno, pokračujeme v režimu jednoho hrá
 
 #: ../../RunActivity/MultiPlayer/ClientComm.cs:153
 msgid "Alt-E to gain control of your train"
-msgstr "Získat kontrolu nad svým vlakem Alt-E"
+msgstr "Získat kontrolu nad svým vlakem (Alt-E)"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:649
 msgid "Dispatcher does not allow hand throw at this time"
@@ -383,21 +383,21 @@ msgstr "Jste nový dispečer. Užijte si to!"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1597
 msgid "Name conflicted with people in the game, will play in single mode"
-msgstr "Toto jméno již někdo používá, pokračujeme v režimu jednoho hráče"
+msgstr "Toto jméno již někdo používá, pokračujrš v režimu jednoho hráče"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1672
 #: ../../RunActivity/MultiPlayer/MPManager.cs:130
 msgid "You gained back the control of your train"
-msgstr "Získal jste opět kontrolu nad svým vlakem"
+msgstr "Získal jsi opět kontrolu nad svým vlakem"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1887
 msgid "Server quits, will play as single mode"
-msgstr "Server byl ukončen, pokračujeme v režimu jednoho hráče"
+msgstr "Server byl ukončen, pokračuje v režimu jednoho hráče"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2168
 #: ../../RunActivity/MultiPlayer/Message.cs:2414
 msgid "Trains uncoupled, gain back control by Alt-E"
-msgstr "Vlak je rozpojen, získat nad ním kontrolu stiskem Alt-E"
+msgstr "Vlak je rozpojen, stisknutím Alt-E získá kontrolu nad svým vlakem"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2552
 #: ../../RunActivity/MultiPlayer/Message.cs:2660
@@ -406,11 +406,11 @@ msgstr "Vlak je spojen, stiskněte \\ a potom Shift-? pro uvolnění brzd"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:3105
 msgid "You are an assistant now, will be able to handle switches and signals."
-msgstr "Nyní jste asistent, můžete přehazovat výhybky a návěstidla."
+msgstr "Nyní jste asistent dispečera, můžete ovládat výhybky a návěstidla."
 
 #: ../../RunActivity/MultiPlayer/Message.cs:3111
 msgid "You are no longer an assistant."
-msgstr "Již nejste asistent."
+msgstr "Již nejsi asistent dispečera."
 
 #: ../../RunActivity/MultiPlayer/Message.cs:692
 #, csharp-format
@@ -461,7 +461,7 @@ msgstr "Spřáhlo je přetížené!"
 #: ../../RunActivity/Physics/Train.cs:4686
 #: ../../RunActivity/Physics/Train.cs:4691
 msgid "Other train is blocking path"
-msgstr "Další vlak blokuje cestu."
+msgstr "Jiný vlak blokuje cestu."
 
 #: ../../RunActivity/Physics/Train.cs:5578
 msgid "Stopped due to errors in route setting"
@@ -518,7 +518,7 @@ msgstr "Povolená rychlost se zvýšila na {0}"
 #: ../../RunActivity/Physics/Train.cs:8300
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
-msgstr "Vlak zastavil kvůli problémům s dalším vlakem: {0} , důvod: {1}"
+msgstr "Vlak zastavil kvůli problémům s jiným vlakem: {0} , důvod: {1}"
 
 #: ../../RunActivity/Processes/GameStateRunActivity.cs:1080
 #, csharp-format
@@ -556,11 +556,11 @@ msgstr "Nepřítomnost troleje není brána v úvahu."
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:317
 msgid "Pantographs"
-msgstr "Pantografy"
+msgstr "Sběrače"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:331
 msgid "Circuit breaker"
-msgstr "Ochranný vypínač"
+msgstr "Hlavní vypínač"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:332
 msgid "TCS"
@@ -593,30 +593,30 @@ msgstr "Výkon"
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1573
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:203
 msgid "Scoop broken because activated outside through"
-msgstr "Naběrač vody byl poškozen, protože byl spuštěn mimo žlab."
+msgstr "Vodní jeřáb nebyl nastaven, protože byl spuštěn mimo žlab."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1595
 msgid "Tender coal supply is empty. Your loco will fail."
-msgstr "Zásoby uhlí v tenderu došly. Vaše lokomotiva selže."
+msgstr "Zásoby uhlí v tenderu došly. Vaše lokomotiva nemá uhlí!."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1609
 msgid "Tender water supply is empty. Your loco will fail."
-msgstr "Zásoby vody v tenderu došly. Vaše lokomotiva selže."
+msgstr "Zásoby vody v tenderu došly. Vaše lokomotiva snemá vodu!."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1667
 msgid "Fire has dropped too far. Your loco will fail."
-msgstr "Ohniště příliš pohaslo. Vaše lokomotiva selže."
+msgstr "Ohniště příliš pohaslo. Něco s tím udělej nebo nedojedeme."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1724
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
-msgstr "Ohniště vyhasíná. Topič musí přikládat rychleji, ale neunavte ho."
+msgstr "Ohniště vyhasíná. Topič musí přikládat rychleji, ale neunav ho."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1737
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
 msgstr ""
-"Ohniště je opět v rámci limitů. Váš topič může přikládat běžným způsobem."
+"Ohniště je opět v rámci limitů. Tvůj topič může přikládat běžným způsobem."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2105
 msgid "Grate limit exceeded - boiler heat rate cannot increase."
@@ -666,7 +666,7 @@ msgstr "Hladina vody v kotli"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3860
 msgid "(safe range)"
-msgstr "(bezpečný rozsah)"
+msgstr "(bezpečné limity)"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3864
 msgid "(absolute)"
@@ -1265,7 +1265,7 @@ msgid ""
 "You are travelling too fast for this curve. Slow down, your freight may be "
 "damaged and your train may derail."
 msgstr ""
-"Jedete do této zatáčky moc rychle. Zpomalte, váš náklad se může poškodit a "
+"Do oblouku jedeš moc rychle. Zpomal, tvůj náklad se může poškodit a "
 "váš vlak může vykolejit."
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:697
@@ -1273,12 +1273,12 @@ msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable and your train may derail."
 msgstr ""
-"Jedete do této zatáčky moc rychle. Zpomalte, cestující se necítí příjemně a "
+"Do oblouku jedeš moc rychle. Zpomalte, cestující se necítí příjemně a "
 "váš vlak může vykolejit."
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:731
 msgid "Your train has overturned."
-msgstr "Váš vlak se převrátil."
+msgstr "Tvůj vlak vykolejil."
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:915
 msgid "(flipped)"
@@ -1322,19 +1322,19 @@ msgstr "Spotř."
 
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:320
 msgid "Oil"
-msgstr "Nafta"
+msgstr "Olej"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:395
 msgctxt "Engine"
 msgid "Stopped"
-msgstr "Motor neběží"
+msgstr "Motor zastaven"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:396
 msgctxt "Engine"
 msgid "Starting"
-msgstr "Startuje motor"
+msgstr "Startuji motor"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:397
@@ -1346,7 +1346,7 @@ msgstr "Motor běží"
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:398
 msgctxt "Engine"
 msgid "Stopping"
-msgstr "Vypíná motor"
+msgstr "Vypínám motor"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:26
 msgid "None"
@@ -1514,7 +1514,7 @@ msgstr "zablokován. Kontrolér dejte do nulové polohy a opakujte."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:154
 msgid "Helper Diesel Power"
-msgstr "Start/stop dieselu ostatních"
+msgstr "Start/stop dieselu ostatních lokomotiv"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:155
 msgid "Diesel Tank"
@@ -1526,7 +1526,7 @@ msgstr "doplněna"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:155
 msgid "level"
-msgstr "úroveň"
+msgstr "hladina"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:158
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:394
@@ -2079,7 +2079,7 @@ msgstr "Hra uložena"
 #: ../../RunActivity/Viewer3D/Viewer.cs:750
 #, csharp-format
 msgid "Vibrating at level {0}"
-msgstr "Vibrující na úrovni {0}"
+msgstr "Úroveň vibrací {0}"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:758
 #, csharp-format
@@ -2089,12 +2089,12 @@ msgstr "Otáčet kabinu {0}/4, otáčet terén {1}/4"
 #: ../../RunActivity/Viewer3D/Viewer.cs:885
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
-msgstr "Seznam mapy kláves byl uložen do '{0}'."
+msgstr "Seznam kláves byl uložen do '{0}'."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:889
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
-msgstr "Obrázek mapy kláves byl uložen do '{0}'."
+msgstr "Obrázek kláves byl uložen do '{0}'."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:787
 #, csharp-format
@@ -2213,7 +2213,7 @@ msgstr "Zavřít okno"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:89
 msgid "Handbrake set"
-msgstr "Ruční brzda nastavena"
+msgstr "Ruční brzda zatáhnuta"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:91
 msgid "Handbrake off"
@@ -2694,7 +2694,7 @@ msgstr "Hybná"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:648
 msgid "Brake"
-msgstr "Brzda"
+msgstr "Brzdy"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:649
 msgid "Friction"
