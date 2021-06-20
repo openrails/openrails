@@ -488,17 +488,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     // the following reduces the brake cylinder and vacuum reservoir to 0inHg if the bleed valve is operated
                     float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                    VacResPressurePSIA += dp;
-                    if (VacResPressurePSIA > OneAtmospherePSI)
-                    {
-                        VacResPressurePSIA = OneAtmospherePSI;
-                    }
 
-                    CylPressurePSIA += dp;
-                    if (CylPressurePSIA > OneAtmospherePSI)
-                    {
-                        CylPressurePSIA = OneAtmospherePSI;
-                    }
+                    VacResPressurePSIA = Math.Min(VacResPressurePSIA + dp, OneAtmospherePSI);
+
+                    CylPressurePSIA = Math.Min(CylPressurePSIA + dp, OneAtmospherePSI);
 
                 }
                 else if (BrakeLine1PressurePSI < VacResPressurePSIA)
