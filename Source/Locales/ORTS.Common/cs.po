@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: ORTS.Common\n"
 "POT-Creation-Date: 2019-05-19 00:50:56+0200\n"
 "PO-Revision-Date: 2019-05-19 01:58+0200\n"
-"Last-Translator: Altmann <altmann@bk.ru>\n"
+"Last-Translator: Howky\n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
@@ -200,99 +200,99 @@ msgstr "Hra Menu pauza"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:12
 msgid "Game Save"
-msgstr "Hra Uložit"
+msgstr "Uložit hru"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:13
 msgid "Game Quit"
-msgstr "Hra Ukončit"
+msgstr "Ukončit hru"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:14
 msgid "Game Pause"
-msgstr "Hra Pauza"
+msgstr "Pauza"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:15
 msgid "Game Screenshot"
-msgstr "Hra Uložit obrázek obrazovky"
+msgstr "Screenshot"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:16
 msgid "Game Fullscreen"
-msgstr "Hra Celá obrazovka"
+msgstr "Fullscreen"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:17
 msgid "Game Switch Ahead"
-msgstr "Hra Výhybka před"
+msgstr "Výhybka před vlakem"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:18
 msgid "Game Switch Behind"
-msgstr "Hra Výhybka za"
+msgstr "Výhybka za vlakem"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:19
 msgid "Game Switch Picked"
-msgstr "Hra Výběr výhybky"
+msgstr "Výběr výhybky"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:20
 msgid "Game Signal Picked"
-msgstr "Hra Výběr návěstidla"
+msgstr "Výběr návěstidla"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:21
 msgid "Game Switch With Mouse"
-msgstr "Hra Výhybka myší"
+msgstr "Výhybka myší"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:22
 msgid "Game Uncouple With Mouse"
-msgstr "Hra Rozpojit myší"
+msgstr "Rozpojit myší"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:23
 msgid "Game Change Cab"
-msgstr "Hra Přepnout kabinu"
+msgstr "Přepnout kabinu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:24
 msgid "Game Request Control"
-msgstr "Hra Požadavek na volnou cestu"
+msgstr "Požadavek na volnou cestu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:25
 msgid "Game Multi Player Dispatcher"
-msgstr "Hra po síti Dispečer"
+msgstr "Dispečer"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:26
 msgid "Game Multi Player Texting"
-msgstr "Hra po síti Poslat zprávu"
+msgstr "Poslat zprávu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:27
 msgid "Game Switch Manual Mode"
-msgstr "Hra Ruční režim výhybek"
+msgstr "Ruční režim výhybek"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:28
 msgid "Game Clear Signal Forward"
-msgstr "Hra Postav cestu vpřed"
+msgstr "Postav cestu vpřed"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:29
 msgid "Game Clear Signal Backward"
-msgstr "Hra Postav cestu vzad"
+msgstr "Postav cestu vzad"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:30
 msgid "Game Reset Signal Forward"
-msgstr "Hra Obnov cestu vpřed"
+msgstr "Obnov cestu vpřed"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:31
 msgid "Game Reset Signal Backward"
-msgstr "Hra Obnov cestu vzad"
+msgstr "Obnov cestu vzad"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:32
 msgid "Game Autopilot Mode"
-msgstr "Hra Autopilot"
+msgstr "Autopilot"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:33
 msgid "Game Suspend Old Player"
-msgstr "Hra Suspendovat starého hráče"
+msgstr "Suspendovat starého hráče"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:35
 msgid "Display Next Window Tab"
-msgstr "Zobrazit Další záložka okna"
+msgstr "Zobrazit Další záložku okna"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:36
 msgid "Display Help Window"
-msgstr "Zobrazit Okno nápovědy"
+msgstr "Zobrazit okno nápovědy"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:37
 msgid "Display Track Monitor Window"
@@ -304,15 +304,15 @@ msgstr "Zobrazit Interní veličiny"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:39
 msgid "Display Car Labels"
-msgstr "Zobrazit Popis vozidel"
+msgstr "Zobrazit popis vozidel"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:40
 msgid "Display Station Labels"
-msgstr "Zobrazit Popis stanic"
+msgstr "Zobrazit popis stanic"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:41
 msgid "Display Switch Window"
-msgstr "Zobrazit Okno výhybky"
+msgstr "Zobrazit okno výhybky"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:42
 msgid "Display Train Operations Window"
@@ -336,67 +336,67 @@ msgstr "Zobrazit Okno se seznamem vlaků"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:48
 msgid "Debug Speed Up"
-msgstr "Ladit Zrychlit čas"
+msgstr "Zrychlit čas"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:49
 msgid "Debug Speed Down"
-msgstr "Ladit Zpomalit čas"
+msgstr "Zpomalit čas"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:50
 msgid "Debug Speed Reset"
-msgstr "Ladit Výchozí rychlost"
+msgstr "Výchozí rychlost"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:51
 msgid "Debug Overcast Increase"
-msgstr "Ladit Přidat oblačnost"
+msgstr "Přidat oblačnost"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:52
 msgid "Debug Overcast Decrease"
-msgstr "Ladit Ubrat oblačnost"
+msgstr "Ubrat oblačnost"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:53
 msgid "Debug Fog Increase"
-msgstr "Ladit Přidat mlhu"
+msgstr "Přidat mlhu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:54
 msgid "Debug Fog Decrease"
-msgstr "Ladit Ubrat mlhu"
+msgstr "Ubrat mlhu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:55
 msgid "Debug Precipitation Increase"
-msgstr "Ladit Přidat srážky"
+msgstr "Zvětšit déšť"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:56
 msgid "Debug Precipitation Decrease"
-msgstr "Ladit Ubrat srážky"
+msgstr "Ubrat déšť"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:59
 msgid "Debug Weather Change"
-msgstr "Ladit Změna počasí"
+msgstr "Změna počasí"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:60
 msgid "Debug Clock Forwards"
-msgstr "Ladit Hodiny vpřed"
+msgstr "Hodiny vpřed"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:61
 msgid "Debug Clock Backwards"
-msgstr "Ladit Hodiny vzad"
+msgstr "Hodiny vzad"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:62
 msgid "Debug Logger"
-msgstr "Ladit Spustit/zastavit logování"
+msgstr "Spustit/zastavit logování"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:63
 msgid "Debug Lock Shadows"
-msgstr "Ladit Uzamknout stíny"
+msgstr "Uzamknout stíny"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:64
 msgid "Debug Dump Keyboard Map"
-msgstr "Ladit Výpis mapy klávesnice"
+msgstr "Výpis klávesnice"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:65
 msgid "Debug Log Render Frame"
-msgstr "Ladit Logování vykreslování"
+msgstr "Logování vykreslování"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:66
 msgid "Debug Tracks"
@@ -408,19 +408,19 @@ msgstr "Ladit Zabezpečovací systém"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:68
 msgid "Debug Reset Wheel Slip"
-msgstr "Ladit Resetovat prokluz kol"
+msgstr "Resetovat prokluz kol"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:69
 msgid "Debug Toggle Advanced Adhesion"
-msgstr "Ladit Zapnout/vypnout pokročilou adhezi"
+msgstr "Zapnout/vypnout pokročilou adhezi"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:70
 msgid "Debug Sound Form"
-msgstr "Ladit Okno zvuků"
+msgstr "Okno zvuků"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:71
 msgid "Debug Physics Form"
-msgstr "Ladit Okno fyziky"
+msgstr "Okno fyziky"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:73
 msgid "Camera Cab"
@@ -556,270 +556,270 @@ msgstr "Pohled Kývání"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:113
 msgid "Control Forwards"
-msgstr "Ovladač Vpřed"
+msgstr "Vpřed"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:114
 msgid "Control Backwards"
-msgstr "Ovladač Vzad"
+msgstr "Vzad"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:115
 msgid "Control Throttle Increase"
-msgstr "Ovladač Zvýšit tah"
+msgstr "Zvýšit tah"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:116
 msgid "Control Throttle Decrease"
-msgstr "Ovladač Snížit tah"
+msgstr "Snížit tah"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:117
 msgid "Control Throttle Zero"
-msgstr "Ovladač Vynulovat tah"
+msgstr "Vynulovat tah"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:118
 msgid "Control Gear Up"
-msgstr "Ovladač Řazení nahoru"
+msgstr "Řazení nahoru"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:119
 msgid "Control Gear Down"
-msgstr "Ovladač Řazení dolů"
+msgstr "OŘazení dolů"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:120
 msgid "Control Train Brake Increase"
-msgstr "Ovladač Zabrzdit vlakovou brzdu"
+msgstr "Zabrzdit vlakovou brzdu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:121
 msgid "Control Train Brake Decrease"
-msgstr "Ovladač Odbrzdit vlakovou brzdu"
+msgstr "Odbrzdit vlakovou brzdu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:122
 msgid "Control Train Brake Zero"
-msgstr "Ovladač Vynulovat vlakovou brzdu"
+msgstr "Vynulovat vlakovou brzdu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:123
 msgid "Control Engine Brake Increase"
-msgstr "Ovladač Zabrzdit přídavnou brzdu"
+msgstr "Zabrzdit přídavnou brzdu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:124
 msgid "Control Engine Brake Decrease"
-msgstr "Ovladač Odbrzdit přídavnou brzdu"
+msgstr "Odbrzdit přídavnou brzdu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:125
 msgid "Control Dynamic Brake Increase"
-msgstr "Ovladač Zabrzdit dynamickou brzdu"
+msgstr "Zabrzdit dynamickou brzdu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:126
 msgid "Control Dynamic Brake Decrease"
-msgstr "Ovladač Odbrzdit dynamickou brzdu"
+msgstr "Odbrzdit dynamickou brzdu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:127
 msgid "Control Bail Off"
-msgstr "Ovladač Odbrzdit"
+msgstr "Odbržďovač"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:128
 msgid "Control Initialize Brakes"
-msgstr "Ovladač Inicializace brzdového systému"
+msgstr "Inicializace brzdového systému"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:129
 msgid "Control Handbrake Full"
-msgstr "Ovladač Zabrzdit ruční brzdu"
+msgstr "Zabrzdit ruční brzdu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:130
 msgid "Control Handbrake None"
-msgstr "Ovladač Odbrzdit ruční brzdu"
+msgstr "Odbrzdit ruční brzdu"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:131
 msgid "Control Odometer Show/Hide"
-msgstr "Ovladač Zobrazit/skrýt měřič ujeté vzdálenosti"
+msgstr "Zobrazit/skrýt měřič ujeté vzdálenosti"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:132
 msgid "Control Odometer Reset"
-msgstr "Ovladač Resetovat měřič ujeté vzdálenosti"
+msgstr "Resetovat měřič ujeté vzdálenosti"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:133
 msgid "Control Odometer Direction"
-msgstr "Ovladač Směr měřiče ujeté vzdálenosti"
+msgstr "Směr měřiče ujeté vzdálenosti"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:134
 msgid "Control Retainers On"
-msgstr "Ovladač Zarážky aktivní"
+msgstr "Zarážky aktivní"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:135
 msgid "Control Retainers Off"
-msgstr "Ovladač Zarážky neaktivní"
+msgstr "Zarážky neaktivní"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:136
 msgid "Control Brake Hose Connect"
-msgstr "Ovladač Zapojit brzdové hadice"
+msgstr "Zapojit brzdové hadice"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:137
 msgid "Control Brake Hose Disconnect"
-msgstr "Ovladač Odpojit brzdové hadice"
+msgstr "Odpojit brzdové hadice"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:138
 msgid "Control Alerter"
-msgstr "Ovladač Tlačítko bdělosti"
+msgstr "Tlačítko bdělosti"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:139
 msgid "Control Emergency Push Button"
-msgstr "Ovladač Záchranná brzda"
+msgstr "Záchranná brzda"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:140
 msgid "Control Sander"
-msgstr "Ovladač Pískování"
+msgstr "Pískování"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:141
 msgid "Control Sander Toggle"
-msgstr "Ovladač Přepínání pískování"
+msgstr "Přepínání pískování"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:142
 msgid "Control Wiper"
-msgstr "Ovladač Stěrače"
+msgstr "Stěrače"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:143
 msgid "Control Horn"
-msgstr "Ovladač Houkačka"
+msgstr "Houkačka"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:144
 msgid "Control Bell"
-msgstr "Ovladač Píšťala"
+msgstr "Píšťala"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:145
 msgid "Control Bell Toggle"
-msgstr "Ovladač Píšťala (přepnout)"
+msgstr "Píšťala (přepnout)"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:146
 msgid "Control Door Left"
-msgstr "Ovladač Dveře levé"
+msgstr "Dveře levé"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:147
 msgid "Control Door Right"
-msgstr "Ovladač Dveře pravé"
+msgstr "Dveře pravé"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:148
 msgid "Control Mirror"
-msgstr "Ovladač Zrcátka"
+msgstr "Zrcátka"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:149
 msgid "Control Light"
-msgstr "Ovladač Osvětlení kabiny"
+msgstr "Osvětlení kabiny"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:150
 msgid "Control Pantograph 1"
-msgstr "Ovladač Sběrač 1"
+msgstr "Sběrač 1"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:151
 msgid "Control Pantograph 2"
-msgstr "Ovladač Sběrač 2"
+msgstr "Sběrač 2"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:152
 #| msgid "Control Pantograph 1"
 msgid "Control Pantograph 3"
-msgstr "Ovladač Sběrač 3"
+msgstr "Sběrač 3"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:153
 #| msgid "Control Pantograph 1"
 msgid "Control Pantograph 4"
-msgstr "Ovladač Sběrač 4"
+msgstr "Sběrač 4"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:157
 msgid "Control Diesel Player"
-msgstr "Ovladač Start/Stop motoru dieselu (hráč)"
+msgstr "Start/Stop motoru dieselu (hráč)"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:158
 msgid "Control Diesel Helper"
-msgstr "Ovladač Start/Stop motoru dieselu (ostatní)"
+msgstr "Start/Stop motoru dieselu (ostatní)"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:159
 msgid "Control Headlight Increase"
-msgstr "Ovladač Zapnout světla/reflektory"
+msgstr "Zapnout světla/reflektory"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:160
 msgid "Control Headlight Decrease"
-msgstr "Ovladač Vypnout světla/reflektory"
+msgstr " Vypnout světla/reflektory"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:161
 msgid "Control Injector 1 Increase"
-msgstr "Ovladač Zvýšit injektor 1"
+msgstr "Zvýšit injektor 1"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:162
 msgid "Control Injector 1 Decrease"
-msgstr "Ovladač Snížit injektor 1"
+msgstr "Snížit injektor 1"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:163
 msgid "Control Injector 1"
-msgstr "Ovladač Injektor 1"
+msgstr "Injektor 1"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:164
 msgid "Control Injector 2 Increase"
-msgstr "Ovladač Zvýšit injektor 2"
+msgstr "Zvýšit injektor 2"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:165
 msgid "Control Injector 2 Decrease"
-msgstr "Ovladač Snížit injektor 2"
+msgstr "Snížit injektor 2"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:166
 msgid "Control Injector 2"
-msgstr "Ovladač Injektor 2"
+msgstr "Injektor 2"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:167
 msgid "Control Blower Increase"
-msgstr "Ovladač Zvýšit průtok"
+msgstr "Zvýšit průtok"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:168
 msgid "Control Blower Decrease"
-msgstr "Ovladač Snížit průtok"
+msgstr "Snížit průtok"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:169
 msgid "Control Steam Heat Increase"
-msgstr "Ovladač Zvýšit žár páry"
+msgstr "Zvýšit žár páry"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:170
 msgid "Control Steam Heat Decrease"
-msgstr "Ovladač Snížit žár páry"
+msgstr "Snížit žár páry"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:171
 msgid "Control Damper Increase"
-msgstr "Ovladač Zvýšit klapku"
+msgstr "Zvýšit klapku"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:172
 msgid "Control Damper Decrease"
-msgstr "Ovladač Snížit klapku"
+msgstr "Snížit klapku"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:173
 msgid "Control Firebox Open"
-msgstr "Ovladač Otevřít ohniště"
+msgstr "Otevřít ohniště"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:174
 msgid "Control Firebox Close"
-msgstr "Ovladač Zavřít ohniště"
+msgstr "Zavřít ohniště"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:175
 msgid "Control Firing Rate Increase"
-msgstr "Ovladač Zvýšit dávku paliva"
+msgstr "Zvýšit dávku paliva"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:176
 msgid "Control Firing Rate Decrease"
-msgstr "Ovladač Snížit dávku palivy"
+msgstr "Snížit dávku palivy"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:177
 msgid "Control Fire Shovel Full"
-msgstr "Ovladač Max. paliva"
+msgstr "Max. paliva"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:178
 msgid "Control Cylinder Cocks"
-msgstr "Ovladač Kohout válce"
+msgstr "Kohout válce"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:181
 msgid "Control Cylinder Compound"
-msgstr "Ovladač Sdružený válec"
+msgstr "Sdružený válec"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:182
 msgid "Control Firing"
-msgstr "Ovladač Spalování"
+msgstr "Spalování"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:183
 msgid "Control Refill"
-msgstr "Ovladač Doplnit"
+msgstr "Doplnit"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:184
 msgid "Control TroughRefill"
-msgstr "Ovladač Doplnit vodu ze žlabu"
+msgstr "Doplnit vodu ze žlabu"
