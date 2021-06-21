@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orts.Simulation\n"
 "POT-Creation-Date: 2020-06-10 18:27:49+0200\n"
-"PO-Revision-Date: 2021-05-17 19:17+0200\n"
+"PO-Revision-Date: 2021-06-13 12:41+0200\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4.3\n"
+"X-Generator: Poedit 3.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:229
@@ -462,12 +462,10 @@ msgid "Pantograph 2"
 msgstr "Pantograph 2"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:182
-#, fuzzy
 msgid "Pantograph 3"
 msgstr "Pantograph 3"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:183
-#, fuzzy
 msgid "Pantograph 4"
 msgstr "Pantograph 4"
 
@@ -532,7 +530,7 @@ msgstr "Injektor 2"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:196
 msgid "Blowdown Valve"
-msgstr ""
+msgstr "Entlüftungsventil"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:197
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5849
@@ -618,7 +616,7 @@ msgstr "Normal"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:208
 msgid "fast"
-msgstr ""
+msgstr "schnell"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:209
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:210
@@ -643,9 +641,8 @@ msgstr "Wasserstand"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:212
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6424
-#, fuzzy
 msgid "Water Scoop"
-msgstr "Wasser"
+msgstr "Wasserschöpfrohr"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:212
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:246
@@ -835,11 +832,11 @@ msgstr "Entfernungsmesser"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:235
 msgid "Doors Left"
-msgstr "linke Türen"
+msgstr "Türen links"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:236
 msgid "Doors Right"
-msgstr "rechte Türen"
+msgstr "Türen rechts"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:237
 msgid "Mirror"
@@ -943,9 +940,8 @@ msgid "Freight load"
 msgstr "Güterladung"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:251
-#, fuzzy
 msgid "Cab Radio"
-msgstr "Funk (Führerstand)"
+msgstr "Führerstand Funk"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:261
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:270
@@ -1059,9 +1055,8 @@ msgstr ""
 "neue Spielerzug"
 
 #: ../../Orts.Simulation/Simulation/Transfertables.cs:245
-#, fuzzy
 msgid "Train partially on transfertable, can't transfer"
-msgstr "Zug nicht vollständig auf Schiebebühne - Verschieben nicht möglich"
+msgstr "Zug nur teilweise auf Schiebebühne - Verschieben nicht möglich"
 
 #: ../../Orts.Simulation/Simulation/Transfertables.cs:256
 #, fuzzy
@@ -1071,7 +1066,6 @@ msgstr ""
 "Richtungswender, und Zugkontrollmodus überprüfen"
 
 #: ../../Orts.Simulation/Simulation/Transfertables.cs:283
-#, fuzzy
 msgid "Transfertable starting transferring train"
 msgstr "Verschiebebühne beginnt Verschieben des Zuges"
 
@@ -1083,44 +1077,42 @@ msgstr "Verschiebebühne verbunden"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:205
 msgid "turntable"
-msgstr ""
+msgstr "Drehscheibe"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:205
-#, fuzzy
 msgid "transfertable"
-msgstr "Verschiebebühne verbunden"
+msgstr "Verschiebebühne"
 
 # Exact funtionality?
 #: ../../Orts.Simulation/Simulation/Turntables.cs:224
 #: ../../Orts.Simulation/Simulation/Turntables.cs:265
-#, fuzzy, csharp-format
+#, csharp-format
 msgid "Train slipped into non aligned {0}"
 msgstr "Zug in nicht ausgerichtete {0} gerutscht."
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:231
-#, fuzzy, csharp-format
+#, csharp-format
 msgid "Train front on {0}"
-msgstr "Vorderes Zugende auf {0}"
+msgstr "Zuganfang auf {0}"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:239
-#, fuzzy, csharp-format
+#, csharp-format
 msgid "Train front outside {0}"
-msgstr "Vorderes Zugende außerhalb von {0}"
+msgstr "Zuganfang außerhalb von {0}"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:272
-#, fuzzy, csharp-format
+#, csharp-format
 msgid "Train rear on {0}"
-msgstr "Hinteres Zugende auf {0}"
+msgstr "Zugende auf {0}"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:280
-#, fuzzy, csharp-format
+#, csharp-format
 msgid "Train rear outside {0}"
-msgstr "Hiteres Zugende außerhalb von {0}"
+msgstr "Zugende außerhalb von {0}"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:599
-#, fuzzy
 msgid "Train partially on turntable, can't rotate"
-msgstr "Zug nicht vollständig auf Drehscheibe - Drehen nicht möglich"
+msgstr "Zug nur teilweise auf Drehscheibe - Drehen nicht möglich"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:610
 msgid "Rotation can't start: check throttle, speed, direction and control mode"
@@ -1129,9 +1121,8 @@ msgstr ""
 "und Zugkontrollmodus überprüfen"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:618
-#, fuzzy
 msgid "Turntable starting rotation with train"
-msgstr "Drehscheibe beginnt Drehung mit Zug"
+msgstr "Zug wird auf Drehscheibe gedreht"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:729
 #: ../../Orts.Simulation/Simulation/Turntables.cs:760
@@ -1165,6 +1156,8 @@ msgid ""
 "The steam usage has exceeded the capacity of the steam boiler. Steam boiler "
 "locked out."
 msgstr ""
+"Der Dampfverbrauch hat die Kapazität des Dampfkessels überschritten. Der "
+"Dampfkessel ist geschlossen."
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:6062
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:6067
@@ -1199,9 +1192,7 @@ msgstr "Wechsel in den manuellen Modus im Autopilotmodus nicht möglich"
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:9272
 msgid "You cannot use this command for pathless trains"
-msgstr ""
-"Diese Funktion ist für ursprünglich abgestellte Züge (ohne Fahrstraße) nicht "
-"verfügbar"
+msgstr "Dieser Befehl ist für Züge ohne Fahrstraße nicht möglich"
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:9284
 msgid "Train is not back on original route"
@@ -1230,7 +1221,7 @@ msgstr "Signalfreigabe hinter dem Zug im automatischen Modus nicht möglich"
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:15272
 msgid "Car "
-msgstr ""
+msgstr "Waggon "
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:15346
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:15351
@@ -1238,14 +1229,14 @@ msgid "Locomotive "
 msgstr "Lokomotivtyp "
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:2292
-#, fuzzy, csharp-format
+#, csharp-format
 msgid "Carriage {0} temperature is too cold, the passengers are freezing."
-msgstr "Die Temperatur in den Waggons ist zu niedrig, die Passagiere frieren."
+msgstr "Die Temperatur im Waggon {0} ist zu niedrig, die Passagiere frieren."
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:2296
-#, fuzzy, csharp-format
+#, csharp-format
 msgid "Car {0} temperature is too cold for the freight."
-msgstr "Die Temperatur in den Waggons ist zu niedrig, die Passagiere frieren."
+msgstr "Die Temperatur im Waggon {0} ist zu niedrig für die Fracht."
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:10155
 #, csharp-format
@@ -1268,7 +1259,6 @@ msgstr "Treibstoff"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:729
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6032
-#, fuzzy
 msgid "StHeat:"
 msgstr "DpfHzg:"
 
@@ -1292,9 +1282,8 @@ msgid "StUse"
 msgstr "DpfNtzg"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:737
-#, fuzzy
 msgid "WaterLvl"
-msgstr "Wasser"
+msgstr "WasserLvl"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:739
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6040
@@ -1365,7 +1354,6 @@ msgid "Power"
 msgstr "Stromzufuhr"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2261
-#, fuzzy
 msgid "No water scoop on this loco"
 msgstr "Kein Schöpfrohr auf dieser Lok."
 
@@ -1375,33 +1363,29 @@ msgid "Scoop is broken, can't refill"
 msgstr "Schöpfrohr beschädigt, auffüllen nicht möglich."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2277
-#, fuzzy
 msgid "Scoop is broken by junction track"
-msgstr "Schöpfrohr beschädigt, auffüllen nicht möglich."
+msgstr "Schöpfrohr ist durch Weiche beschädigt."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2287
-#, fuzzy
 msgid "Scoop is not over trough, can't refill"
-msgstr "Schöpfrohr beschädigt, auffüllen nicht möglich."
+msgstr "Schöpfrohr nicht überm Trog, auffüllen nicht möglich."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2603
 msgid "Sand supply has been exhausted"
 msgstr "Der Sandvorrat ist aufgebraucht"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2299
-#, fuzzy
 msgid "Refill: Loco must be moving forward."
-msgstr "Auftanken: Lokomotive muss stillstehen, um {0} auftanken zu können."
+msgstr "Auftanken: Lokomotive muss sich vorwärts bewegen."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2309
-#, fuzzy, csharp-format
+#, csharp-format
 msgid "Refill: Loco speed must exceed {0} for water to enter tender."
 msgstr "Auftanken: Geschwindigkeit muss größer als {0} sein."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2320
-#, fuzzy
 msgid "Refill: Water supply now replenished."
-msgstr "Auftanken: {0} Vorrat jetzt ergänzt."
+msgstr "Auftanken: Vorrat jetzt ergänzt."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2239
 msgid "Tender coal supply is empty. Your loco will fail."
@@ -1696,7 +1680,7 @@ msgstr "EinlsEnd"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5906
 msgid "Lead"
-msgstr ""
+msgstr "Leitung"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5908
 msgid "ExhLap"
@@ -2206,7 +2190,7 @@ msgstr "Pumpen"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6412
 msgid "Leak:"
-msgstr ""
+msgstr "Leck:"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6414
 msgid "Net:"
@@ -2214,7 +2198,7 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6426
 msgid "Fill:"
-msgstr ""
+msgstr "Befülle:"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6427
 msgid "ScDwn"
@@ -2226,7 +2210,7 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6431
 msgid "Min"
-msgstr ""
+msgstr "Min"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6433
 msgid "WaVel"
@@ -2234,17 +2218,15 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6435
 msgid "Drag"
-msgstr ""
+msgstr "Ziehen"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6437
-#, fuzzy
 msgid "WaterU"
-msgstr "Wasser"
+msgstr "WasserU"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6439
-#, fuzzy
 msgid "Input"
-msgstr "Werte:"
+msgstr "Eingabe"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6441
 msgid "Total"
@@ -2256,17 +2238,14 @@ msgid "Gears can't be changed unless throttle is at zero."
 msgstr "Schalten nur bei Regler im Leerlauf möglich."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7232
-#, fuzzy
 msgid "AI Fireman has started adding fuel to fire"
 msgstr "KI-Heizer hat begonnen zu heizen"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7239
-#, fuzzy
 msgid "AI Fireman has stopped adding fuel to fire"
 msgstr "KI-Heizer hat aufgehört zu heizen"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7246
-#, fuzzy
 msgid "AI Fireman has been reset"
 msgstr "KI-Heizer wurde zurückgesetzt"
 
@@ -2278,9 +2257,8 @@ msgid "Power"
 msgstr "Leistung"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1487
-#, fuzzy
 msgid "Starting unload"
-msgstr "Entladen starten"
+msgstr "Entladen beginnen"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3180
 #, fuzzy
@@ -2293,39 +2271,37 @@ msgid "Starting refill"
 msgstr "Auffüllen starten"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3203
-#, fuzzy
 msgid "Preparing for unload"
 msgstr "Zum Entladen vorbereiten"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1273
-#, fuzzy
 msgid ""
 "You were travelling too fast for this curve, and have snapped a brake hose "
 "on Car "
 msgstr ""
-"Sie sind zu schnell für diese Kurvegefahren und ein Bremsschlauch ist "
-"geborsten. Sie müsse ihn reparieren und von vorne beginnen."
+"Sie sind zu schnell in diese Kurve gefahren und ein Bremsschlauch ist "
+"geborsten. Sie müssen ihn reparieren und von vorne beginnen."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1235
-#, fuzzy, csharp-format
+#, csharp-format
 msgid ""
 "You are travelling too fast for this curve. Slow down, your freight car {0} "
 "may be damaged. The recommended speed for this curve is {1}"
 msgstr ""
-"Sie fahren zu schnell für diese Kurve. Verlangsamen Sie die Fahrt! Ihre "
-"Fracht könnte beschädigt werden und eine Kupplung oder Luftleitung könnte "
-"brechen."
+"Sie fahren zu schnell für diese Kurve. Verlangsamen Sie die Fahrt! Der "
+"Güterwaggon {0} könnte beschädigt werden. Die empfohlene Geschwindigkeit ist "
+"{1}"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1239
-#, fuzzy, csharp-format
+#, csharp-format
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers in "
 "car {0} are feeling uncomfortable. The recommended speed for this curve is "
 "{1}"
 msgstr ""
-"Sie fahren zu schnell für diese Kurve. Verlangsamen Sie die Fahrt! Ihre "
-"Passagiere fühlen sich nicht wohl und eine Kupplung oder Luftleitung könnte "
-"brechen."
+"Sie fahren zu schnell für diese Kurve. Verlangsamen Sie die Fahrt! Die "
+"Passagiere in Waggon {0} fühlen sich unwohl. Die empfohlene Geschwindigkeit "
+"ist {1}"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/CircuitBreaker.cs:406
 msgid "Circuit breaker closing not authorized"
@@ -2389,15 +2365,13 @@ msgstr "Warten auf Ankunft von Zug: "
 
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10500
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10531
-#, fuzzy
 msgid ", backward"
-msgstr ", hinten"
+msgstr ", rückwärts"
 
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10515
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10531
-#, fuzzy
 msgid ", forward"
-msgstr ", vorne"
+msgstr ", vorwärts"
 
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10524
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10532
@@ -2413,7 +2387,7 @@ msgstr "Passagiere ausgestiegen, Zug endet hier."
 #: ../../Orts.Simulation/Simulation/Timetables/TTTurntable.cs:1829
 #, csharp-format
 msgid "Turntable is ready for access - allowed speed set to {0}"
-msgstr ""
+msgstr "Drehscheibe ist bereit - erlaubte Geschwindigkeit ist {0}"
 
 #, fuzzy
 #~ msgid "Carriage temperature is too hot, the passengers are sweating."
