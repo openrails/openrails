@@ -368,13 +368,13 @@ namespace Orts.Viewer3D.Popups
 
         void ExpandWindow_Click(Control arg1, Point arg2)
         {
-            normalTextMode = normalTextMode ? false : true;
+            normalTextMode = !normalTextMode;
             UpdateWindowSize();
         }
 
         private void UpdateWindowSize()
         {
-            labels = TrainDrivingWindowList(Owner.Viewer, true).ToList();
+            labels = TrainDrivingWindowList(Owner.Viewer, normalTextMode).ToList();
             ModifyWindowSize();
         }
 
@@ -510,7 +510,7 @@ namespace Orts.Viewer3D.Popups
         /// </summary>
         /// <param name="viewer">The Viewer to read train data from.</param>
         /// <returns>A list of <see cref="ListLabel"/>s, one per row of the popup.</returns>
-        public IEnumerable<ListLabel> TrainDrivingWindowList(Viewer viewer, bool normalTextMode = true)
+        public IEnumerable<ListLabel> TrainDrivingWindowList(Viewer viewer, bool normalTextMode)
         {
             bool useMetric = viewer.MilepostUnitsMetric;
             labels = new List<ListLabel>();
@@ -1037,8 +1037,7 @@ namespace Orts.Viewer3D.Popups
                 {
                     FirstCol = Viewer.Catalog.GetString("AI Fireman") + (!ctrlAIFiremanOn && !ctrlAIFiremanOff && !ctrlAIFiremanReset ? ColorCode[Color.Black] : ColorCode[Color.White]),
                     LastCol = ctrlAIFiremanOn ? Viewer.Catalog.GetString("On") : ctrlAIFiremanOff ? Viewer.Catalog.GetString("Off") : ctrlAIFiremanReset ? Viewer.Catalog.GetString("Reset") + ColorCode[Color.Cyan] : "",
-                    KeyPressed = aifireKey,
-                    SymbolCol = aifireKey
+                    KeyPressed = aifireKey
                 });
             }
 
@@ -1150,7 +1149,7 @@ namespace Orts.Viewer3D.Popups
             if (!MovingCurrentWindow && !TrainDrivingUpdating && updateFull)
             {
                 TrainDrivingUpdating = true;
-                labels = TrainDrivingWindowList(Owner.Viewer, true).ToList();
+                labels = TrainDrivingWindowList(Owner.Viewer, normalTextMode).ToList();
                 TrainDrivingUpdating = false;
 
                 // Ctrl + F (FiringIsManual)
