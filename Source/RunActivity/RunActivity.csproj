@@ -130,6 +130,7 @@
     <Compile Include="Viewer3D\Popups\CompassWindow.cs" />
     <Compile Include="Viewer3D\Popups\ComposeMessage.cs" />
     <Compile Include="Viewer3D\Popups\LabelPrimitive.cs" />
+    <Compile Include="Viewer3D\Popups\MultiPlayerWindow.cs" />
     <Compile Include="Viewer3D\Popups\NoticeWindow.cs" />
     <Compile Include="Viewer3D\Popups\HelpWindow.cs" />
     <Compile Include="Viewer3D\Popups\HUDWindow.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="Viewer3D\Popups\SwitchWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrackMonitorWindow.cs" />
     <Compile Include="Viewer3D\Popups\TracksDebugWindow.cs" />
+    <Compile Include="Viewer3D\Popups\TrainDrivingWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainListWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainOperationsWindow.cs" />
     <Compile Include="Viewer3D\Popups\TTDetachWindow.cs" />
