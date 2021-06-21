@@ -883,7 +883,9 @@ namespace Orts.Viewer3D.Popups
                 else
                 {
                     TableAddLine(table, Viewer.Catalog.GetString("(Simple adhesion model)"));
-                    TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0:F0} N ({1:F0} kW)", mstsLocomotive.MotiveForceN, mstsLocomotive.MotiveForceN * mstsLocomotive.SpeedMpS / 1000.0f);
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0} ({1})",
+                        FormatStrings.FormatForce(mstsLocomotive.MotiveForceN, mstsLocomotive.IsMetric),
+                        FormatStrings.FormatPower((mstsLocomotive.MotiveForceN * mstsLocomotive.AbsSpeedMpS), mstsLocomotive.IsMetric, false, false));
                     TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);
                     TableAddLabelValue(table, Viewer.Catalog.GetString("Wagon Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);
                 }
