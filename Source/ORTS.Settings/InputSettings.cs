@@ -463,6 +463,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);
             Commands[(int)UserCommand.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayHUD] = new UserCommandModifiableKeyInput(0x3F, Commands[(int)UserCommand.DisplayNextWindowTab]);
+            Commands[(int)UserCommand.DisplayTrainDrivingWindow] = new UserCommandModifiableKeyInput(0x3F, KeyModifiers.Control);
             Commands[(int)UserCommand.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
             Commands[(int)UserCommand.DisplayStationLabels] = new UserCommandModifiableKeyInput(0x40, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplaySwitchWindow] = new UserCommandKeyInput(0x42);

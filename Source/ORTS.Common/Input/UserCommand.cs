@@ -37,6 +37,7 @@
         [GetString("Display Help Window")] DisplayHelpWindow,
         [GetString("Display Track Monitor Window")] DisplayTrackMonitorWindow,
         [GetString("Display HUD")] DisplayHUD,
+        [GetString("Display Train Driving Window")] DisplayTrainDrivingWindow,
         [GetString("Display Car Labels")] DisplayCarLabels,
         [GetString("Display Station Labels")] DisplayStationLabels,
         [GetString("Display Switch Window")] DisplaySwitchWindow,
