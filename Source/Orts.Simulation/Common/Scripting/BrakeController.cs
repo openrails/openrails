@@ -45,14 +45,6 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> OverchargeButtonPressed;
         /// <summary>
-        /// True if low voltage power supply is switched on.
-        /// </summary>
-        public Func<bool> IsLowVoltagePowerSupplyOn;
-        /// <summary>
-        /// True if cab power supply is switched on.
-        /// </summary>
-        public Func<bool> IsCabPowerSupplyOn;
-        /// <summary>
         /// Main reservoir pressure
         /// </summary>
         public Func<float> MainReservoirPressureBar;

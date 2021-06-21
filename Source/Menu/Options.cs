@@ -201,7 +201,6 @@ namespace ORTS
             checkHotStart.Checked = Settings.HotStart;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
-            checkBoxNoDieselEngineStart.Checked = Settings.NoDieselEngineStart;
 
             // Keyboard tab
             InitializeKeyboardSettings();
@@ -487,7 +486,6 @@ namespace ORTS
             Settings.HotStart = checkHotStart.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
-            Settings.NoDieselEngineStart = checkBoxNoDieselEngineStart.Checked;
 
             // Keyboard tab
             // These are edited live.
@@ -796,6 +794,7 @@ namespace ORTS
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
+
 
         #region Help for General Options
         /// <summary>

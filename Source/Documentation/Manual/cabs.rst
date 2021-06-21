@@ -19,91 +19,6 @@ next paragraphs.
 OR adds support for the ETCS circular speed gauge, as described 
 :ref:`here <options-etcs>`.
 
-.. _cabs-battery-switch:
-
-Battery switch
---------------
-
-.. index::
-   single: ORTS_BATTERY_SWITCH_COMMAND_SWITCH
-   single: ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE
-   single: ORTS_BATTERY_SWITCH_ON
-
-The :ref:`battery switch <physics-battery-switch>` controls the low voltage power supply of the locomotive.
-
-The following controls are available for the cabview:
-
-- ``ORTS_BATTERY_SWITCH_COMMAND_SWITCH`` can be used if the switch is directly controlled from the cab
-- ``ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE`` and ``ORTS_BATTERY_SWITCH_COMMAND_BUTTON_OPEN`` can be used if the switch is controlled with two pushbuttons (one to close the switch and the other to open it)
-- ``ORTS_BATTERY_SWITCH_ON`` can be used to control a light on the cab showing the state of the battery switch
-
-Other controls can be hidden if the low voltage power supply is not available using the following parameter::
-
-      TwoState (
-         Type ( ORTS_CIRCUIT_BREAKER_CLOSED TWO_STATE)
-         ...
-         DisabledIfLowVoltagePowerSupplyOff ( 1 )
-      )
-
-.. _cabs-master-key:
-
-Master key
-----------
-
-.. index::
-   single: ORTS_MASTER_KEY
-   single: ORTS_CURRENT_CAB_IN_USE
-   single: ORTS_OTHER_CAB_IN_USE
-
-The :ref:`master key <physics-master-key>` controls the power supply of the cab.
-
-The following controls are available for the cabview:
-
-- ``ORTS_MASTER_KEY`` can be used in order to control the master key
-- ``ORTS_CURRENT_CAB_IN_USE`` can be used to indicate that the current cab is active
-- ``ORTS_OTHER_CAB_IN_USE`` can be used to indicate that another cab of the train is active
-
-Other controls can be hidden if the cab power supply is not available using the following parameter::
-
-      TwoState (
-         Type ( ORTS_CIRCUIT_BREAKER_CLOSED TWO_STATE)
-         ...
-         DisabledIfCabPowerSupplyOff ( 1 )
-      )
-
-.. _cabs-service-retention:
-
-Service retention
------------------
-
-.. index::
-   single: ORTS_SERVICE_RETENTION_BUTTON
-   single: ORTS_SERVICE_RETENTION_CANCELLATION_BUTTON
-
-The :ref:`service retention <physics-service-retention>` can be used to disable a cab without cutting the power on the train.
-It can only be used with a power supply script that uses this functionality.
-
-The following controls are available for the cabview:
-
-- ``ORTS_SERVICE_RETENTION_BUTTON`` can be used in order to enable the service retention
-- ``ORTS_SERVICE_RETENTION_CANCELLATION_BUTTON`` can be used in order to cancel the service retention
-
-.. _cabs-electric-train-supply:
-
-Electric train supply
----------------------
-
-.. index::
-   single: ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH
-   single: ORTS_ELECTRIC_TRAIN_SUPPLY_ON
-
-The :ref:`electric train supply <physics-electric-train-supply>` controls the power line that supplies the passenger cars with electricity.
-
-The following controls are available for the cabview:
-
-- ``ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH`` can be used to control the electric train supply switch
-- ``ORTS_ELECTRIC_TRAIN_SUPPLY_ON`` can be used to indicate that the electric train supply line is powered on
-
 .. _cabs-dieselenginesonoff:
 
 Controls to switch on and off diesel engines
@@ -414,15 +329,18 @@ Further OR cab controls
 -----------------------
 
 OR supports the cabview control to open/close the left doors, the right doors 
-and the mirrors.
+and the mirrors. Moreover it supports the controls for the battery state and for 
+the key state; these two controls have no effect on the state of the locomotive.
 
 .. index::
    single: ORTS_LEFTDOOR
    single: ORTS_RIGHTDOOR
    single: ORTS_MIRRORS
+   single: ORTS_BATTERY
+   single: ORTS_POWERKEY
 
 The control blocks are like the one shown for the cab light. The Type strings 
-are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
+are ORTS_LEFTDOOR, ORTS_RIGHTDOOR, ORTS_MIRRORS, ORTS_BATTERY and ORTS_POWERKEY.
 
 
 High-resolution Cab Backgrounds and Controls

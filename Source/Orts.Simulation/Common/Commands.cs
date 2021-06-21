@@ -20,7 +20,6 @@
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -248,11 +247,11 @@ namespace Orts.Common
         }
     }
 
-    // Power : Close/open circuit breaker switch
+    // Power : Close/open circuit breaker
     [Serializable()]
     public sealed class CircuitBreakerClosingOrderCommand : BooleanCommand
     {
-        public static ILocomotivePowerSupply Receiver { get; set; }
+        public static MSTSElectricLocomotive Receiver { get; set; }
 
         public CircuitBreakerClosingOrderCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -262,7 +261,10 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.CloseCircuitBreaker : PowerSupplyEvent.OpenCircuitBreaker);
+            if (Receiver != null && Receiver.Train != null)
+            {
+                Receiver.Train.SignalEvent(ToState ? PowerSupplyEvent.CloseCircuitBreaker : PowerSupplyEvent.OpenCircuitBreaker);
+            }
         }
 
         public override string ToString()
@@ -275,7 +277,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class CircuitBreakerClosingOrderButtonCommand : BooleanCommand
     {
-        public static ILocomotivePowerSupply Receiver { get; set; }
+        public static MSTSElectricLocomotive Receiver { get; set; }
 
         public CircuitBreakerClosingOrderButtonCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -285,7 +287,10 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.CloseCircuitBreakerButtonPressed : PowerSupplyEvent.CloseCircuitBreakerButtonReleased);
+            if (Receiver != null && Receiver.Train != null)
+            {
+                Receiver.Train.SignalEvent(ToState ? PowerSupplyEvent.CloseCircuitBreakerButtonPressed : PowerSupplyEvent.CloseCircuitBreakerButtonReleased);
+            }
         }
 
         public override string ToString()
@@ -298,7 +303,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class CircuitBreakerOpeningOrderButtonCommand : BooleanCommand
     {
-        public static ILocomotivePowerSupply Receiver { get; set; }
+        public static MSTSElectricLocomotive Receiver { get; set; }
 
         public CircuitBreakerOpeningOrderButtonCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -308,7 +313,10 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.OpenCircuitBreakerButtonPressed : PowerSupplyEvent.OpenCircuitBreakerButtonReleased);
+            if (Receiver != null && Receiver.Train != null)
+            {
+                Receiver.Train.SignalEvent(ToState ? PowerSupplyEvent.OpenCircuitBreakerButtonPressed : PowerSupplyEvent.OpenCircuitBreakerButtonReleased);
+            }
         }
 
         public override string ToString()
@@ -317,11 +325,11 @@ namespace Orts.Common
         }
     }
 
-    // Power : Give/remove circuit breaker authorization switch
+    // Power : Give/remove circuit breaker authorization
     [Serializable()]
     public sealed class CircuitBreakerClosingAuthorizationCommand : BooleanCommand
     {
-        public static ILocomotivePowerSupply Receiver { get; set; }
+        public static MSTSElectricLocomotive Receiver { get; set; }
 
         public CircuitBreakerClosingAuthorizationCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -331,150 +339,15 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.GiveCircuitBreakerClosingAuthorization : PowerSupplyEvent.RemoveCircuitBreakerClosingAuthorization);
+            if (Receiver != null && Receiver.Train != null)
+            {
+                Receiver.Train.SignalEvent(ToState ? PowerSupplyEvent.GiveCircuitBreakerClosingAuthorization : PowerSupplyEvent.RemoveCircuitBreakerClosingAuthorization);
+            }
         }
 
         public override string ToString()
         {
             return base.ToString() + " - " + (ToState ? "given" : "removed");
-        }
-    }
-
-    // Power : Close/open traction cut-off relay switch
-    [Serializable()]
-    public sealed class TractionCutOffRelayClosingOrderCommand : BooleanCommand
-    {
-        public static ILocomotivePowerSupply Receiver { get; set; }
-
-        public TractionCutOffRelayClosingOrderCommand(CommandLog log, bool toState)
-            : base(log, toState)
-        {
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.CloseTractionCutOffRelay : PowerSupplyEvent.OpenTractionCutOffRelay);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "close" : "open");
-        }
-    }
-
-    // Power : Close traction cut-off relay button
-    [Serializable()]
-    public sealed class TractionCutOffRelayClosingOrderButtonCommand : BooleanCommand
-    {
-        public static ILocomotivePowerSupply Receiver { get; set; }
-
-        public TractionCutOffRelayClosingOrderButtonCommand(CommandLog log, bool toState)
-            : base(log, toState)
-        {
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.CloseTractionCutOffRelayButtonPressed : PowerSupplyEvent.CloseTractionCutOffRelayButtonReleased);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "pressed" : "released");
-        }
-    }
-
-    // Power : Open traction cut-off relay button
-    [Serializable()]
-    public sealed class TractionCutOffRelayOpeningOrderButtonCommand : BooleanCommand
-    {
-        public static ILocomotivePowerSupply Receiver { get; set; }
-
-        public TractionCutOffRelayOpeningOrderButtonCommand(CommandLog log, bool toState)
-            : base(log, toState)
-        {
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.OpenTractionCutOffRelayButtonPressed : PowerSupplyEvent.OpenTractionCutOffRelayButtonReleased);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "pressed" : "released");
-        }
-    }
-
-    // Power : Give/remove traction cut-off relay closing authorization switch
-    [Serializable()]
-    public sealed class TractionCutOffRelayClosingAuthorizationCommand : BooleanCommand
-    {
-        public static ILocomotivePowerSupply Receiver { get; set; }
-
-        public TractionCutOffRelayClosingAuthorizationCommand(CommandLog log, bool toState)
-            : base(log, toState)
-        {
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.GiveTractionCutOffRelayClosingAuthorization : PowerSupplyEvent.RemoveTractionCutOffRelayClosingAuthorization);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "given" : "removed");
-        }
-    }
-
-    // Power : Service retention button
-    [Serializable()]
-    public sealed class ServiceRetentionButtonCommand : BooleanCommand
-    {
-        public static ILocomotivePowerSupply Receiver { get; set; }
-
-        public ServiceRetentionButtonCommand(CommandLog log, bool toState)
-            : base(log, toState)
-        {
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.ServiceRetentionButtonPressed : PowerSupplyEvent.ServiceRetentionButtonReleased);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "pressed" : "released");
-        }
-    }
-
-    // Power : Service retention cancellation button
-    [Serializable()]
-    public sealed class ServiceRetentionCancellationButtonCommand : BooleanCommand
-    {
-        public static ILocomotivePowerSupply Receiver { get; set; }
-
-        public ServiceRetentionCancellationButtonCommand(CommandLog log, bool toState)
-            : base(log, toState)
-        {
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.ServiceRetentionCancellationButtonPressed : PowerSupplyEvent.ServiceRetentionCancellationButtonReleased);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "pressed" : "released");
         }
     }
 
@@ -493,7 +366,9 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            Receiver?.SetPower(ToState);
+            if (Receiver == null) return;//no receiver of this panto
+            Receiver.SetPower(ToState);
+            // Report();
         }
 
         public override string ToString()
@@ -517,7 +392,9 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            Receiver?.ToggleMUCommand(ToState);
+            if (Receiver == null) return;//no receiver of this panto
+            Receiver.ToggleMUCommand(ToState);
+            // Report();
         }
 
         public override string ToString()
@@ -633,26 +510,40 @@ namespace Orts.Common
 
         public override void Redo() {
             Receiver.UnconditionalInitializeBrakes();
-            // Report();
         }
     }
 
     [Serializable()]
-    public sealed class EmergencyPushButtonCommand : Command
+    public sealed class ResetOutOfControlModeCommand : Command
     {
-        public static MSTSLocomotive Receiver { get; set; }
-
-        public EmergencyPushButtonCommand(CommandLog log)
-            : base(log)
+        public static Train Receiver { get; set; }
+        public ResetOutOfControlModeCommand(CommandLog log) : base(log)
         {
             Redo();
         }
 
         public override void Redo()
         {
-            Receiver.EmergencyButtonPressed = !Receiver.EmergencyButtonPressed;
-            Receiver.TrainBrakeController.EmergencyBrakingPushButton = Receiver.EmergencyButtonPressed;
-            // Report();
+            Receiver.ManualResetOutOfControlMode();
+            Receiver.SignalEvent(TCSEvent.ManualResetOutOfControlMode);
+        }
+    }
+
+    [Serializable()]
+    public sealed class EmergencyPushButtonCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public EmergencyPushButtonCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.EmergencyButtonPressed = ToState;
+            Receiver.TrainBrakeController.EmergencyBrakingPushButton = ToState;
         }
     }
 
@@ -1032,7 +923,6 @@ namespace Orts.Common
     [Serializable()]
     public sealed class HeadlightCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
-        public static bool MasterKeyHeadlightControl => Receiver.LocomotivePowerSupply.MasterKey.HeadlightControl;
 
         public HeadlightCommand( CommandLog log, bool toState ) 
             : base( log, toState ) {
@@ -1042,35 +932,18 @@ namespace Orts.Common
         public override void Redo() {
             if( ToState ) {
                 switch( Receiver.Headlight ) {
-                    case 0:
-                        if (!MasterKeyHeadlightControl)
-                        {
-                            Receiver.Headlight = 1;
-                            Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Neutral);
-                        }
-                        break;
-                    case 1:
-                        Receiver.Headlight = 2;
-                        Receiver.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.On );
-                        break;
+                    case 0: Receiver.Headlight = 1; Receiver.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.Neutral ); break;
+                    case 1: Receiver.Headlight = 2; Receiver.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.On ); break;
                 }
                 Receiver.SignalEvent(Event.LightSwitchToggle);
             } else {
                 switch( Receiver.Headlight ) {
-                    case 1:
-                        if (!MasterKeyHeadlightControl)
-                        {
-                            Receiver.Headlight = 0;
-                            Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Off);
-                        }
-                        break;
-                    case 2:
-                        Receiver.Headlight = 1;
-                        Receiver.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.Neutral );
-                        break;
+                    case 1: Receiver.Headlight = 0; Receiver.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.Off ); break;
+                    case 2: Receiver.Headlight = 1; Receiver.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.Neutral ); break;
                 }
                 Receiver.SignalEvent(Event.LightSwitchToggle);
             }
+            // Report();
         }
     }
 
@@ -1126,193 +999,51 @@ namespace Orts.Common
         public static MSTSWagon Receiver { get; set; }
 
         public ToggleMirrorsCommand( CommandLog log ) 
-            : base( log )
-        {
+            : base( log ) {
             Redo();
         }
 
-        public override void Redo()
-        {
+        public override void Redo() {
             Receiver.ToggleMirrors();
+            // Report();
         }
     }
 
     [Serializable()]
-    public sealed class ToggleBatterySwitchCommand : BooleanCommand
+    public sealed class ToggleBatteryCommand : Command
     {
-        public static BatterySwitch Receiver { get; set; }
+        public static MSTSLocomotive Receiver { get; set; }
 
-        public ToggleBatterySwitchCommand(CommandLog log, MSTSWagon wagon, bool toState)
-            : base(log, toState)
-        {
-            Receiver = wagon?.PowerSupply?.BatterySwitch;
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            if (Receiver?.Mode == BatterySwitch.ModeType.Switch)
-            {
-                if (ToState)
-                {
-                    Receiver?.HandleEvent(PowerSupplyEvent.CloseBatterySwitch);
-                }
-                else
-                {
-                    Receiver?.HandleEvent(PowerSupplyEvent.OpenBatterySwitch);
-                }
-            }
-            else if (Receiver?.Mode == BatterySwitch.ModeType.PushButtons)
-            {
-                if (ToState)
-                {
-                    Receiver?.HandleEvent(PowerSupplyEvent.CloseBatterySwitchButtonPressed);
-                    Receiver?.Update(0f);
-                    Receiver?.HandleEvent(PowerSupplyEvent.CloseBatterySwitchButtonReleased);
-                }
-                else
-                {
-                    Receiver?.HandleEvent(PowerSupplyEvent.OpenBatterySwitchButtonPressed);
-                    Receiver?.Update(0f);
-                    Receiver?.HandleEvent(PowerSupplyEvent.OpenBatterySwitchButtonReleased);
-                }
-            }
-        }
-    }
-
-    [Serializable()]
-    public sealed class BatterySwitchCommand : BooleanCommand
-    {
-        public static ILocomotivePowerSupply Receiver { get; set; }
-
-        public BatterySwitchCommand(CommandLog log, bool toState)
-            : base(log, toState)
+        public ToggleBatteryCommand(CommandLog log)
+            : base(log)
         {
             Redo();
         }
 
         public override void Redo()
         {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.CloseBatterySwitch : PowerSupplyEvent.OpenBatterySwitch);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "close" : "open");
+            Receiver.ToggleBattery();
+            // Report();
         }
     }
 
     [Serializable()]
-    public sealed class BatterySwitchCloseButtonCommand : BooleanCommand
+    public sealed class TogglePowerKeyCommand : Command
     {
-        public static ILocomotivePowerSupply Receiver { get; set; }
+        public static MSTSLocomotive Receiver { get; set; }
 
-        public BatterySwitchCloseButtonCommand(CommandLog log, bool toState)
-            : base(log, toState)
+        public TogglePowerKeyCommand(CommandLog log)
+            : base(log)
         {
             Redo();
         }
 
         public override void Redo()
         {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.CloseBatterySwitchButtonPressed : PowerSupplyEvent.CloseBatterySwitchButtonReleased);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "pressed" : "released");
+            Receiver.TogglePowerKey();
+            // Report();
         }
     }
-
-    [Serializable()]
-    public sealed class BatterySwitchOpenButtonCommand : BooleanCommand
-    {
-        public static ILocomotivePowerSupply Receiver { get; set; }
-
-        public BatterySwitchOpenButtonCommand(CommandLog log, bool toState)
-            : base(log, toState)
-        {
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.OpenBatterySwitchButtonPressed : PowerSupplyEvent.OpenBatterySwitchButtonReleased);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "pressed" : "released");
-        }
-    }
-
-    [Serializable()]
-    public sealed class ToggleMasterKeyCommand : BooleanCommand
-    {
-        public static ILocomotivePowerSupply Receiver { get; set; }
-
-        public ToggleMasterKeyCommand(CommandLog log, bool toState)
-            : base(log, toState)
-        {
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.TurnOnMasterKey : PowerSupplyEvent.TurnOffMasterKey);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "turned on" : "turned off");
-        }
-    }
-
-    [Serializable()]
-    public sealed class ElectricTrainSupplyCommand : BooleanCommand
-    {
-        public static ILocomotivePowerSupply Receiver { get; set; }
-
-        public ElectricTrainSupplyCommand(CommandLog log, bool toState)
-            : base(log, toState)
-        {
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            Receiver?.HandleEvent(ToState ? PowerSupplyEvent.SwitchOnElectricTrainSupply : PowerSupplyEvent.SwitchOffElectricTrainSupply);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "switched on" : "switched off");
-        }
-    }
-
-    [Serializable()]
-    public sealed class ConnectElectricTrainSupplyCableCommand : BooleanCommand
-    {
-        public static MSTSWagon Receiver { get; set; }
-
-        public ConnectElectricTrainSupplyCableCommand(CommandLog log, MSTSWagon car, bool toState)
-            : base(log, toState)
-        {
-            Receiver = car;
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            Receiver.PowerSupply.FrontElectricTrainSupplyCableConnected = ToState;
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "connect" : "disconnect");
-        }
-    }
-
     // Steam controls
     [Serializable()]
     public sealed class ContinuousSteamHeatCommand : ContinuousCommand
@@ -1330,7 +1061,7 @@ namespace Orts.Common
             if (Receiver == null) return;
             {
                 Receiver.SteamHeatChangeTo(ToState, Target);
-            }
+                           }
             // Report();
         }
     }
@@ -1743,7 +1474,8 @@ namespace Orts.Common
         public override void Redo()
         {
             if (Receiver == null) return;
-            Receiver.LocomotivePowerSupply.HandleEvent(Receiver.DieselEngines.PowerOn ? PowerSupplyEvent.StopEngine : PowerSupplyEvent.StartEngine);
+            Receiver.TogglePlayerEngine();
+            // Report();
         }
     }
 
