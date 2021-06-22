@@ -564,7 +564,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             if (Car.AdvancedAdhesionZeroBrakeForce)
             {
-                Car.BrakeForceN = 0; // Brake force already taken into account in the Axle Model
+                if (Math.Abs(Car.TractiveForceN) > Math.Abs(Car.BrakeRetardForceN))
+                {
+                    Car.BrakeForceN = 0; // Brake force already taken into account in the Axle Model, so set brake force to zero
+                }
+                else
+                {
+                    // Depending upon size of motive force and brake force there will be a residual brake force value, this is applied to brake. Rest of force goes to reducing MotiveForce
+                    Car.BrakeForceN = Math.Abs(Car.BrakeRetardForceN) - Math.Abs(Car.TractiveForceN);
+                }
             }
             else
             {
