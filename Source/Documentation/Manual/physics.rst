@@ -832,8 +832,8 @@ the Engine section of the .eng file (value in seconds). The same delay for
 auxiliary systems can be adjusted by the optional parameter
 ``ORTSAuxPowerOnDelay( )`` (by default in seconds).
 
-A :ref:`scripting interface <features-scripting-eps>` to customize the behavior
-of the power supply is also available.
+A :ref:`scripting interface <features-scripting-powersupply>` to customize the
+behavior of the power supply is also available.
 
 Steam Locomotives
 -----------------
