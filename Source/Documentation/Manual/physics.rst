@@ -842,7 +842,7 @@ General Introduction to Steam Locomotives
 '''''''''''''''''''''''''''''''''''''''''
 
 Principles of Train Movement
-""""""""""""""""""""""""""""
+............................
 
 Key Points to Remember:
 
@@ -860,7 +860,7 @@ Key Points to Remember:
 - Low Factors of Adhesion will cause the locomotive's driving wheels to slip.
 
 Forces Impacting Train Movement
-"""""""""""""""""""""""""""""""
+...............................
 
 The steam locomotive is a heat engine which converts *heat* energy generated
 through the burning of fuel, such as coal, into heat and ultimately steam.
@@ -885,7 +885,7 @@ The sections below describe in more detail the forces of tractive effort
 and train resistance.
 
 Train Resistance
-""""""""""""""""
+................
 
 The movement of the train is opposed by a number of different forces which
 are collectively grouped together to form the *train resistance*.
@@ -905,7 +905,7 @@ straight level track):
   a train is travelling through a tunnel.
 
 Tractive Effort
-"""""""""""""""
+...............
 
 Tractive Effort is created by the action of the steam against the pistons,
 which, through the media of rods, crossheads, etc., cause the wheels to
@@ -927,7 +927,7 @@ Where:
 - D = diameter of drive wheels (in)
 
 Theoretical Tractive Effort
-"""""""""""""""""""""""""""
+...........................
 
 To allow the comparison of different locomotives, as well as determining
 their relative pulling ability, a theoretical approximate value of
@@ -946,7 +946,7 @@ Where:
   companies.
 
 Factor of Adhesion
-""""""""""""""""""
+..................
 
 The factor of adhesion describes the likelihood of the locomotive slipping
 when force is applied to the wheels and rails, and is the ratio of the
@@ -966,7 +966,7 @@ steam locomotives. Values below this range will typically result in
 slippage on the rail.
 
 Indicated HorsePower (IHP)
-""""""""""""""""""""""""""
+..........................
 
 Indicated Horsepower is the theoretical power produced by a steam
 locomotive. The generally accepted formula for Indicated Horsepower is::
@@ -994,7 +994,7 @@ by the cylinders.
   :scale: 80%
 
 Hauling Capacity of Locomotives
-"""""""""""""""""""""""""""""""
+...............................
 
 Thus it can be seen that the hauling capacity is determined by the
 summation of the tractive effort and the train resistance.
@@ -1021,7 +1021,7 @@ in this section. The permissible load would vary depending upon the
 direction of travel of the train.
 
 Elements of Steam Locomotive Operation
-""""""""""""""""""""""""""""""""""""""
+......................................
 
 A steam locomotive is a very complex piece of machinery that has many
 component parts, each of which will influence the performance of the
@@ -1046,7 +1046,7 @@ components:
 - Cylinder (Work done)
 
 Boiler and Fire (Heat conversion)
-"""""""""""""""""""""""""""""""""
+.................................
 
 The amount of work that a locomotive can do will be determined by the
 amount of steam that can be produced (evaporated) by the boiler.
@@ -1075,7 +1075,7 @@ the Boiler Evaporation Area.
   tended to be more efficient then a saturated locomotive.
 
 Cylinder (Work done)
-""""""""""""""""""""
+....................
 
 To drive the locomotive forward, steam was injected into the cylinder
 which pushed the piston backwards and forwards, and this in turn rotated
@@ -1091,7 +1091,7 @@ typically combined to place limits on the power of a locomotive depending
 upon the design factors used.
 
 Locomotive Types
-""""""""""""""""
+................
 
 During the course of their development, many different types of
 locomotives were developed, some of the more common categories are as
@@ -1110,7 +1110,7 @@ follows:
   operation of the locomotive.
 
 Superheated Locomotives
-"""""""""""""""""""""""
+.......................
 
 In the early 1900s, superheaters were fitted to some locomotives. As the
 name was implied a superheater was designed to raise the steam temperature
@@ -1125,7 +1125,7 @@ Superheating was achieved by installing a superheater element that
 effectively increased the heating area of the locomotive.
 
 Geared Locomotives
-""""""""""""""""""
+..................
 
 In industrial type railways, such as those used in the logging industry,
 spurs to coal mines were often built to very cheap standards. As a
@@ -1180,7 +1180,7 @@ Summary of Driving Tips
 .. _physics-steam-firing:
 
 Open Rails Steam Functionality (Fireman)
-""""""""""""""""""""""""""""""""""""""""
+........................................
 
 The Open Rails Steam locomotive functionality provides two operational
 options:
@@ -1205,7 +1205,7 @@ Use the keys ``<Crtl+F>`` to switch between Manual and Automatic firing
 modes.
 
 Hot or Cold Start
-"""""""""""""""""
+.................
 
 The locomotive can be started either in a hot or cold mode. Hot mode
 simulates a locomotive which has a full head of steam and is ready for duty.
@@ -1218,7 +1218,7 @@ This function can be selected through the Open Rails options menu on the
 :ref:`Simulation <options-simulation>` tab.
 
 Main Steam Locomotive Controls
-""""""""""""""""""""""""""""""
+..............................
 
 This section will describe the control and management of the steam
 locomotive based upon the assumption that the Automatic fireman is
@@ -1240,7 +1240,7 @@ this mode of operation:
   (Open Rails Keys: ``<'>`` = increase, ``<;>`` = decrease)
 
 Recommended Option Settings
-"""""""""""""""""""""""""""
+...........................
 
 For added realism of the performance of the steam locomotive, it is
 suggested that the following settings be considered for selection in the
@@ -1256,7 +1256,7 @@ NB: Refer to the relevant sections of the manual for more detailed
 description of these functions.
 
 Locomotive Starting
-"""""""""""""""""""
+...................
 
 Open the cylinder cocks. They are to remain open until the engine has
 traversed a distance of about an average train length, consistent with
@@ -1279,7 +1279,7 @@ all along the train to be gradually extended, and therefore reduce the
 risk of coupler breakages.
 
 Locomotive Running
-""""""""""""""""""
+..................
 
 Theoretically, when running, the regulator should always be fully open and
 the speed of the locomotive controlled, as desired, by the reverser. For
@@ -1359,7 +1359,7 @@ If theses controls are not used, then the AI fireman operates in the same
 fashion as previously.
 
 Steam Boiler Heat Radiation Loss
-""""""""""""""""""""""""""""""""
+................................
 
 A certain amount of heat is lost from the boiler of a steam locomotive. An 
 uninsulated boiler could lose a lot of heat and this impacts on the 
@@ -1387,7 +1387,7 @@ following settings.
 - ``ORTSHeatCoefficientInsulation`` - Thermal conduction coefficient. Default UoM - (BTU / (ft\ :sup:`2` / hr.) / (1 (in. / F)) 
 
 Steam Boiler Blowdown
-"""""""""""""""""""""
+.....................
 Over time as steam is evaporated from the boiler a concentration of impurities 
 will build up in the boiler. The boiler blowdown valve was used to remove these 
 sediments from the boiler which could impact its efficiency. Depending upon the 
@@ -1403,7 +1403,7 @@ Alternatively a cab control can be set up by using the ``<ORTS_BLOWDOWN_VALVE ( 
 A special steam effect can also be added. See the section on steam effects.
 
 Steam Locomotive Carriage Steam Heat Modelling
-""""""""""""""""""""""""""""""""""""""""""""""
+..............................................
 
 Overview
 ........
