@@ -373,8 +373,8 @@ namespace Orts.Formats.Msts
         public CABViewControlStyles ControlStyle = CABViewControlStyles.NONE;
         public CABViewControlUnits Units = CABViewControlUnits.NONE;
 
-        public bool DisabledIfLowVoltagePowerSupplyOff = false;
-        public bool DisabledIfCabPowerSupplyOff = false;
+        public bool DisabledIfLowVoltagePowerSupplyOff { get; private set; } = false;
+        public bool DisabledIfCabPowerSupplyOff { get; private set; } = false;
 
         protected void ParseType(STFReader stf)
         {

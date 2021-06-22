@@ -1417,7 +1417,7 @@ namespace Orts.Viewer3D.RollingStock
     public abstract class CabViewControlRenderer : RenderPrimitive
     {
         protected readonly Viewer Viewer;
-        public readonly MSTSLocomotive Locomotive;
+        protected readonly MSTSLocomotive Locomotive;
         public readonly CabViewControl Control;
         protected readonly CabShader Shader;
         protected readonly SpriteBatchMaterial ControlView;
@@ -1428,6 +1428,25 @@ namespace Orts.Viewer3D.RollingStock
         protected bool HasCabLightDirectory;
 
         Matrix Matrix = Matrix.Identity;
+
+        /// <summary>
+        /// Determines whether or not the control has power given the state of the cab power supply.
+        /// </summary>
+        /// <remarks>
+        /// For controls that do not depend on the power supply, this will always return true.
+        /// </remarks>
+        public bool IsPowered
+        {
+            get
+            {
+                if (Control.DisabledIfLowVoltagePowerSupplyOff)
+                    return Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn;
+                else if (Control.DisabledIfCabPowerSupplyOff)
+                    return Locomotive.LocomotivePowerSupply.CabPowerSupplyOn;
+                else
+                    return true;
+            }
+        }
 
         public CabViewControlRenderer(Viewer viewer, MSTSLocomotive locomotive, CabViewControl control, CabShader shader)
         {
@@ -1471,11 +1490,12 @@ namespace Orts.Viewer3D.RollingStock
         [CallOnThread("Updater")]
         public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if ((!Control.DisabledIfLowVoltagePowerSupplyOff || Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn) &&
-                (!Control.DisabledIfCabPowerSupplyOff || Locomotive.LocomotivePowerSupply.CabPowerSupplyOn))
-            {
-                frame.AddPrimitive(ControlView, this, RenderPrimitiveGroup.Cab, ref Matrix);
-            }
+            var noPower = (Control.DisabledIfLowVoltagePowerSupplyOff && !Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn)
+                || (Control.DisabledIfCabPowerSupplyOff && !Locomotive.LocomotivePowerSupply.CabPowerSupplyOn);
+            if (noPower)
+                return;
+
+            frame.AddPrimitive(ControlView, this, RenderPrimitiveGroup.Cab, ref Matrix);
         }
 
         internal void Mark()
@@ -3109,18 +3129,17 @@ namespace Orts.Viewer3D.RollingStock
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if ((!CVFR.Control.DisabledIfLowVoltagePowerSupplyOff || CVFR.Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn)
-                && (!CVFR.Control.DisabledIfCabPowerSupplyOff || CVFR.Locomotive.LocomotivePowerSupply.CabPowerSupplyOn))
-            {
-                UpdateDigit();
-                Matrix mx = TrainCarShape.Location.XNAMatrix;
-                mx.M41 += (TrainCarShape.Location.TileX - Viewer.Camera.TileX) * 2048;
-                mx.M43 += (-TrainCarShape.Location.TileZ + Viewer.Camera.TileZ) * 2048;
-                Matrix m = XNAMatrix * mx;
+            if (!CVFR.IsPowered)
+                return;
 
-                // TODO: Make this use AddAutoPrimitive instead.
-                frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
-            }
+            UpdateDigit();
+            Matrix mx = TrainCarShape.Location.XNAMatrix;
+            mx.M41 += (TrainCarShape.Location.TileX - Viewer.Camera.TileX) * 2048;
+            mx.M43 += (-TrainCarShape.Location.TileZ + Viewer.Camera.TileZ) * 2048;
+            Matrix m = XNAMatrix * mx;
+
+            // TODO: Make this use AddAutoPrimitive instead.
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
         }
 
         internal void Mark()
@@ -3324,18 +3343,17 @@ namespace Orts.Viewer3D.RollingStock
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if ((!CVFR.Control.DisabledIfLowVoltagePowerSupplyOff || CVFR.Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn)
-               && (!CVFR.Control.DisabledIfCabPowerSupplyOff || CVFR.Locomotive.LocomotivePowerSupply.CabPowerSupplyOn))
-            {
-                UpdateDigit();
-                Matrix mx = TrainCarShape.Location.XNAMatrix;
-                mx.M41 += (TrainCarShape.Location.TileX - Viewer.Camera.TileX) * 2048;
-                mx.M43 += (-TrainCarShape.Location.TileZ + Viewer.Camera.TileZ) * 2048;
-                Matrix m = XNAMatrix * mx;
+            if (!CVFR.IsPowered)
+                return;
 
-                // TODO: Make this use AddAutoPrimitive instead.
-                frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
-            }
+            UpdateDigit();
+            Matrix mx = TrainCarShape.Location.XNAMatrix;
+            mx.M41 += (TrainCarShape.Location.TileX - Viewer.Camera.TileX) * 2048;
+            mx.M43 += (-TrainCarShape.Location.TileZ + Viewer.Camera.TileZ) * 2048;
+            Matrix m = XNAMatrix * mx;
+
+            // TODO: Make this use AddAutoPrimitive instead.
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
         }
 
         internal void Mark()
@@ -3371,12 +3389,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (!locoViewer._has3DCabRenderer) return;
 
-            float scale = 0f;
-            if ((!CVFR.Control.DisabledIfLowVoltagePowerSupplyOff || CVFR.Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn)
-                && (!CVFR.Control.DisabledIfCabPowerSupplyOff || CVFR.Locomotive.LocomotivePowerSupply.CabPowerSupplyOn))
-            {
-                scale = CVFR.GetRangeFraction();
-            }
+            var scale = CVFR.IsPowered ? CVFR.GetRangeFraction() : 0f;
 
             if (CVFR.GetStyle() == CABViewControlStyles.POINTER)
             {

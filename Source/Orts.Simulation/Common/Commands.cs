@@ -1153,29 +1153,13 @@ namespace Orts.Common
         {
             if (Receiver?.Mode == BatterySwitch.ModeType.Switch)
             {
-                if (ToState)
-                {
-                    Receiver?.HandleEvent(PowerSupplyEvent.CloseBatterySwitch);
-                }
-                else
-                {
-                    Receiver?.HandleEvent(PowerSupplyEvent.OpenBatterySwitch);
-                }
+                Receiver?.HandleEvent(ToState ? PowerSupplyEvent.CloseBatterySwitch : PowerSupplyEvent.OpenBatterySwitch);
             }
             else if (Receiver?.Mode == BatterySwitch.ModeType.PushButtons)
             {
-                if (ToState)
-                {
-                    Receiver?.HandleEvent(PowerSupplyEvent.CloseBatterySwitchButtonPressed);
-                    Receiver?.Update(0f);
-                    Receiver?.HandleEvent(PowerSupplyEvent.CloseBatterySwitchButtonReleased);
-                }
-                else
-                {
-                    Receiver?.HandleEvent(PowerSupplyEvent.OpenBatterySwitchButtonPressed);
-                    Receiver?.Update(0f);
-                    Receiver?.HandleEvent(PowerSupplyEvent.OpenBatterySwitchButtonReleased);
-                }
+                Receiver?.HandleEvent(ToState ? PowerSupplyEvent.CloseBatterySwitchButtonPressed : PowerSupplyEvent.OpenBatterySwitchButtonPressed);
+                Receiver?.Update(0f);
+                Receiver?.HandleEvent(ToState ? PowerSupplyEvent.CloseBatterySwitchButtonReleased : PowerSupplyEvent.OpenBatterySwitchButtonReleased);
             }
         }
     }
