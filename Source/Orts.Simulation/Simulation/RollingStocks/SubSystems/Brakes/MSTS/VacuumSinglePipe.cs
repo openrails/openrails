@@ -159,6 +159,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
                 };
             }
             else
@@ -177,6 +178,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 HandbrakePercent > 0 ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
                 };
             }
         }
@@ -323,14 +325,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     LocomotiveSteamBrakeFitted = true;
 
-                    // Steam brake operation is impacted by boiler pressure, a drop in boile rpressure will reduce the force applied
+                    // Steam brake operation is impacted by boiler pressure, a drop in boiler pressure will reduce the force applied
                     SteamBrakeCompensation = lead.BoilerPressurePSI / lead.MaxBoilerPressurePSI;
 
                     float SteamBrakeDesiredFraction;
-                    float MaximumVacuumPressureValue = Vac.ToPress(lead.TrainBrakeController.MaxPressurePSI); // As model uses air pressure this equates to minimum vacuum pressure
-                    float MinimumVacuumPressureValue = Vac.ToPress(0); // As model uses air pressure this equates to maximum vacuum pressure
+
+                    float MaximumVacuumPressureValue = OneAtmospherePSI - lead.TrainBrakeController.MaxPressurePSI; // As model uses air pressure this equates to minimum air pressure
+                    float MinimumVacuumPressureValue = OneAtmospherePSI; // As model uses air pressure this equates to maximum air pressure
                     float EngineBrakePipeFraction = (lead.BrakeSystem.BrakeLine3PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
                     EngineBrakePipeFraction = MathHelper.Clamp(EngineBrakePipeFraction, 0.0f, 1.0f); // Keep fraction within bounds
+
                     float TrainBrakePipeFraction = (lead.BrakeSystem.BrakeLine1PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
                     TrainBrakePipeFraction = MathHelper.Clamp(TrainBrakePipeFraction, 0.0f, 1.0f); // Keep fraction within bounds
 
@@ -343,7 +347,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (SteamBrakingCurrentFraction < SteamBrakeDesiredFraction) // Brake application, increase steam brake pressure to max value as appropriate
                         {
 
-                            SteamBrakingCurrentFraction += elapsedClockSeconds * lead.EngineBrakeController.ApplyRatePSIpS / conversionFactor;
+                            var diff = elapsedClockSeconds * lead.EngineBrakeController.ApplyRatePSIpS / conversionFactor;
+
+                            SteamBrakingCurrentFraction += diff;
                             if (SteamBrakingCurrentFraction > 1.0f)
                             {
                                 SteamBrakingCurrentFraction = 1.0f;
@@ -352,7 +358,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         }
                         else if (SteamBrakingCurrentFraction > SteamBrakeDesiredFraction) // Brake release, decrease steam brake pressure to min value as appropriate
                         {
-                            SteamBrakingCurrentFraction -= elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS / conversionFactor;
+
+                            var diff = elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS / conversionFactor;
+
+                            SteamBrakingCurrentFraction -= diff;
 
                             if (SteamBrakingCurrentFraction < 0)
                             {
@@ -374,6 +383,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             float equivalentBrakeLine3PressurePSI = equivalentEngineBrakePipeFraction * (MinimumVacuumPressureValue - MaximumVacuumPressureValue) + MaximumVacuumPressureValue;
 
                             lead.BrakeSystem.BrakeLine3PressurePSI = equivalentBrakeLine3PressurePSI; // If engine brake on, then don't allow engine brake pressure to drop when reducing train brake pressure
+
                             EngineBrakePipeFraction = SteamBrakingCurrentFraction;
                             Car.PreviousSteamBrakeCylinderPressurePSI = 0; // set to zero so that this loop is not executed again until train brake is activated
                         }
@@ -473,7 +483,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {
-                if (BrakeLine1PressurePSI < VacResPressurePSIA)
+
+                if (BleedOffValveOpen)
+                {
+                    // the following reduces the brake cylinder and vacuum reservoir to 0inHg if the bleed valve is operated
+                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+
+                    VacResPressurePSIA = Math.Min(VacResPressurePSIA + dp, OneAtmospherePSI);
+
+                    CylPressurePSIA = Math.Min(CylPressurePSIA + dp, OneAtmospherePSI);
+
+                }
+                else if (BrakeLine1PressurePSI < VacResPressurePSIA)
                 {
                     float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (NumBrakeCylinders * BrakeCylVolM3) / VacResVolM3;
                     float vr = VacResVolM3 / BrakePipeVolumeM3;
