@@ -158,29 +158,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             BleedOffValveOpen = false;
             Car.BrakeRetardForceN = ( Car.MaxHandbrakeForceN * HandbrakePercent / 100) * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
-
-            if (Car.AdvancedAdhesionZeroBrakeForce)
+            if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
             {
-                if (Math.Abs(Car.TractiveForceN) > Math.Abs(Car.BrakeRetardForceN))
-                {
-                    Car.BrakeForceN = 0; // Brake force already taken into account in the Axle Model, so set brake force to zero
-                }
-                else
-                {
-                    // Depending upon size of motive force and brake force there will be a residual brake force value, this is applied to brake. Rest of force goes to reducing MotiveForce
-                    Car.BrakeForceN = Math.Abs(Car.BrakeRetardForceN) - Math.Abs(Car.TractiveForceN);
-                }
+                Car.BrakeForceN = (Car.MaxHandbrakeForceN * HandbrakePercent / 100) * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
             }
             else
             {
-                if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
-                {
-                    Car.BrakeForceN = (Car.MaxHandbrakeForceN * HandbrakePercent / 100) * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
-                }
-                else
-                {
-                    Car.BrakeForceN = (Car.MaxHandbrakeForceN * HandbrakePercent / 100) * Car.BrakeShoeCoefficientFrictionAdjFactor; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
-                }
+                Car.BrakeForceN = (Car.MaxHandbrakeForceN * HandbrakePercent / 100) * Car.BrakeShoeCoefficientFrictionAdjFactor; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
             }
         
         }

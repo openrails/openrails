@@ -266,14 +266,6 @@ namespace Orts.Simulation.RollingStocks
         float WagonBrakeAdhesiveForceN; // The adhesive force existing on the wheels of the wagon
         public float SkidFriction = 0.08f; // Friction if wheel starts skidding - based upon wheel dynamic friction of approx 0.08
 
-        /// <summary>
-        /// For diesel and electric locomotives using Advanced Adhesion it is necessary to zero brake force as the brake force as it is already factored into the Axle Model and having a non-zero brake
-        /// force will result in "double accounting" for the brake force.
-        /// For Simple Adhesion and other cars the brake force must be used.
-        /// Steam locomotives don't use the same advanced adhesion algorithims as the diesel and electric locomotives, thus brake force is not a factor in advanced adhesion calculations
-        /// <\summary>   
-        public bool AdvancedAdhesionZeroBrakeForce = false;
-
         public float AuxTenderWaterMassKG;    // Water mass in auxiliary tender
         public string AuxWagonType;           // Store wagon type for use with auxilary tender calculations
 
@@ -666,17 +658,6 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void Initialize()
         {
-
-            // Initialise use of zero brake force if advanced adhesion is in use for diesel and electric locomotives.
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive) )
-            {
-                AdvancedAdhesionZeroBrakeForce = true;
-            }
-            else
-            {
-                AdvancedAdhesionZeroBrakeForce = false;
-            }
-
             CurveResistanceDependent = Simulator.Settings.CurveResistanceDependent;
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
             TunnelResistanceDependent = Simulator.Settings.TunnelResistanceDependent;
@@ -941,7 +922,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
                 {
-                   if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0) // If advanced adhesion model indicates wheel slip, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                   if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0) // If advanced adhesion model indicates wheel slip, then check other conditiond (throttle and brake force) to determine whether it is a wheel slip or brake skid
                     {
                        BrakeSkid = true;  // set brake skid flag true
                     } 
