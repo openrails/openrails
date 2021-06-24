@@ -47,6 +47,43 @@ Activities
 - New :ref:`OR-specific additions <operation-activity>` to activity (.act) 
   files enhance activities.
 
+.. _parameters_and_tokens:
+
+Parameters and Tokens
+=====================
+The parameters used in content files have been mentioned throughout this manual for:
+
++------------------------------+-----------------------------+
+| Content Type                 |        File Extension       |
++==============================+=============================+
+| locomotive                   |        eng                  |
++------------------------------+-----------------------------+
+| wagon or non-powered vehicle |        wag                  |
++------------------------------+-----------------------------+
+| activity                     |        act                  |
++------------------------------+-----------------------------+
+| cab view                     |        cvf                  |
++------------------------------+-----------------------------+
+| consist                      |        con                  |
++------------------------------+-----------------------------+
+| train service                |        srv                  |
++------------------------------+-----------------------------+
+| train traffic                |        trf                  |
++------------------------------+-----------------------------+
+| signal configuration         |        sigcfg.dat           |
++------------------------------+-----------------------------+
+| signal scripts               |        sigscr.dat           |
++------------------------------+-----------------------------+
+| sound management             |        sms                  |
++------------------------------+-----------------------------+
+| train timetable              |        timetable-or         |
++------------------------------+-----------------------------+
+
+The complete list is very extensive and is documented in an online spreadsheet at `tinyurl.com/or-parameters-excel
+<https://tinyurl.com/or-parameters-excel>`_.
+
+Since this is a spreadsheet with many rows, you can restrict your view to relevant rows using the filters at the top of each column.
+
 Testing and Debugging Tools
 ===========================
 

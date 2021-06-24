@@ -27,6 +27,7 @@ using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Orts.Simulation.Physics;
+using Orts.Viewer3D.RollingStock;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -222,15 +223,31 @@ namespace Orts.Viewer3D.WebServices
         #endregion
 
 
-        #region /API/TRACKMONITOR
-        [Route(HttpVerbs.Get, "/TRACKMONITOR")]
-        public Train.TrainInfo TrackMonitor() => Viewer.PlayerTrain.GetTrainInfo();
+        #region /API/TRAININFO
+        [Route(HttpVerbs.Get, "/TRAININFO")]
+        public TrainInfo TrainInfo() => Viewer.GetWebTrainInfo();
         #endregion
 
 
         #region /API/TRAINDRIVINGDISPLAY
         [Route(HttpVerbs.Get, "/TRAINDRIVINGDISPLAY")]
         public IEnumerable<TrainDrivingDisplay.ListLabel> TrainDrivingDisplay([QueryField] bool normalText) => Viewer.TrainDrivingDisplayList(normalText);
+        #endregion
+
+        // Note: to see the JSON, use "localhost:2150/API/CABCONTROLS" - Beware: case matters
+        // Note: to run the webpage, use "localhost:2150/CabControls/index.html" - case doesn't matter
+        // or use "localhost:2150/CabControls/"
+        // Do not use "localhost:2150/CabControls/"
+        // as that will return the webpage, but the path will be "/" not "/CabControls/ and the appropriate scripts will not be loaded.
+
+        #region /API/CABCONTROLS
+        [Route(HttpVerbs.Get, "/CABCONTROLS")]
+        public IEnumerable<ControlValue> CabControls() => ((MSTSLocomotiveViewer)Viewer.PlayerLocomotiveViewer).GetWebControlValueList();
+        #endregion
+
+        #region /API/TIME
+        [Route(HttpVerbs.Get, "/TIME")]
+        public double Time() => Viewer.Simulator.ClockTime;
         #endregion
     }
 }

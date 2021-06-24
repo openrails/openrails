@@ -18,6 +18,7 @@
 using ORTS.Common;
 using System;
 using System.IO;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -314,7 +315,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         float axleSpeedMpS;
         /// <summary>
-        /// Read only axle speed value, in metric meters per second
+        /// Axle speed value, in metric meters per second
         /// </summary>
         public float AxleSpeedMpS
         {
@@ -341,10 +342,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 return axleForceN;
             }
-            /*set
-            {
-                axleForceN = value;
-            }*/
         }
 
         /// <summary>
@@ -386,12 +383,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 if (AdhesionK == 0.0f)
                     AdhesionK = 1.0f;
-                float A = 2.0f*AdhesionK*AdhesionConditions*AdhesionConditions;
-                float B = AdhesionConditions*AdhesionConditions;
-                float C = AdhesionK*AdhesionK;
-                float a = -2.0f*A*B;
-                float b = A*B;
-                float c = A*C;
+                float A = 2.0f * AdhesionK * AdhesionConditions * AdhesionConditions;
+                float B = AdhesionConditions * AdhesionConditions;
+                float C = AdhesionK * AdhesionK;
+                float a = -2.0f * A * B;
+                float b = A * B;
+                float c = A * C;
                 return ((-b - (float)Math.Sqrt(b * b - 4.0f * a * c)) / (2.0f * a));
             }
         }
@@ -452,7 +449,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                return SlipSpeedMpS / WheelSlipThresholdMpS * 100.0f;
+                var temp = SlipSpeedMpS / WheelSlipThresholdMpS * 100.0f;
+                if (float.IsNaN(temp)) temp = 0;//avoid NaN on HuD display when first starting OR
+                return temp;
             }
         }
 
@@ -517,10 +516,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxleRevolutionsInt.IsLimited = true;
             Adhesion2 = 0.331455f;
 
-            CurtiusKnifflerA = 7.5f;
-            CurtiusKnifflerB = 44.0f;
-            CurtiusKnifflerC = 0.161f;
-
             switch (driveType)
             {
                 case AxleDriveType.NotDriven:
@@ -558,10 +553,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxleRevolutionsInt.IsLimited = true;
             Adhesion2 = 0.331455f;
 
-            CurtiusKnifflerA = 7.5f;
-            CurtiusKnifflerB = 44.0f;
-            CurtiusKnifflerC = 0.161f;
-
             switch (driveType)
             {
                 case AxleDriveType.NotDriven:
@@ -591,6 +582,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             previousSlipPercent = inf.ReadSingle();
             previousSlipSpeedMpS = inf.ReadSingle();
+            axleForceN = inf.ReadSingle();
+            adhesionK = inf.ReadSingle();
+            AdhesionConditions = inf.ReadSingle();
+            frictionN = inf.ReadSingle();
+            dampingNs = inf.ReadSingle();
         }
 
         /// <summary>
@@ -601,6 +597,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             outf.Write(previousSlipPercent);
             outf.Write(previousSlipSpeedMpS);
+            outf.Write(axleForceN);
+            outf.Write(adhesionK);
+            outf.Write(AdhesionConditions);
+            outf.Write(frictionN);
+            outf.Write(dampingNs);
         }
 
         /// <summary>
@@ -612,6 +613,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="timeSpan"></param>
         public virtual void Update(float timeSpan)
         {
+
             //Update axle force ( = k * loadTorqueNm)
             axleForceN = AxleWeightN * SlipCharacteristics(AxleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionConditions, Adhesion2);
 

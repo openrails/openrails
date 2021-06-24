@@ -69,8 +69,10 @@ namespace Orts.Simulation.Signalling
         private Dictionary<uint, SignalRefObject> SignalRefList;
         private Dictionary<uint, SignalObject> SignalHeadList;
         public static SIGSCRfile scrfile;
+        public static CsSignalScripts CsSignalScripts;
         public int ORTSSignalTypeCount { get; private set; }
         public IList<string> ORTSSignalTypes;
+        public IList<string> ORTSNormalsubtypes;
 
         public int noSignals;
         private int foundSignals;
@@ -111,6 +113,7 @@ namespace Orts.Simulation.Signalling
 
             ORTSSignalTypeCount = sigcfg.ORTSFunctionTypes.Count;
             ORTSSignalTypes = sigcfg.ORTSFunctionTypes;
+            ORTSNormalsubtypes = sigcfg.ORTSNormalSubtypes;
 
             trackDB = simulator.TDB.TrackDB;
             tsectiondat = simulator.TSectionDat;
@@ -120,6 +123,7 @@ namespace Orts.Simulation.Signalling
 
             Trace.Write(" SIGSCR ");
             scrfile = new SIGSCRfile(new SignalScripts(sigcfg.ScriptPath, sigcfg.ScriptFiles, sigcfg.SignalTypes, sigcfg.ORTSFunctionTypes, sigcfg.ORTSNormalSubtypes));
+            CsSignalScripts = new CsSignalScripts(Simulator);
 
             // build list of signal world file information
 
@@ -3171,6 +3175,8 @@ namespace Orts.Simulation.Signalling
             float clearedDistanceM = 0.0f;
             Train.END_AUTHORITY endAuthority = Train.END_AUTHORITY.NO_PATH_RESERVED;
             int routeIndex = -1;
+            float maxDistance = Math.Max((thisTrain.Train.IsActualPlayerTrain ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : thisTrain.Train.AllowedMaxSpeedMpS)
+                * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
 
             int lastReserved = thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex];
             int endListIndex = -1;
@@ -3275,7 +3281,7 @@ namespace Orts.Simulation.Signalling
                 routeIndex = endListIndex;
                 clearedDistanceM = thisTrain.Train.GetDistanceToTrain(lastReserved, 0.0f);
 
-                if (clearedDistanceM > thisTrain.Train.CheckDistanceM)
+                if (clearedDistanceM > maxDistance)
                 {
                     endAuthority = Train.END_AUTHORITY.MAX_DISTANCE;
                     furthestRouteCleared = true;
@@ -3537,7 +3543,8 @@ namespace Orts.Simulation.Signalling
                                 }
                             }
 
-                            if (clearedDistanceM > thisTrain.Train.CheckDistanceM)
+                            if (clearedDistanceM > thisTrain.Train.minCheckDistanceM && clearedDistanceM > (
+                                (thisTrain.Train.IsActualPlayerTrain ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : thisTrain.Train.AllowedMaxSpeedMpS) * thisTrain.Train.maxTimeS))
                             {
                                 endAuthority = Train.END_AUTHORITY.MAX_DISTANCE;
                                 furthestRouteCleared = true;
@@ -8366,7 +8373,7 @@ namespace Orts.Simulation.Signalling
 
         public int SignalNumClearAhead_MSTS = -2;    // Overall maximum SignalNumClearAhead over all heads (MSTS calculation)
         public int SignalNumClearAhead_ORTS = -2;    // Overall maximum SignalNumClearAhead over all heads (ORTS calculation)
-        public int SignalNumClearAheadActive = -2;   // Active SignalNumClearAhead (for ORTS calculation only, as set by script)
+        public int SignalNumClearAheadActive = -2;   // Active SignalNumClearAhead (for ORST calculation only, as set by script)
         public int SignalNumNormalHeads;             // no. of normal signal heads in signal
         public int ReqNumClearAhead;                 // Passed on value for SignalNumClearAhead
 
@@ -8405,6 +8412,8 @@ namespace Orts.Simulation.Signalling
 
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
         protected List<KeyValuePair<int, int>> LockedTrains;
+
+        public bool CallOnEnabled = false;      // set if signal script file uses CallOn functionality
 
         public bool enabled
         {
@@ -10285,10 +10294,14 @@ namespace Orts.Simulation.Signalling
         /// </summary>
 
         public Train.TCSubpathRoute requestClearSignalExplorer(Train.TCSubpathRoute thisRoute,
-            float reqDistance, Train.TrainRouted thisTrain, bool propagated, int signalNumClearAhead)
+            Train.TrainRouted thisTrain, bool propagated, int signalNumClearAhead)
         {
             // build output route from input route
             Train.TCSubpathRoute newRoute = new Train.TCSubpathRoute(thisRoute);
+
+            // don't clear if enabled for another train
+            if (enabledTrain != null && enabledTrain != thisTrain)
+                return newRoute;
 
             // if signal has fixed route, use that else build route
             if (fixedRoute != null && fixedRoute.Count > 0)
@@ -10299,7 +10312,7 @@ namespace Orts.Simulation.Signalling
             // build route from signal, upto next signal or max distance, take into account manual switch settings
             else
             {
-                List<int> nextRoute = signalRef.ScanRoute(thisTrain.Train, TCNextTC, 0.0f, TCNextDirection, true, reqDistance, true, true, true, false,
+                List<int> nextRoute = signalRef.ScanRoute(thisTrain.Train, TCNextTC, 0.0f, TCNextDirection, true, -1, true, true, true, false,
                 true, false, false, false, false, thisTrain.Train.IsFreight);
 
                 signalRoute = new Train.TCSubpathRoute();
@@ -10345,42 +10358,36 @@ namespace Orts.Simulation.Signalling
             if (extendRoute && fullRoute)
             {
                 isPropagated = propagated;
-                int ReqNumClearAhead = 0;
-
-                if (SignalNumClearAhead_MSTS > -2)
-                {
-                    ReqNumClearAhead = propagated ?
-                        signalNumClearAhead - SignalNumNormalHeads : SignalNumClearAhead_MSTS - SignalNumNormalHeads;
-                }
-                else
-                {
-                    if (SignalNumClearAheadActive == -1)
-                    {
-                        ReqNumClearAhead = propagated ? signalNumClearAhead : 1;
-                    }
-                    else if (SignalNumClearAheadActive == 0)
-                    {
-                        ReqNumClearAhead = 0;
-                    }
-                    else
-                    {
-                        ReqNumClearAhead = isPropagated ? signalNumClearAhead - 1 : SignalNumClearAheadActive - 1;
-                    }
-                }
-
-
+                int ReqNumClearAhead = GetReqNumClearAheadExplorer(isPropagated, signalNumClearAhead);
                 if (ReqNumClearAhead > 0)
                 {
                     int nextSignalIndex = sigfound[(int)MstsSignalFunction.NORMAL];
                     if (nextSignalIndex >= 0)
                     {
                         SignalObject nextSignal = signalObjects[nextSignalIndex];
-                        newRoute = nextSignal.requestClearSignalExplorer(newRoute, thisTrain.Train.CheckDistanceM, thisTrain, true, ReqNumClearAhead);
+                        newRoute = nextSignal.requestClearSignalExplorer(newRoute, thisTrain, true, ReqNumClearAhead);
                     }
                 }
             }
 
             return (newRoute);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// number of remaining signals to clear
+        /// </summary>
+
+        public int GetReqNumClearAheadExplorer(bool isPropagated, int signalNumClearAhead)
+        {
+            if (SignalNumClearAhead_MSTS > -2)
+                return propagated ? signalNumClearAhead - SignalNumNormalHeads : SignalNumClearAhead_MSTS - SignalNumNormalHeads;
+            else if (SignalNumClearAheadActive == -1)
+                return propagated ? signalNumClearAhead : 1;
+            else if (SignalNumClearAheadActive == 0)
+                return 0;
+            else
+                return isPropagated ? signalNumClearAhead - 1 : SignalNumClearAheadActive - 1;
         }
         //================================================================================================//
         /// <summary>
@@ -11739,33 +11746,45 @@ namespace Orts.Simulation.Signalling
             }
 
             bool found = false;
+            bool isNormal = isSignalNormal();
             float distance = 0;
             int actDirection = enabledTrain.TrainRouteDirectionIndex;
             Train.TCSubpathRoute routePath = enabledTrain.Train.ValidRoute[actDirection];
             int actRouteIndex = routePath == null ? -1 : routePath.GetRouteIndex(enabledTrain.Train.PresentPosition[actDirection].TCSectionIndex, 0);
             if (actRouteIndex >= 0)
             {
-                float offset = 0;
+                float offset;
                 if (enabledTrain.TrainRouteDirectionIndex == 0)
                     offset = enabledTrain.Train.PresentPosition[0].TCOffset;
                 else
                     offset = signalRef.TrackCircuitList[enabledTrain.Train.PresentPosition[1].TCSectionIndex].Length - enabledTrain.Train.PresentPosition[1].TCOffset;
-                while (!found)
+                while (!found && actRouteIndex < routePath.Count)
                 {
                     Train.TCRouteElement thisElement = routePath[actRouteIndex];
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                    distance += thisSection.Length - offset;
                     if (thisSection.EndSignals[thisElement.Direction] == this)
                     {
+                        distance += thisSection.Length - offset;
                         found = true;
                     }
-                    else
+                    else if (!isNormal)
                     {
+                        TrackCircuitSignalList thisSignalList = thisSection.CircuitItems.TrackCircuitSignals[thisElement.Direction][SignalHeads[0].ORTSsigFunctionIndex];
+                        foreach (TrackCircuitSignalItem thisSignal in thisSignalList.TrackCircuitItem)
+                        {
+                            if (thisSignal.SignalRef == this)
+                            {
+                                distance += thisSignal.SignalLocation - offset;
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!found)
+                    {
+                        distance += thisSection.Length - offset;
                         offset = 0;
-                        int setSection = thisSection.ActivePins[thisElement.OutPin[0], thisElement.OutPin[1]].Link;
                         actRouteIndex++;
-                        if (actRouteIndex >= routePath.Count || setSection < 0)
-                            break;
                     }
                 }
             }
@@ -12593,6 +12612,8 @@ namespace Orts.Simulation.Signalling
             bool[] returnValue = new bool[2] { false, false };
             MstsSignalAspect thisAspect = this_sig_lr(MstsSignalFunction.NORMAL);
 
+            SetManualCallOn(false);
+
             // signal not enabled - set lock, reset if cleared (auto signal can clear without enabling)
 
             if (enabledTrain == null || enabledTrain.Train == null)
@@ -12658,6 +12679,25 @@ namespace Orts.Simulation.Signalling
             holdState = HoldState.None;
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Set call on manually from dispatcher
+        /// </summary>
+        public void SetManualCallOn(bool state)
+        {
+            if (enabledTrain != null)
+            {
+                if (state && CallOnEnabled)
+                {
+                    enabledTrain.Train.AllowedCallOnSignal = this;
+                    clearHoldSignalDispatcher();
+                }
+                else if (enabledTrain.Train.AllowedCallOnSignal == this)
+                {
+                    enabledTrain.Train.AllowedCallOnSignal = null;
+                }
+            }
+        }
     }  // SignalObject
 
 
@@ -12670,8 +12710,10 @@ namespace Orts.Simulation.Signalling
     public class SignalHead
     {
         public SignalType signalType;           // from sigcfg file
+        public CsSignalScript usedCsSignalScript = null;
         public SignalScripts.SCRScripts usedSigScript = null;   // used sigscript
         public MstsSignalAspect state = MstsSignalAspect.STOP;
+        public string TextSignalAspect = String.Empty;
         public int draw_state;
         public int trItemIndex;                 // Index to trItem   
         public uint TrackJunctionNode;          // Track Junction Node (= 0 if not set)
@@ -12785,6 +12827,11 @@ namespace Orts.Simulation.Signalling
 
                 // get related signalscript
                 Signals.scrfile.SignalScripts.Scripts.TryGetValue(signalType, out usedSigScript);
+
+                usedCsSignalScript = Signals.CsSignalScripts.LoadSignalScript(signalType.Script)
+                    ?? Signals.CsSignalScripts.LoadSignalScript(signalType.Name);
+                usedCsSignalScript?.AttachToHead(this);
+                usedCsSignalScript?.Initialize();
 
                 // set signal speeds
                 foreach (SignalAspect thisAspect in signalType.Aspects)
@@ -13232,6 +13279,8 @@ namespace Orts.Simulation.Signalling
             else
                 state = MstsSignalAspect.STOP;
 
+            TextSignalAspect = "";
+
             draw_state = def_draw_state(state);
         }//SetMostRestrictiveAspect
 
@@ -13246,6 +13295,9 @@ namespace Orts.Simulation.Signalling
                 state = signalType.GetLeastRestrictiveAspect();
             else
                 state = MstsSignalAspect.CLEAR_2;
+
+            TextSignalAspect = "";
+
             def_draw_state(state);
         }//SetLeastRestrictiveAspect
 
@@ -13299,7 +13351,14 @@ namespace Orts.Simulation.Signalling
 
         public void Update()
         {
-            SIGSCRfile.SH_update(this, Signals.scrfile);
+            if (usedCsSignalScript is CsSignalScript)
+            {
+                usedCsSignalScript.Update();
+            }
+            else
+            {
+                SIGSCRfile.SH_update(this, Signals.scrfile);
+            }
         }
     } //Update
 

@@ -37,6 +37,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 lower = lower.Substring(21);
             if (lower.StartsWith("enginebrakescontroller"))
                 lower = lower.Substring(22);
+            if (lower.StartsWith("brakemanbrakescontroller"))
+                lower = lower.Substring(24);
             switch (lower)
             {
                 case "dummy": break;
@@ -46,6 +48,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "runningstart": Type = ControllerState.Running; break;
                 case "selflapstart": Type = ControllerState.SelfLap; break;
                 case "holdstart": Type = ControllerState.Hold; break;
+                case "straightbrakingreleaseonstart": Type = ControllerState.StrBrkReleaseOn; break;
+                case "straightbrakingreleaseoffstart": Type = ControllerState.StrBrkReleaseOff; break;
+                case "straightbrakingreleasestart": Type = ControllerState.StrBrkRelease; break;
+                case "straightbrakinglapstart": Type = ControllerState.StrBrkLap; break;
+                case "straightbrakingapplystart": Type = ControllerState.StrBrkApply; break;
+                case "straightbrakingapplyallstart": Type = ControllerState.StrBrkApplyAll; break;
+                case "straightbrakingemergencystart": Type = ControllerState.StrBrkEmergency; break;
                 case "holdlappedstart": Type = ControllerState.Lap; break;
                 case "neutralhandleoffstart": Type = ControllerState.Neutral; break;
                 case "graduatedselflaplimitedstart": Type = ControllerState.GSelfLap; break;
@@ -57,10 +66,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "emergencystart": Type = ControllerState.Emergency; break;
                 case "minimalreductionstart": Type = ControllerState.MinimalReduction; break;
                 case "epapplystart": Type = ControllerState.EPApply; break;
+                case "eponlystart": Type = ControllerState.EPOnly; break;
+                case "epfullservicestart": Type = ControllerState.EPFullServ; break;
                 case "epholdstart": Type = ControllerState.SelfLap; break;
                 case "vacuumcontinuousservicestart": Type = ControllerState.VacContServ; break;
                 case "vacuumapplycontinuousservicestart": Type = ControllerState.VacApplyContServ; break;
+                case "manualbrakingstart": Type = ControllerState.ManualBraking; break;
                 case "brakenotchstart": Type = ControllerState.BrakeNotch; break;
+                case "overchargestart": Type = ControllerState.Overcharge; break;
+                case "slowservicestart": Type = ControllerState.SlowService; break;
                 default:
                     STFException.TraceInformation(stf, "Skipped unknown notch type " + type);
                     break;
@@ -443,7 +457,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             MSTSNotch notch = Notches[CurrentNotch];
             if (!notch.Smooth)
                 // Respect British 3-wire EP brake configurations
-                return notch.Type == ControllerState.EPApply ? CurrentValue : 1;
+                return (notch.Type == ControllerState.EPApply || notch.Type == ControllerState.EPOnly) ? CurrentValue : 1;
             float x = 1;
             if (CurrentNotch + 1 < Notches.Count)
                 x = Notches[CurrentNotch + 1].Value;

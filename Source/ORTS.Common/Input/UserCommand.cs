@@ -124,6 +124,8 @@
         [GetString("Control Train Brake Zero")] ControlTrainBrakeZero,
         [GetString("Control Engine Brake Increase")] ControlEngineBrakeIncrease,
         [GetString("Control Engine Brake Decrease")] ControlEngineBrakeDecrease,
+        [GetString("Control Brakeman Brake Increase")] ControlBrakemanBrakeIncrease,
+        [GetString("Control Brakeman Brake Decrease")] ControlBrakemanBrakeDecrease,
         [GetString("Control Dynamic Brake Increase")] ControlDynamicBrakeIncrease,
         [GetString("Control Dynamic Brake Decrease")] ControlDynamicBrakeDecrease,
         [GetString("Control Bail Off")] ControlBailOff,
@@ -197,5 +199,7 @@
         [GetString("Control AI Fire On")] ControlAIFireOn,
         [GetString("Control AI Fire Off")] ControlAIFireOff,
         [GetString("Control AI Fire Reset")] ControlAIFireReset,
+        [GetString("Control Battery")] ControlBattery,
+        [GetString("Control PowerKey")] ControlPowerKey,
     }
 }

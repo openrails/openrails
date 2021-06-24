@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2021-04-04 04:39:45+0300\n"
-"PO-Revision-Date: 2021-04-04 04:47+0300\n"
+"POT-Creation-Date: 2021-03-21 10:35:04+0300\n"
+"PO-Revision-Date: 2021-03-21 11:13+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -1098,6 +1098,7 @@ msgid "1"
 msgstr "1"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:148
+#| msgid "1"
 msgid "11"
 msgstr "11"
 

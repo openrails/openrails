@@ -85,6 +85,13 @@ motors from motors to generators.
 Blended Dynamic Brake
 ---------------------
 
+.. index::
+   single: MaxApplicationRate
+   single: MaxReleaseRate
+   single: DynamicBrakesDelayTimeBeforeEngaging
+   single: OrtsDynamicBlendingOverride
+   single: OrtsDynamicBlendingForceMatch
+
 Some locomotives have blended dynamic brake, which means that the 
 trainbrake lever also controls the dynamic brake. Currently this is 
 implemented to be MSTS compatible, the dynamic brake force percentage 
@@ -104,9 +111,11 @@ command, if the dynamic brake lever is not at full release position.
 ``Engine()`` block, which makes the dynamic brake system to try to achieve 
 the same brake force as the airbrake would have (even if the airbrake is 
 bailed off), in the current train brake lever position. Example: if the 
-trainbrake has 22 kN brake force at 40% trainbrake setting, then the 
+trainbrake has 22 kN brake force at 40% train brake setting, then the 
 dynamic brake will try to achieve, and maintain 22 kN braking force, instead 
 of just setting 40% dynamic brake percentage.
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 Refill
 ------
@@ -172,6 +181,19 @@ how OR behaves. They are listed in the
 
 The following information is displayed in the basic display:
 
+.. index::
+   single: version
+   single: time
+   single: speed
+   single: gradient
+   single: direction
+   single: throttle
+   single: train brake
+   single: engine brake
+   single: dynamic brake
+   single: fps
+
+
 - Version = The version of the Open Rails software you are running
 - Time = Game time of the Activity
 - Speed = the speed in Miles/Hr. or Kilometers/Hr.
@@ -194,7 +216,7 @@ The following information is displayed in the basic display:
 - Engine = shows the running status of the engine. 
   In case of a gear-based engine, after the ``Engine`` line a ``Gear`` line 
   appears displaying the actual gear. ``N`` means no gear inserted.
-- FPS = Number of Frames rendered per second
+- FPS = Number of frames rendered per second
 
 When applicable, an additional line indicationg whether Autopilot is active or not 
 will be shown.
@@ -237,6 +259,8 @@ An example of the basic HUD for Steam locomotives:
 .. image:: images/driving-hud-steam.png
     :align: center
     :scale: 80%
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 The default :ref:`firing <physics-steam-firing>` setting is automatic fireman. 
 If manual firing is engaged with ``<Ctrl+F>``, then additional information 
@@ -281,8 +305,8 @@ selected by clicking with the mouse on the desired heading:
   :align: center
   :scale: 80%
 
-``Briefing``: displays what the activity creator has entered as information 
-to be provided to the player about the activity:
+``Briefing``: displays what the activity or timetable creator has entered as information 
+to be provided to the player:
 
 .. image:: images/driving-briefing.png
   :align: center
@@ -292,7 +316,7 @@ to be provided to the player about the activity:
 and actual times of arrival and departure. During the activity the actual 
 performance will be shown on the F10 :ref:`Activity Monitor <driving-activity>`.
 
-``Work Orders``: if defined by the activity creator, lists the coupling and 
+``Work Orders``: if defined by the activity or timetable creator, lists the coupling and 
 uncoupling operations to be performed. When an operation has been 
 completed, the string ``Done`` appears in the last column:
 
@@ -387,14 +411,26 @@ the texts do not overlap. As a result, only the first object is always
 shown at the correct position, all other objects are as close to their 
 position as allowed by other objects closer to the train.
 
+Pressing ``<Shift+F4>`` toggles the Track Monitor's *immersive mode*. In this 
+mode, the window conceals upcoming signal aspects and upcoming signal speed 
+limits and does not display upcoming diverging switches. However, it retains 
+the locations of signals, mileposts, permanent speed limits, sidings, and 
+stations. This level of assistance reflects the route knowledge that a train 
+driver could be expected to know by memory.
+
 F6 Siding and Platform Names
 ----------------------------
 
-Hit the ``<F6>`` key to bring up the siding and platform names within a 
-region. These can be crowded so hitting ``<Shift+F6>`` will cycle 
-through showing platforms only, sidings only, and both.
+Hit the ``<F6>`` key to reveal labels naming the siding and platforms.
+Hit it again to hide them.
 
-Hitting ``<F6>`` again removes both siding and platform names.
+Items more distant will show more faded and platforms disappear altogether if more than 1km away from the user; 
+sidings disappear if more than 0.5km away.
+
+Use ``<Shift+F6>`` to cycle through platforms only (in yellow), sidings only (in orange), and both together.
+
+If the user is in Activity Mode or Timetable Mode, then a 4th step is added to the cycle and this step removes
+any labels not relevant to the activity or timetable.
 
 .. image:: images/driving-siding-names.png
 
@@ -583,8 +619,8 @@ While the activity is running relevant data are stored and displayed.
 The stored data are used to generate a report at the end of the activity.
 
 
-``How it does work``
-''''''''''''''''''''
+``How It Works``
+''''''''''''''''
 
 Activity evaluation is enabled only for Activity mode, and requires the 
 "Debrief evaluation" checkbox in the main menu window to be enabled.
@@ -636,7 +672,7 @@ Cliking **Actual status: (**\ |darr| **)**\  expanded real-time display appears.
 
    
 
-Cliking **Actual status: (**\ |uarr| **)**\  collapses all items.
+Clicking **Actual status: (**\ |uarr| **)**\  collapses all items.
 
 Once the activity has ended, the report file is created and a new window displays it.
 
@@ -672,39 +708,43 @@ In such case the activity saves will have the "Eval" checkbox checked in the res
 
 .. _driving-dispatcher:
 
-Dispatcher Window
-=================
+Map Window
+==========
 
-The dispatcher window is a very useful tool to monitor and control train 
-operation. The :ref:`Dispatcher window <options-dispatcher>` option 
-must be selected.
+Use the map window to monitor and control train operation. 
+The :ref:`Map window <options-map-window>` option must be selected prior to starting the simulation.
 
-The dispatcher window is actually created by pressing ``<Ctrl+9>``. The 
-window is created in a minimized state, so to display it in front of the OR 
-window you must click on ``<Alt+Tab>`` and select the dispatcher window 
-icon, or click on one of the OR icons in the taskbar. If you are running OR 
-in full-screen mode, you must also have the :ref:`Fast full screen Alt+Tab 
-<options-fullscreen>` option selected to have both the OR and the 
-dispatcher windows displayed at the same time. After the dispatcher window 
-has been selected with ``<Alt+Tab>``, successive Alt_Tabs will toggle 
-between the OR window and the dispatcher window.
+The map window is opened and closed by pressing ``<Ctrl+9>``. 
+After the map window  has been selected with ``<Alt+Tab>``, successive 
+Alt+Tabs will toggle between the OR window and the dispatcher window.
  
-The dispatcher window is resizable and can also be maximized, e.g. on a 
-second display. You can define the level of zoom either by changing the 
-value within the ``Res`` box or by using the mouse wheel. You can pan 
-through the route by moving the mouse while pressing the left button. You 
-can hold the shift key while clicking the mouse in a place in the map; this 
-will quickly zoom in with that place in focus. You can hold Ctrl while 
-clicking the mouse in a place in the map, which will zoom out to show the 
-whole route. Holding Alt and clicking will zoom out to show part of the 
-route.
+The map window contains 2 tabs: Dispatcher and Timetable. Both provide maps of
+the route with each train following its own path.
+
+The map window is resizable and can also be maximized, e.g. on a 
+second display. 
+
+To pan, use the left mouse button to drag the map around.
+
+To zoom, use left and right mouse buttons together and drag vertically
+or use the mouse wheel.
+
+To zoom in centred on a location, press Shift and click the left mouse button
+at that location.
+
+To zoom out from a location, press Alt and click the left mouse button.
+
+To zoom out fully, press Ctrl and click the left mouse button.
+
+Dispatcher Tab
+--------------
 
 .. image:: images/driving-dispatcher.png
 
-The dispatcher window shows the route layout and monitors the movement of 
-all trains. While the player train is identified by the ``0`` string, 
-AI trains are identified by 
-their OR number (that is also shown in the :ref:`Extended HUD for Dispatcher 
+The dispatcher window shows the route layout, monitors the movement of 
+all trains and allows you to change switches and signals.
+While the player train is identified by the ``0`` label, 
+AI trains are identified by an Id number (as shown in the :ref:`Extended HUD for Dispatcher 
 Information <driving-hud-dispatcher>`), followed by the service name. 
 Static consists are identified as in MSTS.
 
@@ -729,6 +769,12 @@ When left- or right-clicking on a signal, a pop-up menu appears:
 
 Using the mouse, you can force the signal to Stop, Approach or Proceed. 
 Later you can return it to System Controlled mode.
+
+For signals using the TrainHasCallOn functions as described 
+:ref:`here <operation-callon-functions>`, an additional option labeled
+``Enable CallOn`` will appear in the pop-up menu. The use of this
+function allows a train to enter into an occupied platform if the
+dispatcher allows so.
 
 By left- or right-clicking on a switch, a small pop-up menu with the two 
 selections ``Main route`` and ``Side route`` appears. By clicking on them 
@@ -765,8 +811,8 @@ will remain centered on that train.
 
 .. _driving-dispatcher-for-ai-trains:
 
-Using dispatcher window for AI trains
--------------------------------------
+Using dispatcher tab for AI trains
+''''''''''''''''''''''''''''''''''
 
 What is described here is valid only for activity mode and explore in 
 activity mode.
@@ -780,7 +826,7 @@ re-route it without getting it back on the original route.
 It is suggested to look at this video which explains some practical case 
 https://youtu.be/-f0XVg7bSgU before continuing reading.
 
-To perform this correctly and in a way more similar to reality, some rules have to 
+To perform this correctly and in a way closer to reality, some rules have to 
 be followed.
 The concept is that switches must be manually thrown only if they aren't reserved by a train. 
 To be sure of this it is necessary to force to stop the last signal(s) between train(s) 
@@ -801,6 +847,63 @@ Station platform stops are re-assigned to adjacent platforms, if available. Even
 waiting points in the abandoned part of route will be lost.
 
 The re-routed train may be also the player train (be it autopiloted or not).
+
+Timetable Tab
+-------------
+
+This tab shows the same route and trains as the dispatch tab but, with its focus on a timetable
+of trains, is provided to assist timetable builders.
+
+In this tab, for clarity, you can use the checkboxes to hide or reveal the labels for platforms,
+sidings, switches, signals and trains. The simulation time is also on view.
+
+As shown below, the basic red train label identifies the train. 
+
+.. image:: images/timetable_tab1.png
+
+Trains are drawn in green except that locos are drawn in brown. To indicate direction, the leading
+vehicle is draw in a lighter shade.
+
+The "Active trains" selection shows trains that are currently delivering a service.
+The "All trains" selection also shows inactive and static trains with labels in dark red.
+
+Inactive trains are not part of a current service - i.e. their start time has not been reached or 
+they have arrived at their destination and not yet been re-formed for another service - see 
+:ref:`#dispose commands<timetable-dispose>`.
+
+Static trains do not move and are shown in gray. They created with the $static command.
+
+.. raw:: latex
+
+   \clearpage
+
+When you select the "Train state" checkbox, the train labels extend to provide key information matching 
+that from the :ref:`HUD <driving-hud-dispatcher>` as shown below:
+
+.. image:: images/timetable_tab2.png
+
+.. raw:: latex
+
+   \clearpage
+
+The path element of the train state can be very lengthy, so this is only shown where the path
+contains the characters # & * ^ ~ which indicate :ref:`a track section that is in contention <driving-hud-section-state>`.
+
+In the image below, train 192 crosses the path of train 117.
+
+.. image:: images/timetable_tab3.png
+
+.. raw:: latex
+
+   \clearpage
+
+The "Signal state" checkbox reveals the aspect of each signals and also indicates the id number 
+of the train that is approaching. In this image, signal 462 is showing an APPROACH_1 aspect for train 114.
+
+.. image:: images/timetable_tab4.png
+
+The adjustment for "Daylight offset (hrs)" is provided for convenience to advance the sun as it moves 
+across the sky so that night time trains can be more easily observed in daylight.
 
 Additional Train Operation Commands
 ===================================
@@ -845,6 +948,8 @@ Note that this command does not work if the :ref:`Emergency Brake <physics-emerg
 button has 
 been pressed -- the button must be pressed again to cancel the emergency 
 brake condition.
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 Connect/Disconnect Brake Hoses
 ------------------------------
@@ -1362,6 +1467,9 @@ Modifying the Game Environment
 Time of Day
 -----------
 
+.. index::
+   single: StartTime
+
 In activity mode Open Rails software reads the StartTime from the MSTS 
 .act file to determine what the game time is for the activity. In 
 combination with the longitude and latitude of the route and the season, 
@@ -1396,6 +1504,8 @@ other modes the weather can be selected in the start menu. A :ref:`Weather
 Change Activity Event <operation-activity-weather-change>` can be included 
 in an activity that will modify the weather during the activity.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Modifying Weather at Runtime
 ----------------------------
 
@@ -1429,6 +1539,8 @@ In activity mode Open Rails software determines the season, and its
 related alternative textures to display from the Season parameter in the 
 MSTS Activity file. In other modes the player can select the season in the 
 start menu.
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 .. _driving-act-randomization:
 
@@ -1510,6 +1622,8 @@ All these train failures occur only on the player train.
   waiting point delay is introduced, that can have a maximum value of 25 seconds 
   for the standard WPs and 5 minutes for the absolute WPs. Such maximum 
   values depend also from randomization level.
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 Screenshot - Print Screen
 =========================
@@ -1956,6 +2070,8 @@ A detailed explanation of the various columns follows:
       refer to the train numbers as shown at the start of each row. Below, 
       <n> indicates such a number.
 
+.. _driving-hud-section-state:      
+
         - <n> section is occupied by train <n>.
         - (<n>) section is reserved for train <n>.
         - # (either with <n> or on its own) section is claimed by a train 
@@ -2005,6 +2121,9 @@ A wide variety of parameters is shown, from frame wait and render speeds
 in milliseconds, to number of primitives, Process Thread resource 
 utilization and number of Logical CPUs from the system's bios. They are 
 very useful in case of OR stuttering, to find out where the bottleneck is.
+
+.. index::
+   single: tile
 
 The values in the ``Camera`` line refer to the two tile coordinates and to 
 the three coordinates within the tile.

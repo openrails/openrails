@@ -4,6 +4,8 @@
 Further Open Rails Rolling Stock Features
 *****************************************
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Train Engine Lights
 ===================
 
@@ -67,6 +69,9 @@ In addition to the support of the MSTS freight animations, Open Rails provides a
 large extension for freight animations (called *OR freightanims* below) and 
 pickups.
 
+.. index::
+   single: ORTSFreightAnims
+
 Following are the native features Open Rails offers:
 
 - two types of OR freightanims: continuous and static
@@ -127,6 +132,14 @@ be blank.::
         )
     )
 
+.. index::
+   single: ORTSFreightAnims
+   single: MSTSFreightAnimEnabled
+   single: WagonEmptyWeight
+   single: IsGondola
+   single: UnloadingStartDelay
+   single: FreightAnimContinuous
+
 The ``ORTSFreightAnims`` block is composed by a set of general parameters 
 followed by the description of the OR freightanims. Here below the general 
 parameters are described:
@@ -151,6 +164,28 @@ parameters are described:
 There may be more than one ``FreightAnimContinuous`` subblock, one for each 
 possible load type. The parameters of the subblock are described below:
 
+.. index::
+   single: IntakePoint
+   single: FreightGrain
+   single: FreightCoal
+   single: FreightGravel
+   single: FreightSand
+   single: FuelWater
+   single: FuelCoal
+   single: FuelDiesel
+   single: FuelWood
+   single: FuelSand
+   single: FreightGeneral
+   single: FreightLivestock
+   single: FreightFuel
+   single: FreightMilk
+   single: SpecialMail
+   single: Shape
+   single: MaxHeight
+   single: MinHeight
+   single: FreightWeightWhenFull
+   single: FullAtStart
+
 - ``IntakePoint`` has the same format and the same meaning of the IntakePoint 
   line within the standard MSTS freight animations. Following types of loads are 
   accepted: FreightGrain, FreightCoal, FreightGravel, FreightSand, FuelWater, 
@@ -173,10 +208,24 @@ unload operation.
 In a gondola this could be used to rotate the whole wagon, while in a hopper it 
 could be used to open the bottom of the wagon.
 
+.. index::
+   single: UNLOADINGPARTS
+   single: UNLOADINGPARTS1
+   single: UNLOADINGPARTS2
+
 The base matrix within the wagon shape that has to be animated must have a name 
 that starts with ``UNLOADINGPARTS``. There may be more than one, like 
 ``UNLOADINGPARTS1``, ``UNLOADINGPARTS2`` and so on. Its frame rate is fixed, 
 and is 1 frame per second as for the other types of OR trainset animations.
+
+.. index::
+   single: Pickup
+   single: FileName
+   single: DYNAMIC
+   single: Class
+   single: PickupType
+   single: Description
+   single: _FUEL_COAL_
 
 To define a pickup point as an unload point, its shape must be inserted in the 
 .ref file of the route as a pickup object . Here is an example of the .ref block::
@@ -191,6 +240,11 @@ To define a pickup point as an unload point, its shape must be inserted in the
 
 When laying it down in the route with the MSTS Route Editor, its fill rate must 
 be set to a negative value.
+
+.. index::
+   single: ANIMATED_PARTS
+   single: ANIMATED_PARTS1
+   single: ANIMATED_PARTS2
 
 Such a pickup (which in reality is an unloader) may be animated too. The base matrix 
 within the wagon shape that has to be animated must have a name 
@@ -210,6 +264,17 @@ the trainset is at the pickup/unloader location.
 
 Static OR Freightanims
 ''''''''''''''''''''''
+
+.. index::
+   single: MSTSFreightAnimEnabled
+   single: WagonEmptyWeight
+   single: ORTSFreightAnims
+   single: FreightAnimStatic
+   single: SubType
+   single: Shape
+   single: FreightWeight
+   single: Flip
+   single: Visibility
 
 Only the two general parameters shown below are used for static OR freightanims::
 
@@ -261,7 +326,7 @@ Physics Variation with Loads
 
 Variable Loads (Continuous Freight Animation)
 '''''''''''''''''''''''''''''''''''''''''''''
-Oepn Rails supports the variation fo key physics parameters in the wagon as the 
+Open Rails supports the variation of key physics parameters in the wagon as the 
 load varies within the wagon. The parameters which can be changed are:
 
 - Mass
@@ -277,6 +342,36 @@ above physics parameters adjusted as coal and water is used. The adhesive weight
 To support the correct operation of this feature a known physics starting and 
 finishing point is required, ie the state of these parameters under empty conditions, 
 and the state of these parameters when the wagon or locomotive is full.
+
+.. index::
+   single: ORTSFreightAnims
+   single: MSTSFreightAnimEnabled
+   single: WagonEmptyWeight
+   single: EmptyMaxBrakeForce
+   single: EmptyMaxHandbrakeForce
+   single: EmptyORTSDavis_A
+   single: EmptyORTSDavis_B
+   single: EmptyORTSDavis_C
+   single: EmptyORTSWagonFrontalArea
+   single: EmptyORTSDavisDragConstant
+   single: EmptyCentreOfGravity_Y
+   single: IsGondola
+   single: UnloadingStartDelay
+   single: FreightAnimContinuous
+   single: IntakePoint
+   single: Shape
+   single: MaxHeight
+   single: MinHeight
+   single: FreightWeightWhenFull
+   single: FullAtStart
+   single: FullMaxBrakeForce
+   single: FullMaxHandbrakeForce
+   single: FullORTSDavis_A
+   single: FullORTSDavis_B
+   single: FullORTSDavis_C
+   single: FullORTSWagonFrontalArea
+   single: FullORTSDavisDragConstant
+   single: FullCentreOfGravity_Y
 
 To configure the stock correctly the following empty and full parameters need to be 
 included in the ORTSFreightAnims file. Empty values are included in the first block, 
@@ -317,6 +412,11 @@ below.::
      )
   )
 
+.. index::
+   single: Shape
+   single: MaxHeight
+   single: MinHeight
+   single: IntakePoint
 
 Note for enclosed wagons, such as covered vans, the freight animation shape may not be required, 
 and therefore the parameters Shape, MaxHeight, and MinHeight can be left out of the file.
@@ -350,7 +450,7 @@ or tender (or auxiliary tender) WAG file these statements can be left out of the
 animation section.
 
 For example, the following code block would apply to a steam locomotive (note the absence of the 
-``Intakepoint`` statement)::
+``IntakePoint`` statement)::
 
   ORTSFreightAnims
   (
@@ -374,7 +474,12 @@ For example, the following code block would apply to a steam locomotive (note th
       FullCentreOfGravity_Y ( 1.8 ) 
      )
   )
-  
+
+.. index::
+   single: FreightWeightWhenFull
+   single: ORTSWagonFrontalArea
+   single: ORTSDavisDragConstant
+
 Notes:
 
 - Intake points should be defined within the root WAG file
@@ -390,6 +495,24 @@ Static wagons (Static Freight Animations)
 '''''''''''''''''''''''''''''''''''''''''
 Static wagons can be defined with a full and empty state, however only one freight animation should 
 have full values assigned to it,as OR cannot then calculate the known full state.
+
+.. index::
+   single: ORTSFreightAnims
+   single: MSTSFreightAnimEnabled
+   single: WagonEmptyWeight
+   single: FreightAnimStatic
+   single: SubType
+   single: Shape
+   single: Offset
+   single: FreightWeight
+   single: FullMaxBrakeForce
+   single: FullMaxHandbrakeForce
+   single: FullORTSDavis_A
+   single: FullORTSDavis_B
+   single: FullORTSDavis_C
+   single: FullORTSWagonFrontalArea
+   single: FullORTSDavisDragConstant
+   single: FullCentreOfGravity_Y
 
 A typical configuration code block will be as follows::
 
@@ -415,7 +538,7 @@ A typical configuration code block will be as follows::
    )
   )
  
-The empty values for the wagon will be read from the normal base WAG file paramers.
+The empty values for the wagon will be read from the normal base WAG file paramaters.
 
 .. _features-passengerviewpoints:
 
@@ -424,6 +547,13 @@ Multiple passenger viewpoints
 
 Additional passenger viewpoints may be added within a carriage that 
 is provided with passenger viewpoint.
+
+.. index::
+   single: ORTSAlternatePassengerViewPoints
+   single: ORTSAlternatePassengerViewPoint
+   single: PassengerCabinHeadPos
+   single: RotationLimit
+   single: StartDirection
 
 Such additional passenger viewpoints are defined within an include file 
 with the format shown in 
@@ -458,6 +588,9 @@ the other by pressing Shift-5.
 Bell animation
 ==============
 
+.. index::
+   single: ESD_ORTSBellAnimationFPS
+
 Open Rails supports bell animation. The bell animation matrix must be named 
 ORTSBELL within the engine's .s file. Its default frame rate is 8 frames per 
 second. The default frame rate may be modified through the optional parameter 
@@ -475,6 +608,7 @@ forward and backward, and should have a final fadeoff for best result.
 
 C# engine scripting
 ===================
+.. _features-scripting-csharp:
 
 To simulate especially complex behavior, Open Rails provides a C# scripting 
 interface for a number of systems on the player locomotive. Like the Open Rails 
@@ -482,6 +616,12 @@ program itself, these scripts are written in .cs files containing C# classes,
 but they are compiled and linked at runtime, so they don't depend on changes 
 in the core program itself and can be distributed with rolling stock content. 
 Scripts will run if referenced by OR-specific fields in the .eng file.
+
+.. index::
+   single: ORTSTrainBrakeController
+   single: ORTSCircuitBreaker
+   single: ORTSPowerSupply
+   single: ORTSTrainControlSystem
 
 .. list-table:: Currently scriptable locomotive systems
    :widths: 25 37 38
@@ -608,6 +748,9 @@ allowing for much greater systems fidelity compared to what is possible with
 the model inherited from MSTS. For this purpose, the script can read the state 
 of the brake controls and set the air pressures of the brake reservoirs.
 
+.. index::
+   single: ORTSTrainBrakeController
+
 Use the following .eng parameter to load a brake controller script::
 
   Engine (
@@ -630,6 +773,9 @@ Available for electric locomotives only. The circuit breaker script controls
 the behavior of the locomotive's 
 :ref:`circuit breaker <physics-circuit-breaker>`.
 
+.. index::
+   single: ORTSCircuitBreaker
+
 Use the following .eng parameter to load a circuit breaker script::
 
   Engine (
@@ -648,6 +794,9 @@ Available for electric locomotives only. The power supply script determines
 whether or not the locomotive :ref:`is serviceable <physics-power-supply>` given 
 the current line voltage, pantograph position, circuit breaker state, etc.
 
+.. index::
+   single: ORTSPowerSupply
+
 Use the following .eng paramater to load an electric power supply script::
 
   Engine (
@@ -656,6 +805,9 @@ Use the following .eng paramater to load an electric power supply script::
 
 The .cs extension is optional. "Default" will load the generic OR power supply 
 implementation, so do `not` use this name for your own script.
+
+
+.. _features-scripting-tcs:
 
 Train Control System
 --------------------
@@ -667,6 +819,11 @@ The Train Control System, or TCS, script is intended to model train safety and
 cab signalling systems. It can manipulate the locomotive's controls and speed 
 limit displays, impose penalty brake applications, read upcoming signal aspects 
 and speed limits, and play warning sounds.
+
+.. index::
+   single: ORTSTrainControlSystem
+   single: ORTSTrainControlSystemParameters
+   single: ORTSTrainControlSystemSound
 
 Use the following .eng parameters to load a TCS script::
 
@@ -718,6 +875,9 @@ As can be seen, the .ini file is divided in subgroups. As an example, parameter
 where the final ``false`` is the default value, if the parameter can't be found.
 
 
+.. index::
+   single: ORTSTrainControlSystemSound
+
 ``ORTSTrainControlSystemSound``, an optional field, refers to a .sms file either 
 in the engine's ``SOUND`` folder or in the global ``SOUND`` folder. If provided, 
 OR will load this sound library alongside the locomotive's standard cab sounds. 
@@ -762,6 +922,27 @@ which returns a handle for the player locomotive instance of the MSTSLocomotive
 class. Through such handle all public classes, methods and variables of 
 the OR Simulation environment can be accessed within the script. 
 
+The Train Control System class provides the ETCSStatus field, which controls the information
+to be displayed in the ETCS DMI. For example, the following block orders the DMI to show the circular speed gauge in yellow colour as the train approaches a speed restriction:
+
+.. code-block:: csharp
+    
+    ETCSStatus.CurrentMonitor = Monitor.TargetSpeed;
+    ETCSStatus.CurrentSupervisionStatus = SupervisionStatus.Indication;
+    ETCSStatus.TargetDistanceM = 1234.5f;
+    ETCSStatus.AllowedSpeedMpS = 50;
+    ETCSStatus.InterventionSpeedMpS = 52.5f;
+    ETCSStatus.TargetSpeedMpS = 25;
+
+.. index::
+   single: MultiStateDisplay
+   single: Type
+   single: Position
+   single: Graphic
+   single: States
+   single: State
+   single: Style
+   single: SwitchVal
 
 Generic cabview controls
 ''''''''''''''''''''''''
@@ -805,6 +986,15 @@ like e.g.::
 				)
       )
     )
+
+
+.. index::
+   single: TwoState
+   single: Type
+   single: Graphic
+   single: NumFrames
+   single: Style
+   single: MouseControl
 
 Each one of the first 32 can be also used as Two-state commands/displays, like e.g.::
 
@@ -1029,4 +1219,5 @@ The blinker ``On`` property will alternate between ``true`` and ``false`` at the
     SetCabDisplayControl(0, RSOBlinker.On ? 1 : 0);
 
 Please note that, when the blinker is stopped, the ``On`` property is ``false``.
+
 

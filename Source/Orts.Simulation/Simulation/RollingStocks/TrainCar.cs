@@ -471,8 +471,11 @@ namespace Orts.Simulation.RollingStocks
         }
         public BrakeSystem BrakeSystem;
 
+        public float PreviousSteamBrakeCylinderPressurePSI;
+
         // TrainCar.Update() must set these variables
-        public float MotiveForceN;   // ie motor power in Newtons  - signed relative to direction of car - 
+        public float MotiveForceN;   // ie motor power in Newtons  - signed relative to direction of car -
+        public float TractiveForceN = 0f; // Raw tractive force for electric sound variable2
         public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
         public float PrevMotiveForceN;
         // Gravity forces have negative values on rising grade. 
@@ -555,9 +558,11 @@ namespace Orts.Simulation.RollingStocks
         protected float StartCurveResistanceFactor = 2.0f; // Set curve friction at Start = 200%
         protected float RouteSpeedMpS; // Max Route Speed Limit
         protected const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
-        protected float WagonNumWheels; // Number of wheels on a wagon
-        protected float LocoNumDrvWheels = 4; // Number of drive axles (wheels / 2) on locomotive
-        public float DriverWheelRadiusM = 1.5f; // Drive wheel radius of locomotive wheels
+        protected int WagonNumAxles; // Number of axles on a wagon
+        protected float MSTSWagonNumWheels; // Number of axless on a wagon - used to read MSTS value as default
+        protected int LocoNumDrvAxles; // Number of drive axles on locomotive
+        protected float MSTSLocoNumDrvWheels; // Number of drive axles on locomotive - used to read MSTS value as default
+        public float DriverWheelRadiusM = Me.FromIn(30.0f); // Drive wheel radius of locomotive wheels - Wheel radius of loco drive wheels can be anywhere from about 10" to 40".
 
         public enum SteamEngineTypes
         {
@@ -777,7 +782,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 _AccelerationMpSS = (_SpeedMpS - _PrevSpeedMpS) / elapsedClockSeconds;
 
-                if (Simulator.UseAdvancedAdhesion)
+                if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
                     _AccelerationMpSS = AccelerationFilter.Filter(_AccelerationMpSS, elapsedClockSeconds);
 
                 _PrevSpeedMpS = _SpeedMpS;
@@ -851,8 +856,8 @@ namespace Orts.Simulation.RollingStocks
         public virtual void UpdateBrakeSlideCalculation()
         {
 
-            // Only apply slide, and advanced brake friction, if advanced adhesion is selected, and it is a Player train
-            if (Simulator.UseAdvancedAdhesion && IsPlayerTrain)
+            // Only apply slide, and advanced brake friction, if advanced adhesion is selected, simplecontrolphysics is not set, and it is a Player train
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
             {
 
                 // Get user defined brake shoe coefficient if defined in WAG file
@@ -1410,8 +1415,6 @@ namespace Orts.Simulation.RollingStocks
 
                         RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
 
-                        //     Trace.TraceInformation("WagonWheels {0} DriveWheels {1} WheelRadius {2} Axles {3} Bogies {4}", WagonNumWheels, LocoNumDrvWheels, DriverWheelRadiusM, Axles, Bogies);
-
                         // Calculate the number of axles in a car
 
                         if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
@@ -1465,17 +1468,16 @@ namespace Orts.Simulation.RollingStocks
                             else // assume steam locomotive
                             {
 
-                                if (LocoNumDrvWheels >= Axles) // Test to see if ENG file value is too big (typically doubled)
+                                if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
                                 {
-                                    LocoNumDrvWheels = LocoNumDrvWheels / 2.0f;  // Appears this might be the number of wheels rather then the axles.
+                                    LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
                                 }
 
                                 //    Approximation for calculating rigid wheelbase for steam locomotives
                                 // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
 
-                                RigidWheelBaseM = 1.25f * (LocoNumDrvWheels - 1.0f) * (DriverWheelRadiusM * 2.0f);
-                                //  Trace.TraceInformation("Drv {0} Radius {1}", LocoNumDrvWheels, DriverWheelRadiusM);
-
+                                RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
+ 
                             }
 
                         }
@@ -1522,11 +1524,12 @@ namespace Orts.Simulation.RollingStocks
                 ThrottlePercent,
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
-                FormatStrings.FormatPower((MotiveForceN - DynamicBrakeForceN) * SpeedMpS, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN - DynamicBrakeForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""));
+                FormatStrings.FormatPower((MotiveForceN) * SpeedMpS, IsMetric, false, false),
+                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""));
         }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }
+        public virtual string GetBrakemanBrakeStatus() { return null; }
         public virtual string GetDynamicBrakeStatus() { return null; }
         public virtual bool GetSanderOn() { return false; }
         protected bool WheelHasBeenSet = false; //indicating that the car shape has been loaded, thus no need to reset the wheels
@@ -1636,7 +1639,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 var loco = this as MSTSLocomotive;
                 var i = (int)CabViewType.Front;
-                if (loco == null || loco.CabView3D == null) return false;
+                if (loco == null || loco.CabView3D == null || loco.CabView3D.CabViewType != CabViewType.Front) return false;
                 return (loco.CabView3D.ViewPointList.Count > i);
             }
         }

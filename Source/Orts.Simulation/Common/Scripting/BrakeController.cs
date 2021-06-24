@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace ORTS.Scripting.Api
 {
-    public abstract class BrakeController : AbstractScriptClass
+    public abstract class BrakeController : AbstractTrainScriptClass
     {
         /// <summary>
         /// True if the driver has asked for an emergency braking (push button)
@@ -37,6 +37,14 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> TCSFullServiceBraking;
         /// <summary>
+        /// True if the driver has pressed the Quick Release button
+        /// </summary>
+        public Func<bool> QuickReleaseButtonPressed;
+        /// <summary>
+        /// True if the driver has pressed the Overcharge button
+        /// </summary>
+        public Func<bool> OverchargeButtonPressed;
+        /// <summary>
         /// Main reservoir pressure
         /// </summary>
         public Func<float> MainReservoirPressureBar;
@@ -45,6 +53,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> MaxPressureBar;
         /// <summary>
+        /// Maximum pressure in the brake pipes when they are overcharged
+        /// </summary>
+        public Func<float> MaxOverchargePressureBar;
+        /// <summary>
         /// Release rate of the equalizing reservoir
         /// </summary>
         public Func<float> ReleaseRateBarpS;
@@ -52,6 +64,14 @@ namespace ORTS.Scripting.Api
         /// Quick release rate of the equalizing reservoir
         /// </summary>
         public Func<float> QuickReleaseRateBarpS;
+        /// <summary>
+        /// Pressure decrease rate of equalizing reservoir when eliminating overcharge
+        /// </summary>
+        public Func<float> OverchargeEliminationRateBarpS;
+        /// <summary>
+        /// Slow application rate of the equalizing reservoir
+        /// </summary>
+        public Func<float> SlowApplicationRateBarpS;
         /// <summary>
         /// Apply rate of the equalizing reservoir
         /// </summary>
@@ -101,6 +121,10 @@ namespace ORTS.Scripting.Api
         /// Sets the state of the brake pressure (1 = increasing, -1 = decreasing)
         /// </summary>
         public Action<float> SetUpdateValue;
+        /// <summary>
+        /// Sets the dynamic brake intervention value
+        /// </summary>
+        public Action<float> SetDynamicBrakeIntervention;
 
         /// <summary>
         /// Called once at initialization time.
@@ -210,13 +234,24 @@ namespace ORTS.Scripting.Api
         Hold,                   // TrainBrakesControllerHoldStart
 
         // OR values
+        StrBrkReleaseOn,      // TrainBrakesControllerStraightBrakingReleaseOnStart
+        StrBrkReleaseOff,     // TrainBrakesControllerStraightBrakingReleaseOffStart
+        StrBrkRelease,      // TrainBrakesControllerStraightBrakingReleaseStart
+        StrBrkLap,          // TrainBrakesControllerStraightBrakingLapStart
+        StrBrkApply,        // TrainBrakesControllerStraightBrakingApplyStart
+        StrBrkApplyAll,     // TrainBrakesControllerStraightBrakingApplyAllStart
+        StrBrkEmergency,    // TrainBrakesControllerStraightBrakingEmergencyStart
         Overcharge,         // Overcharge
         EBPB,               // Emergency Braking Push Button
         TCSEmergency,       // TCS Emergency Braking
         TCSFullServ,        // TCS Full Service Braking
-        VacContServ,         // TrainBrakesControllerVacuumContinuousServiceStart
-        VacApplyContServ,    // TrainBrakesControllerVacuumApplyContinuousServiceStart
-        BrakeNotch           // EngineBrakesControllerBrakeNotchStart
+        VacContServ,        // TrainBrakesControllerVacuumContinuousServiceStart
+        VacApplyContServ,   // TrainBrakesControllerVacuumApplyContinuousServiceStart
+        ManualBraking,      // BrakemanBrakesControllerManualBraking
+        BrakeNotch,         // EngineBrakesControllerBrakeNotchStart
+        EPOnly,             // TrainBrakesControllerEPOnlyStart
+        EPFullServ,         // TrainBrakesControllerEPFullServiceStart
+        SlowService,        // TrainBrakesControllerSlowServiceStart
     };
 
     public static class ControllerStateDictionary
@@ -242,13 +277,24 @@ namespace ORTS.Scripting.Api
             {ControllerState.FullServ, Catalog.GetString("Full Service")},
             {ControllerState.MinimalReduction, Catalog.GetString("Minimum Reduction")},
             {ControllerState.Hold, Catalog.GetString("Hold")},
+            {ControllerState.StrBrkReleaseOn, Catalog.GetString("Str. Brk. Release On:")},
+            {ControllerState.StrBrkReleaseOff, Catalog.GetString("Str. Brk. Release Off:")},
+            {ControllerState.StrBrkRelease, Catalog.GetString("Str. Brk. Release:")},
+            {ControllerState.StrBrkLap, Catalog.GetString("Str. Brk. Lap:")},
+            {ControllerState.StrBrkApply, Catalog.GetString("Str. Brk. Apply:")},
+            {ControllerState.StrBrkApplyAll, Catalog.GetString("Str. Brk. Apply All:")},
+            {ControllerState.StrBrkEmergency, Catalog.GetString("Str. Brk. Emerg:")},
             {ControllerState.Overcharge, Catalog.GetString("Overcharge")},
             {ControllerState.EBPB, Catalog.GetString("Emergency Braking Push Button")},
             {ControllerState.TCSEmergency, Catalog.GetString("TCS Emergency Braking")},
             {ControllerState.TCSFullServ, Catalog.GetString("TCS Full Service Braking")},
             {ControllerState.VacContServ, Catalog.GetString("Vac. Cont. Service")},
             {ControllerState.VacApplyContServ, Catalog.GetString("Vac. Apply Cont. Service")},
-            {ControllerState.BrakeNotch, Catalog.GetString("Notch")}
+            {ControllerState.ManualBraking, Catalog.GetString("Manual Braking")},
+            {ControllerState.BrakeNotch, Catalog.GetString("Notch")},
+            {ControllerState.EPOnly, Catalog.GetString("EP Service")},
+            {ControllerState.EPFullServ, Catalog.GetString("EP Full Service")},
+            {ControllerState.SlowService, Catalog.GetString("Slow service")}
         };
     }
 }
