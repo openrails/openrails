@@ -4280,7 +4280,7 @@ namespace Orts.Simulation.RollingStocks
                                 if (FilteredMotiveForceN != 0)
                                     data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
                                 else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * rangeFactor;
+                                    data = this.LocomotiveAxle.DriveForceN / MaxForceN * rangeFactor;
                                 data = Math.Abs(data);
                             }
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
@@ -4326,7 +4326,7 @@ namespace Orts.Simulation.RollingStocks
                             if (FilteredMotiveForceN != 0)
                                 data = this.FilteredMotiveForceN / MaxForceN * MaxCurrentA;
                             else
-                                data = this.LocomotiveAxle.AxleForceN / MaxForceN * MaxCurrentA;
+                                data = this.LocomotiveAxle.DriveForceN / MaxForceN * MaxCurrentA;
                             data = Math.Abs(data);
                         }
                         if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
@@ -4347,7 +4347,7 @@ namespace Orts.Simulation.RollingStocks
                         if (FilteredMotiveForceN != 0)
                             data = this.FilteredMotiveForceN;
                         else
-                            data = this.LocomotiveAxle.AxleForceN;
+                            data = this.LocomotiveAxle.DriveForceN;
                         if (DynamicBrakePercent > 0)
                         {
                             data = DynamicBrakeForceN;
@@ -4395,7 +4395,7 @@ namespace Orts.Simulation.RollingStocks
                         if (FilteredMotiveForceN != 0)
                             data = Math.Abs(this.FilteredMotiveForceN);
                         else
-                            data = Math.Abs(this.LocomotiveAxle.AxleForceN);
+                            data = Math.Abs(this.LocomotiveAxle.DriveForceN);
                         if (DynamicBrakePercent > 0)
                         {
                             data = -Math.Abs(DynamicBrakeForceN);
