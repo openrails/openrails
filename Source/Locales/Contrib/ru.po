@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2021-03-21 10:35:04+0300\n"
-"PO-Revision-Date: 2021-03-21 11:13+0300\n"
+"POT-Creation-Date: 2021-06-26 12:00:35+0300\n"
+"PO-Revision-Date: 2021-06-26 12:13+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
@@ -71,7 +71,7 @@ msgstr "Продолжительность"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:85
 msgid "Pre-delay :"
-msgstr ""
+msgstr "Предварительная задержка :"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:100
 msgid "ControlStartProperties"
@@ -111,7 +111,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:93
 msgid "HornProperties"
-msgstr ""
+msgstr "Свойства гудка"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:100
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:111
@@ -185,7 +185,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:105
 msgid "Place Name : "
-msgstr ""
+msgstr "Название места : "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:115
 msgid "WAIT Activity Description"
@@ -294,7 +294,7 @@ msgstr "Задать границы станции"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:380
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:273
 msgid "Station Configuration"
-msgstr ""
+msgstr "Параметры станции"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:389
 msgid "Add Tag"
@@ -647,11 +647,11 @@ msgstr "&Готово"
 
 #: ../../Contrib/ActivityEditor/AEWizard/ExteriorWizardPage.cs:72
 msgid "Welcome to the Sample Setup Wizard"
-msgstr ""
+msgstr "Добро пожаловать в Мастер настройки образца"
 
 #: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:105
 msgid "Sample Header Title"
-msgstr ""
+msgstr "Название образца"
 
 #: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:114
 msgid ""
@@ -1060,7 +1060,7 @@ msgstr "Сохранение битых маршрутов может не ра�
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:111
 msgid "The MSTS format for defining broken paths is not understood very well."
-msgstr ""
+msgstr "Формат описания битых путей в MSTS не очень хорошо понятен."
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:112
 msgid "Reopening it in TrackViewer, however, is likely to work."
@@ -1080,7 +1080,7 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:276
 msgid "Dangling siding node"
-msgstr ""
+msgstr "Непарный узел бокового пути"
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:278
 msgid "Unknown"
@@ -1098,7 +1098,6 @@ msgid "1"
 msgstr "1"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:148
-#| msgid "1"
 msgid "11"
 msgstr "11"
 
