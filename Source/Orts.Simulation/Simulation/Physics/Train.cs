@@ -331,8 +331,28 @@ namespace Orts.Simulation.Physics
             UNDEFINED
         }
 
-        public TRAIN_CONTROL ControlMode = TRAIN_CONTROL.UNDEFINED;     // train control mode
-        public TRAIN_CONTROL PreviousControlMode = TRAIN_CONTROL.UNDEFINED; // set when train is out of control
+        private TRAIN_CONTROL controlMode = TRAIN_CONTROL.UNDEFINED;
+
+        /// <summary>
+        /// Train control mode
+        /// </summary>
+        public TRAIN_CONTROL ControlMode
+        {
+            get => controlMode;
+            set
+            {
+                if (value == TRAIN_CONTROL.OUT_OF_CONTROL && controlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+                    ControlModeBeforeOutOfControl = controlMode;
+                else
+                    ControlModeBeforeOutOfControl = TRAIN_CONTROL.UNDEFINED;
+                controlMode = value;
+            }
+        }
+
+        /// <summary>
+        /// Set when the train is out of control
+        /// </summary>
+        private TRAIN_CONTROL ControlModeBeforeOutOfControl = TRAIN_CONTROL.UNDEFINED;
 
         public enum OUTOFCONTROL
         {
@@ -9683,7 +9703,6 @@ namespace Orts.Simulation.Physics
             // set explorer mode
 
             ControlMode = TRAIN_CONTROL.EXPLORER;
-            PreviousControlMode = TRAIN_CONTROL.UNDEFINED;
 
             // reset routes and check sections either end of train
 
@@ -9722,7 +9741,6 @@ namespace Orts.Simulation.Physics
             // in auto mode, use forward direction only
 
             ControlMode = TRAIN_CONTROL.AUTO_SIGNAL;
-            PreviousControlMode = TRAIN_CONTROL.UNDEFINED;
             thisSignal.requestClearSignal(ValidRoute[0], routedForward, 0, false, null);
 
             // enable any none-NORMAL signals between front of train and first NORMAL signal
@@ -9798,7 +9816,6 @@ namespace Orts.Simulation.Physics
             int endListIndex = -1;
 
             ControlMode = TRAIN_CONTROL.AUTO_NODE;
-            PreviousControlMode = TRAIN_CONTROL.UNDEFINED;
             EndAuthorityType[0] = END_AUTHORITY.NO_PATH_RESERVED;
             IndexNextSignal = -1; // no next signal in Node Control
 
@@ -9961,7 +9978,6 @@ namespace Orts.Simulation.Physics
             // set manual mode
 
             ControlMode = TRAIN_CONTROL.MANUAL;
-            PreviousControlMode = TRAIN_CONTROL.UNDEFINED;
 
             // reset routes and check sections either end of train
 
@@ -10404,7 +10420,6 @@ namespace Orts.Simulation.Physics
 
                 // set control state and issue warning
 
-                PreviousControlMode = ControlMode;
                 ControlMode = TRAIN_CONTROL.OUT_OF_CONTROL;
 
                 var report = string.Format("Train {0} is out of control and will be stopped. Reason : ", Number.ToString());
@@ -10474,7 +10489,7 @@ namespace Orts.Simulation.Physics
                         case OUTOFCONTROL.SPAD:
                         case OUTOFCONTROL.SPAD_REAR:
                         case OUTOFCONTROL.MISALIGNED_SWITCH:
-                            switch (PreviousControlMode)
+                            switch (ControlModeBeforeOutOfControl)
                             {
                                 case TRAIN_CONTROL.AUTO_NODE:
                                     SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
