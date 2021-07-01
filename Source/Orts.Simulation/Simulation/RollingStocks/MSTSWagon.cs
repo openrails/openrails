@@ -143,6 +143,7 @@ namespace Orts.Simulation.RollingStocks
         public float WheelSpeedMpS;
         public float WheelSpeedSlipMpS; // speed of wheel if locomotive is slipping
         public float SlipWarningThresholdPercent = 70;
+        public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
         public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
 
@@ -471,24 +472,6 @@ namespace Orts.Simulation.RollingStocks
             MaxBrakeForceN = InitialMaxBrakeForceN;
             CentreOfGravityM = InitialCentreOfGravityM;
             IsDavisFriction = DavisAN != 0 && DavisBNSpM != 0 && DavisCNSSpMM != 0; // test to see if OR thinks that Davis Values have been entered in WG file.
-
-            // Initialise car body lengths. Assume overhang is 2.0m each end, and bogie centres are the car length minus this value
-
-
-            if (CarCouplerFaceLengthM == 0)
-            {
-                CarCouplerFaceLengthM = CarLengthM;
-            }
-
-            if (CarBodyLengthM == 0)
-            {
-                CarBodyLengthM = CarCouplerFaceLengthM - 0.8f;
-            }
-
-            if (CarBogieCentreLengthM == 0)
-            {
-                CarBogieCentreLengthM = (CarCouplerFaceLengthM - 4.3f);
-            }
 
             if (FreightAnimations != null)
             {
@@ -929,9 +912,6 @@ namespace Orts.Simulation.RollingStocks
                     CarLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(ortslengthcouplerface": CarCouplerFaceLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortstrackgauge":
                     stf.MustMatch("(");
                     TrackGaugeM = stf.ReadFloat(STFReader.UNITS.Distance, null);
@@ -969,7 +949,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsheatingwindowderatingfactor": WindowDeratingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; // Temperature conversion is incorrect - to be checked!!!
                 case "wagon(ortsheatingcompartmentpipeareafactor": CompartmentHeatingPipeAreaFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(ortsheatingtrainpipeouterdiameter": BodyPipeOverhangDistanceM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsheatingtrainpipeouterdiameter": MainSteamHeatPipeOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsheatingtrainpipeinnerdiameter": MainSteamHeatPipeInnerDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsheatingconnectinghoseinnerdiameter": CarConnectSteamHoseInnerDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsheatingconnectinghoseouterdiameter": CarConnectSteamHoseOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1208,9 +1188,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(inside": HasInsideView = true; ParseWagonInside(stf); break;
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
-                case "wagon(numwheels": WagonNumAxles = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
-                case "wagon(ortsnumaxles": WagonNumAxles = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
-                case "wagon(ortsnumbogies": WagonNumBogies = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
+                case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
                 case "wagon(ortspantographs":
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
@@ -1277,11 +1255,6 @@ namespace Orts.Simulation.RollingStocks
             InitialCentreOfGravityM = copy.InitialCentreOfGravityM;
             UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
-            WagonNumAxles = copy.WagonNumAxles;
-            WagonNumBogies = copy.WagonNumBogies;
-            CarBogieCentreLengthM = copy.CarBogieCentreLengthM;
-            CarBodyLengthM = copy.CarBodyLengthM;
-            CarCouplerFaceLengthM = copy.CarCouplerFaceLengthM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             MassKG = copy.MassKG;
             InitialMassKG = copy.InitialMassKG;
@@ -1296,7 +1269,7 @@ namespace Orts.Simulation.RollingStocks
             WindowDeratingFactor = copy.WindowDeratingFactor;
             DesiredCompartmentTempSetpointC = copy.DesiredCompartmentTempSetpointC;
             CompartmentHeatingPipeAreaFactor = copy.CompartmentHeatingPipeAreaFactor;
-            BodyPipeOverhangDistanceM = copy.BodyPipeOverhangDistanceM;
+            MainSteamHeatPipeOuterDiaM = copy.MainSteamHeatPipeOuterDiaM;
             MainSteamHeatPipeInnerDiaM = copy.MainSteamHeatPipeInnerDiaM;
             CarConnectSteamHoseInnerDiaM = copy.CarConnectSteamHoseInnerDiaM;
             CarConnectSteamHoseOuterDiaM = copy.CarConnectSteamHoseOuterDiaM;
