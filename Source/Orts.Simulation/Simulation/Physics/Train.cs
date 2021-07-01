@@ -2218,7 +2218,7 @@ namespace Orts.Simulation.Physics
 
                         // Calculate Length of carriage and heat loss in main steam pipe
                         float CarMainSteamPipeTempF = mstsLocomotive.SteamHeatPressureToTemperaturePSItoF[car.CarSteamHeatMainPipeSteamPressurePSI];
-                        car.CarHeatSteamMainPipeHeatLossBTU = Me.ToFt(car.CarLengthM) * (MathHelper.Pi * Me.ToFt(car.MainSteamHeatPipeOuterDiaM)) * HeatTransCoeffMainPipeBTUpFt2pHrpF * (CarMainSteamPipeTempF - C.ToF(car.CarOutsideTempC));
+                        car.CarHeatSteamMainPipeHeatLossBTU = Me.ToFt(car.CarLengthM) * (MathHelper.Pi * Me.ToFt(car.BodyPipeOverhangDistanceM)) * HeatTransCoeffMainPipeBTUpFt2pHrpF * (CarMainSteamPipeTempF - C.ToF(car.CarOutsideTempC));
 
                         // calculate steam connecting hoses heat loss - assume 1.5" hose
                         float ConnectSteamHoseOuterDiaFt = Me.ToFt(car.CarConnectSteamHoseOuterDiaM);                 
