@@ -190,6 +190,9 @@ namespace Orts.Simulation.RollingStocks
         public bool HasPassengerCapacity = false;
         public bool HasInsideView = false;
         public float CarHeightAboveSeaLevelM;
+        public float CarBogieCentreLengthM;
+        public float CarBodyLengthM;
+        public float CarCouplerFaceLengthM;
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
@@ -488,8 +491,9 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeForceN = 0f; // Raw dynamic brake force for diesel and electric locomotives
 
         // Derailment variables
-        public float WagonVerticalDerailForceN; // Vertical force of wagon/car - essentially determined by the weight
+        public float TotalWagonVerticalDerailForceN; // Vertical force of wagon/car - essentially determined by the weight
         public float TotalWagonLateralDerailForceN;
+        public float DerailmentCoefficient;
         public float LateralWindForceN;
         public float WagonFrontCouplerAngleRad;
         public float WagonRearCouplerAngleRad;
@@ -497,9 +501,7 @@ namespace Orts.Simulation.RollingStocks
         public float AdjustedWagonRearCouplerAngleRad;
         public float WagonFrontCouplerCurveExtM;
         public float WagonRearCouplerCurveExtM;
-        //        public float WagonVerticalForceN; // Vertical force of wagon/car - essentially determined by the weight
-
-
+        public float WagonCouplerAngleDerailRad;
         public bool BuffForceExceeded;
 
         // filter curve force for audio to prevent rapid changes.
@@ -559,6 +561,7 @@ namespace Orts.Simulation.RollingStocks
         protected float SuperelevationM; // Super elevation on the curve
         protected float UnbalancedSuperElevationM;  // Unbalanced superelevation, read from MSTS Wagon File
         protected float SuperElevationTotalM; // Total superelevation
+        public float SuperElevationAngleRad;
         protected bool IsMaxSafeCurveSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
         public bool IsCriticalMaxSpeed = false; // Has the critical maximum speed around the curve been reached, is the wagon about to overturn?
         public bool IsCriticalMinSpeed = false; // Is the speed less then the minimum required for the wagon to travel around the curve
@@ -571,6 +574,7 @@ namespace Orts.Simulation.RollingStocks
         protected int LocoNumDrvAxles; // Number of drive axles on locomotive
         protected float MSTSLocoNumDrvWheels; // Number of drive axles on locomotive - used to read MSTS value as default
         public float DriverWheelRadiusM = Me.FromIn(30.0f); // Drive wheel radius of locomotive wheels - Wheel radius of loco drive wheels can be anywhere from about 10" to 40".
+        public float WagonNumBogies;
 
         public enum SteamEngineTypes
         {
@@ -1072,30 +1076,25 @@ namespace Orts.Simulation.RollingStocks
 
         public void UpdateTrainDerailmentRisk()
         {
-            // Train will derail if lateral forces on the train exceed the vertical forces holding the train on the railway track. 
-            // Typically the train is most at risk when travelling around a curve
+            // Calculate coupler angle when travelling around curve
+            // To achieve an accurate coupler angle calculation the following length need to be calculated. These values can be included in the ENG/WAG file for greatest accuracy, or alternatively OR will
+            // calculate some default values based upon the length of the car specified in the "Size" statement. This value may however be inaccurate, and sets the "visual" distance for placement of the 
+            // animated coupler. So often it is a good idea to add the values in the WAG file.
 
-            // Based upon ??????
+            var OverhangThisCarM = 0.5f * (CarBodyLengthM - CarBogieCentreLengthM); // Vehicle overhang - B
+            var BogieDistanceThisCarM = 0.5f * CarBogieCentreLengthM; // 0.5 * distance between bogie centres - A
+            var CouplerDistanceThisCarM = 0.5f * (CarCouplerFaceLengthM - CarBodyLengthM);
 
-            // Calculate Lateral forces
-
-            foreach (var w in WheelAxles)
+            var OverhangBehindCarM = 2.545f;  // Vehicle overhang - B
+            var BogieDistanceBehindCarM = 8.23f;  // 0.5 * distance between bogie centres - A
+            var CouplerDistanceBehindCarM = 0.5f * (CarCouplerFaceLengthM - CarBodyLengthM);
+            if (CarBehind != null)
             {
- //               Trace.TraceInformation("Car ID {0} Length {1} Bogie {2} Offset {3} MAtrix {4}", CarID, CarLengthM,  w.BogieIndex, w.OffsetM, w.BogieMatrix);
-
+                OverhangBehindCarM = 0.5f * (CarBehind.CarBodyLengthM - CarBehind.CarBogieCentreLengthM);  // Vehicle overhang - B
+                BogieDistanceBehindCarM = 0.5f * CarBehind.CarBogieCentreLengthM;  // 0.5 * distance between bogie centres - A
+                CouplerDistanceBehindCarM = 0.5f * (CarBehind.CarCouplerFaceLengthM - CarBehind.CarBodyLengthM);
             }
 
-            // Calculate the vertival force on the wheel of the car, to determine whether wagon derails or not
-            WagonVerticalDerailForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction;
-
-
-
-            // Calculate coupler angle when travelling around curve
-
-            float OverhangThisCarM = 2.545f; // Vehicle overhang - B
-            float OverhangBehindCarM = 2.545f;  // Vehicle overhang - B
-            float BogieDistanceThisCarM = 8.23f; // 0.5 * distance between bogie centres - A
-            float BogieDistanceBehindCarM = 8.23f;  // 0.5 * distance between bogie centres - A
             float CouplerAlphaAngleRad;
             float CouplerBetaAngleRad;
             float CouplerGammaAngleRad;
@@ -1104,7 +1103,14 @@ namespace Orts.Simulation.RollingStocks
             float finalCouplerBetaAngleRad;
             float finalCouplerGammaAngleRad;
 
-            float BogieCentresAdjVehiclesM = OverhangThisCarM + OverhangBehindCarM + CouplerSlackM; // L value = Overhangs + Coupler spacing
+            var couplerDistanceM = CouplerDistanceThisCarM + CouplerDistanceBehindCarM + CouplerSlackM;
+
+            if (couplerDistanceM == 0)
+            {
+                couplerDistanceM = 0.0001f; // Stop couplerDistance equalling zero as this causes NaN calculations in following calculations.
+            }
+
+            float BogieCentresAdjVehiclesM = OverhangThisCarM + OverhangBehindCarM + couplerDistanceM; // L value = Overhangs + Coupler spacing - D
 
             if (CarBehind != null)
             {
@@ -1149,13 +1155,6 @@ namespace Orts.Simulation.RollingStocks
 
                     float finalAngleBetweenCarbodies = finalCouplerAlphaAngleRad + finalCouplerBetaAngleRad + 2.0f * finalCouplerGammaAngleRad;
 
-                    var couplerDistanceM = CouplerSlackM;
-
-                    if (couplerDistanceM == 0)
-                    {
-                        couplerDistanceM = 0.0001f; // Stop couplerDistance equalling zero as this causes NaN calculations in following calculations.
-                    }
-
                     // Find maximum coupler angle expected in this curve, ie both cars will be on the curve
                     var finalWagonRearCouplerAngleRad = (BogieCentresAdjVehiclesM * (finalCouplerGammaAngleRad + finalCouplerAlphaAngleRad) - OverhangBehindCarM * finalAngleBetweenCarbodies) / couplerDistanceM;
                     var finalWagonFrontCouplerAngleRad = (BogieCentresAdjVehiclesM * (finalCouplerGammaAngleRad + finalCouplerBetaAngleRad) - OverhangThisCarM * finalAngleBetweenCarbodies) / couplerDistanceM;
@@ -1170,7 +1169,7 @@ namespace Orts.Simulation.RollingStocks
                         CarBehind.WagonFrontCouplerAngleRad = MathHelper.Clamp(CarBehind.WagonFrontCouplerAngleRad, 0, finalWagonFrontCouplerAngleRad);
 
                     }
-                    else if (CurrentCurveRadius != 0 && CarBehind.CurrentCurveRadius != 0)
+                    else if (CurrentCurveRadius != 0 && CarBehind.CurrentCurveRadius != 0) // both cars on the curve
                     {
                         // Find coupler angle for rear coupler on the car
                         WagonRearCouplerAngleRad = (BogieCentresAdjVehiclesM * (CouplerGammaAngleRad + CouplerAlphaAngleRad) - OverhangBehindCarM * AngleBetweenCarbodies) / couplerDistanceM;
@@ -1219,17 +1218,68 @@ namespace Orts.Simulation.RollingStocks
                     {
                         AdjustedWagonRearCouplerAngleRad = 0.0f;
                         CarBehind.AdjustedWagonFrontCouplerAngleRad = 0.0f;
+                        WagonRearCouplerAngleRad = 0;
+                        CarBehind.WagonFrontCouplerAngleRad = 0;
+                        CarAhead.WagonRearCouplerAngleRad = 0;
                     }
                 }
             }
 
-            // Lateral Force = Coupler force x Sin (Coupler Angle)
-            float CouplerLateralForceN = CouplerForceU * (float)Math.Sin(WagonFrontCouplerAngleRad);
+            // Train will derail if lateral forces on the train exceed the vertical forces holding the train on the railway track.
+            // Coupler force is calculated at the rear of each car, so calculation values may need to be from the car ahead. 
+            // Typically the train is most at risk when travelling around a curve.
+            // Calculate the vertical force on the wheel of the car, to determine whether wagon derails or not
+            // To calculate vertical force on outer wheel = (WagMass / NumWheels) * gravity + WagMass / NumAxles * ( (Speed^2 / CurveRadius) - (gravity * superelevation angle)) * (height * track width)
 
+            WagonCouplerAngleDerailRad = Math.Abs(WagonRearCouplerAngleRad);
+            var numWheels = WagonNumAxles * 2;
 
-            TotalWagonLateralDerailForceN = CouplerLateralForceN;
+            // Trace.TraceInformation("Wagon Values - CarID {0} Axles {1} Bogies {2} Wheels {3}", CarID, WagonNumAxles, WagonNumBogies, numWheels);
 
-            if (TotalWagonLateralDerailForceN > WagonVerticalDerailForceN)
+            if (CurrentCurveRadius != 0)
+            {
+
+                var A = MassKG * GravitationalAccelerationMpS2 / numWheels;
+                var B1 = (MassKG / WagonNumAxles) * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                var B2 = GravitationalAccelerationMpS2 * (float)Math.Cos(SuperElevationAngleRad);
+                var B3 = CentreOfGravityM.Y / TrackGaugeM;
+
+                TotalWagonVerticalDerailForceN = A + (B1 - B2) * B3;
+
+                // Calculate lateral force per wheelset on the first bogie
+                // Lateral Force = (Coupler force x Sin (Coupler Angle) / NumBogies) + WagMass / NumAxles * ( (Speed^2 / CurveRadius) - (gravity * superelevation angle))
+
+                if (CarAhead != null)
+                {
+                    var AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
+                    var BB1 = MassKG / WagonNumAxles;
+                    var BB2 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                    var BB3 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
+
+                    TotalWagonLateralDerailForceN = AA1 + BB1 * (BB2 - BB3);
+                }
+
+                DerailmentCoefficient = Math.Abs(TotalWagonLateralDerailForceN / TotalWagonVerticalDerailForceN);
+
+                // use the dynamic multiplication coefficient to calculate final derailment coefficient
+                if (CarOnJunction)
+                {
+                    DerailmentCoefficient *= 3.1f;
+                }
+                else
+                {
+                    DerailmentCoefficient *= 2.0f;
+                }
+
+            }
+            else
+            {
+                TotalWagonLateralDerailForceN = 0;
+                TotalWagonVerticalDerailForceN = 0;
+                DerailmentCoefficient = 0;
+            }
+
+            if (TotalWagonLateralDerailForceN > TotalWagonVerticalDerailForceN)
             {
                 BuffForceExceeded = true;
             }
@@ -1420,7 +1470,7 @@ namespace Orts.Simulation.RollingStocks
 
                     SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.0001f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value, having a value of zero causes problems with calculations
 
-                    float SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Total superelevation includes both balanced and unbalanced superelevation
+                    SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Total superelevation includes both balanced and unbalanced superelevation
 
                     MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM); // Used for calculating curve resistance
 
@@ -2430,6 +2480,7 @@ namespace Orts.Simulation.RollingStocks
 
         #region Traveller-based updates
         public float CurrentCurveRadius;
+        public bool CarOnJunction;
 
         internal void UpdatedTraveler(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
         {
@@ -2440,6 +2491,7 @@ namespace Orts.Simulation.RollingStocks
             CurrentCurveRadius = traveler.GetCurveRadius();
             UpdateVibrationAndTilting(traveler, elapsedTimeS, distanceM, speedMpS);
             UpdateSuperElevation(traveler, elapsedTimeS);
+            CarOnJunction = traveler.IsJunction;
         }
         #endregion
 

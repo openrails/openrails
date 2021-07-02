@@ -455,6 +455,18 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            if (WagonNumBogies == 0)
+            {
+
+                WagonNumBogies = 2; // Set 2 bogies as default
+
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Number of Wagon bogies set to default value of {0}", WagonNumBogies);
+                }
+            }
+
             // Initialise steam heat parameters
             if (TrainHeatBoilerWaterUsageGalukpH == null) // If no table entered in WAG file, then use the default table
             {
@@ -507,6 +519,38 @@ namespace Orts.Simulation.RollingStocks
             if (WagonFrontalAreaM2 == 0)
             {
                 WagonFrontalAreaM2 = CarWidthM * CarHeightM;
+            }
+
+            // Initialise car body lengths.
+
+            if (CarCouplerFaceLengthM == 0)
+            {
+                CarCouplerFaceLengthM = CarLengthM;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Length over couplers set to default value of {0}", CarCouplerFaceLengthM);
+                }
+            }
+
+            if (CarBodyLengthM == 0)
+            {
+                CarBodyLengthM = CarCouplerFaceLengthM - 0.8f; // 0.8 - Type F coupler length out of car
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Length over car ends set to default value of {0}", CarBodyLengthM);
+                }
+            }
+
+            if (CarBogieCentreLengthM == 0)
+            {
+                CarBogieCentreLengthM = (CarCouplerFaceLengthM - 4.3f);
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Length over bogie centres set to default value of {0}", CarBogieCentreLengthM);
+                }
             }
 
             // Initialise key wagon parameters
@@ -957,6 +1001,9 @@ namespace Orts.Simulation.RollingStocks
                     CarLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortslengthcouplerface": CarCouplerFaceLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortstrackgauge":
                     stf.MustMatch("(");
                     TrackGaugeM = stf.ReadFloat(STFReader.UNITS.Distance, null);
@@ -1240,6 +1287,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
                 case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
                 case "wagon(ortsnumberaxles": WagonNumAxles = stf.ReadIntBlock(null); break;
+                case "wagon(ortsnumberbogies": WagonNumBogies = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
                 case "wagon(ortspantographs":
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
@@ -1306,11 +1354,15 @@ namespace Orts.Simulation.RollingStocks
             InitialCentreOfGravityM = copy.InitialCentreOfGravityM;
             UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
+            WagonNumAxles = copy.WagonNumAxles;
+            MSTSWagonNumWheels = copy.MSTSWagonNumWheels;
+            WagonNumBogies = copy.WagonNumBogies;
+            CarBogieCentreLengthM = copy.CarBogieCentreLengthM;
+            CarBodyLengthM = copy.CarBodyLengthM;
+            CarCouplerFaceLengthM = copy.CarCouplerFaceLengthM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
-            WagonNumAxles = copy.WagonNumAxles;
-            MSTSWagonNumWheels = copy.MSTSWagonNumWheels;
             MassKG = copy.MassKG;
             InitialMassKG = copy.InitialMassKG;
             WheelRadiusM = copy.WheelRadiusM;
