@@ -1,24 +1,34 @@
 @ECHO OFF
 SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 
-REM Get product version and code revision.
-SET Version=
-SET Revision=
-FOR /F "usebackq tokens=1* delims=-" %%V IN (`git describe --first-parent --always --long`) DO (
-	SET Version=%%V
-	SET Revision=%%W
+SET Mode=%~1%
+FOR /F "usebackq tokens=1-2 delims=-" %%A IN (`git describe --long --exclude=*-*`) DO (
+	SET Git.Tag=%%A
+	SET Git.Commits=%%B
 )
-IF "%~1%" == "Unstable" (
-	SET TZ=UTC
-	FOR /F "usebackq tokens=1* delims=-" %%V IN (`git log -1 --pretty^=format:^%%ad --date^=format-local:^%%Y^.%%m^.%%d-^%%H^%%M`) DO (
-		SET Version=%%V
-		SET Revision=%%W
-	)
-)
-IF "%Version%" == "" (
-	>&2 ECHO WARNING: No Git repository found.
-)
+FOR /F "usebackq tokens=1-4 delims=." %%A IN (`ECHO %Git.Tag%.0.0`) DO SET Revision=%%A.%%B.%%C.%Git.Commits%
+GOTO %Mode%
 
-REM Output version numbers.
+
+:stable
+FOR /F "usebackq tokens=* delims=-" %%A IN (`git describe`) DO SET Version=%%A
+GOTO :done
+
+
+:testing
+FOR /F "usebackq tokens=* delims=-" %%A IN (`git describe --long --exclude=*-*`) DO SET Version=%Mode:~0,1%%%A
+GOTO :done
+
+
+:unstable
+SET TZ=UTC
+FOR /F "usebackq tokens=1-4 delims=." %%A IN (`git log -1 --pretty^=format:%%ad --date=format-local:%%Y.%%m.%%d.%%H%%M`) DO (
+	SET Version=%Mode:~0,1%%%A.%%B.%%C-%%D
+	SET Revision=0.%%A.%%B%%C.%%D
+)
+GOTO :done
+
+
+:done
 ECHO OpenRails_Version=%Version%
 ECHO OpenRails_Revision=%Revision%
