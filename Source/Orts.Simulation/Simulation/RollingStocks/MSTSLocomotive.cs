@@ -2374,15 +2374,16 @@ namespace Orts.Simulation.RollingStocks
 
                 //Set axle model parameters
 
-                //LocomotiveAxle.BrakeForceN = FrictionForceN;
-                //  LocomotiveAxle.BrakeRetardForceN = BrakeForceN;
-
+                // Inputs
                 LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
-                LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;   //will be computed each time considering the tilting
-                LocomotiveAxle.DriveForceN = MotiveForceN;  //Total force applied to wheels
-                LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
-                LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
-                MotiveForceN = LocomotiveAxle.AxleForceN;           //Get the Axle force and use it for the motion
+                LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //will be computed each time considering the tilting
+                LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
+                LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle model
+                LocomotiveAxle.Update(elapsedClockSeconds);             //Main updater of the axle model
+         
+                // Output
+                MotiveForceN = LocomotiveAxle.CompensatedAxleForceN; //Get the Axle force and use it for the motion (use compensated value as it is independent of brake force)
+
                 if (elapsedClockSeconds > 0)
                 {
                     WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
@@ -4279,7 +4280,7 @@ namespace Orts.Simulation.RollingStocks
                                 if (FilteredMotiveForceN != 0)
                                     data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
                                 else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * rangeFactor;
+                                    data = this.LocomotiveAxle.DriveForceN / MaxForceN * rangeFactor;
                                 data = Math.Abs(data);
                             }
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
@@ -4325,7 +4326,7 @@ namespace Orts.Simulation.RollingStocks
                             if (FilteredMotiveForceN != 0)
                                 data = this.FilteredMotiveForceN / MaxForceN * MaxCurrentA;
                             else
-                                data = this.LocomotiveAxle.AxleForceN / MaxForceN * MaxCurrentA;
+                                data = this.LocomotiveAxle.DriveForceN / MaxForceN * MaxCurrentA;
                             data = Math.Abs(data);
                         }
                         if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
@@ -4346,7 +4347,7 @@ namespace Orts.Simulation.RollingStocks
                         if (FilteredMotiveForceN != 0)
                             data = this.FilteredMotiveForceN;
                         else
-                            data = this.LocomotiveAxle.AxleForceN;
+                            data = this.LocomotiveAxle.DriveForceN;
                         if (DynamicBrakePercent > 0)
                         {
                             data = DynamicBrakeForceN;
@@ -4394,7 +4395,7 @@ namespace Orts.Simulation.RollingStocks
                         if (FilteredMotiveForceN != 0)
                             data = Math.Abs(this.FilteredMotiveForceN);
                         else
-                            data = Math.Abs(this.LocomotiveAxle.AxleForceN);
+                            data = Math.Abs(this.LocomotiveAxle.DriveForceN);
                         if (DynamicBrakePercent > 0)
                         {
                             data = -Math.Abs(DynamicBrakeForceN);
