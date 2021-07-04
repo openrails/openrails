@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -20,7 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
@@ -53,6 +53,13 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var drawer in Exhaust)
                 drawer.Initialize(dieselTexture);
 
+            if (car.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
+                ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
+                (car.Train.MUDirection != Direction.N && (car as MSTSDieselLocomotive).DieselEngines[0].EngineStatus == Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Running))))
+            {
+                (car as MSTSDieselLocomotive).SignalEvent(Event.ReverserToForwardBackward);
+                (car as MSTSDieselLocomotive).SignalEvent(Event.ReverserChange);
+            }
         }
 
 
@@ -67,6 +74,7 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void InitializeUserInputCommands()
         {
+            UserInputCommands.Add(UserCommand.ControlVacuumExhausterPressed, new Action[] { () => new VacuumExhausterCommand(Viewer.Log, false), () => new VacuumExhausterCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlDieselPlayer, new Action[] { Noop, () => new TogglePlayerEngineCommand(Viewer.Log) });
             base.InitializeUserInputCommands();
         }

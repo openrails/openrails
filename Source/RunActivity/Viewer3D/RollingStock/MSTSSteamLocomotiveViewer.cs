@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -19,7 +19,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
@@ -37,6 +37,7 @@ namespace Orts.Viewer3D.RollingStock
         MSTSSteamLocomotive SteamLocomotive { get { return (MSTSSteamLocomotive)Car; } }
         List<ParticleEmitterViewer> Cylinders = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Cylinders2 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> Blowdown = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Drainpipe = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Injectors1 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Injectors2 = new List<ParticleEmitterViewer>();
@@ -45,6 +46,8 @@ namespace Orts.Viewer3D.RollingStock
         List<ParticleEmitterViewer> SafetyValves = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Stack = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Whistle = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SmallEjector = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> LargeEjector = new List<ParticleEmitterViewer>();
 
         public MSTSSteamLocomotiveViewer(Viewer viewer, MSTSSteamLocomotive car)
             : base(viewer, car)
@@ -62,13 +65,18 @@ namespace Orts.Viewer3D.RollingStock
                     Cylinders2.AddRange(emitter.Value);
                     car.Cylinder2SteamEffects = true;
                 }
-//          Not used in either MSTS or OR
-                else if (emitter.Key.ToLowerInvariant() == "drainpipefx")        // Drainpipe was not used in MSTS, and has no control
+                else if (emitter.Key.ToLowerInvariant() == "blowdownfx")
+                    Blowdown.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "drainpipefx")        // Drainpipe was not used in MSTS, and has no control set up for it
                     Drainpipe.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "injectors1fx")
                     Injectors1.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "injectors2fx")
                     Injectors2.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "smallejectorfx")
+                    SmallEjector.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "largeejectorfx")
+                    LargeEjector.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "compressorfx")
                     Compressor.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "generatorfx")
@@ -148,12 +156,14 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlFiringRateIncrease, new Action[] { () => SteamLocomotive.StopFiringRateIncrease(), () => SteamLocomotive.StartFiringRateIncrease(null) });
             UserInputCommands.Add(UserCommand.ControlFiringRateDecrease, new Action[] { () => SteamLocomotive.StopFiringRateDecrease(), () => SteamLocomotive.StartFiringRateDecrease(null) });
             UserInputCommands.Add(UserCommand.ControlFireShovelFull, new Action[] { Noop, () => new FireShovelfullCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlBlowdownValve, new Action[] { Noop, () => new ToggleBlowdownValveCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlCylinderCocks, new Action[] { Noop, () => new ToggleCylinderCocksCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlCylinderCompound, new Action[] { Noop, () => new ToggleCylinderCompoundCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommand.ControlTroughRefill, new Action[] { Noop, () => ToggleTroughRefill() });
             UserInputCommands.Add(UserCommand.ControlSmallEjectorIncrease, new Action[] { () => SteamLocomotive.StopSmallEjectorIncrease(), () => SteamLocomotive.StartSmallEjectorIncrease(null) });
             UserInputCommands.Add(UserCommand.ControlSmallEjectorDecrease, new Action[] { () => SteamLocomotive.StopSmallEjectorDecrease(), () => SteamLocomotive.StartSmallEjectorDecrease(null) });
-             base.InitializeUserInputCommands();
+            UserInputCommands.Add(UserCommand.ControlLargeEjectorIncrease, new Action[] { () => SteamLocomotive.StopLargeEjectorIncrease(), () => SteamLocomotive.StartLargeEjectorIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlLargeEjectorDecrease, new Action[] { () => SteamLocomotive.StopLargeEjectorDecrease(), () => SteamLocomotive.StartLargeEjectorDecrease(null) });
+            base.InitializeUserInputCommands();
         }
 
         /// <summary>
@@ -208,84 +218,6 @@ namespace Orts.Viewer3D.RollingStock
         }
 
         /// <summary>
-        /// Switches between refill start and refill end
-        /// </summary>
-        protected void ToggleTroughRefill()
-        {
-            if (SteamLocomotive.RefillingFromTrough) StopRefillingFromTrough(Viewer.Log);
-            else AttemptToRefillFromTrough();
-        }
-
-        /// <summary>
-        /// Checks if on trough. If not, tell that the scoop is destroyed; else, starts refilling
-        /// </summary>
-        public void AttemptToRefillFromTrough()
-        {
-            if (!SteamLocomotive.HasWaterScoop)
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("No scoop in this loco"));
-                return;
-            }
-            if (SteamLocomotive.ScoopIsBroken)
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Scoop is broken, can't refill"));
-                return;
-            }
-            if (!SteamLocomotive.IsOverTrough())
-            {
-                // Bad thing, scoop gets broken!
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Scoop broken because activated outside trough"));
-                return;
-            }
-            if (SteamLocomotive.SpeedMpS < SteamLocomotive.ScoopMinPickupSpeedMpS)
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must exceed {0}.",
-                    FormatStrings.FormatSpeedLimit(SteamLocomotive.ScoopMinPickupSpeedMpS, Viewer.MilepostUnitsMetric)));
-                return;
-            }
-            if (SteamLocomotive.SpeedMpS > SteamLocomotive.ScoopMaxPickupSpeedMpS)
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must not exceed {0}.",
-                    FormatStrings.FormatSpeedLimit(SteamLocomotive.ScoopMaxPickupSpeedMpS, Viewer.MilepostUnitsMetric)));
-                return;
-            }
-            var fraction = SteamLocomotive.GetFilledFraction((uint)MSTSWagon.PickupType.FuelWater);
-            if (fraction > 0.99)
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: {0} supply now replenished.",
-                    PickupTypeDictionary[(uint)MSTSWagon.PickupType.FuelWater]));
-                return;
-            }
-            else
-            {
-                MSTSWagon.RefillProcess.OkToRefill = true;
-                MSTSWagon.RefillProcess.ActivePickupObjectUID = -1;
-                SteamLocomotive.RefillingFromTrough = true;
-                SteamLocomotive.SignalEvent(Event.WaterScoopDown);
-                StartRefilling((uint)MSTSWagon.PickupType.FuelWater, fraction);
-            }
-
-        }
-
-        /// <summary>
-        /// Ends a continuous increase in controlled value.
-        /// </summary>
-        public void StopRefillingFromTrough(CommandLog log)
-        {
-            MSTSWagon.RefillProcess.OkToRefill = false;
-            MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
-            SteamLocomotive.RefillingFromTrough = false;
-            var controller = new MSTSNotchController();
-            controller = SteamLocomotive.GetRefillController((uint)MSTSWagon.PickupType.FuelWater);
-
-            new RefillCommand(log, controller.CurrentValue, controller.CommandStartTime);  // for Replay to use
-            controller.StopIncrease();
-            SteamLocomotive.SignalEvent(Event.WaterScoopUp);
-        }
-
-
-
-        /// <summary>
         /// We are about to display a video frame.  Calculate positions for 
         /// animated objects, and add their primitives to the RenderFrame list.
         /// </summary>
@@ -299,7 +231,10 @@ namespace Orts.Viewer3D.RollingStock
              foreach (var drawer in Cylinders2)
                 drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders2SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
 
-            // TODO: Not used in either MSTS or OR - currently disabled by zero values set in SteamLocomotive file
+            foreach (var drawer in Blowdown)
+                drawer.SetOutput(car.BlowdownSteamVelocityMpS, car.BlowdownSteamVolumeM3pS, car.BlowdownParticleDurationS);
+            
+            // TODO: Drainpipe - Not used in either MSTS or OR - currently disabled by zero values set in SteamLocomotive file
              foreach (var drawer in Drainpipe)
                 drawer.SetOutput(car.DrainpipeSteamVelocityMpS, car.DrainpipeSteamVolumeM3pS, car.DrainpipeParticleDurationS);
 
@@ -309,7 +244,13 @@ namespace Orts.Viewer3D.RollingStock
              foreach (var drawer in Injectors2)
                  drawer.SetOutput(car.Injector2SteamVelocityMpS, car.Injector2SteamVolumeM3pS, car.Injector2ParticleDurationS);
 
-             foreach (var drawer in Compressor)
+            foreach (var drawer in SmallEjector)
+                drawer.SetOutput(car.SmallEjectorSteamVelocityMpS, car.SmallEjectorSteamVolumeM3pS, car.SmallEjectorParticleDurationS);
+
+            foreach (var drawer in LargeEjector)
+                drawer.SetOutput(car.LargeEjectorSteamVelocityMpS, car.LargeEjectorSteamVolumeM3pS, car.LargeEjectorParticleDurationS);
+
+            foreach (var drawer in Compressor)
                 drawer.SetOutput(car.CompressorSteamVelocityMpS, car.CompressorSteamVolumeM3pS, car.CompressorParticleDurationS );
 
             foreach (var drawer in Generator)

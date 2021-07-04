@@ -17,11 +17,11 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-// Enables debugging of shaders via PIX and other tools, by loading shaders by filename with debugging enabled.
-//#define DEBUG_SHADER_CODE
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Content.Pipeline;
+using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
+using Microsoft.Xna.Framework.Content.Pipeline.Processors;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using System;
@@ -32,7 +32,7 @@ namespace Orts.Viewer3D
     public abstract class Shader : Effect
     {
         public Shader(GraphicsDevice graphicsDevice, string filename)
-            : base(graphicsDevice, GetEffectCode(filename), CompilerOptions.None, null)
+            : base(graphicsDevice, GetEffectCode(filename))
         {
         }
 
@@ -40,24 +40,50 @@ namespace Orts.Viewer3D
         {
             var basePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
             var effectFileName = System.IO.Path.Combine(basePath, filename + ".fx");
-#if DEBUG_SHADER_CODE
-            // NOTE: We may need to implement a CompilerIncludeHandler here if we ever use #include in our shaders.
-            var compiledEffect = Effect.CompileEffectFromFile(effectFileName, null, null, CompilerOptions.Debug, TargetPlatform.Windows);
-            if (!compiledEffect.Success)
-                throw new InvalidOperationException(compiledEffect.ErrorsAndWarnings);
-            return compiledEffect.GetEffectCode();
-#else
-            // We have to use a file stream instead of passing the file name directly because the latter method just botches up non-ASCII paths. :(
-            using (var effectFileStream = File.OpenRead(effectFileName))
+
+            var input = new EffectContent()
             {
-                // NOTE: We may need to implement a CompilerIncludeHandler here if we ever use #include in our shaders.
-                var compiledEffect = Effect.CompileEffectFromFile(effectFileStream, null, null, CompilerOptions.None, TargetPlatform.Windows);
-                if (!compiledEffect.Success)
-                    throw new InvalidOperationException(compiledEffect.ErrorsAndWarnings);
-                return compiledEffect.GetEffectCode();
-            }
-#endif
+                // Bizarrely, MonoGame loads the content from the identity's filename and ignores the EffectCode property, so we don't need to bother loading the file ourselves
+                Identity = new ContentIdentity(effectFileName),
+            };
+            var context = new ProcessorContext();
+            var processor = new EffectProcessor();
+            var effect = processor.Process(input, context);
+            return effect.GetEffectCode();
         }
+    }
+
+    class ProcessorContext : ContentProcessorContext
+    {
+        public override TargetPlatform TargetPlatform { get { return TargetPlatform.Windows; } }
+        public override GraphicsProfile TargetProfile { get { return GraphicsProfile.HiDef; } }
+        public override string BuildConfiguration { get { return string.Empty; } }
+        public override string IntermediateDirectory { get { return string.Empty; } }
+        public override string OutputDirectory { get { return string.Empty; } }
+        public override string OutputFilename { get { return string.Empty; } }
+
+        public override ContentIdentity SourceIdentity { get { return sourceIdentity; } }
+        readonly ContentIdentity sourceIdentity = new ContentIdentity();
+
+        public override OpaqueDataDictionary Parameters { get { return parameters; } }
+        readonly OpaqueDataDictionary parameters = new OpaqueDataDictionary();
+
+        public override ContentBuildLogger Logger { get { return logger; } }
+        readonly ContentBuildLogger logger = new Logger();
+
+        public override void AddDependency(string filename) { }
+        public override void AddOutputFile(string filename) { }
+
+        public override TOutput Convert<TInput, TOutput>(TInput input, string processorName, OpaqueDataDictionary processorParameters) { throw new NotImplementedException(); }
+        public override TOutput BuildAndLoadAsset<TInput, TOutput>(ExternalReference<TInput> sourceAsset, string processorName, OpaqueDataDictionary processorParameters, string importerName) { throw new NotImplementedException(); }
+        public override ExternalReference<TOutput> BuildAsset<TInput, TOutput>(ExternalReference<TInput> sourceAsset, string processorName, OpaqueDataDictionary processorParameters, string importerName, string assetName) { throw new NotImplementedException(); }
+    }
+
+    class Logger : ContentBuildLogger
+    {
+        public override void LogMessage(string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
+        public override void LogImportantMessage(string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
+        public override void LogWarning(string helpLink, ContentIdentity contentIdentity, string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
     }
 
     [CallOnThread("Render")]
@@ -81,6 +107,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter nightColorModifier;
         readonly EffectParameter halfNightColorModifier;
         readonly EffectParameter vegetationAmbientModifier;
+        readonly EffectParameter signalLightIntensity;
         readonly EffectParameter eyeVector;
         readonly EffectParameter sideVector;
         readonly EffectParameter imageTexture;
@@ -152,7 +179,17 @@ namespace Orts.Viewer3D
 
         public float ZBias { get { return _zBias_Lighting.X; } set { _zBias_Lighting.X = value; zBias_Lighting.SetValue(_zBias_Lighting); } }
         public float LightingDiffuse { get { return _zBias_Lighting.Y; } set { _zBias_Lighting.Y = value; zBias_Lighting.SetValue(_zBias_Lighting); } }
-        public float LightingSpecular { get { return _zBias_Lighting.Z; } set { _zBias_Lighting.Z = value; _zBias_Lighting.W = value >= 1 ? 1 : 0; zBias_Lighting.SetValue(_zBias_Lighting); } }
+        public float LightingSpecular
+        {
+            get { return _zBias_Lighting.Z; }
+            set
+            {
+                // Setting this exponent of HLSL pow() function to 0 in DX11 leads to undefined result. (HLSL bug?)
+                _zBias_Lighting.Z = value >= 1 ? value : 1;
+                _zBias_Lighting.W = value >= 1 ? 1 : 0;
+                zBias_Lighting.SetValue(_zBias_Lighting);
+            }
+        }
 
         public void SetFog(float depth, ref Color color)
         {
@@ -180,11 +217,13 @@ namespace Orts.Viewer3D
             headlightPosition.SetValue(Vector4.Zero);
         }
 
+        public float SignalLightIntensity { set { signalLightIntensity.SetValue(value); } }
+
         public float Overcast { set { overcast.SetValue(new Vector2(value, value / 2)); } }
 
         public Vector3 ViewerPos { set { viewerPos.SetValue(value); } }
 
-        public bool ImageTextureIsNight { set { _imageTextureIsNight = value; imageTextureIsNight.SetValue(value); } }
+        public bool ImageTextureIsNight { set { _imageTextureIsNight = value; imageTextureIsNight.SetValue(value ? 1f : 0f); } }
 
         public Texture2D ImageTexture { set { imageTexture.SetValue(value); } }
 
@@ -192,7 +231,7 @@ namespace Orts.Viewer3D
 
         public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
 
-        public int OverlayScale { set { overlayScale.SetValue(value); } }
+        public float OverlayScale { set { overlayScale.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
@@ -220,6 +259,7 @@ namespace Orts.Viewer3D
             nightColorModifier = Parameters["NightColorModifier"];
             halfNightColorModifier = Parameters["HalfNightColorModifier"];
             vegetationAmbientModifier = Parameters["VegetationAmbientModifier"];
+            signalLightIntensity = Parameters["SignalLightIntensity"];
             eyeVector = Parameters["EyeVector"];
             sideVector = Parameters["SideVector"];
             imageTexture = Parameters["ImageTexture"];
@@ -239,7 +279,8 @@ namespace Orts.Viewer3D
 
         public void SetData(ref Matrix v)
         {
-            sideVector.SetValue(v.Right);
+            var eyeVector = Vector3.Normalize(new Vector3(v.M13, v.M23, v.M33));
+            sideVector.SetValue(Vector3.Normalize(Vector3.Cross(eyeVector, Vector3.Down)));
         }
 
         public void SetData(ref Matrix wvp, Texture2D texture)
@@ -564,13 +605,13 @@ namespace Orts.Viewer3D
             {
                 screenTexture.SetValue(value);
                 if (value == null)
-                    screenSize.SetValue(new[] { 0, 0 });
+                    screenSize.SetValue(new Vector2(0, 0));
                 else
-                    screenSize.SetValue(new[] { value.Width, value.Height });
+                    screenSize.SetValue(new Vector2(value.Width, value.Height));
             }
         }
 
-        public Color GlassColor { set { glassColor.SetValue(new float[] { value.R / 255, value.G / 255, value.B / 255 }); } }
+        public Color GlassColor { set { glassColor.SetValue(new Vector3(value.R / 255f, value.G / 255f, value.B / 255f)); } }
 
         public void SetMatrix(Matrix w, ref Matrix wvp)
         {
@@ -649,14 +690,16 @@ namespace Orts.Viewer3D
         readonly EffectParameter normalColor;
         readonly EffectParameter limitColor;
         readonly EffectParameter pointerColor;
+        readonly EffectParameter interventionColor;
         readonly EffectParameter backgroundColor;
         //readonly EffectParameter imageTexture;
 
-        public void SetData(Vector4 angle, Color gaugeColor, Color needleColor)
+        public void SetData(Vector4 angle, Color gaugeColor, Color needleColor, Color overspeedColor)
         {
             limitAngle.SetValue(angle);
             limitColor.SetValue(gaugeColor.ToVector4());
             pointerColor.SetValue(needleColor.ToVector4());
+            interventionColor.SetValue(overspeedColor.ToVector4());
         }
 
         public DriverMachineInterfaceShader(GraphicsDevice graphicsDevice)
@@ -668,6 +711,7 @@ namespace Orts.Viewer3D
             backgroundColor = Parameters["BackgroundColor"];
             limitAngle = Parameters["LimitAngle"];
             //imageTexture = Parameters["ImageTexture"];
+            interventionColor = Parameters["InterventionColor"];
         }
     }
 

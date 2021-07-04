@@ -130,7 +130,7 @@ namespace Orts.Viewer3D.Processes
         internal override void Dispose()
         {
             Viewer.Terminate();
-            if (MPManager.Server != null)
+           if (MPManager.Server != null)
                 MPManager.Server.Stop();
             if (MPManager.Client != null)
                 MPManager.Client.Stop();

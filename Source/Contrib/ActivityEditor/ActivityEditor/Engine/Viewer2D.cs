@@ -42,6 +42,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml.Serialization;
+using Color = System.Drawing.Color;
 
 namespace ActivityEditor.Engine
 {
@@ -91,7 +92,7 @@ namespace ActivityEditor.Engine
         private bool Zooming = false;
         float xScale = 1;
         float yScale = 1;
-        public ToolClicked ToolClicked = ToolClicked.NO_TOOL;
+        public ToolClicks ToolClicked = ToolClicks.NO_TOOL;
         public Image ToolToUse = null;
         public Cursor CursorToUse = Cursors.Default;
         public Cursor reduit;
@@ -664,7 +665,7 @@ namespace ActivityEditor.Engine
                 }
 
                 this.Cursor = CursorToUse;
-                if (Program.aePreference.ShowSnapCircle && (ToolClicked == ToolClicked.NO_TOOL))
+                if (Program.aePreference.ShowSnapCircle && (ToolClicked == ToolClicks.NO_TOOL))
                 {
                     PointF point = convertScreen2ViewCoord(CurrentMousePosition.X, CurrentMousePosition.Y);
                     MSTSCoord coord = Simulator.mstsDataConfig.TileBase.getMstsCoord(point);
@@ -675,11 +676,11 @@ namespace ActivityEditor.Engine
                                         (int)(sizeEllipse));
                     g.DrawString(coord.asString(), sidingFont, sidingBrush, CurrentMousePosition.X + 20, CurrentMousePosition.Y - 10);
                 }
-                else if (ToolClicked == ToolClicked.NO_TOOL)
+                else if (ToolClicked == ToolClicks.NO_TOOL)
                 {
 
                 }
-                else if (ToolClicked != ToolClicked.NO_TOOL)
+                else if (ToolClicked != ToolClicks.NO_TOOL)
                 {
                     var tool = ToolToUse;
                     System.Drawing.Rectangle rect = new System.Drawing.Rectangle((int)(CurrentMousePosition.X),
@@ -949,7 +950,7 @@ namespace ActivityEditor.Engine
         {
             //this.routeDrawing.Focus();
             Dragging = false;
-            if (ToolClicked == ToolClicked.AREA_ADD &&
+            if (ToolClicked == ToolClicks.AREA_ADD &&
                 itemToUpdate != null &&
                 (itemToUpdate.GetType() == typeof(StationItem)))
             {
@@ -965,44 +966,44 @@ namespace ActivityEditor.Engine
                 }
                 else
                 {
-                    SetToolClicked(ToolClicked.NO_TOOL);
+                    SetToolClicked(ToolClicks.NO_TOOL);
                 }
             }
             else
             {
                 var item = findItemFromEvent(e);
-                if (ToolClicked == ToolClicked.NO_TOOL &&
+                if (ToolClicked == ToolClicks.NO_TOOL &&
                     item != null && item.IsMovable())
                 {
-                    SetToolClicked(ToolClicked.MOVE);
+                    SetToolClicked(ToolClicks.MOVE);
                 }
-                if ((ToolClicked == ToolClicked.MOVE
-                    || ToolClicked == ToolClicked.ROTATE) &&
+                if ((ToolClicked == ToolClicks.MOVE
+                    || ToolClicked == ToolClicks.ROTATE) &&
                     item != null)
                 {
                     //CancelOperation();
                     if (itemToUpdate != item)
                     {
                         itemToUpdate = null;
-                        if (ToolClicked == ToolClicked.MOVE && item.IsMovable())
+                        if (ToolClicked == ToolClicks.MOVE && item.IsMovable())
                         {
                             itemToUpdate = item;
                         }
-                        else if (ToolClicked == ToolClicked.ROTATE && item.IsRotable())
+                        else if (ToolClicked == ToolClicks.ROTATE && item.IsRotable())
                         {
                             itemToUpdate = item;
                         }
                     }
                 }
-                else if (ToolClicked == ToolClicked.AREA && item != null)
+                else if (ToolClicked == ToolClicks.AREA && item != null)
                 {
                     //CancelOperation();      // First, cancel all operation
                     itemToUpdate = item;
                 }
-                else if (Dragging == false && ToolClicked == ToolClicked.NO_TOOL)
+                else if (Dragging == false && ToolClicked == ToolClicks.NO_TOOL)
                 {
                     Dragging = true;
-                    SetToolClicked(ToolClicked.DRAG);
+                    SetToolClicked(ToolClicks.DRAG);
                 }
             }
 
@@ -1013,7 +1014,7 @@ namespace ActivityEditor.Engine
             //this.routeDrawing.Focus();
             var item = findItemFromEvent(e);
             itemToEdit = null;
-            if (ToolClicked == ToolClicked.NO_TOOL &&
+            if (ToolClicked == ToolClicks.NO_TOOL &&
                 item != null && item.IsEditable())
             {
                 itemToEdit = item;
@@ -1026,7 +1027,7 @@ namespace ActivityEditor.Engine
                 PointF point = convertScreen2ViewCoord(refZoomPoint.X, refZoomPoint.Y);
                 coordZoomPoint = Simulator.mstsDataConfig.TileBase.getMstsCoord(point);
                 refZoomPoint.Y = routeDrawing.Height - e.Y;
-                ToolClicked = ToolClicked.ZOOM;
+                ToolClicked = ToolClicks.ZOOM;
                 System.Drawing.Point refCoord = convertViewCoord2Screen(coordZoomPoint);
             }
         }
@@ -1042,7 +1043,7 @@ namespace ActivityEditor.Engine
             }
 
 
-            if (ToolClicked == ToolClicked.AREA_ADD &&
+            if (ToolClicked == ToolClicks.AREA_ADD &&
                 itemToUpdate != null &&
                 (itemToUpdate.GetType() == typeof(StationAreaItem)))
             {
@@ -1056,7 +1057,7 @@ namespace ActivityEditor.Engine
             {
                 CurrentMousePosition.X = e.X;
                 CurrentMousePosition.Y = e.Y;
-                if (ToolClicked == ToolClicked.MOVE 
+                if (ToolClicked == ToolClicks.MOVE 
                         && itemToUpdate != null 
                         && itemToUpdate.IsMovable())
                 {
@@ -1069,7 +1070,7 @@ namespace ActivityEditor.Engine
                     aeConfig.UpdateItem(itemToUpdate, coord, controlKey, false);
                     //itemToUpdate.configCoord(coord, aeConfig.getSegments(), controlKey);
                 }
-                else if (ToolClicked == ToolClicked.ROTATE
+                else if (ToolClicked == ToolClicks.ROTATE
                         && itemToUpdate != null 
                         && itemToUpdate.IsRotable())
                 {
@@ -1157,32 +1158,32 @@ namespace ActivityEditor.Engine
 
         private void routeDrawingMouseUp(object sender, MouseEventArgs e)
         {
-            if ((ToolClicked == ToolClicked.AREA_ADD ||
-                ToolClicked == ToolClicked.MOVE) &&
+            if ((ToolClicked == ToolClicks.AREA_ADD ||
+                ToolClicked == ToolClicks.MOVE) &&
                 itemToUpdate != null && itemToUpdate.GetType() == typeof(StationAreaItem))
             {
                 PointF point = convertScreen2ViewCoord(e.X, e.Y);
                 MSTSCoord coord = Simulator.mstsDataConfig.TileBase.getMstsCoord(point);
                 stationItem = (StationItem)aeConfig.UpdateItem(itemToUpdate, coord, false, true);
                 itemToUpdate = stationItem;
-                if (stationItem != null && !(ToolClicked == ToolClicked.AREA_ADD))
+                if (stationItem != null && !(ToolClicked == ToolClicks.AREA_ADD))
                 {
                     stationItem.complete(aeConfig.aeRouteConfig.orRouteConfig,
                         aeConfig.aeItems,
                         Simulator.mstsDataConfig.TileBase);
                 }
             }
-            else if (ToolClicked == ToolClicked.AREA &&
+            else if (ToolClicked == ToolClicks.AREA &&
                 itemToUpdate != null && 
                 (itemToUpdate.GetType() == typeof(StationItem) ||
                 itemToUpdate.GetType() == typeof(StationAreaItem)))
             {
-                SetToolClicked(ToolClicked.AREA_ADD);
+                SetToolClicked(ToolClicks.AREA_ADD);
             }
 
-            if (LeftClick && ToolClicked != ToolClicked.NO_TOOL &&
-                ToolClicked != ToolClicked.DRAG &&
-                ToolClicked != ToolClicked.ZOOM)
+            if (LeftClick && ToolClicked != ToolClicks.NO_TOOL &&
+                ToolClicked != ToolClicks.DRAG &&
+                ToolClicked != ToolClicks.ZOOM)
             {
                 PointF point = e.Location;
                 lastContextMenuPos = point;
@@ -1228,10 +1229,10 @@ namespace ActivityEditor.Engine
             if (e.Button == MouseButtons.Left) LeftClick = false;
             if (e.Button == MouseButtons.Right) RightClick = false;
 
-            if (ToolClicked != ToolClicked.AREA_ADD)
+            if (ToolClicked != ToolClicks.AREA_ADD)
             {
                 CancelOperation();
-                ToolClicked = ToolClicked.NO_TOOL;
+                ToolClicked = ToolClicks.NO_TOOL;
             }
         }
 
@@ -1508,18 +1509,18 @@ namespace ActivityEditor.Engine
 
             switch ((int)ToolClicked)
             {
-                case (int)ToolClicked.MOVE:
+                case (int)ToolClicks.MOVE:
                     break;
-                case (int)ToolClicked.TAG:
+                case (int)ToolClicks.TAG:
                     AddTag();
                     break;
-                case (int)ToolClicked.STATION:
+                case (int)ToolClicks.STATION:
                     AddStation();
                     break;
-                case (int)ToolClicked.AREA_ADD:
+                case (int)ToolClicks.AREA_ADD:
                     AddStationArea();
                     break;
-                case (int)ToolClicked.START:
+                case (int)ToolClicks.START:
                     item = findSegmentFromMouse(CurrentMousePosition);
                     if (item != null &&
                         item.GetType () == typeof (TrackSegment) &&
@@ -1528,7 +1529,7 @@ namespace ActivityEditor.Engine
                         AddActStart ((TrackSegment)item, CurrentMousePosition);
                     }
                     break;
-                case (int)ToolClicked.STOP:
+                case (int)ToolClicks.STOP:
                     item = findSegmentFromMouse(CurrentMousePosition);
                     if (item != null &&
                         item.GetType () == typeof (TrackSegment) &&
@@ -1538,7 +1539,7 @@ namespace ActivityEditor.Engine
                     }
 
                     break;
-                case (int)ToolClicked.WAIT:
+                case (int)ToolClicks.WAIT:
                     item = findSegmentFromMouse(CurrentMousePosition);
                     if (item != null &&
                         item.GetType () == typeof (TrackSegment) &&
@@ -1548,11 +1549,11 @@ namespace ActivityEditor.Engine
                     }
 
                     break;
-                case (int)ToolClicked.ACTION:
+                case (int)ToolClicks.ACTION:
                     break;
-                case (int)ToolClicked.CHECK:
+                case (int)ToolClicks.CHECK:
                     break;
-                case (int)ToolClicked.ROTATE:
+                case (int)ToolClicks.ROTATE:
                     break;
                 default:
                     break;
@@ -1865,59 +1866,59 @@ namespace ActivityEditor.Engine
             }
         }
 
-        public void SetToolClicked(ToolClicked info)
+        public void SetToolClicked(ToolClicks info)
         {
             ToolClicked = info;
 
             this.Cursor = Cursors.Default;
-            if (info == ToolClicked.AREA_ADD)
+            if (info == ToolClicks.AREA_ADD)
             {   //  To prevent bad setting
                 ToolToUse = global::ActivityEditor.Properties.Resources._64;
                 CursorToUse = reduit;
             }
-            else if (info == ToolClicked.AREA)
+            else if (info == ToolClicks.AREA)
             {
                 ToolToUse = global::ActivityEditor.Properties.Resources._32;
                 CursorToUse = reduit;
             }
-            else if (info == ToolClicked.DRAG)
+            else if (info == ToolClicks.DRAG)
             {
                 ToolToUse = null;
                 CursorToUse = Cursors.Hand;
             }
-            else if (info == ToolClicked.ZOOM)
+            else if (info == ToolClicks.ZOOM)
             {
                 ToolToUse = null;
                 CursorToUse = Cursors.SizeAll;
             }
-            else if (info == ToolClicked.MOVE)
+            else if (info == ToolClicks.MOVE)
             {
                 ToolToUse = global::ActivityEditor.Properties.Resources.object_move;
                 CursorToUse = Cursors.Default;
             }
-            else if (info == ToolClicked.ROTATE)
+            else if (info == ToolClicks.ROTATE)
             {
                 ToolToUse = global::ActivityEditor.Properties.Resources.object_rotate;
                 CursorToUse = reduit;
             }
-            else if (info == ToolClicked.TAG)
+            else if (info == ToolClicks.TAG)
             {
                 ToolToUse = global::ActivityEditor.Properties.Resources.tag;
                 CursorToUse = reduit;
             }
-            else if (info == ToolClicked.METASEGMENT)
+            else if (info == ToolClicks.METASEGMENT)
             {
                 ToolToUse = global::ActivityEditor.Properties.Resources.metasegment;
                 CursorToUse = reduit;
             }
-            else if (info == ToolClicked.STATION)
+            else if (info == ToolClicks.STATION)
             {
                 ToolToUse = global::ActivityEditor.Properties.Resources.SignalBox;
                 CursorToUse = reduit;
             }
             else
             {
-                ToolClicked = ToolClicked.NO_TOOL;
+                ToolClicked = ToolClicks.NO_TOOL;
                 CursorToUse = Cursors.Default;
                 ToolToUse = null;
             }

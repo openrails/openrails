@@ -27,6 +27,8 @@ namespace Orts.Common
     public enum Event
     {
         None,
+        BatteryOff,
+        BatteryOn,
         BellOff,
         BellOn,
         BlowerChange,
@@ -76,6 +78,14 @@ namespace Orts.Common
         FuelTowerUp,
         GearDown,
         GearUp,
+        GenericEvent1,
+        GenericEvent2,
+        GenericEvent3,
+        GenericEvent4,
+        GenericEvent5,
+        GenericEvent6,
+        GenericEvent7,
+        GenericEvent8,
         HornOff,
         HornOn,
         LightSwitchToggle,
@@ -93,17 +103,21 @@ namespace Orts.Common
         PermissionDenied,
         PermissionGranted,
         PermissionToDepart,
+        PowerKeyOff,
+        PowerKeyOn,
         ReverserChange,
         ReverserToForwardBackward,
         ReverserToNeutral,
         SanderOff,
         SanderOn,
         SemaphoreArm,
+        LargeEjectorChange,
         SmallEjectorChange,
         WaterInjector1Off,
         WaterInjector1On,
         WaterInjector2Off,
         WaterInjector2On,
+        BlowdownValveToggle,
         SteamHeatChange, 
         SteamPulse1,
         SteamPulse2,
@@ -123,6 +137,7 @@ namespace Orts.Common
         SteamPulse16,
         SteamSafetyValveOff,
         SteamSafetyValveOn,
+        TakeScreenshot,
         ThrottleChange,
         TrainBrakeChange,
         TrainBrakePressureDecrease,
@@ -165,7 +180,36 @@ namespace Orts.Common
         CylinderCocksOpen,
         CylinderCocksClose,
         SecondEnginePowerOff,
-        SecondEnginePowerOn
+        SecondEnginePowerOn,
+
+        HotBoxBearingOn,
+        HotBoxBearingOff,
+
+        BoilerBlowdownOn,
+        BoilerBlowdownOff,
+
+        WaterScoopRaiseLower,
+        WaterScoopBroken,
+
+        SteamGearLeverToggle,
+        AIFiremanSoundOn,
+        AIFiremanSoundOff,
+
+        GearPosition0,
+        GearPosition1,
+        GearPosition2,
+        GearPosition3,
+        GearPosition4,
+        GearPosition5,
+        GearPosition6,
+        GearPosition7,
+        GearPosition8,
+
+        LargeEjectorOn,
+        LargeEjectorOff,
+        SmallEjectorOn,
+        SmallEjectorOff,
+
     }
 
     public static class Events
@@ -291,7 +335,8 @@ namespace Orts.Common
                         case 117: return Event.TrainControlSystemAlert1;
                         case 118: return Event.TrainControlSystemAlert2;
                         case 119: return Event.CylinderCompoundToggle; // Locomotive switched to compound
-                        
+
+                        case 120: return Event.BlowdownValveToggle;
                         case 121: return Event.SteamPulse1;
                         case 122: return Event.SteamPulse2;
                         case 123: return Event.SteamPulse3;
@@ -317,6 +362,13 @@ namespace Orts.Common
                         case 142: return Event.BrakePipePressureDecrease;
                         case 143: return Event.BrakePipePressureStoppedChanging;
 
+                        case 145: return Event.WaterScoopRaiseLower;
+                        case 146: return Event.WaterScoopBroken;
+
+                        case 147: return Event.SteamGearLeverToggle;
+                        case 148: return Event.AIFiremanSoundOn;
+                        case 149: return Event.AIFiremanSoundOff;
+
                         case 150: return Event.CircuitBreakerOpen;
                         case 151: return Event.CircuitBreakerClosing;
                         case 152: return Event.CircuitBreakerClosed;
@@ -327,6 +379,7 @@ namespace Orts.Common
                         case 157: return Event.CircuitBreakerClosingAuthorizationOn;
                         case 158: return Event.CircuitBreakerClosingAuthorizationOff;
 
+                        case 159: return Event.LargeEjectorChange;
                         case 160: return Event.SmallEjectorChange;
 
                         case 161: return Event.CabLightSwitchToggle;
@@ -344,7 +397,44 @@ namespace Orts.Common
                         case 170: return Event.Pantograph3Down;
                         case 171: return Event.Pantograph4Up;
                         case 172: return Event.Pantograph4Down;
+
+                        case 173: return Event.HotBoxBearingOn;
+                        case 174: return Event.HotBoxBearingOff;
+
+                        case 175: return Event.BoilerBlowdownOn;
+                        case 176: return Event.BoilerBlowdownOff;
+
+                        case 177: return Event.BatteryOn;
+                        case 178: return Event.BatteryOff;
+
+                        case 179: return Event.PowerKeyOn;
+                        case 180: return Event.PowerKeyOff;
+
+                        case 181: return Event.GenericEvent1;
+                        case 182: return Event.GenericEvent2;
+                        case 183: return Event.GenericEvent3;
+                        case 184: return Event.GenericEvent4;
+                        case 185: return Event.GenericEvent5;
+                        case 186: return Event.GenericEvent6;
+                        case 187: return Event.GenericEvent7;
+                        case 188: return Event.GenericEvent8;
                         //
+
+
+                        case 200: return Event.GearPosition0;
+                        case 201: return Event.GearPosition1;
+                        case 202: return Event.GearPosition2;
+                        case 203: return Event.GearPosition3;
+                        case 204: return Event.GearPosition4;
+                        case 205: return Event.GearPosition5;
+                        case 206: return Event.GearPosition6;
+                        case 207: return Event.GearPosition7;
+                        case 208: return Event.GearPosition8;
+
+                        case 210: return Event.LargeEjectorOn;
+                        case 211: return Event.LargeEjectorOff;
+                        case 212: return Event.SmallEjectorOn;
+                        case 213: return Event.SmallEjectorOff;
 
                         default: return 0;
                     }

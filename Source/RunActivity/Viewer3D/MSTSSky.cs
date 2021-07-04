@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
+using Orts.MultiPlayer;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
@@ -157,29 +158,23 @@ namespace Orts.Viewer3D
                 mstsskyfogDistance = MSTSSkyViewer.Simulator.Weather.FogDistance;
             }
 
-            if (Orts.MultiPlayer.MPManager.IsClient() && Orts.MultiPlayer.MPManager.Instance().weatherChanged)
+            MPManager manager = MPManager.Instance();
+            if (MPManager.IsClient() && manager.weatherChanged)
             {
                 //received message about weather change
-                if (Orts.MultiPlayer.MPManager.Instance().overcastFactor >= 0)
-                {
-                    mstsskyovercastFactor = Orts.MultiPlayer.MPManager.Instance().overcastFactor;
-                }
-                //received message about weather change
-                if (Orts.MultiPlayer.MPManager.Instance().fogDistance > 0)
-                {
-                    mstsskyfogDistance = Orts.MultiPlayer.MPManager.Instance().fogDistance;
-                }
-                try
-                {
-                    if (Orts.MultiPlayer.MPManager.Instance().overcastFactor >= 0 || Orts.MultiPlayer.MPManager.Instance().fogDistance > 0)
-                    {
-                        Orts.MultiPlayer.MPManager.Instance().weatherChanged = false;
-                        Orts.MultiPlayer.MPManager.Instance().overcastFactor = -1;
-                        Orts.MultiPlayer.MPManager.Instance().fogDistance = -1;
-                    }
-                }
-                catch { }
+                if (manager.overcastFactor >= 0)
+                    mstsskyovercastFactor = manager.overcastFactor;
 
+                //received message about weather change
+                if (manager.fogDistance > 0)
+                    mstsskyfogDistance = manager.fogDistance;
+
+                if (manager.overcastFactor >= 0 || manager.fogDistance > 0)
+                {
+                    manager.weatherChanged = false;
+                    manager.overcastFactor = -1;
+                    manager.fogDistance = -1;
+                }
             }
 
             ////////////////////// T E M P O R A R Y ///////////////////////////
@@ -188,7 +183,7 @@ namespace Orts.Viewer3D
             // Control- and Control+ for overcast, Shift- and Shift+ for fog and - and + for time.
 
             // Don't let multiplayer clients adjust the weather.
-            if (!Orts.MultiPlayer.MPManager.IsClient())
+            if (!MPManager.IsClient())
             {
                 // Overcast ranges from 0 (completely clear) to 1 (completely overcast).
                 if (UserInput.IsDown(UserCommand.DebugOvercastIncrease)) mstsskyovercastFactor = MathHelper.Clamp(mstsskyovercastFactor + elapsedTime.RealSeconds / 10, 0, 1);
@@ -198,19 +193,19 @@ namespace Orts.Viewer3D
                 if (UserInput.IsDown(UserCommand.DebugFogDecrease)) mstsskyfogDistance = MathHelper.Clamp(mstsskyfogDistance + elapsedTime.RealSeconds * mstsskyfogDistance, 10, 100000);
             }
             // Don't let clock shift if multiplayer.
-            if (!Orts.MultiPlayer.MPManager.IsMultiPlayer())
+            if (!MPManager.IsMultiPlayer())
             {
                 // Shift the clock forwards or backwards at 1h-per-second.
                 if (UserInput.IsDown(UserCommand.DebugClockForwards)) MSTSSkyViewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
                 if (UserInput.IsDown(UserCommand.DebugClockBackwards)) MSTSSkyViewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
             }
             // Server needs to notify clients of weather changes.
-            if (Orts.MultiPlayer.MPManager.IsServer())
+            if (MPManager.IsServer())
             {
                 if (UserInput.IsReleased(UserCommand.DebugOvercastIncrease) || UserInput.IsReleased(UserCommand.DebugOvercastDecrease) || UserInput.IsReleased(UserCommand.DebugFogIncrease) || UserInput.IsReleased(UserCommand.DebugFogDecrease))
                 {
-                    Orts.MultiPlayer.MPManager.Instance().SetEnvInfo(mstsskyovercastFactor, mstsskyfogDistance);
-                    Orts.MultiPlayer.MPManager.Notify((new Orts.MultiPlayer.MSGWeather(-1, mstsskyovercastFactor, -1, mstsskyfogDistance)).ToString());
+                    manager.SetEnvInfo(mstsskyovercastFactor, mstsskyfogDistance);
+                    MPManager.Notify(new MSGWeather(-1, mstsskyovercastFactor, -1, mstsskyfogDistance).ToString());
                 }
             }
 
@@ -294,9 +289,7 @@ namespace Orts.Viewer3D
     public class MSTSSkyMesh : RenderPrimitive
     {
         private VertexBuffer MSTSSkyVertexBuffer;
-        private static VertexDeclaration MSTSSkyVertexDeclaration;
         private static IndexBuffer MSTSSkyIndexBuffer;
-        private static int MSTSSkyVertexStride;  // in bytes
         public int drawIndex;
         VertexPositionNormalTexture[] vertexList;
         private static short[] triangleListIndices; // Trilist buffer.
@@ -341,8 +334,7 @@ namespace Orts.Viewer3D
         }
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = MSTSSkyVertexDeclaration;
-            graphicsDevice.Vertices[0].SetSource(MSTSSkyVertexBuffer, 0, MSTSSkyVertexStride);
+            graphicsDevice.SetVertexBuffer(MSTSSkyVertexBuffer);
             graphicsDevice.Indices = MSTSSkyIndexBuffer;
 
             switch (drawIndex)
@@ -350,29 +342,23 @@ namespace Orts.Viewer3D
                 case 1: // Sky dome
                     graphicsDevice.DrawIndexedPrimitives(
                         PrimitiveType.TriangleList,
-                        0,
-                        0,
-                        (numVertices - 4) / 2,
-                        0,
-                        (indexCount - 6) / 6);
+                        baseVertex: 0,
+                        startIndex: 0,
+                        primitiveCount: (indexCount - 6) / 6);
                     break;
                 case 2: // Moon
                     graphicsDevice.DrawIndexedPrimitives(
-                    PrimitiveType.TriangleList,
-                    0,
-                    numVertices - 4,
-                    4,
-                    indexCount - 6,
-                    2);
+                        PrimitiveType.TriangleList,
+                        baseVertex: 4,
+                        startIndex: indexCount - 6,
+                        primitiveCount: 2);
                     break;
                 case 3: // Clouds Dome
                     graphicsDevice.DrawIndexedPrimitives(
                         PrimitiveType.TriangleList,
-                        0,
-                        (numVertices - 4) / 2,
-                        (numVertices - 4) / 2,
-                        (indexCount - 6) / 2,
-                        (indexCount - 6) / 6);
+                        baseVertex: 0,
+                        startIndex: (indexCount - 6) / 2,
+                        primitiveCount: (indexCount - 6) / 6);
                     break;
                 default:
                     break;
@@ -518,13 +504,8 @@ namespace Orts.Viewer3D
         /// </summary>
         private void InitializeVertexBuffers(GraphicsDevice graphicsDevice)
         {
-            if (MSTSSkyVertexDeclaration == null)
-            {
-                MSTSSkyVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
-                MSTSSkyVertexStride = VertexPositionNormalTexture.SizeInBytes;
-            }
             // Initialize the vertex and index buffers, allocating memory for each vertex and index
-            MSTSSkyVertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexList.Length, BufferUsage.WriteOnly);
+            MSTSSkyVertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), vertexList.Length, BufferUsage.WriteOnly);
             MSTSSkyVertexBuffer.SetData(vertexList);
             if (MSTSSkyIndexBuffer == null)
             {
@@ -612,8 +593,8 @@ namespace Orts.Viewer3D
                 string mstsSkySunTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[0].TextureName.ToString();
                 string mstsSkyMoonTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[1].TextureName.ToString();
 
-                MSTSSkySunTexture = Orts.Formats.Msts.AceFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkySunTexture);
-                MSTSSkyMoonTexture = Orts.Formats.Msts.AceFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyMoonTexture);
+                MSTSSkySunTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, mstsSkySunTexture);
+                MSTSSkyMoonTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, mstsSkyMoonTexture);
             }
             else
                 MSTSSkyMoonTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.png"));
@@ -657,36 +638,32 @@ namespace Orts.Viewer3D
             MSTSSkyShader.WindSpeed = Viewer.World.MSTSSky.mstsskywindSpeed;
             MSTSSkyShader.WindDirection = Viewer.World.MSTSSky.mstsskywindDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 
+            for (var i = 0; i < 5; i++)
+                graphicsDevice.SamplerStates[i] = SamplerState.LinearWrap;
+
             // Sky dome
-            var rs = graphicsDevice.RenderState;
-            rs.DepthBufferWriteEnable = false;
+            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
 
             MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Sky"];
             Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 1;
             MSTSSkyShader.SetViewMatrix(ref XNAViewMatrix);
-            MSTSSkyShader.Begin();
             ShaderPassesSky.Reset();
             while (ShaderPassesSky.MoveNext())
             {
-                ShaderPassesSky.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                     MSTSSkyShader.SetMatrix(ref wvp);
-                    MSTSSkyShader.CommitChanges();
+                    ShaderPassesSky.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesSky.Current.End();
             }
-            MSTSSkyShader.End();
             MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Moon"];
             Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 2;
 
-            rs.AlphaBlendEnable = true;
-            rs.CullMode = CullMode.CullClockwiseFace;
-            rs.DestinationBlend = Blend.InverseSourceAlpha;
-            rs.SourceBlend = Blend.SourceAlpha;
+            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
             // Send the transform matrices to the shader
             int mstsskyRadius = Viewer.World.MSTSSky.MSTSSkyMesh.mstsskyRadius;
@@ -694,21 +671,17 @@ namespace Orts.Viewer3D
             XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.MSTSSky.mstsskylunarDirection * (mstsskyRadius));
             Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
-            MSTSSkyShader.Begin();
             ShaderPassesMoon.Reset();
             while (ShaderPassesMoon.MoveNext())
             {
-                ShaderPassesMoon.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
                     MSTSSkyShader.SetMatrix(ref wvp);
-                    MSTSSkyShader.CommitChanges();
+                    ShaderPassesMoon.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesMoon.Current.End();
             }
-            MSTSSkyShader.End();
 
             for (int i = 0; i < MSTSSkyCloudTexture.Count; i++)
                 if (i == 0)
@@ -717,36 +690,26 @@ namespace Orts.Viewer3D
                     MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Clouds"];
                     Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 3;
 
-                    rs.CullMode = CullMode.CullCounterClockwiseFace;
+                    graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
-                    MSTSSkyShader.Begin();
                     ShaderPassesClouds[0].Reset();
                     while (ShaderPassesClouds[0].MoveNext())
                     {
-                        ShaderPassesClouds[0].Current.Begin();
                         foreach (var item in renderItems)
                         {
                             Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                             MSTSSkyShader.SetMatrix(ref wvp);
-                            MSTSSkyShader.CommitChanges();
+                            ShaderPassesClouds[0].Current.Apply();
                             item.RenderPrimitive.Draw(graphicsDevice);
                         }
-                        ShaderPassesClouds[0].Current.End();
                     }
-                    MSTSSkyShader.End();
-
-                    rs.CullMode = CullMode.CullCounterClockwiseFace;
-
                 }
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-            rs.DepthBufferWriteEnable = true;
-            rs.DestinationBlend = Blend.Zero;
-            rs.SourceBlend = Blend.One;
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         public override bool GetBlending()

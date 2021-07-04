@@ -117,12 +117,12 @@ namespace Orts.Viewer3D.Popups
 
             var maxLines = vbox.RemainingHeight / TextSize;
             var messages = Messages.Take(maxLines).Reverse().ToList();
-            vbox.AddSpace(0, vbox.RemainingHeight - TextSize * messages.Count());
+            vbox.AddSpace(0, vbox.RemainingHeight - TextSize * messages.Count);
             foreach( var message in messages )
             {
                 var hbox = vbox.AddLayoutHorizontal(TextSize);
-                var width = hbox.RemainingWidth;
-                hbox.Add(message.LabelShadow = new LabelShadow(hbox.RemainingWidth, hbox.RemainingHeight));
+                var width = Owner.Viewer.WindowManager.TextFontDefault.MeasureString(message.Text);
+                hbox.Add(message.LabelShadow = new LabelShadow(width, hbox.RemainingHeight));
                 hbox.Add(message.LabelText = new Label(-width, 0, width, TextSize, message.Text));
             }
             return vbox;

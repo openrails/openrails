@@ -25,12 +25,13 @@ namespace Orts.DataConverter
 {
     class Program
     {
+        //TODO Add a return code for success or not
         static void Main(string[] args)
         {
             var converters = new List<IDataConverter>()
-            {
-                new TerrainConverter()
-            };
+                { new TerrainConverter()
+                , new ClockConverter()
+                };
 
             try
             {
@@ -44,6 +45,7 @@ namespace Orts.DataConverter
                 foreach (var conversion in conversions)
                 {
                     var valid = false;
+                    // Apply each converter in turn to the conversion
                     foreach (var converter in converters)
                     {
                         if (converter.DoConversion(conversion))
@@ -54,6 +56,7 @@ namespace Orts.DataConverter
                             {
                                 Console.WriteLine("--> {0}", output);
                             }
+                            // After a successful conversion, do not apply any more converters.
                             break;
                         }
                     }
@@ -74,6 +77,10 @@ namespace Orts.DataConverter
                 Console.WriteLine();
                 ShowHelp(converters);
             }
+            catch (Orts.Parsers.Msts.STFException)
+            {
+                // End with failure
+            }
         }
 
         static void ShowHelp(List<IDataConverter> converters)
@@ -89,7 +96,7 @@ namespace Orts.DataConverter
             Console.WriteLine("  Multiple outputs may be specified for each input.");
             Console.WriteLine();
             Console.WriteLine("  Available file format conversions");
-            Console.WriteLine("    Input   Output  Description");
+            Console.WriteLine("               Input  Output              Description");
             foreach (var converter in converters)
             {
                 converter.ShowConversions();
@@ -113,7 +120,7 @@ namespace Orts.DataConverter
                         {
                             throw new InvalidCommandLineException("Expected input filename; got option " + args[i]);
                         }
-                        conversions.Add(new DataConversion(args[i]));
+                        conversions.Add(new DataConversion(args[i].ToLowerInvariant()));
                         break;
                     case "/output":
                         if (conversions.Count == 0)
@@ -139,7 +146,7 @@ namespace Orts.DataConverter
                         {
                             throw new InvalidCommandLineException("Expected output filename; got option " + args[i]);
                         }
-                        conversions.Last().Output.Add(args[i]);
+                        conversions.Last().Output.Add(args[i].ToLowerInvariant());
                         break;
                 }
             }

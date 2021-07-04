@@ -467,6 +467,23 @@ namespace Orts.Common
         }
     }
 
+     [Serializable()]
+    public sealed class BrakemanBrakeCommand : ContinuousCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+        public BrakemanBrakeCommand(CommandLog log, bool toState, float? target, double startTime)
+            : base(log, toState, target, startTime)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.BrakemanBrakeChangeTo(ToState, Target);
+            // Report();
+        }
+    }
+
     [Serializable()]
     public sealed class DynamicBrakeCommand : ContinuousCommand {
         public static MSTSLocomotive Receiver { get; set; }
@@ -532,6 +549,52 @@ namespace Orts.Common
 
         public override string ToString() {
             return base.ToString() + " - " + (ToState ? "disengage" : "engage");
+        }
+    }
+
+    [Serializable()]
+    public sealed class QuickReleaseCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public QuickReleaseCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.TrainBrakeController.QuickReleaseButtonPressed = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "off" : "on");
+        }
+    }
+
+    [Serializable()]
+    public sealed class BrakeOverchargeCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public BrakeOverchargeCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.TrainBrakeController.OverchargeButtonPressed = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "off" : "on");
         }
     }
 
@@ -753,6 +816,36 @@ namespace Orts.Common
     }
 
     [Serializable()]
+    public sealed class VacuumExhausterCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public VacuumExhausterCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (ToState)
+            {
+                if (!Receiver.VacuumExhausterPressed)
+                    Receiver.Train.SignalEvent(Event.VacuumExhausterOn);
+            }
+            else
+            {
+                Receiver.Train.SignalEvent(Event.VacuumExhausterOff);
+            }
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " " + (ToState ? "fast" : "normal");
+        }
+    }
+
+    [Serializable()]
     public sealed class HornCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
@@ -901,7 +994,42 @@ namespace Orts.Common
             // Report();
         }
     }
-    
+
+    [Serializable()]
+    public sealed class ToggleBatteryCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public ToggleBatteryCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.ToggleBattery();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class TogglePowerKeyCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public TogglePowerKeyCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.TogglePowerKey();
+            // Report();
+        }
+    }
     // Steam controls
     [Serializable()]
     public sealed class ContinuousSteamHeatCommand : ContinuousCommand
@@ -921,8 +1049,31 @@ namespace Orts.Common
                 Receiver.SteamHeatChangeTo(ToState, Target);
                            }
             // Report();
-        }   
+        }
     }
+
+    // Large Ejector command
+    [Serializable()]
+    public sealed class ContinuousLargeEjectorCommand : ContinuousCommand
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ContinuousLargeEjectorCommand(CommandLog log, int injector, bool toState, float? target, double startTime)
+            : base(log, toState, target, startTime)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            {
+                Receiver.LargeEjectorChangeTo(ToState, Target);
+            }
+            // Report();
+        }
+    }
+
 
     [Serializable()]
     public sealed class ContinuousSmallEjectorCommand : ContinuousCommand
@@ -1222,6 +1373,25 @@ namespace Orts.Common
     }
 
     [Serializable()]
+    public sealed class ToggleWaterScoopCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public ToggleWaterScoopCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.ToggleWaterScoop();
+        }
+    }
+
+    // Cylinder Cocks command
+    [Serializable()]
     public sealed class ToggleCylinderCocksCommand : Command {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
@@ -1252,6 +1422,25 @@ namespace Orts.Common
         {
             if (Receiver == null) return;
             Receiver.ToggleCylinderCompound();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class ToggleBlowdownValveCommand : Command
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ToggleBlowdownValveCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.ToggleBlowdownValve();
             // Report();
         }
     }

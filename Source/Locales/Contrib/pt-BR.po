@@ -1,0 +1,2002 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2020-01-27 22:58:58-0300\n"
+"PO-Revision-Date: 2020-01-28 20:39-0300\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.4\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: pt_BR\n"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:89
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:555
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:287
+msgid "Activity Editor"
+msgstr "Editor de atividade"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:18
+msgid "0.1"
+msgstr "0.1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:19
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:136
+msgid "Copyright by Open Rails project"
+msgstr "Direitos reservados do projeto Open Rails Brasil"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:20
+msgid "OR"
+msgstr "ORBR"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:21
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:125
+msgid ""
+"Tool intended for the creation of activities for the Open simulator Rail."
+msgstr ""
+"Ferramenta destinada à criação de atividades para o simulador Open Rails."
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:111
+msgid "&OK"
+msgstr "&OK"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:148
+msgid "Version 0.1"
+msgstr "Versão 0.1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:166
+msgid "AboutActEdit"
+msgstr "AboutActEdit"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:47
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:41
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:44
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:162
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:390
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:56
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:519
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:110
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:48
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:42
+#: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:13
+msgid "OK"
+msgstr "OK"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:74
+msgid "ActionDuration"
+msgstr "Duração da ação"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:85
+msgid "Pre-delay :"
+msgstr "Pre-delay :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:100
+msgid "ControlStartProperties"
+msgstr "Controlar propriedades de início"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:75
+msgid ""
+"ActionDuration:\r\n"
+"How long does the action takes.  With a minimum of 10sec and a maximum of "
+"25sec.\r\n"
+msgstr ""
+"Duração de ação:\r\n"
+"Quanto tempo a ação leva. Com um mínimo de 10 segundos e um máximo de 25 "
+"segundos.\r\n"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:86
+msgid ""
+"Pre-Delay:\r\n"
+"Define the advance period for this action before the end of caller.\r\n"
+"Minimum 1sec, maximu 20sec, and not over the ActionDuration\r\n"
+msgstr ""
+"Pre-Delay:\r\n"
+"Define the advance period for this action before the end of caller.\r\n"
+"Minimum 1sec, maximu 20sec, and not over the ActionDuration\r\n"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:52
+msgid "No Parameter to set"
+msgstr "Nenhum parâmetro para definir"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:62
+msgid "ControlStoppedProperties"
+msgstr "Controlar propriedades interrompidas"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:55
+msgid "Delay :"
+msgstr "Atraso :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:72
+msgid "Required Trigger Distance :"
+msgstr "Distância necessária do acionador :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:93
+msgid "HornProperties"
+msgstr "Propriedades de buzina"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:100
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:111
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:339
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:92
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:92
+msgid "Activity Description"
+msgstr "Descrição da atividade"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:123
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:351
+msgid "Path Events"
+msgstr "Eventos do Path"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:131
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:257
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:359
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:295
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:82
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:76
+msgid "Remove"
+msgstr "Remover"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:140
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:273
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:368
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:199
+msgid "Edit"
+msgstr "Editar"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:179
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:406
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:96
+msgid "Description"
+msgstr "Descrição"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:195
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:283
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:422
+msgid "Consist :"
+msgstr "Composição:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:212
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:329
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:439
+msgid "Description :"
+msgstr "Descrição:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:228
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:320
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:455
+msgid "Activity Name : "
+msgstr "Nome da atividade : "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:238
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:249
+msgid "Traffic Description"
+msgstr "Descrição do tráfego"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:464
+msgid "StartActivity"
+msgstr "Iniciar atividade"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:67
+msgid "Give your description :"
+msgstr "Escreva sua descrição:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:76
+msgid "Environment"
+msgstr "Environment"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:105
+msgid "Place Name : "
+msgstr "Colocar nome : "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:115
+msgid "WAIT Activity Description"
+msgstr "WAIT Activity Description"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:127
+msgid "WaitActivity"
+msgstr "WaitActivity"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:530
+msgid "NoMoreAct"
+msgstr "NoMoreAct"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:106
+msgid "menuStrip1"
+msgstr "menuStrip1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:119
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:62
+msgid "File"
+msgstr "Arquivo"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:128
+msgid "New"
+msgstr "Novo"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:135
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:292
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:117
+msgid "Activity"
+msgstr "Atividade"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:143
+msgid "Traffic"
+msgstr "Tráfego"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:154
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:68
+msgid "Save"
+msgstr "Salvar"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:161
+msgid "Metadata"
+msgstr "Metadata"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:169
+msgid "Save As"
+msgstr "Salvar como"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:176
+msgid "Load Activity"
+msgstr "Carregar atividade"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:184
+msgid "Load Metada"
+msgstr "Carregar dados"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:192
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:83
+msgid "Quit"
+msgstr "Sair"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:208
+msgid "Tools"
+msgstr "Ferramentas"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:214
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:532
+msgid "Options"
+msgstr "Opções"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:221
+msgid "Import"
+msgstr "Importar"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:229
+msgid "Help"
+msgstr "Ajuda"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:235
+msgid "About Activity Editor"
+msgstr "Sobre o editor de atividades"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:246
+msgid "statusStrip1"
+msgstr "statusStrip1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:252
+msgid "Status"
+msgstr "Status"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2025
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2127
+msgid "v"
+msgstr "v"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:312
+msgid "Edit Description"
+msgstr "Editar descrição"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:370
+msgid "Add Station Area"
+msgstr "Adicionar área da estação"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:380
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:273
+msgid "Station Configuration"
+msgstr "Configuração de estação"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:389
+msgid "Add Tag"
+msgstr "Adicionar etiqueta"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:399
+msgid "Add Station"
+msgstr "Adicionar estação"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:409
+msgid "Edit MetaSegment"
+msgstr "Editar MetaSegment"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:431
+msgid "Move"
+msgstr "Mover"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:441
+msgid "Rotate"
+msgstr "Girar"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:468
+msgid "Activity Start"
+msgstr "Iniciar atividade"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:478
+msgid "Activity Stop"
+msgstr "Parar atividade"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:488
+msgid "Waiting Point"
+msgstr "Ponto de aguardo"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:498
+msgid "Action Point"
+msgstr "Ponto de ação"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:508
+msgid "Action Check"
+msgstr "Ponto de análise"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:518
+msgid "toolStripButton10"
+msgstr "toolStripButton10"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:136
+msgid "Click to start new Activity Description (not ready)"
+msgstr "Clique para iniciar a nova Descrição da Atividade (não pronta)"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:144
+msgid "Click to create new Traffic description (not ready)"
+msgstr "Clique para criar uma nova descrição de tráfego (não pronta)"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:177
+msgid "Click to load an existing OR Activity (not ready)"
+msgstr "Clique para carregar uma atividade OR existente (não pronta)"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:185
+msgid "Click to Edit Metadata for a specified route"
+msgstr "Clique para editar metadados para uma rota especificada"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:85
+msgid "Form1"
+msgstr "Form1"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
+msgid "Route MetaData"
+msgstr "Rota MetaData"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2003
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2092
+msgid "Display"
+msgstr "Display"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2014
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2116
+msgid "x"
+msgstr "x"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
+msgid "Tag"
+msgstr "Etiqueta"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2106
+msgid "Station"
+msgstr "Estação"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.Designer.cs:107
+msgid "Center view"
+msgstr "Visão centralizada"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:114
+msgid "Editor Options"
+msgstr "Opções do editor"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:124
+msgid "Show Platform Label"
+msgstr "Show Platform Label"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:190
+msgid "Zoom level :"
+msgstr "Nível do zoom :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:200
+msgid "Size of snap circle :"
+msgstr "Tamanho do círculo de encaixe :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:209
+msgid "Show Snap circle"
+msgstr "Mostrar círculo Snap"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:220
+msgid "Show all Signal"
+msgstr "Mostrar todos sinais"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:232
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:435
+msgid "Editor Preference"
+msgstr "Preferência do editor"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:250
+msgid "Path Options"
+msgstr "Opções do path"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:261
+msgid "Please, configure your paths"
+msgstr "Por favor, configure seus paths"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:305
+msgid "Add"
+msgstr "Adicionar"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:316
+msgid "Route Paths"
+msgstr "Paths da rota"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:324
+msgid "Browse"
+msgstr "Procurar"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:342
+msgid "MSTS Path :"
+msgstr "MSTS Path :"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:358
+msgid "Debug Options"
+msgstr "Depurador de opções"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:368
+msgid "Show Snap Track Info"
+msgstr "Mostrar informações da faixa de snap"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:379
+msgid "Show Snap Info"
+msgstr "Mostrar informações de snap"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:390
+msgid "Show Snap Line"
+msgstr "Mostrar linha de encaixe"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:401
+msgid "Show Ruler"
+msgstr "Mostrar régua"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:412
+msgid "Show Track Info"
+msgstr "Mostrar informação de via"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:423
+msgid "Show Tiles"
+msgstr "Mostrar terrenos"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:451
+msgid "Actions Configuration"
+msgstr "Configuração de ações"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:468
+msgid "< remove"
+msgstr "< remover"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:478
+msgid "Add >"
+msgstr "Adicionar >"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:511
+msgid "Configuration for Generic Auxiliary Actions"
+msgstr "Configuração para ações auxiliares genéricas"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:34
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:58
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:29
+msgid "Please, give a name"
+msgstr "Por favor, coloque um nome"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:56
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:104
+msgid "TC Section : "
+msgstr "TC seção : "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:73
+msgid "Buffer Label : "
+msgstr "Etiqueta do buffer : "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:93
+msgid "Buffer Direction : "
+msgstr "Direção do buffer : "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:128
+msgid "BufferInterface"
+msgstr "Interface de Buffer"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:49
+msgid "Not yet implemented"
+msgstr "Ainda não implementado"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:67
+msgid "Connection Direction : "
+msgstr "Direção da conexão : "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:87
+msgid "Connection Label : "
+msgstr "Etiqueta de conexão : "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:130
+msgid "Station Route Interface"
+msgstr "Interface de estação da rota"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:39
+msgid "Please Load Paths:"
+msgstr "Por favor, carregue os paths:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:43
+msgid "List of Paths seems OK:"
+msgstr "Lista de paths parece OK:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:120
+msgid "###"
+msgstr "###"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:162
+msgid "Loaded:"
+msgstr "Carregado:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:94
+msgid "Station :"
+msgstr "Estação:"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:163
+msgid "From"
+msgstr "De"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:174
+msgid " To "
+msgstr " Para "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:185
+msgid "Max. Platform Length"
+msgstr "Comprimento máximo da plataforma"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:196
+msgid "Max. Siding Length"
+msgstr "Comprimento máximo do desvio"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:207
+msgid "Number of Platform"
+msgstr "Número da plataforma"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:218
+msgid "Number of Siding"
+msgstr "Número do desvio"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:229
+msgid "Max. Passing Length"
+msgstr "Comprimento máximo de passagem"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:248
+msgid "Load Paths"
+msgstr "Carregar paths"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:260
+msgid "label7"
+msgstr "label7"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:60
+msgid "Segment Label : "
+msgstr "Etiqueta do segmento : "
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:71
+msgid "TrackSegmentInterface"
+msgstr "Interface do segmento de via"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:108
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:108
+msgid "Activity Name"
+msgstr "Nome da atividade"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:124
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:69
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:69
+msgid "Route Path"
+msgstr "Path de rota"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:141
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:141
+msgid "Activity Editor: Create new activity"
+msgstr "Editor de atividade: Crie uma nova atividade"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:48
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:48
+msgid "Route Configuration: Select Route"
+msgstr "Configuração de rota: Seleciona a rota"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:175
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:139
+msgid "Activity Editor: Specify Train Info"
+msgstr "Editor de atividade: Especifique informaão do trem"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:194
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:158
+msgid "Select Train Consist"
+msgstr "Selecione a composição"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:211
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:175
+msgid "Train Name (Opt.)"
+msgstr "Nome do trem (Opt.)"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:192
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:192
+msgid "< &Back"
+msgstr "< Voltar"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:201
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:201
+msgid "&Next >"
+msgstr "Próxima >"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:211
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:211
+#: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:12
+#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:220
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:220
+msgid "&Finish"
+msgstr "Finalizar"
+
+#: ../../Contrib/ActivityEditor/AEWizard/ExteriorWizardPage.cs:72
+msgid "Welcome to the Sample Setup Wizard"
+msgstr "Bem-vindo ao Assistente de configuração de amostra"
+
+#: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:105
+msgid "Sample Header Title"
+msgstr "Sample Header Title"
+
+#: ../../Contrib/ActivityEditor/AEWizard/InteriorWizardPage.cs:114
+msgid ""
+"Sample header subtitle will help a user complete a certain task in the "
+"Sample wizard by clarifying the task in some way."
+msgstr ""
+"Sample header subtitle will help a user complete a certain task in the "
+"Sample wizard by clarifying the task in some way."
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:92
+msgid "Loading..."
+msgstr "Carregando..."
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:115
+msgid "Open Rails Content Manager"
+msgstr "Open Rails Content Manager"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:626
+msgid "The path you are working on has un-saved changes.\n"
+msgstr "The path you are working on has un-saved changes.\n"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:628
+msgid "Do you really want to Quit?"
+msgstr "Você realmente quer sair?"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:731
+#, csharp-format
+msgid ""
+"Route cannot be loaded.\n"
+"Extension {0} is not supported"
+msgstr "A rota não pode ser carregada. Extensão {0} não é suportada"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:738
+#, csharp-format
+msgid ""
+"Route cannot be loaded.\n"
+"{0} does not exist"
+msgstr "A rota não pode ser carregada. {0} não existe"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:744
+#, csharp-format
+msgid ""
+"Route cannot be loaded.\n"
+"While trying to open {0} the folder {1} was inferred as (MSTS or similar) "
+"install folder but does not contain expected files"
+msgstr ""
+"A rota não pode ser carregada.\n"
+"Ao tentar abrir {0}, a pasta {1} foi inferida como pasta de instalação (MSTS "
+"ou similar), mas não contém os arquivos necessários"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:769
+#, csharp-format
+msgid ""
+"Route cannot be loaded.\n"
+"{0} somehow could not be translated into a loadable route"
+msgstr ""
+"Route cannot be loaded.\n"
+"{0} somehow could not be translated into a loadable route"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:810
+msgid ""
+"Directory is not a valid install directory.\n"
+"The install directory needs to contain ROUTES, GLOBAL, ..."
+msgstr ""
+"O diretório não é um diretório de instalação válido.\n"
+"O diretório de instalação precisa conter ROUTES, GLOBAL, ..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:884
+msgid "Loading route..."
+msgstr "Carregando a rota..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:909
+msgid "Route cannot be loaded. Sorry"
+msgstr "Desculpe! A rota não pode ser carregada"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:980
+msgid "Loading .pat file ..."
+msgstr "Carregando arquivo .pat ..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:983
+msgid "Processing .pat file ..."
+msgstr "Processando arquivo .pat ..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1011
+msgid "Path has been modified. Loading a new path will discard changes."
+msgstr ""
+"O path foi modificado. Carregando um novo path e descartando as mudanças."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1012
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1093
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:99
+msgid "Do you want to continue?"
+msgstr "Você deseja continuar?"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1013
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1094
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:85
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:102
+msgid "Trackviewer Path Editor"
+msgstr "Trackviewer (Editor de path)"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1090
+msgid ""
+"This will open every single .pat file for this route, (try to) fix all "
+"broken nodes, and save the modified path. "
+msgstr ""
+"This will open every single .pat file for this route, (try to) fix all "
+"broken nodes, and save the modified path. "
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1091
+msgid "Potentially it will therefore change all .pat files on disc."
+msgstr "Potentially it will therefore change all .pat files on disc."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1092
+msgid ""
+"This can be useful when a route has been changed and you want all paths to "
+"be corrected."
+msgstr ""
+"Isso pode ser útil quando uma rota foi alterada e você deseja que todos os "
+"paths sejam corrigidos."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:81
+msgid "Select broken path color"
+msgstr "Selecionar cor do caminho quebrado"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:87
+msgid "Select path color (main)"
+msgstr "Selecionar cor do caminho (principal)"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:99
+msgid "Select path color (siding)"
+msgstr "Selecionar cor do caminho (desvio)"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:139
+msgid "Select color for multi-colored straight tracks"
+msgstr "Selecione a cor para faixas retas multicoloridas"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:140
+msgid "Select color for multi-colored curved tracks"
+msgstr "Selecione a cor para faixas curvas multicoloridas"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:141
+msgid "Select color for mono-colored tracks"
+msgstr "Selecionar cor para faixas monocromáticas"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:142
+msgid "Select color for tracks on terrain"
+msgstr "Selecione a cor para os trilhos no terreno"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:144
+msgid "Select color for multi-colored straight roads"
+msgstr "Selecione a cor para estradas retas multicoloridas"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:145
+msgid "Select color for multi-colored curved roads"
+msgstr "Selecione a cor para estradas curvas multicoloridas"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:146
+msgid "Select color for mono-colored roads"
+msgstr "Selecione a cor para estradas monocromáticas"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:147
+msgid "Select color for roads on terrain"
+msgstr "Selecione a cor para estradas no terreno"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:155
+msgid "Select background color"
+msgstr "Selecionar cor de fundo"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:170
+msgid "Select text color"
+msgstr "Selecionar cor do texto"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:182
+msgid "Select item text color"
+msgstr "Selecionar cor do texto do item"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:187
+msgid "Select junction color"
+msgstr "Selecionar cor da junção"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:192
+msgid "Select endnode color"
+msgstr "Selecionar cor do fim de linha"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:197
+msgid "Select siding color"
+msgstr "Selecione a cor do desvio"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:202
+msgid "Select crossing color"
+msgstr "Selecionar cor de cruzamento"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:207
+msgid "Select road crossing color"
+msgstr "Selecionar cor da passagem"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:212
+msgid "Select speedpost color"
+msgstr "Selecionar cor do marcador de velocidade"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:291
+msgid "Select other-paths color"
+msgstr "Selecionar cor de outros paths"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:633
+#, csharp-format
+msgid "Loading terrain ace-files {0}-{1} (scaled down with a factor {2})"
+msgstr ""
+"Carregando arquivos ace do terreno {0} - {1} (reduzido com um fator {2})"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:659
+msgid "Rescaling previously loaded ace-files"
+msgstr "Reescalonando arquivos ace anteriormente carregados"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:61
+msgid "Loading trackfile .trk ..."
+msgstr "Carregando trackfile .trk ..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:65
+msgid "Loading track database .tdb ..."
+msgstr "Carregando track database .tdb ..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:69
+msgid "Loading tsection.dat ..."
+msgstr "Carregando tsection.dat ..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:83
+msgid "Loading road track database .rdb ..."
+msgstr "Carregando road track database .rdb ..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:269
+msgid "Finding the angles to draw signals, endnodes, ..."
+msgstr "Encontrar os ângulos para desenhar sinais e fins de linhas ..."
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:266
+msgid "The .json file could not be read properly."
+msgstr "O arquivo .json não pôde ser lido corretamente."
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:278
+msgid "Some labels could not be read properly."
+msgstr "Alguns rótulos não puderam ser lidos corretamente."
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:285
+msgid "None of the labels could be read properly"
+msgstr "Nenhum dos rótulos pôde ser lido corretamente"
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:289
+msgid "There were no labels read"
+msgstr "Não houve marcadores lidos"
+
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml.cs:76
+msgid "Processing .pat file "
+msgstr "Processando arquivo .pat "
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:180
+msgid "Place start point"
+msgstr "Colocar ponto inicial"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:215
+msgid "Remove start point"
+msgstr "Remover ponto inicial"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:242
+msgid "Clear path (keep tail)"
+msgstr "Clear path (keep tail)"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:266
+msgid "Change start direction"
+msgstr "Mudar direção de início"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:295
+msgid "Place end point"
+msgstr "Colocar ponto final"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:334
+msgid "Remove end point"
+msgstr "Remover ponto final"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:360
+msgid "Place reversal point"
+msgstr "Colocar ponto de reverso"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:397
+msgid "Remove reversal point"
+msgstr "Remover ponto de reverso"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:451
+msgid "Place wait point"
+msgstr "Colocar ponto de aguardo"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:479
+msgid "Edit wait point"
+msgstr "Editar ponto de aguardo"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:503
+msgid "Remove wait point"
+msgstr "Remover ponto de aguardo"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:706
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1276
+msgid "Take other exit"
+msgstr "Mudar de desvio"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:753
+msgid "Add passing path"
+msgstr "Adicionar passagem do path"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:793
+msgid "Start passing path"
+msgstr "Início de passagem do path"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:858
+msgid "Remove passing path"
+msgstr "Remover passagem do path"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:898
+msgid "Fix invalid point"
+msgstr "Corrigir ponto inválido"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:922
+msgid "Delete rest of path"
+msgstr "Excluir restante do caminho"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:951
+msgid "Cut path here and store its tail"
+msgstr "Cut path here and store its tail"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1005
+msgid "Auto-fix broken points"
+msgstr "Corrigir automaticamente pontos defeituosos"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1113
+msgid "Reconnect to tail"
+msgstr "Reconectar atrás"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1174
+msgid "Reconnect passing path"
+msgstr "Reconectar passagem do path"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1947
+msgid "Draw path until here"
+msgstr "Traçar caminho até aqui"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1978
+msgid "Draw path until next broken point"
+msgstr "Traçar caminho até o próximo ponto defeituoso"
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:760
+msgid ""
+"The selected path contains no or only 1 node. The current path was not "
+"extended."
+msgstr ""
+"The selected path contains no or only 1 node. The current path was not "
+"extended."
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:800
+msgid "The selected path has been added as tail and then reconnected."
+msgstr "The selected path has been added as tail and then reconnected."
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:804
+msgid ""
+"The selected path has been added as tail. It was not possible to reconnect "
+"automatically."
+msgstr ""
+"The selected path has been added as tail. It was not possible to reconnect "
+"automatically."
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:847
+msgid "Reversing broken paths is not supported"
+msgstr "A reversão de caminhos defeituosos não é suportada"
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:852
+msgid "Reversing a path without start node is not supported"
+msgstr "Reversing a path without start node is not supported"
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:857
+msgid "Reversing a path without end node is not supported"
+msgstr "Reversing a path without end node is not supported"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:84
+msgid ""
+"Path does not even have a start node.\n"
+"Saving is not possible."
+msgstr ""
+"O path não há um ponto de início.\n"
+"O salvamento não será possível."
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:91
+msgid "* The path does not have a well-defined end-point"
+msgstr "* O path não existe um ponto final definido"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:93
+msgid "* The path has a stored and not-yet reconnected tail"
+msgstr "* The path has a stored and not-yet reconnected tail"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:97
+msgid "The current path is not finished:"
+msgstr "O caminho atual não está concluído:"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:110
+msgid "Saving broken paths might not always work correctly."
+msgstr "Salvar caminhos defeituosos nem sempre poderá funcionar corretamente."
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:111
+msgid "The MSTS format for defining broken paths is not understood very well."
+msgstr ""
+"O formato MSTS para definir caminhos defeituosos não é muito bem "
+"compreendido."
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:112
+msgid "Reopening it in TrackViewer, however, is likely to work."
+msgstr "Reabri-lo no TrackViewer, no entanto, provavelmente funcionará."
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:270
+msgid "Set as invalid in .pat file"
+msgstr "Definir como inválido no arquivo .pat"
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:272
+msgid "Closest junction is too far away"
+msgstr "A junção mais próxima fica muito longe"
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:274
+msgid "Not able to place node on track"
+msgstr "Not able to place node on track"
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:276
+msgid "Dangling siding node"
+msgstr "Dangling siding node"
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:278
+msgid "Unknown"
+msgstr "Desconhecido (a)"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:52
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:53
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:54
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:55
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:58
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:143
+msgid "1"
+msgstr "1"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:148
+msgid "10"
+msgstr "10"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:269
+msgid "99"
+msgstr "99"
+
+#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:91
+msgid "Please restart TrackViewer in order to load the new language."
+msgstr "Por favor reinicie o TrackViewer para carregar o novo idioma."
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:403
+msgid "<Select path>"
+msgstr "<Selecionar path>"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:419
+msgid "<Select station>"
+msgstr "<Selecionar estação>"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:432
+msgid "<Select platform>"
+msgstr "<Selecionar plataforma>"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:445
+msgid "<Select siding>"
+msgstr "<Selecionar desvio>"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:558
+msgid "ctrl-R\tReload the route\n"
+msgstr "ctrl-R\t - Recarregar a rota\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:559
+msgid "Q\tQuit\n"
+msgstr ""
+"Q - \tSair\n"
+"\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:561
+msgid "=\tZoom-in (and keep zooming)\n"
+msgstr "=\t Ampliar (e continuar ampliando)\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:562
+msgid "shift-=\tZoom-in\n"
+msgstr "shift-=\t - Mais Zoom\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:563
+msgid "-\tZoom-out (and keep zooming)\n"
+msgstr "-\tDiminuir o zoom (e continuar diminuindo)\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:564
+msgid "shift--\tZoom-out\n"
+msgstr "shift--\tReduzir o zoom\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:565
+msgid "Z\tZoom to tile\n"
+msgstr "Z - \tAplicar zoom ao terreno\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:566
+msgid "M\tToggle zoom center\n"
+msgstr "M - \tAlternar centro de zoom\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:567
+msgid "R\tZoom reset\n"
+msgstr "R - \tRedefinição de zoom\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:568
+msgid "L\tAdd label\n"
+msgstr "L - \tAdicionar marcador\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:570
+msgid "shift-C\t\tShift center to current mouse location\n"
+msgstr "shift-C\t\t - Centralizar a localização atual do mouse\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:571
+msgid "left arrow\tShift left\n"
+msgstr "seta para a esquerda\t Shift para a esquerda\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:572
+msgid "down arrow\tShift down\n"
+msgstr ""
+"seta para baixo\t Shift para baixo\n"
+"\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:573
+msgid "right arrow\tShift right\n"
+msgstr ""
+"seta para a direita\t Shift para a direita\n"
+"\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:574
+msgid "up arrow\t\tShift up\n"
+msgstr ""
+"seta para cima\t\t Shift para cima\n"
+"\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:576
+msgid "F5\tShow speed-limits\n"
+msgstr "F5\t - Mostrar limites de velocidades\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:577
+msgid "shift-F5\tShow mileposts\n"
+msgstr "shift-F5\t - Mostrar quilometragem\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:578
+msgid "F6\tShow terrain\n"
+msgstr "F6\t - Mostrar terreno\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:579
+msgid "ctrl-F6\tShow DM terrain\n"
+msgstr "ctrl-F6\t - Mostrar DM terreno\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:580
+msgid "shift-F6\tShow terrain patch lines\n"
+msgstr "shift-F6\t - Mostrar linhas do path no terreno\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:581
+msgid "F7\tshow signals\n"
+msgstr "F7\t - Mostrar sinais\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:582
+msgid "F8\tShow platforms\n"
+msgstr "F8\t - Mostrar plataformas\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:583
+msgid "shift-F8\tShow platform-names\n"
+msgstr "shift-F8\t - Mostrar nomes das plataformas\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:584
+msgid "F9\tShow sidings\n"
+msgstr "F9\t - Mostrar desvios\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:585
+msgid "shift-F9\tShow siding-names\n"
+msgstr "shift-F9\t - Mostrar nomes dos desvios\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:586
+msgid "F10\tHighlight tracks\n"
+msgstr "F10\t - Realçar vias \n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:587
+msgid "shift-F10\tHighlight items\n"
+msgstr "shift-F10\t -Realçar itens\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:588
+msgid "F11\tShow path\n"
+msgstr "F11\t - Mostrar o path\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:589
+msgid "shift-F11\tShow raw path\n"
+msgstr "shift-F11\t - Mostrar path não finalizado\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:591
+msgid "C\t\tShift to center of current path node\n"
+msgstr "C-Shift \t\t - Mudar para o centro do ponto do caminho atual\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:592
+msgid "PgUp\t\tShow more of the path\n"
+msgstr "PgUp\t\t - Mostrar mais do path\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:593
+msgid "PgDn\t\tShow less of the path\n"
+msgstr "PgDn\t\t - Mostrar menos do caminho\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:594
+msgid "shift-PgUp\tShow the full path\n"
+msgstr "shift-PgUp\t - Mostrar o path completo\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:595
+msgid "shift-PgDn\tShow only start point of path\n"
+msgstr "shift-PgDn\t - Mostrar apenas o ponto inicial do caminho\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:596
+msgid "E\t\tPlace end-point\n"
+msgstr "E\t\t - Colocar ponto final\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:597
+msgid "W\t\tPlace a wait-point\n"
+msgstr "W\t\t - Colocar ponto de aguardo\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:598
+msgid "ctrl-Z\t\tUndo in path editor\n"
+msgstr "ctrl-Z\t\t - Desfazer no editor de path\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:599
+msgid "ctrl-Y\t\tRedo in path editor\n"
+msgstr "ctrl-Y\t\t - Refazer no editor de caminho\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:601
+msgid "alt-?\t\tVarious keys to open submenus\n"
+msgstr "alt-?\t\t - Várias teclas para abrir submenus\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:602
+msgid "Keyboard shortcuts"
+msgstr "Atalhos do teclado"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:608
+msgid "This is ORTS TrackViewer, version "
+msgstr "Este é o ORTS TrackViewer, versão "
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:611
+msgid "It is a 'Contribution' to ORTS, and as such\n"
+msgstr "É uma ''contribuição'' para o ORTS e, como tal\n"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:612
+msgid "not an integral part of ORTS."
+msgstr "não é parte integrante do ORTS."
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:620
+msgid "Documentation is available"
+msgstr "Documentação está disponível"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:624
+msgid "Right column → Open Rails Trackviewer"
+msgstr "Coluna da direita → Open Rails Trackviewer"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:626
+msgid "Do you want to go to the website?"
+msgstr "Você quer ir ao site?"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:628
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:174
+msgid "Documentation"
+msgstr "Documentação"
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:4
+msgid "Label"
+msgstr "Rótulo"
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:14
+msgid "Delete label"
+msgstr "Apagar rótulo"
+
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:4
+msgid "Result of auto correcting all paths"
+msgstr "Resultado da correção automática de todos os paths"
+
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:19
+msgid ""
+"\n"
+"            Save the above overview"
+msgstr ""
+"\n"
+"            Salve a visão geral acima"
+
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:23
+msgid "directly"
+msgstr "diretamente"
+
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:24
+msgid "individually with confirmation"
+msgstr "individualmente com confirmação"
+
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:26
+msgid ""
+"\n"
+"            Cancel"
+msgstr ""
+"\n"
+"            Cancelar"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:4
+msgid "Path metadata"
+msgstr "Dados do path"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:7
+msgid "Path ID"
+msgstr "Nome mostrado do path"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:11
+msgid "Path name"
+msgstr "Nome do path"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:15
+msgid "Path start"
+msgstr "Início do path"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:19
+msgid "Path end"
+msgstr "Fim do path"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:22
+msgid "Player path"
+msgstr "Path do jogador"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:57
+msgid " OK "
+msgstr " OK "
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:58
+msgid " Cancel "
+msgstr " Cancelar "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:4
+msgid "(Un)couple Point"
+msgstr "Ponto de desacoplamento"
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:7
+msgid "Uncouple  "
+msgstr "Desacoplar  "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:8
+msgid "Couple  "
+msgstr "Acoplar  "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:10
+msgid "cars, wait for "
+msgstr "vagões, espera "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:12
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:12
+msgid "seconds"
+msgstr "segundos"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:4
+msgid "Wait Point"
+msgstr "Aguardar ponto"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:8
+msgid "Wait time: "
+msgstr "Aguardar horário : "
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:10
+msgid "minutes"
+msgstr "minutos"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:15
+msgid "Openrails advanced shunting options:"
+msgstr "Openrails advanced shunting options:"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:19
+msgid "Wait until:  "
+msgstr "Espere até:  "
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:21
+msgid ":"
+msgstr ":"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:23
+msgid "HH:MM"
+msgstr "HH:MM"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:27
+msgid "Uncouple: keep "
+msgstr "Desacoplar: manter "
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:29
+msgid " cars, and wait"
+msgstr " vagões, e aguarde"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
+msgid "seconds. "
+msgstr "segundos. "
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:32
+msgid "Keep rear"
+msgstr "Mantenha a retaguarda"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:36
+msgid "Join and split"
+msgstr "Unir e dividir"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
+msgid "AI train request to pass red signal"
+msgstr "Solicitação de trem AI para passar o sinal vermelho"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:44
+msgid "Blow horn for"
+msgstr "Buzina para"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:50
+msgid "Wait time code as decimal ="
+msgstr "Wait time code as decimal ="
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:51
+msgid "00000"
+msgstr "00000"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:52
+msgid "hexadecimal ="
+msgstr "hexadecimal ="
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
+msgid "0000"
+msgstr "0000"
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:6
+msgid "Charting the path"
+msgstr "Traçando o caminho"
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
+msgid ""
+"Save the data of the chart in json format into a .js file.The saved data can "
+"then be used to show the chart on an HTML5 canvas."
+msgstr ""
+"Salve os dados do gráfico no formato json em um arquivo .js. Os dados salvos "
+"podem ser usados para mostrar o gráfico em uma tela HTML5."
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
+msgid "Save json"
+msgstr "Salvar json"
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:66
+msgid "Save the data of the chart in json format into a .js file."
+msgstr "Salve os dados do gráfico no formato json em um arquivo .js."
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:67
+msgid "The saved data can then be used to show the chart on an HTML5 canvas."
+msgstr ""
+"Os dados salvos podem ser usados para mostrar o gráfico em uma tela HTML5."
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
+msgid "_File"
+msgstr "_Arquivo"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
+msgid "(Re)load route (ctrl-R)"
+msgstr "Recarregar rota (ctrl-R)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:10
+msgid "Select install folder"
+msgstr "Selecionar pasta de instalação"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:11
+msgid "Select route"
+msgstr "Selecionar rota"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:13
+msgid "Search by index"
+msgstr "Pesquisa por índice"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:14
+msgid "Search trackNode"
+msgstr "Pesquisar trackNode"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:15
+msgid "Search trackNode for roads"
+msgstr "Pesquisar trackNode para estradas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:16
+msgid "Search trackItem"
+msgstr "Pesquisar item de via"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:17
+msgid "Search trackItem for roads"
+msgstr "Pesquisar item de via para estradas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:20
+msgid "Quit (Q)"
+msgstr "Sair (Q)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:22
+msgid "_View"
+msgstr "_Ver"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:23
+msgid "Center around station"
+msgstr "Centralizar na estação"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:26
+msgid "Center around platform"
+msgstr "Centralizar em torno da plataforma"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:29
+msgid "Center around siding"
+msgstr "Centralizar em torno do desvio"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:33
+msgid "Paths"
+msgstr "Paths"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:34
+msgid "Show path (F11)"
+msgstr "Mostrar path (F11)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:35
+msgid "Show raw path from .pat file (shift-F11)"
+msgstr "Mostrar caminho não finalizado do arquivo .pat (shift-F11)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:37
+msgid "Track Coloring"
+msgstr "Via colorida"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:38
+msgid "Color tracks"
+msgstr "Cor de vias"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:39
+msgid "Highlight tracks (F10)"
+msgstr "Realçar vias (F10)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:41
+msgid "Additional views"
+msgstr "Visões adicionais"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:42
+msgid "Show inset"
+msgstr "Mostrar inserção"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:43
+msgid "Show world tiles"
+msgstr "Mostrar blocos do mundo"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:44
+msgid "Show grid lines"
+msgstr "Mostrar linhas de grade"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:45
+msgid "Show scale ruler"
+msgstr "Mostrar régua de escala"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:46
+msgid "Show longitude/latitude"
+msgstr "Mostrar longitude/latitude"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:48
+msgid "Labels"
+msgstr "Etiquetas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:49
+msgid "Show labels"
+msgstr "Mostrar etiquetas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:49
+msgid "For adding a label, press L"
+msgstr "Para adicionar uma etiqueta, aperte L"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:50
+msgid "Load labels"
+msgstr "Carregar etiquetas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:51
+msgid "Save labels"
+msgstr "Salvar etiquetas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
+msgid "Save current zoom"
+msgstr "Salvar zoom atual"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:55
+msgid "Restore saved zoom"
+msgstr "Restaurar o zoom salvo"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
+msgid "Zoom in (=)"
+msgstr "Mais Zoom (=)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
+msgid "Zoom out (-)"
+msgstr "Reduzir o zoom (-)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:59
+msgid "Zoom to tile (Z)"
+msgstr "Aplicar zoom ao bloco (Z)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
+msgid "Zoom reset (R)"
+msgstr "Resetar zoom (R)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
+msgid "Anti aliasing (needs restart)"
+msgstr "Anti serrilhado (precisa reiniciar)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
+msgid "Track _items"
+msgstr "Itens de via"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
+msgid "Show all items"
+msgstr "Mostrar todos os itens"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
+msgid "Show no items"
+msgstr "Não mostrar os itens"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:67
+msgid "Highlight items (shift-F10)"
+msgstr "Realçar itens (shift-F10)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
+msgid "Junctions/ends"
+msgstr "Junções/fins de linhas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
+msgid "Show junctions"
+msgstr "Mostrar junções"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:70
+msgid "Show end nodes"
+msgstr "Mostrar pontos finais"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:71
+msgid "Show crossovers"
+msgstr "Mostrar cruzamentos"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
+msgid "Sidings"
+msgstr "Desvios"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:74
+msgid "Show siding markers (F9)"
+msgstr "Mostrar marcadores de desvios (F9)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:75
+msgid "Show siding names (shift-F9)"
+msgstr "Mostrar nomes dos desvios (shift-F9)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
+msgid "Platforms"
+msgstr "Plataformas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
+msgid "Show platform markers (F8)"
+msgstr "Mostrar marcadores de plataformas (F8)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:79
+msgid "Show platform names (shift-F8)"
+msgstr "Mostrar os nomes das plataformas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:80
+msgid "Show station names (shift-F8)"
+msgstr "Mostrar os nomes das estações"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
+msgid "Interactives"
+msgstr "Interatividades"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:83
+msgid "Show signals (F7)"
+msgstr "Mostrar sinais (F7)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:84
+msgid "Show also other signals"
+msgstr "Show also other signals"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:85
+msgid "Show level crossings"
+msgstr "Show level crossings"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:86
+msgid "Show hazards"
+msgstr "Show hazards"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:87
+msgid "Show fuel/pickups"
+msgstr "Mostrar abastecimentos"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:88
+msgid "Show sound regions"
+msgstr "Mostrar sons da rota"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
+msgid "Posts"
+msgstr "Posts"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:91
+msgid "Show speed limits (F5)"
+msgstr "Mostrar limites de via (F5)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
+msgid "Show mileposts (shift-F5)"
+msgstr "Mostrar kilometragem (shift-F5)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:94
+msgid "Roads"
+msgstr "Estradas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:95
+msgid "Draw roads"
+msgstr "Desenhar estradas"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
+msgid "Show car spawners"
+msgstr "Mostrar criadores de veículos"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
+msgid "Show road crossings"
+msgstr "Mostrar cruzamentos"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
+msgid "_Statusbar"
+msgstr "_Barra de status"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
+msgid "Show vector section info"
+msgstr "Mostrar informações da seção do vetor"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:103
+msgid "Show PAT file info"
+msgstr "Mostrar arquivo de informação do PAT"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
+msgid "Show Path info"
+msgstr "Mostrar informação do path"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:107
+msgid "Show terrain info"
+msgstr "Mostrar informação do terreno"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:109
+msgid "Show signal info"
+msgstr "Mostrar informação do sinal"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:111
+msgid "Show platform/station names"
+msgstr "Mostrar nomes de plataformas e estações"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:114
+msgid "_Preferences"
+msgstr "_Preferências"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:115
+msgid "Zooming is centered on mouse (M)"
+msgstr "O zoom está centralizado no mouse (M)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:117
+msgid "Use miles i.s.o. meters"
+msgstr "Usar milhas ou metros"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:118
+msgid "Select language"
+msgstr "Selecione o idioma"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:123
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:150
+msgid "Highlight last-drawn section"
+msgstr "Destacar seção desenhada por último"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:124
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:151
+msgid "Enable editing"
+msgstr "Habilitar edição"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:125
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:152
+msgid "Show current mouse action"
+msgstr "Mostrar ação atual do mouse"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:153
+msgid "Shift-PgUp also extends path"
+msgstr "Shift-PgUp também estende o caminho"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
+msgid "Path-_Editor"
+msgstr "Editor de Path"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:130
+msgid "==Supporting MSTS paths only=="
+msgstr "== Suporte apenas a caminhos MSTS =="
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:131
+msgid "Load path"
+msgstr "Carregar path salvo"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:135
+msgid "Show other paths"
+msgstr "Mostrar outros paths"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:137
+msgid "Save path"
+msgstr "Salvar path"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:138
+msgid "Save visited stations"
+msgstr "Save visited stations"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:139
+msgid "Show chart"
+msgstr "Mostrar informações do path"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:141
+msgid "New path"
+msgstr "Novo path"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:143
+msgid "Extend with other path"
+msgstr "Extend with other path"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:147
+msgid "Edit path metadata"
+msgstr "Editar configurações do path"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:148
+msgid "Reverse path"
+msgstr "Path de reverso"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:155
+msgid "Auto-fix all broken nodes"
+msgstr "Corrigir automaticamente todos os pontos defeituosos"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:156
+msgid "Auto-fix all broken paths"
+msgstr "Corrigir automaticamente todos os paths defeituosos"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:158
+msgid "_Terrain"
+msgstr "_Terreno"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:159
+msgid "Show terrain textures (F6)"
+msgstr "Mostrar texturas do terreno (F6)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:160
+msgid "Show DM terrain textures (ctrl-F6)"
+msgstr "Mostrar texturas do terreno DM (ctrl-F6)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:161
+msgid "Show patch lines (shift-F6)"
+msgstr "Mostrar linhas do path (shift-F6)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:163
+msgid "Memory reduction options"
+msgstr "Opções de redução de memória"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:164
+msgid "No reduction"
+msgstr "Sem redução"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:165
+msgid "Automatic reduction"
+msgstr "Redução automática"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:166
+msgid "Reduce by linear factor 2"
+msgstr "Reduzir pelo fator linear 2"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:167
+msgid "Reduce by linear factor 4"
+msgstr "Reduzir pelo fator linear 4"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:168
+msgid "Reduce by linear factor 8"
+msgstr "Reduzir pelo fator linear 8"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:169
+msgid "Reduce by linear factor 16"
+msgstr "Reduzir pelo fator linear 16"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:172
+msgid "_Help"
+msgstr "_Ajuda"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:173
+msgid "Shortcuts"
+msgstr "Atalhos"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:175
+msgid "About"
+msgstr "Sobre"
+
+#: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:8
+msgid "Select paths to draw"
+msgstr "Selecionar caminhos para desenhar"
+
+#: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:12
+msgid "Clear all"
+msgstr "Limpar tudo"
+
+#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:4
+#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:13
+msgid "Search"
+msgstr "Pesquisar"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
+msgid "Shows tileX and tileZ of the world location at the mouse pointer"
+msgstr "Mostra tile X e tile Z da localização no ponteiro do mouse"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:41
+msgid "Shows X-coordinate (without tileX) at the mouse pointer"
+msgstr "Mostra coordenada X (sem tile X) no ponteiro do mouse"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:48
+msgid "Shows Z-coordinate (without tileZ) at the mouse pointer"
+msgstr "Mostra coordenada Z (sem tile Z) no ponteiro do mouse"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:54
+msgid "Trackindex"
+msgstr "Índice da via"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:60
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:79
+msgid "Index in the Track DataBase (.tdb) file"
+msgstr "Índice no arquivo Track DataBase (.tdb)"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:66
+msgid "Item"
+msgstr "Item"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:99
+msgid "Any other relevant information. Make your choice via Statusbar menu"
+msgstr ""
+"Qualquer outra informação relevante. Faça sua escolha através do menu da "
+"barra de status"

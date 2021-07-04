@@ -73,6 +73,7 @@ namespace Orts.Formats.Msts
             OPP_SIG_MR,
             NEXT_NSIG_LR,
             DIST_MULTI_SIG_MR,
+            DIST_MULTI_SIG_MR_OF_LR,
             NEXT_SIG_ID,
             NEXT_NSIG_ID,
             OPP_SIG_ID,
@@ -90,6 +91,8 @@ namespace Orts.Formats.Msts
             CHECK_TIMING_TRIGGER,
             TRAINHASCALLON,
             TRAINHASCALLON_RESTRICTED,
+            TRAINHASCALLON_ADVANCED,
+            TRAINHASCALLON_RESTRICTED_ADVANCED,
             TRAIN_REQUIRES_NEXT_SIGNAL,
             FIND_REQ_NORMAL_SIGNAL,
             ROUTE_CLEARED_TO_SIGNAL,
@@ -107,6 +110,7 @@ namespace Orts.Formats.Msts
             THIS_SIG_HASNORMALSUBTYPE,
             NEXT_SIG_HASNORMALSUBTYPE,
             ID_SIG_HASNORMALSUBTYPE,
+            SWITCHSTAND,
             DEBUG_HEADER,
             DEBUG_OUT,
             RETURN,
@@ -1595,23 +1599,20 @@ namespace Orts.Formats.Msts
                 }
 
                 // process function part
-
-                try
+                if (Enum.TryParse(StatementParts[0], true, out SCRExternalFunctions exFunction))
                 {
-                    SCRExternalFunctions exFunction =
-                            (SCRExternalFunctions)Enum.Parse(typeof(SCRExternalFunctions), StatementParts[0], true);
                     FunctionParts.Add(exFunction);
-
                 }
-                catch (Exception ex)
+                else
                 {
                     valid_func = false;
-                    Trace.TraceWarning("sigscr-file line {1} : Unknown function call : {0}\nDetails : {2}",
-                        FunctionStatement, linenumber.ToString(), ex.ToString());
+                    Trace.TraceWarning("sigscr-file line {1} : Unknown function call : {0}\n",
+                        FunctionStatement, linenumber.ToString());
 #if DEBUG_PRINT_IN
                     File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown function call : " + FunctionStatement + "\n");
 #endif
                 }
+
 
                 // remove closing bracket
 
@@ -1656,201 +1657,85 @@ namespace Orts.Formats.Msts
 
             static public SCRParameterType process_TermPart(string TermString, IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes, int linenumber)
             {
+                TermString = TermString.ToUpper();
 
-                bool termset = false;
-                SCRParameterType TermParts = new SCRParameterType(SCRTermType.Constant, 0);
+                // Skip over any leading "#"
+                if (TermString.StartsWith("#"))
+                    TermString = TermString.Substring(1);
 
-                // check for use of #
-                if (String.Compare(TermString.Substring(0, 1), "#") == 0)
-                {
-                    TermString = TermString.Substring(1).Trim();
-                }
+                // try integer literal
+                if (int.TryParse(TermString, out int tmpint))
+                    return new SCRParameterType(SCRTermType.Constant, tmpint);
 
-
-                // try constant
-
-                try
-                {
-                    int tmpint = int.Parse(TermString);
-                    TermParts = new SCRParameterType(SCRTermType.Constant, tmpint);
-                    termset = true;
-                }
-                catch (Exception Ex)
-                {
-                    if (TermString.Length < 1)
-                        Trace.Write(Ex.ToString());   // dummy statement to avoid compiler warning
-                }
-
-                // try external float
-
-                if (!termset)
-                {
-                    try
-                    {
-                        SCRExternalFloats exFloat =
-                                (SCRExternalFloats)Enum.Parse(typeof(SCRExternalFloats), TermString, true);
-                        TermParts = new SCRParameterType(SCRTermType.ExternalFloat, (int)exFloat);
-                        termset = true;
-                    }
-                    catch (Exception Ex)
-                    {
-                        if (TermString.Length < 1)
-                            Trace.Write(Ex.ToString());   // dummy statement to avoid compiler warning
-                    }
-                }
+                // try external float, e.g. BLOCK_STATE
+                else if (Enum.TryParse(TermString, true, out SCRExternalFloats exFloat))
+                    return new SCRParameterType(SCRTermType.ExternalFloat, (int)exFloat);
 
                 // try local float
+                else if (LocalFloats.TryGetValue(TermString, out uint def))
+                    return new SCRParameterType(SCRTermType.LocalFloat, (int)def);
 
-                if (!termset)
+                int? ParseEnum<TEnum>(string part) where TEnum : struct
                 {
-                    foreach (KeyValuePair<string, uint> intFloat in LocalFloats)
-                    {
-                        string intFloatName = intFloat.Key;
-                        uint intFloatDef = intFloat.Value;
-
-                        if (String.Compare(TermString, intFloatName) == 0)
-                        {
-                            TermParts = new SCRParameterType(SCRTermType.LocalFloat, (int)intFloatDef);
-                            termset = true;
-                        }
-                    }
+                    if (Enum.TryParse(part, ignoreCase: true, out TEnum value))
+                        return (int)(object)value;
+                    else
+                        return null;
                 }
-
-                // try blockstate
-
-                if (!termset)
+                int? ParseList(IList<string> list, string part)
                 {
-                    if (TermString.StartsWith("BLOCK_"))
-                    {
-                        string partString = TermString.Substring(6);
-                        try
-                        {
-                            MstsBlockState Blockstate =
-                                    (MstsBlockState)Enum.Parse(typeof(MstsBlockState), partString, true);
-                            TermParts = new SCRParameterType(SCRTermType.Block, (int)Blockstate);
-                        }
-                        catch (Exception Ex)
-                        {
-                            Trace.TraceWarning("sigscr-file line {1} : Unknown Blockstate : {0}\nDetails {2}: ",
-                                partString, linenumber.ToString(), Ex.ToString());
-#if DEBUG_PRINT_IN
-                            File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown Blockstate : " + partString + "\n");
-#endif
-                        }
-                        termset = true;
-                    }
+                    var idx = list.IndexOf(part);
+                    if (idx > -1)
+                        return idx;
+                    else
+                        return null;
                 }
+                (string, SCRTermType, Func<string, int?>)[] parameterParsers = {
+                    // try BLOCK_CLEAR etc
+                    ("BLOCK_", SCRTermType.Block, ParseEnum<MstsBlockState>),
+                    // try SIGASP definition
+                    ("SIGASP_", SCRTermType.Sigasp, ParseEnum<MstsSignalAspect>),
+                    // try SIGFN definition
+                    ("SIGFN_", SCRTermType.Sigfn, part => ParseList(ORSignalTypes, part)),
+                    // try ORSubtype definition
+                    ("ORSUBTYPE_", SCRTermType.ORNormalSubtype, part => ParseList(ORNormalSubtypes, part)),
+                    // try SIGFEAT definition
+                    ("SIGFEAT_", SCRTermType.Sigfeat, part => ParseList(SignalShape.SignalSubObj.SignalSubTypes, part)),
+                };
 
-
-                // try SIGASP definition
-
-                if (!termset)
+                foreach (var (tokenType, termType, Parse) in parameterParsers)
                 {
-                    if (TermString.StartsWith("SIGASP_"))
+                    if (TermString.StartsWith(tokenType))
                     {
-                        string partString = TermString.Substring(7);
-                        try
+                        var part = TermString.Substring(tokenType.Length);
+                        var parsed = Parse(part);
+                        if (parsed.HasValue)
                         {
-                            MstsSignalAspect Aspect =
-                                    (MstsSignalAspect)Enum.Parse(typeof(MstsSignalAspect), partString, true);
-                            TermParts = new SCRParameterType(SCRTermType.Sigasp, (int)Aspect);
-                        }
-                        catch (Exception Ex)
-                        {
-                            Trace.TraceWarning("sigscr-file line {1} : Unknown Aspect : {0}\nDetails : {2}",
-                                partString, linenumber.ToString(), Ex.ToString());
-#if DEBUG_PRINT_IN
-                            File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown Aspect : " + partString + "\n");
-#endif
-                        }
-                        termset = true;
-                    }
-                }
-
-                // try SIGFN definition
-
-                if (!termset)
-                {
-                    if (TermString.StartsWith("SIGFN_"))
-                    {
-                        string partString = TermString.Substring(6);
-
-                        if (ORSignalTypes.Contains(partString.ToUpper()))
-                        {
-                            TermParts = new SCRParameterType(SCRTermType.Sigfn, ORSignalTypes.IndexOf(partString.ToUpper()));
+                            return new SCRParameterType(termType, parsed.Value);
                         }
                         else
                         {
-                            Trace.TraceWarning("sigscr-file line {1} : Unknown SIGFN Type : {0} \n",
-                                partString, linenumber.ToString());
-#if DEBUG_PRINT_IN
-                            File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown Type : " + partString + "\n");
-#endif
+                            TraceError(linenumber, tokenType, TermString);
+                            break;
                         }
-                        termset = true;
                     }
                 }
 
-                // try ORSubtype definition
-
-                if (!termset)
-                {
-                    if (TermString.StartsWith("ORSUBTYPE_"))
-                    {
-                        string partString = TermString.Substring(10);
-
-                        if (ORNormalSubtypes.Contains(partString.ToUpper()))
-                        {
-                            TermParts = new SCRParameterType(SCRTermType.ORNormalSubtype, ORNormalSubtypes.IndexOf(partString.ToUpper()));
-                        }
-                        else
-                        {
-                            Trace.TraceWarning("sigscr-file line {1} : Unknown ORSUBTYPE : {0} \n",
-                                partString, linenumber.ToString());
-#if DEBUG_PRINT_IN
-                            File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown Type : " + partString + "\n");
-#endif
-                        }
-                        termset = true;
-                    }
-                }
-
-                // try SIGFEAT definition
-
-                if (!termset)
-                {
-                    if (TermString.StartsWith("SIGFEAT_"))
-                    {
-                        string partString = TermString.Substring(8);
-                        try
-                        {
-                            int sfIndex = Orts.Formats.Msts.SignalShape.SignalSubObj.SignalSubTypes.IndexOf(partString);
-                            TermParts = new SCRParameterType(SCRTermType.Sigfeat, sfIndex);
-                        }
-                        catch (Exception Ex)
-                        {
-                            Trace.TraceWarning("sigscr-file line {1} : Unknown SubType : {0}\nDetails {2}",
-                                partString, linenumber.ToString(), Ex.ToString());
-#if DEBUG_PRINT_IN
-                            File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown SubType : " + partString + "\n");
-#endif
-                        }
-                        termset = true;
-                    }
-                }
-
-                // nothing found - set error
-
-                if (!termset)
-                {
-                    Trace.TraceWarning("sigscr-file line {1} : Unknown parameter in statement : {0}", TermString, linenumber.ToString());
-#if DEBUG_PRINT_IN
-                    File.AppendAllText(din_fileLoc + @"sigscr.txt", "Unknown parameter : " + TermString + "\n");
-#endif
-                }
-
-                return TermParts;
+                return new SCRParameterType(SCRTermType.Constant, 0);
             }//process_TermPart
+
+            private static void Debugprocess_FunctionCall(SCRParameterType TermParts)
+            {
+                Trace.WriteLine($"SignalScript: {TermParts.PartParameter}, {TermParts.PartType}");
+            }
+
+            private static void TraceError(int lineNumber, string tokenType, string termString )
+            {
+#if DEBUG_PRINT_IN
+                                File.AppendAllText(din_fileLoc + @"sigscr.txt", $"Unknown {tokenType} : {termString}\n");
+#endif
+                Trace.TraceWarning($"sigscr-file line {lineNumber} : Unknown {tokenType} : {termString}");
+            }
 
             //================================================================================================//
             //
@@ -2219,18 +2104,10 @@ namespace Orts.Formats.Msts
                     if (StatementParts.Length == 2)
                     {
                         string assignPart = StatementParts[0].Trim();
-                        try
+                        if (Enum.TryParse(assignPart, true, out SCRExternalFloats exFloat))  // try external float, e.g. BLOCK_STATE
                         {
-
-                            SCRExternalFloats exFloat =
-                                    (SCRExternalFloats)Enum.Parse(typeof(SCRExternalFloats), assignPart, true);
                             AssignParameter = (int)exFloat;
                             AssignType = SCRTermType.ExternalFloat;
-                        }
-                        catch (Exception Ex)
-                        {
-                            if (StatementLine.Length < 1)
-                                Trace.Write(Ex.ToString());   // dummy statement to avoid compiler warning
                         }
 
                         foreach (KeyValuePair<string, uint> intFloat in LocalFloats)
@@ -2247,12 +2124,9 @@ namespace Orts.Formats.Msts
                         // get positions of allowed operators
 
                         TermPart = StatementParts[1].Trim();
-
                     }
                     else
                     {
-
-
                         // Term part
                         // get positions of allowed operators
 

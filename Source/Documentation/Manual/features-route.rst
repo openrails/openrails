@@ -13,6 +13,9 @@ such as also accepting textures in .dds format.
 Modifications to .trk Files
 ===========================
 
+.. index::
+   single: ORTSUserPreferenceForestClearDistance
+
 Many of the features described in this chapter require additional parameters to be 
 added in the route's .trk file. The additional parameters can be directly added at 
 the end (just above the last parenthesis) of  
@@ -29,6 +32,8 @@ As an example, in case of the parameter needed to avoid forest trees on tracks (
         ORTSUserPreferenceForestClearDistance ( 2 )
 
 Only OR will look in the ``Openrails`` folder.
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 Repetition of Snow Terrain Textures
 ===================================
@@ -89,6 +94,9 @@ in explore mode or within activities are available in the Open Rails pack.
 Within the route's folder an OpenRails subfolder must be created, that must contain 
 2 files. The first one is following file ``turntables.dat``, which contains the data needed 
 to OR to locate and specify the turntable.
+
+.. index::
+   single: Turntable
 
 turntables.dat::
 
@@ -207,6 +215,10 @@ have been created. More can be read
 Transfertables
 --------------
 
+.. index::
+   single: Turntable
+   single: Transfertable
+
 Info for transfertables is stored in file ``turntables.dat`` too. This file may contain 
 info for transfertables and turntables together. Here is an example of such file for 
 a turntable and a transfertable::
@@ -243,6 +255,13 @@ In the standard ``tsection.dat`` there are no usable transfertables defined. The
 at least a new TrackShape block has to be created. Also in this case it is suggested 
 to define the additional block in the route's specific ``tsection.dat``.
 
+.. index::
+   single: TrackSections
+   single: TrackShapes
+   single: TrackShape
+   single: NumPaths
+   single: SectionIdx
+
 Here below is an example for a route's specific ``tsection.dat`` containing a 
 TrackShape for a transfertable::
 
@@ -273,7 +292,7 @@ The first line must be empty.
 
 The animation block for the above transfertable is as follows::
 
-		animations ( 1
+	animations ( 1
 		animation ( 3600 30
 			anim_nodes ( 2
 				anim_node BASIN (
@@ -282,9 +301,9 @@ The animation block for the above transfertable is as follows::
 				anim_node TRACKPIECE (
 					controllers ( 1
 						linear_pos ( 2
-  linear_key (	0	0	-1.92177	0	 )
-  linear_key (	3600	39.88	-1.92177	0	 )
-  						)					
+              linear_key (	0	0	-1.92177	0	 )
+              linear_key (	3600	39.88	-1.92177	0	 )
+  					)					
 					)
 				)
 			)
@@ -293,6 +312,98 @@ The animation block for the above transfertable is as follows::
 
 3600 is not a mandatory value, however to have a reasonable transfer speed a number of 
 animation keys equal to 60 - 90 every meter should be selected. 
+
+
+Locomotive and wagon elevators
+------------------------------
+.. index::
+   single: Elevator
+
+The elevator is managed by ORTS as a  vertically moving transfertable. So files needed 
+are the same as used for a transfertable, with content modified where needed.
+
+Info to identify an elevator in a route is stored in file turntables.dat, as it is 
+for turntables and transfertables. The same file can store info for moving tables of 
+different types. Here a turntables.dat file that contains info for an elevator::
+
+  1
+  Transfertable(
+  WFile ( "w-005578+014976.w" )
+  UiD ( 75 )
+  XOffset ( 0 )
+  YOffset ( -0.18 )
+  ZOffset ( 13.405)
+  VerticalTransfer ( 1 )
+  TrackShapeIndex ( 37301 )
+  Animation ( "TRACKPIECE" )
+  Length ( 26.81 )
+  )
+
+What identifies this as an elevator is the presence of the VerticalTransfer parameter 
+with value 1. The other difference to a transfertable is the presence of the YOffset 
+parameter, which is the vertical offset of the zero position of the elevator with respect to 
+the shape file zero.
+
+An example of the animation block in the elevator shape file is shown here below::
+
+	animations ( 1
+		animation ( 1800 30
+			anim_nodes ( 2
+				anim_node BASIN (
+					controllers ( 0 )
+				)
+				anim_node TRACKPIECE (
+					controllers ( 1
+						linear_pos ( 2
+              linear_key (	0	0	-1.92177	0	 )
+              linear_key (	1800	0	6.07823	0	 )
+						)					
+					)
+				)
+			)
+		)
+	)
+
+wich generates a vertical movement with a span of 8 meters which is covered in 60 
+seconds. Of course the 1800 value may be modified to get the desired motion speed.
+
+The elevator must also be defined as a TrackShape in tsection.dat. It is suggested 
+to define it in a route specific ``tsection.dat`` extension file, which, for the 
+sample elevator, is as follows::
+
+
+  
+  include ( "../../../Global/tsection.dat" )
+  _INFO ( Track section and shape addition for transfer table derived from turntable 27m )
+  
+  TrackSections ( 40000
+  
+  _SKIP ( No change here )
+  
+  )
+  
+  
+  TrackShapes ( 40000
+  
+  _INFO(TrackShape for for vertical transfer table derived from turntable 27m)
+   
+  TrackShape ( 37301
+   FileName ( A1t27mVerticalTransfertable.s )
+    NumPaths ( 2 )
+    SectionIdx ( 1 0 -0.18 0.0000 0 338 )
+    SectionIdx ( 1 0 7.82 0.0000 0 338 )
+   )
+  )
+
+To insert the elevator in a route using TSRE5 it must be reminded that the latter 
+doesn't look at the tsection.dat file within the Openrails subfolder. So, for the sole 
+time of the editing of the route, the TrackShape() block must be inserted in the global 
+tsection.dat. After route editing is terminated, the block may be removed.
+Tsection.dat build 38 or higher is required within the main Global folder.
+
+At runtime the elevator is moved with the keys used for transfertables and turntables. 
+Alt-C moves the elevator upwards, while Ctrl-C moves the elevator downwards.
+
 
 .. _features-route-turntable-operation:
 
@@ -372,6 +483,11 @@ With this OR-specific feature it is possible to associate any car spawner to one
 additional car lists, therefore allowing e.g. to have different vehicles appearing in 
 a highway and in a small country road.
 
+.. index::
+   single: CarSpawnerList
+   single: CarSpawnerItem
+   single: ListName
+
 The additional car lists have to be defined within a file named carspawn.dat to be inserted in an ``Openrails`` subfolder within the Route's root folder.
 Such file must have the structure as in following example::
 
@@ -397,6 +513,9 @@ Such file must have the structure as in following example::
   CarSpawnerItem( "US2Pickup.s" 6 )
   CarSpawnerItem( "postbus.s" 13 )
   )
+
+.. index::
+   single: ORTSListName
 
 The first ``3`` defines the number of the additional car spawner lists.
 To associate a CarSpawner block to one of these lists, a line like this one::
@@ -425,6 +544,8 @@ vehicle does, instead they remain vertical. To enable OR to handle these car (or
 person) spawners specifically, the parameter IgnoreXRotation () has to be inserted in 
 the car spawner list, just after the number of the car spawner items.
 
+.. index::
+   single: IgnoreXRotation
 
 .. image:: images/features-carspawner.png
    :align: center
@@ -449,6 +570,15 @@ the route's Openrails subfolder ( see :ref:`here <features-route-extended-carspa
 
 Route specific TrackSections and TrackShapes
 ============================================
+
+.. index::
+   single: TrackSections
+   single: SectionSize
+   single: TrackShapes
+   single: TrackShape
+   single: NumPaths
+   single: SectionIdx
+
 It quite often occurs that for special routes also special TrackSections and TrackShapes 
 are needed. Being file tsection.dat unique for every installation, for such routes a 
 so-called mini-route installation was needed.
@@ -517,6 +647,11 @@ OR provides an :ref:`experimental function that enables the upper wire <options-
 electrified routes. The optional parameter ``ortsdoublewireenabled`` in the ``.trk`` file of the route can
 force the activation or deactivation of the option overriding the user setting in the options panel.
 
+.. index::
+   single: OrtsDoubleWireEnabled
+   single: OrtsTriphaseEnabled
+   single: OrtsDoubleWireHeight
+
 In this example the upper wire is enabled overriding the user setting::
 
   OrtsDoubleWireEnabled ( On )
@@ -560,6 +695,10 @@ is not declared) of 1 meter.
 Loading screen
 ==============
 
+.. index::
+   single: LoadingScreen
+   single: ortsloadingscreenwide
+
 In the ``.trk`` file of the route the parameter ``loadingscreen`` can be used as in this example::
 
 	LoadingScreen ( Load.ace )
@@ -579,6 +718,9 @@ loads the route on a wide (16:9) screen. This parameter is ignored when a tradit
 
 MSTS-Compatible semaphore indexing
 ==================================
+
+.. index::
+   single: SemaphorePos
 
 When a signal shape has a semaphore (moving part), and its animation definition within the 
 .s file has only two lines (e.g ``slerp_rot`` lines), MSTS interprets the ``SemaphorePos()`` lines within ``sigcfg.dat`` accordingly to following rule::
@@ -603,6 +745,9 @@ Automatic door open/close on AI trains
 
 The feature is explained :ref:`here<options-open-doors-ai>`.
 
+.. index::
+   single: ORTSOpenDoorsInAITrains
+
 To override the selection made in the 
 :ref:`Experimental Options Window<options-experimental>`, a command line must be inserted 
 in a small integration .trk file, that must be located in an Openrails subfolder within 
@@ -625,6 +770,10 @@ option within the Experimental Options Window is checked.
 
 Removing forest trees from tracks and roads
 ===========================================
+
+.. index::
+   single: ORTSUserPreferenceForestClearDistance
+   single: ORTSUserPreferenceRemoveForestTreesFromRoads
 
 OR and MSTS determine differently the position of trees in forests. 
 This may result in trees appearing on tracks or roads.
@@ -654,6 +803,10 @@ It is not possible to remove trees only from roads and not from tracks.
 
 Multiple level crossing sounds 
 ==============================
+
+.. index::
+   single: ORTSSoundFileName
+   single: ESD_ORTSSoundFileName
 
 This feature allows to have level crossing sounds different from the default one 
 for a specific level 
@@ -690,7 +843,10 @@ For the second case there is no suggestion. The file will again be searched in b
 
 Defining Curve Superelevation
 =============================
-  
+
+.. index::
+   single: ORTSTrackSuperElevation
+
 This feature allows curves within the route to be assigned a value for superelevation. It
 is inserted either in the route's root .trk file or in the "Include" .trk file.
 
@@ -720,8 +876,144 @@ there either, Open Rails selects texture ``GLOBAL\TEXTURES\diselsmoke.ace``. It 
 strongly suggested to use a specific texture to display the overhead wire. A possible 
 texture to be used can be downloaded here ``Documentation\SampleFiles\Manual\overheadwire.zip``.
 
+Fading signal lamps
+===================
 
+.. index::
+   single: ORTSOnOffTimeS
 
+In Open Rails, signal lamps fade on and off for a visually pleasing transition 
+effect. The fade time defaults to one-fifth of a second. It can be customized in 
+the ``SignalType`` block of the ``sigcfg.dat`` file using the ``ORTSOnOffTimeS`` 
+property::
 
+   SignalTypes( ...
+       SignalType ( "AM14Light"
+           ...
+           ORTSOnOffTimeS ( 0.2 )
+       )
+   )
 
+The value is the fade time in seconds. Use ``0`` to disable the effect 
+completely.
 
+Animated clocks
+===============
+
+.. image:: images/features-animated-clock4.png
+
+Animated clocks that show the simulation time can be added or retro-fitted to a route. 
+The clocks can have a second-hand that ticks each second, or one that moves smoothly or none at all.
+Typically clocks could be station clocks, church tower clocks or clocks at other public buildings. 
+They are placed as normal static shapes in a route, similar to other shapes such as houses or trees.
+
+Note: Loco cabs already have provision for both analogue and digital clocks.
+
+Overview
+--------
+
+You will need:
+
+#. Shape and Texture Files
+
+   A shape file which defines each shape of clock, its hands and their animation and the texture files used by the shape.
+
+#. Reference File
+
+   For each shape of clock in the route, a reference to the shape file in the reference file.
+
+#. Animated Clocks List File
+
+   A file listing the shape file for each clock that Open Rails is to animate.
+
+#. World File
+ 
+   The location of each clock in the world must be given in the world file.
+
+Details
+-------
+
+#. Shape and Texture Files
+
+   Create a clock just like any other shape. The hands of the clock must be sub-objects within the shape. 
+   They must have specific names and an animation.	
+   
+   Open Rails looks for the following names of clock hands in the shape file and animates them according to the simulation time.	
+   
+   The names for the clock hands must start with:	
+  
+   - "ORTS_HHand_Clock" for the hour hand
+   - "ORTS_MHand_Clock" for the minute hand
+   - "ORTS_SHand_Clock" for the second hand
+   - "ORTS_CHand_Clock" for the centi-second hand
+     
+   This last is used to provide a smooth movement in hundredths of a second whereas the second hand ticks forward once a second.	
+   It is suggested to use either the second hand or the centisecond hand or neither.	
+	
+   .. image:: images/features-animated-clock5.png
+   
+   If a clock is to have several hands of the same type, simply append a number to the names of the hands, like this:
+
+   .. image:: images/features-animated-clock6.png
+
+   The animation requires 4 key frames at the 12, 3, 6 and 9 positions and calculates the intermediate 
+   positions using linear interpolation. 	
+   
+   .. image:: images/features-animated-clock3.png
+					
+   For example: ::
+
+	  anim_node ORTS_HHand_Clock01 (				
+		  controllers ( 1			
+			  tcb_rot ( 5		
+				  slerp_rot ( 0  0     0 0 -1 )	
+				  slerp_rot ( 1 -0.707 0 0 -0.707 )	
+				  slerp_rot ( 2 -1     0 0  0 )	
+				  slerp_rot ( 3 -0.707 0 0  0.707 )	
+				  slerp_rot ( 4  0     0 0  1 )	
+				)	
+			)		
+		)
+
+   Finally, move the clock shape and its textures into the corresponding folders SHAPES and TEXTURES of your route, 
+   such as ROUTES\\<route_name>\\SHAPES\\clocks.s
+
+#. Reference File
+
+   Add a reference to the shape file into the reference file ROUTES\\<route_name>\\<route_name>.ref
+   Make sure that this reference begins with the "Static" keyword.::
+
+    Static (	
+	    Filename    ( "ChurchClock.s" )
+	    Class       ( "Clocks" )
+	    Align       ( None )
+	    Description ( "ChurchClock" )
+    )	
+
+#. Animated Clocks List File
+
+   Create a file ROUTES\\<route_name>\\animated.clocks-or file the file for each shape of clock that Open Rails will animate.
+   The type parameter is always "analog" as "digital" types are not yet supported.::		
+   
+      [
+         {
+            "Name": "Clock01.s",
+            "ClockType": "analog"
+         },
+         {
+            "Name": "ChurchClock.s",
+            "ClockType": "analog"
+         },
+         {
+            "Name": "PlatformClock.s",
+            "ClockType": "analog"
+         }
+      ]
+
+#. World File
+
+   Use a route editor to locate the clocks in the world file. 
+   
+   Note: Do not insert the shapes as animated ones. 
+   Otherwise, if MSTS is used to view the route then the hands of the clock will rotate wildly.
+   In Open Rails they will match the simulation time anyway.

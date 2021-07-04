@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -12,6 +12,8 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -41,7 +43,12 @@
     <Reference Include="GNU.Gettext">
       <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="MonoGame.Framework">
+      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=3.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
@@ -56,6 +63,7 @@
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
     <Compile Include="Common\Scripting\BrakeController.cs" />
+    <Compile Include="Common\Scripting\Commands.cs" />
     <Compile Include="Common\Scripting\Common.cs" />
     <Compile Include="Common\Scripting\PowerSupply\AbstractPowerSupply.cs" />
     <Compile Include="Common\Scripting\PowerSupply\CircuitBreaker.cs" />
@@ -94,8 +102,10 @@
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\AirSinglePipe.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\AirTwinPipe.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\EPBrakeSystem.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\ManualBraking.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\MSTSBrakeSystem.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\SingleTransferPipe.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\StraightVacuumSinglePipe.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\VacuumSinglePipe.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\BrakeController.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\ControllerFactory.cs" />
@@ -114,6 +124,8 @@
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\SeriesMotor.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\TrainControlSystem.cs" />
     <Compile Include="Simulation\RollingStocks\TrainCar.cs" />
+    <Compile Include="Simulation\Signalling\CsSignalScript.cs" />
+    <Compile Include="Simulation\Signalling\CsSignalScripts.cs" />
     <Compile Include="Simulation\Signalling\Signals.cs" />
     <Compile Include="Simulation\Signalling\SIGSCRfile.cs" />
     <Compile Include="Simulation\Simulator.cs" />
@@ -122,10 +134,13 @@
     <Compile Include="Simulation\Timetables\ProcessTimetable.cs" />
     <Compile Include="Simulation\Timetables\TTPool.cs" />
     <Compile Include="Simulation\Timetables\TTTrain.cs" />
+    <Compile Include="Simulation\Timetables\TTTurntable.cs" />
+    <Compile Include="Simulation\Timetables\TurntableInfo.cs" />
     <Compile Include="Simulation\Transfertables.cs" />
     <Compile Include="Simulation\Traveller.cs" />
     <Compile Include="Simulation\Turntables.cs" />
     <Compile Include="Simulation\Weather.cs" />
+    <Compile Include="Common\Scripting\EuropeanTrainControlSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
@@ -157,7 +172,17 @@
       <Name>ORTS.Settings</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Ce projet fait référence à des packages NuGet qui sont manquants sur cet ordinateur. Utilisez l'option de restauration des packages NuGet pour les télécharger. Pour plus d'informations, consultez http://go.microsoft.com/fwlink/?LinkID=322105. Le fichier manquant est : {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

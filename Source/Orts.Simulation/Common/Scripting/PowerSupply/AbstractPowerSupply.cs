@@ -20,7 +20,7 @@ using System;
 
 namespace ORTS.Scripting.Api
 {
-    public abstract class AbstractPowerSupply : AbstractScriptClass
+    public abstract class AbstractPowerSupply : AbstractTrainScriptClass
     {
         /// <summary>
         /// Current state of the power supply

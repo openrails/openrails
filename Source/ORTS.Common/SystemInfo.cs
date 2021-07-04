@@ -204,22 +204,9 @@ namespace ORTS.Common
             {
                 try
                 {
-                    var caps = adapter.GetCapabilities(DeviceType.Hardware);
-                    output.WriteLine("{0} = {1} ({2} {3})", adapter.DeviceName, adapter.Description, adapter.DriverDll, adapter.DriverVersion);
-
-                    output.WriteLine("    Anisotropy     = {0}", caps.MaxAnisotropy);
-                    output.WriteLine("    Render Targets = {0}", caps.MaxSimultaneousRenderTargets);
-                    output.WriteLine("    Streams        = {0} (stride {1})", caps.MaxStreams, caps.MaxStreamStride);
-                    output.WriteLine("    Textures       = {0} ({1} x {2}, repeat {3}, ratio {4})", caps.MaxSimultaneousTextures, caps.MaxTextureWidth, caps.MaxTextureHeight, caps.MaxTextureRepeat, caps.MaxTextureAspectRatio);
-                    output.WriteLine("    Points         = {0}^2", caps.MaxPointSize);
-                    output.WriteLine("    Volumes        = {0}^3", caps.MaxVolumeExtent);
-                    output.WriteLine("    Primitives     = {0}", caps.MaxPrimitiveCount);
-                    output.WriteLine("    Vertexes       = {0}", caps.MaxVertexIndex);
-                    output.WriteLine("    Vertex Shader  = {0} ({1} slots, {2} constants)", caps.VertexShaderVersion, caps.MaxVertexShader30InstructionSlots, caps.MaxVertexShaderConstants);
-                    output.WriteLine("    Pixel Shader   = {0} ({1} slots)", caps.PixelShaderVersion, caps.MaxPixelShader30InstructionSlots);
-                    output.WriteLine("    Clip Planes    = {0}", caps.MaxUserClipPlanes);
+                    output.WriteLine("{0} = {1}", adapter.DeviceName, adapter.Description);
                 }
-                catch (Exception error) { }
+                catch (Exception) { }
             }
         }
 

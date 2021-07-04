@@ -2,15 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2018-10-06 15:03:28+0200\n"
-"PO-Revision-Date: 2018-10-06 15:42+0200\n"
-"Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
-"field@libero.it>\n"
+"PO-Revision-Date: 2021-05-09 16:41+0200\n"
+"Last-Translator: Roberto Ceccarelli\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:598
@@ -151,12 +150,12 @@ msgstr "Vibrazione al livello {0}"
 #: ../../RunActivity/Viewer3D/Viewer.cs:1170
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
-msgstr "Lista comandi tastiera salvati in '{0}'"
+msgstr "Lista comandi tastiera salvati in '{0}'."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1174
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
-msgstr "Immagine comandi tastiera salvata in '{0}'"
+msgstr "Immagine comandi tastiera salvata in '{0}'."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1021
 #, csharp-format
@@ -495,7 +494,7 @@ msgstr "Comando di accensione inviato"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:120
 msgid "No power command for this type of car!"
-msgstr "Non c'è comando di accensione per questo rotabile"
+msgstr "Non c'è comando di accensione per questo rotabile!"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:134
 msgid "MU signal connected"
@@ -507,7 +506,7 @@ msgstr "Segnale MU disconnesso"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:139
 msgid "No MU command for this type of car!"
-msgstr "Questo rotabile non supporta MU"
+msgstr "Questo rotabile non supporta MU."
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:146
 msgid "Front brake hose connected"
@@ -651,15 +650,15 @@ msgstr "Fatto"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:293
 msgid "Evaluation"
-msgstr ""
+msgstr "Valutazione"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:332
 msgid "This Activity has ended."
-msgstr "Questa Activity è terminata"
+msgstr "Questa Activity è terminata."
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:341
 msgid "Timetable:"
-msgstr "Tabella Orario;"
+msgstr "Tabella Orario;:"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:376
 msgid "- Station stops: "
@@ -667,11 +666,11 @@ msgstr "- Fermate in stazione: "
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:387
 msgid "- Remaining station stops: "
-msgstr ""
+msgstr "- Fermate in stazione rimaste:"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:402
 msgid "- Missed station stops: "
-msgstr ""
+msgstr "- Fermate saltate:"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:412
 msgid " "
@@ -1615,7 +1614,7 @@ msgstr "Esplorazione"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:81
 msgid "OutOfControl : "
-msgstr "Fuori Controllo:"
+msgstr "Fuori Controllo: "
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:82
 msgid "Inactive"

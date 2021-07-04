@@ -203,7 +203,7 @@ namespace Orts.Viewer3D.Popups
         [CallOnThread("Render")]
         public void Draw(SpriteBatch spriteBatch, Rectangle position, Point offset, string text, LabelAlignment align, Color color)
         {
-            Draw(spriteBatch, position, offset, text, align, color, Color.Black);
+            Draw(spriteBatch, position, offset, 0, text, align, color, Color.Black);
         }
 
         [CallOnThread("Render")]
@@ -213,11 +213,11 @@ namespace Orts.Viewer3D.Popups
         }
 
         [CallOnThread("Render")]
-        public void Draw(SpriteBatch spriteBatch, Rectangle position, Point offset, string text, LabelAlignment align, Color color, Color outline)
+        public void Draw(SpriteBatch spriteBatch, Rectangle position, Point offset, float rotation, string text, LabelAlignment align, Color color, Color outline)
         {
             offset.X += position.Location.X;
             offset.Y += position.Location.Y;
-            Draw(spriteBatch, offset, 0, position.Width, text, align, color, outline);
+            Draw(spriteBatch, offset, rotation, position.Width, text, align, color, outline);
         }
 
         [CallOnThread("Render")]
@@ -579,7 +579,7 @@ namespace Orts.Viewer3D.Popups
                     rectangle.Height *= 2;
                 }
 
-                var texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
+                var texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, false, SurfaceFormat.Color); // Color = 32bppRgb
                 texture.SetData(buffer);
                 Texture = texture;
             }

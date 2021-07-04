@@ -901,8 +901,7 @@ namespace Orts.Formats.Msts
         {
             flags = copy.flags;
             ishader = copy.ishader;
-            tex_idxs = new int[copy.tex_idxs.Length];
-            for (var i = 0; i < copy.tex_idxs.Length; ++i) tex_idxs[i] = copy.tex_idxs[i];
+            tex_idxs = (int[])copy.tex_idxs.Clone();
             ZBias = copy.ZBias;
             ivtx_state = copy.ivtx_state;
             alphatestmode = copy.alphatestmode;
@@ -915,7 +914,7 @@ namespace Orts.Formats.Msts
             if (flags != prim_state.flags) return false;
             if (ishader != prim_state.ishader) return false;
             if (tex_idxs.Length != prim_state.tex_idxs.Length) return false;
-            for (var i = 0; i < tex_idxs.Length; ++i) if (tex_idxs[i] != prim_state.tex_idxs[i]) return false;
+            if (!tex_idxs.SequenceEqual(prim_state.tex_idxs)) return false;
             if (ZBias != prim_state.ZBias) return false;
             if (ivtx_state != prim_state.ivtx_state) return false;
             if (alphatestmode != prim_state.alphatestmode) return false;
@@ -1246,8 +1245,7 @@ namespace Orts.Formats.Msts
             inormal = copy.inormal;
             Color1 = copy.Color1;
             Color2 = copy.Color2;
-            vertex_uvs = new int[copy.vertex_uvs.Length];
-            for (var i = 0; i < copy.vertex_uvs.Length; ++i) vertex_uvs[i] = copy.vertex_uvs[i];
+            vertex_uvs = (int[])copy.vertex_uvs.Clone();
         }
 
         public vertex()
@@ -1268,8 +1266,7 @@ namespace Orts.Formats.Msts
             if (inormal != vertex.inormal) return false;
             if (Color1 != vertex.Color1) return false;
             if (Color2 != vertex.Color2) return false;
-            if (vertex_uvs.Length != vertex.vertex_uvs.Length) return false;
-            for (var i = 0; i < vertex_uvs.Length; ++i) if (vertex_uvs[i] != vertex.vertex_uvs[i]) return false;
+            if (!vertex_uvs.SequenceEqual(vertex.vertex_uvs)) return false;
             return true;
         }
     }

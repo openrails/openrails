@@ -31,6 +31,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Common.Input;
+using ORTS.Settings;
 
 namespace Orts.Viewer3D
 {
@@ -1066,7 +1067,7 @@ namespace Orts.Viewer3D
                 {
                     SetCameraCar(GetCameraCars().First());
                     browsedTraveller = new Traveller(attachedCar.Train.FrontTDBTraveller);
-                    ZDistanceM = 0;
+                    ZDistanceM = -attachedCar.CarLengthM / 2;
                     HighWagonOffsetLimit = 0;
                     LowWagonOffsetLimit = -attachedCar.CarLengthM;
                 }
@@ -1075,7 +1076,7 @@ namespace Orts.Viewer3D
                     var trainCars = GetCameraCars();
                     SetCameraCar(trainCars.Last());
                     browsedTraveller = new Traveller(attachedCar.Train.RearTDBTraveller);
-                    ZDistanceM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f;
+                    ZDistanceM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f + attachedCar.CarLengthM / 2;
                     LowWagonOffsetLimit = -attachedCar.Train.Length + trainCars.First().CarLengthM * 0.5f;
                     HighWagonOffsetLimit = LowWagonOffsetLimit + attachedCar.CarLengthM;
                 }
@@ -1237,7 +1238,6 @@ namespace Orts.Viewer3D
             }
             else if (attachedCar != null)
             {
-                attachedLocation.Z += attachedCar.CarLengthM / 2.0f * (Front ? 1 : -1);
                 LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
             }
             UpdateLocation(LookedAtPosition);
@@ -1550,6 +1550,12 @@ namespace Orts.Viewer3D
             LastCar();
         }
 
+        public override void LastCar()
+        {
+            base.LastCar();
+            attachedToRear = true;
+        }
+
     }
 
     public class InsideThreeDimCamera : NonTrackingCamera
@@ -1775,20 +1781,30 @@ namespace Orts.Viewer3D
             base.SetCameraCar(car);
             // Settings are held so that when switching back from another camera, view is not reset.
             // View is only reset on move to a different car and/or viewpoint or "Ctl + 8".
-            if (car.CarID != prevcar || ActViewPoint != prevViewPoint)
+            if (car.CarID != prevcar)
             {
-                prevcar = car.CarID;
-                prevViewPoint = ActViewPoint;
-                viewPointLocation = attachedCar.PassengerViewpoints[ActViewPoint].Location;
-                viewPointRotationXRadians = attachedCar.PassengerViewpoints[ActViewPoint].RotationXRadians;
-                viewPointRotationYRadians = attachedCar.PassengerViewpoints[ActViewPoint].RotationYRadians;
-                RotationXRadians = viewPointRotationXRadians;
-                RotationYRadians = viewPointRotationYRadians;
-                attachedLocation = viewPointLocation;
-                StartViewPointLocation = viewPointLocation;
-                StartViewPointRotationXRadians = viewPointRotationXRadians;
-                StartViewPointRotationYRadians = viewPointRotationYRadians;
+                ActViewPoint = 0;
+                ResetViewPoint(car);
             }
+            else if (ActViewPoint != prevViewPoint)
+            {
+                ResetViewPoint(car);
+            }
+        }
+
+        protected void ResetViewPoint (TrainCar car)
+        {
+            prevcar = car.CarID;
+            prevViewPoint = ActViewPoint;
+            viewPointLocation = attachedCar.PassengerViewpoints[ActViewPoint].Location;
+            viewPointRotationXRadians = attachedCar.PassengerViewpoints[ActViewPoint].RotationXRadians;
+            viewPointRotationYRadians = attachedCar.PassengerViewpoints[ActViewPoint].RotationYRadians;
+            RotationXRadians = viewPointRotationXRadians;
+            RotationYRadians = viewPointRotationYRadians;
+            attachedLocation = viewPointLocation;
+            StartViewPointLocation = viewPointLocation;
+            StartViewPointRotationXRadians = viewPointRotationXRadians;
+            StartViewPointRotationYRadians = viewPointRotationYRadians;
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -1820,7 +1836,8 @@ namespace Orts.Viewer3D
             get
             {
                 return Viewer.SelectedTrain != null && Viewer.SelectedTrain.IsActualPlayerTrain &&
-                    Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null;
+                    Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null &&
+                    (Viewer.PlayerLocomotive.HasFront3DCab || Viewer.PlayerLocomotive.HasRear3DCab);
             }
         }
         public override string Name { get { return Viewer.Catalog.GetString("3D Cab"); } }
@@ -1957,6 +1974,7 @@ namespace Orts.Viewer3D
 
     public class CabCamera : NonTrackingCamera
     {
+        private readonly SavingProperty<bool> LetterboxProperty;
         protected int sideLocation;
         public int SideLocation { get { return sideLocation; } }
 
@@ -1985,6 +2003,7 @@ namespace Orts.Viewer3D
         public CabCamera(Viewer viewer)
             : base(viewer)
         {
+            LetterboxProperty = viewer.Settings.GetSavingProperty<bool>("Letterbox2DCab");
         }
 
         protected internal override void Save(BinaryWriter outf)
@@ -2015,7 +2034,12 @@ namespace Orts.Viewer3D
 
         public void Initialize()
         {
-            if (Viewer.Settings.Cab2DStretch == 0 && Viewer.CabExceedsDisplayHorizontally <= 0)
+            if (Viewer.Settings.Letterbox2DCab)
+            {
+                float fovFactor = 1f - Math.Max((float)Viewer.CabXLetterboxPixels / Viewer.DisplaySize.X, (float)Viewer.CabYLetterboxPixels / Viewer.DisplaySize.Y);
+                FieldOfView = MathHelper.ToDegrees((float)(2 * Math.Atan(fovFactor * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)))));
+            }
+            else if (Viewer.Settings.Cab2DStretch == 0 && Viewer.CabExceedsDisplayHorizontally <= 0)
             {
                 // We must modify FOV to get correct lookout
                     FieldOfView = MathHelper.ToDegrees((float)(2 * Math.Atan((float)Viewer.DisplaySize.Y / Viewer.DisplaySize.X / Viewer.CabTextureInverseRatio * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)))));
@@ -2027,6 +2051,7 @@ namespace Orts.Viewer3D
                     RotationRatioHorizontal = (float)(0.962314f * 2 * Viewer.DisplaySize.X / Viewer.DisplaySize.Y * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)) / Viewer.DisplaySize.X);
             }
             InitialiseRotation(attachedCar);
+            ScreenChanged();
         }
 
         protected override void OnActivate(bool sameCamera)
@@ -2094,7 +2119,7 @@ namespace Orts.Viewer3D
         void PanUp(bool up, float speed)
         {
             int max = 0;
-            int min = Viewer.DisplaySize.Y - Viewer.CabHeightPixels; // -ve value
+            int min = Viewer.DisplaySize.Y - Viewer.CabHeightPixels - 2 * Viewer.CabYLetterboxPixels; // -ve value
             int cushionPixels = 40;
             int slowFactor = 4;
 
@@ -2128,7 +2153,7 @@ namespace Orts.Viewer3D
         void ScrollRight (bool right, float speed)
         {
             int min = 0;
-            int max = Viewer.CabWidthPixels - Viewer.DisplaySize.X; // -ve value
+            int max = Viewer.CabWidthPixels - Viewer.DisplaySize.X - 2 * Viewer.CabXLetterboxPixels; // -ve value
             int cushionPixels = 40;
             int slowFactor = 4;
 
@@ -2188,6 +2213,13 @@ namespace Orts.Viewer3D
                 ScrollRight(true, speed);
             if (UserInput.IsDown(UserCommand.CameraScrollLeft))
                 ScrollRight(false, speed);
+            if (UserInput.IsPressed(UserCommand.CameraToggleLetterboxCab))
+            {
+                LetterboxProperty.Value = !LetterboxProperty.Value;
+                Viewer.AdjustCabHeight(Viewer.DisplaySize.X, Viewer.DisplaySize.Y);
+                if (attachedCar != null)
+                    Initialize();
+            }
         }
     }
 

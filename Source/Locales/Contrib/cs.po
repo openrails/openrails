@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2015-10-25 09:17+0100\n"
 "PO-Revision-Date: 2015-10-25 09:18+0100\n"
-"Last-Translator: Altmann <altmann@bk.ru>\n"
+"Last-Translator: Howkyn"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
@@ -26,7 +26,7 @@ msgstr "0.1"
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:19
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:136
 msgid "Copyright by Open Rails project"
-msgstr "Chráněno autorským právem Open Rails projektu"
+msgstr "Chráněno autorským právem projektu Open Rails"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:20
 msgid "OR"
