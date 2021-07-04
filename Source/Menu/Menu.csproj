@@ -214,5 +214,7 @@ IF EXIST "Program\Documentation\es" RMDIR "Program\Documentation\es" /S /Q
 IF NOT EXIST "Program\Documentation\es" MKDIR "Program\Documentation\es"
 COPY "Source\Documentation\Manual\es\Manual.pdf" "Program\Documentation\es\"
 </PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
