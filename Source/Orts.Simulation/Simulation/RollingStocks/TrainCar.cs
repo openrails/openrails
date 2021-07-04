@@ -502,7 +502,7 @@ namespace Orts.Simulation.RollingStocks
         public float WagonFrontCouplerCurveExtM;
         public float WagonRearCouplerCurveExtM;
         public float WagonCouplerAngleDerailRad;
-        public bool BuffForceExceeded;
+        public bool DerailmentCoefficientExceeded;
 
         // filter curve force for audio to prevent rapid changes.
         //private IIRFilter CurveForceFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.9f);
@@ -1262,9 +1262,9 @@ namespace Orts.Simulation.RollingStocks
                 DerailmentCoefficient = Math.Abs(TotalWagonLateralDerailForceN / TotalWagonVerticalDerailForceN);
 
                 // use the dynamic multiplication coefficient to calculate final derailment coefficient
-                if (CarOnJunction)
+                if (IsOverJunction())
                 {
-                    DerailmentCoefficient *= 3.1f;
+                    DerailmentCoefficient *= 3.1f;                    
                 }
                 else
                 {
@@ -1279,13 +1279,15 @@ namespace Orts.Simulation.RollingStocks
                 DerailmentCoefficient = 0;
             }
 
-            if (TotalWagonLateralDerailForceN > TotalWagonVerticalDerailForceN)
+            if (DerailmentCoefficient > 1 && !DerailmentCoefficientExceeded && !Simulator.Settings.SimpleControlPhysics)
             {
-                BuffForceExceeded = true;
+                DerailmentCoefficientExceeded = true;
+                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("CarID {0} - Derailment Coefficient level exceeded {1}", CarID, DerailmentCoefficient));
+                Trace.TraceInformation("CarID {0} Derailment Coefficient maximum level ( {1} ) has been exceeded at location {2}", CarID, DerailmentCoefficient, WorldPosition.WorldLocation);
             }
-            else
+            else if (DerailmentCoefficient < 0.66)
             {
-                BuffForceExceeded = false;
+                DerailmentCoefficientExceeded = false; // Reset derailment alarm notification
             }
 
         }
@@ -2480,7 +2482,6 @@ namespace Orts.Simulation.RollingStocks
 
         #region Traveller-based updates
         public float CurrentCurveRadius;
-        public bool CarOnJunction;
 
         internal void UpdatedTraveler(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
         {
@@ -2491,7 +2492,6 @@ namespace Orts.Simulation.RollingStocks
             CurrentCurveRadius = traveler.GetCurveRadius();
             UpdateVibrationAndTilting(traveler, elapsedTimeS, distanceM, speedMpS);
             UpdateSuperElevation(traveler, elapsedTimeS);
-            CarOnJunction = traveler.IsJunction;
         }
         #endregion
 
