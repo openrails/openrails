@@ -92,6 +92,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Source: {#NetRedistPath}\{#NetRedist}; DestDir: {tmp}; Flags: deleteafterinstall; AfterInstall: InstallFrameworkNet472; Check: IsNotInstalledFrameworkNet472
 
 ; The game itself
+; Readme.txt is copied from Source\RunActivity\Readme.txt
 Source: {#MyAppProgPath}\*; Excludes: Readme*.txt; DestDir: {app}; Flags: ignoreversion recursesubdirs
 Source: ..\Program\Readme.txt; DestDir: {app}; Flags: ignoreversion
 Source: {#MyAppDocPath}\*; DestDir: {app}\Documentation; Flags: ignoreversion recursesubdirs
@@ -107,6 +108,7 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 [Run]
 Filename: "{app}\{#MyAppExeName}"; StatusMsg: "Installing Open Rails ..."; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
  
+
 [Code]
 function IsNotInstalledFrameworkNet472: Boolean;
 var
@@ -114,22 +116,37 @@ var
   StatusText: string;
 begin
   // Gets left on screen while file is unpacked.
+  //StatusText := WizardForm.StatusLabel.Caption;
+  //WizardForm.StatusLabel.Caption := 'Unpacking {#DotNETName}...';
+  //result := true;
+  //if (RegQueryDWordValue(HKLM, 'Software\Microsoft\NET Framework Setup\NDP\v4.7.2', 'Install', data)) then begin // CHECK THIS
+  //  if (data = 1) then begin
+  //    if (RegQueryDWordValue(HKLM, 'Software\Microsoft\NET Framework Setup\NDP\v4.7.2', 'SP', data)) then begin
+  //      if (data = 1) then begin
+  //        result := false
+  //        // Prompt is repeated. Help suggests a way around this.
+  //        //MsgBox('{#DotNETName} is already installed', mbError, MB_OK);
+  //      end;
+  //    end;
+  //  end;
+  //  WizardForm.StatusLabel.Caption := StatusText;
+  //  WizardForm.ProgressGauge.Style := npbstNormal;
+  //end;
+  
+  // Gets left on screen while file is unpacked.
   StatusText := WizardForm.StatusLabel.Caption;
-  WizardForm.StatusLabel.Caption := 'Unpacking {#DotNETName}...';
-  result := true;
-  if (RegQueryDWordValue(HKLM, 'Software\Microsoft\NET Framework Setup\NDP\v4.7.2', 'Install', data)) then begin // CHECK THIS
-    if (data = 1) then begin
-      if (RegQueryDWordValue(HKLM, 'Software\Microsoft\NET Framework Setup\NDP\v4.7.2', 'SP', data)) then begin
-        if (data = 1) then begin
-          result := false
-          // Prompt is repeated. Help suggests a way around this.
-          //MsgBox('{#DotNETName} is already installed', mbError, MB_OK);
-        end;
-      end;
-    end;
-    WizardForm.StatusLabel.Caption := StatusText;
-    WizardForm.ProgressGauge.Style := npbstNormal;
+  WizardForm.StatusLabel.Caption := 'Checking for prerequisite {#DotNETName}...';
+  Result := true; // Result is a pre-declared return value
+  if (RegQueryDWordValue(HKLM, 'Software\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', data)) then begin
+    // "or" operator doesn't work
+    if (IntToStr(data) = '461808') then Result := false; // v4.7.2
+    if (IntToStr(data) = '461814') then Result := false; // v4.7.2
+    if (IntToStr(data) = '528040') then Result := false; // v4.8
+    if (IntToStr(data) = '528372') then Result := false; // v4.8
+    if (IntToStr(data) = '528049') then Result := false; // v4.8
   end;
+  if (Result = true) then 
+    WizardForm.StatusLabel.Caption := 'Installing Open Rails ...';
 end;
 
 procedure InstallFrameworkNet472;
@@ -154,40 +171,3 @@ begin
     WizardForm.ProgressGauge.Style := npbstNormal;
   end;
 end;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
