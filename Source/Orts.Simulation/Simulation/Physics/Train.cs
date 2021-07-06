@@ -1722,7 +1722,6 @@ namespace Orts.Simulation.Physics
                 massKg += car.MassKG;
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
-                //                 if (car.Flipped)
                 if (car.Flipped ^ (car.IsDriveable && car.Train.IsActualPlayerTrain && ((MSTSLocomotive)car).UsingRearCab))
                 {
                     car.TotalForceN = -car.TotalForceN;
@@ -5417,10 +5416,6 @@ namespace Orts.Simulation.Physics
                 // update coupler slack distance
                 TrainCar car = Cars[i];
 
-                // Initialise individual car coupler slack values
-                car.RearCouplerSlackM = 0;
-                car.FrontCouplerSlackM = 0;
-
                 // Calculate coupler slack - this should be the full amount for both couplers
                 car.CouplerSlackM += (car.SpeedMpS - Cars[i + 1].SpeedMpS) * elapsedTime;
 
@@ -5446,13 +5441,13 @@ namespace Orts.Simulation.Physics
                         car.CouplerSlackM = max;
                 }
 
-                // Proportion coupler slack across front and rear couplers of this car, and the following car
+                // Proportion coupler slack across the rear coupler of this car, and the front coupler of the following car
                 car.RearCouplerSlackM = car.CouplerSlackM / AdvancedCouplerDuplicationFactor;
-                car.FrontCouplerSlackM = Cars[i + 1].CouplerSlackM / AdvancedCouplerDuplicationFactor;
+                Cars[i + 1].FrontCouplerSlackM = car.CouplerSlackM / AdvancedCouplerDuplicationFactor;
 
                 // Check to see if coupler is opened or closed - only closed or opened couplers have been specified
-                // It is assumed that the front coupler on first car will always be opened, and so will coupler on last car. All others on the train will be coupled
-                if (i == 0)
+                // It is assumed that the front coupler on first car will always be opened, and so will the coupler on last car. All others on the train will be coupled
+                if (i == 0) // first car
                 {
                     if (car.FrontCouplerOpenFitted)
                     {
@@ -5469,8 +5464,8 @@ namespace Orts.Simulation.Physics
                     car.FrontCouplerOpen = false;
                 }
 
-
-                if (i == Cars.Count - 2)
+                // Set up coupler information for last car
+                if (i == Cars.Count - 2) // 2nd last car in count, but set up last car, ie i+1
                 {
 
                     if (Cars[i + 1].RearCouplerOpenFitted)
@@ -5549,8 +5544,48 @@ namespace Orts.Simulation.Physics
                 }
 
             }
+
+            int j = 0;
+
             foreach (TrainCar car in Cars)
+            {
                 car.DistanceM += Math.Abs(car.SpeedMpS * elapsedTime);
+
+                // Identify links to cars ahead and behind for use when animating couplers
+                if (j == 0) // typically the locomotive
+                {
+                    car.CarAhead = null;
+                    if (Cars.Count > j) // if not a single loco
+                    {
+                        if (j < Cars.Count - 1) // if > then or =, this is the last car, and hence no further cars behind it
+                        {
+                            car.CarBehind = Cars[j + 1];
+                        }
+                        else
+                        {
+                            car.CarBehind = null;
+                        }
+                    }
+                    else // if a single loco
+                    {
+                        car.CarBehind = null;
+                    }
+                }
+                else if (j == Cars.Count - 1) // last car in train
+                {
+                    Cars[j].CarAhead = Cars[j - 1];
+                    Cars[j].CarBehind = null;
+                }
+                else // Set up coupler information for cars between first and last car
+                {
+                    Cars[j].CarAhead = Cars[j - 1];
+                    Cars[j].CarBehind = Cars[j + 1];
+
+                }
+
+                j = j + 1;
+
+            }
         }
 
         //================================================================================================//
