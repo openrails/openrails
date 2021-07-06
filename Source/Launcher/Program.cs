@@ -116,6 +116,10 @@ namespace ORTS
             });
         }
 
+        // With OR v1.4, there is no longer any need to check for DirectX. 
+        // Minimum WIndows version 7 (SP1) guarantees DirectX v11 driver is available and OR v1.4 requires DirectX 10.0 level 9_1 (equivalent to DirectX 9.0c),
+        // so checking for minimum Windows is sufficient.
+        // Of course, this does not gurantee that the graphics card is also compatible with DirectX 10.0 level 9_1, but that cannot be checked by the Launcher.
         //static void CheckDXRuntime(List<DependencyHint> missingDependencies)
         //{
         //    if (File.Exists(Path.Combine(Environment.SystemDirectory, "D3Dcompiler_43.dll")))       //there is a dependency in Monogame requiring the specific version of D3D compiler
