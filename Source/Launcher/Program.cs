@@ -17,17 +17,12 @@
 
 /* ORTS Launcher
  * 
- * This is the program from which users execute ORTS.  
- * Its purpose has been to check for required dependencies before launching the rest of the ORTS executables.
- * Although this check is also made by the Open Rails Installer, Open Rails can be delivered and used without
- * using the Installer, so a check at run-time is worthwhile.
- * This program must be compiled with a minimum of dependencies so that it is guaranteed to run.
+ * This is the program that users execute start ORTS.  
+ * Its purpose is to check for required dependencies 
+ * before launching the rest of the ORTS executables.
  * 
- * This was true before Open Rails v1.4 and dependencies included XNA v3.1 and .NET v3.5 (SP1).
- * With v1.4 it is no longer the case, since XNA has been superseded by Monogame.
- * The other dependency for v1.4 is .NET 4.7.2 which runs on Windows from 7 (SP1) upwards.
- * Windows 7 and upwards now checks an executable and prompts for the installation of .NET 4.7.2 before running
- * that executable. The checks made here are now redundant and are kept just for easy reference.
+ * This program must be compiled with a minimum of dependencies
+ * so that it is guaranteed to run.
  */
 
 using Microsoft.Win32;
@@ -62,7 +57,8 @@ namespace ORTS
             List<DependencyHint> missingDependencies = new List<DependencyHint>();
 
             CheckNetFx(missingDependencies);
-            //CheckDXRuntime(missingDependencies);
+            CheckXNA(missingDependencies);
+            CheckDXRuntime(missingDependencies);
 
             if (missingDependencies.Count > 0)
             {
@@ -116,23 +112,37 @@ namespace ORTS
             });
         }
 
-        // With OR v1.4, there is no longer any need to check for DirectX. 
-        // Minimum WIndows version 7 (SP1) guarantees DirectX v11 driver is available and OR v1.4 requires DirectX 10.0 level 9_1 (equivalent to DirectX 9.0c),
-        // so checking for minimum Windows is sufficient.
-        // Of course, this does not gurantee that the graphics card is also compatible with DirectX 10.0 level 9_1, but that cannot be checked by the Launcher.
-        //static void CheckDXRuntime(List<DependencyHint> missingDependencies)
-        //{
-        //    if (File.Exists(Path.Combine(Environment.SystemDirectory, "D3Dcompiler_43.dll")))       //there is a dependency in Monogame requiring the specific version of D3D compiler
-        //        return;
+        static void CheckXNA(List<DependencyHint> missingDependencies)
+        {
+            foreach (var key in new[] { @"SOFTWARE\Wow6432Node\Microsoft\XNA\Framework\v3.1", @"SOFTWARE\Microsoft\XNA\Framework\v3.1" })
+            {
+                using (var RK = Registry.LocalMachine.OpenSubKey(key))
+                    if (SafeReadKey(RK, "Installed", 0) == 1)
+                        return;
+            }
 
-        //    missingDependencies.Add(new DependencyHint()
-        //    {
-        //        Name = "DirectX 9 Runtime",
-        //        Text = "Please go to\n https://www.microsoft.com/en-us/download/details.aspx?id=35&nowin10 \nto download the web installer for " +
-        //        "DirectX Runtime and install the software. While downloading and installing, you may uncheck the installation of MSN and Bing software.",
-        //        Url = "https://www.microsoft.com/en-us/download/details.aspx?id=35&nowin10"
-        //    });
-        //}
+            missingDependencies.Add(new DependencyHint()
+            {
+                Name = "Microsoft XNA Framework 3.1",
+                Text = "Please go to\n https://www.microsoft.com/en-us/download/details.aspx?id=15163 \nto download the installer for " +
+                "Microsoft XNA Framework Redistributable 3.1 and install the software.",
+                Url = "https://www.microsoft.com/en-us/download/details.aspx?id=15163"
+            });
+        }
+
+        static void CheckDXRuntime(List<DependencyHint> missingDependencies)
+        {
+            if (File.Exists(Path.Combine(Environment.SystemDirectory, "D3Dcompiler_43.dll")))       //there is a dependency in Monogame requiring the specific version of D3D compiler
+                return;
+
+            missingDependencies.Add(new DependencyHint()
+            {
+                Name = "DirectX 9 Runtime",
+                Text = "Please go to\n https://www.microsoft.com/en-us/download/details.aspx?id=35&nowin10 \nto download the web installer for " +
+                "DirectX Runtime and install the software. While downloading and installing, you may uncheck the installation of MSN and Bing software.",
+                Url = "https://www.microsoft.com/en-us/download/details.aspx?id=35&nowin10"
+            });
+        }
 
         static void CheckOR(List<string> missingFiles, string path)
         {
