@@ -163,7 +163,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         private Timer PowerOnTimer;
         private Timer AuxPowerOnTimer;
 
+        /// <remarks>
+        /// Used for the corresponding first engine on/off sound triggers.
+        /// </remarks>
         private DieselEngineState PreviousFirstEngineState;
+        /// <remarks>
+        /// Used for the corresponding second engine on/off sound triggers.
+        /// </remarks>
         private DieselEngineState PreviousSecondEngineState;
 
         private bool QuickPowerOn = false;
