@@ -65,7 +65,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float AirConditioningPowerW { get; protected set; } = 0f;
         public float AirConditioningYield { get; protected set; } = 0.9f;
 
-        private bool firstUpdate = true;
+        private bool IsFirstUpdate = true;
 
         public ScriptedPassengerCarPowerSupply(MSTSWagon wagon)
         {
@@ -186,18 +186,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             ElectricTrainSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
             BatteryState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
 
-            firstUpdate = false;
+            IsFirstUpdate = false;
         }
 
         public virtual void Update(float elapsedClockSeconds)
         {
             CarId = Train?.Cars.IndexOf(Wagon) ?? 0;
 
-            if (firstUpdate)
+            if (IsFirstUpdate)
             {
-                firstUpdate = false;
+                IsFirstUpdate = false;
 
-                TrainCar previousCar = CarId > 0 ? Train.Cars[CarId - 1] : null;
+                // At this point, we can expect Train to be initialized.
+                var previousCar = CarId > 0 ? Train.Cars[CarId - 1] : null;
 
                 // Connect the power supply cable if the previous car is a locomotive or another passenger car
                 if (previousCar != null

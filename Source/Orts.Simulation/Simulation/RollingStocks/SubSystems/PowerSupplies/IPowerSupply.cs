@@ -19,6 +19,9 @@ using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
+    /// <summary>
+    /// Base interface for any kind of line electric power supply via catenary, third rail, etc.
+    /// </summary>
     public interface IPowerSupply : ISubSystem<IPowerSupply>, IParsable
     {
         BatterySwitch BatterySwitch { get; }
