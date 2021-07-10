@@ -164,13 +164,13 @@ namespace Orts.Viewer3D.Popups
         bool ctrlAIFiremanReset = false;//AIFireman Reset
         double clockAIFireTime; //AIFireman reset timing
 
-        bool grateLabelHide = false;// Grate label visible
+        bool grateLabelVisible = false;// Grate label visible
         double clockGrateTime; // Grate hide timing
 
-        bool wheelLabelHide = false;// Wheel label visible
+        bool wheelLabelVisible = false;// Wheel label visible
         double clockWheelTime; // Wheel hide timing
 
-        bool doorsLabelHide = false; // Doors label visible
+        bool doorsLabelVisible = false; // Doors label visible
         double clockDoorsTime; // Doors hide timing
 
         bool ResizeWindow = false;
@@ -219,9 +219,9 @@ namespace Orts.Viewer3D.Popups
             outf.Write(ctrlAIFiremanOff);
             outf.Write(ctrlAIFiremanReset);
             outf.Write(clockWheelTime);
-            outf.Write(wheelLabelHide);
+            outf.Write(wheelLabelVisible);
             outf.Write(clockDoorsTime);
-            outf.Write(doorsLabelHide);
+            outf.Write(doorsLabelVisible);
         }
 
         protected internal override void Restore(BinaryReader inf)
@@ -238,9 +238,9 @@ namespace Orts.Viewer3D.Popups
             ctrlAIFiremanOff = inf.ReadBoolean();
             ctrlAIFiremanReset = inf.ReadBoolean();
             clockWheelTime = inf.ReadDouble();
-            wheelLabelHide = inf.ReadBoolean();
+            wheelLabelVisible = inf.ReadBoolean();
             clockDoorsTime = inf.ReadDouble();
-            doorsLabelHide = inf.ReadBoolean();
+            doorsLabelVisible = inf.ReadBoolean();
 
             // Display window
             SizeTo(LocationRestore.Width, LocationRestore.Height);
@@ -1065,7 +1065,7 @@ namespace Orts.Viewer3D.Popups
             {
                 if (steamLocomotive1.IsGrateLimit && steamLocomotive1.GrateCombustionRateLBpFt2 > steamLocomotive1.GrateLimitLBpFt2)
                 {
-                    grateLabelHide = true;
+                    grateLabelVisible = true;
                     clockGrateTime = Owner.Viewer.Simulator.ClockTime;
 
                     AddLabel(new ListLabel
@@ -1077,13 +1077,13 @@ namespace Orts.Viewer3D.Popups
                 else
                 {
                     // delay to hide the grate label
-                    if (grateLabelHide && clockGrateTime + 3 < Owner.Viewer.Simulator.ClockTime)
-                        grateLabelHide = false;
+                    if (grateLabelVisible && clockGrateTime + 3 < Owner.Viewer.Simulator.ClockTime)
+                        grateLabelVisible = false;
 
                     AddLabel(new ListLabel
                     {
-                        FirstCol = grateLabelHide ? Viewer.Catalog.GetString("Grate limit") + ColorCode[Color.White] : "",
-                        LastCol = grateLabelHide ? Viewer.Catalog.GetString("Normal") + ColorCode[Color.White] : ""
+                        FirstCol = grateLabelVisible ? Viewer.Catalog.GetString("Grate limit") + ColorCode[Color.White] : "",
+                        LastCol = grateLabelVisible ? Viewer.Catalog.GetString("Normal") + ColorCode[Color.White] : ""
                     });
                 }
             }
@@ -1091,7 +1091,7 @@ namespace Orts.Viewer3D.Popups
             // Wheel
             if (train.IsWheelSlip || train.IsWheelSlipWarninq || train.IsBrakeSkid)
             {
-                wheelLabelHide = true;
+                wheelLabelVisible = true;
                 clockWheelTime = Owner.Viewer.Simulator.ClockTime;
             }
 
@@ -1122,10 +1122,10 @@ namespace Orts.Viewer3D.Popups
             else
             {
                 // delay to hide the wheel label
-                if (wheelLabelHide && clockWheelTime + 3 < Owner.Viewer.Simulator.ClockTime)
-                    wheelLabelHide = false;
+                if (wheelLabelVisible && clockWheelTime + 3 < Owner.Viewer.Simulator.ClockTime)
+                    wheelLabelVisible = false;
 
-                if (wheelLabelHide)
+                if (wheelLabelVisible)
                 {
                     AddLabel(new ListLabel
                     {
@@ -1141,7 +1141,7 @@ namespace Orts.Viewer3D.Popups
             {
                 var status = new List<string>();
                 bool flipped = locomotive.GetCabFlipped();
-                doorsLabelHide = true;
+                doorsLabelVisible = true;
                 clockDoorsTime = Owner.Viewer.Simulator.ClockTime;
                 if (wagon.DoorLeftOpen)
                     status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString(flipped ? "Right" : "Left")));
@@ -1157,10 +1157,10 @@ namespace Orts.Viewer3D.Popups
             else
             {
                 // delay to hide the doors label
-                if (doorsLabelHide && clockDoorsTime + 3 < Owner.Viewer.Simulator.ClockTime)
-                    doorsLabelHide = false;
+                if (doorsLabelVisible && clockDoorsTime + 3 < Owner.Viewer.Simulator.ClockTime)
+                    doorsLabelVisible = false;
 
-                if (doorsLabelHide)
+                if (doorsLabelVisible)
                 {
                     AddLabel(new ListLabel
                     {
