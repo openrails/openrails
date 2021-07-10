@@ -19,6 +19,9 @@ using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
+    /// <summary>
+    /// Base class for a controllable power supply for an electric or dual-mode locmotive.
+    /// </summary>
     public interface ILocomotivePowerSupply : IPowerSupply
     {
         PowerSupplyType Type { get; }
