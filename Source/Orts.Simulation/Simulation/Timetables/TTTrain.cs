@@ -29,7 +29,7 @@
 // #define DEBUG_TTANALYSIS
 // DEBUG flag for debug prints
 
-using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
@@ -209,6 +209,7 @@ namespace Orts.Simulation.Timetables
         }
 
         public List<TriggerActivation> activatedTrainTriggers = new List<TriggerActivation>();
+        public string Briefing { get; set; } = "";
 
         //================================================================================================//
         /// <summary>
@@ -591,6 +592,8 @@ namespace Orts.Simulation.Timetables
             DriverOnlyOperation = inf.ReadBoolean();
             ForceReversal = inf.ReadBoolean();
 
+            Briefing = inf.ReadString();
+
             // reset actions if train is active
             bool activeTrain = true;
 
@@ -641,6 +644,8 @@ namespace Orts.Simulation.Timetables
             outf.Write(UncondAttach);
             outf.Write(doorCloseAdvance);
             outf.Write(doorOpenDelay);
+            // dummy for level crossing horn pattern
+            outf.Write(-1);
 
             // dummy for service list count
             outf.Write(-1);
@@ -896,6 +901,7 @@ namespace Orts.Simulation.Timetables
             outf.Write(SpeedSettings.restrictedSet);
             outf.Write(DriverOnlyOperation);
             outf.Write(ForceReversal);
+            outf.Write(Briefing);
         }
 
 
@@ -15174,4 +15180,3 @@ namespace Orts.Simulation.Timetables
         }
     }
 }
-

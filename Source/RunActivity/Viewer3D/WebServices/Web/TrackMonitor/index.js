@@ -55,7 +55,7 @@ async function ApiGet(path) {
 async function ApiTrackMonitor() {
 	// GET to fetch data, POST to send it
 	// "/API/APISAMPLE" /API is a prefix hard-coded into the WebServer class
-	let [tmData, tmDisplay] = await Promise.all([ApiGet("TRACKMONITOR"), ApiGet("TRACKMONITORDISPLAY")]);
+	let [tnInfo, tmDisplay] = await Promise.all([ApiGet("TRAININFO"), ApiGet("TRACKMONITORDISPLAY")]);
 
 	let Str = "<table>";
 	let endIndexFirst = 0,
@@ -83,8 +83,7 @@ async function ApiTrackMonitor() {
 	const codeColor = ['???', '??!', '?!?', '?!!', '!??', '!!?', '!!!', '%%%', '%$$', '%%$', '$%$', '$$$'];
 
 	//controlMode
-	const modes = ["AUTO_SIGNAL", "AUTO_NODE", "MANUAL", "EXPLORER", "OUT_OF_CONTROL", "INACTIVE", "TURNTABLE", "UNDEFINED"];
-	const controlMode = modes[tmData.ControlMode];
+	const controlMode = tnInfo.ControlMode;
 
 	// Table title
 	Str += "<tr> <td colspan='9' style='text-align: center'>" + 'Track Monitor' + "</td></tr>";

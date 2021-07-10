@@ -110,10 +110,10 @@ namespace ORTS.Settings
             Commands[(int)GetCommand(name)].PersistentDescriptor = (string)value;
         }
 
-        protected override void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary)
+        protected override void Load(Dictionary<string, string> optionsDictionary)
         {
             foreach (var command in GetCommands())
-                Load(allowUserSettings, optionsDictionary, command.ToString(), typeof(string));
+                Load(optionsDictionary, command.ToString(), typeof(string));
         }
 
         public override void Save()
@@ -210,6 +210,7 @@ namespace ORTS.Settings
                 new KeyValuePair<string, Color>("ControlThrottle", Color.DarkGreen),
                 new KeyValuePair<string, Color>("ControlTrainBrake", Color.DarkRed),
                 new KeyValuePair<string, Color>("ControlEngineBrake", Color.DarkRed),
+                new KeyValuePair<string, Color>("ControlBrakemanBrake", Color.DarkRed),
                 new KeyValuePair<string, Color>("ControlDynamicBrake", Color.DarkRed),
                 new KeyValuePair<string, Color>("ControlBrakeHose", Color.DarkRed),
                 new KeyValuePair<string, Color>("ControlEmergency", Color.DarkRed),
@@ -227,7 +228,7 @@ namespace ORTS.Settings
                     if (command.ToString().StartsWith(prefixToColor.Key))
                         return prefixToColor.Value;
 
-            return Color.TransparentBlack;
+            return Color.Transparent;
         }
 
         public void DumpToText(string filePath)
@@ -258,7 +259,7 @@ namespace ORTS.Settings
 
                     var keyColor = GetScanCodeColor(keyScanCode);
                     var keyTextColor = System.Drawing.Brushes.Black;
-                    if (keyColor == Color.TransparentBlack)
+                    if (keyColor == Color.Transparent)
                     {
                         keyColor = Color.White;
                     }
@@ -344,6 +345,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlAlerter] = new UserCommandKeyInput(0x2C);
             Commands[(int)UserCommand.ControlBackwards] = new UserCommandKeyInput(0x1F);
             Commands[(int)UserCommand.ControlBailOff] = new UserCommandKeyInput(0x35);
+            Commands[(int)UserCommand.ControlBattery] = new UserCommandKeyInput(0x30, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlBell] = new UserCommandKeyInput(0x30);
             Commands[(int)UserCommand.ControlBellToggle] = new UserCommandKeyInput(0x30, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlBlowerDecrease] = new UserCommandKeyInput(0x31, KeyModifiers.Shift);
@@ -374,6 +376,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlEmergencyPushButton] = new UserCommandKeyInput(0x0E);
             Commands[(int)UserCommand.ControlEngineBrakeDecrease] = new UserCommandKeyInput(0x1A);
             Commands[(int)UserCommand.ControlEngineBrakeIncrease] = new UserCommandKeyInput(0x1B);
+            Commands[(int)UserCommand.ControlBrakemanBrakeDecrease] = new UserCommandKeyInput(0x1A, KeyModifiers.Alt);
+            Commands[(int)UserCommand.ControlBrakemanBrakeIncrease] = new UserCommandKeyInput(0x1B, KeyModifiers.Alt);
             Commands[(int)UserCommand.ControlFireboxClose] = new UserCommandKeyInput(0x21, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlFireboxOpen] = new UserCommandKeyInput(0x21);
             Commands[(int)UserCommand.ControlFireShovelFull] = new UserCommandKeyInput(0x13, KeyModifiers.Control);
@@ -405,6 +409,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlPantograph2] = new UserCommandKeyInput(0x19, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlPantograph3] = new UserCommandKeyInput(0x19, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlPantograph4] = new UserCommandKeyInput(0x19, KeyModifiers.Shift | KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlPowerKey] = new UserCommandKeyInput(0x25, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlOdoMeterShowHide] = new UserCommandKeyInput(0x2C, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlOdoMeterReset] = new UserCommandKeyInput(0x2C, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlOdoMeterDirection] = new UserCommandKeyInput(0x2C, KeyModifiers.Control | KeyModifiers.Shift);
@@ -461,7 +466,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
             Commands[(int)UserCommand.DisplayStationLabels] = new UserCommandModifiableKeyInput(0x40, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplaySwitchWindow] = new UserCommandKeyInput(0x42);
-            Commands[(int)UserCommand.DisplayTrackMonitorWindow] = new UserCommandKeyInput(0x3E);
+            Commands[(int)UserCommand.DisplayTrackMonitorWindow] = new UserCommandModifiableKeyInput(0x3E, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43);
 
             Commands[(int)UserCommand.GameAutopilotMode] = new UserCommandKeyInput(0x1E, KeyModifiers.Alt);

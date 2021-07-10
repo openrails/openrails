@@ -44,9 +44,9 @@ sampler ImageSampler = sampler_state
 
 struct PIXEL_INPUT
 {
-	//float2 Position  : VPOS;
-	float2 TexCoords : TEXCOORD0;
+	float4 Position  : SV_POSITION;
 	float4 Color     : COLOR0;
+	float2 TexCoords : TEXCOORD0;
 	float3 Normal    : NORMAL;
 };
 
@@ -88,6 +88,6 @@ float4 PSCabShader(PIXEL_INPUT In) : COLOR0
 
 technique CabShader {
 	pass Pass_0 {
-		PixelShader = compile ps_2_0 PSCabShader();
+		PixelShader = compile ps_4_0_level_9_1 PSCabShader();
 	}
 }

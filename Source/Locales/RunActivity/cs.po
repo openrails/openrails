@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-10-25 09:21+0100\n"
 "PO-Revision-Date: 2015-10-25 10:36+0100\n"
-"Last-Translator: Altmann <altmann@bk.ru>\n"
+"Last-Translator: Howky\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
@@ -16,13 +16,13 @@ msgstr ""
 #: ../../RunActivity/Simulator/Activity.cs:891
 #: ../../RunActivity/Timetable/TTTrain.cs:5792
 msgid "Passenger boarding completed. Waiting for signal ahead to clear."
-msgstr "Nástup cestujících dokončen. Čekáme na návěstí volno před vlakem."
+msgstr "Nástup cestujících ukončen. Čekáme na návěst volno před vlakem."
 
 #: ../../RunActivity/AI/AITrain.cs:6106
 #: ../../RunActivity/Simulator/Activity.cs:896
 #: ../../RunActivity/Timetable/TTTrain.cs:5797
 msgid "Passenger boarding completed. You may depart now."
-msgstr "Nástup ukončen. Souhlas k odjezdu!"
+msgstr "Nástup ukončen. Odjezd!"
 
 #: ../../RunActivity/AI/AITrain.cs:4144
 #: ../../RunActivity/Simulator/Simulator.cs:582
@@ -40,7 +40,7 @@ msgid ""
 "Join success: Train {0} service {1} has been incorporated into train {2} "
 "service {3}"
 msgstr ""
-"Úspěšné spojení: Vlak {0} služba {1} byl začleněno do vlaku {2} služba {3}"
+"Úspěšné spojení: Vlak {0} služba {1} byl začleněn do vlaku {2} služba {3}"
 
 #: ../../RunActivity/AI/AITrain.cs:6113
 #: ../../RunActivity/Simulator/Activity.cs:880
@@ -143,43 +143,43 @@ msgstr "Zap"
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:86
 msgctxt "Pantograph"
 msgid "Down"
-msgstr "Dole"
+msgstr "Stažen"
 
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:87
 msgctxt "Pantograph"
 msgid "Lowering"
-msgstr "Sklápění"
+msgstr "Stahuje"
 
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:88
 msgctxt "Pantograph"
 msgid "Raising"
-msgstr "Zvedání"
+msgstr "Zvedá"
 
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:89
 msgctxt "Pantograph"
 msgid "Up"
-msgstr "Nahoře"
+msgstr "Zvednut"
 
 #. Context: CircuitBraker
 #: ../../RunActivity/Common/Scripting/PowerSupply/CircuitBreaker.cs:79
 msgctxt "CircuitBraker"
 msgid "Open"
-msgstr "Otevřeno"
+msgstr "Vypnuto"
 
 #. Context: CircuitBraker
 #: ../../RunActivity/Common/Scripting/PowerSupply/CircuitBreaker.cs:80
 msgctxt "CircuitBraker"
 msgid "Closing"
-msgstr "Uzavíráno"
+msgstr "Zapínám"
 
 #. Context: CircuitBraker
 #: ../../RunActivity/Common/Scripting/PowerSupply/CircuitBreaker.cs:81
 msgctxt "CircuitBraker"
 msgid "Closed"
-msgstr "Uzavřeno"
+msgstr "Zapnuto"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:1956
 msgid "Switching Request Sent to the Server"
@@ -220,7 +220,7 @@ msgstr "Zobrazit avatary"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
 msgid "MSG to Selected"
-msgstr "Zpráva zvoleným"
+msgstr "Zpráva vybraným"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:88
@@ -233,7 +233,7 @@ msgstr "Měř"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
-msgstr "Odpovědět zvoleným"
+msgstr "Odpovědět vybraným"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
 msgid "Draw Path"
@@ -261,7 +261,7 @@ msgstr "Normální"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
 msgid "Follow"
-msgstr "Následovat"
+msgstr "Sledovat"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
 msgid "Penalty"
@@ -285,7 +285,7 @@ msgstr "Vymazat vše"
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:57
 msgid "Reply Selected"
-msgstr "Odpovědět zvoleným"
+msgstr "Odpovědět vybraným"
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:102
 msgid "MessageViewer"
@@ -317,7 +317,7 @@ msgstr "Mezipaměť zvuků"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:202
 msgid "Selected sound"
-msgstr "Zvolený zvuk"
+msgstr "Vybraný zvuk"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:214
 msgid "3D"
@@ -346,7 +346,7 @@ msgstr "Proměnná 1"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:693
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Distance"
-msgstr "Vzdálen."
+msgstr "Vzdálenost"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:359
 msgid "Volume"
@@ -363,7 +363,7 @@ msgstr "Připojení k serveru bylo ztraceno, pokračujeme v režimu jednoho hrá
 
 #: ../../RunActivity/MultiPlayer/ClientComm.cs:153
 msgid "Alt-E to gain control of your train"
-msgstr "Získat kontrolu nad svým vlakem Alt-E"
+msgstr "Získat zpět kontrolu nad svým vlakem (Alt-E)"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:649
 msgid "Dispatcher does not allow hand throw at this time"
@@ -379,25 +379,25 @@ msgstr "vedlejší trať"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1467
 msgid "You are the new dispatcher. Enjoy!"
-msgstr "Jste nový dispečer. Užijte si to!"
+msgstr "Jsi nový dispečer. Užijte si to!"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1597
 msgid "Name conflicted with people in the game, will play in single mode"
-msgstr "Toto jméno již někdo používá, pokračujeme v režimu jednoho hráče"
+msgstr "Tuto přezdívku již někdo používá, jsi opět v režimu jednoho hráče"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1672
 #: ../../RunActivity/MultiPlayer/MPManager.cs:130
 msgid "You gained back the control of your train"
-msgstr "Získal jste opět kontrolu nad svým vlakem"
+msgstr "Získal jsi opět kontrolu nad svým vlakem"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1887
 msgid "Server quits, will play as single mode"
-msgstr "Server byl ukončen, pokračujeme v režimu jednoho hráče"
+msgstr "Server byl ukončen, jsi opět v režimu jednoho hráče"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2168
 #: ../../RunActivity/MultiPlayer/Message.cs:2414
 msgid "Trains uncoupled, gain back control by Alt-E"
-msgstr "Vlak je rozpojen, získat nad ním kontrolu stiskem Alt-E"
+msgstr "Vlak je rozpojen, stiskni Alt-E a získej nad vlakem kontrolu"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2552
 #: ../../RunActivity/MultiPlayer/Message.cs:2660
@@ -406,11 +406,11 @@ msgstr "Vlak je spojen, stiskněte \\ a potom Shift-? pro uvolnění brzd"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:3105
 msgid "You are an assistant now, will be able to handle switches and signals."
-msgstr "Nyní jste asistent, můžete přehazovat výhybky a návěstidla."
+msgstr "Nyní jste asistent dispečera, můžete ovládat výhybky a návěstidla."
 
 #: ../../RunActivity/MultiPlayer/Message.cs:3111
 msgid "You are no longer an assistant."
-msgstr "Již nejste asistent."
+msgstr "Již nejste asistent dispečera."
 
 #: ../../RunActivity/MultiPlayer/Message.cs:692
 #, csharp-format
@@ -461,7 +461,7 @@ msgstr "Spřáhlo je přetížené!"
 #: ../../RunActivity/Physics/Train.cs:4686
 #: ../../RunActivity/Physics/Train.cs:4691
 msgid "Other train is blocking path"
-msgstr "Další vlak blokuje cestu."
+msgstr "Jiný vlak blokuje cestu."
 
 #: ../../RunActivity/Physics/Train.cs:5578
 msgid "Stopped due to errors in route setting"
@@ -518,7 +518,7 @@ msgstr "Povolená rychlost se zvýšila na {0}"
 #: ../../RunActivity/Physics/Train.cs:8300
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
-msgstr "Vlak zastavil kvůli problémům s dalším vlakem: {0} , důvod: {1}"
+msgstr "Vlak zastavil kvůli problémům s jiným vlakem: {0} , důvod: {1}"
 
 #: ../../RunActivity/Processes/GameStateRunActivity.cs:1080
 #, csharp-format
@@ -556,11 +556,11 @@ msgstr "Nepřítomnost troleje není brána v úvahu."
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:317
 msgid "Pantographs"
-msgstr "Pantografy"
+msgstr "Sběrače"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:331
 msgid "Circuit breaker"
-msgstr "Ochranný vypínač"
+msgstr "Hlavní vypínač"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:332
 msgid "TCS"
@@ -593,30 +593,30 @@ msgstr "Výkon"
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1573
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:203
 msgid "Scoop broken because activated outside through"
-msgstr "Naběrač vody byl poškozen, protože byl spuštěn mimo žlab."
+msgstr "Vodní jeřáb nebyl nastaven, protože byl spuštěn mimo žlab."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1595
 msgid "Tender coal supply is empty. Your loco will fail."
-msgstr "Zásoby uhlí v tenderu došly. Vaše lokomotiva selže."
+msgstr "Zásoby uhlí v tenderu došly. Vaše lokomotiva nemá uhlí!."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1609
 msgid "Tender water supply is empty. Your loco will fail."
-msgstr "Zásoby vody v tenderu došly. Vaše lokomotiva selže."
+msgstr "Zásoby vody v tenderu došly. Vaše lokomotiva nemá vodu!."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1667
 msgid "Fire has dropped too far. Your loco will fail."
-msgstr "Ohniště příliš pohaslo. Vaše lokomotiva selže."
+msgstr "Ohniště příliš pohaslo. Zatop nebo daleko nedojedeme."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1724
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
-msgstr "Ohniště vyhasíná. Topič musí přikládat rychleji, ale neunavte ho."
+msgstr "Ohniště vyhasíná. Topič musí přikládat rychleji, ale neunav ho."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1737
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
 msgstr ""
-"Ohniště je opět v rámci limitů. Váš topič může přikládat běžným způsobem."
+"Ohniště je opět v pořádku. Tvůj topič může přikládat běžným způsobem."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2105
 msgid "Grate limit exceeded - boiler heat rate cannot increase."
@@ -624,7 +624,7 @@ msgstr "Limit roštu překročen - nelze zvýšit tepelný výkon kotle."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2115
 msgid "Grate limit return to normal."
-msgstr "Limit roštu - návrat k normálu."
+msgstr "Limit roštu - zpět v normálu."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3328
 msgid "Water level dropped too far. Plug has fused and loco has failed."
@@ -666,7 +666,7 @@ msgstr "Hladina vody v kotli"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3860
 msgid "(safe range)"
-msgstr "(bezpečný rozsah)"
+msgstr "(bezpečný limit)"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3864
 msgid "(absolute)"
@@ -682,7 +682,7 @@ msgstr "Pom.spal."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3871
 msgid "Fuel levels"
-msgstr "Hladiny paliva"
+msgstr "Hladina paliva"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3871
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:331
@@ -791,7 +791,7 @@ msgstr "Teplota:"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3937
 msgid "Flue"
-msgstr "Spal."
+msgstr "Spaliny."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:3939
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:4180
@@ -1265,7 +1265,7 @@ msgid ""
 "You are travelling too fast for this curve. Slow down, your freight may be "
 "damaged and your train may derail."
 msgstr ""
-"Jedete do této zatáčky moc rychle. Zpomalte, váš náklad se může poškodit a "
+"Do obloukou jedeš moc rychle. Zpomalte, váš náklad se může poškodit a "
 "váš vlak může vykolejit."
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:697
@@ -1273,12 +1273,12 @@ msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable and your train may derail."
 msgstr ""
-"Jedete do této zatáčky moc rychle. Zpomalte, cestující se necítí příjemně a "
+"Do obloukou jedeš moc rychle. Zpomalte, cestující se necítí příjemně a "
 "váš vlak může vykolejit."
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:731
 msgid "Your train has overturned."
-msgstr "Váš vlak se převrátil."
+msgstr "Váš vlak vykolejil."
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:915
 msgid "(flipped)"
@@ -1328,13 +1328,13 @@ msgstr "Nafta"
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:395
 msgctxt "Engine"
 msgid "Stopped"
-msgstr "Motor neběží"
+msgstr "Motor zastaven"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:396
 msgctxt "Engine"
 msgid "Starting"
-msgstr "Startuje motor"
+msgstr "Startuji motor"
 
 #. Context: Engine
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:397
@@ -1346,7 +1346,7 @@ msgstr "Motor běží"
 #: ../../RunActivity/RollingStock/SubSystems/PowerSupply/DieselEngine.cs:398
 msgctxt "Engine"
 msgid "Stopping"
-msgstr "Vypíná motor"
+msgstr "Vypínám motor"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:26
 msgid "None"
@@ -1391,7 +1391,7 @@ msgstr "Vpřed"
 #: ../../RunActivity/Simulator/Confirmation.cs:157
 msgid "locked. Close throttle, stop train then re-try."
 msgstr ""
-"zablokován. Kontrolér dejte do nulové polohy, zastavte vlak a opakujte."
+"zablokován. Kontrolér dej do nulové polohy, zastav vlak a opakuj."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:146
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:125
@@ -1428,7 +1428,7 @@ msgstr "otevřen/zvýšen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:146
 msgid "locked. Release dynamic brake then re-try."
-msgstr "zablokován. Vypněte dynamickou brzdu a opakujte."
+msgstr "zablokován. Vypni dynamickou brzdu a opakuj."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "Wheel-slip"
@@ -1510,11 +1510,11 @@ msgstr "Start/stop dieselu hráče"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:153
 msgid "locked. Close throttle then re-try."
-msgstr "zablokován. Kontrolér dejte do nulové polohy a opakujte."
+msgstr "zablokován. Kontrolér dej do nulové polohy a opakuj."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:154
 msgid "Helper Diesel Power"
-msgstr "Start/stop dieselu ostatních"
+msgstr "Start/stop dieselu pomocné"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:155
 msgid "Diesel Tank"
@@ -1766,7 +1766,7 @@ msgid ""
 "changing disabled. Close throttle, set reverser to neutral, stop train then "
 "re-try."
 msgstr ""
-"- změna je zablokována. Kontrolér dejte do nulové polohy, nastavte reverser "
+"- změna je zablokována. Kontrolér dej do nulové polohy, nastav páku směru "
 "na neutrál, zastavte vlak a opakujte."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:192
@@ -1800,7 +1800,7 @@ msgstr "Výhybka vpředu"
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 #: ../../RunActivity/Simulator/Confirmation.cs:199
 msgid "locked. Use Control+M to change signals to manual mode then re-try."
-msgstr "zamknutá. Zkratkou Control+M změňte režim na manuální a opakujte."
+msgstr "zamknutá. Zkratkou Control+M změň režim na manuální a opakuj."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:199
 msgid "Switch Behind"
@@ -1854,7 +1854,7 @@ msgstr "řazení nahoru"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:205
 msgid "locked. Use shaft before changing gear."
-msgstr "zamčeno. Použijte spojku před změnou převodu."
+msgstr "zamčeno. Použij spojku před změnou převodu."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:206
 msgid "Signal mode"
@@ -1870,7 +1870,7 @@ msgstr "automatické"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:206
 msgid "locked. Stop train, then re-try."
-msgstr "zamčen. Zastavte vlak a opakujte."
+msgstr "zamčen. Zastavt vlak a opakuj."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:208
 msgid "Wagon"
@@ -1944,7 +1944,7 @@ msgstr "Reverser"
 #: ../../RunActivity/Simulator/Confirmation.cs:184
 msgctxt "Alerter"
 msgid "sound"
-msgstr "živák"
+msgstr "Živák"
 
 #. Context: Horn
 #: ../../RunActivity/Simulator/Confirmation.cs:185
@@ -1968,7 +1968,7 @@ msgstr "resetovat"
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgctxt "Odometer"
 msgid "counting down"
-msgstr "odečítá"
+msgstr "odpočítává"
 
 #. Context: Odometer
 #: ../../RunActivity/Simulator/Confirmation.cs:192
@@ -2079,7 +2079,7 @@ msgstr "Hra uložena"
 #: ../../RunActivity/Viewer3D/Viewer.cs:750
 #, csharp-format
 msgid "Vibrating at level {0}"
-msgstr "Vibrující na úrovni {0}"
+msgstr "Úroveň vibrací {0}"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:758
 #, csharp-format
@@ -2089,12 +2089,12 @@ msgstr "Otáčet kabinu {0}/4, otáčet terén {1}/4"
 #: ../../RunActivity/Viewer3D/Viewer.cs:885
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
-msgstr "Seznam mapy kláves byl uložen do '{0}'."
+msgstr "Seznam kláves byl uložen do '{0}'."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:889
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
-msgstr "Obrázek mapy kláves byl uložen do '{0}'."
+msgstr "Obrázek kláves byl uložen do '{0}'."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:787
 #, csharp-format
@@ -2213,7 +2213,7 @@ msgstr "Zavřít okno"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:89
 msgid "Handbrake set"
-msgstr "Ruční brzda nastavena"
+msgstr "Ruční brzda zatáhnuta"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:91
 msgid "Handbrake off"
@@ -2974,7 +2974,7 @@ msgstr "Rychlost:"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:94
 msgid "Projected:"
-msgstr "Projektovaná:"
+msgstr "Předpokládaná:"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:99
 msgid "Limit:"
@@ -3042,7 +3042,7 @@ msgstr "Doplnit: Neexistuje žádný vhodný přípojný bod, doplňuji okamžit
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:452
 msgid "Refill: Electric loco and no pickup. Command rejected"
-msgstr "Doplnit: Elektrická lokomotiva bez naběrače. Příkaz zamítnut"
+msgstr "Doplnit: Elektrickou lokomotivu nelze doplnit. Příkaz zamítnut"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:549
 msgid "Incompatible pickup type"
@@ -3102,7 +3102,7 @@ msgstr "Naběrač vody je poškozen, nelze ji doplnit"
 #~ "You are traveling too fast for this curve. Slow down, your freight may be "
 #~ "damaged and your train may derail."
 #~ msgstr ""
-#~ "Jedete do této zatáčky moc rychle. Zpomalte, váš náklad může být poškozen "
+#~ "Jedete do oblouku moc rychle. Zpomalte, váš náklad může být poškozen "
 #~ "a váš vlak může vykolejit."
 
 #~ msgid "SupFact"
@@ -3163,7 +3163,7 @@ msgstr "Naběrač vody je poškozen, nelze ji doplnit"
 #~ msgstr "Není definováno (předpokládáno jednoduchá)"
 
 #~ msgid "Superheater"
-#~ msgstr "Přehřívač páry"
+#~ msgstr "Přehřívák páry"
 
 #~ msgid "Saturated"
 #~ msgstr "Nasycená"

@@ -76,6 +76,7 @@ namespace Orts.Simulation
       // Braking
       , TrainBrake
       , EngineBrake
+      , BrakemanBrake
       , DynamicBrake
       , EmergencyBrake
       , BailOff
@@ -83,6 +84,8 @@ namespace Orts.Simulation
       , Handbrake
       , Retainers
       , BrakeHose
+      , QuickRelease
+      , Overcharge
       // Cab Devices
       , Sander
       , Alerter
@@ -94,6 +97,8 @@ namespace Orts.Simulation
       , Wipers
       , ChangeCab
       , Odometer
+      , Battery
+      , PowerKey
       // Train Devices
       , DoorsLeft
       , DoorsRight
@@ -214,14 +219,17 @@ namespace Orts.Simulation
                 , new string [] { GetString("Water Scoop"), GetString("up"), null, GetString("down") }
                 // Braking
                 , new string [] { GetString("Train Brake"), null, null, null, GetString("release"), GetString("apply") } 
-                , new string [] { GetString("Engine Brake"), null, null, null, GetString("release"), GetString("apply") } 
+                , new string [] { GetString("Engine Brake"), null, null, null, GetString("release"), GetString("apply") }
+                , new string [] { GetString("Brakeman Brake"), null, null, null, GetString("release"), GetString("apply") }
                 , new string [] { GetString("Dynamic Brake"), GetString("off"), null, GetString("setup"), GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("Emergency Brake"), GetString("release"), null, GetString("apply") } 
                 , new string [] { GetString("Bail Off"), GetString("disengage"), null, GetString("engage") } 
                 , new string [] { GetString("Brakes"), GetString("initialize"), null, null, null, null, GetString("cannot initialize. Stop train then re-try.") } 
                 , new string [] { GetString("Handbrake"), GetString("none"), null, GetString("full") } 
                 , new string [] { GetString("Retainers"), GetString("off"), null, GetString("on"), null, null, null, null, GetString("Exhaust"), GetString("High Pressure"), GetString("Low Pressure"), GetString("Slow Direct") } 
-                , new string [] { GetString("Brake Hose"), GetString("disconnect"), null, GetString("connect") } 
+                , new string [] { GetString("Brake Hose"), GetString("disconnect"), null, GetString("connect") }
+                , new string [] { GetString("Quick Release"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("Overcharge"), GetString("off"), null, GetString("on") }
                 // Cab Devices
                 , new string [] { GetString("Sander"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Alerter"), GetString("acknowledge"), null, GetParticularString("Alerter", "sound") } 
@@ -233,6 +241,8 @@ namespace Orts.Simulation
                 , new string [] { GetString("Wipers"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Cab"), null, null, GetParticularString("Cab", "change"), null, null, GetString("changing is not available"), GetString("changing disabled. Close throttle, set reverser to neutral, stop train then re-try.") } 
                 , new string [] { GetString("Odometer"), null, null, GetParticularString("Odometer", "reset"), GetParticularString("Odometer", "counting down"), GetParticularString("Odometer", "counting up") }
+                , new string [] { GetString("Battery"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("PowerKey"), GetString("off"), null, GetString("on")}
                 // Train Devices
                 , new string [] { GetString("Doors Left"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("Doors Right"), GetString("close"), null, GetString("open") } 

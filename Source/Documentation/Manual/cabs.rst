@@ -7,6 +7,8 @@ Open Rails Cabs
 OR supports both MSTS-compatible 2D cabs as well as native 3D cabs, even on 
 the same locomotive.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 2D Cabs
 =======
 
@@ -30,6 +32,9 @@ The keyboard keys to switch on and off diesel engines are following ones:
   
 Following cabview controls are available:
 
+.. index::
+   single: ORTS_PLAYER_DIESEL_ENGINE
+
 ORTS_PLAYER_DIESEL_ENGINE: the first frame is displayed when the diesel engine 
 of the player locomotive is in states stopped or stopping, while the second 
 frame is displayed when it is in states running or started. The control may 
@@ -49,6 +54,9 @@ Example::
                 )
 
 
+
+.. index::
+   single: ORTS_HELPERS_DIESEL_ENGINES
 
 ORTS_HELPERS_DIESEL_ENGINES: the first frame is displayed when further diesel 
 engines of the player locomotive and/or the diesel engines of the helper 
@@ -71,6 +79,8 @@ Example::
                 )
 
 
+.. index::
+   single: ORTS_PLAYER_DIESEL_ENGINE_STATE
 
 ORTS_PLAYER_DIESEL_ENGINE_STATE: this control respectively selects frames 0, 
 1, 2, 3 for the player locomotive engine states Stopped, Starting, Running and 
@@ -90,6 +100,8 @@ Example::
                 )
 
 
+.. index::
+   single: ORTS_PLAYER_DIESEL_ENGINE_STARTER
 
 ORTS_PLAYER_DIESEL_ENGINE_STARTER: it displays the second frame when the 
 player diesel engine is in starting status, and the first one in all other 
@@ -110,6 +122,8 @@ Example::
                 )
 
 
+.. index::
+   single: ORTS_PLAYER_DIESEL_ENGINE_STOPPER
 
 ORTS_PLAYER_DIESEL_ENGINE_STOPPER: it displays the second frame when the 
 player diesel engine is in stopping status, and the second one in all other 
@@ -135,6 +149,9 @@ Example::
 Cab radio
 ---------
 
+.. index::
+   single: CAB_RADIO
+
 OR supports the cab radio cabview control.
 Pressing keys Alt+R switches on and off the cab radio.
 Switching on and off the cab radio enables discrete sound triggers 162 and 
@@ -154,6 +171,9 @@ Here is an example of a cab radio control block within the .cvf file::
 Cab light
 ---------
 
+.. index::
+   single: ORTS_CABLIGHT
+
 OR supports the cab light cabview control.
 Pressing key L switches on and off the cab light under the same conditions 
 applicable to MSTS.
@@ -170,9 +190,46 @@ Here is an example of a cab light control block within the .cvf file::
 			      MouseControl ( 1 )
             )
 
+Dedicated buttons for brake controllers
+---------------------------------------
+
+.. index::
+    single: ORTS_BAILOFF
+
+In addition to the BailOff keyboard command, a cabview control named
+ORTS_BAILOFF is available. It is used to release the brakes of the engine
+while keeping the train brakes applied.
+
+.. index::
+    single: ORTS_QUICKRELEASE
+
+In some brake controllers, there is a button that provides a full and quick
+release of the train brake when pressed. OR supports this via the
+ORTS_QUICKRELEASE cabview control.
+
+.. index::
+    single: ORTS_OVERCHARGE
+
+Some brake controllers have a dedicated button to overcharge the brake pipe.
+The ORTS_OVERCHARGE cabview control can be used for this purpose.
+
+Here is an example of one of this controls within the .cvf file::
+
+			TwoState (
+            Type ( ORTS_BAILOFF TWO_STATE )
+			      Position ( 120 425 30 21 )
+			      Graphic ( BailOff.ace )
+			      NumFrames ( 2 2 1 )
+			      Style ( PRESSED )
+			      MouseControl ( 1 )
+            )
 
 Signed Traction Braking control
 -------------------------------
+
+.. index::
+   single: ORTS_SIGNED_TRACTION_BRAKING
+   single: TRACTION_BRAKING
 
 This cabview control shows the signed value of the force (+ve or -ve, that is 
 tractive or due to dynamic braking) as displayed 
@@ -197,19 +254,93 @@ Here is an example of a cab light control block within the .cvf file::
 Signed Traction Total Braking control
 -------------------------------------
 
+.. index::
+   single: ORTS_SIGNED_TRACTION_TOTAL_BRAKING
+
 ORTS_SIGNED_TRACTION_TOTAL_BRAKING control behaves and is defined like 
 ORTS_SIGNED_TRACTION_BRAKING, with the only difference that the braking 
 force does include also the train brake force in addition to the dynamic 
 brake force.
 
+Animated 2D Wipers
+------------------
+
+.. index::
+   single:  ORTS_2DEXTERNALWIPERS
+
+This control animates the wipers as seen from a 2D cab.
+Animation is triggered on/off through key V.
+
+Here is an example of a 2D wipers control block within the .cvf file::
+
+
+        ORTSAnimatedDisplay  (
+			Type ( ORTS_2DEXTERNALWIPERS MULTI_STATE_DISPLAY )
+			Position ( 155 0 331.875 236.25 )
+			Graphic ( ..//..//Common.Cab//CabE464_DMI//e464Tergicristallo9.ace )
+			ORTSCycleTime ( 1.35 )
+			States ( 9 3 3
+				State (
+					Style ( 0 )
+					SwitchVal ( 0 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.11 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.22 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.33 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.44 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.55 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.66 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.77 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.88 )
+				)
+			)
+		)
+
+ORTSCycleTime is expressed in seconds.
+The .ace file must contain only the frames related to half cycle, that is 
+if e.g. the wiper moves from left to right and back, only the frames related 
+to the motion from left to right have to be included. For the reverse 
+motion the same frames are used from last to first. SwitchVal can vary from 0 to 1.
+
 Further OR cab controls
 -----------------------
 
 OR supports the cabview control to open/close the left doors, the right doors 
-and the mirrors.
+and the mirrors. Moreover it supports the controls for the battery state and for 
+the key state; these two controls have no effect on the state of the locomotive.
+
+.. index::
+   single: ORTS_LEFTDOOR
+   single: ORTS_RIGHTDOOR
+   single: ORTS_MIRRORS
+   single: ORTS_BATTERY
+   single: ORTS_POWERKEY
 
 The control blocks are like the one shown for the cab light. The Type strings 
-are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
+are ORTS_LEFTDOOR, ORTS_RIGHTDOOR, ORTS_MIRRORS, ORTS_BATTERY and ORTS_POWERKEY.
 
 
 High-resolution Cab Backgrounds and Controls
@@ -242,6 +373,9 @@ vertical position. In the ``Dial`` type the last 2 numbers are the size of the
 needle texture. The last number (50 in the example) controls the scaling of 
 the needle texture, i.e. changing this changes the size of the needle that OR 
 displays.
+
+.. index::
+   single: SPEEDOMETER
 
 ::
 
@@ -311,6 +445,9 @@ OR supports a configurable font family, with font size selection, and a
 choice of regular or bold style. More than one font or size can be used in 
 the same cabview. This does not affect the display in MSTS.
 
+.. index::
+   single: ORTSfont
+   
 An optional line of the form ``ORTSfont ( fontsize  fontstyle  "fontfamily" )`` 
 must be inserted into the .cvf block of the digital control or digital clock, 
 where *fontsize* is a float (default value 10), *fontstyle* an integer having 
@@ -318,6 +455,9 @@ the value 0 (default) for regular and 1 for bold, and *fontfamily* is a
 string with the font family name (ex. "Times New Roman"). The default is 
 "Courier New". A convenient font, if available, is "Quartz MS" or "Quartz", 
 which models a 7-segment display.
+
+.. index::
+   single: DIGITAL_CLOCK
 
 Here is an example that displays the digital clock with a 12 pt. bold font 
 using the Sans Serif font family::
@@ -337,24 +477,37 @@ Note that you cannot use the MS Cabview editor on the .cvf file after having
 inserted these optional lines, because the editor will delete these added 
 lines when the file is saved.
 
-Rotation of Digital controls
-----------------------------
+Rotation of Gauges and Digital controls
+---------------------------------------
+
+.. index::
+   single: ORTSAngle
 
 One of the drawbacks of rendering a cabview in 2D is that some parts of it 
-are not shown with a frontal, horizontal, view. Displaying a horizontal digital 
-control on it generates an unrealistc effect. This is the rationale of following 
-entry, to be added within a Digital cabview control block in the .cvf file::
+are not shown with a frontal, precisely vertical or horizontal, view. 
+Displaying a vertical gauge or a horizontal digital control on it generates an
+unrealistic effect. This is the rationale of following entry, to be added
+within a Gauge or Digital cabview control block in the .cvf file::
 
   ORTSAngle ( 5 )
 
 The number in parenthesis is the angle in degrees with respect to the horizontal 
-(positive for counterclockwise rotation).
+(or to the vertical for vertical gauges). Positive values produce
+counterclockwise rotation.
+
+At the left of the picture an example of a white vertical gauge that has been rotated 
+by 12 degrees
+
+.. image:: images/cabs-gauges-rotation.png
 
 Here an example of a red max speed indication that has been rotated by 5 degrees
 
 .. image:: images/cabs-digitals-rotation.png
 
+Gauges may have Style POINTER or SOLID.
+
 Rotation may be applied, with the same syntax, also to DigitalClock cab controls.
+
 
 3D cabs
 =======
@@ -365,6 +518,11 @@ provided, the key ``<Alt+1>`` can be used in order to switch between 2D and 3D c
 
 Development Rules
 -----------------
+
+.. index::
+   single: CABVIEW3D
+   single: SPEEDOMETER
+   single: TRAIN_BRAKE
 
 - The 3D cab is described by an .s file, the associated .ace or .dds files, 
   and a .cvf file having the same name as the .s file. All these files reside 
@@ -388,6 +546,14 @@ Development Rules
   in future OR releases. The important information for a digital device is 
   its location, thus it can be defined as an object with a small single face 
   in the 3D model.
+
+.. index::
+   single: ORTS3DCab
+   single: ORTS3DCabFile
+   single: ORTS3DCabHeadPos
+   single: RotationLimit
+   single: StartDirection
+
 - Animation ranges must be in agreement with the .cvf file 
 - Within the Wagon section of the .eng file a block like the following one 
   has to be generated::
@@ -398,6 +564,17 @@ Development Rules
         RotationLimit ( 40 60 0 )
         StartDirection ( 12 0 0 )
     )
+
+.. index::
+   single: EXTERNALWIPERS
+   single: AMMETER
+   single: CLOCK
+   single: CABVIEW3D
+   single: LEFTDOOR
+   single: RIGHTDOOR
+   single: MIRRORS
+   single: NIGHT
+   single: ESD_Alternative_Texture
 
 - It is also possible to animate the wipers, by inserting into the .s file an 
   animation named ``EXTERNALWIPERS:0:0``
@@ -422,7 +599,9 @@ Development Rules
 - How to control the view in a 3D cab is described :ref:`here <driving-changing-view>`.
 
 A demo trainset with a 3Dcab, that may be useful for developers, can be 
-downloaded from: `<http://www.tsimserver.com/Download/Df11G3DCab.zip>`_.  
+downloaded from: `http://www.tsimserver.com/Download/Df11G3DCab.zip`_
+
+.. _http://www.tsimserver.com/Download/Df11G3DCab.zip: http://www.tsimserver.com/Download/Df11G3DCab.zip
 
 A Practical Development Example For a Digital Speedometer
 ---------------------------------------------------------
@@ -476,12 +655,14 @@ Now, open OR and test your speedometer.
 FUEL_GAUGE for steam locomotives
 --------------------------------
 
+.. index::
+   single: FUEL_GAUGE
+
 The FUEL_GAUGE dial is available also for steam locomotives. It may be used 
 both to display a fuel level for oil burning steam locomotives (also in 2D cabs), 
 and to animate the coal level in a tank loco. Default unit of measure is Kg; 
-alternate unit of 
-measure may be LBS.
-Here below an example of an entry for a 3D cab::
+alternate unit of measure may be LBS.
+Here below is an example of an entry for a 3D cab::
 
   Dial (
   Type ( FUEL_GAUGE DIAL )

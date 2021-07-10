@@ -467,6 +467,23 @@ namespace Orts.Common
         }
     }
 
+     [Serializable()]
+    public sealed class BrakemanBrakeCommand : ContinuousCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+        public BrakemanBrakeCommand(CommandLog log, bool toState, float? target, double startTime)
+            : base(log, toState, target, startTime)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.BrakemanBrakeChangeTo(ToState, Target);
+            // Report();
+        }
+    }
+
     [Serializable()]
     public sealed class DynamicBrakeCommand : ContinuousCommand {
         public static MSTSLocomotive Receiver { get; set; }
@@ -532,6 +549,52 @@ namespace Orts.Common
 
         public override string ToString() {
             return base.ToString() + " - " + (ToState ? "disengage" : "engage");
+        }
+    }
+
+    [Serializable()]
+    public sealed class QuickReleaseCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public QuickReleaseCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.TrainBrakeController.QuickReleaseButtonPressed = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "off" : "on");
+        }
+    }
+
+    [Serializable()]
+    public sealed class BrakeOverchargeCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public BrakeOverchargeCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.TrainBrakeController.OverchargeButtonPressed = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "off" : "on");
         }
     }
 
@@ -931,7 +994,42 @@ namespace Orts.Common
             // Report();
         }
     }
-    
+
+    [Serializable()]
+    public sealed class ToggleBatteryCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public ToggleBatteryCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.ToggleBattery();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class TogglePowerKeyCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public TogglePowerKeyCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.TogglePowerKey();
+            // Report();
+        }
+    }
     // Steam controls
     [Serializable()]
     public sealed class ContinuousSteamHeatCommand : ContinuousCommand

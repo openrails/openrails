@@ -7,6 +7,8 @@ Open Rails Train Operation
 Note that this document details behaviour while in single-player mode only. For 
 :ref:`multi-player mode <multiplayer>`, different rules may apply.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Open Rails Activities
 =====================
 
@@ -1012,6 +1014,9 @@ how to modify these two files is contained in the Word document
 ``TECH DOCS`` folder of an MSTS installation. Note that these files must be 
 edited with a Unicode text editor.
 
+Additionally, a C# scripting interface is available to complement
+the ``sigscr.dat``` file for more complex systems.
+
 SignalNumClearAhead
 -------------------
 
@@ -1070,6 +1075,56 @@ value, or if the sigcfg.dat file is located in the subfolder ``OpenRails``:
 - 0 : no signal will be cleared beyond this signal until train passes this 
   signal.
 - -1: signal does not count when determining the number of signals to clear.
+
+C# signal scripting
+-------------------
+To simulate especially complex behavior, Open Rails provides a C# scripting 
+interface for signals. These scripts are written in .cs files containing
+C# classes, but they are compiled and linked at runtime, so they don't depend 
+on changes in the core program itself and can be distributed with the route.
+
+C# signal scripts are placed in the ``Script/Signal`` subfolder within the
+main folder of the route. All C# files present in that folder will be compiled
+together at runtime into a single assembly.
+
+For each signal type defined in the ``sigcfg.dat`` file, OR tries to find a 
+class with the same name as the signal type in the compiled assembly. 
+If there are compile errors or no class with the required name
+is found, the script defined in the ``sigscr.dat`` file will be used instead,
+if there is an adequate script there.
+
+Each signal script must be inside the ``ORTS.Scripting.Script`` namespace
+and has to inherit from the ``CsSignalScript`` class, which contains all 
+the API functions available for the script.
+
+This example illustrates the minimum code required for a signal script::
+
+    using System;
+    using Orts.Simulation.Signalling;
+
+    namespace ORTS.Scripting.Script
+    {
+        public class MYSIGNALTYPE : CsSignalScript
+        {
+            public override void Initialize()
+            {
+                // Perform some initializations here, taking into account
+                // that no route information is available at this point
+            }
+            public override void Update()
+            {
+                // Set the aspect of your signal here depending on route state
+            }
+            public override void HandleSignalMessage(int signalId, string message) {}
+        }
+    }
+    
+For a list of the API calls available for signal scripts, refer to the
+``Orts.Simulation/Simulation/Signalling/CsSignalScript.cs`` file in the OR source code.
+
+A development environment can be set up to accelerate development process.
+See the :ref:`engine scripting <features-scripting-csharp>` section for
+further information.
 
 OR-specific Signaling Functions
 ===============================
@@ -1194,18 +1249,24 @@ has reduced its speed to a specific value. Such control is used for diverging
 routes, to ensure the speed of the train is reduced sufficiently to safely 
 negotiate the switches onto the diverging route.
 
-Two script functions for use in OR have been defined which can be used to 
+Three script functions for use in OR have been defined which can be used to
 control the signal until the train has reached a specific position or has 
 reduced its speed.
 
 These functions are::
 
     APPROACH_CONTROL_POSITION(position)
+    APPROACH_CONTROL_POSITION_FORCED(position)
     APPROACH_CONTROL_SPEED(position, speed)
 
 These functions are Boolean functions: the returned value is 'true' if a train 
-is approaching the signal and is within the required distance of the signal 
-and, for APPROACH_CONTROL_SPEED, has reduced its speed below the required values.
+is approaching the signal and is within the required distance of the signal and,
+for ``APPROACH_CONTROL_SPEED``, has reduced its speed below the required values.
+
+``APPROACH_CONTROL_POSITION_FORCED`` function is similar to
+``APPROACH_CONTROL_POSITION``, but it can be used with any type of signal.
+Meanwhile, ``APPROACH_CONTROL_POSITION`` requires NORMAL signals, and will
+only clear the signal if it is the train's next signal.
 
 Parameters :
 
@@ -1488,6 +1549,8 @@ This function uses approach control for the 'lower' route.::
     // Get draw state
     draw_state = def_draw_state (state);
 
+.. _operation-callon-functions:
+    
 TrainHasCallOn, TrainHasCallOn_Advanced Functions
 -------------------------------------------------
 
@@ -1524,6 +1587,10 @@ It is a Boolean function and returns state as follows:
             - Train is part of ``RunRound`` command, and is to attach to the 
               train presently in the platform.
 
+Additionally, both in Timetable and Activity modes, this functions will return 
+true if the CallOn option is selected from signal's context menu in the
+:ref:`Dispatcher Window <driving-dispatcher>`.
+              
 The use of this function must be combined with a check for::
 
     blockstate ==# BLOCK_OCCUPIED
@@ -1607,6 +1674,9 @@ So, in a nutshell :
         - ``TrainsHasCallOn_Restricted()``:
 
             - Activity or Timetable: call-on never allowed
+
+All these functions can be set to true by hand from the
+:ref:`Dispatcher Window <driving-dispatcher>`.
 
 These signals can be laid down with the MSTS RE. In the .tdb file only a 
 reference to the  SignalType name is written, an in the world file only a 
@@ -1764,6 +1834,9 @@ lines within such EventCategory block must be present in the extension .act file
 No Halt by Activity Message Box
 -------------------------------
 
+.. index::
+   single: ORTSContinue
+
 MSTS activities may contain instructions to display a message box when the 
 player train reaches a specific location in the activity, or at a specific 
 time. Normally the simulation is halted when the message box is displayed until 
@@ -1798,19 +1871,18 @@ does not work for the terminating event of the activity.
 AI Train Horn Blow
 ------------------
 
-Horn blow by AI trains is achieved by inserting into the AI train path a 
-waiting point with a waiting time value between 60011 (1 second horn blow) and 
-60020 (10 seconds horn blow).
+Waiting points can be used to instruct AI trains to blow their horns at 
+specific locations.
+
+If the waiting time value is between 60011 (1 second horn blow) and 
+60020 (10 seconds horn blow), a single horn blow is generated.
+
+If the waiting time value is 60021, a horn blow sequence is generated, 
+with the pattern long blow - long blow - short blow - long blow (North 
+American horn pattern at level crossings).
 
 The AI train will not stop at these waiting points, but will continue at its 
 regular speed.
-
-If a "normal" waiting point follows a horn blow waiting point, the horn blow 
-must be terminated before the normal waiting point is reached ( just in case).
-
-On the other hand, a horn blow waiting point may be positioned just after a 
-normal WP (thus achieving the effect that the train blows the horn when it 
-restarts).
 
 If the lead locomotive of the AI train has parameter DoesHornTriggerBell 
 set to 1 in the .eng file, the bell is played for further 30 seconds after 
@@ -1823,17 +1895,30 @@ points within the paths with either the MSTS AE or through TrackViewer.
 AI Horn Blow at Level Crossings
 -------------------------------
 
-If the line::
+.. index::
+   single: ORTSAIHornAtCrossings
+   single: ORTSAICrossingHornPattern
+   single: NextActivityObjectUID
 
-    ORTSAIHornAtCrossings ( 1 )
+Open Rails can also be instructed to have AI trains automatically blow their
+horns at level crossings. This feature is activated using special properties
+in the ``Tr_Activity_File`` block:
 
-is inserted into the activity file following the line::
+========================= ========================================================
+Property                  Meaning
+========================= ========================================================
+ORTSAIHornAtCrossings     Have AI trains blow their horns at level crossings ---
+                          ``( 1 )`` for yes, ``( 0 )`` or omitted for no.
+ORTSAICrossingHornPattern Specifies the horn pattern blown at level crossings ---
+                          ``( US )`` for a North American long-long-short-long
+                          pattern, ``( Single )`` or omitted for a single blast
+                          between 2 to 5 seconds long.
+========================= ========================================================
 
-    NextActivityObjectUID ( 32768 )
+These lines **must** be placed after the ``NextActivityObjectUID ( 32768 )``
+line, or else the activity file will become unloadable in the MSTS Activity
+Editor.
 
-(note that the number in the brackets may be different), then AI trains will 
-blow their horn at level crossings for a random time between 2 and 5 
-seconds.The level crossing must be defined as such in the MSTS route editor. 
 *Simple* road crossings, not defined as level crossings, may also be present in 
 the route. The AI train will not blow the horn at these crossings. Examining 
 the route with TrackViewer allows identification of the true level crossings. 
@@ -1848,6 +1933,9 @@ the end of the horn blow.
 
 Location Event triggered by AI Train
 ------------------------------------
+
+.. index::
+   single: ORTSTriggeringTrain
 
 Under MSTS location events may only be triggered when the player train reaches 
 them. OR provides also location events that are triggered by AI trains.
@@ -1871,6 +1959,11 @@ This feature is not yet managed by TSRE5.
 
 Location Event and Time Event Sound File
 ----------------------------------------
+
+.. index::
+   single: ORTSActivitySound
+   single: ORTSActSoundFile
+   single: ORTSSoundLocation
 
 An activity file can be modified so that a sound file is played when the train 
 reaches a location specified in an EventTypeLocation event in the .act file, 
@@ -1904,6 +1997,18 @@ to the ``EventCategoryLocation`` or ``EventCategoryTime`` event, where:
 
 Note: Parameter ORTSSoundLocation is needed only when *Soundtype* is ``Location``.
 
+.. index::
+   single: EventCategoryLocation
+   single: EventCategoryTime
+   single: EventTypeLocation
+   single: Activation_Level
+   single: Outcomes
+   single: DisplayMessage
+   single: Name
+   single: Location
+   single: TriggerOnStop
+   single: ORTSContinue
+
 For example::
 
     EventCategoryLocation (
@@ -1933,6 +2038,21 @@ This feature is not yet managed by TSRE5 in this format.
 
 Weather Change Activity Event 
 -----------------------------
+
+.. index::
+   single: ORTSWeatherChange
+   single: ORTSOvercast
+   single: final_overcastFactor
+   single: overcast_transitionTime
+   single: ORTSFog
+   single: final_fogDistance
+   single: fog_transitionTime
+   single: ORTSPrecipitationIntensity
+   single: final_precipitationIntensity
+   single: precipitationIntensity_transitionTime
+   single: ORTSPrecipitationLiquidity
+   single: final_precipitationLiquidity
+   single: precipitationLiquidity_transitionTime
 
 An activity can be modified so that the weather changes when running the 
 activity in ORTS. MSTS operation is not affected by these WeatherChange events. 
@@ -1982,6 +2102,9 @@ to pass from the initial weather feature value (overcastFactor, fogDistance
 and so on) to the final weather feature value. If such xx_transitionTime is 
 set to 0, the weather feature takes immediately the final value. This is 
 useful to start activities with weather features in intermediate states.
+
+.. index::
+   single: ORTSContinue
 
 The event can also include an ORTSContinue ( 0 ) line, therefore not displaying 
 messages and not suspending activity execution.
@@ -2044,6 +2167,19 @@ Syntax of the feature
 '''''''''''''''''''''
 To make use of this feature it is suggested to generate an :ref:`Extension activity 
 file <operation-extension-activity-file>` .
+
+.. index::
+   single: Tr_Activity
+   single: Tr_Activity_File
+   single: Events
+   single: EventCategoryLocation
+   single: ORTSContinue
+   single: Outcomes
+   single: ORTSRestartWaitingTrain
+   single: ORTSWaitingTrainToRestart
+   single: ORTSDelayToRestart
+   single: ORTSMatchingWPDelay
+
 Here is an example of an extension activity file using such feature::
 
   SIMISA@@@@@@@@@@JINX0a0t______
@@ -2102,6 +2238,10 @@ Old formats
 
 Following alternate formats are accepted by OR for Event Sound Files and 
 Weather Change. These formats are not recommended for new activities.
+
+.. index::
+   single: ORTSActSoundFile
+   single: ORTSWeatherChange
 
 Event Sound Files: The sound file may be defined by a single line::
 

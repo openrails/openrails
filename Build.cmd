@@ -133,7 +133,7 @@ REM Build locales.
 PUSHD Source\Locales && CALL Update.bat non-interactive && POPD || GOTO :error
 
 REM Run unit tests (9009 means XUnit itself wasn't found, which is an error).
-xunit.console.x86 Program\Tests.dll /nunit xunit.xml
+xunit.console.x86 Program\Tests.dll -nunit xunit.xml
 IF "%ERRORLEVEL%" == "9009" GOTO :error
 
 CALL :copy "Program\RunActivity.exe" "Program\RunActivityLAA.exe" || GOTO :error
@@ -177,6 +177,8 @@ IF NOT "%Mode%" == "Unstable" (
 
 	REM Compile the documentation.
 	FOR /R "Source\Documentation" %%F IN (*.doc *.docx *.docm *.xls *.xlsx *.xlsm *.odt) DO ECHO %%~F && OfficeToPDF.exe /bookmarks /print "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
+	>"Source\Documentation\Manual\version.py" ECHO version = '%Version%' || GOTO :error
+	>>"Source\Documentation\Manual\version.py" ECHO release = '%Revision%' || GOTO :error
 	PUSHD "Source\Documentation\Manual" && CALL make.bat clean & POPD || GOTO :error
 	PUSHD "Source\Documentation\Manual" && CALL make.bat latexpdf && POPD || GOTO :error
 

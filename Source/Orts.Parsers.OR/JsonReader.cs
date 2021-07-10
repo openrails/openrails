@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 // Use this define to diagnose issues in the JSON reader below.
-// #define DEBUG_JSON_READER
+//#define DEBUG_JSON_READER
 
 using System;
 using System.Collections.Generic;
@@ -30,6 +30,11 @@ namespace Orts.Parsers.OR
 {
     public class JsonReader
     {
+        /// <summary>
+        /// Read the JSON file (check first that it exists) using a method TryParse() which is specific for the expected objects.  
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="tryParse"></param>
         public static void ReadFile(string fileName, Func<JsonReader, bool> tryParse)
         {
             using (var reader = new JsonTextReader(File.OpenText(fileName))
@@ -46,8 +51,18 @@ namespace Orts.Parsers.OR
         StringBuilder _path;
         Stack<int> _pathPositions;
 
+        /// <summary>
+        /// Contains a condensed account of the position of the current item in the JSO, such as when parsing "Clear" from a WeatherFile:
+        /// JsonReader item;
+        ///   item.Path = "Changes[].Type"
+        /// </summary>
         public string Path { get; private set; }
 
+        /// <summary>
+        /// Note the values needed for parsing and helpful error messages
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="reader"></param>
         JsonReader(string fileName, JsonTextReader reader)
         {
             _fileName = fileName;
@@ -65,7 +80,7 @@ namespace Orts.Parsers.OR
             Console.WriteLine($"JsonReader({_path.ToString()} ({string.Join(",", _pathPositions.Select(p => p.ToString()).ToArray())})).ReadBlock(): base={basePosition}");
 #endif
 
-            while (_reader.Read())
+            while (_reader.Read()) // Reads the next JSON token. Returns false if at end
             {
 #if DEBUG_JSON_READER
                 Console.WriteLine($"JsonReader.ReadBlock({_path.ToString()} ({string.Join(",", _pathPositions.Select(p => p.ToString()).ToArray())})): token={_reader.TokenType} value={_reader.Value} type={_reader.ValueType}");

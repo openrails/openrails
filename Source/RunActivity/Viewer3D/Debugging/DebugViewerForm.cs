@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -32,6 +33,7 @@ using System.Windows.Forms;
 using GNU.Gettext.WinForms;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.MultiPlayer;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
@@ -40,6 +42,7 @@ using Orts.Viewer3D.Popups;
 using ORTS.Common;
 using Control = System.Windows.Forms.Control;
 using Image = System.Drawing.Image;
+using Color = System.Drawing.Color;
 
 namespace Orts.Viewer3D.Debugging
 {
@@ -60,23 +63,24 @@ namespace Orts.Viewer3D.Debugging
       /// <summary>
       /// Reference to the main simulator object.
       /// </summary>
-      private readonly Simulator simulator;
+      public readonly Simulator simulator;
+		private TimetableWindow TimetableWindow;
 
 
       private int IM_Width = 720;
       private int IM_Height = 720;
 
-	  /// <summary>
-	  /// True when the user is dragging the route view
-	  /// </summary>
-      private bool Dragging;
+		/// <summary>
+		/// True when the user is dragging the route view
+		/// </summary>
+		public bool Dragging;
 	  private WorldPosition worldPos;
-      float xScale = 1; 
-      float yScale = 1; 
+      public float xScale = 1; // pixels / metre
+      public float yScale = 1; // pixels / metre 
 
-	  string name = "";
-	  List<SwitchWidget> switchItemsDrawn;
-	  List<SignalWidget> signalItemsDrawn;
+		string name = "";
+	  public List<SwitchWidget> switchItemsDrawn;
+	  public List<SignalWidget> signalItemsDrawn;
 
       public SwitchWidget switchPickedItem;
       public SignalWidget signalPickedItem;
@@ -91,20 +95,45 @@ namespace Orts.Viewer3D.Debugging
 	  /// contains the last position of the mouse
 	  /// </summary>
 	  private System.Drawing.Point LastCursorPosition = new System.Drawing.Point();
-	Pen redPen = new Pen(Color.Red);
-	Pen greenPen = new Pen(Color.Green);
-	Pen orangePen = new Pen(Color.Orange);
-	Pen trainPen = new Pen(Color.DarkGreen);
-	Pen pathPen = new Pen(Color.DeepPink);
-	Pen grayPen = new Pen(Color.Gray);
+		public Pen redPen = new Pen(Color.Red);
+		public Pen greenPen = new Pen(Color.Green);
+		public Pen orangePen = new Pen(Color.Orange);
+		public Pen trainPen = new Pen(Color.DarkGreen);
+		public Pen pathPen = new Pen(Color.DeepPink);
+		public Pen grayPen = new Pen(Color.Gray);
+		public Pen PlatformPen = new Pen(Color.Blue);
 
 	   //the train selected by leftclicking the mouse
 	public Train PickedTrain;
 
-      /// <summary>
-      /// Defines the area to view, in meters.
-      /// </summary>
-      private RectangleF ViewWindow;
+		// Note +ve pixels draw down from top, but +ve metres draw up from the bottom
+		//
+		// |-------- subX ---------->|           ViewWindow                
+		//                           +--------------------------------+             
+		//                           |                                |      
+		//                           |                                |           
+		//                           |                                |         
+		//                           |                                |       
+		//                  ==========                                |                -----   
+		//                  ===========\         Track Extent         |                   ^
+		//                  ====================================================          |
+		//                           |                       \        |                   |
+		//                           |                        ==================   ----   |
+		//                           |                                |               ^   |
+		//                           |                                |               |
+		//                           |                                |               | maxY
+		//                           +--------------------------------+                
+		//                                                                           minY |
+		// |----- minX --->|<- VW.X->|<------------ VW.Width -------->|                   |
+		//                                                                            |   |
+		// |------------------------------ maxX ------------------------------->|     |   |
+		//                                                                            |   |
+		// + 0,0 World origin                                                     ----------
+
+		/// <summary>
+		/// Defines the area to view, in meters. The left edge is meters from the leftmost extent of the route.
+		/// </summary>
+		public RectangleF ViewWindow;
 
       /// <summary>
       /// Used to periodically check if we should shift the view when the
@@ -114,13 +143,14 @@ namespace Orts.Viewer3D.Debugging
 
       bool loaded;
 	  TrackNode[] nodes;
-	  float minX = float.MaxValue;
-	  float minY = float.MaxValue;
 
-	  float maxX = float.MinValue;
-	  float maxY = float.MinValue;
+		// Extents of the route in meters measured from the World origin
+		public float minX = float.MaxValue;
+		public float minY = float.MaxValue;
+		public float maxX = float.MinValue;
+		public float maxY = float.MinValue;
 
-	  Viewer Viewer;
+	  public Viewer Viewer;
         /// <summary>
         /// Creates a new DebugViewerForm.
         /// </summary>
@@ -131,21 +161,13 @@ namespace Orts.Viewer3D.Debugging
             InitializeComponent();
 
             if (simulator == null)
-            {
                 throw new ArgumentNullException("simulator", "Simulator object cannot be null.");
-            }
 
             this.simulator = simulator;
             this.Viewer = viewer;
+			TimetableWindow = new TimetableWindow(this);
 
-            nodes = simulator.TDB.TrackDB.TrackNodes;
-
-            trainFont = new Font("Arial", 14, FontStyle.Bold);
-            sidingFont = new Font("Arial", 12, FontStyle.Bold);
-
-            trainBrush = new SolidBrush(Color.Red);
-            sidingBrush = new SolidBrush(Color.Blue);
-
+			nodes = simulator.TDB.TrackDB.TrackNodes;
 
             // initialise the timer used to handle user input
             UITimer = new Timer();
@@ -163,50 +185,47 @@ namespace Orts.Viewer3D.Debugging
             selectedTrainList = new List<Train>();
             if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.AllowedManualSwitch = false; }
 
-
             InitData();
             InitImage();
-            chkShowAvatars.Checked = Program.Simulator.Settings.ShowAvatar;
-            if (!MultiPlayer.MPManager.IsMultiPlayer())//single player mode, make those unnecessary removed
-            {
-                msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
-                AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false; chkAllowNew.Visible = false;
-                chkBoxPenalty.Visible = false; chkPreferGreen.Visible = false;
-                pictureBox1.Location = new System.Drawing.Point(pictureBox1.Location.X, label1.Location.Y + 18);
-                refreshButton.Text = "View Self";
-            }
 
-            /*
+			/*
           if (MultiPlayer.MPManager.IsMultiPlayer())
           {
               MessageViewer = new MessageViewer();
               MessageViewer.Show();
               MessageViewer.Visible = false;
           }*/
+			MultiPlayer.MPManager.Instance().ServerChanged += (sender, e) =>
+			{
+				firstShow = true;
+			};
 
-            MultiPlayer.MPManager.Instance().ServerChanged += (sender, e) =>
-            {
-                firstShow = true;
-            };
+			MultiPlayer.MPManager.Instance().AvatarUpdated += (sender, e) =>
+			{
+				AddAvatar(e.User, e.URL);
+			};
 
-            MultiPlayer.MPManager.Instance().AvatarUpdated += (sender, e) =>
-            {
-                AddAvatar(e.User, e.URL);
-            };
+			MultiPlayer.MPManager.Instance().MessageReceived += (sender, e) =>
+			{
+				AddNewMessage(e.Time, e.Message);
+			};
 
-            MultiPlayer.MPManager.Instance().MessageReceived += (sender, e) =>
-            {
-                AddNewMessage(e.Time, e.Message);
-            };
-        }
+			tWindow.SelectedIndex = (MPManager.IsMultiPlayer()) ? 0 : 1;
+			TimetableWindow.SetControls();
+		}
 
+		public int RedrawCount;
+		public Font trainFont;
+		public Font sidingFont;
+		public Font PlatformFont;
+		public Font SignalFont;
+		public SolidBrush trainBrush;
+		public SolidBrush sidingBrush;
+		public SolidBrush PlatformBrush;
+		public SolidBrush SignalBrush;
+		public SolidBrush InactiveTrainBrush;
 
-      public int RedrawCount;
-	  private Font trainFont;
-	  private Font sidingFont;
-	  private SolidBrush trainBrush;
-	  private SolidBrush sidingBrush;
-      private double lastUpdateTime;
+		private double lastUpdateTime;
 
       /// <summary>
       /// When the user holds down the  "L", "R", "U", "D" buttons,
@@ -223,7 +242,7 @@ namespace Orts.Viewer3D.Debugging
 		 if (Program.Simulator.GameTime - lastUpdateTime < 1) return;
 		 lastUpdateTime = Program.Simulator.GameTime;
 
-            GenerateView();
+			GenerateView();
 	  }
 
 	  #region initData
@@ -305,59 +324,40 @@ namespace Orts.Viewer3D.Debugging
 			  }
 		  }
 
-          var maxsize = maxX - minX > maxY - minY ? maxX - minX : maxY - minY;
-          maxsize = (int)(maxsize / 100 +1 ) * 100;
-          windowSizeUpDown.Maximum = (decimal)maxsize;
-          Inited = true;
+			var maxsize = maxX - minX > maxY - minY ? maxX - minX : maxY - minY;
+            // Take up to next 100
+            maxsize = (int)(maxsize / 100 + 1) * 100;
+            windowSizeUpDown.Maximum = (decimal)maxsize;
+			Inited = true;
 
-          if (simulator.TDB == null || simulator.TDB.TrackDB == null || simulator.TDB.TrackDB.TrItemTable == null) return;
+			if (simulator.TDB == null || simulator.TDB.TrackDB == null || simulator.TDB.TrackDB.TrItemTable == null) 
+				return;
 
-		  foreach (var item in simulator.TDB.TrackDB.TrItemTable)
-		  {
-			  if (item.ItemType == TrItem.trItemType.trSIGNAL)
-			  {
-				  if (item is SignalItem)
-				  {
-
-					  SignalItem si = item as SignalItem;
-					  
-					  if (si.SigObj >=0  && si.SigObj < simulator.Signals.SignalObjects.Length)
-					  {
-						  SignalObject s = simulator.Signals.SignalObjects[si.SigObj];
-						  if (s != null && s.isSignal && s.isSignalNormal()) signals.Add(new SignalWidget(si, s));
-					  }
-				  }
-
-			  }
-			  if (item.ItemType == TrItem.trItemType.trSIDING || item.ItemType == TrItem.trItemType.trPLATFORM)
-			  {
-				  sidings.Add(new SidingWidget(item));
-			  }
-		  }
-          return;
-	  }
+			TimetableWindow.PopulateItemLists();
+		}
 
       bool Inited;
-	  List<LineSegment> segments = new List<LineSegment>();
-	  List<SwitchWidget> switches;
+		public List<LineSegment> segments = new List<LineSegment>();
+		public List<SwitchWidget> switches;
 	  //List<PointF> buffers = new List<PointF>();
-	  List<SignalWidget> signals = new List<SignalWidget>();
-	  List<SidingWidget> sidings = new List<SidingWidget>();
+	  public List<SignalWidget> signals = new List<SignalWidget>();
+		public List<SidingWidget> sidings = new List<SidingWidget>();
+		public List<PlatformWidget> platforms = new List<PlatformWidget>();
 
-	   /// <summary>
-      /// Initialises the picturebox and the image it contains. 
-      /// </summary>
-      public void InitImage()
+		/// <summary>
+		/// Initialises the picturebox and the image it contains. 
+		/// </summary>
+		public void InitImage()
       {
-         pictureBox1.Width = IM_Width;
-         pictureBox1.Height = IM_Height;
+         pbCanvas.Width = IM_Width;
+         pbCanvas.Height = IM_Height;
 
-         if (pictureBox1.Image != null)
+         if (pbCanvas.Image != null)
          {
-            pictureBox1.Image.Dispose();
+            pbCanvas.Image.Dispose();
          }
 
-         pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+         pbCanvas.Image = new Bitmap(pbCanvas.Width, pbCanvas.Height);
 		 imageList1 = new ImageList();
 		 this.AvatarView.View = View.LargeIcon;
 		 imageList1.ImageSize = new Size(64, 64);
@@ -530,10 +530,11 @@ namespace Orts.Viewer3D.Debugging
 
 	  #region Draw
 	  public bool firstShow = true;
-      public bool followTrain;
-	  float subX, subY;
-      float oldWidth;
-      float oldHeight;
+		public bool followTrain;
+		public float subX, subY;
+      public float oldWidth;
+      public float oldHeight;
+
        //determine locations of buttons and boxes
       void DetermineLocations()
       {
@@ -542,15 +543,16 @@ namespace Orts.Viewer3D.Debugging
           {
               oldWidth = label1.Left; oldHeight = this.Height;
               IM_Width = label1.Left - 20;
-              IM_Height = this.Height - pictureBox1.Top;
-              pictureBox1.Width = IM_Width;
-              pictureBox1.Height = IM_Height;
-              if (pictureBox1.Image != null)
+              IM_Height = this.Height - pbCanvas.Top;
+              pbCanvas.Width = IM_Width;
+				//pictureBox1.Height = IM_Height;
+				pbCanvas.Height = this.Height - pbCanvas.Top - 40;
+				if (pbCanvas.Image != null)
               {
-                  pictureBox1.Image.Dispose();
+                  pbCanvas.Image.Dispose();
               }
 
-              pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+              pbCanvas.Image = new Bitmap(pbCanvas.Width, pbCanvas.Height);
 
               if (btnAssist.Left - 10 < composeMSG.Right)
               {
@@ -561,17 +563,22 @@ namespace Orts.Viewer3D.Debugging
               firstShow = true;
           }
       }
+
       /// <summary>
       /// Regenerates the 2D view. At the moment, examines the track network
       /// each time the view is drawn. Later, the traversal and drawing can be separated.
       /// </summary>
-      public void GenerateView()
+      public void GenerateView(bool dragging = false)
       {
-
-
 		  if (!Inited) return;
 
-		  if (pictureBox1.Image == null) InitImage();
+			if (tWindow.SelectedIndex == 1)
+            {
+				TimetableWindow.GenerateTimetableView(dragging);
+                return;
+            }
+
+		  if (pbCanvas.Image == null) InitImage();
           DetermineLocations();
 
 		  if (firstShow)
@@ -620,20 +627,18 @@ namespace Orts.Viewer3D.Debugging
 			  CheckAvatar();
 		  }
 		  catch {  } //errors for avatar, just ignore
-         using(Graphics g = Graphics.FromImage(pictureBox1.Image))
+         using(Graphics g = Graphics.FromImage(pbCanvas.Image))
          {
 			 subX = minX + ViewWindow.X; subY = minY + ViewWindow.Y;
             g.Clear(Color.White);
             
-            xScale = pictureBox1.Width / ViewWindow.Width;
-            yScale = pictureBox1.Height/ ViewWindow.Height;
+            xScale = pbCanvas.Width / ViewWindow.Width;
+            yScale = pbCanvas.Height/ ViewWindow.Height;
 
 			PointF[] points = new PointF[3];
 			Pen p = grayPen;
 
-			p.Width = (int) xScale;
-			if (p.Width < 1) p.Width = 1;
-			else if (p.Width > 3) p.Width = 3;
+			p.Width = MathHelper.Clamp(xScale, 1, 3);
 			greenPen.Width = orangePen.Width = redPen.Width = p.Width; pathPen.Width = 2 * p.Width;
 			trainPen.Width = p.Width*6;
 			var forwardDist = 100 / xScale; if (forwardDist < 5) forwardDist = 5;
@@ -647,8 +652,8 @@ namespace Orts.Viewer3D.Debugging
 			foreach (var line in segments)
             {
 
-                scaledA.X = (line.A.TileX * 2048 - subX + (float)line.A.X) * xScale; scaledA.Y = pictureBox1.Height - (line.A.TileZ * 2048 - subY + (float)line.A.Z) * yScale;
-                scaledB.X = (line.B.TileX * 2048 - subX + (float)line.B.X) * xScale; scaledB.Y = pictureBox1.Height - (line.B.TileZ * 2048 - subY + (float)line.B.Z) * yScale;
+                scaledA.X = (line.A.TileX * 2048 - subX + (float)line.A.X) * xScale; scaledA.Y = pbCanvas.Height - (line.A.TileZ * 2048 - subY + (float)line.A.Z) * yScale;
+                scaledB.X = (line.B.TileX * 2048 - subX + (float)line.B.X) * xScale; scaledB.Y = pbCanvas.Height - (line.B.TileZ * 2048 - subY + (float)line.B.Z) * yScale;
 
 
 				if ((scaledA.X < 0 && scaledB.X < 0) || (scaledA.X > IM_Width && scaledB.X > IM_Width) || (scaledA.Y > IM_Height && scaledB.Y > IM_Height) || (scaledA.Y < 0 && scaledB.Y < 0)) continue;
@@ -664,7 +669,7 @@ namespace Orts.Viewer3D.Debugging
 
 			   if (line.isCurved == true)
 			   {
-				   scaledC.X = ((float)line.C.X - subX) * xScale; scaledC.Y = pictureBox1.Height - ((float)line.C.Z - subY) * yScale;
+				   scaledC.X = ((float)line.C.X - subX) * xScale; scaledC.Y = pbCanvas.Height - ((float)line.C.Z - subY) * yScale;
 				   points[0] = scaledA; points[1] = scaledC; points[2] = scaledB;
 				   g.DrawCurve(p, points);
 			   }
@@ -685,7 +690,7 @@ namespace Orts.Viewer3D.Debugging
 			 {
 				 SwitchWidget sw = switches[i];
 
-				 x = (sw.Location.X - subX) * xScale; y = pictureBox1.Height - (sw.Location.Y - subY) * yScale;
+				 x = (sw.Location.X - subX) * xScale; y = pbCanvas.Height - (sw.Location.Y - subY) * yScale;
 
 				 if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 
@@ -712,7 +717,7 @@ namespace Orts.Viewer3D.Debugging
 			 foreach (var s in signals)
 			 {
                  if (float.IsNaN(s.Location.X) || float.IsNaN(s.Location.Y)) continue;
-				 x = (s.Location.X - subX) * xScale; y = pictureBox1.Height - (s.Location.Y - subY) * yScale;
+				 x = (s.Location.X - subX) * xScale; y = pbCanvas.Height - (s.Location.Y - subY) * yScale;
 				 if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 				 scaledItem.X = x; scaledItem.Y = y;
 				 s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
@@ -738,7 +743,7 @@ namespace Orts.Viewer3D.Debugging
 					 signalItemsDrawn.Add(s);
 					 if (s.hasDir)
 					 {
-						 scaledB.X = (s.Dir.X - subX) * xScale; scaledB.Y = pictureBox1.Height - (s.Dir.Y - subY) * yScale;
+						 scaledB.X = (s.Dir.X - subX) * xScale; scaledB.Y = pbCanvas.Height - (s.Dir.Y - subY) * yScale;
 						 g.DrawLine(pen, scaledItem, scaledB);
 					 }
 				 }
@@ -747,17 +752,12 @@ namespace Orts.Viewer3D.Debugging
             if (true/*showPlayerTrain.Checked*/)
             {
 
-				CleanVerticalCells();//clean the drawing area for text of sidings
-				foreach (var s in sidings)
-				{
-					scaledItem.X = (s.Location.X - subX) * xScale;
-					scaledItem.Y = DetermineSidingLocation(scaledItem.X, pictureBox1.Height - (s.Location.Y - subY) * yScale, s.Name);
-					if (scaledItem.Y >= 0f) //if we need to draw the siding names
-					{
+				CleanVerticalCells();//clean the drawing area for text of sidings and platforms
+				foreach (var sw in sidings)
+	                scaledItem = DrawSiding(g, scaledItem, sw);
+                foreach (var pw in platforms)
+					scaledItem = DrawPlatform(g, scaledItem, pw);
 
-						g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
-					}
-				}
 				var margin = 30 * xScale;//margins to determine if we want to draw a train
 				var margin2 = 5000 * xScale;
 
@@ -825,7 +825,7 @@ namespace Orts.Viewer3D.Debugging
 					{
 						worldPos = firstCar.WorldPosition;
 						scaledItem.X = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
-						scaledItem.Y = pictureBox1.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
+						scaledItem.Y = pbCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
 						if (scaledItem.X < -margin2 || scaledItem.X > IM_Width + margin2 || scaledItem.Y > IM_Height + margin2 || scaledItem.Y < -margin2) continue;
 						if (drawRed > ValidTrain) g.FillRectangle(Brushes.Gray, GetRect(scaledItem, 15f));
 						else
@@ -839,7 +839,7 @@ namespace Orts.Viewer3D.Debugging
 						continue;
 					}
 					var loc = t.FrontTDBTraveller.WorldLocation;
-					x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale; y = pictureBox1.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
+					x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale; y = pbCanvas.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
 					if (x < -margin2 || x > IM_Width + margin2 || y > IM_Height + margin2 || y < -margin2) continue;
 					
 					//train quit will not draw path, others will draw it
@@ -854,14 +854,14 @@ namespace Orts.Viewer3D.Debugging
 						if (dist > 0)
 						{
 							t1.Move(dist - 1 + car.CarLengthM / 2);
-							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pictureBox1.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
 							//x = (worldPos.TileX * 2048 + worldPos.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - minY - ViewWindow.Y) * yScale;
 							if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
 
 							scaledItem.X = x; scaledItem.Y = y;
 
 							t1.Move(-car.CarLengthM);
-							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pictureBox1.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
 							if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
 
 							scaledA.X = x; scaledA.Y = y;
@@ -876,7 +876,7 @@ namespace Orts.Viewer3D.Debugging
 					}
 					worldPos = firstCar.WorldPosition;
 					scaledItem.X = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
-					scaledItem.Y = -25 + pictureBox1.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
+					scaledItem.Y = -25 + pbCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
 
 					g.DrawString(name, trainFont, trainBrush, scaledItem);
 
@@ -922,12 +922,35 @@ namespace Orts.Viewer3D.Debugging
 
          }
 
-         pictureBox1.Invalidate();
+         pbCanvas.Invalidate();
       }
 
-	  private Vector2[][] alignedTextY;
-	  private int[] alignedTextNum;
-	  private int spacing = 12;
+        private PointF DrawSiding(Graphics g, PointF scaledItem, SidingWidget s)
+        {
+            scaledItem.X = (s.Location.X - subX) * xScale;
+            scaledItem.Y = DetermineSidingLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
+            if (scaledItem.Y >= 0f) //if we need to draw the siding names
+            {
+
+                g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
+            }
+            return scaledItem;
+        }
+		private PointF DrawPlatform(Graphics g, PointF scaledItem, PlatformWidget s)
+		{
+			scaledItem.X = (s.Location.X - subX) * xScale;
+			scaledItem.Y = DetermineSidingLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
+			if (scaledItem.Y >= 0f) //if we need to draw the siding names
+			{
+
+				g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
+			}
+			return scaledItem;
+		}
+
+		public Vector2[][] alignedTextY;
+	  public int[] alignedTextNum;
+		public const int spacing = 12;
 	  private void CleanVerticalCells()
 	  {
 		  if (alignedTextY == null || alignedTextY.Length != IM_Height / spacing) //first time to put text, or the text height has changed
@@ -1131,8 +1154,8 @@ namespace Orts.Viewer3D.Debugging
 						if (stepDistance + stepLength >= initialNodeOffset && stepDistance <= initialNodeOffset + DisplayDistance)
 						{
 							var currentLocation = currentPosition.WorldLocation;
-							scaledA.X = (previousLocation.TileX * 2048 + previousLocation.Location.X - subX) * xScale; scaledA.Y = pictureBox1.Height - (previousLocation.TileZ * 2048 + previousLocation.Location.Z - subY) * yScale;
-							scaledB.X = (currentLocation.TileX * 2048 + currentLocation.Location.X - subX) * xScale; scaledB.Y = pictureBox1.Height - (currentPosition.TileZ * 2048 + currentPosition.Location.Z - subY) * yScale;
+							scaledA.X = (previousLocation.TileX * 2048 + previousLocation.Location.X - subX) * xScale; scaledA.Y = pbCanvas.Height - (previousLocation.TileZ * 2048 + previousLocation.Location.Z - subY) * yScale;
+							scaledB.X = (currentLocation.TileX * 2048 + currentLocation.Location.X - subX) * xScale; scaledB.Y = pbCanvas.Height - (currentPosition.TileZ * 2048 + currentPosition.Location.Z - subY) * yScale;
 							g.DrawLine(pathPen, scaledA, scaledB);
 						}
 					}
@@ -1204,7 +1227,7 @@ namespace Orts.Viewer3D.Debugging
       /// <param name="p">Center point of the dot, in pixels.</param>
       /// <param name="size">Size of the dot's diameter, in pixels</param>
       /// <returns></returns>
-      static RectangleF GetRect(PointF p, float size)
+      static public RectangleF GetRect(PointF p, float size)
       {
          return new RectangleF(p.X - size / 2f, p.Y - size / 2f, size, size);
       }
@@ -1362,13 +1385,14 @@ namespace Orts.Viewer3D.Debugging
          PointF center = new PointF(ViewWindow.X + ViewWindow.Width / 2f, ViewWindow.Y + ViewWindow.Height / 2f);
 
 
-         float newSize = (float)windowSizeUpDown.Value;
+         float newSizeH = (float)windowSizeUpDown.Value;
+			float verticalByHorizontal = ViewWindow.Height / ViewWindow.Width;
+			float newSizeV = newSizeH * verticalByHorizontal;
 
-         ViewWindow = new RectangleF(center.X - newSize / 2f, center.Y - newSize / 2f, newSize, newSize);
+		 ViewWindow = new RectangleF(center.X - newSizeH / 2f, center.Y - newSizeV / 2f, newSizeH, newSizeV);
 
 
          GenerateView();
-
       }
 
 
@@ -1393,21 +1417,28 @@ namespace Orts.Viewer3D.Debugging
 		  if (e.Button == MouseButtons.Left) LeftClick = true;
 		  if (e.Button == MouseButtons.Right) RightClick = true;
 
-		  if (LeftClick == true && RightClick == false)
-		  {
-			  if (Dragging == false) Dragging = true;
-		  }
-		  else if (LeftClick == true && RightClick == true)
-		  {
-			  if (Zooming == false) Zooming = true;
-		  }
+			if (LeftClick == true && RightClick == false)
+			{
+				if (Dragging == false)
+				{
+					Dragging = true;
+				}
+			}
+			else if (LeftClick == true && RightClick == true)
+			{
+				if (Zooming == false) Zooming = true;
+			}
 		  LastCursorPosition.X = e.X;
 		  LastCursorPosition.Y = e.Y;
 		  //MSG.Enabled = false;
 		  MultiPlayer.MPManager.Instance().ComposingText = false;
-	  }
+			lblInstruction1.Visible = true;
+			lblInstruction2.Visible = true;
+			lblInstruction3.Visible = true;
+			lblInstruction4.Visible = true;
+		}
 
-	  private void pictureBoxMouseUp(object sender, MouseEventArgs e)
+		private void pictureBoxMouseUp(object sender, MouseEventArgs e)
 	  {
 		  if (e.Button == MouseButtons.Left) LeftClick = false;
 		  if (e.Button == MouseButtons.Right) RightClick = false; 
@@ -1416,7 +1447,7 @@ namespace Orts.Viewer3D.Debugging
 		  {
 			  Dragging = false;
 			  Zooming = false;
-		  }
+			}
 
           if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
           {
@@ -1455,8 +1486,12 @@ namespace Orts.Viewer3D.Debugging
               }
 
           }
+			lblInstruction1.Visible = false;
+			lblInstruction2.Visible = false;
+			lblInstruction3.Visible = false;
+			lblInstruction4.Visible = false;
 
-	  }
+		}
 #if false
 	  void switchMainClick(object sender, EventArgs e)
 	  {
@@ -1491,7 +1526,7 @@ namespace Orts.Viewer3D.Debugging
 	  }
 #endif
 
-	  private void UnHandleItemPick()
+		private void UnHandleItemPick()
 	  {
 		  boxSetSignal.Visible = false;
 		  //boxSetSignal.Enabled = false;
@@ -1506,7 +1541,21 @@ namespace Orts.Viewer3D.Debugging
 		  if (signalPickedItem == null) return;
 		  var y = LastCursorPosition.Y;
 		  if (LastCursorPosition.Y < 100) y = 100;
-		  if (LastCursorPosition.Y > pictureBox1.Size.Height - 100) y = pictureBox1.Size.Height - 100;
+		  if (LastCursorPosition.Y > pbCanvas.Size.Height - 100) y = pbCanvas.Size.Height - 100;
+
+		  if (boxSetSignal.Items.Count == 5)
+			  boxSetSignal.Items.RemoveAt(4);
+
+		  if (signalPickedItem.Signal.enabledTrain != null && signalPickedItem.Signal.CallOnEnabled)
+		  {
+			  if (signalPickedItem.Signal.enabledTrain.Train.AllowedCallOnSignal != signalPickedItem.Signal)
+			  boxSetSignal.Items.Add("Enable call on");
+			  /*else
+				  boxSetSignal.Items.Add("Disable call on");*/
+			  // To disable Call On signal must be manually set to stop, to avoid signal state change
+			  // in the interval between this list is shown and the option is selected by dispatcher
+		  }
+
 		  boxSetSignal.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);
 		  boxSetSignal.Enabled = true;
 		  boxSetSignal.Focus();
@@ -1523,7 +1572,7 @@ namespace Orts.Viewer3D.Debugging
 		  if (switchPickedItem == null) return;
 		  var y = LastCursorPosition.Y + 100;
 		  if (y < 140) y = 140;
-		  if (y > pictureBox1.Size.Height + 100) y = pictureBox1.Size.Height + 100;
+		  if (y > pbCanvas.Size.Height + 100) y = pbCanvas.Size.Height + 100;
 		  boxSetSwitch.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);
 		  boxSetSwitch.Enabled = true;
 		  boxSetSwitch.Focus();
@@ -1601,7 +1650,7 @@ namespace Orts.Viewer3D.Debugging
 
 			  worldPos = firstCar.WorldPosition;
 			  tX = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
-			  tY = pictureBox1.Height - (worldPos.TileZ * 2048 -subY + worldPos.Location.Z) * yScale;
+			  tY = pbCanvas.Height - (worldPos.TileZ * 2048 -subY + worldPos.Location.Z) * yScale;
               float xSpeedCorr = Math.Abs(t.SpeedMpS) * xScale * 1.5f;
               float ySpeedCorr = Math.Abs(t.SpeedMpS) * yScale * 1.5f;
 
@@ -1619,29 +1668,34 @@ namespace Orts.Viewer3D.Debugging
 
 	  private void pictureBoxMouseMove(object sender, MouseEventArgs e)
 	  {
-		  if (Dragging&&!Zooming)
-		  {
-			  int diffX = LastCursorPosition.X - e.X;
-			  int diffY = LastCursorPosition.Y - e.Y;
+			if (tWindow.SelectedIndex == 1)
+				TimetableDrag(sender, e);
+            else
+            {
+				if (Dragging && !Zooming)
+				{
+					int diffX = LastCursorPosition.X - e.X;
+					int diffY = LastCursorPosition.Y - e.Y;
 
-			  ViewWindow.Offset(diffX * ScrollSpeedX/10, -diffY * ScrollSpeedX/10);
-			  GenerateView();
-		  }
-		  else if (Zooming)
-		  {
-			  decimal tempValue = windowSizeUpDown.Value;
-			  if (LastCursorPosition.Y - e.Y < 0) tempValue /= 0.95m;
-			  else if (LastCursorPosition.Y - e.Y > 0) tempValue *= 0.95m;
+					ViewWindow.Offset(diffX * ScrollSpeedX / 10, -diffY * ScrollSpeedX / 10);
+					GenerateView();
+				}
+				else if (Zooming)
+				{
+					decimal tempValue = windowSizeUpDown.Value;
+					if (LastCursorPosition.Y - e.Y < 0) tempValue /= 0.95m;
+					else if (LastCursorPosition.Y - e.Y > 0) tempValue *= 0.95m;
 
-			  if (tempValue < windowSizeUpDown.Minimum) tempValue = windowSizeUpDown.Minimum;
-			  if (tempValue > windowSizeUpDown.Maximum) tempValue = windowSizeUpDown.Maximum;
-			  windowSizeUpDown.Value = tempValue;
-			  GenerateView();
+					if (tempValue < windowSizeUpDown.Minimum) tempValue = windowSizeUpDown.Minimum;
+					if (tempValue > windowSizeUpDown.Maximum) tempValue = windowSizeUpDown.Maximum;
+					windowSizeUpDown.Value = tempValue;
+					GenerateView();
 
-		  }
-		  LastCursorPosition.X = e.X;
-		  LastCursorPosition.Y = e.Y;
-	  }
+				}
+				LastCursorPosition.X = e.X;
+				LastCursorPosition.Y = e.Y;
+			}
+		}
 
 	  public bool AddNewMessage(double _, string msg)
 	  {
@@ -1922,6 +1976,8 @@ namespace Orts.Viewer3D.Debugging
                       else if (drawstate2 > 0) { sigHead.state = MstsSignalAspect.APPROACH_2; }
                       else { sigHead.state = MstsSignalAspect.APPROACH_3; }
                       sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
+                      // Clear the text aspect so as not to leave C# scripted signals in an inconsistent state.
+					  sigHead.TextSignalAspect = "";
                   }
 				  break;
 			  case 3:
@@ -1932,6 +1988,9 @@ namespace Orts.Viewer3D.Debugging
                       sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
                   }
 				  break;
+              case 4:
+                  signal.SetManualCallOn(true);
+                  break;
 		  }
 		  UnHandleItemPick();
 	  }
@@ -2050,23 +2109,168 @@ namespace Orts.Viewer3D.Debugging
 		  else ClickedTrain = false;
 	  }
 
-      private void PictureMoveAndZoomInOut(int x, int y, decimal scale)
+        private void bBackgroundColor_Click(object sender, EventArgs e)
+        {
+			// Can't just use a dialog as the watchdog timer trips and returns OR back to the Menu.exe.
+			//if (cdBackground.ShowDialog() == DialogResult.OK)
+			//{
+			//	pbCanvas.BackColor = cdBackground.Color;
+			//}
+
+			// As an alternative, cycle through 3 non-white backgrounds
+			if (pbCanvas.BackColor == Color.White)
+				pbCanvas.BackColor = Color.FromArgb(64, 128, 128);
+			else if (pbCanvas.BackColor == Color.FromArgb(64, 128, 128))
+				pbCanvas.BackColor = Color.FromArgb(250, 234, 209);
+			else if (pbCanvas.BackColor == Color.FromArgb(250, 234, 209))
+				pbCanvas.BackColor = Color.FromArgb(250, 240, 230);
+			else if (pbCanvas.BackColor == Color.FromArgb(250, 240, 230)) // Windows color "linen"
+				pbCanvas.BackColor = Color.White;
+		}
+
+        private void PictureMoveAndZoomInOut(int x, int y, decimal scale)
       {
-          int diffX = x -pictureBox1.Width/2;
-          int diffY = y -pictureBox1.Height/2;
+          int diffX = x -pbCanvas.Width/2;
+          int diffY = y -pbCanvas.Height/2;
           ViewWindow.Offset(diffX / xScale, -diffY/yScale);
           if (scale < windowSizeUpDown.Minimum) scale = windowSizeUpDown.Minimum;
           if (scale > windowSizeUpDown.Maximum) scale = windowSizeUpDown.Maximum;
           windowSizeUpDown.Value = scale;
           GenerateView();
       }
-   }
 
-   #region SignalWidget
-   /// <summary>
-   /// Defines a signal being drawn in a 2D view.
-   /// </summary>
-   public class SignalWidget : ItemWidget
+
+		#region Timetable =============================================================
+		public int DaylightOffsetHrs { get; set; } = 0;
+
+        private void TimetableDrag(object sender, MouseEventArgs e)
+		{
+			if (Dragging && !Zooming)
+            {
+                int diffX = e.X - LastCursorPosition.X;
+                int diffY = e.Y - LastCursorPosition.Y;
+
+				ClipDrag(diffX, diffY);
+                GenerateView(true);
+            }
+            else if (Zooming)
+			{
+				decimal tempValue = windowSizeUpDown.Value;
+				if (LastCursorPosition.Y - e.Y < 0) tempValue /= 0.95m;
+				else if (LastCursorPosition.Y - e.Y > 0) tempValue *= 0.95m;
+
+				if (tempValue < windowSizeUpDown.Minimum) tempValue = windowSizeUpDown.Minimum;
+				if (tempValue > windowSizeUpDown.Maximum) tempValue = windowSizeUpDown.Maximum;
+				windowSizeUpDown.Value = tempValue;
+				GenerateView(true);
+			}
+			LastCursorPosition.X = e.X;
+			LastCursorPosition.Y = e.Y;
+		}
+
+        private void pbCanvas_SizeChanged(object sender, EventArgs e)
+        {
+			var oldSizePxX = ViewWindow.Width * xScale;
+			var oldSizePxY = ViewWindow.Height * yScale;
+			var newSizePxX = pbCanvas.Width;
+			var newSizePxY = pbCanvas.Height;
+			var sizeIncreaseX = newSizePxX / oldSizePxX;
+			var sizeIncreaseY = newSizePxY / oldSizePxY;
+
+			// Could be clever and keep all the previous view still in view and centred at the same point.
+			// Instead use the simplest solution:
+			ViewWindow.Width *= sizeIncreaseX;
+			ViewWindow.Height *= sizeIncreaseY;
+		}
+
+		/// <summary>
+		/// Add or subtract hours of daylight to more easily observe activity during the night.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void nudDaylightOffsetHrs_ValueChanged(object sender, EventArgs e)
+        {
+			DaylightOffsetHrs = (int)nudDaylightOffsetHrs.Value;
+		}
+
+  //      private void bSwitchWindow_Click(object sender, EventArgs e)
+  //      {
+		//	DispatchWindowWanted = true;
+		//	ShowTimetableControls(false);
+		//	RestoreDispatchMedia();
+		//}
+
+		//private void RestoreDispatchMedia()
+  //      {
+		//	this.Name = "Dispatch Window";
+		//	trainFont = new Font("Arial", 14, FontStyle.Bold);
+		//	sidingFont = new Font("Arial", 12, FontStyle.Bold);
+		//	trainBrush = new SolidBrush(Color.Red);
+		//	sidingBrush = new SolidBrush(Color.Blue);
+		//	pbCanvas.BackColor = Color.White;
+		//}
+
+        private void tWindow_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TimetableWindow.SetControls();
+        }
+
+		/// <summary>
+		/// Loads a relevant page from the manual maintained by James Ross's automatic build
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+        private void bTrainKey_Click(object sender, EventArgs e)
+        {
+			// This method is also compatible with .NET Core 3
+			var psi = new ProcessStartInfo
+				{ FileName = "https://open-rails.readthedocs.io/en/latest/driving.html#extended-hud-for-dispatcher-information"
+				, UseShellExecute = true
+				};
+			Process.Start(psi);
+		}
+
+		/// <summary>
+		/// Provides a clip zone to stop user from pushing track fully out of window
+		/// </summary>
+		/// <param name="diffX"></param>
+		/// <param name="diffY"></param>
+		private void ClipDrag(int diffX, int diffY)
+        {
+			// Moving the mouse right means moving the ViewWindow left.
+            var changeXm = -(float)(diffX / xScale);
+			// Moving the mouse up means moving the ViewWindow up.
+			var changeYm = +(float)(diffY / yScale);
+
+            
+            const int clipPixels = 100;
+            var viewWindowLeftM = minX + ViewWindow.X;
+            var viewWindowRightM = minX + ViewWindow.X + ViewWindow.Width;
+            var bufferXm = clipPixels / xScale;
+            var viewWindowTopM = minY + ViewWindow.Y;
+            var viewWindowBottomM = minY + ViewWindow.Y + ViewWindow.Height;
+            var bufferYm = clipPixels / yScale;
+
+            if (viewWindowRightM + changeXm < minX + bufferXm) // drag right => -ve changeX
+                changeXm = +(minX + bufferXm - viewWindowRightM);
+            else if (viewWindowLeftM + changeXm > maxX - bufferXm)
+                changeXm = +(maxX - bufferXm - viewWindowLeftM);
+
+            if (viewWindowBottomM + changeYm < minY + bufferYm)
+                changeYm = minY + bufferYm - viewWindowBottomM;
+            else if (viewWindowTopM + changeYm > maxY - bufferYm)
+                changeYm = maxY - bufferYm - viewWindowTopM;
+
+            ViewWindow.Offset(changeXm, changeYm);
+        }
+        #endregion
+    }
+
+	#region SignalWidget
+	/// <summary>
+	/// Defines a signal being drawn in a 2D view.
+	/// </summary>
+	public class SignalWidget : ItemWidget
    {
 	   public TrItem Item;
 	   /// <summary>
@@ -2316,30 +2520,67 @@ namespace Orts.Viewer3D.Debugging
    /// </summary>
    public struct SidingWidget
    {
-	   public PointF Location;
-	   public string Name;
-	   /// <summary>
-	   /// The underlying track item.
-	   /// </summary>
-	   private TrItem Item;
+		public uint Id;
+		public PointF Location;
+	    public string Name;
+		public uint LinkId;
 
-	   /// <summary>
-	   /// 
-	   /// </summary>
-	   /// <param name="item"></param>
-	   /// <param name="signal"></param>
-	   public SidingWidget(TrItem item)
-	   {
-		   Item = item;
+		/// <summary>
+		/// The underlying track item.
+		/// </summary>
+		public SidingItem Item;
 
-		   Name = item.ItemName;
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="item"></param>
+		/// <param name="signal"></param>
+		public SidingWidget(SidingItem item)
+		{
+			Id = item.TrItemId;
+			LinkId = item.LinkedSidingId;
+			Item = item;
+			Name = item.ItemName;
+			Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+		}
+	}
 
-		   Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
-	   }
-   }
-   #endregion
+#endregion
 
-   public class dVector
+	public struct PlatformWidget
+	{
+		public uint Id;
+		public PointF Location;
+		public string Name;
+		public PointF Extent1;
+		public PointF Extent2;
+		public uint LinkId;
+		public string Station;
+
+		/// <summary>
+		/// The underlying track item.
+		/// </summary>
+		public PlatformItem Item;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="item"></param>
+		/// <param name="signal"></param>
+		public PlatformWidget(PlatformItem item)
+		{
+			Id = item.TrItemId;
+			LinkId = item.LinkedPlatformItemId;
+			Item = item;
+			Name = item.ItemName;
+			Station = item.Station;
+			Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+			Extent1 = default(PointF);
+			Extent2 = default(PointF);
+		}
+	}
+
+	public class dVector
    {
        public int TileX, TileZ;
 	   public double X, Z;
