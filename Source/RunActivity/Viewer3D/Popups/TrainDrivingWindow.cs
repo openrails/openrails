@@ -493,7 +493,7 @@ namespace Orts.Viewer3D.Popups
                 labels.Add(new ListLabel
                 {
                     FirstCol = firstCol,
-                    FirstColWidth = firstColWidth,
+                    FirstColWidth = !normalTextMode ? firstColWidth + 10 : firstColWidth,// avoids the symbol/keypressed from overlapping with the text,
                     LastCol = lastCol,
                     LastColWidth = lastColWidth,
                     SymbolCol = symbolCol,
