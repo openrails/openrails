@@ -82,6 +82,8 @@ Trigger       Function
     20        DynamicBrakeChange
     21        EngineBrakePressureIncrease
     22        EngineBrakePressureDecrease
+    23        EnginePowerOn (requires MSTS Bin option)
+    24        EnginePowerOff (requires MSTS Bin option)
     27        SteamEjector2On 
     28        SteamEjector2Off 
     30        SteamEjector1On 
@@ -110,6 +112,8 @@ Trigger       Function
     61        Uncouple
     62        UncoupleB (currently not managed)
     63        UncoupleC (currently not managed)
+    66        Pantograph2Up (requires MSTS Bin option)
+    67        Pantograph2Down (requires MSTS Bin option)
 =========     ===============================================
 
 MSTS .sms files for crossings (``crossing.sms``), control error and permission 
