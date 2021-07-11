@@ -406,8 +406,8 @@ namespace Orts.Viewer3D.Popups
                 FirstColLenght = labels.Max(x => x.FirstColWidth);
                 LastColLenght = labels.Max(x => x.LastColWidth);
 
-                var desiredHeight = FontToBold ? Owner.TextFontDefaultBold.Height * labels.Count(x => x.LastCol != null)
-                    : Owner.TextFontDefault.Height * labels.Count(x => x.LastCol != null);
+                var desiredHeight = FontToBold ? Owner.TextFontDefaultBold.Height * labels.Where(x => x.FirstCol == "Sprtr" || x.LastCol != "").Count()
+                    : Owner.TextFontDefault.Height * labels.Where(x => x.FirstCol == "Sprtr" || x.LastCol != "").Count();
 
                 var desiredWidth = FirstColLenght + LastColLenght + (normalTextMode ? FontToBold ? 43 : 41 : 31);
 
@@ -1080,11 +1080,14 @@ namespace Orts.Viewer3D.Popups
                     if (grateLabelVisible && clockGrateTime + 3 < Owner.Viewer.Simulator.ClockTime)
                         grateLabelVisible = false;
 
-                    AddLabel(new ListLabel
+                    if (grateLabelVisible)
                     {
-                        FirstCol = grateLabelVisible ? Viewer.Catalog.GetString("Grate limit") + ColorCode[Color.White] : "",
-                        LastCol = grateLabelVisible ? Viewer.Catalog.GetString("Normal") + ColorCode[Color.White] : ""
-                    });
+                        AddLabel(new ListLabel
+                        {
+                            FirstCol = Viewer.Catalog.GetString("Grate limit") + ColorCode[Color.White],
+                            LastCol = Viewer.Catalog.GetString("Normal") + ColorCode[Color.White]
+                        });
+                    }
                 }
             }
 
