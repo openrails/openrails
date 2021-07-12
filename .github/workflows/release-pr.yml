@@ -1,0 +1,12 @@
+on:
+  push:
+    branches:
+      - "release/*"
+jobs:
+  release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create PR
+        uses: funivan/github-autopr@0.2.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
