@@ -345,6 +345,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Script.GameTime = () => (float)Simulator.GameTime;
                 Script.DistanceM = () => Locomotive.DistanceM;
                 Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
+                Script.Confirm = Locomotive.Simulator.Confirmer.Confirm;
+                Script.Message = Locomotive.Simulator.Confirmer.Message;
+                Script.SignalEvent = Locomotive.SignalEvent;
+                Script.SignalEventToTrain = (evt) =>
+                {
+                    if (Locomotive.Train != null)
+                    {
+                        Locomotive.Train.SignalEvent(evt);
+                    }
+                };
 
                 // BrakeController
                 Script.EmergencyBrakingPushButton = () => EmergencyBrakingPushButton;
@@ -352,6 +362,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Script.TCSFullServiceBraking = () => TCSFullServiceBraking;
                 Script.QuickReleaseButtonPressed = () => QuickReleaseButtonPressed;
                 Script.OverchargeButtonPressed = () => OverchargeButtonPressed;
+                Script.IsLowVoltagePowerSupplyOn = () => Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn;
+                Script.IsCabPowerSupplyOn = () => Locomotive.LocomotivePowerSupply.CabPowerSupplyOn;
 
                 Script.MainReservoirPressureBar = () =>
                 {

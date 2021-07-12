@@ -765,6 +765,9 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            if (!IsPowered)
+                return;
+
             base.PrepareFrame(frame, elapsedTime);
             var xScale = Viewer.CabWidthPixels / 640f;
             var yScale = Viewer.CabHeightPixels / 480f;
