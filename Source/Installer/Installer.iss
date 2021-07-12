@@ -1,6 +1,11 @@
 ;Open Rails installer                                 
-;03-Jul-2021
+;12-Jul-2021
 ;Chris Jakeman
+
+; Assuming that Build.cmd is run from its directory then, in the same directory, this installer creates:
+; Open Rails/Program/*
+; Source/Installer/Output/OpenRailsSetup.exe
+; Build.cmd will move OpenRailSetup.exe back into .\OpenRails-<mode>-Setup.exe where <mode> = "Stable" etc.
 
 #define MyAppName "Open Rails"
 #include "Version.iss"  ; provides the version number
@@ -18,10 +23,10 @@
 #define MyAppExeName "OpenRails.exe"
 #define MyAppManual "Documentation\Manual.pdf"
 
-#define MyAppProgPath "..\Program"
-#define MyAppDocPath "..\Program\Documentation"
+#define MyAppProgPath "..\..\Program"
+#define MyAppDocPath "..\..\Source\Documentation"
 
-#define NetRedistPath "..\.NET Framework 4.7.2 web installer"
+#define NetRedistPath "..\..\..\.NET Framework 4.7.2 web installer"
 #define NetRedist "NDP472-KB4054531-Web.exe"
 
 [Setup]
@@ -41,10 +46,10 @@ DefaultDirName  ={commonpf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons    =yes
 LicenseFile     ={#MyAppProgPath}\Copying.txt
+InfoAfterFile   ={#MyAppProgPath}\Readme.txt
 
 ; Remove the following line to run in administrative install mode (install for all users.)
 ; PrivilegesRequired=lowest ; Cannot create the directory C:\Program Files\Open Rails
-InfoAfterFile   =..\Program\Readme.txt
 
 Compression     =lzma
 SolidCompression=yes
@@ -94,7 +99,7 @@ Source: {#NetRedistPath}\{#NetRedist}; DestDir: {tmp}; Flags: deleteafterinstall
 ; The game itself
 ; Readme.txt is copied from Source\RunActivity\Readme.txt
 Source: {#MyAppProgPath}\*; Excludes: Readme*.txt; DestDir: {app}; Flags: ignoreversion recursesubdirs
-Source: ..\Program\Readme.txt; DestDir: {app}; Flags: ignoreversion
+Source: ..\..\Program\Readme.txt; DestDir: {app}; Flags: ignoreversion
 Source: {#MyAppDocPath}\*; DestDir: {app}\Documentation; Flags: ignoreversion recursesubdirs
 
 [Icons]
@@ -115,24 +120,6 @@ var
   data: Cardinal;
   StatusText: string;
 begin
-  // Gets left on screen while file is unpacked.
-  //StatusText := WizardForm.StatusLabel.Caption;
-  //WizardForm.StatusLabel.Caption := 'Unpacking {#DotNETName}...';
-  //result := true;
-  //if (RegQueryDWordValue(HKLM, 'Software\Microsoft\NET Framework Setup\NDP\v4.7.2', 'Install', data)) then begin // CHECK THIS
-  //  if (data = 1) then begin
-  //    if (RegQueryDWordValue(HKLM, 'Software\Microsoft\NET Framework Setup\NDP\v4.7.2', 'SP', data)) then begin
-  //      if (data = 1) then begin
-  //        result := false
-  //        // Prompt is repeated. Help suggests a way around this.
-  //        //MsgBox('{#DotNETName} is already installed', mbError, MB_OK);
-  //      end;
-  //    end;
-  //  end;
-  //  WizardForm.StatusLabel.Caption := StatusText;
-  //  WizardForm.ProgressGauge.Style := npbstNormal;
-  //end;
-  
   // Gets left on screen while file is unpacked.
   StatusText := WizardForm.StatusLabel.Caption;
   WizardForm.StatusLabel.Caption := 'Checking for prerequisite {#DotNETName}...';
