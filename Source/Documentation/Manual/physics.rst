@@ -312,8 +312,11 @@ Open Rails software provides for different classes of engines: diesel,
 electric, steam and default. If needed, additional classes can be created
 with unique performance characteristics.
 
+Diesel Locomotives
+------------------
+
 Diesel Locomotives in General
------------------------------
+'''''''''''''''''''''''''''''
 
 The diesel locomotive model in ORTS simulates the behavior of two basic
 types of diesel engine driven locomotives-- diesel-electric and
@@ -377,7 +380,7 @@ If using power/force Tables, then some of the above values will not be
 required, see the sections below for details.
 
 Starting the Diesel Engine
-''''''''''''''''''''''''''
+..........................
 
 To start the engine, simply press the START/STOP key once. The direction
 controller must be in the neutral position (otherwise, a warning message
@@ -389,7 +392,7 @@ StartingConfirmationRPM (110% of IdleRPM by default) and the demanded RPM
 is set to idle. The engine is now started and ready to operate.
 
 Stopping the Diesel Engine
-''''''''''''''''''''''''''
+..........................
 
 To stop the engine, press the START/STOP key once. The direction
 controller must be in the neutral position (otherwise, a warning message
@@ -399,7 +402,7 @@ stopped when RPM is zero. The engine can be restarted even while it is
 stopping (RPM is not zero).
 
 Starting or Stopping Helper Diesel Engines
-''''''''''''''''''''''''''''''''''''''''''
+..........................................
 
 By pressing the Diesel helper START/STOP key (``<Ctrl+Y>`` on English
 keyboards), the diesel engines of helper locomotives can be started or
@@ -411,7 +414,7 @@ It is also possible to operate a locomotive with the own engine off and
 the helper's engine on.
 
 ORTS Specific Diesel Engine Definition
-''''''''''''''''''''''''''''''''''''''
+......................................
 
 If no ORTS specific definition is found, a single diesel engine definition
 is created based on the MSTS settings. Since MSTS introduces a model
@@ -544,7 +547,7 @@ simulation falls back to use MSTS parameters.
 +---------------------------------+------------------------------------+
 
 Diesel Engine Speed Behavior
-''''''''''''''''''''''''''''
+............................
 
 The engine speed is calculated based on the RPM rate of change and its
 rate of change. The usual setting and the corresponding result is shown
@@ -556,7 +559,7 @@ means how fast the RPM approaches the demanded RPM.
   :scale: 80%
 
 Fuel Consumption
-''''''''''''''''
+................
 
 Following the MSTS model, ORTS computes the diesel engine fuel consumption
 based on .eng file parameters. The fuel flow and level are indicated by
@@ -564,7 +567,7 @@ the HUD view. Final fuel consumption is adjusted according to the current
 diesel power output (load).
 
 Diesel Exhaust
-''''''''''''''
+..............
 
 The diesel engine exhaust feature can be modified as needed. The main idea
 of this feature is based on the general combustion engine exhaust. When
@@ -591,7 +594,7 @@ The format of the *color* value is (aarrggbb) where:
 and each component is in HEX number format (00 to ff).
 
 Cooling System
-''''''''''''''
+..............
 
 ORTS introduces a simple cooling and oil system within the diesel engine
 model. The engine temperature is based on the output power and the cooling
@@ -602,7 +605,7 @@ simplified and the value is proportional to the RPM. There will be further
 improvements of the system later.
 
 Diesel-Electric Locomotives
----------------------------
+'''''''''''''''''''''''''''
 
 Diesel-electric locomotives are driven by electric traction motors
 supplied by a diesel-generator set. The gen-set is the only power source
@@ -629,7 +632,7 @@ setting, but the power follows maximal output power available (RPM
 dependent).
 
 Diesel-Hydraulic Locomotives
-----------------------------
+''''''''''''''''''''''''''''
 
 Diesel-hydraulic locomotives are not implemented in ORTS. However, by
 using either ``ORTSTractionCharacteristics`` or ``ORTSMaxTractiveForceCurves``
@@ -637,7 +640,7 @@ tables, the desired performance can be achieved, when no gearbox is in use
 and the ``DieselEngineType`` is *electric*.
 
 Diesel-Mechanical Locomotives
------------------------------
+'''''''''''''''''''''''''''''
 
 .. index::
    single: GearBoxBackLoadForce
@@ -653,8 +656,63 @@ Output performance is very different compared with MSTS. The output force
 is computed using the diesel engine torque characteristics to get results
 that are more precise.
 
+.. _physics-traction-cut-off-relay:
+
+Traction cut-off relay
+''''''''''''''''''''''
+
+The traction cut-off relay of all locomotives in a consist can be controlled by
+*Control Traction Cut-Off Relay Closing Order*, *Control Traction Cut-Off Relay Opening Order*
+and *Control Traction Cut-Off Relay Closing Authorization* commands
+( ``<O>``, ``<I>`` and ``<Shift+O>`` by default ). The status of the traction cut-off relay
+is indicated by the *Traction cut-off relay* value in the HUD view.
+
+The traction cut-off relay is also opened if the :ref:`Train Control System <physics-train-control-system>`
+triggers an emergency braking.
+
+.. index::
+   single: ORTSTractionCutOffRelay
+   single: ORTSTractionCutOffRelayClosingDelay
+
+Two default behaviours are available:
+
+- By default, the traction cut-off relay of the train closes as soon as power is available
+  on the engines.
+- The traction cut-off relay can also be controlled manually by the driver. To get this
+  behaviour, put the parameter ``ORTSTractionCutOffRelay( Manual )`` in the Engine section
+  of the ENG file.
+
+In order to model a different behaviour of the traction cut-off relay,
+a :ref:`scripting interface <features-scripting-tcor>` is available. The script
+can be loaded with the parameter ``ORTSTractionCutOffRelay( <name of the file> )``.
+
+In real life, the traction cut-off relay does not
+close instantly, so you can add a delay with the optional parameter
+``ORTSTractionCutOffRelayClosingDelay( )`` (by default in seconds).
+
+.. _physics-diesel-power-supply:
+
+Power supply
+''''''''''''
+
+The power status is indicated by the *Power* value in the HUD
+view.
+
+.. index::
+   single: ORTSPowerOnDelay
+   single: ORTSAuxPowerOnDelay
+
+The power-on sequence time delay can be adjusted by the optional
+``ORTSPowerOnDelay( )`` value (for example: ``ORTSPowerOnDelay( 5s )``) within
+the Engine section of the .eng file (value in seconds). The same delay for
+auxiliary systems can be adjusted by the optional parameter
+``ORTSAuxPowerOnDelay( )`` (by default in seconds).
+
+A :ref:`scripting interface <features-scripting-powersupply>` to customize the behavior
+of the power supply is also available.
+
 Electric Locomotives
-====================
+--------------------
 
 .. index::
    single: MaxPower
@@ -671,7 +729,7 @@ Some OR-specific parameters are available in order to improve the realism
 of the electric system.
 
 Pantographs
------------
+'''''''''''
 
 The pantographs of all locomotives in a consist are triggered by
 *Control Pantograph First* and *Control Pantograph Second* commands
@@ -706,7 +764,7 @@ limitations or speed restrictions.
 
 
 3rd and 4th Pantograph
-----------------------
+''''''''''''''''''''''
 
 .. index::
    single: ORTSPantographs
@@ -726,13 +784,15 @@ The cabview controls must be named ORTS_PANTOGRAPH3 and ORTS_PANTOGRAPH4.
 .. _physics-circuit-breaker:
 
 Circuit breaker
----------------
+'''''''''''''''
 
 The circuit breaker of all locomotives in a consist can be controlled by
 *Control Circuit Breaker Closing Order*, *Control Circuit Breaker Opening Order*
 and *Control Circuit Breaker Closing Authorization* commands
 ( ``<O>``, ``<I>`` and ``<Shift+O>`` by default ). The status of the circuit breaker
 is indicated by the *Circuit breaker* value in the HUD view.
+
+The circuit breaker is also opened if the :ref:`Train Control System <physics-train-control-system>` triggers an emergency braking.
 
 .. index::
    single: ORTSCircuitBreaker
@@ -754,10 +814,10 @@ In real life, the circuit breaker does not
 close instantly, so you can add a delay with the optional parameter
 ``ORTSCircuitBreakerClosingDelay( )`` (by default in seconds).
 
-.. _physics-power-supply:
+.. _physics-electric-power-supply:
 
 Power supply
-------------
+''''''''''''
 
 The power status is indicated by the *Power* value in the HUD
 view.
@@ -772,17 +832,17 @@ the Engine section of the .eng file (value in seconds). The same delay for
 auxiliary systems can be adjusted by the optional parameter
 ``ORTSAuxPowerOnDelay( )`` (by default in seconds).
 
-A :ref:`scripting interface <features-scripting-eps>` to customize the behavior
-of the power supply is also available.
+A :ref:`scripting interface <features-scripting-powersupply>` to customize the
+behavior of the power supply is also available.
 
 Steam Locomotives
-=================
+-----------------
 
 General Introduction to Steam Locomotives
------------------------------------------
+'''''''''''''''''''''''''''''''''''''''''
 
 Principles of Train Movement
-''''''''''''''''''''''''''''
+............................
 
 Key Points to Remember:
 
@@ -961,7 +1021,7 @@ in this section. The permissible load would vary depending upon the
 direction of travel of the train.
 
 Elements of Steam Locomotive Operation
-''''''''''''''''''''''''''''''''''''''
+......................................
 
 A steam locomotive is a very complex piece of machinery that has many
 component parts, each of which will influence the performance of the
@@ -1031,7 +1091,7 @@ typically combined to place limits on the power of a locomotive depending
 upon the design factors used.
 
 Locomotive Types
-''''''''''''''''
+................
 
 During the course of their development, many different types of
 locomotives were developed, some of the more common categories are as
@@ -1097,7 +1157,7 @@ The three principal types of geared locomotives used were:
 - Heisler
 
 Steam Locomotive Operation
---------------------------
+''''''''''''''''''''''''''
 
 To successfully drive a steam locomotive it is necessary to consider the
 performance of the following elements:
@@ -1120,7 +1180,7 @@ Summary of Driving Tips
 .. _physics-steam-firing:
 
 Open Rails Steam Functionality (Fireman)
-''''''''''''''''''''''''''''''''''''''''
+........................................
 
 The Open Rails Steam locomotive functionality provides two operational
 options:
@@ -1145,7 +1205,7 @@ Use the keys ``<Crtl+F>`` to switch between Manual and Automatic firing
 modes.
 
 Hot or Cold Start
-'''''''''''''''''
+.................
 
 The locomotive can be started either in a hot or cold mode. Hot mode
 simulates a locomotive which has a full head of steam and is ready for duty.
@@ -1158,7 +1218,7 @@ This function can be selected through the Open Rails options menu on the
 :ref:`Simulation <options-simulation>` tab.
 
 Main Steam Locomotive Controls
-''''''''''''''''''''''''''''''
+..............................
 
 This section will describe the control and management of the steam
 locomotive based upon the assumption that the Automatic fireman is
@@ -1299,7 +1359,7 @@ If theses controls are not used, then the AI fireman operates in the same
 fashion as previously.
 
 Steam Boiler Heat Radiation Loss
-''''''''''''''''''''''''''''''''
+................................
 
 A certain amount of heat is lost from the boiler of a steam locomotive. An 
 uninsulated boiler could lose a lot of heat and this impacts on the 
@@ -1327,7 +1387,7 @@ following settings.
 - ``ORTSHeatCoefficientInsulation`` - Thermal conduction coefficient. Default UoM - (BTU / (ft\ :sup:`2` / hr.) / (1 (in. / F)) 
 
 Steam Boiler Blowdown
-'''''''''''''''''''''
+.....................
 Over time as steam is evaporated from the boiler a concentration of impurities 
 will build up in the boiler. The boiler blowdown valve was used to remove these 
 sediments from the boiler which could impact its efficiency. Depending upon the 
@@ -1343,7 +1403,7 @@ Alternatively a cab control can be set up by using the ``<ORTS_BLOWDOWN_VALVE ( 
 A special steam effect can also be added. See the section on steam effects.
 
 Steam Locomotive Carriage Steam Heat Modelling
-''''''''''''''''''''''''''''''''''''''''''''''
+..............................................
 
 Overview
 ........
@@ -1502,10 +1562,10 @@ Special effects can also be added to support the steam heating model, see the se
 
 
 Steam Locomotives -- Physics Parameters for Optimal Operation
--------------------------------------------------------------
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 Required Input ENG and WAG File Parameters
-''''''''''''''''''''''''''''''''''''''''''
+..........................................
 
 The OR Steam Locomotive Model (SLM) should work with default MSTS files;
 however optimal performance will only be achieved if the following
@@ -1796,7 +1856,7 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 .. _visual-effects:
 
 `Special Visual Effects for Locomotives or Wagons`
---------------------------------------------------
+''''''''''''''''''''''''''''''''''''''''''''''''''
 Steam exhausts on a steam locomotive, and other special visual effects can be modelled in OR by defining
 appropriate visual effects in the ``SteamSpecialEffects`` section of the steam locomotive ENG file, the
 ``DieselSpecialEffects`` section of the diesel locomotive ENG file, or the ``SpecialEffects`` section
@@ -1882,7 +1942,7 @@ The code block consists of the following elements:
 - Effect nozzle width (in metres)
 
 Auxiliary Water Tenders
------------------------
+'''''''''''''''''''''''
 
 To increase the water carrying capacity of a steam locomotive, an *auxiliary tender* (or as known in Australia as a water gin) would sometimes be coupled to the locomotive. This auxiliary tender would provide additional water to the locomotive tender via connecting pipes.
 
@@ -4095,8 +4155,151 @@ groups of .wag or .eng files that the user wishes to replace by a specific
 block of data -- the parameters can be provided by a text file located
 outside the usual MSTS folders; e.g. brake parameters.
 
+Common locomotive subsystems
+============================
+
+.. _physics-battery-switch:
+
+Battery switch
+--------------
+
+The battery switch controls the low voltage power supply of the locomotive.
+If the low voltage power supply is disabled, all of the systems of the locomotive are disabled
+(for example, the circuit breaker opens and the pantograph falls down).
+
+The battery switch of all locomotives in a consist can be controlled by
+*Control Battery Switch Close* and *Control Battery Switch Open* commands
+( ``<Insert>`` and ``<Ctrl+Insert>`` by default ). The status of the battery switch
+is indicated by the *Battery switch* value in the HUD view.
+
+.. index::
+   single: ORTSBattery
+
+Three behaviours are available:
+
+- By default, the battery switch is always closed (equivalent to MSTS).
+- The battery switch can also be controlled directly by the driver with a switch.
+  To get this behaviour, put the parameter ``ORTSBattery( Mode ( Switch ) )`` in the Engine section
+  of the ENG file.
+- The battery switch can also be controlled directly by the driver with two push buttons.
+  To get this behaviour, put the parameter ``ORTSBattery( Mode ( PushButtons ) )`` in the Engine section
+  of the ENG file.
+
+In real life, the battery switch may not
+close instantly, so you can add a delay with the optional parameter
+``ORTSBattery( Delay ( ) )`` (by default in seconds).
+
+Example::
+
+    Engine (
+      ORTSBattery (
+        Mode ( PushButtons )
+        Delay ( 2s )
+      )
+    )
+
+The state of the battery switch can be used in the :ref:`power supply scripts <features-scripting-powersupply>` and the :ref:`cabview controls <cabs-battery-switch>`.
+
+.. _physics-master-key:
+
+Master key
+----------
+
+The master key controls the power supply of the cab.
+If the cab power supply is disabled, all of the systems of the cab are disabled
+(for example, the speed indicator switches off, the throttle controller is disabled, etc.).
+
+The master key of the current cab can be controlled by the *Control Master Key* command
+( ``<Enter>`` by default ). The status of the master key is indicated by the *Master key* value in the HUD view.
+
+.. index::
+   single: ORTSMasterKey
+
+Two behaviours are available:
+
+- By default, the master key is always on (equivalent to MSTS).
+- The master key can also be controlled by the driver.
+  To get this behaviour, put the parameter ``ORTSMasterKey ( Mode ( Manual ) )``
+  in the Engine section of the ENG file.
+
+In real life, when the master key is switched off, the cab systems may not switch off
+instantly, so you can add a delay with the optional parameter
+``ORTSMasterKey ( DelayOff ( ) )`` (by default in seconds).
+
+The master key can also control the headlights on multiple units. For example, when the master key is switched on,
+the red lights can automatically be replaced by the white lights. In order to activate this behaviour, put The
+parameter ``ORTSMasterKey ( HeadlightControl ( 1 ) )`` in the Engine section of the ENG file.
+
+Example::
+
+    Engine (
+      ORTSMasterKey (
+        Mode ( Manual )
+        DelayOff ( 10s )
+        HeadlightControl ( 1 )
+      )
+    )
+
+The state of the master key can be used in the :ref:`power supply scripts <features-scripting-powersupply>` and the :ref:`cabview controls <cabs-master-key>`.
+
+.. _physics-service-retention:
+
+Service retention
+-----------------
+
+The service retention allows for the systems of the train to still be supplied with electricity even if
+a cab is not in service. It maintains the pantographs up and the circuit breaker closed even if the master
+key is switched off.
+
+This feature can only be used with a :ref:`custom power supply script <features-scripting-powersupply>`.
+
+The service retention can be controlled by the *Control Service Retention* and *Control Service Retention Cancellation* commands
+( ``<Delete>`` and ``<Ctrl+Delete>`` by default ).
+
+:ref:`Cabview controls <cabs-service-retention>` are also available for this functionality.
+
+.. _physics-electric-train-supply:
+
+Electric train supply
+---------------------
+
+The electric train supply supplies passenger cars and heated wagons with electricity in order to power the battery chargers,
+the heating, ventilation and air conditioning systems.
+
+The electric train supply can be controlled by the *Control Electric Train Supply* command
+( ``<Alt+B>`` by default ). The status of the electric train supply switch state is indicated
+by the *Electric train supply* value in the HUD view.
+
+.. index::
+   single: ORTSElectricTrainSupply
+
+Three behaviours are available:
+
+- By default, the electric train supply is automatic (it will switch on as soon as the auxiliary power supply is on).
+- The locomotive can also be not fitted with electric train supply.
+  To get this behaviour, put the parameter ``ORTSElectricTrainSupply ( Mode ( Unfitted ) )``
+  in the Engine section of the ENG file.
+- The electric train supply can also be controlled by the driver.
+  To get this behaviour, put the parameter ``ORTSElectricTrainSupply ( Mode ( Switch ) )``
+  in the Engine section of the ENG file.
+
+Example::
+
+    Engine (
+      ORTSElectricTrainSupply (
+        Mode ( Switch )
+      )
+    )
+
+If the locomotive is a diesel locomotive, the power consumed by the cars on the electric train supply is no longer available for traction.
+
+The state of the electric train supply can be used in the :ref:`locomotive power supply scripts <features-scripting-powersupply>`,
+in the :ref:`passenger car power supply scripts <features-scripting-passenger-car-power-supply>` and the :ref:`cabview controls <cabs-master-key>`.
+
+.. _physics-train-control-system:
+
 Train Control System
-====================
+--------------------
 
 The Train Control System is a system that ensures the safety of the train.
 
