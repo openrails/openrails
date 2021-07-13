@@ -627,19 +627,21 @@ namespace Orts.Viewer3D.Popups
             // Direction
             {
                 UserCommand? reverserCommand = GetPressedKey(UserCommand.ControlBackwards, UserCommand.ControlForwards);
-                string reverserKey;
-                bool moving = Math.Abs(trainCar.SpeedMpS) > 1;
-                bool nonSteamEnd = trainCar.EngineType != TrainCar.EngineTypes.Steam && trainCar.Direction == Direction.N && (trainCar.ThrottlePercent >= 1 || moving);
-                bool steamEnd = locomotive is MSTSSteamLocomotive steamLocomotive2 && steamLocomotive2.CutoffController.MaximumValue == Math.Abs(train.MUReverserPercent / 100);
-                if (reverserCommand != null && (nonSteamEnd || steamEnd))
-                    reverserKey = Symbols.End + ColorCode[Color.Yellow];
-                else if (reverserCommand == UserCommand.ControlBackwards)
-                    reverserKey = Symbols.ArrowDown + ColorCode[Color.Yellow];
-                else if (reverserCommand == UserCommand.ControlForwards)
-                    reverserKey = Symbols.ArrowUp + ColorCode[Color.Yellow];
-                else
-                    reverserKey = "";
-
+                string reverserKey = "";
+                if (reverserCommand == UserCommand.ControlBackwards || reverserCommand == UserCommand.ControlForwards)
+                {
+                    bool moving = Math.Abs(trainCar.SpeedMpS) > 1;
+                    bool nonSteamEnd = trainCar.EngineType != TrainCar.EngineTypes.Steam && trainCar.Direction == Direction.N && (trainCar.ThrottlePercent >= 1 || moving);
+                    bool steamEnd = locomotive is MSTSSteamLocomotive steamLocomotive2 && steamLocomotive2.CutoffController.MaximumValue == Math.Abs(train.MUReverserPercent / 100);
+                    if (reverserCommand != null && (nonSteamEnd || steamEnd))
+                        reverserKey = Symbols.End + ColorCode[Color.Yellow];
+                    else if (reverserCommand == UserCommand.ControlBackwards)
+                        reverserKey = Symbols.ArrowDown + ColorCode[Color.Yellow];
+                    else if (reverserCommand == UserCommand.ControlForwards)
+                        reverserKey = Symbols.ArrowUp + ColorCode[Color.Yellow];
+                    else
+                        reverserKey = "";
+                }
                 string reverserIndicator = showMUReverser ? $"{Round(Math.Abs(train.MUReverserPercent))}% " : "";
                 AddLabel(new ListLabel
                 {
