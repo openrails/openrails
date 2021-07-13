@@ -68,6 +68,15 @@ IF NOT EXIST "Source\ORTS.sln" (
 	EXIT /B 1
 )
 
+IF "%Mode%" == "Stable" (
+	CALL :create ".NET Framework 4.7.2 web installer"
+	IF NOT EXIST ".NET Framework 4.7.2 web installer\ndp472-kb4054531-web.exe" (
+		>&2 ECHO ERROR: Missing required file for "%Mode%" build: ".NET Framework 4.7.2 web installer\ndp472-kb4054531-web.exe".
+		>&2 ECHO "Download from http://go.microsoft.com/fwlink/?LinkId=863262"
+		EXIT /B 1
+	)
+)
+
 REM Get code revision.
 SET Revision=000
 IF EXIST ".git" (

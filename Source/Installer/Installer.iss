@@ -2,10 +2,14 @@
 ;12-Jul-2021
 ;Chris Jakeman
 
-; Assuming that Build.cmd is run from its directory then, in the same directory, this installer creates:
-; Open Rails/Program/*
-; Source/Installer/Output/OpenRailsSetup.exe
-; Build.cmd will move OpenRailSetup.exe back into .\OpenRails-<mode>-Setup.exe where <mode> = "Stable" etc.
+; Assuming that Build.cmd is run from its directory then, in the same directory, this installer for "stable" requires file:
+;   ".NET Framework 4.7.2 web installer\ndp472-kb4054531-web.exe"
+; which can be downloaded from:
+;   http://go.microsoft.com/fwlink/?LinkId=863262
+; and creates:
+;   Open Rails/Program/*
+;   Source/Installer/Output/OpenRailsSetup.exe
+; Build.cmd for "stable" will move OpenRailSetup.exe back into .\OpenRails-<mode>-Setup.exe.
 
 #define MyAppName "Open Rails"
 #include "Version.iss"  ; provides the version number
@@ -26,7 +30,7 @@
 #define MyAppProgPath "..\..\Program"
 #define MyAppDocPath "..\..\Source\Documentation"
 
-#define NetRedistPath "..\..\..\.NET Framework 4.7.2 web installer"
+#define NetRedistPath "..\..\.NET Framework 4.7.2 web installer"
 #define NetRedist "NDP472-KB4054531-Web.exe"
 
 [Setup]
