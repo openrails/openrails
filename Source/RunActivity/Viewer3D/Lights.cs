@@ -30,6 +30,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -55,6 +56,7 @@ namespace Orts.Viewer3D
         public WeatherType Weather;
         public bool CarCoupledFront;
         public bool CarCoupledRear;
+        public bool CarBatteryOn;
 
         public bool IsLightConeActive { get { return ActiveLightCone != null; } }
         List<LightPrimitive> LightPrimitives = new List<LightPrimitive>();
@@ -242,6 +244,8 @@ namespace Orts.Viewer3D
             // Coupling
             var newCarCoupledFront = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.LastCar : Car.Train.FirstCar) != Car);
             var newCarCoupledRear = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.FirstCar : Car.Train.LastCar) != Car);
+            // Nattery
+            var newCarBatteryOn = Car is MSTSWagon wagon ? wagon.PowerSupply?.BatteryState == PowerSupplyState.PowerOn : true;
 
             if (
                 (TrainHeadlight != newTrainHeadlight) ||
@@ -254,7 +258,8 @@ namespace Orts.Viewer3D
                 (IsDay != newIsDay) ||
                 (Weather != newWeather) ||
                 (CarCoupledFront != newCarCoupledFront) ||
-                (CarCoupledRear != newCarCoupledRear))
+                (CarCoupledRear != newCarCoupledRear) ||
+                (CarBatteryOn != newCarBatteryOn))
             {
                 TrainHeadlight = newTrainHeadlight;
                 CarIsReversed = newCarIsReversed;
@@ -267,6 +272,7 @@ namespace Orts.Viewer3D
                 Weather = newWeather;
                 CarCoupledFront = newCarCoupledFront;
                 CarCoupledRear = newCarCoupledRear;
+                CarBatteryOn = newCarBatteryOn;
 
 #if DEBUG_LIGHT_STATES
                 Console.WriteLine();
@@ -283,7 +289,8 @@ namespace Orts.Viewer3D
                     IsDay ? "" : " Night",
                     Weather == WeatherType.Snow ? " Snow" : Weather == WeatherType.Rain ? " Rain" : "",
                     CarCoupledFront ? " CoupledFront" : "",
-                    CarCoupledRear ? " CoupledRear" : "");
+                    CarCoupledRear ? " CoupledRear" : "",
+                    CarLowVoltagePowerSupplyOn ? " LowVoltageOn" : "");
                 if (Car.Lights != null)
                 {
                     Console.WriteLine();
@@ -432,6 +439,15 @@ namespace Orts.Viewer3D
                     Enabled &= !lightViewer.CarCoupledFront && lightViewer.CarCoupledRear;
                 else if (Light.Coupling == LightCouplingCondition.Both)
                     Enabled &= lightViewer.CarCoupledFront && lightViewer.CarCoupledRear;
+                else
+                    Enabled &= false;
+            }
+            if (Light.Battery != LightBatteryCondition.Ignore)
+            {
+                if (Light.Battery == LightBatteryCondition.On)
+                    Enabled &= lightViewer.CarBatteryOn;
+                else if (Light.Battery == LightBatteryCondition.Off)
+                    Enabled &= !lightViewer.CarBatteryOn;
                 else
                     Enabled &= false;
             }
