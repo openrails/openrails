@@ -747,7 +747,7 @@ namespace Orts.Viewer3D.RollingStock
                 TrainCarShape.XNAMatrices[p.iMatrix] = Car.VibrationInverseMatrix * m;
             }
 
-            if (MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && !Car.Simulator.Settings.SimpleControlPhysics)
+            if ((MSTSWagon.Train?.IsPlayerDriven ?? false) && !Car.Simulator.Settings.SimpleControlPhysics)
             {
                 UpdateCouplers(frame, elapsedTime);
             }
