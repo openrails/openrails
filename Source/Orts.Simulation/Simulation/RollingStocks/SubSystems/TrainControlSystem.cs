@@ -140,7 +140,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 simulatorEmergencyBraking = value;
 
                 if (Script != null)
+#pragma warning disable CS0618 // SetEmergency is obsolete
                     Script.SetEmergency(value);
+#pragma warning restore CS0618 // SetEmergency is obsolete
                 else
                     Locomotive.TrainBrakeController.TCSEmergencyBraking = value;
             }
@@ -1259,12 +1261,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case TCSEvent.AlerterReleased:
                     ResetButtonPressed = false;
                     break;
-            }
-        }
 
-        public override void SetEmergency(bool emergency)
-        {
-            ExternalEmergency = emergency;
+                case TCSEvent.EmergencyBrakingRequestedBySimulator:
+                    ExternalEmergency = true;
+                    break;
+
+                case TCSEvent.EmergencyBrakingReleasedBySimulator:
+                    ExternalEmergency = false;
+                    break;
+            }
         }
 
         void UpdateVigilance()

@@ -3839,6 +3839,13 @@ namespace Orts.Simulation.RollingStocks
         }
         #endregion
 
+        public override void SignalEvent(TCSEvent evt)
+        {
+            TrainControlSystem.HandleEvent(evt);
+
+            base.SignalEvent(evt);
+        }
+
         public override void SignalEvent(PowerSupplyEvent evt)
         {
             LocomotivePowerSupply.HandleEvent(evt);
@@ -3856,18 +3863,6 @@ namespace Orts.Simulation.RollingStocks
         public virtual void SetPower(bool toState)
         {
             LocomotivePowerSupply.HandleEvent(toState ? PowerSupplyEvent.QuickPowerOn : PowerSupplyEvent.QuickPowerOff);
-        }
-
-        public override void SignalEvent(TCSEvent evt)
-        {
-            TrainControlSystem.HandleEvent(evt);
-
-            base.SignalEvent(evt);
-        }
-
-        public override void SignalEvent(PowerSupplyEvent evt)
-        {
-
         }
 
         internal void ToggleMUCommand(bool ToState)
