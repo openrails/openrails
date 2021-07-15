@@ -227,6 +227,27 @@ namespace Orts.Simulation.RollingStocks
         public bool RearCouplerOpenFitted = false;
         public bool RearCouplerOpen = false;
 
+        // Air hose animation
+        public string FrontAirHoseShapeFileName;
+        public float FrontAirHoseAnimLengthM;
+        public float FrontAirHoseAnimWidthM;
+        public float FrontAirHoseAnimHeightM;
+
+        public string FrontAirHoseDisconnectedShapeFileName;
+        public float FrontAirHoseDisconnectedAnimLengthM;
+        public float FrontAirHoseDisconnectedAnimWidthM;
+        public float FrontAirHoseDisconnectedAnimHeightM;
+
+        public string RearAirHoseShapeFileName;
+        public float RearAirHoseAnimLengthM;
+        public float RearAirHoseAnimWidthM;
+        public float RearAirHoseAnimHeightM;
+
+        public string RearAirHoseDisconnectedShapeFileName;
+        public float RearAirHoseDisconnectedAnimLengthM;
+        public float RearAirHoseDisconnectedAnimWidthM;
+        public float RearAirHoseDisconnectedAnimHeightM;
+
         // Used to calculate Carriage Steam Heat Loss
         public const float BogieHeightM = 1.06f; // Height reduced by 1.06m to allow for bogies, etc
         public const float CarCouplingPipeM = 1.2f;  // Allow for connection between cars (assume 2' each end) - no heat is contributed to carriages.
