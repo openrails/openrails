@@ -11128,8 +11128,7 @@ namespace Orts.Simulation.Signalling
 
                     // if section has signal at end stop check
 
-                    if (thisSection.EndSignals[direction] != null
-                        || (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack && thisSection.EndSignals[direction] == null))
+                    if (thisSection.EndSignals[direction] != null || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
                     {
                         thisSection = null;
                     }
