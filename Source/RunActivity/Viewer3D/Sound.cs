@@ -494,7 +494,8 @@ namespace Orts.Viewer3D
     {
         /// <summary>
         /// Squared cutoff distance. No sound is audible above that, except for the actual player train,
-        /// where cutoff occurs at a distance wich is higher than the train length
+        /// where cutoff occurs at a distance wich is higher than the train length plus offset to 
+        /// approximately take into account distance from camera to car
         /// </summary>
         private int CutOffDistanceM2
         {
@@ -502,7 +503,8 @@ namespace Orts.Viewer3D
             {
                 const int staticDistanceM2 = 4000000;
                 var isPlayer = Car?.Train?.IsActualPlayerTrain ?? false;
-                return (int)Math.Max(staticDistanceM2, isPlayer ? Car.Train.Length * Car.Train.Length : 0);
+                var correctedLength = isPlayer ? Car.Train.Length + 50 : 0; 
+                return (int)Math.Max(staticDistanceM2, correctedLength * correctedLength);
             }
         }
         /// <summary>
