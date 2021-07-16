@@ -322,6 +322,8 @@ namespace Orts.Simulation.RollingStocks
         public TrainCar CarAhead;
         public TrainCar CarBehind;
         public Vector3 RearCouplerLocation;
+        public int RearCouplerLocationTileX;
+        public int RearCouplerLocationTileZ;
         public float AdvancedCouplerDynamicTensionSlackLimitM;   // Varies as coupler moves
         public float AdvancedCouplerDynamicCompressionSlackLimitM; // Varies as coupler moves
 

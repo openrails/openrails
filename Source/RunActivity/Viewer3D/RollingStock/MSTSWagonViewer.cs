@@ -926,8 +926,6 @@ namespace Orts.Viewer3D.RollingStock
                     Z = (Car.FrontCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM - Car.WagonFrontCouplerCurveExtM)
                 };
 
-                var tempZ = (Car.FrontCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM - Car.WagonFrontCouplerCurveExtM);
-
                 if (Car.CarAhead != null) // Display animated coupler if there is a car infront of this car
                 {
                     var quaternion = PositionCoupler(Car, FrontCouplerShape, displacement);
@@ -949,6 +947,8 @@ namespace Orts.Viewer3D.RollingStock
                     if ((absXc > 0.005 || absYc > 0.005 || absZc > 0.005))
                     {
                         FrontCouplerShape.Location.Location = Car.CarAhead.RearCouplerLocation; // Set coupler to same location as previous car coupler
+                        FrontCouplerShape.Location.TileX = Car.CarAhead.RearCouplerLocationTileX;
+                        FrontCouplerShape.Location.TileZ = Car.CarAhead.RearCouplerLocationTileZ;
                     }
 
                     // Display Animation Shape                    
@@ -1001,7 +1001,11 @@ namespace Orts.Viewer3D.RollingStock
                     // Display Animation Shape                    
                     RearCouplerShape.PrepareFrame(frame, elapsedTime);
 
+                    // Save coupler location for use on following car front coupler
                     Car.RearCouplerLocation = RearCouplerShape.Location.Location;
+                    Car.RearCouplerLocationTileX = RearCouplerShape.Location.TileX;
+                    Car.RearCouplerLocationTileZ = RearCouplerShape.Location.TileZ;
+
                 }
                 else if (RearCouplerOpenShape != null && Car.RearCouplerOpenFitted && Car.RearCouplerOpen) // Display open coupler if no car is behind car, and an open coupler shape is present
                 {
