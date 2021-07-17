@@ -26,12 +26,13 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Common.Input;
+using ORTS.Scripting.Api;
 
 namespace Orts.Viewer3D.RollingStock
 {
     public class MSTSDieselLocomotiveViewer : MSTSLocomotiveViewer
     {
-        MSTSDieselLocomotive DieselLocomotive { get { return (MSTSDieselLocomotive)Car; } }
+        MSTSDieselLocomotive DieselLocomotive => Car as MSTSDieselLocomotive;
         List<ParticleEmitterViewer> Exhaust = new List<ParticleEmitterViewer>();
 
         public MSTSDieselLocomotiveViewer(Viewer viewer, MSTSDieselLocomotive car)
@@ -55,7 +56,7 @@ namespace Orts.Viewer3D.RollingStock
 
             if (car.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
                 ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
-                (car.Train.MUDirection != Direction.N && (car as MSTSDieselLocomotive).DieselEngines[0].EngineStatus == Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Running))))
+                (car.Train.MUDirection != Direction.N && (car as MSTSDieselLocomotive).DieselEngines[0].State == DieselEngineState.Running))))
             {
                 (car as MSTSDieselLocomotive).SignalEvent(Event.ReverserToForwardBackward);
                 (car as MSTSDieselLocomotive).SignalEvent(Event.ReverserChange);
@@ -74,6 +75,30 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void InitializeUserInputCommands()
         {
+            UserInputCommands.Add(UserCommand.ControlBatterySwitchClose, new Action[] {
+                () => new BatterySwitchCloseButtonCommand(Viewer.Log, false),
+                () => {
+                    new BatterySwitchCloseButtonCommand(Viewer.Log, true);
+                    new BatterySwitchCommand(Viewer.Log, !DieselLocomotive.LocomotivePowerSupply.BatterySwitch.CommandSwitch);
+                }
+            });
+            UserInputCommands.Add(UserCommand.ControlBatterySwitchOpen, new Action[] {
+                () => new BatterySwitchOpenButtonCommand(Viewer.Log, false),
+                () => new BatterySwitchOpenButtonCommand(Viewer.Log, true)
+            });
+            UserInputCommands.Add(UserCommand.ControlMasterKey, new Action[] { Noop, () => new ToggleMasterKeyCommand(Viewer.Log, !DieselLocomotive.LocomotivePowerSupply.MasterKey.CommandSwitch) });
+            UserInputCommands.Add(UserCommand.ControlServiceRetention, new Action[] { () => new ServiceRetentionButtonCommand(Viewer.Log, false), () => new ServiceRetentionButtonCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlServiceRetentionCancellation, new Action[] { () => new ServiceRetentionCancellationButtonCommand(Viewer.Log, false), () => new ServiceRetentionButtonCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlElectricTrainSupply, new Action[] { Noop, () => new ElectricTrainSupplyCommand(Viewer.Log, !DieselLocomotive.LocomotivePowerSupply.ElectricTrainSupplySwitch.CommandSwitch) });
+            UserInputCommands.Add(UserCommand.ControlTractionCutOffRelayClosingOrder, new Action[] {
+                () => new TractionCutOffRelayClosingOrderButtonCommand(Viewer.Log, false),
+                () => {
+                    new TractionCutOffRelayClosingOrderCommand(Viewer.Log, !DieselLocomotive.DieselPowerSupply.TractionCutOffRelay.DriverClosingOrder);
+                    new TractionCutOffRelayClosingOrderButtonCommand(Viewer.Log, true);
+                }
+            });
+            UserInputCommands.Add(UserCommand.ControlTractionCutOffRelayOpeningOrder, new Action[] { () => new TractionCutOffRelayOpeningOrderButtonCommand(Viewer.Log, false), () => new TractionCutOffRelayOpeningOrderButtonCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlTractionCutOffRelayClosingAuthorization, new Action[] { Noop, () => new TractionCutOffRelayClosingAuthorizationCommand(Viewer.Log, !DieselLocomotive.DieselPowerSupply.TractionCutOffRelay.DriverClosingAuthorization) });
             UserInputCommands.Add(UserCommand.ControlVacuumExhausterPressed, new Action[] { () => new VacuumExhausterCommand(Viewer.Log, false), () => new VacuumExhausterCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlDieselPlayer, new Action[] { Noop, () => new TogglePlayerEngineCommand(Viewer.Log) });
             base.InitializeUserInputCommands();

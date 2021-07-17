@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2021-01-16 15:50:23+0300\n"
-"PO-Revision-Date: 2021-01-16 15:58+0300\n"
+"POT-Creation-Date: 2021-05-16 15:37:48+0300\n"
+"PO-Revision-Date: 2021-05-16 15:48+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
@@ -397,7 +397,7 @@ msgstr "Отладка Запись параметров"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:63
 msgid "Debug Lock Shadows"
-msgstr "Отладка Откл.динамич.тени"
+msgstr "Отладка Отключить динамические тени"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:64
 msgid "Debug Dump Keyboard Map"
@@ -409,11 +409,11 @@ msgstr "Отладка Log Render Frame"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:66
 msgid "Debug Tracks"
-msgstr "Отладка Показ резервирования пути"
+msgstr "Отладка Показ секций пути"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:67
 msgid "Debug Signalling"
-msgstr "Отладка Показ секций пути"
+msgstr "Отладка Показ резервирования пути"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:68
 msgid "Debug Reset Wheel Slip"
@@ -441,7 +441,7 @@ msgstr "Кабина Основной вид"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:75
 msgid "Camera Change Passenger Viewpoint"
-msgstr "Кабина Смена внутренней камеры"
+msgstr "Кабина Прочие виды"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:76
 msgid "Camera Toggle 3D Cab"
@@ -509,27 +509,27 @@ msgstr "Камера Замедленное перемещение"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:92
 msgid "Camera Pan (Rotate) Left"
-msgstr "Камера сдвиг(поворот) влево"
+msgstr "Камера сдвиг (поворот) влево"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:93
 msgid "Camera Pan (Rotate) Right"
-msgstr "Камера сдвиг(поворот) вправо"
+msgstr "Камера сдвиг (поворот) вправо"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:94
 msgid "Camera Pan (Rotate) Up"
-msgstr "Камера сдвиг(поворот) вверх"
+msgstr "Камера сдвиг (поворот) вверх"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:95
 msgid "Camera Pan (Rotate) Down"
-msgstr "Камера сдвиг(поворот) вниз"
+msgstr "Камера сдвиг (поворот) вниз"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:96
 msgid "Camera Zoom In (Move Z)"
-msgstr "Камера наезд(сдвиг вперёд)"
+msgstr "Камера наезд (сдвиг вперёд)"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:97
 msgid "Camera Zoom Out (Move Z)"
-msgstr "Камера отъезд(сдвиг назад)"
+msgstr "Камера отъезд (сдвиг назад)"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:98
 msgid "Camera Rotate (Pan) Left"
@@ -549,31 +549,31 @@ msgstr "Камера Поворот/сдвиг вниз"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:102
 msgid "Camera Car Next"
-msgstr "Вид на следующий вагон"
+msgstr "Фокус на следующий вагон"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:103
 msgid "Camera Car Previous"
-msgstr "Вид на предыдущий вагон"
+msgstr "Фокус на предыдущий вагон"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:104
 msgid "Camera Car First"
-msgstr "Вид на первый вагон"
+msgstr "Фокус на первый вагон"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:105
 msgid "Camera Car Last"
-msgstr "Вид на последний вагон"
+msgstr "Фокус на последний вагон"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:106
 msgid "Camera Jumping Trains"
-msgstr "Вид на другие поезда"
+msgstr "Фокус на другие поезда"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:107
 msgid "Camera Jump Back Player"
-msgstr "Вид на поезд игрока"
+msgstr "Фокус на поезд игрока"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:108
 msgid "Camera Jump See Switch"
-msgstr "Вид Показать стрелку"
+msgstr "Фокус на стрелку"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:109
 msgid "Camera Vibrate"
@@ -645,11 +645,11 @@ msgstr "Ручки Локомотивный тормоз  -"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:127
 msgid "Control Brakeman Brake Increase"
-msgstr "Тормозильщик Тормоза поезда +"
+msgstr "Ручки Ручные тормоза вагонов +"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:128
 msgid "Control Brakeman Brake Decrease"
-msgstr "Тормозильщик Тормоза поезда -"
+msgstr "Ручки Ручные тормоза вагонов  -"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:129
 msgid "Control Dynamic Brake Increase"
@@ -669,11 +669,11 @@ msgstr "Мгновенно Восстановить тормоза"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:133
 msgid "Control Handbrake Full"
-msgstr "Ручки Ручной тормоз затянуть"
+msgstr "Ручки Ручной тормоз локомотива затянуть"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:134
 msgid "Control Handbrake None"
-msgstr "Ручки Ручной тормоз отпустить"
+msgstr "Ручки Ручной тормоз локомотива отпустить"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:135
 msgid "Control Odometer Show/Hide"
@@ -781,11 +781,11 @@ msgstr "Гл.Выключатель Возврат"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:161
 msgid "Control Diesel Player"
-msgstr "ДВС первый запуск/останов"
+msgstr "ДВС первый: запуск/останов"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:162
 msgid "Control Diesel Helper"
-msgstr "ДВС остальные запуск/останов"
+msgstr "ДВС остальные: запуск/останов"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:163
 msgid "Control Headlight Increase"
@@ -942,6 +942,14 @@ msgstr "Автокочегар Не топить"
 #: ../../ORTS.Common/Input/UserCommand.cs:201
 msgid "Control AI Fire Reset"
 msgstr "Автокочегар Сброс"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:202
+msgid "Control Battery"
+msgstr "Рубильник АБ"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:203
+msgid "Control PowerKey"
+msgstr "Выключатель управления"
 
 #~ msgid "Camera 3D Cab"
 #~ msgstr "Кабина Виртуальная"
