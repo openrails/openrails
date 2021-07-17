@@ -759,9 +759,6 @@
     <Content Include="Readme.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Version.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Viewer3D\WebServices\Web\APISample\index.css" />
     <Content Include="Viewer3D\WebServices\Web\APISample\index.html" />
     <Content Include="Viewer3D\WebServices\Web\APISample\index.js" />
@@ -854,10 +851,7 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
-date /t&gt;&gt;Revision.txt
-time /t&gt;&gt;Revision.txt
-CD ..\
+    <PostBuildEvent>CD ..\
 IF EXIST "Program\Content\Web" RMDIR "Program\Content\Web" /S /Q
 IF NOT EXIST "Program\Content\Web" MKDIR "Program\Content\Web"
 XCOPY "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web" /S /Y</PostBuildEvent>

@@ -421,14 +421,12 @@ namespace Orts.Viewer3D.Processes
 
             // First use the .save file to check the validity and extract the route and activity.
             var saveFile = GetSaveFile(args);
-            var versionOrBuild = "";
-            var saveRevision = 0;
+            var versionAndBuild = new[] { "", "", "" };
             using (BinaryReader inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
             {
                 try // Because Restore() methods may try to read beyond the end of an out of date file.
                 {
-                    versionOrBuild = GetValidSaveVersionOrBuild(settings, saveFile, inf);
-                    saveRevision = VersionInfo.GetRevisionFromVersion(versionOrBuild);
+                    versionAndBuild = GetValidSaveVersionAndBuild(settings, saveFile, inf);
 
                     var values = GetSavedValues(inf);
                     Acttype = values.acttype;
@@ -487,23 +485,25 @@ namespace Orts.Viewer3D.Processes
                 }
                 catch (Exception error)
                 {
-                    if (versionOrBuild == VersionInfo.VersionOrBuild)
+                    if (versionAndBuild[2] == VersionInfo.VersionOrBuild)
                     {
                         // If the save version is the same as the program version, we can't be an incompatible save - it's just a bug.
                         throw;
                     }
                     else
                     {
-                        if (saveRevision > settings.YoungestFailedToRestore)
+                        var parsedSaveVersion = VersionInfo.ParseVersion(versionAndBuild[0]);
+                        var parsedSettingVersion = VersionInfo.ParseVersion(settings.YoungestVersionFailedToRestore);
+                        if (parsedSaveVersion > parsedSettingVersion)
                         {
-                            settings.YoungestFailedToRestore = saveRevision;
-                            settings.Save("YoungestFailedToRestore");
-                            Trace.TraceInformation("YoungestFailedToRestore set to Save's revision: {0}", saveRevision);
+                            settings.YoungestVersionFailedToRestore = versionAndBuild[0];
+                            settings.Save("YoungestVersionFailedToRestore");
+                            Trace.TraceInformation("YoungestVersionFailedToRestore set to Save version: {0}", versionAndBuild[0]);
                         }
                         // Rethrow the existing error if it is already an IncompatibleSaveException.
                         if (error is IncompatibleSaveException)
                             throw;
-                        throw new IncompatibleSaveException(saveFile, versionOrBuild, error);
+                        throw new IncompatibleSaveException(saveFile, versionAndBuild[2], error);
                     }
                 }
 
@@ -611,7 +611,7 @@ namespace Orts.Viewer3D.Processes
                 // Resume from previous SaveFile and then replay
                 using (var inf = new BinaryReader(new FileStream(previousSaveFile, FileMode.Open, FileAccess.Read)))
                 {
-                    GetValidSaveVersionOrBuild(settings, saveFile, inf);
+                    GetValidSaveVersionAndBuild(settings, saveFile, inf);
 
                     var values = GetSavedValues(inf);
                     InitSimulator(settings, values.args, "Resume", values.acttype);
@@ -630,12 +630,12 @@ namespace Orts.Viewer3D.Processes
             Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
 
-        static string GetValidSaveVersionOrBuild(UserSettings settings, string saveFile, BinaryReader inf)
+        static string[] GetValidSaveVersionAndBuild(UserSettings settings, string saveFile, BinaryReader inf)
         {
             var version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X1321" or "" (if compiled locally)
             var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
             var versionOrBuild = version.Length > 0 ? version : build;
-            var valid = VersionInfo.GetValidity(version, build, settings.YoungestFailedToRestore);
+            var valid = VersionInfo.GetValidity(version, build, settings.YoungestVersionFailedToRestore);
             if (valid == false) // This is usually detected in ResumeForm.cs but a Resume can also be launched from the command line.
                 throw new IncompatibleSaveException(saveFile, versionOrBuild);
             if (valid == null)
@@ -646,7 +646,7 @@ namespace Orts.Viewer3D.Processes
                     + "Please do not report any problems that may result.\n",
                     Application.ProductName, versionOrBuild, VersionInfo.VersionOrBuild);
             }
-            return versionOrBuild;
+            return new[] { version, build, versionOrBuild };
         }
 
         /// <summary>
