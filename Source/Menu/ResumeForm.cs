@@ -90,7 +90,7 @@ namespace ORTS
             public bool IsMultiplayer { get; private set; }
             public bool DbfEval { get; private set; } //Debrief Eval
 
-            public Save(string fileName, string currentBuild, int youngestFailedToResume)
+            public Save(string fileName, string youngestVersionFailedToRestore)
             {
                 File = fileName;
                 System.Threading.Thread.Sleep(10);
@@ -101,7 +101,7 @@ namespace ORTS
                         var version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X1321" or "" (if compiled locally)
                         var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
                         var versionOrBuild = version.Length > 0 ? version : build;
-                        var valid = VersionInfo.GetValidity(version, build, youngestFailedToResume);
+                        var valid = VersionInfo.GetValidity(version, build, youngestVersionFailedToRestore);
                         // Read in multiplayer flag/ route/activity/path/player data.
                         // Done so even if not elegant to be compatible with existing save files
                         var routeNameOrMultipl = inf.ReadString();
@@ -213,7 +213,6 @@ namespace ORTS
             {
                 var saves = new List<Save>();
                 var directory = UserSettings.UserDataFolder;
-                var build = VersionInfo.Build.Contains(" ") ? VersionInfo.Build.Substring(VersionInfo.Build.IndexOf(" ") + 1) : null;
                 var prefix = String.Empty;
 
                 if (SelectedAction == MainForm.UserAction.SinglePlayerTimetableGame)
@@ -244,7 +243,7 @@ namespace ORTS
                             // SavePacks are all in the same folder and activities may have the same name 
                             // (e.g. Short Passenger Run shrtpass.act) but belong to a different route,
                             // so pick only the activities for the current route.
-                            var save = new Save(saveFile, build, Settings.YoungestFailedToRestore);
+                            var save = new Save(saveFile, Settings.YoungestVersionFailedToRestore);
                             if (save.RouteName == Route.Name)
                             {
                                 if (!save.IsMultiplayer ^ Multiplayer)
@@ -447,11 +446,10 @@ namespace ORTS
             var directory = UserSettings.UserDataFolder;
             if (Directory.Exists(directory))
             {
-                var build = VersionInfo.Build.Contains(" ") ? VersionInfo.Build.Substring(VersionInfo.Build.IndexOf(" ") + 1) : null;
                 var deletes = 0;
                 foreach (var saveFile in Directory.GetFiles(directory, "*.save"))
                 {
-                    var save = new Save(saveFile, build, Settings.YoungestFailedToRestore);
+                    var save = new Save(saveFile, Settings.YoungestVersionFailedToRestore);
                     if (save.Valid == false)
                     {
                         foreach (var fileName in new[] { 
