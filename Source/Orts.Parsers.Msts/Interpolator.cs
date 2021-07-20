@@ -316,7 +316,7 @@ namespace Orts.Parsers.Msts
                         stf.MustMatch("(");
                         for (int i = 0; i < numOfRows; i++)
                         {
-                            float x = stf.ReadFloat(STFReader.UNITS.SpeedDefaultMPH, 0);
+                            float x = stf.ReadFloat(STFReader.UNITS.Speed, 0);
                             numofData++;
                             for (int j = 0; j < numOfColumns - 1; j++)
                             {
