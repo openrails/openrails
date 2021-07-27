@@ -311,6 +311,14 @@ namespace Orts.Formats.Msts
         LBS
     }
 
+    public static class DiscreteStates
+    {
+        public const string Lever = "lever";
+        public const string TwoState = "twostate";
+        public const string TriState = "tristate";
+        public const string MultiState = "multistate";
+    }
+
     public class CabViewControls : List<CabViewControl>
     {
         public CabViewControls(STFReader stf, string basepath)
@@ -322,10 +330,10 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsanimateddisplay", ()=>{ Add(new CVCAnimatedDisplay(stf, basepath)); }),
                 new STFReader.TokenProcessor("dial", ()=>{ Add(new CVCDial(stf, basepath)); }),
                 new STFReader.TokenProcessor("gauge", ()=>{ Add(new CVCGauge(stf, basepath)); }),
-                new STFReader.TokenProcessor("lever", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("twostate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("tristate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("multistate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor(DiscreteStates.Lever, ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.Lever)); }),
+                new STFReader.TokenProcessor(DiscreteStates.TwoState, ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.TwoState)); }),
+                new STFReader.TokenProcessor(DiscreteStates.TriState, ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.TriState)); }),
+                new STFReader.TokenProcessor(DiscreteStates.MultiState, ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.MultiState)); }),
                 new STFReader.TokenProcessor("multistatedisplay", ()=>{ Add(new CVCMultiStateDisplay(stf, basepath)); }),
                 new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath)); }), 
                 new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }), 
@@ -845,7 +853,7 @@ namespace Orts.Formats.Msts
         private int numPositions;
         private bool canFill = true;
 
-        public CVCDiscrete(STFReader stf, string basepath)
+        public CVCDiscrete(STFReader stf, string basepath, string discreteStates = null)
         {
 //            try
             {
@@ -1149,14 +1157,23 @@ namespace Orts.Formats.Msts
                     ControlStyle = CABViewControlStyles.WHILE_PRESSED;
                 if (ControlType == CABViewControlTypes.DIRECTION && Orientation == 0)
                     Direction = 1 - Direction;
+
+                switch (discreteStates)
+                {
+                    case DiscreteStates.TriState:
+                        MaxValue = 2.0f; // So that LocomotiveViewerExtensions.GetWebControlValueList() returns right value to web server
+                        break;
+                    default:
+                        break;
+                }
             }
-//            catch (Exception error)
-//            {
-//                if (error is STFException) // Parsing error, so pass it on
-//                    throw;
-//                else                       // Unexpected error, so provide a hint
-//                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
-//            } // End of Need check the Values collection for validity
+            //            catch (Exception error)
+            //            {
+            //                if (error is STFException) // Parsing error, so pass it on
+            //                    throw;
+            //                else                       // Unexpected error, so provide a hint
+            //                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
+            //            } // End of Need check the Values collection for validity
         } // End of Constructor
     }
     #endregion
