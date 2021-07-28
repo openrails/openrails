@@ -377,7 +377,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 UpdateTripleValveState(threshold);
 
             // triple valve is set to charge the brake cylinder
-            if (TripleValveState == ValveState.Apply || TripleValveState == ValveState.Emergency)
+            if ((TripleValveState == ValveState.Apply || TripleValveState == ValveState.Emergency) && !Car.WheelBrakeSlipProtectionActive)
             {
                 float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                 if (AuxResPressurePSI - dp / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
@@ -486,6 +486,42 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 CylPressurePSI = BrakeLine3PressurePSI;
             else
                 CylPressurePSI = AutoCylPressurePSI;
+
+            // During braking wheelslide control is effected throughout the train by additional equipment on each vehicle. In the piping to each pair of brake cylinders are fitted electrically operated 
+            // dump valves. When axle rotations which are sensed electrically, differ by a predetermined speed the dump valves are operated releasing brake cylinder pressure to both axles of the affected 
+            // bogie.
+
+            // Dump valve operation will cease when differences in axle rotations arewithin specified limits or the axle accelerates faster than a specified rate. The dump valve will only operate for a
+            // maximum period of seven seconds after which time it will be de-energised and the dump valve will not re-operate until the train has stopped or the throttle operated.
+
+            // Dump valve operation is prevented under the following conditions:-
+            // (i) When the Power Controller is open.
+
+            // (ii) When Brake Pipe Pressure has been reduced below 250 kPa (36.25psi). 
+
+            if (Car.WheelBrakeSlipProtectionFitted)
+            {
+                if ((Car.BrakeSkidWarning || Car.BrakeSkid) && BrakeLine1PressurePSI > 36.25)
+                {
+                    Car.WheelBrakeSlipProtectionActive = true;
+//                    Trace.TraceInformation("WSP#1 - CarID {0} BC {1} Auto {2} BP1 {3}", Car.CarID, CylPressurePSI, AutoCylPressurePSI, BrakeLine1PressurePSI);
+                    AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
+                    CylPressurePSI = AutoCylPressurePSI;
+//                    Trace.TraceInformation("WSP#2 - CarID {0} BC {1} Auto {2}", Car.CarID, CylPressurePSI, AutoCylPressurePSI);
+                }
+                else
+                {
+                    Car.WheelBrakeSlipProtectionActive = false;
+//                    Trace.TraceInformation("WSP Non-active - CarID {0} BC {1} Auto {2} BP1 {3}", Car.CarID, CylPressurePSI, AutoCylPressurePSI, BrakeLine1PressurePSI);
+                }
+
+
+
+
+
+            }
+
+
 
             // Record HUD display values for brake cylinders depending upon whether they are wagons or locomotives/tenders (which are subject to their own engine brakes)   
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)

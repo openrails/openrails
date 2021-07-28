@@ -1018,6 +1018,18 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsbrakeshoefriction": BrakeShoeFrictionFactor = new Interpolator(stf); break;
                 case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(ortswheelbrakeslipprotection":
+                  // stf.MustMatch("(");
+                    var brakeslipprotection = stf.ReadFloatBlock(STFReader.UNITS.None, null);
+                    if (brakeslipprotection == 1)
+                    {
+                        WheelBrakeSlipProtectionFitted = true;
+                    }
+                    else
+                    {
+                        WheelBrakeSlipProtectionFitted = false;
+                    }
+                    break;
                 case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.Resistance, null); break;
                 case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, null); break;
@@ -1341,6 +1353,7 @@ namespace Orts.Simulation.RollingStocks
             DriverWheelRadiusM = copy.DriverWheelRadiusM;
             MainSoundFileName = copy.MainSoundFileName;
             BrakeShoeFrictionFactor = copy.BrakeShoeFrictionFactor;
+            WheelBrakeSlipProtectionFitted = copy.WheelBrakeSlipProtectionFitted;
             InitialMaxBrakeForceN = copy.InitialMaxBrakeForceN;
             InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
