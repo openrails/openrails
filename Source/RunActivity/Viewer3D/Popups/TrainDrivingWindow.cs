@@ -181,6 +181,8 @@ namespace Orts.Viewer3D.Popups
         int LastColLenght = 0;
         int LastColOverFlow = 0;
         int LinesCount = 0;
+        int maxFirstColWidth = 0;
+        int maxLastColWidth = 0;
         int WindowHeightMin = 0;
         int WindowHeightMax = 0;
         int WindowWidthMin = 0;
@@ -259,7 +261,7 @@ namespace Orts.Viewer3D.Popups
             var vbox = base.Layout(layout).AddLayoutVertical();
             if (labels.Count > 0)
             {
-                var colWidth = labels.Max(x => x.FirstColWidth) + (normalTextMode ? FontToBold ? 19 : 16 : 8);
+                var colWidth = labels.Max(x => x.FirstColWidth) + (normalTextMode? 15: 20);
                 var TimeHboxPositionY = 0;
                 foreach (var data in labels.ToList())
                 {
@@ -406,10 +408,11 @@ namespace Orts.Viewer3D.Popups
                 FirstColLenght = labels.Max(x => x.FirstColWidth);
                 LastColLenght = labels.Max(x => x.LastColWidth);
 
-                var desiredHeight = FontToBold ? Owner.TextFontDefaultBold.Height * labels.Where(x => x.FirstCol == "Sprtr" || x.LastCol != "").Count()
-                    : Owner.TextFontDefault.Height * labels.Where(x => x.FirstCol == "Sprtr" || x.LastCol != "").Count();
+                var rowCount = labels.Where(x => x.FirstCol == "Sprtr" || x.LastCol != "").Count();
+                var desiredHeight = FontToBold ? Owner.TextFontDefaultBold.Height * rowCount
+                    : Owner.TextFontDefault.Height * rowCount;
 
-                var desiredWidth = FirstColLenght + LastColLenght + (normalTextMode ? FontToBold ? 43 : 41 : 31);
+                var desiredWidth = FirstColLenght + LastColLenght + 45;// interval between firstcol and lastcol
 
                 var newHeight = (int)MathHelper.Clamp(desiredHeight, (normalTextMode ? WindowHeightMin : 100), WindowHeightMax);
                 var newWidth = (int)MathHelper.Clamp(desiredWidth, (normalTextMode ? WindowWidthMin : 100), WindowWidthMax);
@@ -459,21 +462,25 @@ namespace Orts.Viewer3D.Popups
 
                 if (!firstCol.Contains("Sprtr"))
                 {
-                    if (firstCol.Contains("?") || firstCol.Contains("!") || firstCol.Contains("$"))
+                    if (ColorCodeCtrl.Keys.Any(firstCol.EndsWith))
                     {
-                        firstColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(firstCol.Replace("?", "").Replace("!", "").Replace("$", "").TrimEnd())
-                            : Owner.TextFontDefault.MeasureString(firstCol.Replace("?", "").Replace("!", "").Replace("$", "").TrimEnd());
+                        var tempFirstCol = firstCol.Substring(0, firstCol.Length - 3);
+                        firstColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(tempFirstCol.TrimEnd())
+                            : !normalTextMode? Owner.TextFontMonoSpacedBold.MeasureString(tempFirstCol.TrimEnd())
+                            : Owner.TextFontDefault.MeasureString(tempFirstCol.TrimEnd());
                     }
                     else
                     {
                         firstColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(firstCol.TrimEnd())
+                            : !normalTextMode ? Owner.TextFontMonoSpacedBold.MeasureString(firstCol.TrimEnd())
                             : Owner.TextFontDefault.MeasureString(firstCol.TrimEnd());
                     }
 
-                    if (lastCol.Contains("?") || lastCol.Contains("!") || lastCol.Contains("$"))
+                    if (ColorCodeCtrl.Keys.Any(lastCol.EndsWith))
                     {
-                        lastColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(lastCol.Replace("?", "").Replace("!", "").Replace("$", "").TrimEnd())
-                            : Owner.TextFontDefault.MeasureString(lastCol.Replace("?", "").Replace("!", "").Replace("$", "").TrimEnd());
+                        var tempLastCol = lastCol.Substring(0, lastCol.Length - 3);
+                        lastColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(tempLastCol.TrimEnd())
+                            : Owner.TextFontDefault.MeasureString(tempLastCol.TrimEnd());
                     }
                     else
                     {
@@ -486,20 +493,26 @@ namespace Orts.Viewer3D.Popups
                     {
                         lastColWidth = labels.First().LastColWidth + 15;// time value + clickable symbol
                     }
-                    // Ajuste the text lenght because MeasureString was not accuracy
-                    lastColWidth = lastColWidth > 180 ? lastColWidth + 10 : lastColWidth;
                 }
 
                 labels.Add(new ListLabel
                 {
                     FirstCol = firstCol,
-                    FirstColWidth = !normalTextMode ? firstColWidth + 10 : firstColWidth,// avoids the symbol/keypressed from overlapping with the text,
+                    FirstColWidth = firstColWidth,
                     LastCol = lastCol,
                     LastColWidth = lastColWidth,
                     SymbolCol = symbolCol,
                     ChangeColWidth = changeColwidth,
                     KeyPressed = keyPressed
                 });
+
+                //ResizeWindow, when the string spans over the right boundary of the window
+                if (!ResizeWindow)
+                {
+                    if (maxFirstColWidth < firstColWidth) FirstColOverFlow = maxFirstColWidth;
+                    if (maxLastColWidth < lastColWidth) LastColOverFlow = maxLastColWidth;
+                    ResizeWindow = true;
+                }
             }
             else
             {
@@ -509,8 +522,8 @@ namespace Orts.Viewer3D.Popups
                     var AutopilotOn = Owner.Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ? true : false;
 
                     //ResizeWindow, when the string spans over the right boundary of the window
-                    var maxFirstColWidth = labels.Max(x => x.FirstColWidth);
-                    var maxLastColWidth = labels.Max(x => x.LastColWidth);
+                    maxFirstColWidth = labels.Max(x => x.FirstColWidth);
+                    maxLastColWidth = labels.Max(x => x.LastColWidth);
 
                     if (!ResizeWindow & (FirstColOverFlow != maxFirstColWidth || (!AutopilotOn && LastColOverFlow != maxLastColWidth)))
                     {
@@ -1188,7 +1201,6 @@ namespace Orts.Viewer3D.Popups
                    UserInput.MouseX >= Location.X && UserInput.MouseX <= Location.X + Location.Width &&
                    UserInput.MouseY >= Location.Y && UserInput.MouseY <= Location.Y + Location.Height ?
                    true : false;
-
 
             // Avoid to updateFull when the window is moving
             if (!MovingCurrentWindow && !TrainDrivingUpdating && updateFull)
