@@ -248,6 +248,11 @@ namespace Orts.Simulation.RollingStocks
         public float RearAirHoseDisconnectedAnimWidthM;
         public float RearAirHoseDisconnectedAnimHeightM;
 
+        public float FrontAirHoseHeightAdjustmentM;
+        public float RearAirHoseHeightAdjustmentM;
+        public float FrontAirHoseAngleAdjustmentRad;
+        public float RearAirHoseAngleAdjustmentRad;
+
         // Used to calculate Carriage Steam Heat Loss
         public const float BogieHeightM = 1.06f; // Height reduced by 1.06m to allow for bogies, etc
         public const float CarCouplingPipeM = 1.2f;  // Allow for connection between cars (assume 2' each end) - no heat is contributed to carriages.
@@ -1270,6 +1275,68 @@ namespace Orts.Simulation.RollingStocks
                         CarAhead.WagonRearCouplerAngleRad = 0;
                     }
                 }
+
+                // Calculate airhose angles and height
+                var airhoselengthM = 1.0f; // 2' = 600mm  - Note if air hose length is less then coupler distance then NaN occurs
+                var rearairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(airhoselengthM, 2) - (float)Math.Pow(CouplerDistanceThisCarM, 2));
+                var frontairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(airhoselengthM, 2) - (float)Math.Pow(CouplerDistanceBehindCarM, 2));
+
+                RearAirHoseHeightAdjustmentM =  (float)Math.Sqrt( (float)Math.Pow(airhoselengthM, 2) - (float)Math.Pow((CouplerDistanceThisCarM + CouplerSlackM / 2.0f), 2));
+                CarBehind.FrontAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(airhoselengthM, 2) - (float)Math.Pow((CouplerDistanceBehindCarM + CouplerSlackM / 2.0f), 2));
+//                Trace.TraceInformation("Rear AirHose Heights - CarID {0} R {1} length {2} CouplerDistance {3} Slack {4}", CarID, RearAirHoseHeightAdjustmentM, airhoselengthM, CouplerDistanceThisCarM, CouplerSlackM / 2.0f);
+
+//                Trace.TraceInformation("Front AirHose Heights - CarID {0} F {1} length {2} CouplerDistance {3} Slack {4}", CarID, CarBehind.FrontAirHoseHeightAdjustmentM, airhoselengthM, CouplerDistanceBehindCarM, CouplerSlackM / 2.0f);
+
+                // refererence adjustment heights to rest position
+                if (RearAirHoseHeightAdjustmentM >= rearairhoseheightadjustmentreferenceM)
+                {
+                    RearAirHoseHeightAdjustmentM -= rearairhoseheightadjustmentreferenceM;
+                }
+                else
+                {
+                    RearAirHoseHeightAdjustmentM = rearairhoseheightadjustmentreferenceM - RearAirHoseHeightAdjustmentM;
+                }
+
+                if (CarBehind.FrontAirHoseHeightAdjustmentM >= frontairhoseheightadjustmentreferenceM)
+                {
+                    CarBehind.FrontAirHoseHeightAdjustmentM -= frontairhoseheightadjustmentreferenceM;
+                }
+                else
+                {
+                    CarBehind.FrontAirHoseHeightAdjustmentM = frontairhoseheightadjustmentreferenceM - CarBehind.FrontAirHoseHeightAdjustmentM;
+                }
+
+                var rearairhoseangleadjustmentreferenceRad = (float)Math.Cos(CouplerDistanceThisCarM / airhoselengthM);
+                var frontairhoseangleadjustmentreferenceRad = (float)Math.Cos(CouplerDistanceBehindCarM / airhoselengthM);
+
+                RearAirHoseAngleAdjustmentRad = (float)Math.Cos((CouplerDistanceThisCarM + CouplerSlackM / 2.0f)/ airhoselengthM);
+                CarBehind.FrontAirHoseAngleAdjustmentRad = (float)Math.Cos((CouplerDistanceBehindCarM + CouplerSlackM / 2.0f) / airhoselengthM);
+
+//                Trace.TraceInformation("Angle Adjustment Rear - CarID {0} Adj {1} CouplerDist {2} Slack {3} Length {4} Ref {5}", CarID, RearAirHoseAngleAdjustmentRad, CouplerDistanceThisCarM, CouplerSlackM / 2.0f, airhoselengthM, rearairhoseangleadjustmentreferenceRad);
+
+//                Trace.TraceInformation("Angle Adjustment Front - CarID {0} Adj {1} CouplerDist {2} Slack {3} Length {4} Ref {5}", CarID, CarBehind.FrontAirHoseAngleAdjustmentRad, CouplerDistanceBehindCarM, CouplerSlackM / 2.0f, airhoselengthM, frontairhoseangleadjustmentreferenceRad);
+
+                // refererence adjustment angles to rest position
+                if (RearAirHoseAngleAdjustmentRad >= rearairhoseangleadjustmentreferenceRad)
+                {
+                    RearAirHoseAngleAdjustmentRad -= rearairhoseangleadjustmentreferenceRad;
+                }
+                else
+                {
+                    RearAirHoseAngleAdjustmentRad = rearairhoseangleadjustmentreferenceRad - RearAirHoseAngleAdjustmentRad;
+                }
+
+                if (CarBehind.FrontAirHoseAngleAdjustmentRad >= frontairhoseangleadjustmentreferenceRad)
+                {
+                    CarBehind.FrontAirHoseAngleAdjustmentRad -= frontairhoseangleadjustmentreferenceRad;
+                }
+                else
+                {
+                    CarBehind.FrontAirHoseAngleAdjustmentRad = frontairhoseangleadjustmentreferenceRad - CarBehind.FrontAirHoseAngleAdjustmentRad;
+                }
+
+//                Trace.TraceInformation("CarID {0} FrontAdj {1} RearAdj {2}", CarID, CarBehind.FrontAirHoseAngleAdjustmentRad, RearAirHoseAngleAdjustmentRad);
+
             }
 
             // Train will derail if lateral forces on the train exceed the vertical forces holding the train on the railway track.
