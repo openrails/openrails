@@ -377,7 +377,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 UpdateTripleValveState(threshold);
 
             // triple valve is set to charge the brake cylinder
-            if ((TripleValveState == ValveState.Apply || TripleValveState == ValveState.Emergency) && !Car.WheelBrakeSlipProtectionActive)
+            if ((TripleValveState == ValveState.Apply || TripleValveState == ValveState.Emergency) && !Car.WheelBrakeSlideProtectionActive)
             {
                 float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                 if (AuxResPressurePSI - dp / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
@@ -499,23 +499,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             // (ii) When Brake Pipe Pressure has been reduced below 250 kPa (36.25psi). 
 
-            if (Car.WheelBrakeSlipProtectionFitted)
+            if (Car.WheelBrakeSlideProtectionFitted)
             {
-                if ((Car.BrakeSkidWarning || Car.BrakeSkid) && BrakeLine1PressurePSI > 36.25)
+                if ((Car.BrakeSkidWarning || Car.BrakeSkid) && ( !Car.WheelBrakeSlideProtectionEmergencyDisabled && BrakeLine1PressurePSI > 36.25) && Car.WheelBrakeSlideProtectionTimerS != 0)
                 {
-                    Car.WheelBrakeSlipProtectionActive = true;
+                    Car.WheelBrakeSlideProtectionActive = true;
 //                    Trace.TraceInformation("WSP#1 - CarID {0} BC {1} Auto {2} BP1 {3}", Car.CarID, CylPressurePSI, AutoCylPressurePSI, BrakeLine1PressurePSI);
                     AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
                     CylPressurePSI = AutoCylPressurePSI;
-//                    Trace.TraceInformation("WSP#2 - CarID {0} BC {1} Auto {2}", Car.CarID, CylPressurePSI, AutoCylPressurePSI);
+                    //                    Trace.TraceInformation("WSP#2 - CarID {0} BC {1} Auto {2}", Car.CarID, CylPressurePSI, AutoCylPressurePSI);
+                    Car.WheelBrakeSlideProtectionTimerS -= elapsedClockSeconds;
                 }
                 else
                 {
-                    Car.WheelBrakeSlipProtectionActive = false;
+                    Car.WheelBrakeSlideProtectionActive = false;
 //                    Trace.TraceInformation("WSP Non-active - CarID {0} BC {1} Auto {2} BP1 {3}", Car.CarID, CylPressurePSI, AutoCylPressurePSI, BrakeLine1PressurePSI);
                 }
-
-
 
 
 

@@ -256,8 +256,11 @@ namespace Orts.Simulation.RollingStocks
         }
 
         // Used to calculate wheel sliding for locked brake
-        public bool WheelBrakeSlipProtectionFitted = false;
-        public bool WheelBrakeSlipProtectionActive = false;
+        public bool WheelBrakeSlideProtectionFitted = false;
+        public bool WheelBrakeSlideProtectionActive = false;
+        public bool WheelBrakeSlideProtectionEmergencyDisabled = false;
+        public float WheelBrakeSlideProtectionTimerS = 7;
+
         public bool BrakeSkid = false;
         public bool BrakeSkidWarning = false;
         public bool HUDBrakeSkid = false;
@@ -964,6 +967,15 @@ namespace Orts.Simulation.RollingStocks
                     {
                         BrakeSkidWarning = false; 	// wagon wheel is back to normal
                     }
+
+                    // Reset WSP timer
+
+                    if (WheelBrakeSlideProtectionFitted && (ThrottlePercent == 0 || AbsSpeedMpS == 0))
+                    {
+                        WheelBrakeSlideProtectionTimerS = 7;
+
+                    }
+                    
 
 
                     // Calculate adhesive force based upon whether in skid or not
