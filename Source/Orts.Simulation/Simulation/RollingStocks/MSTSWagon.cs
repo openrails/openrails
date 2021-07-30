@@ -1050,16 +1050,28 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsbrakeshoefriction": BrakeShoeFrictionFactor = new Interpolator(stf); break;
                 case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(ortswheelbrakeslipprotection":
+                case "wagon(ortswheelbrakeslideprotection":
                   // stf.MustMatch("(");
-                    var brakeslipprotection = stf.ReadFloatBlock(STFReader.UNITS.None, null);
-                    if (brakeslipprotection == 1)
+                    var brakeslideprotection = stf.ReadFloatBlock(STFReader.UNITS.None, null);
+                    if (brakeslideprotection == 1)
                     {
-                        WheelBrakeSlipProtectionFitted = true;
+                        WheelBrakeSlideProtectionFitted = true;
                     }
                     else
                     {
-                        WheelBrakeSlipProtectionFitted = false;
+                        WheelBrakeSlideProtectionFitted = false;
+                    }
+                    break;
+                case "wagon(ortsemergencybrakingdisableswsp":
+                    // stf.MustMatch("(");
+                    var brakeslideprotectiondisable = stf.ReadFloatBlock(STFReader.UNITS.None, null);
+                    if (brakeslideprotectiondisable == 1)
+                    {
+                        WheelBrakeSlideProtectionEmergencyDisabled = true;
+                    }
+                    else
+                    {
+                        WheelBrakeSlideProtectionEmergencyDisabled = false;
                     }
                     break;
                 case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
@@ -1447,7 +1459,8 @@ namespace Orts.Simulation.RollingStocks
             DriverWheelRadiusM = copy.DriverWheelRadiusM;
             MainSoundFileName = copy.MainSoundFileName;
             BrakeShoeFrictionFactor = copy.BrakeShoeFrictionFactor;
-            WheelBrakeSlipProtectionFitted = copy.WheelBrakeSlipProtectionFitted;
+            WheelBrakeSlideProtectionFitted = copy.WheelBrakeSlideProtectionFitted;
+            WheelBrakeSlideProtectionEmergencyDisabled = copy.WheelBrakeSlideProtectionEmergencyDisabled;
             InitialMaxBrakeForceN = copy.InitialMaxBrakeForceN;
             InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
@@ -1670,6 +1683,9 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(CarInsideTempC);
             outf.Write(CurrentCarSteamHeatBoilerWaterCapacityL);
 
+            outf.Write(WheelBrakeSlideProtectionActive);
+            outf.Write(WheelBrakeSlideProtectionTimerS);
+
             base.Save(outf);
         }
 
@@ -1713,6 +1729,9 @@ namespace Orts.Simulation.RollingStocks
             CurrentSteamHeatBoilerFuelCapacityL = inf.ReadSingle();
             CarInsideTempC = inf.ReadSingle();
             CurrentCarSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
+
+            WheelBrakeSlideProtectionActive = inf.ReadBoolean();
+            WheelBrakeSlideProtectionTimerS = inf.ReadInt32();
 
             base.Restore(inf);
         }
