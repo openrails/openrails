@@ -311,12 +311,14 @@ namespace Orts.Formats.Msts
         LBS
     }
 
-    public static class DiscreteStates
+    public enum DiscreteStates
     {
-        public const string Lever = "lever";
-        public const string TwoState = "twostate";
-        public const string TriState = "tristate";
-        public const string MultiState = "multistate";
+        LEVER,
+        TWO_STATE,
+        TRI_STATE,
+        MULTI_STATE,
+        COMBINED_CONTROL,
+        CAB_SIGNAL_DISPLAY
     }
 
     public class CabViewControls : List<CabViewControl>
@@ -330,14 +332,14 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsanimateddisplay", ()=>{ Add(new CVCAnimatedDisplay(stf, basepath)); }),
                 new STFReader.TokenProcessor("dial", ()=>{ Add(new CVCDial(stf, basepath)); }),
                 new STFReader.TokenProcessor("gauge", ()=>{ Add(new CVCGauge(stf, basepath)); }),
-                new STFReader.TokenProcessor(DiscreteStates.Lever, ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.Lever)); }),
-                new STFReader.TokenProcessor(DiscreteStates.TwoState, ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.TwoState)); }),
-                new STFReader.TokenProcessor(DiscreteStates.TriState, ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.TriState)); }),
-                new STFReader.TokenProcessor(DiscreteStates.MultiState, ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.MultiState)); }),
+                new STFReader.TokenProcessor("lever", ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.LEVER)); }),
+                new STFReader.TokenProcessor("twostate", ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.TWO_STATE)); }),
+                new STFReader.TokenProcessor("tristate", ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.TRI_STATE)); }),
+                new STFReader.TokenProcessor("multistate", ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.MULTI_STATE)); }),
                 new STFReader.TokenProcessor("multistatedisplay", ()=>{ Add(new CVCMultiStateDisplay(stf, basepath)); }),
-                new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath)); }), 
+                new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath, DiscreteStates.CAB_SIGNAL_DISPLAY)); }), 
                 new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }), 
-                new STFReader.TokenProcessor("combinedcontrol", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("combinedcontrol", ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.COMBINED_CONTROL)); }),
                 new STFReader.TokenProcessor("firebox", ()=>{ Add(new CVCFirebox(stf, basepath)); }),
                 new STFReader.TokenProcessor("dialclock", ()=>{ ProcessDialClock(stf, basepath);  }),
                 new STFReader.TokenProcessor("digitalclock", ()=>{ Add(new CVCDigitalClock(stf, basepath)); }),
@@ -853,7 +855,7 @@ namespace Orts.Formats.Msts
         private int numPositions;
         private bool canFill = true;
 
-        public CVCDiscrete(STFReader stf, string basepath, string discreteStates = null)
+        public CVCDiscrete(STFReader stf, string basepath, DiscreteStates discreteStates)
         {
 //            try
             {
@@ -1160,20 +1162,20 @@ namespace Orts.Formats.Msts
 
                 switch (discreteStates)
                 {
-                    case DiscreteStates.TriState:
+                    case DiscreteStates.TRI_STATE:
                         MaxValue = 2.0f; // So that LocomotiveViewerExtensions.GetWebControlValueList() returns right value to web server
                         break;
                     default:
                         break;
                 }
             }
-            //            catch (Exception error)
-            //            {
-            //                if (error is STFException) // Parsing error, so pass it on
-            //                    throw;
-            //                else                       // Unexpected error, so provide a hint
-            //                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
-            //            } // End of Need check the Values collection for validity
+//            catch (Exception error)
+//            {
+//                if (error is STFException) // Parsing error, so pass it on
+//                    throw;
+//                else                       // Unexpected error, so provide a hint
+//                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
+//            } // End of Need check the Values collection for validity
         } // End of Constructor
     }
     #endregion
@@ -1310,8 +1312,8 @@ namespace Orts.Formats.Msts
     #region other controls
     public class CVCSignal : CVCDiscrete
     {
-        public CVCSignal(STFReader inf, string basepath)
-            : base(inf, basepath)
+        public CVCSignal(STFReader inf, string basepath, DiscreteStates discreteStates)
+            : base(inf, basepath, discreteStates)
         {
             FramesCount = 8;
             FramesX = 4;
@@ -1326,4 +1328,3 @@ namespace Orts.Formats.Msts
     }
     #endregion
 }
-
