@@ -291,6 +291,7 @@ namespace Orts.Simulation.RollingStocks
         public bool WheelBrakeSlideProtectionActive = false;
         public bool WheelBrakeSlideProtectionEmergencyDisabled = false;
         public float WheelBrakeSlideProtectionTimerS = 7;
+        public bool WheelBrakeSlideProtectionDumpValveLockout = false;
 
         public bool BrakeSkid = false;
         public bool BrakeSkidWarning = false;
@@ -1002,11 +1003,11 @@ namespace Orts.Simulation.RollingStocks
                         BrakeSkidWarning = false; 	// wagon wheel is back to normal
                     }
 
-                    // Reset WSP timer
-
-                    if (WheelBrakeSlideProtectionFitted && (ThrottlePercent == 0 || AbsSpeedMpS == 0))
+                    // Reset WSP dump valve lockout
+                    if (WheelBrakeSlideProtectionFitted && WheelBrakeSlideProtectionDumpValveLockout && (ThrottlePercent == 0 || AbsSpeedMpS == 0))
                     {
                         WheelBrakeSlideProtectionTimerS = 7;
+                        WheelBrakeSlideProtectionDumpValveLockout = false;
 
                     }
                     
