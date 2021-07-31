@@ -503,7 +503,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (Car.WheelBrakeSlideProtectionFitted)
             {
                 // WSP dump valve active
-                if ((Car.BrakeSkidWarning || Car.BrakeSkid) && ( !Car.WheelBrakeSlideProtectionEmergencyDisabled && BrakeLine1PressurePSI > 36.25) && Car.WheelBrakeSlideProtectionTimerS != 0 && !Car.WheelBrakeSlideProtectionDumpValveLockout)
+                if ((Car.BrakeSkidWarning || Car.BrakeSkid) && !Car.WheelBrakeSlideProtectionDumpValveLockout && ( (!Car.WheelBrakeSlideProtectionEmergencyDisabled && BrakeLine1PressurePSI > 36.25) || Car.WheelBrakeSlideProtectionEmergencyDisabled) )
                 {
                     Car.WheelBrakeSlideProtectionActive = true;
                     AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
