@@ -493,9 +493,20 @@ namespace Orts.Viewer3D
     public class SoundSource : SoundSourceBase
     {
         /// <summary>
-        /// Squeared cutoff distance. No sound is audible above that
+        /// Squared cutoff distance. No sound is audible above that, except for the actual player train,
+        /// where cutoff occurs at a distance wich is higher than the train length plus offset to 
+        /// approximately take into account distance from camera to car
         /// </summary>
-        private const int CUTOFFDISTANCE = 4000000;
+        private int CutOffDistanceM2
+        {
+            get
+            {
+                const int staticDistanceM2 = 4000000;
+                var isPlayer = Car?.Train?.IsActualPlayerTrain ?? false;
+                var correctedLength = isPlayer ? Car.Train.Length + 50 : 0; 
+                return (int)Math.Max(staticDistanceM2, correctedLength * correctedLength);
+            }
+        }
         /// <summary>
         /// Max distance for OpenAL inverse distance model. Equals to Math.Sqrt(CUTOFFDISTANCE)
         /// </summary>
@@ -659,9 +670,9 @@ namespace Orts.Viewer3D
         public bool MstsMonoTreatment;
 
         /// <summary>
-        /// Current distance to camera, squared meter. Is used for comparision to <see cref="CUTOFFDISTANCE"/>, to determine if is out-of-scope
+        /// Current distance to camera, squared meter. Is used for comparision to <see cref="CutOffDistanceM2"/>, to determine if is out-of-scope
         /// </summary>
-        public float DistanceSquared = CUTOFFDISTANCE + 1;
+        public float DistanceSquared = float.MaxValue;
         /// <summary>
         /// Out-of-scope state in previous <see cref="Update"/> loop
         /// </summary>
@@ -994,7 +1005,7 @@ namespace Orts.Viewer3D
         } // Update
 
         /// <summary>
-        /// Calculate current distance to camera, and compare it to <see cref="CUTOFFDISTANCE"/>
+        /// Calculate current distance to camera, and compare it to <see cref="CutOffDistanceM2"/>
         /// </summary>
         /// <returns>True, if is now out-of-scope</returns>
         public bool isOutOfDistance()
@@ -1009,13 +1020,13 @@ namespace Orts.Viewer3D
                 float.IsNaN(WorldLocation.Location.Y) ||
                 float.IsNaN(WorldLocation.Location.Z))
             {
-                DistanceSquared = CUTOFFDISTANCE + 1;
+                DistanceSquared = float.MaxValue;
                 return true;
             }
 
             DistanceSquared = WorldLocation.GetDistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
 
-            return DistanceSquared > CUTOFFDISTANCE;
+            return DistanceSquared > CutOffDistanceM2;
         }
 
         /// <summary>
@@ -1034,7 +1045,7 @@ namespace Orts.Viewer3D
                 {
                     // (ActivationConditions.Distance == 0) means distance checking disabled
                     if ((ActivationConditions.Distance == 0 || DistanceSquared < ActivationConditions.Distance * ActivationConditions.Distance) &&
-                        DistanceSquared < CUTOFFDISTANCE)
+                        DistanceSquared < CutOffDistanceM2)
                         return true;
                 }
                 else
@@ -1059,7 +1070,7 @@ namespace Orts.Viewer3D
             if (WorldLocation != WorldLocation.None)
             {
                 if (DeactivationConditions.Distance != 0 && DistanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance ||
-                    DistanceSquared > CUTOFFDISTANCE)
+                    DistanceSquared > CutOffDistanceM2)
                     return true;
             }
 
