@@ -491,8 +491,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // dump valves. When axle rotations which are sensed electrically, differ by a predetermined speed the dump valves are operated releasing brake cylinder pressure to both axles of the affected 
             // bogie.
 
-            // Dump valve operation will cease when differences in axle rotations arewithin specified limits or the axle accelerates faster than a specified rate. The dump valve will only operate for a
-            // maximum period of seven seconds after which time it will be de-energised and the dump valve will not re-operate until the train has stopped or the throttle operated.
+            // Dump valve operation will cease when differences in axle rotations arewithin specified limits or the axle accelerates faster than a specified rate. The dump valve resets whenever the wheel
+            // creep speed drops to normal. The dump valve will only operate continuously for a maximum period of seven seconds after which time it will be de-energised and the dump valve will not 
+            // re-operate until the train has stopped or the throttle operated. 
 
             // Dump valve operation is prevented under the following conditions:-
             // (i) When the Power Controller is open.
@@ -501,27 +502,30 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             if (Car.WheelBrakeSlideProtectionFitted)
             {
-                if ((Car.BrakeSkidWarning || Car.BrakeSkid) && ( !Car.WheelBrakeSlideProtectionEmergencyDisabled && BrakeLine1PressurePSI > 36.25) && Car.WheelBrakeSlideProtectionTimerS != 0)
+                // WSP dump valve active
+                if ((Car.BrakeSkidWarning || Car.BrakeSkid) && ( !Car.WheelBrakeSlideProtectionEmergencyDisabled && BrakeLine1PressurePSI > 36.25) && Car.WheelBrakeSlideProtectionTimerS != 0 && !Car.WheelBrakeSlideProtectionDumpValveLockout)
                 {
                     Car.WheelBrakeSlideProtectionActive = true;
-//                    Trace.TraceInformation("WSP#1 - CarID {0} BC {1} Auto {2} BP1 {3}", Car.CarID, CylPressurePSI, AutoCylPressurePSI, BrakeLine1PressurePSI);
                     AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
                     CylPressurePSI = AutoCylPressurePSI;
-                    //                    Trace.TraceInformation("WSP#2 - CarID {0} BC {1} Auto {2}", Car.CarID, CylPressurePSI, AutoCylPressurePSI);
                     Car.WheelBrakeSlideProtectionTimerS -= elapsedClockSeconds;
+
+                    // Lockout WSP dump valve if it is open for greater then 7 seconds continuously
+                    if (Car.WheelBrakeSlideProtectionTimerS <= 0)
+                    {
+                        Car.WheelBrakeSlideProtectionDumpValveLockout = true;
+                    }
+
                 }
-                else
+                else if (!Car.WheelBrakeSlideProtectionDumpValveLockout)
                 {
+                    // WSP dump valve stops
                     Car.WheelBrakeSlideProtectionActive = false;
-//                    Trace.TraceInformation("WSP Non-active - CarID {0} BC {1} Auto {2} BP1 {3}", Car.CarID, CylPressurePSI, AutoCylPressurePSI, BrakeLine1PressurePSI);
+                    Car.WheelBrakeSlideProtectionTimerS = 7.0f; // Reset WSP timer if 
                 }
-
-
 
             }
-
-
-
+                       
             // Record HUD display values for brake cylinders depending upon whether they are wagons or locomotives/tenders (which are subject to their own engine brakes)   
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)
             {
