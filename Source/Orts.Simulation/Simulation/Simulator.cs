@@ -90,6 +90,7 @@ namespace Orts.Simulation
         public string ActivityFileName;
         public string TimetableFileName;
         public bool TimetableMode;
+        public bool PreUpdate;
         public ActivityFile Activity;
         public Activity ActivityRun;
         public TrackDatabaseFile TDB;
@@ -578,7 +579,7 @@ namespace Orts.Simulation
             if (playerTrain != null)
             {
                 var validPosition = playerTrain.PostInit();  // place player train after pre-running of AI trains
-                if (validPosition && AI != null) AI.PreUpdate = false;
+                if (validPosition && AI != null) PreUpdate = false;
                 if (playerTrain.InitialSpeed > 0 && playerTrain.MovementState != AITrain.AI_MOVEMENT_STATE.STATION_STOP)
                 {
                     playerTrain.InitializeMoving();
