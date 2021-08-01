@@ -855,7 +855,7 @@ namespace Orts.Formats.Msts
         private int numPositions;
         private bool canFill = true;
 
-        public CVCDiscrete(STFReader stf, string basepath, DiscreteStates discreteStates)
+        public CVCDiscrete(STFReader stf, string basepath, DiscreteStates discreteState)
         {
 //            try
             {
@@ -1160,7 +1160,7 @@ namespace Orts.Formats.Msts
                 if (ControlType == CABViewControlTypes.DIRECTION && Orientation == 0)
                     Direction = 1 - Direction;
 
-                switch (discreteStates)
+                switch (discreteState)
                 {
                     case DiscreteStates.TRI_STATE:
                         MaxValue = 2.0f; // So that LocomotiveViewerExtensions.GetWebControlValueList() returns right value to web server
@@ -1312,8 +1312,8 @@ namespace Orts.Formats.Msts
     #region other controls
     public class CVCSignal : CVCDiscrete
     {
-        public CVCSignal(STFReader inf, string basepath, DiscreteStates discreteStates)
-            : base(inf, basepath, discreteStates)
+        public CVCSignal(STFReader inf, string basepath, DiscreteStates discreteState)
+            : base(inf, basepath, discreteState)
         {
             FramesCount = 8;
             FramesX = 4;
