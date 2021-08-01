@@ -90,6 +90,7 @@ namespace Orts.Simulation
         public string ActivityFileName;
         public string TimetableFileName;
         public bool TimetableMode;
+        public bool PreUpdate;
         public ActivityFile Activity;
         public Activity ActivityRun;
         public TrackDatabaseFile TDB;

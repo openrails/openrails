@@ -54,7 +54,18 @@ namespace Orts.Simulation.AIs
         public List<AITrain> AutoGenTrains = new List<AITrain>(); // auto-generated trains
         public double clockTime; // clock time : local time before activity start, common time from simulator after start
         private bool localTime;  // if true : clockTime is local time
-        public bool PreUpdate; // if true : running in pre-update phase
+        public bool PreUpdate // if true : running in pre-update phase
+        {
+            get
+            {
+                return Simulator.PreUpdate;
+            }
+
+            set
+            {
+                Simulator.PreUpdate = value;
+            }
+        }
         public List<AITrain> TrainsToRemove = new List<AITrain>();
         public List<AITrain> TrainsToAdd = new List<AITrain>();
         public List<AITrain> TrainsToRemoveFromAI = new List<AITrain>();

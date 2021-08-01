@@ -114,6 +114,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 // AbstractScriptClass
                 Script.ClockTime = () => (float)Simulator.ClockTime;
                 Script.GameTime = () => (float)Simulator.GameTime;
+                Script.PreUpdate = () => Simulator.PreUpdate;
                 Script.DistanceM = () => Locomotive.DistanceM;
                 Script.Confirm = Locomotive.Simulator.Confirmer.Confirm;
                 Script.Message = Locomotive.Simulator.Confirmer.Message;
