@@ -1,4 +1,4 @@
-﻿//// COPYRIGHT 2014 by the Open Rails project.
+﻿//// COPYRIGHT 2021 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -22,7 +22,7 @@ namespace ORTS.Scripting.Api
     /// <summary>
     /// Power supply for electric locomotives
     /// </summary>
-    public abstract class ElectricPowerSupply : AbstractPowerSupply
+    public abstract class ElectricPowerSupply : LocomotivePowerSupply
     {
         /// <summary>
         /// Current state of the pantograph
@@ -32,6 +32,18 @@ namespace ORTS.Scripting.Api
         /// Current state of the circuit breaker
         /// </summary>
         public Func<CircuitBreakerState> CurrentCircuitBreakerState;
+        /// <summary>
+        /// Driver's closing order of the circuit breaker
+        /// </summary>
+        public Func<bool> CircuitBreakerDriverClosingOrder;
+        /// <summary>
+        /// Driver's opening order of the circuit breaker
+        /// </summary>
+        public Func<bool> CircuitBreakerDriverOpeningOrder;
+        /// <summary>
+        /// Driver's closing authorization of the circuit breaker
+        /// </summary>
+        public Func<bool> CircuitBreakerDriverClosingAuthorization;
         /// <summary>
         /// Voltage of the pantograph
         /// </summary>
@@ -53,5 +65,25 @@ namespace ORTS.Scripting.Api
         /// Sets the voltage of the filter
         /// </summary>
         public Action<float> SetFilterVoltageV;
+        /// <summary>
+        /// Sends an event to the circuit breaker
+        /// </summary>
+        public Action<PowerSupplyEvent> SignalEventToCircuitBreaker;
+
+        public override void HandleEvent(PowerSupplyEvent evt)
+        {
+            base.HandleEvent(evt);
+
+            // By default, send the event to every component
+            SignalEventToCircuitBreaker(evt);
+        }
+
+        public override void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
+        {
+            base.HandleEventFromLeadLocomotive(evt);
+
+            // By default, send the event to every component
+            SignalEventToCircuitBreaker(evt);
+        }
     }
 }

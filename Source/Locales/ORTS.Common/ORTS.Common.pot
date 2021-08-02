@@ -11,167 +11,167 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../ORTS.Common/Conversions.cs:524
+#: ../../ORTS.Common/Conversions.cs:535
 msgid "m"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:525
+#: ../../ORTS.Common/Conversions.cs:536
 msgid "km"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:526
+#: ../../ORTS.Common/Conversions.cs:537
 msgid "mm"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:527
+#: ../../ORTS.Common/Conversions.cs:538
 msgid "mi"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:528
+#: ../../ORTS.Common/Conversions.cs:539
 msgid "ft"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:529
+#: ../../ORTS.Common/Conversions.cs:540
 msgid "yd"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:530
+#: ../../ORTS.Common/Conversions.cs:541
 msgid "m²"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:531
+#: ../../ORTS.Common/Conversions.cs:542
 msgid "ft²"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:532
+#: ../../ORTS.Common/Conversions.cs:543
 msgid "m³"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:533
+#: ../../ORTS.Common/Conversions.cs:544
 msgid "ft³"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:534
+#: ../../ORTS.Common/Conversions.cs:545
 msgid "km/h"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:535
+#: ../../ORTS.Common/Conversions.cs:546
 msgid "mph"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:536
+#: ../../ORTS.Common/Conversions.cs:547
 msgid "kPa"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:537
+#: ../../ORTS.Common/Conversions.cs:548
 msgid "bar"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:538
+#: ../../ORTS.Common/Conversions.cs:549
 msgid "psi"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:539
+#: ../../ORTS.Common/Conversions.cs:550
 msgid "inHg"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:540
+#: ../../ORTS.Common/Conversions.cs:551
 msgid "kgf/cm²"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:541
+#: ../../ORTS.Common/Conversions.cs:552
 msgid "kg"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:542
+#: ../../ORTS.Common/Conversions.cs:553
 msgid "t"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:543
+#: ../../ORTS.Common/Conversions.cs:554
 msgid "t-uk"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:544
+#: ../../ORTS.Common/Conversions.cs:555
 msgid "t-us"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:545
+#: ../../ORTS.Common/Conversions.cs:556
 msgid "lb"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:546
+#: ../../ORTS.Common/Conversions.cs:557
 msgid "s"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:547
+#: ../../ORTS.Common/Conversions.cs:558
 msgid "min"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:548
+#: ../../ORTS.Common/Conversions.cs:559
 msgid "h"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:549
+#: ../../ORTS.Common/Conversions.cs:560
 msgid "L"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:550
+#: ../../ORTS.Common/Conversions.cs:561
 msgid "g-uk"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:551
+#: ../../ORTS.Common/Conversions.cs:562
 msgid "g-us"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:552
+#: ../../ORTS.Common/Conversions.cs:563
 msgid "rpm"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:553
+#: ../../ORTS.Common/Conversions.cs:564
 msgid "kW"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:554
+#: ../../ORTS.Common/Conversions.cs:565
 msgid "hp"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:555
+#: ../../ORTS.Common/Conversions.cs:566
 msgid "bhp"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:556
+#: ../../ORTS.Common/Conversions.cs:567
 msgid "kJ"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:557
+#: ../../ORTS.Common/Conversions.cs:568
 msgid "MJ"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:558
+#: ../../ORTS.Common/Conversions.cs:569
 msgid "BTU"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:559
+#: ../../ORTS.Common/Conversions.cs:570
 msgid "°C"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:560
+#: ../../ORTS.Common/Conversions.cs:571
 msgid "°F"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:561
+#: ../../ORTS.Common/Conversions.cs:572
 msgid "N"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:562
+#: ../../ORTS.Common/Conversions.cs:573
 msgid "kN"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:563
+#: ../../ORTS.Common/Conversions.cs:574
 msgid "lbf"
 msgstr ""
 
-#: ../../ORTS.Common/Conversions.cs:564
+#: ../../ORTS.Common/Conversions.cs:575
 msgid "klbf"
 msgstr ""
 
@@ -766,186 +766,214 @@ msgid "Control Pantograph 4"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:158
-msgid "Control Circuit Breaker Closing Order"
+msgid "Control Battery Close"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:159
-msgid "Control Circuit Breaker Opening Order"
+msgid "Control Battery Open"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:160
-msgid "Control Circuit Breaker Closing Authorization"
+msgid "Control Master Key"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:161
-msgid "Control Diesel Player"
+msgid "Control Service Retention"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:162
-msgid "Control Diesel Helper"
+msgid "Control Service Retention Cancellation"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:163
-msgid "Control Headlight Increase"
+msgid "Control Circuit Breaker Closing Order"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:164
-msgid "Control Headlight Decrease"
+msgid "Control Circuit Breaker Opening Order"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:165
-msgid "Control Injector 1 Increase"
+msgid "Control Circuit Breaker Closing Authorization"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:166
-msgid "Control Injector 1 Decrease"
+msgid "Control Traction Cut-Off Relay Closing Order"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:167
-msgid "Control Injector 1"
+msgid "Control Traction Cut-Off Relay Opening Order"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:168
-msgid "Control Injector 2 Increase"
+msgid "Control Traction Cut-Off Relay Closing Authorization"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:169
-msgid "Control Injector 2 Decrease"
+msgid "Control Electric Train Supply"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:170
-msgid "Control Injector 2"
+msgid "Control Diesel Player"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:171
-msgid "Control Blowdown Valve"
+msgid "Control Diesel Helper"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:172
-msgid "Control Blower Increase"
+msgid "Control Headlight Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:173
-msgid "Control Blower Decrease"
+msgid "Control Headlight Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:174
-msgid "Control Steam Heat Increase"
+msgid "Control Injector 1 Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:175
-msgid "Control Steam Heat Decrease"
+msgid "Control Injector 1 Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:176
-msgid "Control Damper Increase"
+msgid "Control Injector 1"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:177
-msgid "Control Damper Decrease"
+msgid "Control Injector 2 Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:178
-msgid "Control Firebox Open"
+msgid "Control Injector 2 Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:179
-msgid "Control Firebox Close"
+msgid "Control Injector 2"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:180
-msgid "Control Firing Rate Increase"
+msgid "Control Blowdown Valve"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:181
-msgid "Control Firing Rate Decrease"
+msgid "Control Blower Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:182
-msgid "Control Fire Shovel Full"
+msgid "Control Blower Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:183
-msgid "Control Cylinder Cocks"
+msgid "Control Steam Heat Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:184
-msgid "Control Large Ejector Increase"
+msgid "Control Steam Heat Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:185
-msgid "Control Large Ejector Decrease"
+msgid "Control Damper Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:186
-msgid "Control Small Ejector Increase"
+msgid "Control Damper Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:187
-msgid "Control Small Ejector Decrease"
+msgid "Control Firebox Open"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:188
-msgid "Control Vacuum Exhauster"
+msgid "Control Firebox Close"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:189
-msgid "Control Cylinder Compound"
+msgid "Control Firing Rate Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:190
-msgid "Control Firing"
+msgid "Control Firing Rate Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:191
-msgid "Control Refill"
+msgid "Control Fire Shovel Full"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:192
-msgid "Control Water Scoop"
+msgid "Control Cylinder Cocks"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:193
-msgid "Control ImmediateRefill"
+msgid "Control Large Ejector Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:194
-msgid "Control Turntable Clockwise"
+msgid "Control Large Ejector Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:195
-msgid "Control Turntable Counterclockwise"
+msgid "Control Small Ejector Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:196
-msgid "Control Generic 1"
+msgid "Control Small Ejector Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:197
-msgid "Control Generic 2"
+msgid "Control Vacuum Exhauster"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:198
-msgid "Control Cab Radio"
+msgid "Control Cylinder Compound"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:199
-msgid "Control AI Fire On"
+msgid "Control Firing"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:200
-msgid "Control AI Fire Off"
+msgid "Control Refill"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:201
-msgid "Control AI Fire Reset"
+msgid "Control Water Scoop"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:202
-msgid "Control Battery"
+msgid "Control ImmediateRefill"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:203
-msgid "Control PowerKey"
+msgid "Control Turntable Clockwise"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:204
+msgid "Control Turntable Counterclockwise"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:205
+msgid "Control Generic 1"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:206
+msgid "Control Generic 2"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:207
+msgid "Control Cab Radio"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:208
+msgid "Control AI Fire On"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:209
+msgid "Control AI Fire Off"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:210
+msgid "Control AI Fire Reset"
 msgstr ""
 

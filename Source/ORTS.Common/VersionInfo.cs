@@ -29,43 +29,23 @@ namespace ORTS.Common
     public static class VersionInfo
     {
         static readonly string ApplicationPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-        // GetRevision() must come before GetVersion()
-        /// <summary>Revision number, e.g. Release: "1648",       experimental: "1649",   local: ""</summary>
-        public static readonly string Revision = GetRevision("Revision.txt");
-        /// <summary>Full version number, e.g. Release: "0.9.0.1648", experimental: "X.1649", local: ""</summary>
-        public static readonly string Version = GetVersion("Version.txt");
-        /// <summary>Full build number, e.g. "0.0.5223.24629 (2014-04-20 13:40:58Z)"</summary>
-        public static readonly string Build = GetBuild("ORTS.Common.dll", "OpenRails.exe", "Menu.exe", "RunActivity.exe");
+
+        /// <summary>Full version, e.g. stable: "1.4", testing: "T1.4-1-g1234567", unstable: "U2021.01.01-0000", local: ""</summary>
+        public static readonly string Version = GetVersion("OpenRails.exe");
+
+        /// <summary>Full build, e.g. "0.0.5223.24629 (2014-04-20 13:40:58Z)"</summary>
+        public static readonly string Build = GetBuild("OpenRails.exe");
+
         /// <summary>Version, but if "", returns Build</summary>
         public static readonly string VersionOrBuild = GetVersionOrBuild();
-
-        static string GetRevision(string fileName)
-        {
-            try
-            {
-                using (var f = new StreamReader(Path.Combine(ApplicationPath, fileName)))
-                {
-                    var revision = f.ReadLine().Trim();
-                    if (revision.StartsWith("$Revision:") && revision.EndsWith("$") && !revision.Contains(" 000 "))
-                        return revision.Substring(10, revision.Length - 11).Trim();
-                }
-            }
-            catch
-            {
-            }
-            return "";
-        }
 
         static string GetVersion(string fileName)
         {
             try
             {
-                using (var f = new StreamReader(Path.Combine(ApplicationPath, fileName)))
-                {
-                    var version = f.ReadLine().Trim();
-                    if (!String.IsNullOrEmpty(Revision))
-                        return version + Revision;
-                }
+                var version = FileVersionInfo.GetVersionInfo(Path.Combine(ApplicationPath, fileName));
+                if (version.ProductVersion != version.FileVersion)
+                    return version.ProductVersion;
             }
             catch
             {
@@ -73,25 +53,18 @@ namespace ORTS.Common
             return "";
         }
 
-        static string GetBuild(params string[] fileNames)
+        static string GetBuild(string fileName)
         {
             var builds = new Dictionary<TimeSpan, string>();
-            foreach (var fileName in fileNames)
+            try
             {
-                try
-                {
-                    var version = FileVersionInfo.GetVersionInfo(Path.Combine(ApplicationPath, fileName));
-                    builds.Add(new TimeSpan(version.ProductBuildPart, 0, 0, version.ProductPrivatePart * 2), version.ProductVersion);
-                }
-                catch
-                {
-                }
-            }
-            if (builds.Count > 0)
-            {
+                var version = FileVersionInfo.GetVersionInfo(Path.Combine(ApplicationPath, fileName));
                 var datetime = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                var timespan = builds.Keys.OrderBy(ts => ts).Last();
-                return String.Format("{0} ({1:u})", builds[timespan], datetime + timespan);
+                var timespan = new TimeSpan(version.FileBuildPart, 0, 0, version.FilePrivatePart * 2);
+                return String.Format("{0} ({1:u})", version.FileVersion, datetime + timespan);
+            }
+            catch
+            {
             }
             return "";
         }
@@ -102,70 +75,62 @@ namespace ORTS.Common
         }
 
         /// <summary>
-        /// Find whether a requested version and build are valid for this build 
+        /// Compares a version and build with the youngest version which failed to restore, to see if that version/build is likely to restore successfully
         /// </summary>
-        /// <param name="version">version to test again</param>
-        /// <param name="build">build to test again</param>
-        /// <param name="youngestFailedToResume">youngest build that failed to resume</param>
+        /// <param name="version">version to test</param>
+        /// <param name="build">build to test</param>
+        /// <param name="youngestVersionFailedToRestore">youngest version that failed to restore</param>
         /// <returns>true or false when able to determine validity, null otherwise</returns>
-        public static bool? GetValidity(string version, string build, int youngestFailedToResume)
+        public static bool? GetValidity(string version, string build, string youngestVersionFailedToRestore)
         {
-            int revision = GetRevisionFromVersion(version);
-            int programRevision = 0;
-            try  // as Convert.ToInt32() can fail and version may be ""
-            {
-                programRevision = Convert.ToInt32(VersionInfo.Revision);
-            }
-            catch { } // ignore errors
-            //MessageBox.Show(String.Format("VersionInfo.Build = {0}, build = {1}, version = {2}, youngestFailedToResume = {3}", VersionInfo.Build, build, Version, youngestFailedToResume));
-            if (revision != 0)  // compiled remotely by Open Rails
-            {
-                if (revision == programRevision)
-                {
-                    return true;
-                }
-                else
-                {
-                    if (revision > youngestFailedToResume        // 1. Normal situation
-                    || programRevision < youngestFailedToResume) // 2. If an old version of OR is used, then attempt to load Saves
-                                                                 //    which would be blocked by the current version of OR
-                    {
-                        return null;
-                    }
-                }
-            }
-            else  // compiled locally
-            {
-                if (build.EndsWith(VersionInfo.Build))
-                {
-                    return true;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            return false; // default validity
+            // Validity rules:
+            //  - Same version and build --> yes
+            //  - Same non-empty version --> yes
+            //  - Unable to parse save or program version --> maybe
+            //  - Save version > setting --> maybe
+            //  - Program version < setting --> maybe
+            //  - Default --> no
+
+            if (Version == version && Build == build) return true;
+            if (Version.Length > 0 && version.Length > 0 && Version == version) return true;
+            var saveVersion = ParseVersion(version);
+            var programVersion = ParseVersion(Version);
+            var settingVersion = ParseVersion(youngestVersionFailedToRestore);
+            if (saveVersion.Major == 0 || programVersion.Major == 0) return null;
+            if (saveVersion > settingVersion) return null;
+            if (programVersion < settingVersion) return null;
+            return false;
         }
 
         /// <summary>
-        /// Find the revision number (e.g. 1648) from the full version (e.g. 0.9.0.1648 or X.1648 or X1648)
+        /// Converts many possible Open Rails versions into a standard Version struct
         /// </summary>
-        /// <param name="version">full version</param>
-        public static int GetRevisionFromVersion(string fullVersion)
+        /// <param name="version">text version to parse</param>
+        public static Version ParseVersion(string version)
         {
-            var versionParts = fullVersion.Split('.');
-            var revision = 0;
-            try
-            {
-                var version = versionParts[versionParts.Length - 1];
-                if (version.StartsWith("X"))
-                    version = version.Substring(1);
-                // Might throw an error if it isn't a number like we expect.
-                revision = Convert.ToInt32(version);
-            }
-            catch { }
-            return revision;
+            // Version numbers which we do parse:
+            //  - 0.9.0.1648            --> 0.9
+            //  - 1.3.1.4328            --> 1.3.1
+            //  - T1.3.1-241-g6ff150c21 --> 1.3.1.241
+            //  - X1.3.1-370-g7df5318c2 --> 1.3.1.370
+            //  - 1.4                   --> 1.4
+            //  - 1.4-rc1               --> 1.4
+            //  - T1.4-2-g7db094316     --> 1.4.0.2
+            // Version numbers which we do NOT parse:
+            //  - U2019.07.25-2200
+            //  - U2021.06.25-0406
+            //  - X.1648
+            //  - X1648
+
+            if (version.StartsWith("T") || version.StartsWith("X")) version = version.Substring(1);
+
+            var versionParts = version.Split('-');
+            if (!System.Version.TryParse(versionParts[0], out var parsedVersion)) return new Version();
+
+            var commits = 0;
+            if (versionParts.Length > 1) int.TryParse(versionParts[1], out commits);
+            // parsedVersion.Build will be -1 if the version only has major and minor, but we need the build number >= 0 here
+            return new Version(parsedVersion.Major, parsedVersion.Minor, Math.Max(0, parsedVersion.Build), commits);
         }
     }
 }
