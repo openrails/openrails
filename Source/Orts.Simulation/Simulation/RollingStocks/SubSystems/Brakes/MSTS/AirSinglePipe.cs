@@ -500,10 +500,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             // (ii) When Brake Pipe Pressure has been reduced below 250 kPa (36.25psi). 
 
-            if (Car.WheelBrakeSlideProtectionFitted)
+            if (Car.WheelBrakeSlideProtectionFitted && Car.Train.IsPlayerDriven)
             {
                 // WSP dump valve active
-                if ((Car.BrakeSkidWarning || Car.BrakeSkid) && !Car.WheelBrakeSlideProtectionDumpValveLockout && ( (!Car.WheelBrakeSlideProtectionEmergencyDisabled && BrakeLine1PressurePSI > 36.25) || Car.WheelBrakeSlideProtectionEmergencyDisabled) )
+                if ((Car.BrakeSkidWarning || Car.BrakeSkid) && CylPressurePSI > 0 && !Car.WheelBrakeSlideProtectionDumpValveLockout && ( (!Car.WheelBrakeSlideProtectionLimitDisabled && BrakeLine1PressurePSI > 36.25) || Car.WheelBrakeSlideProtectionLimitDisabled) )
                 {
                     Car.WheelBrakeSlideProtectionActive = true;
                     AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
