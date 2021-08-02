@@ -26,6 +26,7 @@ ECHO [UTS] indicates which build modes need the tool: unstable, testing, and sta
 SET CheckToolInPath.Missing=0
 SET CheckToolInPath.Check=0
 :check-tools
+CALL :list-or-check-tool "git.exe" "[UTS] Git version control tool"
 CALL :list-or-check-tool "nuget.exe" "[UTS] .NET package manager tool"
 CALL :list-or-check-tool "MSBuild.exe" "[UTS] Microsoft Visual Studio build tool"
 CALL :list-or-check-tool "lazbuild.exe" "[UTS] Lazarus compiler"
