@@ -311,6 +311,16 @@ namespace Orts.Formats.Msts
         LBS
     }
 
+    public enum DiscreteStates
+    {
+        LEVER,
+        TWO_STATE,
+        TRI_STATE,
+        MULTI_STATE,
+        COMBINED_CONTROL,
+        CAB_SIGNAL_DISPLAY
+    }
+
     public class CabViewControls : List<CabViewControl>
     {
         public CabViewControls(STFReader stf, string basepath)
@@ -322,14 +332,14 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsanimateddisplay", ()=>{ Add(new CVCAnimatedDisplay(stf, basepath)); }),
                 new STFReader.TokenProcessor("dial", ()=>{ Add(new CVCDial(stf, basepath)); }),
                 new STFReader.TokenProcessor("gauge", ()=>{ Add(new CVCGauge(stf, basepath)); }),
-                new STFReader.TokenProcessor("lever", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("twostate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("tristate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("multistate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("lever", ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.LEVER)); }),
+                new STFReader.TokenProcessor("twostate", ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.TWO_STATE)); }),
+                new STFReader.TokenProcessor("tristate", ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.TRI_STATE)); }),
+                new STFReader.TokenProcessor("multistate", ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.MULTI_STATE)); }),
                 new STFReader.TokenProcessor("multistatedisplay", ()=>{ Add(new CVCMultiStateDisplay(stf, basepath)); }),
-                new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath)); }), 
+                new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath, DiscreteStates.CAB_SIGNAL_DISPLAY)); }), 
                 new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }), 
-                new STFReader.TokenProcessor("combinedcontrol", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("combinedcontrol", ()=>{ Add(new CVCDiscrete(stf, basepath, DiscreteStates.COMBINED_CONTROL)); }),
                 new STFReader.TokenProcessor("firebox", ()=>{ Add(new CVCFirebox(stf, basepath)); }),
                 new STFReader.TokenProcessor("dialclock", ()=>{ ProcessDialClock(stf, basepath);  }),
                 new STFReader.TokenProcessor("digitalclock", ()=>{ Add(new CVCDigitalClock(stf, basepath)); }),
@@ -845,7 +855,7 @@ namespace Orts.Formats.Msts
         private int numPositions;
         private bool canFill = true;
 
-        public CVCDiscrete(STFReader stf, string basepath)
+        public CVCDiscrete(STFReader stf, string basepath, DiscreteStates discreteState)
         {
 //            try
             {
@@ -1149,6 +1159,15 @@ namespace Orts.Formats.Msts
                     ControlStyle = CABViewControlStyles.WHILE_PRESSED;
                 if (ControlType == CABViewControlTypes.DIRECTION && Orientation == 0)
                     Direction = 1 - Direction;
+
+                switch (discreteState)
+                {
+                    case DiscreteStates.TRI_STATE:
+                        MaxValue = 2.0f; // So that LocomotiveViewerExtensions.GetWebControlValueList() returns right value to web server
+                        break;
+                    default:
+                        break;
+                }
             }
 //            catch (Exception error)
 //            {
@@ -1293,8 +1312,8 @@ namespace Orts.Formats.Msts
     #region other controls
     public class CVCSignal : CVCDiscrete
     {
-        public CVCSignal(STFReader inf, string basepath)
-            : base(inf, basepath)
+        public CVCSignal(STFReader inf, string basepath, DiscreteStates discreteState)
+            : base(inf, basepath, discreteState)
         {
             FramesCount = 8;
             FramesX = 4;
@@ -1309,4 +1328,3 @@ namespace Orts.Formats.Msts
     }
     #endregion
 }
-
