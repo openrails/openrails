@@ -289,7 +289,7 @@ namespace Orts.Simulation.RollingStocks
         // Used to calculate wheel sliding for locked brake
         public bool WheelBrakeSlideProtectionFitted = false;
         public bool WheelBrakeSlideProtectionActive = false;
-        public bool WheelBrakeSlideProtectionEmergencyDisabled = false;
+        public bool WheelBrakeSlideProtectionLimitDisabled = false;
         public float WheelBrakeSlideProtectionTimerS = 7;
         public bool WheelBrakeSlideProtectionDumpValveLockout = false;
 
@@ -963,8 +963,8 @@ namespace Orts.Simulation.RollingStocks
 
                 if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
                 {
-
-                    if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0) // If advanced adhesion model indicates wheel slip, then check other conditiond (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                    // If advanced adhesion model indicates wheel slip warning, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                    if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0) 
                     {
                         BrakeSkidWarning = true;  // set brake skid flag true
                     }
@@ -973,14 +973,15 @@ namespace Orts.Simulation.RollingStocks
                         BrakeSkidWarning = false;
                     }
 
-                    if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0) // If advanced adhesion model indicates wheel slip, then check other conditiond (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                    // If advanced adhesion model indicates wheel slip, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                    if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
                     {
-                       BrakeSkid = true;  // set brake skid flag true
-                    } 
-                   else
-                   {
-                       BrakeSkid = false;
-                   }
+                        BrakeSkid = true;  // set brake skid flag true
+                    }
+                    else
+                    {
+                        BrakeSkid = false;
+                    }
                 }
 
                 else if (!(this is MSTSDieselLocomotive) || !(this is MSTSElectricLocomotive))
@@ -989,11 +990,12 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate tread force on wheel - use the retard force as this is related to brakeshoe coefficient, and doesn't vary with skid.
                     BrakeWheelTreadForceN = BrakeRetardForceN;
 
+                    // Determine whether car is experiencing a wheel slip during braking
                     if (!BrakeSkidWarning && AbsSpeedMpS > 0.01)
                     {
                         var wagonbrakeadhesiveforcen = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal 
 
-                        if (BrakeWheelTreadForceN > 0.80f * WagonBrakeAdhesiveForceN)
+                        if (BrakeWheelTreadForceN > 0.80f * WagonBrakeAdhesiveForceN && ThrottlePercent > 0.01)
                         {
                             BrakeSkidWarning = true; 	// wagon wheel is about to slip
                         }
@@ -1004,7 +1006,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     // Reset WSP dump valve lockout
-                    if (WheelBrakeSlideProtectionFitted && WheelBrakeSlideProtectionDumpValveLockout && (ThrottlePercent == 0 || AbsSpeedMpS == 0))
+                    if (WheelBrakeSlideProtectionFitted && WheelBrakeSlideProtectionDumpValveLockout && (ThrottlePercent > 0.01 || AbsSpeedMpS <= 0.002))
                     {
                         WheelBrakeSlideProtectionTimerS = 7;
                         WheelBrakeSlideProtectionDumpValveLockout = false;

@@ -1062,16 +1062,16 @@ namespace Orts.Simulation.RollingStocks
                         WheelBrakeSlideProtectionFitted = false;
                     }
                     break;
-                case "wagon(ortsemergencybrakingdisableswsp":
+                case "wagon(ortswheelbrakesslideprotectionlimitdisable":
                     // stf.MustMatch("(");
                     var brakeslideprotectiondisable = stf.ReadFloatBlock(STFReader.UNITS.None, null);
                     if (brakeslideprotectiondisable == 1)
                     {
-                        WheelBrakeSlideProtectionEmergencyDisabled = true;
+                        WheelBrakeSlideProtectionLimitDisabled = true;
                     }
                     else
                     {
-                        WheelBrakeSlideProtectionEmergencyDisabled = false;
+                        WheelBrakeSlideProtectionLimitDisabled = false;
                     }
                     break;
                 case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
@@ -1460,7 +1460,7 @@ namespace Orts.Simulation.RollingStocks
             MainSoundFileName = copy.MainSoundFileName;
             BrakeShoeFrictionFactor = copy.BrakeShoeFrictionFactor;
             WheelBrakeSlideProtectionFitted = copy.WheelBrakeSlideProtectionFitted;
-            WheelBrakeSlideProtectionEmergencyDisabled = copy.WheelBrakeSlideProtectionEmergencyDisabled;
+            WheelBrakeSlideProtectionLimitDisabled = copy.WheelBrakeSlideProtectionLimitDisabled;
             InitialMaxBrakeForceN = copy.InitialMaxBrakeForceN;
             InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
