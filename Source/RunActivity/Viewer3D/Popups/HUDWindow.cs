@@ -1238,6 +1238,7 @@ namespace Orts.Viewer3D.Popups
 
         void TextPageWeather(TableData table)
         {
+            TableSetLabelValueColumns(table, 0, 2);
             TextPageHeading(table, Viewer.Catalog.GetString("WEATHER INFORMATION"));
 
             TableAddLabelValue(table, Viewer.Catalog.GetString("Visibility"), Viewer.Catalog.GetStringFmt("{0:N0} m", Viewer.Simulator.Weather.FogDistance));
@@ -1250,6 +1251,7 @@ namespace Orts.Viewer3D.Popups
 
         void TextPageDebugInfo(TableData table)
         {
+            TableSetLabelValueColumns(table, 0, 2);
             TextPageHeading(table, Viewer.Catalog.GetString("DEBUG INFORMATION"));
 
             var allocatedBytesPerSecond = AllocatedBytesPerSecCounter == null ? 0 : AllocatedBytesPerSecCounter.NextValue();
