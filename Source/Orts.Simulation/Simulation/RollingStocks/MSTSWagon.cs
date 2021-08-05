@@ -436,7 +436,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            // Ensure Drive Axles is set to a default if no OR value added to WAG file, assumes that WagonNumAxles only needs to be set on non locomotive cars
+            // Ensure Drive Axles is set to a default if no OR value added to WAG file
             if (WagonNumAxles == 0 && WagonType != WagonTypes.Engine)
             {
                 if (MSTSWagonNumWheels != 0 && MSTSWagonNumWheels < 6)
