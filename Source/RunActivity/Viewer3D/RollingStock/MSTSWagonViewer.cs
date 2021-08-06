@@ -938,17 +938,21 @@ namespace Orts.Viewer3D.RollingStock
 
                     AdjustCouplerAngle(Car, FrontCouplerShape, quaternionCar, CouplerAngleRadians);
 
-                    // Next section tests front coupler against rear coupler on previous car. If they are not located at the same position, then location is set the same as previous car.
-                    // For some reason flipped cars have a small location error, and hence couplers do not align.
-                    var absXc = Math.Abs(FrontCouplerShape.Location.Location.X - Car.CarAhead.RearCouplerLocation.X);
-                    var absYc = Math.Abs(FrontCouplerShape.Location.Location.Y - Car.CarAhead.RearCouplerLocation.Y);
-                    var absZc = Math.Abs(FrontCouplerShape.Location.Location.Z - Car.CarAhead.RearCouplerLocation.Z);
-
-                    if ((absXc > 0.005 || absYc > 0.005 || absZc > 0.005))
+                    // If the car ahead does not have an animated coupler then location values will be zero for car ahaead, and no coupler will display. Hence do not correct coupler location 
+                    if (Car.CarAhead.RearCouplerLocation.X != 0 && Car.CarAhead.RearCouplerLocation.Y != 0 && Car.CarAhead.RearCouplerLocation.Z != 0)
                     {
-                        FrontCouplerShape.Location.Location = Car.CarAhead.RearCouplerLocation; // Set coupler to same location as previous car coupler
-                        FrontCouplerShape.Location.TileX = Car.CarAhead.RearCouplerLocationTileX;
-                        FrontCouplerShape.Location.TileZ = Car.CarAhead.RearCouplerLocationTileZ;
+                        // Next section tests front coupler against rear coupler on previous car. If they are not located at the same position, then location is set the same as previous car.
+                        // For some reason flipped cars have a small location error, and hence couplers do not align.
+                        var absXc = Math.Abs(FrontCouplerShape.Location.Location.X - Car.CarAhead.RearCouplerLocation.X);
+                        var absYc = Math.Abs(FrontCouplerShape.Location.Location.Y - Car.CarAhead.RearCouplerLocation.Y);
+                        var absZc = Math.Abs(FrontCouplerShape.Location.Location.Z - Car.CarAhead.RearCouplerLocation.Z);
+
+                        if ((absXc > 0.005 || absYc > 0.005 || absZc > 0.005))
+                        {
+                            FrontCouplerShape.Location.Location = Car.CarAhead.RearCouplerLocation; // Set coupler to same location as previous car coupler
+                            FrontCouplerShape.Location.TileX = Car.CarAhead.RearCouplerLocationTileX;
+                            FrontCouplerShape.Location.TileZ = Car.CarAhead.RearCouplerLocationTileZ;
+                        }
                     }
 
                     // Display Animation Shape                    
