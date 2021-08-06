@@ -639,6 +639,12 @@ the WAG file:
 
 Each of these parameters will have the same format as indicated above for the coupler shapes.
 
+Open rails uses some defaults to calculate the required movement and angles for coupler and air hose 
+shape movement, however for greater accuracy the modeler can add specific values such as 
+``ORTSLengthAirHose``. In addition the length values suggested in the Derailment Coefficient should 
+also be added.
+
+
 C# engine scripting
 ===================
 .. _features-scripting-csharp:
