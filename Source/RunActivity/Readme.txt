@@ -6,12 +6,6 @@ Visit our web-page at http://openrails.org for details and links.
 Please note the distribution and use of Open Rails software is governed by the GNU License - see file Copying.txt. 
 Source code can be downloaded from https://github.com/openrails/openrails
 
-INSTALLATION
-- You must have a PC running Windows 7 with Service Pack 1 or later version of Windows, including Windows 10.
-- If not already installed, Microsoft .NET Framework 4.7.2 will be added by the Open Rails installer.
-- Open Rails is compatible with an existing Microsoft Train Simulator installation and will also work without one.
-- The default folder is C:\Program Files (x86)\Open Rails\ but you can choose another location and multiple installations can co-exist.
-
 OPERATION
 - You can run Open Rails by clicking on the Desktop icon or the Quick Launch icon or the Start Menu entry or C:\Program Files (x86)\Open Rails\OpenRails.exe
 - Help and Game Controls are available in-game using the Help key (F1).
