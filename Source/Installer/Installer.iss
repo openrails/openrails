@@ -28,7 +28,7 @@
 #define MyAppManual "Documentation\Manual.pdf"
 
 #define MyAppProgPath "..\..\Program"
-#define MyAppDocPath "..\..\Source\Documentation"
+#define MyAppDocPath "..\..\Program\Documentation"
 
 #define NetRedistPath "..\..\.NET Framework 4.7.2 web installer"
 #define NetRedist "NDP472-KB4054531-Web.exe"
@@ -50,6 +50,7 @@ DefaultDirName  ={commonpf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons    =yes
 LicenseFile     ={#MyAppProgPath}\Copying.txt
+InfoBeforeFile   ={#MyAppProgPath}\Prerequisites.txt
 InfoAfterFile   ={#MyAppProgPath}\Readme.txt
 
 ; Remove the following line to run in administrative install mode (install for all users.)

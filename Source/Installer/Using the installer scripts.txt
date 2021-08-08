@@ -10,13 +10,13 @@ Initial trials (Apr 2014) used v5.5.4. Open Rails v1.4 uses 6.1.2
   <A>\.NET Framework 4.7.2 web installer\ndp472-kb4054531-web.exe
   where <A> is any folder.
   
-2. Make a folder Installer inside folder <A>.
-   From Source\Installer, copy OpenRails.iss and Version.iss into <A>\Installer
+2. Make a chain of folders inside folder <A>: <A>\Temp\Installer\
+   From Source\Installer, copy OpenRails.iss and Version.iss into <A>\Temp\Installer
 
 3. If you wish to update the version name from "1.4", then edit the line
      #define MyAppVersion "1.4"
 	 in the file 
-   <A>\Installer\Version.iss
+   <A>\Temp\Installer\Version.iss
   
 4. Repeat the following as often as required:
   A. Download OR zip file from http://openrails.org/files/OpenRails-Testing.zip
@@ -35,9 +35,9 @@ Initial trials (Apr 2014) used v5.5.4. Open Rails v1.4 uses 6.1.2
     <A>\Open Rails\Program\Documentation\
 
   F. Use Inno Setup > Project > Compile to compile the installer script
-    <A>\Installer\Installer.iss
+    <A>\Temp\Installer\Installer.iss
   
-  G. The installer file will be found in <A>\Installer\Output\OpenRailsSetup.exe
+  G. The installer file will be found in <A>\Temp\Installer\Output\OpenRailsSetup.exe
  
 5. Test the installer by building Virtual Machines with a fresh copy of Windows.
 Open Rails v1.4 is compatible with Windows from 7 (SP1) to 10 (1809) and, hopefully, beyond.
