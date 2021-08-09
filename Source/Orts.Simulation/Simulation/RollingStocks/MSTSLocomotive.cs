@@ -353,6 +353,7 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
         public bool UsingRearCab;
+        public bool BrakeOverchargeSoundOn = false;
 
         protected bool DynamicBrakeBlended; // dynamic brake blending is currently active
         protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
