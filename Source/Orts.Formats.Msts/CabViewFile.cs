@@ -72,6 +72,7 @@ namespace Orts.Formats.Msts
         NONE,
         SPEEDOMETER,
         MAIN_RES,
+        MAIN_RES_PIPE,
         EQ_RES,
         BRAKE_CYL,
         BRAKE_PIPE,

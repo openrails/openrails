@@ -452,6 +452,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     BrakeLine1PressurePSI += dp * AuxBrakeLineVolumeRatio;
                 }
             }
+
+            // Charge Auxiliary reservoir for MRP
             if (TwoPipes
                 && !NoMRPAuxResCharging
                 && AuxResPressurePSI < BrakeLine2PressurePSI
@@ -796,7 +798,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             int last = -1;
             train.FindLeadLocomotives(ref first, ref last);
             float sumpv = 0;
+            float summainrespv = 0;
             float sumv = 0;
+            float summainresv = 0;
             int continuousFromInclusive = 0;
             int continuousToExclusive = train.Cars.Count;
             for (int i = 0; i < train.Cars.Count; i++)
@@ -823,11 +827,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     sumv += brakeSystem.BrakePipeVolumeM3;
                     sumpv += brakeSystem.BrakePipeVolumeM3 * brakeSystem.BrakeLine2PressurePSI;
+
+                    summainresv += brakeSystem.BrakePipeVolumeM3;
+                    summainrespv += brakeSystem.BrakePipeVolumeM3 * (train.Cars[i] as MSTSLocomotive).MainResPressurePSI;
+
                     var eng = train.Cars[i] as MSTSLocomotive;
                     if (eng != null)
                     {
                         sumv += eng.MainResVolumeM3;
                         sumpv += eng.MainResVolumeM3 * eng.MainResPressurePSI;
+
+                        summainresv += eng.MainResVolumeM3;
+                        summainrespv += eng.MainResVolumeM3 * eng.MainResPressurePSI;
                     }
                 }
 
@@ -876,11 +887,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
             }
             if (sumv > 0)
+            {
                 sumpv /= sumv;
+                summainrespv /= summainresv;
+            }
 
             if (!train.Cars[continuousFromInclusive].BrakeSystem.FrontBrakeHoseConnected && train.Cars[continuousFromInclusive].BrakeSystem.AngleCockAOpen
                 || (continuousToExclusive == train.Cars.Count || !train.Cars[continuousToExclusive].BrakeSystem.FrontBrakeHoseConnected) && train.Cars[continuousToExclusive - 1].BrakeSystem.AngleCockBOpen)
+            {
                 sumpv = 0;
+                summainrespv = 0;
+            }
 
             // Propagate main reservoir pipe (2) data
             train.BrakeLine2PressurePSI = sumpv;
@@ -888,12 +905,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 if (first <= i && i <= last || twoPipes && continuousFromInclusive <= i && i < continuousToExclusive)
                 {
+                    if (sumpv > (train.Cars[i] as MSTSLocomotive).MaximumMainReservoirPipePressurePSI)
+                    {
+                        sumpv = (train.Cars[i] as MSTSLocomotive).MaximumMainReservoirPipePressurePSI;
+                    }
+
                     train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = sumpv;
                     if (sumpv != 0 && train.Cars[i] is MSTSLocomotive)
-                        (train.Cars[i] as MSTSLocomotive).MainResPressurePSI = sumpv;
+                        (train.Cars[i] as MSTSLocomotive).MainResPressurePSI = summainrespv;
                 }
                 else
-                    train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = train.Cars[i] is MSTSLocomotive ? (train.Cars[i] as MSTSLocomotive).MainResPressurePSI : 0;
+                {
+                    // train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = train.Cars[i] is MSTSLocomotive ? (train.Cars[i] as MSTSLocomotive).MainResPressurePSI : 0;
+                    train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = train.Cars[i] is MSTSLocomotive ? (train.Cars[i] as MSTSLocomotive).MaximumMainReservoirPipePressurePSI : 0;
+                }
             }
         }
 
