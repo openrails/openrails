@@ -829,7 +829,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     sumpv += brakeSystem.BrakePipeVolumeM3 * brakeSystem.BrakeLine2PressurePSI;
 
                     summainresv += brakeSystem.BrakePipeVolumeM3;
-                    summainrespv += brakeSystem.BrakePipeVolumeM3 * (train.Cars[i] as MSTSLocomotive).MainResPressurePSI;
+
+                    if (lead != null)
+                    {
+                        summainrespv += brakeSystem.BrakePipeVolumeM3 * lead.MainResPressurePSI;
+                    }
 
                     var eng = train.Cars[i] as MSTSLocomotive;
                     if (eng != null)
@@ -905,9 +909,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 if (first <= i && i <= last || twoPipes && continuousFromInclusive <= i && i < continuousToExclusive)
                 {
-                    if (sumpv > (train.Cars[i] as MSTSLocomotive).MaximumMainReservoirPipePressurePSI)
+
+                    if (lead != null && sumpv > lead.MaximumMainReservoirPipePressurePSI)
                     {
-                        sumpv = (train.Cars[i] as MSTSLocomotive).MaximumMainReservoirPipePressurePSI;
+                        sumpv = lead.MaximumMainReservoirPipePressurePSI;
                     }
 
                     train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = sumpv;
