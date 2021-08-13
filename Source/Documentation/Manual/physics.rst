@@ -2867,6 +2867,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Engine(ORTSBrakePipeTimeFactor`` -- Time in seconds for a difference in
   pipe pressure between adjacent cars to equalize to about 1/3
   (default .003).
+- ``Engine(AirBrakeMaxMainResPipePressure`` -- Pressure in Main Reservoir 
+  Pipe for twin pipe braking systems (default = Main Reservoir Pressure).
 
 .. _physics-retainers:
 
