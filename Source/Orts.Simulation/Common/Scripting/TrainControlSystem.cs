@@ -523,7 +523,8 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Called by signalling code externally to stop the train in certain circumstances.
         /// </summary>
-        public abstract void SetEmergency(bool emergency);
+        [Obsolete("SetEmergency method is deprecated, use HandleEvent(TCSEvent, string) instead")]
+        public virtual void SetEmergency(bool emergency) { }
         /// <summary>
         /// Called when player has requested a game save. 
         /// Set at virtual to keep compatibility with scripts not providing this method.
@@ -570,6 +571,18 @@ namespace ORTS.Scripting.Api
 
     public enum TCSEvent
     {
+        /// <summary>
+        /// Emergency braking requested by simulator (train is out of control).
+        /// </summary>
+        EmergencyBrakingRequestedBySimulator,
+        /// <summary>
+        /// Emergency braking released by simulator.
+        /// </summary>
+        EmergencyBrakingReleasedBySimulator,
+        /// <summary>
+        /// Manual reset of the train's out of control mode.
+        /// </summary>
+        ManualResetOutOfControlMode,
         /// <summary>
         /// Reset request by pressing the alerter button.
         /// </summary>

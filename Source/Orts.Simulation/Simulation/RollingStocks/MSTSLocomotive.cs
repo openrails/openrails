@@ -3839,6 +3839,13 @@ namespace Orts.Simulation.RollingStocks
         }
         #endregion
 
+        public override void SignalEvent(TCSEvent evt)
+        {
+            TrainControlSystem.HandleEvent(evt);
+
+            base.SignalEvent(evt);
+        }
+
         public override void SignalEvent(PowerSupplyEvent evt)
         {
             LocomotivePowerSupply.HandleEvent(evt);
@@ -3986,12 +3993,6 @@ namespace Orts.Simulation.RollingStocks
         public override bool GetCabFlipped()
         {
             return UsingRearCab;
-        }
-
-        public void SetEmergency(bool emergency)
-        {
-            if (this.Train != null && this.Train.TrainType == Train.TRAINTYPE.REMOTE) return; //not apply emergency for remote trains.
-            TrainControlSystem.SetEmergency(emergency);
         }
 
         public void AlerterReset()

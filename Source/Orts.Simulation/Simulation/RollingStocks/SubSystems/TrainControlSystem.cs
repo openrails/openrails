@@ -129,6 +129,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         MonitoringDevice EmergencyStopMonitor;
         MonitoringDevice AWSMonitor;
 
+        private bool simulatorEmergencyBraking = false;
+        public bool SimulatorEmergencyBraking {
+            get
+            {
+                return simulatorEmergencyBraking;
+            }
+            protected set
+            {
+                simulatorEmergencyBraking = value;
+
+                if (Script != null)
+#pragma warning disable CS0618 // SetEmergency is obsolete
+                    Script.SetEmergency(value);
+#pragma warning restore CS0618 // SetEmergency is obsolete
+                else
+                    Locomotive.TrainBrakeController.TCSEmergencyBraking = value;
+            }
+        }
         public bool AlerterButtonPressed { get; private set; }
         public bool PowerAuthorization { get; private set; }
         public bool CircuitBreakerClosingOrder { get; private set; }
@@ -803,14 +821,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             HandleEvent(TCSEvent.AlerterReset);
         }
 
-        public void SetEmergency(bool emergency)
-        {
-            if (Script != null)
-                Script.SetEmergency(emergency);
-            else
-                Locomotive.TrainBrakeController.TCSEmergencyBraking = emergency;
-        }
-
         public void HandleEvent(TCSEvent evt)
         {
             HandleEvent(evt, String.Empty);
@@ -819,12 +829,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public void HandleEvent(TCSEvent evt, string message)
         {
             Script?.HandleEvent(evt, message);
+
+            switch (evt)
+            {
+                case TCSEvent.EmergencyBrakingRequestedBySimulator:
+                    SimulatorEmergencyBraking = true;
+                    break;
+
+                case TCSEvent.EmergencyBrakingReleasedBySimulator:
+                    SimulatorEmergencyBraking = false;
+                    break;
+            }
         }
 
         public void HandleEvent(TCSEvent evt, int eventIndex)
         {
             var message = eventIndex.ToString();
-            Script?.HandleEvent(evt, message);
+            HandleEvent(evt, message);
         }
 
         public void HandleEvent(PowerSupplyEvent evt)
@@ -1240,12 +1261,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case TCSEvent.AlerterReleased:
                     ResetButtonPressed = false;
                     break;
-            }
-        }
 
-        public override void SetEmergency(bool emergency)
-        {
-            ExternalEmergency = emergency;
+                case TCSEvent.EmergencyBrakingRequestedBySimulator:
+                    ExternalEmergency = true;
+                    break;
+
+                case TCSEvent.EmergencyBrakingReleasedBySimulator:
+                    ExternalEmergency = false;
+                    break;
+            }
         }
 
         void UpdateVigilance()

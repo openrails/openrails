@@ -1054,6 +1054,38 @@ to be displayed in the ETCS DMI. For example, the following block orders the DMI
    single: Style
    single: SwitchVal
 
+Emergency braking triggered by the simulator
+''''''''''''''''''''''''''''''''''''''''''''
+
+The emergency brakings triggered by the simulator are always sent to the TCS script.
+
+Two functions are used to transmit this information:
+
+.. code-block:: csharp
+
+    public override void HandleEvent(TCSEvent evt, string message)
+
+The events sent are ``EmergencyBrakingRequestedBySimulator``, ``EmergencyBrakingReleasedBySimulator`` and ``ManualResetOutOfControlMode``.
+For the first event, the reason of the emergency braking is also sent:
+
+- ``SPAD``: The train has passed a signal at danger at the front of the train
+- ``SPAD_REAR``: The train has passed a signal at danger at the rear of the train
+- ``MISALIGNED_SWITCH``: The train has trailed a misaligned switch
+- ``OUT_OF_AUTHORITY``: The train has passed the limit of authority
+- ``OUT_OF_PATH``: The train has ran off its allocated path
+- ``SLIPPED_INTO_PATH``: The train has slipped back into the path of another train
+- ``SLIPPED_TO_ENDOFTRACK``: The train has slipped off the end of the track
+- ``OUT_OF_TRACK``: The train has moved off the track
+- ``OTHER_TRAIN_IN_PATH``: Another train has entered the train's path
+- ``SLIPPED_INTO_TURNTABLE``: The train has entered a misaligned turntable
+- ``TRAIN_ON_MOVING_TURNTABLE``: The train has started moving on a moving turntable
+
+.. code-block:: csharp
+
+    public override void SetEmergency(bool emergency)
+
+This function is deprecated and will be deleted in a future version. The parameter indicates if the emergency braking is requested (true) or released (false).
+
 Generic cabview controls
 ''''''''''''''''''''''''
 Often Train Control Systems have a quite sophisticated DMI (driver-machine 
