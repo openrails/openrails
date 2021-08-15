@@ -68,6 +68,8 @@ namespace Orts.Simulation.Signalling
         private List<SignalWorldObject> SignalWorldList = new List<SignalWorldObject>();
         private Dictionary<uint, SignalRefObject> SignalRefList;
         private Dictionary<uint, SignalObject> SignalHeadList;
+        private List<SpeedPostWorldObject> SpeedPostWorldList = new List<SpeedPostWorldObject>();
+        private Dictionary<int, int> SpeedPostRefList = new Dictionary<int, int>();
         public static SIGSCRfile scrfile;
         public static CsSignalScripts CsSignalScripts;
         public int ORTSSignalTypeCount { get; private set; }
@@ -467,6 +469,7 @@ namespace Orts.Simulation.Signalling
 
             var Tokens = new List<TokenID>();
             Tokens.Add(TokenID.Signal);
+            Tokens.Add(TokenID.Speedpost);
             Tokens.Add(TokenID.Platform);
 
             // loop through files, use only extention .w, skip w+1000000+1000000.w file
@@ -538,7 +541,19 @@ namespace Orts.Simulation.Signalling
                             }
                         }
                     }
-                    else  if (worldObject.GetType() == typeof(PlatformObj))
+                    else if (worldObject is SpeedPostObj speedPostObj)
+                    {
+                        SpeedPostWorldList.Add(new SpeedPostWorldObject(speedPostObj));
+                        int thisSpeedPostId = SpeedPostWorldList.Count() - 1;
+                        foreach(TrItemId trItemId in speedPostObj.trItemIDList)
+                        {
+                            if (!SpeedPostRefList.ContainsKey(trItemId.dbID))
+                            {
+                                SpeedPostRefList.Add(trItemId.dbID, thisSpeedPostId);
+                            }
+                        }
+                    }
+                    else if (worldObject.GetType() == typeof(PlatformObj))
                     {
                         var thisWorldObj = worldObject as PlatformObj;
                         if (!PlatformSidesList.ContainsKey(thisWorldObj.trItemIDList[0].dbID)) PlatformSidesList.Add(thisWorldObj.trItemIDList[0].dbID, thisWorldObj.PlatformData);
@@ -633,7 +648,7 @@ namespace Orts.Simulation.Signalling
                     else if (trItem.ItemType == TrItem.trItemType.trSPEEDPOST)
                     {
                         SpeedPostItem Speedpost = (SpeedPostItem)trItem;
-                        if (Speedpost.IsLimit)
+                        if (!Speedpost.IsMilePost)
                         {
                             noSignals++;
                         }
@@ -981,15 +996,14 @@ namespace Orts.Simulation.Signalling
                         else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSPEEDPOST)
                         {
                             SpeedPostItem speedItem = (SpeedPostItem)TrItems[TDBRef];
-                            if (speedItem.IsLimit)
+                            if (!speedItem.IsMilePost)
                             {
                                 speedItem.SigObj = foundSignals;
 
                                 lastSignal = AddSpeed(index, i, speedItem, TDBRef, tsectiondat, tdbfile, ORTSSignalTypeCount);
                                 speedItem.SigObj = lastSignal;
-
                             }
-                            else if (speedItem.IsMilePost)
+                            else
                             {
                                 speedItem.SigObj = foundMileposts;
                                 lastMilepost = AddMilepost(index, i, speedItem, TDBRef, tsectiondat, tdbfile);
@@ -1231,22 +1245,39 @@ namespace Orts.Simulation.Signalling
             {
                 if (signal != null)
                 {
-                    foreach (SignalHead head in signal.SignalHeads)
+                    if (signal.isSignal)
                     {
-
-                        // get reference using TDB index from head
-
-                        uint TDBRef = Convert.ToUInt32(head.TDBIndex);
-                        SignalRefObject thisRef;
-
-                        if (SignalRefList.TryGetValue(TDBRef, out thisRef))
+                        foreach (SignalHead head in signal.SignalHeads)
                         {
-                            uint signalIndex = thisRef.SignalWorldIndex;
-                            if (signal.WorldObject == null)
+
+                            // get reference using TDB index from head
+
+                            uint TDBRef = Convert.ToUInt32(head.TDBIndex);
+                            SignalRefObject thisRef;
+
+                            if (SignalRefList.TryGetValue(TDBRef, out thisRef))
                             {
-                                signal.WorldObject = SignalWorldList[(int)signalIndex];
+                                uint signalIndex = thisRef.SignalWorldIndex;
+                                if (signal.WorldObject == null)
+                                {
+                                    signal.WorldObject = SignalWorldList[(int)signalIndex];
+                                }
+                                SignalRefList.Remove(TDBRef);
                             }
-                            SignalRefList.Remove(TDBRef);
+                        }
+                    }
+                    else
+                    {
+                        SignalHead head = signal.SignalHeads[0];
+                        int speedPostIndex;
+
+                        if (SpeedPostRefList.TryGetValue(head.TDBIndex, out speedPostIndex))
+                        {
+                            if (signal.SpeedPostWorldObject == null)
+                            {
+                                signal.SpeedPostWorldObject = SpeedPostWorldList[speedPostIndex];
+                            }
+                            SpeedPostRefList.Remove(head.TDBIndex);
                         }
                     }
                 }
@@ -8351,6 +8382,7 @@ namespace Orts.Simulation.Signalling
         public static TrackNode[] trackNodes;
         public static TrItem[] trItems;
         public SignalWorldObject WorldObject;   // Signal World Object information
+        public SpeedPostWorldObject SpeedPostWorldObject; // Speed Post World Object information
 
         public int trackNode;                   // Track node which contains this signal
         public int trRefIndex;                  // Index to TrItemRef within Track Node 
@@ -9205,7 +9237,7 @@ namespace Orts.Simulation.Signalling
         public ObjectSpeedInfo this_sig_speed(MstsSignalFunction fn_type)
         {
             var sigAsp = MstsSignalAspect.STOP;
-            var set_speed = new ObjectSpeedInfo(-1, -1, false, false, 0);
+            var set_speed = new ObjectSpeedInfo(-1, -1, false, false, 0, false);
 
             foreach (SignalHead sigHead in SignalHeads)
             {
@@ -9363,14 +9395,14 @@ namespace Orts.Simulation.Signalling
 
         public ObjectSpeedInfo this_lim_speed(MstsSignalFunction fn_type)
         {
-            var set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false, false, 0);
+            var set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false, false, 0, false);
 
             foreach (SignalHead sigHead in SignalHeads)
             {
                 if (sigHead.sigFunction == fn_type)
                 {
                     ObjectSpeedInfo this_speed = sigHead.speed_info[(int)sigHead.state];
-                    if (this_speed != null)
+                    if (this_speed != null && !this_speed.speed_isWarning)
                     {
                         if (this_speed.speed_pass > 0 && this_speed.speed_pass < set_speed.speed_pass)
                         {
@@ -12806,7 +12838,7 @@ namespace Orts.Simulation.Signalling
 
             float passSpeed = speedItem.IsPassenger ? speedMpS : -1;
             float freightSpeed = speedItem.IsFreight ? speedMpS : -1;
-            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false, false, speedItem is TempSpeedPostItem? (speedMpS == 999f? 2 : 1) : 0);
+            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false, false, speedItem is TempSpeedPostItem? (speedMpS == 999f? 2 : 1) : 0, speedItem.IsWarning);
             speed_info[(int)state] = speedinfo;
         }
 
@@ -12837,7 +12869,7 @@ namespace Orts.Simulation.Signalling
                 foreach (SignalAspect thisAspect in signalType.Aspects)
                 {
                     int arrindex = (int)thisAspect.Aspect;
-                    speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap, thisAspect.Reset, thisAspect.NoSpeedReduction? 1 : 0);
+                    speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap, thisAspect.Reset, thisAspect.NoSpeedReduction? 1 : 0, false);
                 }
 
                 // set normal subtype
@@ -13558,7 +13590,8 @@ namespace Orts.Simulation.Signalling
         public int speed_flag;
         public int speed_reset;
         // for signals: if = 1 no speed reduction; for speedposts: if = 0 standard; = 1 start of temp speedreduction post; = 2 end of temp speed reduction post
-        public int speed_noSpeedReductionOrIsTempSpeedReduction; 
+        public int speed_noSpeedReductionOrIsTempSpeedReduction;
+        public bool speed_isWarning;
         public float actual_speed;                   // set active by TRAIN
 
         public bool processed;                       // for AI trains, set active by TRAIN
@@ -13597,6 +13630,7 @@ namespace Orts.Simulation.Signalling
                 speed_flag = speed_info.speed_flag;
                 speed_reset = speed_info.speed_reset;
                 speed_noSpeedReductionOrIsTempSpeedReduction = speed_info.speed_noSpeedReductionOrIsTempSpeedReduction;
+                speed_isWarning = speed_info.speed_isWarning;
             }
         }
 
@@ -13622,19 +13656,21 @@ namespace Orts.Simulation.Signalling
         public int speed_flag;
         public int speed_reset;
         public int speed_noSpeedReductionOrIsTempSpeedReduction;
+        public bool speed_isWarning;
 
         //================================================================================================//
         /// <summary>
         /// Constructor
         /// </summary>
 
-        public ObjectSpeedInfo(float pass, float freight, bool asap, bool reset, int nospeedreductionOristempspeedreduction)
+        public ObjectSpeedInfo(float pass, float freight, bool asap, bool reset, int nospeedreductionOristempspeedreduction, bool isWarning)
         {
             speed_pass = pass;
             speed_freight = freight;
             speed_flag = asap ? 1 : 0;
             speed_reset = reset ? 1 : 0;
             speed_noSpeedReductionOrIsTempSpeedReduction = nospeedreductionOristempspeedreduction;
+            speed_isWarning = isWarning;
         }
     }
 
