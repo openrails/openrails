@@ -504,6 +504,16 @@ namespace Orts.Simulation.RollingStocks
                     Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
             }
 
+            DrvWheelWeightKg = InitialDrvWheelWeightKg;
+
+            // If DrvWheelWeight is not in ENG file, then set drivewheel weight the same as locomotive mass
+
+            if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
+            {
+                DrvWheelWeightKg = MassKG; // set Drive wheel weight to total wagon mass if not in ENG file
+                InitialDrvWheelWeightKg = MassKG; // // set Initial Drive wheel weight as well, as it is used as a reference
+            }
+
             CorrectBrakingParams();
             CheckCoherence();
             GetPressureUnit();
@@ -1461,7 +1471,6 @@ namespace Orts.Simulation.RollingStocks
             base.Initialize();
             if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;
 
-            DrvWheelWeightKg = InitialDrvWheelWeightKg;
         }
 
         //================================================================================================//
