@@ -1038,6 +1038,7 @@ namespace Orts.Simulation.RollingStocks
 
             DynamicBrakeBlended = locoCopy.DynamicBrakeBlended;
             DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
+            DynamicBrakeAvailable = locoCopy.DynamicBrakeAvailable;
             airPipeSystem = locoCopy.airPipeSystem;
             DynamicBrakeCommandStartTime = locoCopy.DynamicBrakeCommandStartTime;
             DynamicBrakeBlendingOverride = locoCopy.DynamicBrakeBlendingOverride;
