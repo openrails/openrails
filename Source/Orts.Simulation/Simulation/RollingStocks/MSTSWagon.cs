@@ -419,6 +419,18 @@ namespace Orts.Simulation.RollingStocks
                 RearCouplerShapeFileName = null;
             }
 
+            if (FrontAirHoseShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHoseShapeFileName))
+            {
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHoseShapeFileName);
+                FrontAirHoseShapeFileName = null;
+            }
+
+            if (RearAirHoseShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHoseShapeFileName))
+            {
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHoseShapeFileName);
+                RearAirHoseShapeFileName = null;
+            }
+
             // If trailing loco resistance constant has not been  defined in WAG/ENG file then assign default value based upon orig Davis values
             if (TrailLocoResistanceFactor == 0)
             {
@@ -436,6 +448,40 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Initialise car body lengths. Assume overhang is 2.0m each end, and bogie centres are the car length minus this value
+
+            if (CarCouplerFaceLengthM == 0)
+            {
+                CarCouplerFaceLengthM = CarLengthM;
+            }
+
+            if (CarBodyLengthM == 0)
+            {
+                CarBodyLengthM = CarCouplerFaceLengthM - 0.8f;
+            }
+
+            if (CarBogieCentreLengthM == 0)
+            {
+                CarBogieCentreLengthM = (CarCouplerFaceLengthM - 4.3f);
+            }
+
+            if (CarAirHoseLengthM == 0)
+            {
+                CarAirHoseLengthM = Me.FromIn(26.25f); // 26.25 inches
+            }
+
+            var couplerlength = ((CarCouplerFaceLengthM - CarBodyLengthM) / 2) + 0.1f; // coupler length at rest, allow 0.1m also for slack
+
+            if (CarAirHoseLengthM < couplerlength)
+            {
+                CarCouplerFaceLengthM = CarBodyLengthM + (0.4f * 2.0f); // Assume a coupler length of 400mm at each end and add to car body length
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Coupler length exceeded brake air hose length, so  ORTSLengthCouplerFace decreased to {0}", CarCouplerFaceLengthM);
+                }
+            }
+            
             // Ensure Drive Axles is set to a default if no OR value added to WAG file
             if (WagonNumAxles == 0)
             {
@@ -964,6 +1010,10 @@ namespace Orts.Simulation.RollingStocks
                     CarLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortslengthcouplerface": CarCouplerFaceLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortstrackgauge":
                     stf.MustMatch("(");
                     TrackGaugeM = stf.ReadFloat(STFReader.UNITS.Distance, null);
@@ -1121,6 +1171,15 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
 
+                case "wagon(coupling(frontairhoseanim":
+                    stf.MustMatch("(");
+                    FrontAirHoseShapeFileName = stf.ReadString();
+                    FrontAirHoseAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHoseAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHoseAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+
                 case "wagon(coupling(rearcoupleranim":
                     stf.MustMatch("(");
                     RearCouplerShapeFileName = stf.ReadString();
@@ -1130,7 +1189,16 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
 
-               case "wagon(coupling(spring(ortstensionstiffness":
+                case "wagon(coupling(rearairhoseanim":
+                    stf.MustMatch("(");
+                    RearAirHoseShapeFileName = stf.ReadString();
+                    RearAirHoseAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHoseAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHoseAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+
+                case "wagon(coupling(spring(ortstensionstiffness":
                     stf.MustMatch("(");
                     Couplers[CouplerCountLocation].SetTensionStiffness(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
                     stf.SkipRestOfBlock();
@@ -1155,6 +1223,25 @@ namespace Orts.Simulation.RollingStocks
                     RearCouplerOpenAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
+
+                case "wagon(coupling(frontairhosediconnectedanim":
+                    stf.MustMatch("(");
+                    FrontAirHoseDisconnectedShapeFileName = stf.ReadString();
+                    FrontAirHoseDisconnectedAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHoseDisconnectedAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHoseDisconnectedAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                    
+                case "wagon(coupling(rearairhosediconnectedanim":
+                    stf.MustMatch("(");
+                    RearAirHoseDisconnectedShapeFileName = stf.ReadString();
+                    RearAirHoseDisconnectedAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHoseDisconnectedAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHoseDisconnectedAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+
 
                 case "wagon(coupling(spring(ortscompressionstiffness":
                     stf.MustMatch("(");
@@ -1247,7 +1334,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
                 case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
                 case "wagon(ortsnumberaxles": WagonNumAxles = stf.ReadIntBlock(null); break;
-
+                case "wagon(ortsnumberbogies": WagonNumBogies = stf.ReadIntBlock(null); break;
                 case "wagon(ortspantographs":
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
@@ -1322,6 +1409,27 @@ namespace Orts.Simulation.RollingStocks
             RearCouplerOpenAnimHeightM = copy.RearCouplerOpenAnimHeightM;
             RearCouplerOpenAnimLengthM = copy.RearCouplerOpenAnimLengthM;
             RearCouplerOpenFitted = copy.RearCouplerOpenFitted;
+
+            FrontAirHoseShapeFileName = copy.FrontAirHoseShapeFileName;
+            FrontAirHoseAnimWidthM = copy.FrontAirHoseAnimWidthM;
+            FrontAirHoseAnimHeightM = copy.FrontAirHoseAnimHeightM;
+            FrontAirHoseAnimLengthM = copy.FrontAirHoseAnimLengthM;
+            
+            FrontAirHoseDisconnectedShapeFileName = copy.FrontAirHoseDisconnectedShapeFileName;
+            FrontAirHoseDisconnectedAnimWidthM = copy.FrontAirHoseDisconnectedAnimWidthM;
+            FrontAirHoseDisconnectedAnimHeightM = copy.FrontAirHoseDisconnectedAnimHeightM;
+            FrontAirHoseDisconnectedAnimLengthM = copy.FrontAirHoseDisconnectedAnimLengthM;
+            
+            RearAirHoseShapeFileName = copy.RearAirHoseShapeFileName;
+            RearAirHoseAnimWidthM = copy.RearAirHoseAnimWidthM;
+            RearAirHoseAnimHeightM = copy.RearAirHoseAnimHeightM;
+            RearAirHoseAnimLengthM = copy.RearAirHoseAnimLengthM;
+            
+            RearAirHoseDisconnectedShapeFileName = copy.RearAirHoseDisconnectedShapeFileName;
+            RearAirHoseDisconnectedAnimWidthM = copy.RearAirHoseDisconnectedAnimWidthM;
+            RearAirHoseDisconnectedAnimHeightM = copy.RearAirHoseDisconnectedAnimHeightM;
+            RearAirHoseDisconnectedAnimLengthM = copy.RearAirHoseDisconnectedAnimLengthM;
+
             CarWidthM = copy.CarWidthM;
             CarHeightM = copy.CarHeightM;
             CarLengthM = copy.CarLengthM;
@@ -1330,10 +1438,15 @@ namespace Orts.Simulation.RollingStocks
             InitialCentreOfGravityM = copy.InitialCentreOfGravityM;
             UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
+            CarBogieCentreLengthM = copy.CarBogieCentreLengthM;
+            CarBodyLengthM = copy.CarBodyLengthM;
+            CarCouplerFaceLengthM = copy.CarCouplerFaceLengthM;
+            CarAirHoseLengthM = copy.CarAirHoseLengthM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
             WagonNumAxles = copy.WagonNumAxles;
+            WagonNumBogies = copy.WagonNumBogies;
             MSTSWagonNumWheels = copy.MSTSWagonNumWheels;
             MassKG = copy.MassKG;
             InitialMassKG = copy.InitialMassKG;

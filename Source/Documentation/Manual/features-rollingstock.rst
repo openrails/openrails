@@ -606,6 +606,45 @@ to the oscillation from center point to an oscillation end point. The file shoul
 one cue point at its beginning and one after the time interval of a complete bell swing 
 forward and backward, and should have a final fadeoff for best result. 
 
+Coupler and Airhose Animation
+=============================
+
+Open Rails supports animation of couplers and air hoses. Coupler animation will move the 
+couplers and air hoses as the train moves and the coupler slack increases or decreases. 
+Couplers will also rotate as the train travels around a curve.
+
+To implement this separate models need to be provided for the couplers and air hoses. A 
+separate model for the coupled and uncoupled state is suggested.
+
+To enable coupler animation the following parameters need to be included in the coupler 
+code section of the WAG file:
+
+``FrontCouplerAnim`` - Coupler shape to be displayed at the front of the car when it is coupled.
+``FrontCouplerOpenAnim`` - Coupler shape to be displayed at the front of the car when it is uncoupled.
+``RearCouplerAnim`` - Coupler shape to be displayed at the rear of the car when it is coupled.
+``RearCouplerOpenAnim`` - Coupler shape to be displayed at the rear of the car when it is uncoupled
+
+All four of the above will have the following format:
+
+CouplerAnimation ( couplershape.s, x, y, z ) where the coupler shape file name is included along with 
+x, y, z values that offset the coupler in the three axis.
+
+For the airhose animation the following parameters must be included in the coupler code section of 
+the WAG file:
+
+``FrontAirHoseAnim`` - Air hose shape to be displayed at the front of the car when it is coupled.
+``FrontAirHoseDisconnectedAnim`` - Air hose shape to be displayed at the front of the car when it is uncoupled.
+``RearAirHoseAnim`` - Air hose shape to be displayed at the rear of the car when it is coupled.
+``RearAirHoseDisconnectedAnim`` - Air hose shape to be displayed at the rear of the car when it is uncoupled.
+
+Each of these parameters will have the same format as indicated above for the coupler shapes.
+
+Open rails uses some defaults to calculate the required movement and angles for coupler and air hose 
+shape movement, however for greater accuracy the modeler can add specific values such as 
+``ORTSLengthAirHose``. In addition the length values suggested in the Derailment Coefficient should 
+also be added.
+
+
 C# engine scripting
 ===================
 .. _features-scripting-csharp:
