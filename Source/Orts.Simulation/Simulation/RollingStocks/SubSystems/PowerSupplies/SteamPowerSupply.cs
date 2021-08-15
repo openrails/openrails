@@ -9,7 +9,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     /// Basic power supply class for steam locomotives
     /// For electrical systems powered by battery
     /// </summary>
-    public class SteamPowerSupply : ILocomotivePowerSupply, ISubSystem<SteamPowerSupply>
+    public class SteamPowerSupply : ILocomotivePowerSupply
     {
         public readonly MSTSSteamLocomotive Locomotive;
         public PowerSupplyType Type => PowerSupplyType.Steam;
@@ -70,14 +70,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             if (other is SteamPowerSupply steamOther)
             {
-                Copy(steamOther);
+                BatterySwitch.Copy(steamOther.BatterySwitch);
+                MasterKey.Copy(steamOther.MasterKey);
             }
-        }
-
-        public void Copy(SteamPowerSupply other)
-        {
-            BatterySwitch.Copy(other.BatterySwitch);
-            MasterKey.Copy(other.MasterKey);
         }
 
         public void Initialize()

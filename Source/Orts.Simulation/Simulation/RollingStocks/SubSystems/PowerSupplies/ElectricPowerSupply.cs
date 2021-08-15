@@ -24,7 +24,7 @@ using System.IO;
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
 
-    public class ScriptedElectricPowerSupply : ScriptedLocomotivePowerSupply, ISubSystem<ScriptedElectricPowerSupply>
+    public class ScriptedElectricPowerSupply : ScriptedLocomotivePowerSupply
     {
         public MSTSElectricLocomotive ElectricLocomotive => Locomotive as MSTSElectricLocomotive;
         public Pantographs Pantographs => Locomotive.Pantographs;
@@ -60,10 +60,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        public void Copy(ScriptedElectricPowerSupply other)
+        public override void Copy(IPowerSupply other)
         {
-            base.Copy(other);            
-            CircuitBreaker.Copy(other.CircuitBreaker);
+            base.Copy(other);
+
+            if (other is ScriptedElectricPowerSupply scriptedOther)
+            {
+                CircuitBreaker.Copy(scriptedOther.CircuitBreaker);
+            }
         }
 
         public override void Initialize()
