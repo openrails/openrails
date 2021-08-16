@@ -1371,11 +1371,15 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortspowersupplyheatingpower":
                 case "wagon(ortspowersupplyairconditioningpower":
                 case "wagon(ortspowersupplyairconditioningyield":
-                    if (PassengerCarPowerSupply == null)
+                    if (this is MSTSLocomotive)
+                    {
+                        Trace.TraceWarning($"Defining the {lowercasetoken} parameter is forbidden for locomotives (in {stf.FileName}:line {stf.LineNumber})");
+                    }
+                    else if (PassengerCarPowerSupply == null)
                     {
                         PowerSupply = new ScriptedPassengerCarPowerSupply(this);
                     }
-                    PassengerCarPowerSupply.Parse(lowercasetoken, stf);
+                    PassengerCarPowerSupply?.Parse(lowercasetoken, stf);
                     break;
 
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
