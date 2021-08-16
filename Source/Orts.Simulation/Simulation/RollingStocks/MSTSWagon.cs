@@ -2301,7 +2301,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                // Typically this loop should only be processed when it is a car of some descritption, and therefore it will use the wagon axles as it reference.
+                // Typically this loop should only be processed when it is a car of some description, and therefore it will use the wagon axles as it reference.
                 if (WagonNumAxles > 0)
                 {
                     AxleLoadKg = MassKG / WagonNumAxles;
