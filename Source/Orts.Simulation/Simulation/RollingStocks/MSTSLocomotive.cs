@@ -1781,7 +1781,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 
                  }
-                 else
+                 else if (EngineType != EngineTypes.Control) // TODO - Control trailers would not have compressors, but if they do then need to be linked to power supply requirements
                  {
                    UpdateCompressor(elapsedClockSeconds);
                  }

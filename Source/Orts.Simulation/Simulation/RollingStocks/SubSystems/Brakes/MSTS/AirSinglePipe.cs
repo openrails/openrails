@@ -467,19 +467,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio;
             }
 
-            if (Car is MSTSLocomotive loco && loco.LocomotivePowerSupply.MainPowerSupplyOn)
+            if (Car is MSTSLocomotive loco && loco.EngineType != TrainCar.EngineTypes.Control)  // TODO - Control cars ned to be linked to power suppy requirements.
             {
-                BailOffOn = false;
-                if ((loco.Train.LeadLocomotiveIndex >= 0 && ((MSTSLocomotive)loco.Train.Cars[loco.Train.LeadLocomotiveIndex]).BailOff) || loco.DynamicBrakeAutoBailOff && loco.Train.MUDynamicBrakePercent > 0 && loco.DynamicBrakeForceCurves == null)
-                    BailOffOn = true;
-                else if (loco.DynamicBrakeAutoBailOff && loco.Train.MUDynamicBrakePercent > 0 && loco.DynamicBrakeForceCurves != null)
+                //    if (Car is MSTSLocomotive loco && loco.LocomotivePowerSupply.MainPowerSupplyOn)
+                if (loco.LocomotivePowerSupply.MainPowerSupplyOn)
                 {
-                    var dynforce = loco.DynamicBrakeForceCurves.Get(1.0f, loco.AbsSpeedMpS);  // max dynforce at that speed
-                    if ((loco.MaxDynamicBrakeForceN == 0 && dynforce > 0) || dynforce > loco.MaxDynamicBrakeForceN * 0.6)
+                    BailOffOn = false;
+                    if ((loco.Train.LeadLocomotiveIndex >= 0 && ((MSTSLocomotive)loco.Train.Cars[loco.Train.LeadLocomotiveIndex]).BailOff) || loco.DynamicBrakeAutoBailOff && loco.Train.MUDynamicBrakePercent > 0 && loco.DynamicBrakeForceCurves == null)
                         BailOffOn = true;
+                    else if (loco.DynamicBrakeAutoBailOff && loco.Train.MUDynamicBrakePercent > 0 && loco.DynamicBrakeForceCurves != null)
+                    {
+                        var dynforce = loco.DynamicBrakeForceCurves.Get(1.0f, loco.AbsSpeedMpS);  // max dynforce at that speed
+                        if ((loco.MaxDynamicBrakeForceN == 0 && dynforce > 0) || dynforce > loco.MaxDynamicBrakeForceN * 0.6)
+                            BailOffOn = true;
+                    }
+                    if (BailOffOn)
+                        AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
                 }
-                if (BailOffOn)
-                    AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
             }
 
             if (AutoCylPressurePSI < 0)
