@@ -38,10 +38,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         // Variables
         readonly MSTSWagon Wagon;
         protected Timer Timer;
-        public bool CommandSwitch { get; protected set; } = true;
+        public bool CommandSwitch { get; protected set; } = false;
         public bool CommandButtonOn { get; protected set; } = false;
         public bool CommandButtonOff { get; protected set; } = false;
-        public bool On { get; protected set; } = true;
+        public bool On { get; protected set; } = false;
 
         public BatterySwitch(MSTSWagon wagon)
         {
@@ -91,17 +91,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public virtual void Initialize()
         {
-            switch (Mode)
-            {
-                case ModeType.Switch:
-                    CommandSwitch = false;
-                    On = false;
-                    break;
-
-                case ModeType.PushButtons:
-                    On = false;
-                    break;
-            }
         }
 
         /// <summary>
