@@ -98,7 +98,6 @@
     <Compile Include="Simulation\LevelCrossing.cs" />
     <Compile Include="Simulation\Physics\Train.cs" />
     <Compile Include="Simulation\RollingStocks\LocomotiveAttributes.cs" />
-    <Compile Include="Simulation\RollingStocks\MSTSControlTrailerCar.cs" />
     <Compile Include="Simulation\RollingStocks\MSTSDieselLocomotive.cs" />
     <Compile Include="Simulation\RollingStocks\MSTSElectricLocomotive.cs" />
     <Compile Include="Simulation\RollingStocks\MSTSLocomotive.cs" />
