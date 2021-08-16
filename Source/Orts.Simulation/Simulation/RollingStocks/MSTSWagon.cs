@@ -483,7 +483,7 @@ namespace Orts.Simulation.RollingStocks
             }
             
             // Ensure Drive Axles is set to a default if no OR value added to WAG file
-            if (WagonNumAxles == 0)
+            if (WagonNumAxles == 0 && WagonType != WagonTypes.Engine)
             {
                 if (MSTSWagonNumWheels != 0 && MSTSWagonNumWheels < 6)
                 {
@@ -2409,11 +2409,16 @@ namespace Orts.Simulation.RollingStocks
             // Determine Axle loading of Car
             if (WagonType == WagonTypes.Engine && IsPlayerTrain && Simulator.PlayerLocomotive is MSTSLocomotive locoParameters)
             {
+                // This only takes into account the driven axles for 100% accuracy the non driven axles should also be considered
                 AxleLoadKg = locoParameters.DrvWheelWeightKg / locoParameters.LocoNumDrvAxles;
             }
             else
             {
-                AxleLoadKg = MassKG / WagonNumAxles;
+                // Typically this loop should only be processed when it is a car of some description, and therefore it will use the wagon axles as it reference.
+                if (WagonNumAxles > 0)
+                {
+                    AxleLoadKg = MassKG / WagonNumAxles;
+                }
             }
 
             // Calculate the track gradient based on wagon axle loading
