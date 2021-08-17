@@ -527,7 +527,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     // WSP dump valve stops
                     Car.WheelBrakeSlideProtectionActive = false;
-                    Car.WheelBrakeSlideProtectionTimerS = 7.0f; // Reset WSP timer if 
+                    Car.WheelBrakeSlideProtectionTimerS = Car.wheelBrakeSlideTimerResetValueS; // Reset WSP timer if 
                 }
 
             }

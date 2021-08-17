@@ -291,7 +291,8 @@ namespace Orts.Simulation.RollingStocks
         public bool WheelBrakeSlideProtectionFitted = false;
         public bool WheelBrakeSlideProtectionActive = false;
         public bool WheelBrakeSlideProtectionLimitDisabled = false;
-        public float WheelBrakeSlideProtectionTimerS = 7;
+        public float wheelBrakeSlideTimerResetValueS = 7.0f; // Set wsp time to 7 secs
+        public float WheelBrakeSlideProtectionTimerS = 7.0f;
         public bool WheelBrakeSlideProtectionDumpValveLockout = false;
 
         public bool BrakeSkid = false;
@@ -1010,7 +1011,7 @@ namespace Orts.Simulation.RollingStocks
                     // Reset WSP dump valve lockout
                     if (WheelBrakeSlideProtectionFitted && WheelBrakeSlideProtectionDumpValveLockout && (ThrottlePercent > 0.01 || AbsSpeedMpS <= 0.002))
                     {
-                        WheelBrakeSlideProtectionTimerS = 7;
+                        WheelBrakeSlideProtectionTimerS = wheelBrakeSlideTimerResetValueS;
                         WheelBrakeSlideProtectionDumpValveLockout = false;
 
                     }
