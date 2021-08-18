@@ -1049,11 +1049,12 @@ namespace Orts.Viewer3D.RollingStock
 
                     var quaternionCar = new Quaternion(quaternion.X, quaternion.Y, quaternion.Z, quaternion.W);
 
-                    var AirHoseAngleRadians = Car.FrontAirHoseAngleAdjustmentRad;
+                    var AirHoseYAngleRadians = Car.FrontAirHoseYAngleAdjustmentRad;
+                    var AirHoseZAngleRadians = Car.FrontAirHoseZAngleAdjustmentRad;
 
                     AlignCouplerWithCar(Car, FrontAirHoseShape);
 
-                    AdjustAirHoseAngle(Car, FrontAirHoseShape, quaternionCar, AirHoseAngleRadians);
+                    AdjustAirHoseAngle(Car, FrontAirHoseShape, quaternionCar, AirHoseYAngleRadians, AirHoseZAngleRadians);
 
                     // Display Animation Shape                    
                     FrontAirHoseShape.PrepareFrame(frame, elapsedTime);
@@ -1113,11 +1114,12 @@ namespace Orts.Viewer3D.RollingStock
 
                     var quaternionCar = new Quaternion(quaternion.X, quaternion.Y, quaternion.Z, quaternion.W);
 
-                    var AirHoseAngleRadians = -Car.RearAirHoseAngleAdjustmentRad;
+                    var AirHoseYAngleRadians = Car.RearAirHoseYAngleAdjustmentRad;
+                    var AirHoseZAngleRadians = -Car.RearAirHoseZAngleAdjustmentRad;
 
                     AlignCouplerWithCar(Car, RearAirHoseShape);
 
-                    AdjustAirHoseAngle(Car, RearAirHoseShape, quaternionCar, AirHoseAngleRadians);
+                    AdjustAirHoseAngle(Car, RearAirHoseShape, quaternionCar, AirHoseYAngleRadians, AirHoseZAngleRadians);
 
                     // Display Animation Shape                    
                     RearAirHoseShape.PrepareFrame(frame, elapsedTime);
@@ -1230,17 +1232,17 @@ namespace Orts.Viewer3D.RollingStock
         /// <param name="adjacentCar"></param>
         /// <param name="couplerShape"></param>
         /// <param name="quaternionCar"></param>
-        private void AdjustAirHoseAngle(TrainCar adjacentCar, AnimatedShape airhoseShape, Quaternion quaternionCar, float angle)
+        private void AdjustAirHoseAngle(TrainCar adjacentCar, AnimatedShape airhoseShape, Quaternion quaternionCar, float angley, float anglez)
         {
-            var mRotation = Matrix.CreateRotationZ(angle);
+            var zRotation = Matrix.CreateRotationZ(anglez);
 
-            // Rotate the coupler to align with the calculated angle direction
-            airhoseShape.Location.XNAMatrix = mRotation * airhoseShape.Location.XNAMatrix;
+            // Rotate the airhose to align with the calculated angle direction
+            airhoseShape.Location.XNAMatrix = zRotation * airhoseShape.Location.XNAMatrix;
 
-            //            var mextRotation = Matrix.CreateRotationX(-angle);
+            var yRotation = Matrix.CreateRotationY(angley);
 
-            // Rotate the coupler to align with the calculated angle direction
-            //            airhoseShape.Location.XNAMatrix = mextRotation * airhoseShape.Location.XNAMatrix;
+            // Rotate the airhose to align with the calculated angle direction
+            airhoseShape.Location.XNAMatrix = yRotation * airhoseShape.Location.XNAMatrix;
 
         }
 
