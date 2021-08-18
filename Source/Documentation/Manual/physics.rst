@@ -3216,6 +3216,8 @@ Dump valve operation is prevented under the following conditions:
 To enable WSP ``ORTSWheelBrakeSlideProtection (1)``. If it is desired that emergency braking should not be impacted by WSP, then use 
 the ``ORTSEmergencyBrakingDisablesWSP (1)`` parameter.
 
+When WSP is active the brake cylinder pressure reading will go yellow in the extended HuD on the BRAKE INFORMATION screen.
+
 
 Dynamically Evolving Tractive Force
 ===================================
