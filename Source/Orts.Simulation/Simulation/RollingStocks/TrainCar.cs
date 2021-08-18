@@ -196,7 +196,6 @@ namespace Orts.Simulation.RollingStocks
         public float CarBodyLengthM;
         public float CarCouplerFaceLengthM;
         public float DerailmentCoefficient;
-        public float CarAirHoseLengthM;
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
@@ -251,8 +250,13 @@ namespace Orts.Simulation.RollingStocks
 
         public float FrontAirHoseHeightAdjustmentM;
         public float RearAirHoseHeightAdjustmentM;
-        public float FrontAirHoseAngleAdjustmentRad;
-        public float RearAirHoseAngleAdjustmentRad;
+        public float FrontAirHoseYAngleAdjustmentRad;
+        public float FrontAirHoseZAngleAdjustmentRad;
+        public float RearAirHoseYAngleAdjustmentRad;
+        public float RearAirHoseZAngleAdjustmentRad;
+
+        public float CarAirHoseLengthM;
+        public float CarAirHoseHorizontalLengthM;
 
         // Used to calculate Carriage Steam Heat Loss
         public const float BogieHeightM = 1.06f; // Height reduced by 1.06m to allow for bogies, etc
@@ -1322,21 +1326,26 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-                // Calculate airhose angles and height
-                var rearairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow(CouplerDistanceThisCarM, 2));
-                var frontairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow(CouplerDistanceBehindCarM, 2));
+                // Calculate airhose angles and height adjustment values for the air hose.  Firstly the "rest point" is calculated, and then the real time point. 
+                // The height and angle variation are then calculated against "at rest" reference point. The air hose angle is used to rotate the hose in two directions, ie the Y and Z axis. 
 
-                RearAirHoseHeightAdjustmentM =  (float)Math.Sqrt( (float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CouplerDistanceThisCarM + CouplerSlackM / 2.0f), 2));
-                CarBehind.FrontAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CouplerDistanceBehindCarM + CouplerSlackM / 2.0f), 2));
+                // Calculate height adjustment.
+                var rearairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow(CarAirHoseHorizontalLengthM, 2));
+                var frontairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow(CarBehind.CarAirHoseHorizontalLengthM, 2));
+
+                // actual airhose height
+                RearAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
+                CarBehind.FrontAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
 
                 // refererence adjustment heights to rest position
+                // If higher then rest position, then +ve adjustment
                 if (RearAirHoseHeightAdjustmentM >= rearairhoseheightadjustmentreferenceM)
                 {
                     RearAirHoseHeightAdjustmentM -= rearairhoseheightadjustmentreferenceM;
                 }
-                else
+                else // if lower then the rest position, then -ve adjustment
                 {
-                    RearAirHoseHeightAdjustmentM = rearairhoseheightadjustmentreferenceM - RearAirHoseHeightAdjustmentM;
+                    RearAirHoseHeightAdjustmentM = (rearairhoseheightadjustmentreferenceM - RearAirHoseHeightAdjustmentM);
                 }
 
                 if (CarBehind.FrontAirHoseHeightAdjustmentM >= frontairhoseheightadjustmentreferenceM)
@@ -1348,30 +1357,37 @@ namespace Orts.Simulation.RollingStocks
                     CarBehind.FrontAirHoseHeightAdjustmentM = frontairhoseheightadjustmentreferenceM - CarBehind.FrontAirHoseHeightAdjustmentM;
                 }
 
-                var rearairhoseangleadjustmentreferenceRad = (float)Math.Cos(CouplerDistanceThisCarM / CarAirHoseLengthM);
-                var frontairhoseangleadjustmentreferenceRad = (float)Math.Cos(CouplerDistanceBehindCarM / CarAirHoseLengthM);
+                // Calculate angle adjustments
+                var rearairhoseangleadjustmentreferenceRad = (float)Math.Asin(CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
+                var frontairhoseangleadjustmentreferenceRad = (float)Math.Asin(CarBehind.CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
 
-                RearAirHoseAngleAdjustmentRad = (float)Math.Cos((CouplerDistanceThisCarM + CouplerSlackM / 2.0f)/ CarAirHoseLengthM);
-                CarBehind.FrontAirHoseAngleAdjustmentRad = (float)Math.Cos((CouplerDistanceBehindCarM + CouplerSlackM / 2.0f) / CarAirHoseLengthM);
+                RearAirHoseZAngleAdjustmentRad = (float)Math.Asin((CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
+                CarBehind.FrontAirHoseZAngleAdjustmentRad = (float)Math.Asin((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
 
                 // refererence adjustment angles to rest position
-                if (RearAirHoseAngleAdjustmentRad >= rearairhoseangleadjustmentreferenceRad)
+                if (RearAirHoseZAngleAdjustmentRad >= rearairhoseangleadjustmentreferenceRad)
                 {
-                    RearAirHoseAngleAdjustmentRad -= rearairhoseangleadjustmentreferenceRad;
+                    RearAirHoseZAngleAdjustmentRad -= rearairhoseangleadjustmentreferenceRad;
                 }
                 else
                 {
-                    RearAirHoseAngleAdjustmentRad = rearairhoseangleadjustmentreferenceRad - RearAirHoseAngleAdjustmentRad;
+                    RearAirHoseZAngleAdjustmentRad = (rearairhoseangleadjustmentreferenceRad - RearAirHoseZAngleAdjustmentRad);
                 }
 
-                if (CarBehind.FrontAirHoseAngleAdjustmentRad >= frontairhoseangleadjustmentreferenceRad)
+                // The Y axis angle adjustment should be the same as the z axis
+                RearAirHoseYAngleAdjustmentRad = RearAirHoseZAngleAdjustmentRad;
+
+                if (CarBehind.FrontAirHoseZAngleAdjustmentRad >= frontairhoseangleadjustmentreferenceRad)
                 {
-                    CarBehind.FrontAirHoseAngleAdjustmentRad -= frontairhoseangleadjustmentreferenceRad;
+                    CarBehind.FrontAirHoseZAngleAdjustmentRad -= frontairhoseangleadjustmentreferenceRad;
                 }
                 else
                 {
-                    CarBehind.FrontAirHoseAngleAdjustmentRad = frontairhoseangleadjustmentreferenceRad - CarBehind.FrontAirHoseAngleAdjustmentRad;
+                    CarBehind.FrontAirHoseZAngleAdjustmentRad = (frontairhoseangleadjustmentreferenceRad - CarBehind.FrontAirHoseZAngleAdjustmentRad);
                 }
+
+                // The Y axis angle adjustment should be the same as the z axis
+                CarBehind.FrontAirHoseYAngleAdjustmentRad = CarBehind.FrontAirHoseZAngleAdjustmentRad;
 
             }
 
