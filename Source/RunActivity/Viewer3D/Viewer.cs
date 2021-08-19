@@ -516,6 +516,7 @@ namespace Orts.Viewer3D
             BrakemanBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             DynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             InitializeBrakesCommand.Receiver = PlayerLocomotive.Train;
+            ResetOutOfControlModeCommand.Receiver = PlayerLocomotive.Train;
             EmergencyPushButtonCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             HandbrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BailOffCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
@@ -1168,6 +1169,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.GameResetSignalBackward)) PlayerTrain.RequestResetSignal(Direction.Reverse);
 
             if (UserInput.IsPressed(UserCommand.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
+            if (UserInput.IsPressed(UserCommand.GameResetOutOfControlMode)) new ResetOutOfControlModeCommand(Log);
 
             if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
             if (UserInput.IsPressed(UserCommand.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }

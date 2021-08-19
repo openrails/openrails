@@ -1026,6 +1026,17 @@ You can have train cars oscillating (swaying) by hitting ``<Ctrl+V>``; if
 you want more oscillation, click ``<Ctrl+V>`` again. Four levels, 
 including the no-oscillation level, are available by repeating ``<Ctrl+V>``.
 
+Manual emergency braking release
+--------------------------------
+
+In some cases where the emergency braking is triggered by the simulator, it is possible to release
+the emergency braking by pressing ``<Shift+Backspace>``.
+
+The cases where the reset is allowed are:
+
+- Signal passed at danger
+- Trailed misaligned switch
+
 .. _driving-turntable:
 
 Engaging a turntable or a transfertable

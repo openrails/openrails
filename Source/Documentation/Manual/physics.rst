@@ -139,6 +139,33 @@ the typical outcomes for bearing temperature heating or cooling effects.
 A special smoke effect,  ``BearingHotboxFX``, can be added adjacent to the wagon hot box. 
 This will be triggered if the bearing overheats.
 
+Derailment Coefficient
+----------------------
+
+The derailment coefficient indicates the likelihood that a car or wagon will derail, 
+and is the ratio of the lateral force to vertical force acting on the wagon. This concept was 
+first proposed by Nadal.
+
+The higher the coefficient the higher the risk that a derailment will occur. Most railway 
+companies tend to operate at a coefficient value of less then 0.8 as this gives a desireable 
+safety margin for the car.
+
+The OR calculated derailment coefficient is displayed in the Force Information HuD. The 
+coefficient value will change colour to indicate the likelihood of the car derailing. White 
+indicates normal operation, yellow provides a warning indication, whilst red indicates that 
+derailment is extremely likely.
+
+Open Rails uses some standard defaults that it uses to calculate the derailment coefficient, 
+however if the modeler desires greater accuracy the following parameters can be added to the 
+WAG/ENG file in the wagon section:
+
+``ORTSLengthBogieCentre`` - length between bogie centres.
+``ORTSLengthCarBody`` - Length between car ends.
+``ORTSLengthCouplerFace`` - length between coupler faces.
+
+``ORTSNumAxles`` - number of axles on the car.
+``ORTSNumBogies`` - number of bogies on the car.
+
 .. _physics-adhesion:
 
 Adhesion of Locomotives -- Settings Within the Wagon Section of ENG files
