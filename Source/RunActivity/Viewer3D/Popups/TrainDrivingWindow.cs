@@ -382,6 +382,7 @@ namespace Orts.Viewer3D.Popups
         void FontToBold_Click(Control arg1, Point arg2)
         {
             FontToBold = !FontToBold;
+            Owner.Viewer.Settings.WindowGlass = !Owner.Viewer.Settings.WindowGlass;// to help user with ageing eyesight.
             UpdateWindowSize();
         }
 
