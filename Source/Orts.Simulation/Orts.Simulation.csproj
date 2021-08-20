@@ -65,6 +65,7 @@
     <Compile Include="Common\Scripting\BrakeController.cs" />
     <Compile Include="Common\Scripting\Commands.cs" />
     <Compile Include="Common\Scripting\Common.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\ControlCarPowerSupply.cs" />
     <Compile Include="Common\Scripting\PowerSupply\DualModePowerSupply.cs" />
     <Compile Include="Common\Scripting\PowerSupply\LocomotivePowerSupply.cs" />
     <Compile Include="Common\Scripting\PowerSupply\PassengerCarPowerSupply.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\MSTSBrakeController.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\MSTSNotchController.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\FreightAnimations.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ControlCarPowerSupply.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ElectricTrainSupplySwitch.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\BatterySwitch.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\DualModePowerSupply.cs" />
