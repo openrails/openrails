@@ -10,7 +10,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   Position = poScreenCenter
   ShowHint = True
-  LCLVersion = '1.2.2.0'
+  LCLVersion = '2.0.12.0'
   object Panel1: TPanel
     Left = 0
     Height = 56
@@ -2182,15 +2182,15 @@ object Form1: TForm1
     OnSelectCell = gridSelectCell
   end
   object OpenDialog1: TOpenDialog
-    left = 792
-    top = 16
+    Left = 792
+    Top = 16
   end
   object SaveDialog1: TSaveDialog
-    left = 792
+    Left = 792
   end
   object gridpopup: TPopupMenu
-    left = 552
-    top = 88
+    Left = 552
+    Top = 88
     object MenuItem1: TMenuItem
       Caption = 'automatic column width'
       OnClick = MenuItem1Click
@@ -2223,7 +2223,7 @@ object Form1: TForm1
     end
   end
   object SaveDialog2: TSaveDialog
-    left = 758
-    top = 76
+    Left = 758
+    Top = 76
   end
 end

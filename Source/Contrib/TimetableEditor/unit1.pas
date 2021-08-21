@@ -516,10 +516,10 @@ begin
     //savedialog1.Title:='Zeitplan speichern';
     savedialog1.Title:=DLGsave;
     savedialog1.InitialDir:=UTF8ToSys(getroutepath+'Activities\Openrails');
-    //savedialog1.Filter:='Openrails Zeitplan|*.timetable_or';
-    savedialog1.Filter:='Openrails timetable (*.timetable_or)|*.timetable_or';
+    //savedialog1.Filter:='Open Rails Zeitplan|*.timetable-or';
+    savedialog1.Filter:='Open Rails timetable|*.timetable-or;*.timetable_or';
     if ttfilename <> '' then savedialog1.filename:=ttfilename
-    else savedialog1.filename:=title+'.timetable_or';
+    else savedialog1.filename:=title+'.timetable-or';
     save:=true;
     but:=1;
     if (savedialog1.Execute) and (savedialog1.FileName<>'') then begin
@@ -598,8 +598,8 @@ begin
   cols:=tstringlist.create;
   //opendialog1.Title:='Zeitplan öffnen';
   opendialog1.Title:=DLGopenTT;
-  //opendialog1.Filter:='Openrails Zeitplan|*.timetable_or';
-  opendialog1.Filter:='Openrails timetable (*.timetable_or)|*.timetable_or';
+  //opendialog1.Filter:='Open Rails Zeitplan|*.timetable-or';
+  opendialog1.Filter:='Open Rails timetable|*.timetable-or;*.timetable_or';
   opendialog1.filename:='';
   if (opendialog1.execute) and (opendialog1.FileName<>'') then begin
     resetgrid;
@@ -842,7 +842,7 @@ begin
   slist:=tstringlist.create;
   cols:=tstringlist.create;
   opendialog1.Title:=DLGImportTT;
-  opendialog1.Filter:='Openrails timetable|*.timetable_or';
+  opendialog1.Filter:='Open Rails timetable|*.timetable-or;*.timetable_or';
   if (opendialog1.execute) and (opendialog1.FileName<>'') then begin
     fces:=tcharencStream.create;
     fces.reset;
