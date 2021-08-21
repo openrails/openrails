@@ -1194,11 +1194,6 @@
             // numericWorldObjectDensity
             // 
             this.numericWorldObjectDensity.Location = new System.Drawing.Point(6, 299);
-            this.numericWorldObjectDensity.Maximum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
             this.numericWorldObjectDensity.Name = "numericWorldObjectDensity";
             this.numericWorldObjectDensity.Size = new System.Drawing.Size(54, 20);
             this.numericWorldObjectDensity.TabIndex = 16;
