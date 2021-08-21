@@ -109,13 +109,12 @@ IF "%ERRORLEVEL%" == "9009" GOTO :error
 
 CALL :copy "Program\RunActivity.exe" "Program\RunActivityLAA.exe" || GOTO :error
 editbin /NOLOGO /LARGEADDRESSAWARE "Program\RunActivityLAA.exe" || GOTO :error
-copy "Program\RunActivity.exe.config" "Program\RunActivityLAA.exe.config" || GOTO :error
+CALL :copy "Program\RunActivity.exe.config" "Program\RunActivityLAA.exe.config" || GOTO :error
 ECHO Created large address aware version of RunActivity.exe.
 
-REM Copy the Web content, empty the destination folder first
-IF EXIST "Program\Content\Web" RMDIR "Program\Content\Web" /S /Q
-IF NOT EXIST "Program\Content\Web" MKDIR "Program\Content\Web"
-XCOPY "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web" /S /Y || GOTO :error
+REM Copy the web content
+ROBOCOPY /MIR /NJH /NJS "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web"
+IF %ERRORLEVEL% GEQ 8 GOTO :error
 
 REM Copy version number from OpenRails.exe into all other 1st party files
 FOR %%F IN ("Program\*.exe", "Program\Orts.*.dll", "Program\Contrib.*.dll", "Program\Tests.dll") DO (
@@ -144,7 +143,9 @@ IF NOT "%Mode%" == "Unstable" (
 	PUSHD "Source\Documentation\Manual" && CALL make.bat latexpdf && POPD || GOTO :error
 
 	REM Copy the documentation.
-	FOR /R "Source\Documentation" %%F IN (*.pdf *.txt) DO CALL :copy "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
+	FOR /R "Source\Documentation" %%F IN (*.pdf) DO CALL :copy "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
+	CALL :create "Program\Documentation\es"
+	CALL :copy "Source\Documentation\Manual\es\Manual.pdf" "Program\Documentation\es\Manual.pdf" || GOTO :error
 	ROBOCOPY /MIR /NJH /NJS "Source\Documentation\SampleFiles" "Program\Documentation\SampleFiles"
 	IF %ERRORLEVEL% GEQ 8 GOTO :error
 
