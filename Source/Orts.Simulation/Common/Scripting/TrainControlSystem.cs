@@ -118,6 +118,12 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<string, int, float, SignalFeatures> NextGenericSignalFeatures;
         /// <summary>
+        /// Features of next speed post
+        /// int: position of speed post in the speed post sequence along the train route, starting from train front; 0 for first speed post;
+        /// float: max testing distance
+        /// </summary>
+        public Func<int, float, SpeedPostFeatures> NextSpeedPostFeatures;
+        /// <summary>
         /// Next normal signal has a repeater head
         /// </summary>
         public Func<bool> DoesNextNormalSignalHaveRepeaterHead;
@@ -517,7 +523,8 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Called by signalling code externally to stop the train in certain circumstances.
         /// </summary>
-        public abstract void SetEmergency(bool emergency);
+        [Obsolete("SetEmergency method is deprecated, use HandleEvent(TCSEvent, string) instead")]
+        public virtual void SetEmergency(bool emergency) { }
         /// <summary>
         /// Called when player has requested a game save. 
         /// Set at virtual to keep compatibility with scripts not providing this method.
@@ -564,6 +571,18 @@ namespace ORTS.Scripting.Api
 
     public enum TCSEvent
     {
+        /// <summary>
+        /// Emergency braking requested by simulator (train is out of control).
+        /// </summary>
+        EmergencyBrakingRequestedBySimulator,
+        /// <summary>
+        /// Emergency braking released by simulator.
+        /// </summary>
+        EmergencyBrakingReleasedBySimulator,
+        /// <summary>
+        /// Manual reset of the train's out of control mode.
+        /// </summary>
+        ManualResetOutOfControlMode,
         /// <summary>
         /// Reset request by pressing the alerter button.
         /// </summary>
@@ -687,6 +706,24 @@ namespace ORTS.Scripting.Api
             SpeedLimitMpS = speedLimitMpS;
             AltitudeM = altitudeM;
             TextAspect = textAspect;
+        }
+    }
+
+    public struct SpeedPostFeatures
+    {
+        public readonly string SpeedPostTypeName;
+        public readonly bool IsWarning;
+        public readonly float DistanceM;
+        public readonly float SpeedLimitMpS;
+        public readonly float AltitudeM;
+
+        public SpeedPostFeatures(string speedPostTypeName, bool isWarning, float distanceM, float speedLimitMpS, float altitudeM)
+        {
+            SpeedPostTypeName = speedPostTypeName;
+            IsWarning = isWarning;
+            DistanceM = distanceM;
+            SpeedLimitMpS = speedLimitMpS;
+            AltitudeM = altitudeM;
         }
     }
 

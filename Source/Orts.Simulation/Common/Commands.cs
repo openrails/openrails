@@ -633,26 +633,40 @@ namespace Orts.Common
 
         public override void Redo() {
             Receiver.UnconditionalInitializeBrakes();
-            // Report();
         }
     }
 
     [Serializable()]
-    public sealed class EmergencyPushButtonCommand : Command
+    public sealed class ResetOutOfControlModeCommand : Command
     {
-        public static MSTSLocomotive Receiver { get; set; }
-
-        public EmergencyPushButtonCommand(CommandLog log)
-            : base(log)
+        public static Train Receiver { get; set; }
+        public ResetOutOfControlModeCommand(CommandLog log) : base(log)
         {
             Redo();
         }
 
         public override void Redo()
         {
-            Receiver.EmergencyButtonPressed = !Receiver.EmergencyButtonPressed;
-            Receiver.TrainBrakeController.EmergencyBrakingPushButton = Receiver.EmergencyButtonPressed;
-            // Report();
+            Receiver.ManualResetOutOfControlMode();
+            Receiver.SignalEvent(TCSEvent.ManualResetOutOfControlMode);
+        }
+    }
+
+    [Serializable()]
+    public sealed class EmergencyPushButtonCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public EmergencyPushButtonCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.EmergencyButtonPressed = ToState;
+            Receiver.TrainBrakeController.EmergencyBrakingPushButton = ToState;
         }
     }
 

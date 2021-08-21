@@ -606,6 +606,45 @@ to the oscillation from center point to an oscillation end point. The file shoul
 one cue point at its beginning and one after the time interval of a complete bell swing 
 forward and backward, and should have a final fadeoff for best result. 
 
+Coupler and Airhose Animation
+=============================
+
+Open Rails supports animation of couplers and air hoses. Coupler animation will move the 
+couplers and air hoses as the train moves and the coupler slack increases or decreases. 
+Couplers will also rotate as the train travels around a curve.
+
+To implement this separate models need to be provided for the couplers and air hoses. A 
+separate model for the coupled and uncoupled state is suggested.
+
+To enable coupler animation the following parameters need to be included in the coupler 
+code section of the WAG file:
+
+``FrontCouplerAnim`` - Coupler shape to be displayed at the front of the car when it is coupled.
+``FrontCouplerOpenAnim`` - Coupler shape to be displayed at the front of the car when it is uncoupled.
+``RearCouplerAnim`` - Coupler shape to be displayed at the rear of the car when it is coupled.
+``RearCouplerOpenAnim`` - Coupler shape to be displayed at the rear of the car when it is uncoupled
+
+All four of the above will have the following format:
+
+CouplerAnimation ( couplershape.s, x, y, z ) where the coupler shape file name is included along with 
+x, y, z values that offset the coupler in the three axis.
+
+For the airhose animation the following parameters must be included in the coupler code section of 
+the WAG file:
+
+``FrontAirHoseAnim`` - Air hose shape to be displayed at the front of the car when it is coupled.
+``FrontAirHoseDisconnectedAnim`` - Air hose shape to be displayed at the front of the car when it is uncoupled.
+``RearAirHoseAnim`` - Air hose shape to be displayed at the rear of the car when it is coupled.
+``RearAirHoseDisconnectedAnim`` - Air hose shape to be displayed at the rear of the car when it is uncoupled.
+
+Each of these parameters will have the same format as indicated above for the coupler shapes.
+
+Open rails uses some defaults to calculate the required movement and angles for coupler and air hose 
+shape movement, however for greater accuracy the modeler can add specific values such as 
+``ORTSLengthAirHose``. In addition the length values suggested in the Derailment Coefficient should 
+also be added.
+
+
 C# engine scripting
 ===================
 .. _features-scripting-csharp:
@@ -1053,6 +1092,38 @@ to be displayed in the ETCS DMI. For example, the following block orders the DMI
    single: State
    single: Style
    single: SwitchVal
+
+Emergency braking triggered by the simulator
+''''''''''''''''''''''''''''''''''''''''''''
+
+The emergency brakings triggered by the simulator are always sent to the TCS script.
+
+Two functions are used to transmit this information:
+
+.. code-block:: csharp
+
+    public override void HandleEvent(TCSEvent evt, string message)
+
+The events sent are ``EmergencyBrakingRequestedBySimulator``, ``EmergencyBrakingReleasedBySimulator`` and ``ManualResetOutOfControlMode``.
+For the first event, the reason of the emergency braking is also sent:
+
+- ``SPAD``: The train has passed a signal at danger at the front of the train
+- ``SPAD_REAR``: The train has passed a signal at danger at the rear of the train
+- ``MISALIGNED_SWITCH``: The train has trailed a misaligned switch
+- ``OUT_OF_AUTHORITY``: The train has passed the limit of authority
+- ``OUT_OF_PATH``: The train has ran off its allocated path
+- ``SLIPPED_INTO_PATH``: The train has slipped back into the path of another train
+- ``SLIPPED_TO_ENDOFTRACK``: The train has slipped off the end of the track
+- ``OUT_OF_TRACK``: The train has moved off the track
+- ``OTHER_TRAIN_IN_PATH``: Another train has entered the train's path
+- ``SLIPPED_INTO_TURNTABLE``: The train has entered a misaligned turntable
+- ``TRAIN_ON_MOVING_TURNTABLE``: The train has started moving on a moving turntable
+
+.. code-block:: csharp
+
+    public override void SetEmergency(bool emergency)
+
+This function is deprecated and will be deleted in a future version. The parameter indicates if the emergency braking is requested (true) or released (false).
 
 Generic cabview controls
 ''''''''''''''''''''''''

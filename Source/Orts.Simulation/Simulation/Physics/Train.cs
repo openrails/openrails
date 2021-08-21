@@ -331,7 +331,28 @@ namespace Orts.Simulation.Physics
             UNDEFINED
         }
 
-        public TRAIN_CONTROL ControlMode = TRAIN_CONTROL.UNDEFINED;     // train control mode
+        private TRAIN_CONTROL controlMode = TRAIN_CONTROL.UNDEFINED;
+
+        /// <summary>
+        /// Train control mode
+        /// </summary>
+        public TRAIN_CONTROL ControlMode
+        {
+            get => controlMode;
+            set
+            {
+                if (value == TRAIN_CONTROL.OUT_OF_CONTROL && controlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+                    ControlModeBeforeOutOfControl = controlMode;
+                else
+                    ControlModeBeforeOutOfControl = TRAIN_CONTROL.UNDEFINED;
+                controlMode = value;
+            }
+        }
+
+        /// <summary>
+        /// Set when the train is out of control
+        /// </summary>
+        private TRAIN_CONTROL ControlModeBeforeOutOfControl = TRAIN_CONTROL.UNDEFINED;
 
         public enum OUTOFCONTROL
         {
@@ -1486,6 +1507,12 @@ namespace Orts.Simulation.Physics
         /// </summary>
 
         public void SignalEvent(Event evt)
+        {
+            foreach (TrainCar car in Cars)
+                car.SignalEvent(evt);
+        }
+
+        public void SignalEvent(TCSEvent evt)
         {
             foreach (TrainCar car in Cars)
                 car.SignalEvent(evt);
@@ -2686,12 +2713,11 @@ namespace Orts.Simulation.Physics
 
         public void UpdateTurntable(float elapsedClockSeconds)
         {
-            //           UpdateTrainPosition();                                                                // position update                  //
-            if (LeadLocomotive != null && (LeadLocomotive.ThrottlePercent >= 1 || Math.Abs(LeadLocomotive.SpeedMpS) > 0.05 || !(LeadLocomotive.Direction == Direction.N
-            || Math.Abs(MUReverserPercent) <= 1)) || ControlMode != TRAIN_CONTROL.TURNTABLE)
+            if (LeadLocomotive is MSTSLocomotive locomotive && (LeadLocomotive.ThrottlePercent >= 1 || Math.Abs(LeadLocomotive.SpeedMpS) > 0.05 || !(LeadLocomotive.Direction == Direction.N
+            || Math.Abs(MUReverserPercent) <= 1)))
             // Go to emergency.
             {
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, "TRAIN_ON_MOVING_TURNTABLE");
             }
         }
 
@@ -3066,103 +3092,107 @@ namespace Orts.Simulation.Physics
 
                 while (firstObject.distance_to_train < 0.0f && SignalObjectItems.Count > 0)
                 {
-#if DEBUG_REPORTS
-                    File.AppendAllText(@"C:\temp\printproc.txt", "Passed Signal : " + firstObject.ObjectDetails.thisRef.ToString() +
-                        " with speed : " + firstObject.actual_speed.ToString() + "\n");
-#endif
-                    var temp1MaxSpeedMpS = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
-                    if (firstObject.ObjectDetails.isSignal)
-                    {
-                        allowedAbsoluteMaxSpeedSignalMpS = temp1MaxSpeedMpS == -1 ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : temp1MaxSpeedMpS;
-                    }
-                    else if (firstObject.speed_reset == 0)
-                    {
-                        if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0) allowedAbsoluteMaxSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? allowedAbsoluteMaxSpeedLimitMpS : temp1MaxSpeedMpS;
-                        else allowedAbsoluteMaxTempSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? allowedAbsoluteMaxTempSpeedLimitMpS : temp1MaxSpeedMpS;
-                    }
-                    else
-                    {
-                        allowedAbsoluteMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedLimitMpS;
-                    }
-
-                    if (firstObject.actual_speed > 0)
+                    // If the object is a signal or a speed limit execution
+                    if (firstObject.ObjectDetails.isSignal || !firstObject.speed_isWarning)
                     {
 #if DEBUG_REPORTS
-                        File.AppendAllText(@"C:\temp\printproc.txt", "Passed speedpost : " + firstObject.ObjectDetails.thisRef.ToString() +
-                            " = " + firstObject.actual_speed.ToString() + "\n");
-
-                        File.AppendAllText(@"C:\temp\printproc.txt", "Present Limits : " +
-                            "Limit : " + allowedMaxSpeedLimitMpS.ToString() + " ; " +
-                            "Signal : " + allowedMaxSpeedSignalMpS.ToString() + " ; " +
-                            "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Passed Signal : " + firstObject.ObjectDetails.thisRef.ToString() +
+                            " with speed : " + firstObject.actual_speed.ToString() + "\n");
 #endif
-                        if (firstObject.actual_speed <= AllowedMaxSpeedMpS)
+                        var temp1MaxSpeedMpS = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
+                        if (firstObject.ObjectDetails.isSignal)
                         {
-                            AllowedMaxSpeedMpS = firstObject.actual_speed;
-                            float tempMaxSpeedMps = AllowedMaxSpeedMpS;
-                            if (!Simulator.TimetableMode)
-                            {
-                                tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
-                                if (tempMaxSpeedMps == -1f)
-                                    tempMaxSpeedMps = AllowedMaxSpeedMpS;
-                            }
-
-
-                            if (firstObject.ObjectDetails.isSignal)
-                            {
-                                allowedMaxSpeedSignalMpS = tempMaxSpeedMps;
-                            }
-                            else if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0)
-                            {
-                                allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
-                            }
-                            else
-                            {
-                                allowedMaxTempSpeedLimitMpS = tempMaxSpeedMps;
-                            }
-                            requiredActions.UpdatePendingSpeedlimits(AllowedMaxSpeedMpS);  // update any older pending speed limits
+                            allowedAbsoluteMaxSpeedSignalMpS = temp1MaxSpeedMpS == -1 ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : temp1MaxSpeedMpS;
+                        }
+                        else if (firstObject.speed_reset == 0)
+                        {
+                            if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0) allowedAbsoluteMaxSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? allowedAbsoluteMaxSpeedLimitMpS : temp1MaxSpeedMpS;
+                            else allowedAbsoluteMaxTempSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? allowedAbsoluteMaxTempSpeedLimitMpS : temp1MaxSpeedMpS;
                         }
                         else
                         {
-                            ActivateSpeedLimit speedLimit;
-                            float reqDistance = DistanceTravelledM + Length;
-                            if (firstObject.ObjectDetails.isSignal)
-                            {
-                                speedLimit = new ActivateSpeedLimit(reqDistance, -1f, firstObject.actual_speed);
-                            }
-                            else if (Simulator.TimetableMode || firstObject.speed_reset == 0)
-                            {
-                                speedLimit = new ActivateSpeedLimit(reqDistance,
-                                    firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0 ? firstObject.actual_speed : -1, -1f,
-                                    firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0 ? -1 : firstObject.actual_speed);
-                            }
-                            else
-                            {
-                                speedLimit = new ActivateSpeedLimit(reqDistance, firstObject.actual_speed, firstObject.actual_speed);
-                            }
+                            allowedAbsoluteMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedLimitMpS;
+                        }
 
-                            requiredActions.InsertAction(speedLimit);
-                            requiredActions.UpdatePendingSpeedlimits(firstObject.actual_speed);  // update any older pending speed limits
-                        }
-                    }
-                    else if (!Simulator.TimetableMode)
-                    {
-                        var tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
-                        if (tempMaxSpeedMps >= 0)
+                        if (firstObject.actual_speed > 0)
                         {
-                            if (firstObject.ObjectDetails.isSignal)
+#if DEBUG_REPORTS
+                            File.AppendAllText(@"C:\temp\printproc.txt", "Passed speedpost : " + firstObject.ObjectDetails.thisRef.ToString() +
+                                " = " + firstObject.actual_speed.ToString() + "\n");
+
+                            File.AppendAllText(@"C:\temp\printproc.txt", "Present Limits : " +
+                                "Limit : " + allowedMaxSpeedLimitMpS.ToString() + " ; " +
+                                "Signal : " + allowedMaxSpeedSignalMpS.ToString() + " ; " +
+                                "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
+#endif
+                            if (firstObject.actual_speed <= AllowedMaxSpeedMpS)
                             {
-                                allowedMaxSpeedSignalMpS = tempMaxSpeedMps;
+                                AllowedMaxSpeedMpS = firstObject.actual_speed;
+                                float tempMaxSpeedMps = AllowedMaxSpeedMpS;
+                                if (!Simulator.TimetableMode)
+                                {
+                                    tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
+                                    if (tempMaxSpeedMps == -1f)
+                                        tempMaxSpeedMps = AllowedMaxSpeedMpS;
+                                }
+
+
+                                if (firstObject.ObjectDetails.isSignal)
+                                {
+                                    allowedMaxSpeedSignalMpS = tempMaxSpeedMps;
+                                }
+                                else if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0)
+                                {
+                                    allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
+                                }
+                                else
+                                {
+                                    allowedMaxTempSpeedLimitMpS = tempMaxSpeedMps;
+                                }
+                                requiredActions.UpdatePendingSpeedlimits(AllowedMaxSpeedMpS);  // update any older pending speed limits
                             }
                             else
                             {
-                                if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0) allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
-                                else allowedMaxTempSpeedLimitMpS = tempMaxSpeedMps;
+                                ActivateSpeedLimit speedLimit;
+                                float reqDistance = DistanceTravelledM + Length;
+                                if (firstObject.ObjectDetails.isSignal)
+                                {
+                                    speedLimit = new ActivateSpeedLimit(reqDistance, -1f, firstObject.actual_speed);
+                                }
+                                else if (Simulator.TimetableMode || firstObject.speed_reset == 0)
+                                {
+                                    speedLimit = new ActivateSpeedLimit(reqDistance,
+                                        firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0 ? firstObject.actual_speed : -1, -1f,
+                                        firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0 ? -1 : firstObject.actual_speed);
+                                }
+                                else
+                                {
+                                    speedLimit = new ActivateSpeedLimit(reqDistance, firstObject.actual_speed, firstObject.actual_speed);
+                                }
+
+                                requiredActions.InsertAction(speedLimit);
+                                requiredActions.UpdatePendingSpeedlimits(firstObject.actual_speed);  // update any older pending speed limits
                             }
                         }
-                        else if (firstObject.ObjectDetails.isSignal)
+                        else if (!Simulator.TimetableMode)
                         {
-                            allowedMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedSignalMpS;
+                            var tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
+                            if (tempMaxSpeedMps >= 0)
+                            {
+                                if (firstObject.ObjectDetails.isSignal)
+                                {
+                                    allowedMaxSpeedSignalMpS = tempMaxSpeedMps;
+                                }
+                                else
+                                {
+                                    if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0) allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
+                                    else allowedMaxTempSpeedLimitMpS = tempMaxSpeedMps;
+                                }
+                            }
+                            else if (firstObject.ObjectDetails.isSignal)
+                            {
+                                allowedMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedSignalMpS;
+                            }
                         }
                     }
 
@@ -3292,6 +3322,7 @@ namespace Orts.Simulation.Physics
                         firstObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
                         firstObject.speed_reset = thisSpeed == null ? 0 : thisSpeed.speed_reset;
                         firstObject.speed_noSpeedReductionOrIsTempSpeedReduction = thisSpeed == null ? 0 : thisSpeed.speed_noSpeedReductionOrIsTempSpeedReduction;
+                        firstObject.speed_isWarning = thisSpeed?.speed_isWarning ?? false;
                     }
                 }
 
@@ -3330,6 +3361,7 @@ namespace Orts.Simulation.Physics
                             nextObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
                             nextObject.speed_reset = thisSpeed == null ? 0 : thisSpeed.speed_reset;
                             nextObject.speed_noSpeedReductionOrIsTempSpeedReduction = thisSpeed == null ? 0 : thisSpeed.speed_noSpeedReductionOrIsTempSpeedReduction;
+                            nextObject.speed_isWarning = thisSpeed?.speed_isWarning ?? false;
                         }
                     }
 
@@ -3419,6 +3451,7 @@ namespace Orts.Simulation.Physics
                                 nextObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
                                 nextObject.speed_reset = thisSpeed == null ? 0 : thisSpeed.speed_reset;
                                 nextObject.speed_noSpeedReductionOrIsTempSpeedReduction = thisSpeed == null ? 0 : thisSpeed.speed_noSpeedReductionOrIsTempSpeedReduction;
+                                nextObject.speed_isWarning = thisSpeed?.speed_isWarning ?? false;
                             }
                         }
 
@@ -3503,7 +3536,7 @@ namespace Orts.Simulation.Physics
             {
                 DistanceToSignal = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
             }
-            else if (ControlMode != TRAIN_CONTROL.AUTO_NODE)
+            else if (ControlMode != TRAIN_CONTROL.AUTO_NODE && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
             {
                 bool validModeSwitch = true;
 
@@ -3621,6 +3654,7 @@ namespace Orts.Simulation.Physics
                 }
                 else if (Simulator.TimetableMode)
                 {
+                    if (!thisObject.speed_isWarning)
                     {
                         if (actualSpeedMpS > 998f)
                         {
@@ -3642,7 +3676,7 @@ namespace Orts.Simulation.Physics
                     }
                 }
 
-                else  // Enhanced Compatibility on & SpeedLimit
+                else if (!thisObject.speed_isWarning) // Enhanced Compatibility on & SpeedLimit
                 {
                     if (actualSpeedMpS > 998f)
                     {
@@ -7158,28 +7192,28 @@ namespace Orts.Simulation.Physics
         {
             switch (ControlMode)
             {
-                case (TRAIN_CONTROL.AUTO_SIGNAL):
+                case TRAIN_CONTROL.AUTO_SIGNAL:
+                    UpdateSignalMode(signalObjectIndex, backward, elapsedClockSeconds);
+                    break;
+
+                case TRAIN_CONTROL.AUTO_NODE:
+                    UpdateNodeMode();
+                    break;
+
+                case TRAIN_CONTROL.OUT_OF_CONTROL:
+                    UpdateOutOfControl();
+                    if (LeadLocomotive is MSTSLocomotive locomotive)
                     {
-                        UpdateSignalMode(signalObjectIndex, backward, elapsedClockSeconds);
-                        break;
+                        if (!locomotive.TrainControlSystem.SimulatorEmergencyBraking)
+                        {
+                            locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, OutOfControlReason.ToString());
+                        }
                     }
-                case (TRAIN_CONTROL.AUTO_NODE):
-                    {
-                        UpdateNodeMode();
-                        break;
-                    }
-                case (TRAIN_CONTROL.OUT_OF_CONTROL):
-                    {
-                        UpdateOutOfControl();
-                        if (LeadLocomotive != null)
-                            ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
-                        break;
-                    }
-                case (TRAIN_CONTROL.UNDEFINED):
-                    {
-                        SwitchToNodeControl(-1);
-                        break;
-                    }
+                    break;
+
+                case TRAIN_CONTROL.UNDEFINED:
+                    SwitchToNodeControl(-1);
+                    break;
 
                 // other modes are processed directly
                 default:
@@ -9632,8 +9666,10 @@ namespace Orts.Simulation.Physics
 
         public void ToggleToExplorerMode()
         {
-            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+            }
 
             // set track occupation (using present route)
             UpdateSectionStateExplorer();
@@ -9881,10 +9917,10 @@ namespace Orts.Simulation.Physics
             }
             else if (ControlMode == TRAIN_CONTROL.EXPLORER)
             {
-                if (LeadLocomotive != null &&
-                    (((MSTSLocomotive)LeadLocomotive).TrainBrakeController.TCSEmergencyBraking || ((MSTSLocomotive)LeadLocomotive).TrainBrakeController.TCSFullServiceBraking))
+                if (LeadLocomotive is MSTSLocomotive locomotive &&
+                    (locomotive.TrainBrakeController.TCSEmergencyBraking || locomotive.TrainBrakeController.TCSFullServiceBraking))
                 {
-                    ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+                    locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
                     ResetExplorerMode();
                     return;
                 }
@@ -9905,8 +9941,10 @@ namespace Orts.Simulation.Physics
 
         public void ToggleToManualMode()
         {
-            if (LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+            if (LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+            }
 
             // set track occupation (using present route)
             UpdateSectionStateManual();
@@ -10032,8 +10070,10 @@ namespace Orts.Simulation.Physics
 
         public void ResetExplorerMode()
         {
-            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+            }
 
             // set track occupation (using present route)
             UpdateSectionStateExplorer();
@@ -10388,8 +10428,7 @@ namespace Orts.Simulation.Physics
 
                 // set control state and issue warning
 
-                if (ControlMode != TRAIN_CONTROL.EXPLORER)
-                    ControlMode = TRAIN_CONTROL.OUT_OF_CONTROL;
+                ControlMode = TRAIN_CONTROL.OUT_OF_CONTROL;
 
                 var report = string.Format("Train {0} is out of control and will be stopped. Reason : ", Number.ToString());
 
@@ -10397,25 +10436,25 @@ namespace Orts.Simulation.Physics
 
                 switch (reason)
                 {
-                    case (OUTOFCONTROL.SPAD):
+                    case OUTOFCONTROL.SPAD:
                         report = String.Concat(report, " train passed signal at Danger");
                         break;
-                    case (OUTOFCONTROL.SPAD_REAR):
+                    case OUTOFCONTROL.SPAD_REAR:
                         report = String.Concat(report, " train passed signal at Danger at rear of train");
                         break;
-                    case (OUTOFCONTROL.OUT_OF_AUTHORITY):
+                    case OUTOFCONTROL.OUT_OF_AUTHORITY:
                         report = String.Concat(report, " train passed limit of authority");
                         break;
-                    case (OUTOFCONTROL.OUT_OF_PATH):
+                    case OUTOFCONTROL.OUT_OF_PATH:
                         report = String.Concat(report, " train has ran off its allocated path");
                         break;
-                    case (OUTOFCONTROL.SLIPPED_INTO_PATH):
+                    case OUTOFCONTROL.SLIPPED_INTO_PATH:
                         report = String.Concat(report, " train slipped back into path of another train");
                         break;
-                    case (OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK):
+                    case OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK:
                         report = String.Concat(report, " train slipped of the end of track");
                         break;
-                    case (OUTOFCONTROL.OUT_OF_TRACK):
+                    case OUTOFCONTROL.OUT_OF_TRACK:
                         report = String.Concat(report, " train has moved off the track");
                         break;
                 }
@@ -10428,8 +10467,10 @@ namespace Orts.Simulation.Physics
                     File.AppendAllText(@"C:\temp\checktrain.txt", report + "\n");
                 }
 
-                if (LeadLocomotive != null)
-                    ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
+                if (LeadLocomotive is MSTSLocomotive locomotive)
+                {
+                    locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, OutOfControlReason.ToString());
+                }
             }
             // the AI train is now out of path. Instead of killing him, we give him a chance on a new path
             else
@@ -10442,6 +10483,52 @@ namespace Orts.Simulation.Physics
                 }
                 // reset actions to recalculate distances
                 if (TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING) ((AITrain)this).ResetActions(true);
+            }
+        }
+
+        public void ManualResetOutOfControlMode()
+        {
+            if (LeadLocomotive is MSTSLocomotive locomotive && locomotive.TrainControlSystem.SimulatorEmergencyBraking)
+            {
+                if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL)
+                {
+                    switch (OutOfControlReason)
+                    {
+                        case OUTOFCONTROL.SPAD:
+                        case OUTOFCONTROL.SPAD_REAR:
+                        case OUTOFCONTROL.MISALIGNED_SWITCH:
+                            switch (ControlModeBeforeOutOfControl)
+                            {
+                                case TRAIN_CONTROL.AUTO_NODE:
+                                    SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
+                                    locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+                                    break;
+
+                                case TRAIN_CONTROL.AUTO_SIGNAL:
+                                    // It is impossible to go back directly to auto signal mode since we are no longer on a valid route, switching to manual mode.
+                                    ToggleToManualMode();
+                                    break;
+
+                                case TRAIN_CONTROL.EXPLORER:
+                                    ToggleToExplorerMode();
+                                    break;
+
+                                case TRAIN_CONTROL.MANUAL:
+                                    ToggleToManualMode();
+                                    break;
+                            }
+
+                            if (ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+                            {
+                                Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Out of control mode reset"));
+                            }
+                            break;
+
+                        default:
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You can only reset if you passed a signal at danger or if you passed a misaligned switch."));
+                            break;
+                    }
+                }
             }
         }
 
@@ -10746,8 +10833,10 @@ namespace Orts.Simulation.Physics
 
             }
 
-            if (LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
+            if (LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, "OTHER_TRAIN_IN_PATH");
+            }
         }
 
         //================================================================================================//
@@ -14141,8 +14230,11 @@ namespace Orts.Simulation.Physics
                         }
                         else if (signalObjectItem.ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit && signalObjectItem.actual_speed > 0)
                         {
-                            thisItem = new TrainObjectItem(signalObjectItem.actual_speed, signalObjectItem.distance_to_train,
-                                (TrainObjectItem.SpeedItemType)(signalObjectItem.speed_noSpeedReductionOrIsTempSpeedReduction));
+                            thisItem = new TrainObjectItem(thisSpeedMpS: signalObjectItem.actual_speed,
+                                isWarning: signalObjectItem.speed_isWarning,
+                                thisDistanceM: signalObjectItem.distance_to_train,
+                                signalObject: signalObjectItem.ObjectDetails,
+                                speedObjectType: (TrainObjectItem.SpeedItemType)signalObjectItem.speed_noSpeedReductionOrIsTempSpeedReduction);
                             PlayerTrainSpeedposts[dir].Add(thisItem);
                         }
                     }
@@ -14222,7 +14314,11 @@ namespace Orts.Simulation.Physics
                                 if (thisSpeedInfo != null && thisSpeedInfo.speed_reset == 1)
                                     validSpeed = progressiveMaxSpeedLimitMpS;
                                 else progressiveMaxSpeedLimitMpS = validSpeed;
-                                thisItem = new TrainObjectItem(validSpeed, thisSpeeditem.SignalLocation + sectionDistanceToTrainM, (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
+                                thisItem = new TrainObjectItem(thisSpeedMpS: validSpeed,
+                                    isWarning: thisSpeedInfo.speed_isWarning,
+                                    thisDistanceM: thisSpeeditem.SignalLocation + sectionDistanceToTrainM,
+                                    signalObject: thisSpeedpost,
+                                    speedObjectType: (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
                                 PlayerTrainSpeedposts[dir].Add(thisItem);
                             }
                         }
@@ -20687,6 +20783,7 @@ namespace Orts.Simulation.Physics
             public END_AUTHORITY AuthorityType;
             public TrackMonitorSignalAspect SignalState;
             public float AllowedSpeedMpS;
+            public bool IsWarning;
             public float DistanceToTrainM;
             public bool Enabled;
             public int StationPlatformLength;
@@ -20705,6 +20802,7 @@ namespace Orts.Simulation.Physics
             //
             // if ItemType == SPEEDPOST :
             //      AllowedSpeedMpS
+            //      IsWarning
             //      DistanceToTrainM
             //
             // if ItemType == STATION :
@@ -20742,13 +20840,15 @@ namespace Orts.Simulation.Physics
             }
 
             // Constructor for Speedpost
-            public TrainObjectItem(float thisSpeedMpS, float thisDistanceM, SpeedItemType speedObjectType = SpeedItemType.Standard)
+            public TrainObjectItem(float thisSpeedMpS, bool isWarning, float thisDistanceM, SignalObject signalObject, SpeedItemType speedObjectType = SpeedItemType.Standard)
             {
                 ItemType = TRAINOBJECTTYPE.SPEEDPOST;
                 AuthorityType = END_AUTHORITY.NO_PATH_RESERVED;
                 SignalState = TrackMonitorSignalAspect.Clear_2;
                 AllowedSpeedMpS = thisSpeedMpS;
+                IsWarning = isWarning;
                 DistanceToTrainM = thisDistanceM;
+                SignalObject = signalObject;
                 SpeedObjectType = speedObjectType;
             }
 
