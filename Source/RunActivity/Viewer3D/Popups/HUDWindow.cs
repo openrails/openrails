@@ -25,8 +25,10 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -113,6 +115,7 @@ namespace Orts.Viewer3D.Popups
             textPages.Add(TextPageCommon);
             textPages.Add(TextPageConsistInfo);
             textPages.Add(TextPageLocomotiveInfo);
+            textPages.Add(TextPagePowerSupplyInfo);
             textPages.Add(TextPageBrakeInfo);
             textPages.Add(TextPageForceInfo);
             textPages.Add(TextPageDispatcherInfo);
@@ -549,7 +552,8 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Length"),
                 Viewer.Catalog.GetString("Weight"),
                 Viewer.Catalog.GetString("Drv/Cabs"),
-                Viewer.Catalog.GetString("Wheels"));
+                Viewer.Catalog.GetString("Wheels"),
+                Viewer.Catalog.GetString("Temp"));
             TableAddLine(table);
             foreach (var car in train.Cars.Take(20))
             {
@@ -559,7 +563,8 @@ namespace Orts.Viewer3D.Popups
                     FormatStrings.FormatShortDistanceDisplay(car.CarLengthM, locomotive.IsMetric),
                     FormatStrings.FormatLargeMass(car.MassKG, locomotive.IsMetric, locomotive.IsUK),
                     (car.IsDriveable ? Viewer.Catalog.GetParticularString("Cab", "D") : "") + (car.HasFrontCab || car.HasFront3DCab ? Viewer.Catalog.GetParticularString("Cab", "F") : "") + (car.HasRearCab || car.HasRear3DCab ? Viewer.Catalog.GetParticularString("Cab", "R") : ""),
-                    GetCarWhyteLikeNotation(car));
+                    GetCarWhyteLikeNotation(car),
+                    car.WagonType == TrainCar.WagonTypes.Passenger || car.WagonSpecialType == TrainCar.WagonSpecialTypes.Heated ? FormatStrings.FormatTemperature(car.CarInsideTempC, locomotive.IsMetric, false) : string.Empty);
                 TableAddLine(table);
             }
         }
@@ -619,6 +624,116 @@ namespace Orts.Viewer3D.Popups
             foreach (var car in train.Cars)
                 if (car is MSTSLocomotive)
                     TableAddLines(table, car.GetDebugStatus());
+        }
+
+        void TextPagePowerSupplyInfo(TableData table)
+        {
+            TextPageHeading(table, Viewer.Catalog.GetString("POWER SUPPLY INFORMATION"));
+
+            Train train = Viewer.PlayerLocomotive.Train;
+
+            TableAddLine(table);
+            TableSetCells(table, 0,
+                    Viewer.Catalog.GetString("Wagon"),
+                    Viewer.Catalog.GetString("Type"),
+                    Viewer.Catalog.GetParticularString("Pantograph", "Panto"),
+                    Viewer.Catalog.GetParticularString("Engine", "Eng"),
+                    Viewer.Catalog.GetParticularString("CircuitBreaker", "CB"),
+                    Viewer.Catalog.GetParticularString("TractionCutOffRelay", "TCOR"),
+                    Viewer.Catalog.GetString("MainPS"),
+                    Viewer.Catalog.GetString("AuxPS"),
+                    Viewer.Catalog.GetString("Battery"),
+                    Viewer.Catalog.GetString("LowVoltPS"),
+                    Viewer.Catalog.GetString("CabPS"),
+                    Viewer.Catalog.GetString("ETS"),
+                    Viewer.Catalog.GetString("ETSCable"),
+                    Viewer.Catalog.GetString("Power")
+                );
+            foreach (TrainCar car in train.Cars.Where(car => car.PowerSupply != null))
+            {
+                IPowerSupply powerSupply = car.PowerSupply;
+                ILocomotivePowerSupply locomotivePowerSupply = powerSupply as ILocomotivePowerSupply;
+
+                string pantographState = string.Empty;
+                string dieselEngineState = string.Empty;
+                string circuitBreakerState = string.Empty;
+                string tractionCutOffRelayState = string.Empty;
+                string mainPowerSupplyState = string.Empty;
+                string auxiliaryPowerSupplyState = string.Empty;
+                string electricTrainSupplyState = string.Empty;
+                string electricTrainSupplyCableState = string.Empty;
+                string electricTrainSupplyPower = string.Empty;
+
+                if (powerSupply is ScriptedElectricPowerSupply electricPowerSupply)
+                {
+                    pantographState = Viewer.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName((car as MSTSWagon).Pantographs.State));
+                    circuitBreakerState = Viewer.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(electricPowerSupply.CircuitBreaker.State));
+                    mainPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.MainPowerSupplyState));
+                    auxiliaryPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.AuxiliaryPowerSupplyState));
+                    if (locomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
+                    {
+                        electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
+                        electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
+                        electricTrainSupplyPower = FormatStrings.FormatPower(locomotivePowerSupply.ElectricTrainSupplyPowerW, true, false, false);
+                    }
+                }
+                else if (powerSupply is ScriptedDieselPowerSupply dieselPowerSupply)
+                {
+                    dieselEngineState = Viewer.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName((car as MSTSDieselLocomotive).DieselEngines.State));
+                    tractionCutOffRelayState = Viewer.Catalog.GetParticularString("TractionCutOffRelay", GetStringAttribute.GetPrettyName(dieselPowerSupply.TractionCutOffRelay.State));
+                    mainPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.MainPowerSupplyState));
+                    auxiliaryPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.AuxiliaryPowerSupplyState));
+                    if (locomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
+                    {
+                        electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
+                        electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
+                        electricTrainSupplyPower = FormatStrings.FormatPower(locomotivePowerSupply.ElectricTrainSupplyPowerW, true, false, false);
+                    }
+                }
+                else if (powerSupply is ScriptedDualModePowerSupply dualModePowerSupply)
+                {
+                    pantographState = Viewer.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName((car as MSTSWagon).Pantographs.State));
+                    // TODO with DualModeLocomotive : dieselEngineState = Viewer.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName((car as MSTSDualModeLocomotive).DieselEngines.State));
+                    circuitBreakerState = Viewer.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(dualModePowerSupply.CircuitBreaker.State));
+                    tractionCutOffRelayState = Viewer.Catalog.GetParticularString("TractionCutOffRelay", GetStringAttribute.GetPrettyName(dualModePowerSupply.TractionCutOffRelay.State));
+                    mainPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.MainPowerSupplyState));
+                    auxiliaryPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.AuxiliaryPowerSupplyState));
+                    if (locomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
+                    {
+                        electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
+                        electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
+                        electricTrainSupplyPower = FormatStrings.FormatPower(locomotivePowerSupply.ElectricTrainSupplyPowerW, true, false, false);
+                    }
+                }
+                else if (powerSupply is IPassengerCarPowerSupply passengerCarPowerSupply)
+                {
+                    if (passengerCarPowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
+                    {
+                        electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
+                        electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
+                        electricTrainSupplyPower = FormatStrings.FormatPower(passengerCarPowerSupply.ElectricTrainSupplyPowerW, true, false, false);
+                    }
+                }
+                // If power supply is steam power supply, do nothing.
+
+                TableAddLine(table);
+                TableSetCells(table, 0,
+                    car.CarID,
+                    car.WagonType.ToString(),
+                    pantographState,
+                    dieselEngineState,
+                    circuitBreakerState,
+                    tractionCutOffRelayState,
+                    mainPowerSupplyState,
+                    auxiliaryPowerSupplyState,
+                    Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.BatteryState)),
+                    Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.LowVoltagePowerSupplyState)),
+                    locomotivePowerSupply != null ? Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.CabPowerSupplyState)) : string.Empty,
+                    electricTrainSupplyState,
+                    electricTrainSupplyCableState,
+                    electricTrainSupplyPower
+                    );
+            }
         }
 
         void TextPageBrakeInfo(TableData table)
@@ -920,14 +1035,10 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Curve"),
                 Viewer.Catalog.GetString("Brk Frict."),
                 Viewer.Catalog.GetString("Brk Slide"),
-                Viewer.Catalog.GetString("Bear Temp")
-
-                // Possibly needed for buffing forces
-                //                Viewer.Catalog.GetString("VertD"),
-                //                Viewer.Catalog.GetString("VertL"),
-                //                Viewer.Catalog.GetString("BuffExc"),
-                //                Viewer.Catalog.GetString("CplAng")
-
+                Viewer.Catalog.GetString("Bear Temp"),
+                Viewer.Catalog.GetString(" "),
+                Viewer.Catalog.GetString("DerailCoeff")
+                
                 );
             TableAddLine(table);
 
@@ -954,16 +1065,8 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 15, "{0:F0}%", car.BrakeShoeCoefficientFriction * 100.0f);
                 TableSetCell(table, 16, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
                 TableSetCell(table, 17, "{0} {1}", FormatStrings.FormatTemperature(car.WheelBearingTemperatureDegC, car.IsMetric, false), car.DisplayWheelBearingTemperatureStatus);
-
-                // Possibly needed for buffing forces
-                //                TableSetCell(table, 17, "{0}", FormatStrings.FormatForce(car.WagonVerticalDerailForceN, car.IsMetric));
-                //                TableSetCell(table, 18, "{0}", FormatStrings.FormatForce(car.TotalWagonLateralDerailForceN, car.IsMetric));
-                //                TableSetCell(table, 19, car.BuffForceExceeded ? Viewer.Catalog.GetString("Yes") : "No");
-
-                //                TableSetCell(table, 20, "{0:F2}", MathHelper.ToDegrees(car.WagonFrontCouplerAngleRad));
-
-
                 TableSetCell(table, 18, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
+                TableSetCell(table, 19, "{0:F2}{1}", car.DerailmentCoefficient, car.DerailmentCoefficient > 1 ? "!!!" : car.DerailmentCoefficient < 1 && car.DerailmentCoefficient > 0.66 ? "???" : "");
                 TableAddLine(table);
 
             }
@@ -1123,6 +1226,7 @@ namespace Orts.Viewer3D.Popups
 
         void TextPageWeather(TableData table)
         {
+            TableSetLabelValueColumns(table, 0, 2);
             TextPageHeading(table, Viewer.Catalog.GetString("WEATHER INFORMATION"));
 
             TableAddLabelValue(table, Viewer.Catalog.GetString("Visibility"), Viewer.Catalog.GetStringFmt("{0:N0} m", Viewer.Simulator.Weather.FogDistance));
@@ -1130,11 +1234,12 @@ namespace Orts.Viewer3D.Popups
             TableAddLabelValue(table, Viewer.Catalog.GetString("Intensity"), Viewer.Catalog.GetStringFmt("{0:F4} p/s/m^2", Viewer.Simulator.Weather.PricipitationIntensityPPSPM2));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Liquidity"), Viewer.Catalog.GetStringFmt("{0:F0} %", Viewer.Simulator.Weather.PrecipitationLiquidity * 100));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Wind"), Viewer.Catalog.GetStringFmt("{0:F1},{1:F1} m/s", Viewer.Simulator.Weather.WindSpeedMpS.X, Viewer.Simulator.Weather.WindSpeedMpS.Y));
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Amb Temp"), FormatStrings.FormatTemperature(Viewer.PlayerLocomotive.Train.TrainOutsideTempC, Viewer.PlayerLocomotive.IsMetric, false));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Amb Temp"), FormatStrings.FormatTemperature(Viewer.PlayerLocomotive.CarOutsideTempC, Viewer.PlayerLocomotive.IsMetric, false));
         }
 
         void TextPageDebugInfo(TableData table)
         {
+            TableSetLabelValueColumns(table, 0, 2);
             TextPageHeading(table, Viewer.Catalog.GetString("DEBUG INFORMATION"));
 
             var allocatedBytesPerSecond = AllocatedBytesPerSecCounter == null ? 0 : AllocatedBytesPerSecCounter.NextValue();

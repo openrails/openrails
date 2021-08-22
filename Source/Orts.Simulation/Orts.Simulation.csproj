@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -65,8 +65,14 @@
     <Compile Include="Common\Scripting\BrakeController.cs" />
     <Compile Include="Common\Scripting\Commands.cs" />
     <Compile Include="Common\Scripting\Common.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\AbstractPowerSupply.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\DualModePowerSupply.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\LocomotivePowerSupply.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\PassengerCarPowerSupply.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\TractionCutOffRelay.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\TractionCutOffSubsytem.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\PowerSupply.cs" />
     <Compile Include="Common\Scripting\PowerSupply\CircuitBreaker.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\DieselPowerSupply.cs" />
     <Compile Include="Common\Scripting\PowerSupply\ElectricPowerSupply.cs" />
     <Compile Include="Common\Scripting\ScriptManager.cs" />
     <Compile Include="Common\Scripting\TrainControlSystem.cs" />
@@ -113,7 +119,18 @@
     <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\MSTSBrakeController.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\MSTSNotchController.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\FreightAnimations.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\AbstractPowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ElectricTrainSupplySwitch.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\BatterySwitch.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\DualModePowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ILocomotivePowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\IPassengerCarPowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\IPowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\PassengerCarPowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\SteamPowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\TractionCutOffRelay.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\DieselPowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\MasterKey.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\LocomotivePowerSupply.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\CircuitBreaker.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\DieselEngine.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ElectricPowerSupply.cs" />
@@ -122,12 +139,14 @@
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\ElectricMotor.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\GearBox.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\SeriesMotor.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\ISubSystem.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\TrainControlSystem.cs" />
     <Compile Include="Simulation\RollingStocks\TrainCar.cs" />
     <Compile Include="Simulation\Signalling\CsSignalScript.cs" />
     <Compile Include="Simulation\Signalling\CsSignalScripts.cs" />
     <Compile Include="Simulation\Signalling\Signals.cs" />
     <Compile Include="Simulation\Signalling\SIGSCRfile.cs" />
+    <Compile Include="Simulation\Signalling\SpeedPostWorldObject.cs" />
     <Compile Include="Simulation\Simulator.cs" />
     <Compile Include="Simulation\SuperElevation.cs" />
     <Compile Include="Simulation\Timetables\PoolInfo.cs" />

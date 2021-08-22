@@ -16,20 +16,20 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Microsoft.Xna.Framework;
-using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
-using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
-    public class DieselEngines : IEnumerable
+    public class DieselEngines : IEnumerable, ISubSystem<DieselEngines>
     {
         /// <summary>
         /// A list of auxiliaries
@@ -41,10 +41,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public int Count { get { return DEList.Count; } }
 
+        public DieselEngineState State
+        {
+            get
+            {
+                DieselEngineState state = DieselEngineState.Stopped;
+
+                foreach (DieselEngine dieselEngine in DEList)
+                {
+                    if (dieselEngine.State > state)
+                        state = dieselEngine.State;
+                }
+
+                return state;
+            }
+        }
+
         /// <summary>
         /// Reference to the locomotive carrying the auxiliaries
         /// </summary>
-        public readonly MSTSDieselLocomotive Locomotive;
+        protected readonly MSTSDieselLocomotive Locomotive;
+
+        public MSTSGearBoxParams MSTSGearBoxParams = new MSTSGearBoxParams();
 
         /// <summary>
         /// Creates a set of auxiliaries connected to the locomotive
@@ -55,32 +73,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             Locomotive = loco;
         }
 
-        /// <summary>
-        /// constructor from copy
-        /// </summary>
-        public DieselEngines(DieselEngines copy, MSTSDieselLocomotive loco)
-        {
-            DEList = new List<DieselEngine>();
-            foreach (DieselEngine de in copy.DEList)
-            {
-                DEList.Add(new DieselEngine(de, loco));
-            }
-            Locomotive = loco;
-        }
-
-        /// <summary>
-        /// Creates a set of auxiliaries connected to the locomotive, based on stf reader parameters 
-        /// </summary>
-        /// <param name="loco">Host locomotive</param>
-        /// <param name="stf">Reference to the ENG file reader</param>
-        public DieselEngines(MSTSDieselLocomotive loco, STFReader stf)
-        {
-            Locomotive = loco;
-            Parse(stf, loco);
-
-        }
-
-
         public DieselEngine this[int i]
         {
             get { return DEList[i]; }
@@ -89,7 +81,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Add()
         {
-            DEList.Add(new DieselEngine());
+            DEList.Add(new DieselEngine(Locomotive));
         }
 
         public void Add(DieselEngine de)
@@ -102,37 +94,78 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Parses all the parameters within the ENG file
         /// </summary>
         /// <param name="stf">reference to the ENG file reader</param>
-        public void Parse(STFReader stf, MSTSDieselLocomotive loco)
+        public void Parse(string lowercasetoken, STFReader stf)
         {
-            stf.MustMatch("(");
-            int count = stf.ReadInt(0);
-            for (int i = 0; i < count; i++)
+            switch (lowercasetoken)
             {
-                string setting = stf.ReadString().ToLower();
-                if (setting == "diesel")
-                {
-                    DEList.Add(new DieselEngine());
+                case "engine(ortsdieselengines":
+                    stf.MustMatch("(");
+                    int count = stf.ReadInt(0);
+                    for (int i = 0; i < count; i++)
+                    {
+                        string setting = stf.ReadString().ToLower();
+                        if (setting == "diesel")
+                        {
+                            DEList.Add(new DieselEngine(Locomotive));
 
-                    DEList[i].Parse(stf, loco);
-                    DEList[i].Initialize(true);
+                            DEList[i].Parse(stf);
+                            DEList[i].Initialize();
 
-                    // sets flag to indicate that a diesel eng prime mover code block has been defined by user, otherwise OR will define one through the next code section using "MSTS" values
-                    DEList[i].DieselEngineConfigured = true;
-                }
-                
-                if ((!DEList[i].IsInitialized))
-                {
-                    STFException.TraceWarning(stf, "Diesel engine model has some errors - loading MSTS format");
-                    DEList[i].InitFromMSTS((MSTSDieselLocomotive)Locomotive);
-                    DEList[i].Initialize(true);
-                }
+                            // sets flag to indicate that a diesel eng prime mover code block has been defined by user, otherwise OR will define one through the next code section using "MSTS" values
+                            DEList[i].DieselEngineConfigured = true;
+                        }
+
+                        if ((!DEList[i].IsInitialized))
+                        {
+                            STFException.TraceWarning(stf, "Diesel engine model has some errors - loading MSTS format");
+                            DEList[i].InitFromMSTS();
+                            DEList[i].Initialize();
+                        }
+                    }
+                    break;
+                case "engine(gearboxnumberofgears":
+                case "engine(gearboxdirectdrivegear":
+                case "engine(gearboxoperation":
+                case "engine(gearboxenginebraking":
+                case "engine(gearboxmaxspeedforgears":
+                case "engine(gearboxmaxtractiveforceforgears":
+                case "engine(gearboxoverspeedpercentageforfailure":
+                case "engine(gearboxbackloadforce":
+                case "engine(gearboxcoastingforce":
+                case "engine(gearboxupgearproportion":
+                case "engine(gearboxdowngearproportion":
+                    MSTSGearBoxParams.Parse(lowercasetoken, stf);
+                    break;
             }
         }
 
-        public void Initialize(bool start)
+        public void Copy(DieselEngines other)
+        {
+            DEList = new List<DieselEngine>();
+            MSTSGearBoxParams.Copy(other.MSTSGearBoxParams);
+            foreach (DieselEngine de in other.DEList)
+            {
+                DieselEngine dieselEngine = new DieselEngine(Locomotive);
+                dieselEngine.Copy(de);
+
+                DEList.Add(dieselEngine);
+            }
+        }
+
+        public void Initialize()
         {
             foreach (DieselEngine de in DEList)
-                de.Initialize(start);
+            {
+                de.Initialize();
+            }
+        }
+
+        public void InitializeMoving()
+        {
+            foreach (DieselEngine de in DEList)
+            {
+                de.InitializeMoving();
+            }
         }
 
         /// <summary>
@@ -157,9 +190,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 for (int i = 0; i < count; i++)
                 {
-                    DEList.Add(new DieselEngine());
-                    DEList[i].InitFromMSTS((MSTSDieselLocomotive)Locomotive);
-                    DEList[i].Initialize(true);
+                    DEList.Add(new DieselEngine(Locomotive));
+                    DEList[i].InitFromMSTS();
+                    DEList[i].Initialize();
                 }
                 
             }
@@ -193,7 +226,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 bool temp = false;
                 foreach (DieselEngine de in DEList)
                 {
-                    temp |= (de.EngineStatus == DieselEngine.Status.Running) || (de.EngineStatus == DieselEngine.Status.Starting);
+                    temp |= (de.State == DieselEngineState.Running) || (de.State == DieselEngineState.Starting);
                 }
                 return temp;
             }
@@ -247,21 +280,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        /// <summary>
-        /// A summary of current rail output power for all diesel prime movers
-        /// </summary>
-        public float CurrentRailOutputPowerW
-        {
-            get
-            {
-                float temp = 0f;
-                foreach (DieselEngine de in DEList)
-                {
-                    temp += de.CurrentRailOutputPowerW;
-                }
-                return temp;
-            }
-        }
         /// <summary>
         /// A summary of fuel flow of all the auxiliaries
         /// </summary>
@@ -333,6 +351,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
+        public void HandleEvent(PowerSupplyEvent evt)
+        {
+            foreach (DieselEngine de in DEList)
+            {
+                de.HandleEvent(evt);
+            }
+        }
+
+        public void HandleEvent(PowerSupplyEvent evt, int id)
+        {
+            if (id <= DEList.Count)
+            {
+                DEList[id - 1].HandleEvent(evt);
+            }
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return (IEnumerator)GetEnumerator();
@@ -349,7 +383,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             result.AppendFormat(Simulator.Catalog.GetString("Status"));
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0}", Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(eng.EngineStatus)));
+                result.AppendFormat("\t{0}", Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(eng.State)));
 
             result.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), FormatStrings.FormatPower(MaxOutputPowerW, Locomotive.IsMetric, false, false));
             foreach (var eng in DEList)
@@ -384,7 +418,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 int num = 0;
                 foreach(DieselEngine eng in DEList)
                 {
-                    if (eng.EngineStatus == DieselEngine.Status.Running)
+                    if (eng.State == DieselEngineState.Running)
                         num++;
                 }
                 return num;
@@ -403,7 +437,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 foreach (DieselEngine eng in DEList)
                 {
                     totalpossiblepower += eng.MaximumDieselPowerW;
-                    if (eng.EngineStatus == DieselEngine.Status.Running)
+                    if (eng.State == DieselEngineState.Running)
                     {
                         runningPower += eng.MaximumDieselPowerW;
                     }
@@ -462,16 +496,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
     }
 
-    public class DieselEngine
+    public class DieselEngine : ISubSystem<DieselEngine>
     {
-        public enum Status
-        {
-            [GetParticularString("Engine", "Stopped")] Stopped = 0,
-            [GetParticularString("Engine", "Starting")] Starting = 1,
-            [GetParticularString("Engine", "Running")] Running = 2,
-            [GetParticularString("Engine", "Stopping")] Stopping = 3
-        }
-
         public enum Cooling
         {
             NoCooling = 0,
@@ -509,48 +535,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             IdleTemperature      = 0x1000000
         }
 
-        public DieselEngine()
+        public int Id
         {
-        }
-
-        public DieselEngine(DieselEngine copy, MSTSDieselLocomotive loco)
-        {
-            IdleRPM = copy.IdleRPM;
-            MaxRPM = copy.MaxRPM;
-            StartingRPM = copy.StartingRPM;
-            StartingConfirmationRPM = copy.StartingConfirmationRPM;
-            ChangeUpRPMpS = copy.ChangeUpRPMpS;
-            ChangeDownRPMpS = copy.ChangeDownRPMpS;
-            RateOfChangeUpRPMpSS = copy.RateOfChangeUpRPMpSS;
-            RateOfChangeDownRPMpSS = copy.RateOfChangeDownRPMpSS;
-            MaximumDieselPowerW = copy.MaximumDieselPowerW;
-            MaximumRailOutputPowerW = copy.MaximumRailOutputPowerW;
-            initLevel = copy.initLevel;
-            DieselPowerTab = new Interpolator(copy.DieselPowerTab);
-            DieselConsumptionTab = new Interpolator(copy.DieselConsumptionTab);
-            ThrottleRPMTab = new Interpolator(copy.ThrottleRPMTab);
-            ReverseThrottleRPMTab = new Interpolator(copy.ReverseThrottleRPMTab);
-            if (copy.DieselTorqueTab != null) DieselTorqueTab = new Interpolator(copy.DieselTorqueTab);
-            DieselUsedPerHourAtMaxPowerL = copy.DieselUsedPerHourAtMaxPowerL;
-            DieselUsedPerHourAtIdleL = copy.DieselUsedPerHourAtIdleL;
-            InitialExhaust = copy.InitialExhaust;
-            InitialMagnitude = copy.InitialMagnitude;
-            MaxExhaust = copy.MaxExhaust;
-            MaxMagnitude = copy.MaxMagnitude;
-            ExhaustParticles = copy.ExhaustParticles;
-            ExhaustColor = copy.ExhaustColor;
-            ExhaustSteadyColor = copy.ExhaustSteadyColor;
-            ExhaustTransientColor = copy.ExhaustTransientColor;
-            ExhaustDecelColor = copy.ExhaustDecelColor;
-            DieselMaxOilPressurePSI = copy.DieselMaxOilPressurePSI;
-            DieselMinOilPressurePSI = copy.DieselMinOilPressurePSI;
-            DieselMaxTemperatureDeg = copy.DieselMaxTemperatureDeg;
-
-            if (copy.GearBox != null)
+            get
             {
-                GearBox = new GearBox(copy.GearBox, this);
+                return Locomotive.DieselEngines.DEList.IndexOf(this) + 1;
             }
-            locomotive = loco;
         }
 
         #region Parameters and variables
@@ -582,7 +572,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Parent locomotive
         /// </summary>
-        public MSTSDieselLocomotive locomotive;
+        public readonly MSTSDieselLocomotive Locomotive;
+
+        protected MSTSGearBoxParams GearBoxParams => Locomotive.DieselEngines.MSTSGearBoxParams;
+
+        protected Simulator Simulator => Locomotive.Simulator;
 
         SettingsFlags initLevel;          //level of initialization
         /// <summary>
@@ -607,7 +601,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Engine status
         /// </summary>
-        public Status EngineStatus = Status.Stopped;
+        public DieselEngineState State { get; protected set; } = DieselEngineState.Stopped;
+        public bool PowerOn => State == DieselEngineState.Running || State == DieselEngineState.Starting;
         /// <summary>
         /// Type of engine cooling
         /// </summary>
@@ -662,10 +657,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Maximum power available to the rail
         /// </summary>
         public float MaximumRailOutputPowerW;
-        /// <summary>
-        /// Actual current power output to the rail
-        /// </summary>
-        public float CurrentRailOutputPowerW;
         /// <summary>
         /// Real power output of the engine (based upon previous cycle - ie equivalent to Previous Motive Force - to calculate difference in power
         /// </summary>
@@ -810,7 +801,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                return (CurrentDieselOutputPowerW <= 0f ? 0f : (OutputPowerW * 100f / CurrentDieselOutputPowerW)) ;
+                return CurrentDieselOutputPowerW <= 0f ? 0f : ((OutputPowerW + (Locomotive.DieselEngines.NumOfActiveEngines > 0 ? Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines : 0f)) * 100f / CurrentDieselOutputPowerW);
             }
         }
         /// <summary>
@@ -819,14 +810,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public bool HasGearBox { get { return GearBox != null; } }
         #endregion
 
+        public DieselEngine(MSTSDieselLocomotive locomotive)
+        {
+            Locomotive = locomotive;
+        }
+
         /// <summary>
         /// Parses parameters from the stf reader
         /// </summary>
         /// <param name="stf">Reference to the stf reader</param>
         /// <param name="loco">Reference to the locomotive</param>
-        public virtual void Parse(STFReader stf, MSTSDieselLocomotive loco)
+        public virtual void Parse(STFReader stf)
         {
-            locomotive = loco;
             stf.MustMatch("(");
             bool end = false;
             while (!end)
@@ -867,11 +862,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "dieseltorquetab": DieselTorqueTab = new Interpolator(stf); initLevel |= SettingsFlags.DieselTorqueTab; break;
                     case "minoilpressure": DieselMinOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 0); initLevel |= SettingsFlags.MinOilPressure; break;
                     case "maxoilpressure": DieselMaxOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 0); initLevel |= SettingsFlags.MaxOilPressure; break;
-                    case "maxtemperature": DieselMaxTemperatureDeg = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 0); initLevel |= SettingsFlags.MaxTemperature; break;
+                    case "maxtemperature": DieselMaxTemperatureDeg = stf.ReadFloatBlock(STFReader.UNITS.Temperature, 0); initLevel |= SettingsFlags.MaxTemperature; break;
                     case "cooling": EngineCooling = (Cooling)stf.ReadIntBlock((int)Cooling.Proportional); initLevel |= SettingsFlags.Cooling; break ; //ReadInt changed to ReadIntBlock
                     case "temptimeconstant": DieselTempTimeConstantSec = stf.ReadFloatBlock(STFReader.UNITS.Time, 0); initLevel |= SettingsFlags.TempTimeConstant; break;
-                    case "opttemperature": DieselOptimalTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 95f); initLevel |= SettingsFlags.OptTemperature; break;
-                    case "idletemperature": DieselIdleTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 75f); initLevel |= SettingsFlags.IdleTemperature; break;
+                    case "opttemperature": DieselOptimalTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, 95f); initLevel |= SettingsFlags.OptTemperature; break;
+                    case "idletemperature": DieselIdleTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, 75f); initLevel |= SettingsFlags.IdleTemperature; break;
                     default:
                         end = true;
                         break;
@@ -879,41 +874,90 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        public void Initialize(bool start)
+        public void Copy(DieselEngine other)
         {
-            if (start)
+            IdleRPM = other.IdleRPM;
+            MaxRPM = other.MaxRPM;
+            StartingRPM = other.StartingRPM;
+            StartingConfirmationRPM = other.StartingConfirmationRPM;
+            ChangeUpRPMpS = other.ChangeUpRPMpS;
+            ChangeDownRPMpS = other.ChangeDownRPMpS;
+            RateOfChangeUpRPMpSS = other.RateOfChangeUpRPMpSS;
+            RateOfChangeDownRPMpSS = other.RateOfChangeDownRPMpSS;
+            MaximumDieselPowerW = other.MaximumDieselPowerW;
+            MaximumRailOutputPowerW = other.MaximumRailOutputPowerW;
+            initLevel = other.initLevel;
+            DieselPowerTab = new Interpolator(other.DieselPowerTab);
+            DieselConsumptionTab = new Interpolator(other.DieselConsumptionTab);
+            ThrottleRPMTab = new Interpolator(other.ThrottleRPMTab);
+            ReverseThrottleRPMTab = new Interpolator(other.ReverseThrottleRPMTab);
+            if (other.DieselTorqueTab != null) DieselTorqueTab = new Interpolator(other.DieselTorqueTab);
+            DieselUsedPerHourAtMaxPowerL = other.DieselUsedPerHourAtMaxPowerL;
+            DieselUsedPerHourAtIdleL = other.DieselUsedPerHourAtIdleL;
+            InitialExhaust = other.InitialExhaust;
+            InitialMagnitude = other.InitialMagnitude;
+            MaxExhaust = other.MaxExhaust;
+            MaxMagnitude = other.MaxMagnitude;
+            ExhaustParticles = other.ExhaustParticles;
+            ExhaustColor = other.ExhaustColor;
+            ExhaustSteadyColor = other.ExhaustSteadyColor;
+            ExhaustTransientColor = other.ExhaustTransientColor;
+            ExhaustDecelColor = other.ExhaustDecelColor;
+            DieselMaxOilPressurePSI = other.DieselMaxOilPressurePSI;
+            DieselMinOilPressurePSI = other.DieselMinOilPressurePSI;
+            DieselMaxTemperatureDeg = other.DieselMaxTemperatureDeg;
+        }
+
+        public void Initialize()
+        {
+            if (!Simulator.Settings.NoDieselEngineStart)
             {
                 RealRPM = IdleRPM;
-                EngineStatus = Status.Running;
+                State = DieselEngineState.Running;
             }
             RPMRange = MaxRPM - IdleRPM;
             MagnitudeRange = MaxMagnitude - InitialMagnitude;
             ExhaustRange = MaxExhaust - InitialExhaust;
             ExhaustSteadyColor.A = 10;
             ExhaustDecelColor.A = 10;
+
+            if (GearBoxParams.IsInitialized)
+            {
+                GearBox = new GearBox(this);
+                GearBox.Initialize();
+            }
         }
 
+        public void InitializeMoving()
+        {
+            RealRPM = IdleRPM;
+            State = DieselEngineState.Running;
+
+            GearBox?.InitializeMoving();
+        }
 
         public void Update(float elapsedClockSeconds)
         {
-            if (EngineStatus == DieselEngine.Status.Running)
-                DemandedThrottlePercent = locomotive.ThrottlePercent;
+            if (Locomotive.DieselPowerSupply.MainPowerSupplyOn)
+                DemandedThrottlePercent = Locomotive.ThrottlePercent;
             else
                 DemandedThrottlePercent = 0f;
 
-            if (locomotive.Direction == Direction.Reverse)
-                locomotive.PrevMotiveForceN *= -1f;
+            DemandedThrottlePercent = Math.Max(DemandedThrottlePercent, ReverseThrottleRPMTab[Locomotive.DieselPowerSupply.DieselEngineMinRpm]);
 
-            if ((EngineStatus == DieselEngine.Status.Running) && (locomotive.ThrottlePercent > 0))
+            if (Locomotive.Direction == Direction.Reverse)
+                Locomotive.PrevMotiveForceN *= -1f;
+
+            if ((State == DieselEngineState.Running) && (Locomotive.ThrottlePercent > 0))
             {
-                OutputPowerW = (locomotive.PrevMotiveForceN > 0 ? locomotive.PrevMotiveForceN * locomotive.AbsSpeedMpS : 0) / locomotive.DieselEngines.NumOfActiveEngines;
+                OutputPowerW = (Locomotive.PrevMotiveForceN > 0 ? Locomotive.PrevMotiveForceN * Locomotive.AbsSpeedMpS : 0) / Locomotive.DieselEngines.NumOfActiveEngines;
             }
             else
             {
                 OutputPowerW = 0.0f;
             }
 
-            if ((ThrottleRPMTab != null) && (EngineStatus == Status.Running))
+            if ((ThrottleRPMTab != null) && (State == DieselEngineState.Running))
             {
                 DemandedRPM = ThrottleRPMTab[demandedThrottlePercent];
             }
@@ -932,7 +976,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
 
-            if ( RealRPM == IdleRPM )
+            if (RealRPM == IdleRPM)
             {
                 ExhaustParticles = InitialExhaust;
                 ExhaustMagnitude = InitialMagnitude;
@@ -961,7 +1005,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 ExhaustParticles = (InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
                 ExhaustMagnitude = (InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
                 ExhaustColor = ExhaustDecelColor;
-
             }
 
             // Uncertain about the purpose of this code piece?? Does there need to be a corresponding code for RateOfChangeUpRPMpSS???
@@ -975,7 +1018,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             // Calculate the apparent throttle setting based upon the current rpm of the diesel prime mover. This allows the Tractive effort to increase with rpm to the throttle setting selected.
             // This uses the reverse Tab of the Throttle vs rpm Tab.
-            if ((ReverseThrottleRPMTab != null) && (EngineStatus == Status.Running))
+            if ((ReverseThrottleRPMTab != null) && (State == DieselEngineState.Running))
             {
                 ApparentThrottleSetting = ReverseThrottleRPMTab[RealRPM];
             }
@@ -984,18 +1027,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (DieselPowerTab != null)
             {
-                CurrentDieselOutputPowerW = (DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) : MaximumDieselPowerW * (1 - locomotive.PowerReduction));
-                CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
-                // Rail output power will never be the same as the diesel prime mover output power it will always have some level of loss of efficiency
-                CurrentRailOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumRailOutputPowerW * (1 - locomotive.PowerReduction);
-                CurrentRailOutputPowerW = CurrentRailOutputPowerW < 0f ? 0f : CurrentRailOutputPowerW;
+                CurrentDieselOutputPowerW = (DieselPowerTab[RealRPM] * (1 - Locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - Locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - Locomotive.PowerReduction) : MaximumDieselPowerW * (1 - Locomotive.PowerReduction));
             }
-             else
+            else
             {
-                CurrentDieselOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - locomotive.PowerReduction);
+                CurrentDieselOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
             }
 
-            if (EngineStatus == Status.Starting)
+            if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
+            {
+                CurrentDieselOutputPowerW -= Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
+                CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
+            }
+
+            if (State == DieselEngineState.Starting)
             {
                 if ((RealRPM > (0.9f * StartingRPM)) && (RealRPM < StartingRPM))
                 {
@@ -1004,13 +1049,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     ExhaustParticles = (MaxExhaust - InitialExhaust) / (0.5f * StartingRPM - StartingRPM) * (RealRPM - 0.5f * StartingRPM) + InitialExhaust;
                 }
                 if ((RealRPM > StartingConfirmationRPM))// && (RealRPM < 0.9f * IdleRPM))
-                    EngineStatus = Status.Running;
+                    State = DieselEngineState.Running;
             }
 
-            if ((EngineStatus != Status.Starting) && (RealRPM == 0f))
-                EngineStatus = Status.Stopped;
+            if ((State != DieselEngineState.Starting) && (RealRPM == 0f))
+                State = DieselEngineState.Stopped;
 
-            if ((EngineStatus == Status.Stopped) || (EngineStatus == Status.Stopping) || ((EngineStatus == Status.Starting) && (RealRPM < StartingRPM)))
+            if ((State == DieselEngineState.Stopped) || (State == DieselEngineState.Stopping) || ((State == DieselEngineState.Starting) && (RealRPM < StartingRPM)))
             {
                 ExhaustParticles = 0;
                 DieselFlowLps = 0;
@@ -1033,7 +1078,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if (ExhaustParticles > 100f)
                 ExhaustParticles = 100f;
 
-            if (locomotive.PowerReduction == 1 && EngineStatus != Status.Stopped)     // Compressor blown, you get much smoke 
+            if (Locomotive.PowerReduction == 1 && State != DieselEngineState.Stopped)     // Compressor blown, you get much smoke 
             {
                 ExhaustColor = Color.WhiteSmoke;
                 ExhaustParticles = 40f;
@@ -1084,12 +1129,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (GearBox != null)
             {
-                if ((locomotive.IsLeadLocomotive()))
+                if ((Locomotive.IsLeadLocomotive()))
                 {
                     if (GearBox.GearBoxOperation == GearBoxOperation.Manual)
                     {
-                        if (locomotive.GearBoxController.CurrentNotch > 0)
-                            GearBox.NextGear = GearBox.Gears[locomotive.GearBoxController.CurrentNotch - 1];
+                        if (Locomotive.GearBoxController.CurrentNotch > 0)
+                            GearBox.NextGear = GearBox.Gears[Locomotive.GearBoxController.CurrentNotch - 1];
                         else
                             GearBox.NextGear = null;
                     }
@@ -1098,8 +1143,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     if (GearBox.GearBoxOperation == GearBoxOperation.Manual)
                     {
-                        if (locomotive.GearboxGearIndex > 0)
-                            GearBox.NextGear = GearBox.Gears[locomotive.GearboxGearIndex - 1];
+                        if (Locomotive.GearboxGearIndex > 0)
+                            GearBox.NextGear = GearBox.Gears[Locomotive.GearboxGearIndex - 1];
                         else
                             GearBox.NextGear = null;
                     }
@@ -1111,57 +1156,50 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        public Status Start()
+        public void HandleEvent(PowerSupplyEvent evt)
         {
-            switch (EngineStatus)
+            switch (evt)
             {
-                case Status.Stopped:
-                case Status.Stopping:
-                    DemandedRPM = StartingRPM;
-                    EngineStatus = Status.Starting;
-                    break;
-                default:
-                    break;
-            }
-            return EngineStatus;
-        }
+                case PowerSupplyEvent.StopEngine:
+                    if (State != DieselEngineState.Stopped)
+                    {
+                        DemandedRPM = 0;
+                        State = DieselEngineState.Stopping;
+                        if (RealRPM <= 0)
+                            State = DieselEngineState.Stopped;
+                    }
 
-        public Status Stop()
-        {
-            if (EngineStatus != Status.Stopped)
-            {
-                DemandedRPM = 0;
-                EngineStatus = Status.Stopping;
-                if (RealRPM <= 0)
-                    EngineStatus = Status.Stopped;
+                    break;
+
+                case PowerSupplyEvent.StartEngine:
+                    if (State == DieselEngineState.Stopped || State == DieselEngineState.Stopping)
+                    {
+                        DemandedRPM = StartingRPM;
+                        State = DieselEngineState.Starting;
+                    }
+                    break;
             }
-            return EngineStatus;
         }
 
         public void Restore(BinaryReader inf)
         {
-            EngineStatus = (Status)inf.ReadInt32();
+            State = (DieselEngineState)inf.ReadInt32();
             RealRPM = inf.ReadSingle();
             OutputPowerW = inf.ReadSingle();
             DieselTemperatureDeg = inf.ReadSingle();
 
-            Boolean gearSaved    = inf.ReadBoolean();  // read boolean which indicates gear data was saved
+            bool gearSaved = inf.ReadBoolean();  // read boolean which indicates gear data was saved
 
-            if (((MSTSDieselLocomotive)locomotive).GearBox != null)
+            if (gearSaved)
             {
-                if (!((MSTSDieselLocomotive)locomotive).GearBox.IsInitialized || !gearSaved)
-                    GearBox = null;
-                else
-                {
-                    GearBox.Restore(inf);
-                }
+                GearBox = new GearBox(this);
+                GearBox.Restore(inf);
             }
-
         }
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write((int)EngineStatus);
+            outf.Write((int)State);
             outf.Write(RealRPM);
             outf.Write(OutputPowerW);
             outf.Write(DieselTemperatureDeg);
@@ -1176,42 +1214,37 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        public void InitializeMoving()
-        {
-            EngineStatus = Status.Running;
-        }
-
         /// <summary>
         /// Fix or define a diesel prime mover engine code block. If the user has not defned a diesel eng, then OR will use this section to create one.
         /// If the user has left a parameter out of the code, then OR uses this section to try and set the missing values to a default value.
         /// Error code has been provided that will provide the user with an indication if a parameter has been left out.
         /// </summary>
-        public void InitFromMSTS(MSTSDieselLocomotive loco)
+        public void InitFromMSTS()
         {
             if ((initLevel & SettingsFlags.IdleRPM) == 0)
             {
-                if (DieselEngineConfigured && loco.IdleRPM != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
+                if (DieselEngineConfigured && Locomotive.IdleRPM != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
                 {
-                    IdleRPM = loco.IdleRPM;
+                    IdleRPM = Locomotive.IdleRPM;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("IdleRpM not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", IdleRPM);
 
                 }
-                else if (IdleRPM == 0 && loco.IdleRPM != 0) // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
+                else if (IdleRPM == 0 && Locomotive.IdleRPM != 0) // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
-                    IdleRPM = loco.IdleRPM;
+                    IdleRPM = Locomotive.IdleRPM;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("IdleRpM: set at default value (BASIC Config) = {0}", IdleRPM);
 
                 }
-                else if (loco.IdleRPM == 0) // No default "MSTS" value present, set to arbitary value
+                else if (Locomotive.IdleRPM == 0) // No default "MSTS" value present, set to arbitary value
                 {
                     IdleRPM = 300.0f;
-                    loco.IdleRPM = IdleRPM;
+                    Locomotive.IdleRPM = IdleRPM;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("IdleRpM not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", IdleRPM);
 
                 } 
@@ -1219,28 +1252,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if ((initLevel & SettingsFlags.MaxRPM) == 0)
             {
-                if (DieselEngineConfigured && loco.MaxRPM != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
+                if (DieselEngineConfigured && Locomotive.MaxRPM != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
                 {
-                    MaxRPM = loco.MaxRPM;
+                    MaxRPM = Locomotive.MaxRPM;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxRpM not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", MaxRPM);
 
                 }
-                else if (MaxRPM == 0 && loco.MaxRPM != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
+                else if (MaxRPM == 0 && Locomotive.MaxRPM != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
-                    MaxRPM = loco.MaxRPM;
+                    MaxRPM = Locomotive.MaxRPM;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxRpM: set at default value (BASIC Config) = {0}", MaxRPM);
 
                 }
-                else if (loco.MaxRPM == 0) // No default "MSTS" value present, set to arbitary value
+                else if (Locomotive.MaxRPM == 0) // No default "MSTS" value present, set to arbitary value
                 {
                     MaxRPM = 600.0f;
-                    loco.MaxRPM = MaxRPM;
+                    Locomotive.MaxRPM = MaxRPM;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxRpM not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", MaxRPM);
 
                 }
@@ -1252,74 +1285,74 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 const float RPMFactor = 1.5f;
                 MaxRPM = IdleRPM * RPMFactor;
 
-                if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                 {
                     Trace.TraceInformation("MaxRPM < IdleRPM x 1.5, set MaxRPM at arbitary value = {0}", MaxRPM);
                 }
             }
 
-            InitialMagnitude = loco.InitialMagnitude;
-            MaxMagnitude = loco.MaxMagnitude;
+            InitialMagnitude = Locomotive.InitialMagnitude;
+            MaxMagnitude = Locomotive.MaxMagnitude;
             if ((initLevel & SettingsFlags.MaxExhaust) == 0)
             {
-                MaxExhaust = loco.MaxExhaust;
-                if (DieselEngineConfigured && loco.Simulator.Settings.VerboseConfigurationMessages)
+                MaxExhaust = Locomotive.MaxExhaust;
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("MaxExhaust not found in Diesel Engine Prime Mover Configuration, set at default value = {0}", MaxExhaust);
             }
 
             if ((initLevel & SettingsFlags.ExhaustColor) == 0)
             {
-                ExhaustSteadyColor = loco.ExhaustSteadyColor;
-                if (DieselEngineConfigured && loco.Simulator.Settings.VerboseConfigurationMessages)
+                ExhaustSteadyColor = Locomotive.ExhaustSteadyColor;
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("ExhaustColour not found in Diesel Engine Prime Mover Configuration, set at default value = {0}", ExhaustSteadyColor);
             }
-            ExhaustDecelColor = loco.ExhaustDecelColor;
+            ExhaustDecelColor = Locomotive.ExhaustDecelColor;
 
             if ((initLevel & SettingsFlags.ExhaustTransientColor) == 0)
             {
 
-                ExhaustTransientColor = loco.ExhaustTransientColor;
-                if (DieselEngineConfigured && loco.Simulator.Settings.VerboseConfigurationMessages)
+                ExhaustTransientColor = Locomotive.ExhaustTransientColor;
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("ExhaustTransientColour not found in Diesel Engine Prime Mover Configuration, set at default value = {0}", ExhaustTransientColor);
             }
 
             if ((initLevel & SettingsFlags.StartingRPM) == 0)
             {
-                StartingRPM = loco.IdleRPM * 2.0f / 3.0f;
-                if (DieselEngineConfigured && loco.Simulator.Settings.VerboseConfigurationMessages)
+                StartingRPM = Locomotive.IdleRPM * 2.0f / 3.0f;
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("StartingRpM not found in Diesel Engine Prime Mover Configuration, set at default value = {0}", StartingRPM);
             }
 
             if ((initLevel & SettingsFlags.StartingConfirmRPM) == 0)
             {
-                StartingConfirmationRPM = loco.IdleRPM * 1.1f;
-                if (DieselEngineConfigured && loco.Simulator.Settings.VerboseConfigurationMessages)
+                StartingConfirmationRPM = Locomotive.IdleRPM * 1.1f;
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("StartingConfirmRpM not found in Diesel Engine Prime Mover Configuration, set at default value = {0}", StartingConfirmationRPM);
             }
 
             if ((initLevel & SettingsFlags.ChangeUpRPMpS) == 0)
             {
-                if (DieselEngineConfigured && loco.MaxRPMChangeRate != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
+                if (DieselEngineConfigured && Locomotive.MaxRPMChangeRate != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
                 {
-                    ChangeUpRPMpS = loco.MaxRPMChangeRate;
+                    ChangeUpRPMpS = Locomotive.MaxRPMChangeRate;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeUpRPMpS not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", ChangeUpRPMpS);
                 }
-                else if (ChangeUpRPMpS == 0 && loco.MaxRPMChangeRate != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
+                else if (ChangeUpRPMpS == 0 && Locomotive.MaxRPMChangeRate != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
-                    ChangeUpRPMpS = loco.MaxRPMChangeRate;
+                    ChangeUpRPMpS = Locomotive.MaxRPMChangeRate;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeUpRPMpS: set at default value (BASIC Config) = {0}", ChangeUpRPMpS);
 
                 }
-                else if (loco.MaxRPMChangeRate == 0) // No default "MSTS" value present, set to arbitary value
+                else if (Locomotive.MaxRPMChangeRate == 0) // No default "MSTS" value present, set to arbitary value
                 {
                     ChangeUpRPMpS = 40.0f;
-                    loco.MaxRPMChangeRate = ChangeUpRPMpS;
+                    Locomotive.MaxRPMChangeRate = ChangeUpRPMpS;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeUpRPMpS not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", ChangeUpRPMpS);
 
                 }
@@ -1327,27 +1360,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if ((initLevel & SettingsFlags.ChangeDownRPMpS) == 0)
             {
-                if (DieselEngineConfigured && loco.MaxRPMChangeRate != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
+                if (DieselEngineConfigured && Locomotive.MaxRPMChangeRate != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
                 {
-                    ChangeDownRPMpS = loco.MaxRPMChangeRate;
+                    ChangeDownRPMpS = Locomotive.MaxRPMChangeRate;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeDownRPMpS not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", ChangeDownRPMpS);
 
                 }
-                else if (ChangeDownRPMpS == 0 && loco.MaxRPMChangeRate != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
+                else if (ChangeDownRPMpS == 0 && Locomotive.MaxRPMChangeRate != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
-                    ChangeDownRPMpS = loco.MaxRPMChangeRate;
+                    ChangeDownRPMpS = Locomotive.MaxRPMChangeRate;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeDownRPMpS: set at default value (BASIC Config) = {0}", ChangeDownRPMpS);
 
                 }
-                else if (loco.MaxRPMChangeRate == 0) // No default "MSTS" value present, set to arbitary value
+                else if (Locomotive.MaxRPMChangeRate == 0) // No default "MSTS" value present, set to arbitary value
                 {
                     ChangeDownRPMpS = 40.0f;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeDownRPMpS not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", ChangeDownRPMpS);
 
                 }
@@ -1356,41 +1389,41 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if ((initLevel & SettingsFlags.RateOfChangeUpRPMpSS) == 0)
             {
                 RateOfChangeUpRPMpSS = ChangeUpRPMpS;
-                if (DieselEngineConfigured && loco.Simulator.Settings.VerboseConfigurationMessages)
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("RateofChangeUpRpMpS not found in Diesel Engine Prime Mover Configuration, set at default value = {0}", RateOfChangeUpRPMpSS);
             }
 
             if ((initLevel & SettingsFlags.RateOfChangeDownRPMpSS) == 0)
             {
                 RateOfChangeDownRPMpSS = ChangeDownRPMpS;
-                if (DieselEngineConfigured && loco.Simulator.Settings.VerboseConfigurationMessages)
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("RateofChangeDownRpMpS not found in Diesel Engine Prime Mover Configuration, set at default value = {0}", RateOfChangeDownRPMpSS);
             }
 
             if ((initLevel & SettingsFlags.MaximalDieselPowerW) == 0)
             {
-                if (loco.MaximumDieselEnginePowerW != 0)
+                if (Locomotive.MaximumDieselEnginePowerW != 0)
                 {
-                    MaximumDieselPowerW = loco.MaximumDieselEnginePowerW;
+                    MaximumDieselPowerW = Locomotive.MaximumDieselEnginePowerW;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value (ORTSDieselEngineMaxPower) = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, loco.IsMetric, false, false));
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value (ORTSDieselEngineMaxPower) = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, Locomotive.IsMetric, false, false));
 
                 }
-                else if (loco.MaxPowerW == 0)
+                else if (Locomotive.MaxPowerW == 0)
                 {
                     MaximumDieselPowerW = 2500000;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set at arbitary value = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, loco.IsMetric, false, false));
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set at arbitary value = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, Locomotive.IsMetric, false, false));
 
                 }
                 else
                 {
-                    MaximumDieselPowerW = loco.MaxPowerW;
+                    MaximumDieselPowerW = Locomotive.MaxPowerW;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value (MaxPower) = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, loco.IsMetric, false, false));
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value (MaxPower) = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, Locomotive.IsMetric, false, false));
 
                 }
 
@@ -1399,28 +1432,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if ((initLevel & SettingsFlags.MaxOilPressure) == 0)
             {
 
-                if (DieselEngineConfigured && loco.DieselMaxOilPressurePSI != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
+                if (DieselEngineConfigured && Locomotive.DieselMaxOilPressurePSI != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
                 {
-                    DieselMaxOilPressurePSI = loco.DieselMaxOilPressurePSI;
+                    DieselMaxOilPressurePSI = Locomotive.DieselMaxOilPressurePSI;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxOilPressure not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", DieselMaxOilPressurePSI);
 
                 }
-                else if (DieselMaxOilPressurePSI == 0 && loco.DieselMaxOilPressurePSI != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
+                else if (DieselMaxOilPressurePSI == 0 && Locomotive.DieselMaxOilPressurePSI != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
-                    DieselMaxOilPressurePSI = loco.DieselMaxOilPressurePSI;
+                    DieselMaxOilPressurePSI = Locomotive.DieselMaxOilPressurePSI;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxOilPressure: set at default value (BASIC Config) = {0}", DieselMaxOilPressurePSI);
 
                 }
-                else if (loco.DieselMaxOilPressurePSI == 0) // No default "MSTS" value present, set to arbitary value
+                else if (Locomotive.DieselMaxOilPressurePSI == 0) // No default "MSTS" value present, set to arbitary value
                 {
                     DieselMaxOilPressurePSI = 120.0f;
-                    loco.DieselMaxOilPressurePSI = DieselMaxOilPressurePSI;
+                    Locomotive.DieselMaxOilPressurePSI = DieselMaxOilPressurePSI;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxOilPressure not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", DieselMaxOilPressurePSI);
 
                 }
@@ -1429,28 +1462,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if ((initLevel & SettingsFlags.MinOilPressure) == 0)
             {
-                if (DieselEngineConfigured && loco.DieselMinOilPressurePSI != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
+                if (DieselEngineConfigured && Locomotive.DieselMinOilPressurePSI != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
                 {
-                    DieselMinOilPressurePSI = loco.DieselMinOilPressurePSI;
+                    DieselMinOilPressurePSI = Locomotive.DieselMinOilPressurePSI;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MinOilPressure not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", DieselMinOilPressurePSI);
 
                 }
-                else if (DieselMinOilPressurePSI == 0 && loco.DieselMinOilPressurePSI != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
+                else if (DieselMinOilPressurePSI == 0 && Locomotive.DieselMinOilPressurePSI != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
-                    DieselMinOilPressurePSI = loco.DieselMinOilPressurePSI;
+                    DieselMinOilPressurePSI = Locomotive.DieselMinOilPressurePSI;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MinOilPressure: set at default value (BASIC Config) = {0}", DieselMinOilPressurePSI);
 
                 }
-                else if (loco.DieselMinOilPressurePSI == 0) // No default "MSTS" value present, set to arbitary value
+                else if (Locomotive.DieselMinOilPressurePSI == 0) // No default "MSTS" value present, set to arbitary value
                 {
                     DieselMinOilPressurePSI = 40.0f;
-                    loco.DieselMinOilPressurePSI = DieselMinOilPressurePSI;
+                    Locomotive.DieselMinOilPressurePSI = DieselMinOilPressurePSI;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MinOilPressure not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", DieselMinOilPressurePSI);
 
                 }
@@ -1458,28 +1491,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if ((initLevel & SettingsFlags.MaxTemperature) == 0)
             {
-                if (DieselEngineConfigured && loco.DieselMaxTemperatureDeg != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
+                if (DieselEngineConfigured && Locomotive.DieselMaxTemperatureDeg != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
                 {
-                    DieselMaxTemperatureDeg = loco.DieselMaxTemperatureDeg;
+                    DieselMaxTemperatureDeg = Locomotive.DieselMaxTemperatureDeg;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxTemperature not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", DieselMaxTemperatureDeg);
 
                 }
-                else if (DieselMaxTemperatureDeg == 0 && loco.DieselMaxTemperatureDeg != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
+                else if (DieselMaxTemperatureDeg == 0 && Locomotive.DieselMaxTemperatureDeg != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
-                    DieselMaxTemperatureDeg = loco.DieselMaxTemperatureDeg;
+                    DieselMaxTemperatureDeg = Locomotive.DieselMaxTemperatureDeg;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxTemperature: set at default value (BASIC Config) = {0}", DieselMaxTemperatureDeg);
 
                 }
-                else if (loco.DieselMaxTemperatureDeg == 0) // No default "MSTS" value present, set to arbitary value
+                else if (Locomotive.DieselMaxTemperatureDeg == 0) // No default "MSTS" value present, set to arbitary value
                 {
                     DieselMaxTemperatureDeg = 100.0f;
-                    loco.DieselMaxTemperatureDeg = DieselMaxTemperatureDeg;
+                    Locomotive.DieselMaxTemperatureDeg = DieselMaxTemperatureDeg;
 
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxTemperature not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", DieselMaxTemperatureDeg);
 
                 }
@@ -1488,32 +1521,32 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if ((initLevel & SettingsFlags.Cooling) == 0)
             {
-                EngineCooling = loco.DieselEngineCooling;
+                EngineCooling = Locomotive.DieselEngineCooling;
             }
 
             // Advise user what cooling method is set
-            if (loco.Simulator.Settings.VerboseConfigurationMessages)
+            if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                 Trace.TraceInformation("ORTSDieselCooling, set at default value = {0}", EngineCooling);
 
 
             if ((initLevel & SettingsFlags.TempTimeConstant) == 0)
             {
                 DieselTempTimeConstantSec = 720f;
-                if (DieselEngineConfigured && loco.Simulator.Settings.VerboseConfigurationMessages)
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("TempTimeConstant not found in Diesel Engine Config, set at arbitary value = {0}", DieselTempTimeConstantSec);
             }
 
             if ((initLevel & SettingsFlags.DieselConsumptionTab) == 0)
             {
-                DieselConsumptionTab = new Interpolator(new float[] { IdleRPM, MaxRPM }, new float[] { loco.DieselUsedPerHourAtIdleL, loco.DieselUsedPerHourAtMaxPowerL });
-                if (DieselEngineConfigured && loco.Simulator.Settings.VerboseConfigurationMessages)
+                DieselConsumptionTab = new Interpolator(new float[] { IdleRPM, MaxRPM }, new float[] { Locomotive.DieselUsedPerHourAtIdleL, Locomotive.DieselUsedPerHourAtMaxPowerL });
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("DieselConsumptionTab not found in Diesel Engine Config, set at default values");
             }
 
             if ((initLevel & SettingsFlags.ThrottleRPMTab) == 0)
             {
                 ThrottleRPMTab = new Interpolator(new float[] { 0, 100 }, new float[] { IdleRPM, MaxRPM });
-                if (DieselEngineConfigured && loco.Simulator.Settings.VerboseConfigurationMessages)
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("ThrottleRpMTab not found in Diesel Engine Config, set at default values");
             }
 
@@ -1540,7 +1573,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 DieselTorqueTab = new Interpolator(rpm, torque);
                 if (DieselEngineConfigured)
                 {
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     {
                         Trace.TraceInformation("DieselPowerTab not found in Diesel Engine Config (ADVANCED Config): constructed from default values");
                         Trace.TraceInformation("DieselTorqueTab not found in Diesel Engine Config (ADVANCED Config): constructed from default values");
@@ -1548,7 +1581,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 else
                 {
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     {
                         Trace.TraceInformation("DieselPowerTab constructed from default values (BASIC Config)");
                         Trace.TraceInformation("DieselTorqueTab constructed from default values (BASIC Config)");
@@ -1568,14 +1601,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 if (DieselEngineConfigured)
                 {
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     {
                         Trace.TraceInformation("DieselTorqueTab not found in Diesel Engine Config (ADVANCED Config): constructed from default values");
                     }
                 }
                 else
                 {
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     {
                         Trace.TraceInformation("DieselTorqueTab constructed from default values (BASIC Config)");
                     }
@@ -1594,45 +1627,43 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 if (DieselEngineConfigured)
                 {
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     {
                         Trace.TraceInformation("DieselPowerTab not found in Diesel Engine Config (ADVANCED Config): constructed from default values");
                     }
                 }
                 else
                 {
-                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     {
                         Trace.TraceInformation("DieselPowerTab constructed from default values (BASIC Config)");
                     }
                 }
             }
 
-            if (loco.MaximumDieselEnginePowerW == 0 && DieselPowerTab != null)
+            if (Locomotive.MaximumDieselEnginePowerW == 0 && DieselPowerTab != null)
             {
-                loco.MaximumDieselEnginePowerW = DieselPowerTab[MaxRPM];
-                if (loco.Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set by DieselPowerTab {0} value", FormatStrings.FormatPower(DieselPowerTab[MaxRPM], loco.IsMetric, false, false));
+                Locomotive.MaximumDieselEnginePowerW = DieselPowerTab[MaxRPM];
+                if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set by DieselPowerTab {0} value", FormatStrings.FormatPower(DieselPowerTab[MaxRPM], Locomotive.IsMetric, false, false));
             }
 
             // Check whether this code check is really required.
-            if (MaximumRailOutputPowerW == 0 && loco.MaxPowerW != 0)
+            if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
             {
-                MaximumRailOutputPowerW = loco.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
+                MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
             }
             else 
             {
                 MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is about 80% of the prime mover output power
             }
 
-            InitialExhaust = loco.InitialExhaust;
-            MaxExhaust = loco.MaxExhaust;
-            locomotive = loco;
+            InitialExhaust = Locomotive.InitialExhaust;
+            MaxExhaust = Locomotive.MaxExhaust;
         }
 
         public void InitDieselRailPowers(MSTSDieselLocomotive loco)
         {
-
             // Set up the reverse ThrottleRPM table. This is used to provide an apparent throttle setting to the Tractive Force calculation, and allows the diesel engine to control the up/down time of 
             // tractive force. This table should be creeated with all locomotives, as they will either use (create) a default ThrottleRPM table, or the user will enter one. 
 
@@ -1686,10 +1717,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     loco.MaxRPM = 600.0f;
                 }
-
-
             }
         }
-
     }
 }

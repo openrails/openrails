@@ -71,6 +71,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Event = Orts.Common.Event;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 
 namespace Orts.Simulation.Physics
 {
@@ -166,23 +167,10 @@ namespace Orts.Simulation.Physics
         public bool HeatedCarAttached = false;
         public bool HeatingBoilerCarAttached = false;
         bool IsFirstTimeBoilerCarAttached = true;
-        public float TrainSteamPipeHeatW;               // Not required, all instances can be removed!!!!!!!!!
-        public float TrainInsideTempC;                  // Desired inside temperature for carriage steam heating depending upon season
-        public float TrainOutsideTempC;                 // External ambient temeprature for carriage steam heating.
-        public float TrainSteamHeatLossWpT;             // Total Steam Heat loss of train
-        public float TrainHeatVolumeM3;                 // Total Volume of train to steam heat
-        public float TrainHeatPipeAreaM2;               // Total area of heating pipe for steam heating
-        public float TrainCurrentSteamHeatPipeTempC;                 // Temperature of steam in steam heat system based upon pressure setting
         public bool CarSteamHeatOn = false;    // Is steam heating turned on
-        public float TrainNetSteamHeatLossWpTime;        // Net Steam loss - Loss in Cars vs Steam Pipe Heat
-        public float TrainCurrentTrainSteamHeatW;    // Current steam heat of air in train
-        public float TrainTotalSteamHeatW;         // Total steam heat in train - based upon air volume
-        float SpecificHeatCapcityAirKJpKgK = 1.006f; // Specific Heat Capacity of Air
-        float DensityAirKgpM3 = 1.247f;   // Density of air - use a av value
+        const float SpecificHeatCapacityAirKJpKgK = 1.006f; // Specific Heat Capacity of Air
+        const float DensityAirKgpM3 = 1.247f;   // Density of air - use a av value
         bool IsSteamHeatLow = false;        // Flag to indicate when steam heat temp is low
-        public float DisplayTrainNetSteamHeatLossWpTime;  // Display Net Steam loss - Loss in Cars vs Steam Pipe Heat
-        public float TrainSteamPipeHeatConvW;               // Heat radiated by steam pipe - convection
-        public float TrainSteamHeatPipeRadW;                // Heat radiated by steam pipe - radiation
         float EmissivityFactor = 0.79f; // Oxidised steel
         float OneAtmospherePSI = 14.696f;      // Atmospheric Pressure
         float PipeHeatTransCoeffWpM2K = 22.0f;    // heat transmission coefficient for a steel pipe.
@@ -343,7 +331,28 @@ namespace Orts.Simulation.Physics
             UNDEFINED
         }
 
-        public TRAIN_CONTROL ControlMode = TRAIN_CONTROL.UNDEFINED;     // train control mode
+        private TRAIN_CONTROL controlMode = TRAIN_CONTROL.UNDEFINED;
+
+        /// <summary>
+        /// Train control mode
+        /// </summary>
+        public TRAIN_CONTROL ControlMode
+        {
+            get => controlMode;
+            set
+            {
+                if (value == TRAIN_CONTROL.OUT_OF_CONTROL && controlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+                    ControlModeBeforeOutOfControl = controlMode;
+                else
+                    ControlModeBeforeOutOfControl = TRAIN_CONTROL.UNDEFINED;
+                controlMode = value;
+            }
+        }
+
+        /// <summary>
+        /// Set when the train is out of control
+        /// </summary>
+        private TRAIN_CONTROL ControlModeBeforeOutOfControl = TRAIN_CONTROL.UNDEFINED;
 
         public enum OUTOFCONTROL
         {
@@ -1503,6 +1512,12 @@ namespace Orts.Simulation.Physics
                 car.SignalEvent(evt);
         }
 
+        public void SignalEvent(TCSEvent evt)
+        {
+            foreach (TrainCar car in Cars)
+                car.SignalEvent(evt);
+        }
+
         public void SignalEvent(PowerSupplyEvent evt)
         {
             foreach (TrainCar car in Cars)
@@ -1799,6 +1814,7 @@ namespace Orts.Simulation.Physics
 
 
             UpdateCarSteamHeat(elapsedClockSeconds);
+            UpdateCarElectricHeatingAndAirConditioning(elapsedClockSeconds);
             UpdateAuxTender();
 
             AddCouplerImpulseForces(elapsedClockSeconds);
@@ -2016,9 +2032,8 @@ namespace Orts.Simulation.Physics
 
                 if (IsFirstTimeBoilerCarAttached)
                 {
-                    for (int i = 0; i < Cars.Count; i++)
+                    foreach (TrainCar car in Cars)
                     {
-                        var car = Cars[i];
                         if (car.WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
                         {
                             HeatingBoilerCarAttached = true; // A steam heating boiler is fitted in a wagon
@@ -2027,7 +2042,6 @@ namespace Orts.Simulation.Physics
                         {
                             HeatedCarAttached = true; // A steam heating boiler is fitted in a wagon
                         }
-
                     }
                     IsFirstTimeBoilerCarAttached = false;
                 }
@@ -2041,155 +2055,17 @@ namespace Orts.Simulation.Physics
                     float ConnectSteamHoseLengthFt = 2.0f * 2.0f; // Assume two hoses on each car * 2 ft long
 
                     // Calculate total heat loss and car temperature along the train
-                    for (int i = 0; i < Cars.Count; i++)
+                    foreach (TrainCar car in Cars)
                     {
-                        var car = Cars[i];
-                        // Calculate volume in carriage - note height reduced by 1.06m to allow for bogies, etc
-                        float BogieHeightM = 1.06f;
-
-                        car.CarHeatVolumeM3 = car.CarWidthM * (car.CarLengthM) * (car.CarHeightM - BogieHeightM); // Check whether this needs to be same as compartment volume
-                        car.CarOutsideTempC = TrainOutsideTempC;  // Update Outside temp
-
                         // Only initialise these values the first time around the loop
-                        if (car.IsCarSteamHeatInitial)
+                        if (!car.IsCarHeatingInitialized)
                         {
-                           
-                            // This section sets some arbitary default values the first time that this section is processed. Real values are set on subsequent loops, once steam heat is turned on in locomotive
-                            if (TrainInsideTempC == 0)
-                            {
-                                TrainInsideTempC = car.DesiredCompartmentTempSetpointC; // Set intial temp - will be set in Steam and Diesel Eng, but these are done after this step
-                            }
-
-                            if (TrainOutsideTempC == 0)
-                            {
-
-                                TrainOutsideTempC = 10.0f; // Set intial temp - will be set in Steam and Diesel Eng, but these are done after this step
-                            }
-
-                            if (mstsLocomotive.EngineType == TrainCar.EngineTypes.Steam && Simulator.Settings.HotStart || mstsLocomotive.EngineType == TrainCar.EngineTypes.Diesel || mstsLocomotive.EngineType == TrainCar.EngineTypes.Electric)
-                            {
-                                if (TrainOutsideTempC < car.DesiredCompartmentTempSetpointC)
-                                {
-                                    car.CarCurrentCarriageHeatTempC = car.DesiredCompartmentTempSetpointC; // Set intial temp
-                                }
-                                else
-                                {
-                                    car.CarCurrentCarriageHeatTempC = TrainOutsideTempC;
-                                }
-                            }
-                            else
-                            {
-                                car.CarCurrentCarriageHeatTempC = TrainOutsideTempC;
-                            }
-
-                            // Calculate a random factor for steam heat leaks in connecting pipes
-                            car.SteamHoseLeakRateRandom = (float)Simulator.Random.Next(100) / 100.0f; // Achieves a two digit random number betwee 0 and 1
-                            car.SteamHoseLeakRateRandom = MathHelper.Clamp(car.SteamHoseLeakRateRandom, 0.5f, 1.0f); // Keep Random Factor ratio within bounds
-
-                            // Calculate Starting Heat value in Car Q = C * M * Tdiff, where C = Specific heat capacity, M = Mass ( Volume * Density), Tdiff - difference in temperature
-                            car.TotalPossibleCarHeatW = W.FromKW(SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * car.CarHeatVolumeM3 * (car.CarCurrentCarriageHeatTempC - TrainOutsideTempC));
-
-                            //                            Trace.TraceInformation("Initialise TotalCarHeat - CarID {0} Possible {1} Max {2} Out {3} Vol {4} Density {5} Specific {6}", car.CarID, car.TotalPossibleCarHeatW, car.CarCurrentCarriageHeatTempC, TrainOutsideTempC, car.CarHeatVolumeM3, DensityAirKgpM3, SpecificHeatCapcityAirKJpKgC);
-
-                            // Initialise current Train Steam Heat based upon selected Current carriage Temp
-                            car.CarHeatCurrentCompartmentHeatW = car.TotalPossibleCarHeatW;
-                            car.IsCarSteamHeatInitial = false;
+                            car.InitializeCarHeatingVariables();
                         }
-
-                        // Heat loss due to train movement and air flow, based upon convection heat transfer information - http://www.engineeringtoolbox.com/convective-heat-transfer-d_430.html
-                        // The formula on this page ( hc = 10.45 - v + 10v1/2), where v = m/s. This formula is used to develop a multiplication factor with train speed.
-                        // Curve is only valid between 2.0m/s and 20.0m/s
-
-                        float LowSpeedMpS = 2.0f;
-                        float HighSpeedMpS = 20.0f;
-                        float ConvHeatTxfMinSpeed = 10.45f - LowSpeedMpS + (10.0f * (float)Math.Pow(LowSpeedMpS, 0.5));
-                        float ConvHeatTxfMaxSpeed = 10.45f - HighSpeedMpS + (10.0f * (float)Math.Pow(HighSpeedMpS, 0.5));
-                        float ConvHeatTxActualSpeed = 10.45f - car.AbsSpeedMpS + (10.0f * (float)Math.Pow(car.AbsSpeedMpS, 0.5));
-                        float ConvFactor = 0;
-
-                        if (car.AbsSpeedMpS > 2 && car.AbsSpeedMpS < 20.0f)
-                        {
-                            ConvFactor = ConvHeatTxActualSpeed / ConvHeatTxfMinSpeed; // Calculate fraction only between 2 and 20
-                        }
-                        else if (car.AbsSpeedMpS < 2)
-                        {
-                            ConvFactor = 1.0f; // If speed less then 2m/s then set fracftion to give stationary Kc value 
-                        }
-                        else
-                        {
-                            ConvFactor = ConvHeatTxActualSpeed / ConvHeatTxfMinSpeed; // Calculate constant fraction over 20m/s
-                        }
-                        ConvFactor = MathHelper.Clamp(ConvFactor, 1.0f, 1.6f); // Keep Conv Factor ratio within bounds - should not exceed 1.6.
-
 
                         if (car.WagonType == TrainCar.WagonTypes.Passenger || car.WagonSpecialType == MSTSWagon.WagonSpecialTypes.Heated) // Only calculate compartment heat in passenger or specially marked heated cars
                         {
-
-                            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                            // Calculate heat loss from inside the carriage
-                            // Initialise car values for heating to zero
-                            car.TotalCarCompartmentHeatLossWpT = 0.0f;
-                            car.CarHeatCompartmentPipeAreaM2 = 0.0f;
-                            car.CarHeatVolumeM3 = 0.0f;
-                            float HeatLossTransmissionWpT = 0;
-
-                            // Transmission heat loss = exposed area * heat transmission coeff (inside temp - outside temp)
-                            // Calculate the heat loss through the roof, wagon sides, and floor separately  
-                            // Calculate the heat loss through the carriage sides, per degree of temp change
-                            // References - https://www.engineeringtoolbox.com/heat-loss-transmission-d_748.html  and https://www.engineeringtoolbox.com/heat-loss-buildings-d_113.html
-                            float HeatTransCoeffRoofWm2C = 1.7f * ConvFactor; // 2 inch wood - uninsulated
-                            float HeatTransCoeffEndsWm2C = 0.9f * ConvFactor; // 2 inch wood - insulated - this compensates for the fact that the ends of the cars are somewhat protected from the environment
-                            float HeatTransCoeffSidesWm2C = 1.7f * ConvFactor; // 2 inch wood - uninsulated
-                            float HeatTransCoeffWindowsWm2C = 4.7f * ConvFactor; // Single glazed glass window in wooden frame
-                            float HeatTransCoeffFloorWm2C = 2.5f * ConvFactor; // uninsulated floor
-
-                            // Calculate volume in carriage - note height reduced by 1.06m to allow for bogies, etc
-                            float CarCouplingPipeM = 1.2f;  // Allow for connection between cars (assume 2' each end) - no heat is contributed to carriages.
-
-                            // Calculate the heat loss through the roof, allow 15% additional heat loss through roof because of radiation to space
-                            float RoofHeatLossFactor = 1.15f;
-                            float HeatLossTransRoofWpT = RoofHeatLossFactor * (car.CarWidthM * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffRoofWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
-
-                            // Each car will have 2 x sides + 2 x ends. Each side will be made up of solid walls, and windows. A factor has been assumed to determine the ratio of window area to wall area.
-                            float HeatLossTransWindowsWpT = (car.WindowDeratingFactor * (car.CarHeightM - BogieHeightM) * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffWindowsWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
-                            float HeatLossTransSidesWpT = ((1.0f - car.WindowDeratingFactor) * (car.CarHeightM - BogieHeightM) * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffSidesWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
-                            float HeatLossTransEndsWpT = ((car.CarHeightM - BogieHeightM) * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffEndsWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
-
-                            // Total equals 2 x sides, ends, windows
-                            float HeatLossTransTotalSidesWpT = (2.0f * HeatLossTransWindowsWpT) + (2.0f * HeatLossTransSidesWpT) + (2.0f * HeatLossTransEndsWpT);
-
-                            // Calculate the heat loss through the floor
-                            float HeatLossTransFloorWpT = (car.CarWidthM * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffFloorWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
-
-                            HeatLossTransmissionWpT = HeatLossTransRoofWpT + HeatLossTransTotalSidesWpT + HeatLossTransFloorWpT;
-
-                            // ++++++++++++++++++++++++
-                            // Ventilation Heat loss, per degree of temp change
-                            // This will occur when the train is stopped at the station and prior to being ready to depart. Typically will only apply in activity mode, and not explore mode
-                            float HeatLossVentilationWpT = 0;
-                            float HeatRecoveryEfficiency = 0.5f; // Assume a HRF of 50%
-                            float AirFlowVolumeM3pS = car.CarHeatVolumeM3 / 300.0f; // Assume that the volume of the car is emptied over a period of 5 minutes
-
-                            if (AtStation) // When train is at station.
-                            {
-                                if (MayDepart) // If the train is ready to depart, assume all doors are closed, and hence no ventilation loss
-                                {
-                                    HeatLossVentilationWpT = 0;
-                                }
-                                else //
-                                {
-                                    HeatLossVentilationWpT = W.FromKW((1.0f - HeatRecoveryEfficiency) * SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * AirFlowVolumeM3pS * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC));
-                                }
-                            }
-
-                            // ++++++++++++++++++++++++
-                            // Infiltration Heat loss, per degree of temp change
-                            float NumAirShiftspSec = pS.FrompH(10.0f);      // Pepper article suggests that approx 14 air changes per hour happen for a train that is moving @ 50mph, use and av figure of 10.0.
-                            float HeatLossInfiltrationWpT = 0;
-                            car.CarHeatVolumeM3 = car.CarWidthM * (car.CarLengthM - CarCouplingPipeM) * (car.CarHeightM - BogieHeightM);
-                            HeatLossInfiltrationWpT = W.FromKW(SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * NumAirShiftspSec * car.CarHeatVolumeM3 * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC));
-
-                            car.TotalCarCompartmentHeatLossWpT = HeatLossTransmissionWpT + HeatLossInfiltrationWpT + HeatLossVentilationWpT;
+                            car.UpdateHeatLoss();
                             
                             //++++++++++++++++++++++++++++++++++++++++
                             // Calculate heat produced by steam pipe acting as heat exchanger inside carriage - this model is based upon the heat loss from a steam pipe. 
@@ -2203,7 +2079,7 @@ namespace Orts.Simulation.Physics
 
                             // Assume door pipes are 3' 4" (ie 3.3') long, and that there are doors at both ends of the car, ie x 2
                             float CarDoorLengthM = 2.0f * Me.FromFt(3.3f);
-                            float CarDoorVolumeM3 = car.CarWidthM * CarDoorLengthM * (car.CarHeightM - BogieHeightM);
+                            float CarDoorVolumeM3 = car.CarWidthM * CarDoorLengthM * (car.CarHeightM - TrainCar.BogieHeightM);
 
                             float CarDoorPipeAreaM2 = 2.0f * MathHelper.Pi * DoorSteamPipeRadiusM * CarDoorLengthM;
 
@@ -2215,23 +2091,22 @@ namespace Orts.Simulation.Physics
 
                             // Pipe convection heat produced - steam is reduced to atmospheric pressure when it is injected into compartment
                             float CompartmentSteamPipeTempC = C.FromF(mstsLocomotive.SteamHeatPressureToTemperaturePSItoF[0]);
-                            car.CarCompartmentSteamPipeHeatConvW = (PipeHeatTransCoeffWpM2K * car.CarHeatCompartmentPipeAreaM2 * (CompartmentSteamPipeTempC - car.CarCurrentCarriageHeatTempC));
+                            car.CarCompartmentSteamPipeHeatConvW = (PipeHeatTransCoeffWpM2K * car.CarHeatCompartmentPipeAreaM2 * (CompartmentSteamPipeTempC - car.CarInsideTempC));
 
                             // Pipe radiation heat produced
                             float PipeTempAK = (float)Math.Pow(C.ToK(C.FromF(CompartmentSteamPipeTempC)), 4.0f);
-                            float PipeTempBK = (float)Math.Pow(C.ToK(car.CarCurrentCarriageHeatTempC), 4.0f);
+                            float PipeTempBK = (float)Math.Pow(C.ToK(car.CarInsideTempC), 4.0f);
                             car.CarCompartmentSteamHeatPipeRadW = (BoltzmanConstPipeWpM2 * EmissivityFactor * car.CarHeatCompartmentPipeAreaM2 * (PipeTempAK - PipeTempBK));
 
                             car.CarHeatCompartmentSteamPipeHeatW = car.CarCompartmentSteamHeatPipeRadW + car.CarCompartmentSteamPipeHeatConvW;
-
                         }
 
                         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                         // Calculate heating loss in main supply pipe that runs under carriage
 
                         // Set heat trans coeff
-                        float HeatTransCoeffMainPipeBTUpFt2pHrpF = 0.4f * ConvFactor; // insulated pipe - BTU / sq.ft. / hr / l in / °F.
-                        float HeatTransCoeffConnectHoseBTUpFt2pHrpF = 0.04f * ConvFactor; // rubber connecting hoses - BTU / sq.ft. / hr / l in / °F. TO BE CHECKED
+                        float HeatTransCoeffMainPipeBTUpFt2pHrpF = 0.4f * car.ConvectionFactor; // insulated pipe - BTU / sq.ft. / hr / l in / °F.
+                        float HeatTransCoeffConnectHoseBTUpFt2pHrpF = 0.04f * car.ConvectionFactor; // rubber connecting hoses - BTU / sq.ft. / hr / l in / °F. TO BE CHECKED
 
                         // Calculate Length of carriage and heat loss in main steam pipe
                         float CarMainSteamPipeTempF = mstsLocomotive.SteamHeatPressureToTemperaturePSItoF[car.CarSteamHeatMainPipeSteamPressurePSI];
@@ -2286,43 +2161,29 @@ namespace Orts.Simulation.Physics
                         mstsLocomotive.CalculatedCarHeaterSteamUsageLBpS = pS.FrompH(SteamFlowRateLbpHr);
 
                         // Calculate Net steam heat loss or gain for each compartment in the car
-                        car.CarNetSteamHeatLossWpTime = CurrentComparmentSteamPipeHeatW - car.TotalCarCompartmentHeatLossWpT;
-
-                        car.DisplayTrainNetSteamHeatLossWpTime = car.CarNetSteamHeatLossWpTime;
+                        car.CarNetHeatFlowRateW = CurrentComparmentSteamPipeHeatW - car.TotalCarCompartmentHeatLossW;
 
                         // Given the net heat loss the car calculate the current heat capacity, and corresponding temperature
-                        if (car.CarNetSteamHeatLossWpTime < 0)
-                        {
-                            car.CarNetSteamHeatLossWpTime = -1.0f * car.CarNetSteamHeatLossWpTime; // If steam heat loss is negative, convert to a positive number
-                            car.CarHeatCurrentCompartmentHeatW -= car.CarNetSteamHeatLossWpTime * elapsedClockSeconds;  // Losses per elapsed time
-                        }
-                        else
-                        {
+                        car.CarHeatCurrentCompartmentHeatJ += car.CarNetHeatFlowRateW * elapsedClockSeconds;
 
-                            car.CarHeatCurrentCompartmentHeatW += car.CarNetSteamHeatLossWpTime * elapsedClockSeconds;  // Gains per elapsed time         
-                        }
+                        car.CarInsideTempC = J.ToKJ(car.CarHeatCurrentCompartmentHeatJ) / (SpecificHeatCapacityAirKJpKgK * DensityAirKgpM3 * car.CarHeatVolumeM3) + car.CarOutsideTempC;
 
-                        car.CarCurrentCarriageHeatTempC = W.ToKW(car.CarHeatCurrentCompartmentHeatW) / (SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * car.CarHeatVolumeM3) + TrainOutsideTempC;
-
-                        float DesiredCompartmentTempResetpointC = car.DesiredCompartmentTempSetpointC - 2.5f; // Allow 2.5Deg bandwidth for temperature
-
-                        if (car.CarCurrentCarriageHeatTempC > car.DesiredCompartmentTempSetpointC)
+                        if (car.CarInsideTempC > car.DesiredCompartmentTempSetpointC)
                         {
                             car.CarHeatCompartmentHeaterOn = false;
                         }
-                        else if (car.CarCurrentCarriageHeatTempC < DesiredCompartmentTempResetpointC)
+                        else if (car.CarInsideTempC < car.DesiredCompartmentTempSetpointC - 2.5f) // Allow 2.5Deg bandwidth for temperature
                         {
                             car.CarHeatCompartmentHeaterOn = true;
                         }
 
                         float DesiredCompartmentAlarmTempSetpointC = C.FromF(45.0f); // Alarm temperature
-                        if (car.CarCurrentCarriageHeatTempC < DesiredCompartmentAlarmTempSetpointC) // If temp below 45of then alarm
+                        if (car.CarInsideTempC < DesiredCompartmentAlarmTempSetpointC) // If temp below 45of then alarm
                         {
                             if (!IsSteamHeatLow)
                             {
                                 IsSteamHeatLow = true;
                                 // Provide warning message if temperature is too hot
-                                float CarTemp = car.CarCurrentCarriageHeatTempC;
                                 if (car.WagonType == TrainCar.WagonTypes.Passenger)
                                 {
                                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("Carriage {0} temperature is too cold, the passengers are freezing.", car.CarID));
@@ -2334,7 +2195,7 @@ namespace Orts.Simulation.Physics
                             }
 
                         }
-                        else if (car.CarCurrentCarriageHeatTempC > C.FromF(65.0f))
+                        else if (car.CarInsideTempC > C.FromF(65.0f))
                         {
 
                             IsSteamHeatLow = false;        // Reset temperature warning
@@ -2347,10 +2208,8 @@ namespace Orts.Simulation.Physics
                     float ProgressivePressureAlongTrainPSI = mstsLocomotive.CurrentSteamHeatPressurePSI;
 
                     // Calculate pressure drop along whole train
-                    for (int i = 0; i < Cars.Count; i++)
+                    foreach (TrainCar car in Cars)
                     {
-                        var car = Cars[i];
-
                         // Calculate pressure drop in pipe along train. This calculation is based upon the Unwin formula - https://www.engineeringtoolbox.com/steam-pressure-drop-calculator-d_1093.html
                         // dp = 0.0001306 * q^2 * L * (1 + 3.6/d) / (3600 * ρ * d^5)
                         // where dp = pressure drop (psi), q = steam flow rate(lb/ hr), L = length of pipe(ft), d = pipe inside diameter(inches), ρ = steam density(lb / ft3)
@@ -2400,6 +2259,36 @@ namespace Orts.Simulation.Physics
                     }
 
                     #endregion
+                }
+            }
+        }
+
+        public void UpdateCarElectricHeatingAndAirConditioning(float elapsedClockSeconds)
+        {
+            // Check to confirm that train is player driven
+            if (IsPlayerDriven)
+            {
+                // Calculate total heat loss and car temperature along the train
+                foreach (TrainCar car in Cars.Where(car => car.PowerSupply is ScriptedPassengerCarPowerSupply))
+                {
+                    // Only initialise these values the first time around the loop
+                    if (!car.IsCarHeatingInitialized)
+                    {
+                        car.InitializeCarHeatingVariables();
+                    }
+
+                    if (car.PowerSupply is ScriptedPassengerCarPowerSupply passengerCarPowerSupply)
+                    {
+                        car.UpdateHeatLoss();
+
+                        // Calculate Net steam heat loss or gain for each compartment in the car
+                        car.CarNetHeatFlowRateW = passengerCarPowerSupply.HeatFlowRateW - car.TotalCarCompartmentHeatLossW;
+
+                        // Given the net heat loss the car calculate the current heat capacity, and corresponding temperature
+                        car.CarHeatCurrentCompartmentHeatJ += car.CarNetHeatFlowRateW * elapsedClockSeconds;
+
+                        car.CarInsideTempC = J.ToKJ(car.CarHeatCurrentCompartmentHeatJ) / (SpecificHeatCapacityAirKJpKgK * DensityAirKgpM3 * car.CarHeatVolumeM3) + car.CarOutsideTempC;
+                    }
                 }
             }
         }
@@ -2824,12 +2713,11 @@ namespace Orts.Simulation.Physics
 
         public void UpdateTurntable(float elapsedClockSeconds)
         {
-            //           UpdateTrainPosition();                                                                // position update                  //
-            if (LeadLocomotive != null && (LeadLocomotive.ThrottlePercent >= 1 || Math.Abs(LeadLocomotive.SpeedMpS) > 0.05 || !(LeadLocomotive.Direction == Direction.N
-            || Math.Abs(MUReverserPercent) <= 1)) || ControlMode != TRAIN_CONTROL.TURNTABLE)
+            if (LeadLocomotive is MSTSLocomotive locomotive && (LeadLocomotive.ThrottlePercent >= 1 || Math.Abs(LeadLocomotive.SpeedMpS) > 0.05 || !(LeadLocomotive.Direction == Direction.N
+            || Math.Abs(MUReverserPercent) <= 1)))
             // Go to emergency.
             {
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, "TRAIN_ON_MOVING_TURNTABLE");
             }
         }
 
@@ -3204,103 +3092,107 @@ namespace Orts.Simulation.Physics
 
                 while (firstObject.distance_to_train < 0.0f && SignalObjectItems.Count > 0)
                 {
-#if DEBUG_REPORTS
-                    File.AppendAllText(@"C:\temp\printproc.txt", "Passed Signal : " + firstObject.ObjectDetails.thisRef.ToString() +
-                        " with speed : " + firstObject.actual_speed.ToString() + "\n");
-#endif
-                    var temp1MaxSpeedMpS = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
-                    if (firstObject.ObjectDetails.isSignal)
-                    {
-                        allowedAbsoluteMaxSpeedSignalMpS = temp1MaxSpeedMpS == -1 ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : temp1MaxSpeedMpS;
-                    }
-                    else if (firstObject.speed_reset == 0)
-                    {
-                        if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0) allowedAbsoluteMaxSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? allowedAbsoluteMaxSpeedLimitMpS : temp1MaxSpeedMpS;
-                        else allowedAbsoluteMaxTempSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? allowedAbsoluteMaxTempSpeedLimitMpS : temp1MaxSpeedMpS;
-                    }
-                    else
-                    {
-                        allowedAbsoluteMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedLimitMpS;
-                    }
-
-                    if (firstObject.actual_speed > 0)
+                    // If the object is a signal or a speed limit execution
+                    if (firstObject.ObjectDetails.isSignal || !firstObject.speed_isWarning)
                     {
 #if DEBUG_REPORTS
-                        File.AppendAllText(@"C:\temp\printproc.txt", "Passed speedpost : " + firstObject.ObjectDetails.thisRef.ToString() +
-                            " = " + firstObject.actual_speed.ToString() + "\n");
-
-                        File.AppendAllText(@"C:\temp\printproc.txt", "Present Limits : " +
-                            "Limit : " + allowedMaxSpeedLimitMpS.ToString() + " ; " +
-                            "Signal : " + allowedMaxSpeedSignalMpS.ToString() + " ; " +
-                            "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Passed Signal : " + firstObject.ObjectDetails.thisRef.ToString() +
+                            " with speed : " + firstObject.actual_speed.ToString() + "\n");
 #endif
-                        if (firstObject.actual_speed <= AllowedMaxSpeedMpS)
+                        var temp1MaxSpeedMpS = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
+                        if (firstObject.ObjectDetails.isSignal)
                         {
-                            AllowedMaxSpeedMpS = firstObject.actual_speed;
-                            float tempMaxSpeedMps = AllowedMaxSpeedMpS;
-                            if (!Simulator.TimetableMode)
-                            {
-                                tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
-                                if (tempMaxSpeedMps == -1f)
-                                    tempMaxSpeedMps = AllowedMaxSpeedMpS;
-                            }
-
-
-                            if (firstObject.ObjectDetails.isSignal)
-                            {
-                                allowedMaxSpeedSignalMpS = tempMaxSpeedMps;
-                            }
-                            else if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0)
-                            {
-                                allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
-                            }
-                            else
-                            {
-                                allowedMaxTempSpeedLimitMpS = tempMaxSpeedMps;
-                            }
-                            requiredActions.UpdatePendingSpeedlimits(AllowedMaxSpeedMpS);  // update any older pending speed limits
+                            allowedAbsoluteMaxSpeedSignalMpS = temp1MaxSpeedMpS == -1 ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : temp1MaxSpeedMpS;
+                        }
+                        else if (firstObject.speed_reset == 0)
+                        {
+                            if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0) allowedAbsoluteMaxSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? allowedAbsoluteMaxSpeedLimitMpS : temp1MaxSpeedMpS;
+                            else allowedAbsoluteMaxTempSpeedLimitMpS = temp1MaxSpeedMpS == -1 ? allowedAbsoluteMaxTempSpeedLimitMpS : temp1MaxSpeedMpS;
                         }
                         else
                         {
-                            ActivateSpeedLimit speedLimit;
-                            float reqDistance = DistanceTravelledM + Length;
-                            if (firstObject.ObjectDetails.isSignal)
-                            {
-                                speedLimit = new ActivateSpeedLimit(reqDistance, -1f, firstObject.actual_speed);
-                            }
-                            else if (Simulator.TimetableMode || firstObject.speed_reset == 0)
-                            {
-                                speedLimit = new ActivateSpeedLimit(reqDistance,
-                                    firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0 ? firstObject.actual_speed : -1, -1f,
-                                    firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0 ? -1 : firstObject.actual_speed);
-                            }
-                            else
-                            {
-                                speedLimit = new ActivateSpeedLimit(reqDistance, firstObject.actual_speed, firstObject.actual_speed);
-                            }
+                            allowedAbsoluteMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedLimitMpS;
+                        }
 
-                            requiredActions.InsertAction(speedLimit);
-                            requiredActions.UpdatePendingSpeedlimits(firstObject.actual_speed);  // update any older pending speed limits
-                        }
-                    }
-                    else if (!Simulator.TimetableMode)
-                    {
-                        var tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
-                        if (tempMaxSpeedMps >= 0)
+                        if (firstObject.actual_speed > 0)
                         {
-                            if (firstObject.ObjectDetails.isSignal)
+#if DEBUG_REPORTS
+                            File.AppendAllText(@"C:\temp\printproc.txt", "Passed speedpost : " + firstObject.ObjectDetails.thisRef.ToString() +
+                                " = " + firstObject.actual_speed.ToString() + "\n");
+
+                            File.AppendAllText(@"C:\temp\printproc.txt", "Present Limits : " +
+                                "Limit : " + allowedMaxSpeedLimitMpS.ToString() + " ; " +
+                                "Signal : " + allowedMaxSpeedSignalMpS.ToString() + " ; " +
+                                "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
+#endif
+                            if (firstObject.actual_speed <= AllowedMaxSpeedMpS)
                             {
-                                allowedMaxSpeedSignalMpS = tempMaxSpeedMps;
+                                AllowedMaxSpeedMpS = firstObject.actual_speed;
+                                float tempMaxSpeedMps = AllowedMaxSpeedMpS;
+                                if (!Simulator.TimetableMode)
+                                {
+                                    tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
+                                    if (tempMaxSpeedMps == -1f)
+                                        tempMaxSpeedMps = AllowedMaxSpeedMpS;
+                                }
+
+
+                                if (firstObject.ObjectDetails.isSignal)
+                                {
+                                    allowedMaxSpeedSignalMpS = tempMaxSpeedMps;
+                                }
+                                else if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0)
+                                {
+                                    allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
+                                }
+                                else
+                                {
+                                    allowedMaxTempSpeedLimitMpS = tempMaxSpeedMps;
+                                }
+                                requiredActions.UpdatePendingSpeedlimits(AllowedMaxSpeedMpS);  // update any older pending speed limits
                             }
                             else
                             {
-                                if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0) allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
-                                else allowedMaxTempSpeedLimitMpS = tempMaxSpeedMps;
+                                ActivateSpeedLimit speedLimit;
+                                float reqDistance = DistanceTravelledM + Length;
+                                if (firstObject.ObjectDetails.isSignal)
+                                {
+                                    speedLimit = new ActivateSpeedLimit(reqDistance, -1f, firstObject.actual_speed);
+                                }
+                                else if (Simulator.TimetableMode || firstObject.speed_reset == 0)
+                                {
+                                    speedLimit = new ActivateSpeedLimit(reqDistance,
+                                        firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0 ? firstObject.actual_speed : -1, -1f,
+                                        firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0 ? -1 : firstObject.actual_speed);
+                                }
+                                else
+                                {
+                                    speedLimit = new ActivateSpeedLimit(reqDistance, firstObject.actual_speed, firstObject.actual_speed);
+                                }
+
+                                requiredActions.InsertAction(speedLimit);
+                                requiredActions.UpdatePendingSpeedlimits(firstObject.actual_speed);  // update any older pending speed limits
                             }
                         }
-                        else if (firstObject.ObjectDetails.isSignal)
+                        else if (!Simulator.TimetableMode)
                         {
-                            allowedMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedSignalMpS;
+                            var tempMaxSpeedMps = IsFreight ? firstObject.speed_freight : firstObject.speed_passenger;
+                            if (tempMaxSpeedMps >= 0)
+                            {
+                                if (firstObject.ObjectDetails.isSignal)
+                                {
+                                    allowedMaxSpeedSignalMpS = tempMaxSpeedMps;
+                                }
+                                else
+                                {
+                                    if (firstObject.speed_noSpeedReductionOrIsTempSpeedReduction == 0) allowedMaxSpeedLimitMpS = tempMaxSpeedMps;
+                                    else allowedMaxTempSpeedLimitMpS = tempMaxSpeedMps;
+                                }
+                            }
+                            else if (firstObject.ObjectDetails.isSignal)
+                            {
+                                allowedMaxSpeedSignalMpS = allowedAbsoluteMaxSpeedSignalMpS;
+                            }
                         }
                     }
 
@@ -3430,6 +3322,7 @@ namespace Orts.Simulation.Physics
                         firstObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
                         firstObject.speed_reset = thisSpeed == null ? 0 : thisSpeed.speed_reset;
                         firstObject.speed_noSpeedReductionOrIsTempSpeedReduction = thisSpeed == null ? 0 : thisSpeed.speed_noSpeedReductionOrIsTempSpeedReduction;
+                        firstObject.speed_isWarning = thisSpeed?.speed_isWarning ?? false;
                     }
                 }
 
@@ -3468,6 +3361,7 @@ namespace Orts.Simulation.Physics
                             nextObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
                             nextObject.speed_reset = thisSpeed == null ? 0 : thisSpeed.speed_reset;
                             nextObject.speed_noSpeedReductionOrIsTempSpeedReduction = thisSpeed == null ? 0 : thisSpeed.speed_noSpeedReductionOrIsTempSpeedReduction;
+                            nextObject.speed_isWarning = thisSpeed?.speed_isWarning ?? false;
                         }
                     }
 
@@ -3557,6 +3451,7 @@ namespace Orts.Simulation.Physics
                                 nextObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
                                 nextObject.speed_reset = thisSpeed == null ? 0 : thisSpeed.speed_reset;
                                 nextObject.speed_noSpeedReductionOrIsTempSpeedReduction = thisSpeed == null ? 0 : thisSpeed.speed_noSpeedReductionOrIsTempSpeedReduction;
+                                nextObject.speed_isWarning = thisSpeed?.speed_isWarning ?? false;
                             }
                         }
 
@@ -3641,7 +3536,7 @@ namespace Orts.Simulation.Physics
             {
                 DistanceToSignal = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
             }
-            else if (ControlMode != TRAIN_CONTROL.AUTO_NODE)
+            else if (ControlMode != TRAIN_CONTROL.AUTO_NODE && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
             {
                 bool validModeSwitch = true;
 
@@ -3759,6 +3654,7 @@ namespace Orts.Simulation.Physics
                 }
                 else if (Simulator.TimetableMode)
                 {
+                    if (!thisObject.speed_isWarning)
                     {
                         if (actualSpeedMpS > 998f)
                         {
@@ -3780,7 +3676,7 @@ namespace Orts.Simulation.Physics
                     }
                 }
 
-                else  // Enhanced Compatibility on & SpeedLimit
+                else if (!thisObject.speed_isWarning) // Enhanced Compatibility on & SpeedLimit
                 {
                     if (actualSpeedMpS > 998f)
                     {
@@ -7296,28 +7192,28 @@ namespace Orts.Simulation.Physics
         {
             switch (ControlMode)
             {
-                case (TRAIN_CONTROL.AUTO_SIGNAL):
+                case TRAIN_CONTROL.AUTO_SIGNAL:
+                    UpdateSignalMode(signalObjectIndex, backward, elapsedClockSeconds);
+                    break;
+
+                case TRAIN_CONTROL.AUTO_NODE:
+                    UpdateNodeMode();
+                    break;
+
+                case TRAIN_CONTROL.OUT_OF_CONTROL:
+                    UpdateOutOfControl();
+                    if (LeadLocomotive is MSTSLocomotive locomotive)
                     {
-                        UpdateSignalMode(signalObjectIndex, backward, elapsedClockSeconds);
-                        break;
+                        if (!locomotive.TrainControlSystem.SimulatorEmergencyBraking)
+                        {
+                            locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, OutOfControlReason.ToString());
+                        }
                     }
-                case (TRAIN_CONTROL.AUTO_NODE):
-                    {
-                        UpdateNodeMode();
-                        break;
-                    }
-                case (TRAIN_CONTROL.OUT_OF_CONTROL):
-                    {
-                        UpdateOutOfControl();
-                        if (LeadLocomotive != null)
-                            ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
-                        break;
-                    }
-                case (TRAIN_CONTROL.UNDEFINED):
-                    {
-                        SwitchToNodeControl(-1);
-                        break;
-                    }
+                    break;
+
+                case TRAIN_CONTROL.UNDEFINED:
+                    SwitchToNodeControl(-1);
+                    break;
 
                 // other modes are processed directly
                 default:
@@ -9770,8 +9666,10 @@ namespace Orts.Simulation.Physics
 
         public void ToggleToExplorerMode()
         {
-            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+            }
 
             // set track occupation (using present route)
             UpdateSectionStateExplorer();
@@ -10019,10 +9917,10 @@ namespace Orts.Simulation.Physics
             }
             else if (ControlMode == TRAIN_CONTROL.EXPLORER)
             {
-                if (LeadLocomotive != null &&
-                    (((MSTSLocomotive)LeadLocomotive).TrainBrakeController.TCSEmergencyBraking || ((MSTSLocomotive)LeadLocomotive).TrainBrakeController.TCSFullServiceBraking))
+                if (LeadLocomotive is MSTSLocomotive locomotive &&
+                    (locomotive.TrainBrakeController.TCSEmergencyBraking || locomotive.TrainBrakeController.TCSFullServiceBraking))
                 {
-                    ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+                    locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
                     ResetExplorerMode();
                     return;
                 }
@@ -10043,8 +9941,10 @@ namespace Orts.Simulation.Physics
 
         public void ToggleToManualMode()
         {
-            if (LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+            if (LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+            }
 
             // set track occupation (using present route)
             UpdateSectionStateManual();
@@ -10170,8 +10070,10 @@ namespace Orts.Simulation.Physics
 
         public void ResetExplorerMode()
         {
-            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+            }
 
             // set track occupation (using present route)
             UpdateSectionStateExplorer();
@@ -10526,8 +10428,7 @@ namespace Orts.Simulation.Physics
 
                 // set control state and issue warning
 
-                if (ControlMode != TRAIN_CONTROL.EXPLORER)
-                    ControlMode = TRAIN_CONTROL.OUT_OF_CONTROL;
+                ControlMode = TRAIN_CONTROL.OUT_OF_CONTROL;
 
                 var report = string.Format("Train {0} is out of control and will be stopped. Reason : ", Number.ToString());
 
@@ -10535,25 +10436,25 @@ namespace Orts.Simulation.Physics
 
                 switch (reason)
                 {
-                    case (OUTOFCONTROL.SPAD):
+                    case OUTOFCONTROL.SPAD:
                         report = String.Concat(report, " train passed signal at Danger");
                         break;
-                    case (OUTOFCONTROL.SPAD_REAR):
+                    case OUTOFCONTROL.SPAD_REAR:
                         report = String.Concat(report, " train passed signal at Danger at rear of train");
                         break;
-                    case (OUTOFCONTROL.OUT_OF_AUTHORITY):
+                    case OUTOFCONTROL.OUT_OF_AUTHORITY:
                         report = String.Concat(report, " train passed limit of authority");
                         break;
-                    case (OUTOFCONTROL.OUT_OF_PATH):
+                    case OUTOFCONTROL.OUT_OF_PATH:
                         report = String.Concat(report, " train has ran off its allocated path");
                         break;
-                    case (OUTOFCONTROL.SLIPPED_INTO_PATH):
+                    case OUTOFCONTROL.SLIPPED_INTO_PATH:
                         report = String.Concat(report, " train slipped back into path of another train");
                         break;
-                    case (OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK):
+                    case OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK:
                         report = String.Concat(report, " train slipped of the end of track");
                         break;
-                    case (OUTOFCONTROL.OUT_OF_TRACK):
+                    case OUTOFCONTROL.OUT_OF_TRACK:
                         report = String.Concat(report, " train has moved off the track");
                         break;
                 }
@@ -10566,8 +10467,10 @@ namespace Orts.Simulation.Physics
                     File.AppendAllText(@"C:\temp\checktrain.txt", report + "\n");
                 }
 
-                if (LeadLocomotive != null)
-                    ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
+                if (LeadLocomotive is MSTSLocomotive locomotive)
+                {
+                    locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, OutOfControlReason.ToString());
+                }
             }
             // the AI train is now out of path. Instead of killing him, we give him a chance on a new path
             else
@@ -10580,6 +10483,52 @@ namespace Orts.Simulation.Physics
                 }
                 // reset actions to recalculate distances
                 if (TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING) ((AITrain)this).ResetActions(true);
+            }
+        }
+
+        public void ManualResetOutOfControlMode()
+        {
+            if (LeadLocomotive is MSTSLocomotive locomotive && locomotive.TrainControlSystem.SimulatorEmergencyBraking)
+            {
+                if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL)
+                {
+                    switch (OutOfControlReason)
+                    {
+                        case OUTOFCONTROL.SPAD:
+                        case OUTOFCONTROL.SPAD_REAR:
+                        case OUTOFCONTROL.MISALIGNED_SWITCH:
+                            switch (ControlModeBeforeOutOfControl)
+                            {
+                                case TRAIN_CONTROL.AUTO_NODE:
+                                    SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
+                                    locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
+                                    break;
+
+                                case TRAIN_CONTROL.AUTO_SIGNAL:
+                                    // It is impossible to go back directly to auto signal mode since we are no longer on a valid route, switching to manual mode.
+                                    ToggleToManualMode();
+                                    break;
+
+                                case TRAIN_CONTROL.EXPLORER:
+                                    ToggleToExplorerMode();
+                                    break;
+
+                                case TRAIN_CONTROL.MANUAL:
+                                    ToggleToManualMode();
+                                    break;
+                            }
+
+                            if (ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+                            {
+                                Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Out of control mode reset"));
+                            }
+                            break;
+
+                        default:
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You can only reset if you passed a signal at danger or if you passed a misaligned switch."));
+                            break;
+                    }
+                }
             }
         }
 
@@ -10884,8 +10833,10 @@ namespace Orts.Simulation.Physics
 
             }
 
-            if (LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
+            if (LeadLocomotive is MSTSLocomotive locomotive)
+            {
+                locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingRequestedBySimulator, "OTHER_TRAIN_IN_PATH");
+            }
         }
 
         //================================================================================================//
@@ -14279,8 +14230,11 @@ namespace Orts.Simulation.Physics
                         }
                         else if (signalObjectItem.ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit && signalObjectItem.actual_speed > 0)
                         {
-                            thisItem = new TrainObjectItem(signalObjectItem.actual_speed, signalObjectItem.distance_to_train,
-                                (TrainObjectItem.SpeedItemType)(signalObjectItem.speed_noSpeedReductionOrIsTempSpeedReduction));
+                            thisItem = new TrainObjectItem(thisSpeedMpS: signalObjectItem.actual_speed,
+                                isWarning: signalObjectItem.speed_isWarning,
+                                thisDistanceM: signalObjectItem.distance_to_train,
+                                signalObject: signalObjectItem.ObjectDetails,
+                                speedObjectType: (TrainObjectItem.SpeedItemType)signalObjectItem.speed_noSpeedReductionOrIsTempSpeedReduction);
                             PlayerTrainSpeedposts[dir].Add(thisItem);
                         }
                     }
@@ -14360,7 +14314,11 @@ namespace Orts.Simulation.Physics
                                 if (thisSpeedInfo != null && thisSpeedInfo.speed_reset == 1)
                                     validSpeed = progressiveMaxSpeedLimitMpS;
                                 else progressiveMaxSpeedLimitMpS = validSpeed;
-                                thisItem = new TrainObjectItem(validSpeed, thisSpeeditem.SignalLocation + sectionDistanceToTrainM, (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
+                                thisItem = new TrainObjectItem(thisSpeedMpS: validSpeed,
+                                    isWarning: thisSpeedInfo.speed_isWarning,
+                                    thisDistanceM: thisSpeeditem.SignalLocation + sectionDistanceToTrainM,
+                                    signalObject: thisSpeedpost,
+                                    speedObjectType: (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
                                 PlayerTrainSpeedposts[dir].Add(thisItem);
                             }
                         }
@@ -20825,6 +20783,7 @@ namespace Orts.Simulation.Physics
             public END_AUTHORITY AuthorityType;
             public TrackMonitorSignalAspect SignalState;
             public float AllowedSpeedMpS;
+            public bool IsWarning;
             public float DistanceToTrainM;
             public bool Enabled;
             public int StationPlatformLength;
@@ -20843,6 +20802,7 @@ namespace Orts.Simulation.Physics
             //
             // if ItemType == SPEEDPOST :
             //      AllowedSpeedMpS
+            //      IsWarning
             //      DistanceToTrainM
             //
             // if ItemType == STATION :
@@ -20880,13 +20840,15 @@ namespace Orts.Simulation.Physics
             }
 
             // Constructor for Speedpost
-            public TrainObjectItem(float thisSpeedMpS, float thisDistanceM, SpeedItemType speedObjectType = SpeedItemType.Standard)
+            public TrainObjectItem(float thisSpeedMpS, bool isWarning, float thisDistanceM, SignalObject signalObject, SpeedItemType speedObjectType = SpeedItemType.Standard)
             {
                 ItemType = TRAINOBJECTTYPE.SPEEDPOST;
                 AuthorityType = END_AUTHORITY.NO_PATH_RESERVED;
                 SignalState = TrackMonitorSignalAspect.Clear_2;
                 AllowedSpeedMpS = thisSpeedMpS;
+                IsWarning = isWarning;
                 DistanceToTrainM = thisDistanceM;
+                SignalObject = signalObject;
                 SpeedObjectType = speedObjectType;
             }
 

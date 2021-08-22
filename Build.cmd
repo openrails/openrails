@@ -87,17 +87,10 @@ IF "%Mode%" == "Stable" (
 	)
 )
 
-REM Get code revision.
-SET Revision=000
-IF EXIST ".svn" (
-	FOR /F "usebackq tokens=1" %%R IN (`svn --non-interactive info --show-item revision .`) DO SET Revision=%%R
-)
-IF EXIST ".git" (
-	FOR /F "usebackq tokens=1" %%R IN (`git describe --first-parent --always`) DO SET Revision=%%R
-)
-IF "%Revision%" == "000" (
-	>&2 ECHO WARNING: No Subversion or Git revision found.
-)
+REM Get product version and code revision.
+FOR /F "usebackq tokens=1* delims==" %%A IN (`CALL GetVersion.cmd %Mode%`) DO SET %%A=%%B
+SET Version=%OpenRails_Version%
+SET Revision=%OpenRails_Revision%
 
 REM Restore NuGet packages.
 nuget restore Source\ORTS.sln || GOTO :error
@@ -115,19 +108,6 @@ PUSHD Source\Contrib\TimetableEditor && CALL Build.cmd && POPD || GOTO :error
 REM Set update channel.
 >>Program\Updater.ini ECHO Channel=string:%Mode% || GOTO :error
 ECHO Set update channel to "%Mode%".
-
-REM Set version number.
-IF NOT "%Version%" == "" (
-	>Program\Version.txt ECHO %Version%. || GOTO :error
-	ECHO Set version number to "%Version%".
-) ELSE (
-	>Program\Version.txt ECHO X || GOTO :error
-	ECHO Set version number to none.
-)
-
-REM Set revision number.
->Program\Revision.txt ECHO $Revision: %Revision% $ || GOTO :error
-ECHO Set revision number to "%Revision%".
 
 REM Build locales.
 PUSHD Source\Locales && CALL Update.bat non-interactive && POPD || GOTO :error
@@ -147,20 +127,10 @@ IF NOT EXIST "Program\Content\Web" MKDIR "Program\Content\Web"
 XCOPY "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web" /S /Y || GOTO :error
 
 REM Copy version number from OpenRails.exe into all other 1st party files
-SET VersionInfoVersion=0.0.0.0
-IF NOT "%Version%" == "" (
-	SET VersionInfoVersion=%Version%.%Revision%
-) ELSE (
-	FOR /F "usebackq tokens=1" %%V IN (`rcedit-x86.exe "Program\OpenRails.exe" --get-version-string FileVersion`) DO SET VersionInfoVersion=%%V
-)
-IF "%VersionInfoVersion%" == "0.0.0.0" (
-	>&2 ECHO ERROR: No VersionInfoVersion found in "Program\OpenRails.exe".
-	GOTO :error
-)
 FOR %%F IN ("Program\*.exe", "Program\Orts.*.dll", "Program\Contrib.*.dll", "Program\Tests.dll") DO (
-	rcedit-x86.exe "%%~F" --set-product-version %VersionInfoVersion% --set-file-version %VersionInfoVersion% --set-version-string ProductVersion %VersionInfoVersion% --set-version-string FileVersion %VersionInfoVersion% || GOTO :error
+	rcedit-x86.exe "%%~F" --set-product-version %Revision% --set-version-string ProductVersion %Version% || GOTO :error
 )
-ECHO Set product and file version information to "%VersionInfoVersion%".
+ECHO Set product version information to "%Version%".
 
 REM *** Special build step: signs binaries ***
 IF NOT "%JENKINS_TOOLS%" == "" (
@@ -196,7 +166,7 @@ IF "%Mode%" == "Stable" (
 	IF %ERRORLEVEL% GEQ 8 GOTO :error
 	ROBOCOPY /MIR /NJH /NJS "Program\Documentation" "Open Rails\Documentation"
 	IF %ERRORLEVEL% GEQ 8 GOTO :error
-	>"Source\Installer\OpenRails shared\Version.iss" ECHO #define MyAppVersion "%Version%.%Revision%" || GOTO :error
+	>"Source\Installer\OpenRails shared\Version.iss" ECHO #define MyAppVersion "%Version%" || GOTO :error
 	iscc "Source\Installer\OpenRails from download\OpenRails from download.iss" || GOTO :error
 	iscc "Source\Installer\OpenRails from DVD\OpenRails from DVD.iss" || GOTO :error
 	CALL :move "Source\Installer\OpenRails from download\Output\OpenRailsTestingSetup.exe" "OpenRails-%Mode%-Setup.exe" || GOTO :error

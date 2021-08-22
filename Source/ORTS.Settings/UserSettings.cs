@@ -251,6 +251,8 @@ namespace ORTS.Settings
         public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]
         public bool HotStart { get; set; }
+        [Default(false)]
+        public bool NoDieselEngineStart { get; set; }
 
         // Data logger settings:
         [Default("comma")]
@@ -378,8 +380,8 @@ namespace ORTS.Settings
         public string AvatarURL { get; set; }
         [Default(false)]
         public bool ShowAvatar { get; set; }
-        [Default(0)] // Do not offer to restore/resume any saves this age or older. Updated whenever a younger save fails to restore.
-        public int YoungestFailedToRestore { get; set; }
+        [Default("0.0")] // Do not offer to restore/resume any saves this version or older. Updated whenever a younger save fails to restore.
+        public string YoungestVersionFailedToRestore { get; set; }
 
         // Internal settings:
         [Default(false)]

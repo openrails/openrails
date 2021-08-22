@@ -37,7 +37,6 @@
 //#define DEBUG_VARIABLE_MASS
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems;
@@ -68,7 +67,7 @@ namespace Orts.Simulation.RollingStocks
     public class MSTSWagon : TrainCar
     {
         public Pantographs Pantographs;
-        public bool AuxPowerOn;
+        public ScriptedPassengerCarPowerSupply PassengerCarPowerSupply => PowerSupply as ScriptedPassengerCarPowerSupply;
         public bool DoorLeftOpen;
         public bool DoorRightOpen;
         public bool MirrorOpen;
@@ -420,6 +419,18 @@ namespace Orts.Simulation.RollingStocks
                 RearCouplerShapeFileName = null;
             }
 
+            if (FrontAirHoseShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHoseShapeFileName))
+            {
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHoseShapeFileName);
+                FrontAirHoseShapeFileName = null;
+            }
+
+            if (RearAirHoseShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHoseShapeFileName))
+            {
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHoseShapeFileName);
+                RearAirHoseShapeFileName = null;
+            }
+
             // If trailing loco resistance constant has not been  defined in WAG/ENG file then assign default value based upon orig Davis values
             if (TrailLocoResistanceFactor == 0)
             {
@@ -437,8 +448,42 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Initialise car body lengths. Assume overhang is 2.0m each end, and bogie centres are the car length minus this value
+
+            if (CarCouplerFaceLengthM == 0)
+            {
+                CarCouplerFaceLengthM = CarLengthM;
+            }
+
+            if (CarBodyLengthM == 0)
+            {
+                CarBodyLengthM = CarCouplerFaceLengthM - 0.8f;
+            }
+
+            if (CarBogieCentreLengthM == 0)
+            {
+                CarBogieCentreLengthM = (CarCouplerFaceLengthM - 4.3f);
+            }
+
+            if (CarAirHoseLengthM == 0)
+            {
+                CarAirHoseLengthM = Me.FromIn(26.25f); // 26.25 inches
+            }
+
+            var couplerlength = ((CarCouplerFaceLengthM - CarBodyLengthM) / 2) + 0.1f; // coupler length at rest, allow 0.1m also for slack
+
+            if (CarAirHoseLengthM < couplerlength)
+            {
+                CarCouplerFaceLengthM = CarBodyLengthM + (0.4f * 2.0f); // Assume a coupler length of 400mm at each end and add to car body length
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Coupler length exceeded brake air hose length, so  ORTSLengthCouplerFace decreased to {0}", CarCouplerFaceLengthM);
+                }
+            }
+            
             // Ensure Drive Axles is set to a default if no OR value added to WAG file
-            if (WagonNumAxles == 0)
+            if (WagonNumAxles == 0 && WagonType != WagonTypes.Engine)
             {
                 if (MSTSWagonNumWheels != 0 && MSTSWagonNumWheels < 6)
                 {
@@ -879,6 +924,7 @@ namespace Orts.Simulation.RollingStocks
         public override void Initialize()
         {
             Pantographs.Initialize();
+            PassengerCarPowerSupply?.Initialize();
 
             base.Initialize();
                        
@@ -903,6 +949,13 @@ namespace Orts.Simulation.RollingStocks
                         break;
                 }
             }
+        }
+
+        public override void InitializeMoving()
+        {
+            PassengerCarPowerSupply?.InitializeMoving();
+
+            base.InitializeMoving();
         }
 
         /// <summary>
@@ -957,6 +1010,10 @@ namespace Orts.Simulation.RollingStocks
                     CarLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortslengthcouplerface": CarCouplerFaceLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortstrackgauge":
                     stf.MustMatch("(");
                     TrackGaugeM = stf.ReadFloat(STFReader.UNITS.Distance, null);
@@ -994,7 +1051,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortstenderwagoncoalmass": TenderWagonMaxCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortstenderwagonwatermass": TenderWagonMaxWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortsheatingwindowderatingfactor": WindowDeratingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; // Temperature conversion is incorrect - to be checked!!!
+                case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; 
                 case "wagon(ortsheatingcompartmentpipeareafactor": CompartmentHeatingPipeAreaFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsheatingtrainpipeouterdiameter": MainSteamHeatPipeOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsheatingtrainpipeinnerdiameter": MainSteamHeatPipeInnerDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1114,6 +1171,15 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
 
+                case "wagon(coupling(frontairhoseanim":
+                    stf.MustMatch("(");
+                    FrontAirHoseShapeFileName = stf.ReadString();
+                    FrontAirHoseAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHoseAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHoseAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+
                 case "wagon(coupling(rearcoupleranim":
                     stf.MustMatch("(");
                     RearCouplerShapeFileName = stf.ReadString();
@@ -1123,7 +1189,16 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
 
-               case "wagon(coupling(spring(ortstensionstiffness":
+                case "wagon(coupling(rearairhoseanim":
+                    stf.MustMatch("(");
+                    RearAirHoseShapeFileName = stf.ReadString();
+                    RearAirHoseAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHoseAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHoseAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+
+                case "wagon(coupling(spring(ortstensionstiffness":
                     stf.MustMatch("(");
                     Couplers[CouplerCountLocation].SetTensionStiffness(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
                     stf.SkipRestOfBlock();
@@ -1148,6 +1223,25 @@ namespace Orts.Simulation.RollingStocks
                     RearCouplerOpenAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
+
+                case "wagon(coupling(frontairhosediconnectedanim":
+                    stf.MustMatch("(");
+                    FrontAirHoseDisconnectedShapeFileName = stf.ReadString();
+                    FrontAirHoseDisconnectedAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHoseDisconnectedAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHoseDisconnectedAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                    
+                case "wagon(coupling(rearairhosediconnectedanim":
+                    stf.MustMatch("(");
+                    RearAirHoseDisconnectedShapeFileName = stf.ReadString();
+                    RearAirHoseDisconnectedAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHoseDisconnectedAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHoseDisconnectedAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+
 
                 case "wagon(coupling(spring(ortscompressionstiffness":
                     stf.MustMatch("(");
@@ -1240,9 +1334,30 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
                 case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
                 case "wagon(ortsnumberaxles": WagonNumAxles = stf.ReadIntBlock(null); break;
+                case "wagon(ortsnumberbogies": WagonNumBogies = stf.ReadIntBlock(null); break;
                 case "wagon(ortspantographs":
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
+
+                case "wagon(ortspowersupply":
+                case "wagon(ortspowerondelay":
+                case "wagon(ortsbattery(mode":
+                case "wagon(ortsbattery(delay":
+                case "wagon(ortspowersupplycontinuouspower":
+                case "wagon(ortspowersupplyheatingpower":
+                case "wagon(ortspowersupplyairconditioningpower":
+                case "wagon(ortspowersupplyairconditioningyield":
+                    if (this is MSTSLocomotive)
+                    {
+                        Trace.TraceWarning($"Defining the {lowercasetoken} parameter is forbidden for locomotives (in {stf.FileName}:line {stf.LineNumber})");
+                    }
+                    else if (PassengerCarPowerSupply == null)
+                    {
+                        PowerSupply = new ScriptedPassengerCarPowerSupply(this);
+                    }
+                    PassengerCarPowerSupply?.Parse(lowercasetoken, stf);
+                    break;
+
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
                 case "wagon(passengercapacity": HasPassengerCapacity = true; break;
                 case "wagon(ortsfreightanims":
@@ -1298,6 +1413,27 @@ namespace Orts.Simulation.RollingStocks
             RearCouplerOpenAnimHeightM = copy.RearCouplerOpenAnimHeightM;
             RearCouplerOpenAnimLengthM = copy.RearCouplerOpenAnimLengthM;
             RearCouplerOpenFitted = copy.RearCouplerOpenFitted;
+
+            FrontAirHoseShapeFileName = copy.FrontAirHoseShapeFileName;
+            FrontAirHoseAnimWidthM = copy.FrontAirHoseAnimWidthM;
+            FrontAirHoseAnimHeightM = copy.FrontAirHoseAnimHeightM;
+            FrontAirHoseAnimLengthM = copy.FrontAirHoseAnimLengthM;
+            
+            FrontAirHoseDisconnectedShapeFileName = copy.FrontAirHoseDisconnectedShapeFileName;
+            FrontAirHoseDisconnectedAnimWidthM = copy.FrontAirHoseDisconnectedAnimWidthM;
+            FrontAirHoseDisconnectedAnimHeightM = copy.FrontAirHoseDisconnectedAnimHeightM;
+            FrontAirHoseDisconnectedAnimLengthM = copy.FrontAirHoseDisconnectedAnimLengthM;
+            
+            RearAirHoseShapeFileName = copy.RearAirHoseShapeFileName;
+            RearAirHoseAnimWidthM = copy.RearAirHoseAnimWidthM;
+            RearAirHoseAnimHeightM = copy.RearAirHoseAnimHeightM;
+            RearAirHoseAnimLengthM = copy.RearAirHoseAnimLengthM;
+            
+            RearAirHoseDisconnectedShapeFileName = copy.RearAirHoseDisconnectedShapeFileName;
+            RearAirHoseDisconnectedAnimWidthM = copy.RearAirHoseDisconnectedAnimWidthM;
+            RearAirHoseDisconnectedAnimHeightM = copy.RearAirHoseDisconnectedAnimHeightM;
+            RearAirHoseDisconnectedAnimLengthM = copy.RearAirHoseDisconnectedAnimLengthM;
+
             CarWidthM = copy.CarWidthM;
             CarHeightM = copy.CarHeightM;
             CarLengthM = copy.CarLengthM;
@@ -1306,10 +1442,15 @@ namespace Orts.Simulation.RollingStocks
             InitialCentreOfGravityM = copy.InitialCentreOfGravityM;
             UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
+            CarBogieCentreLengthM = copy.CarBogieCentreLengthM;
+            CarBodyLengthM = copy.CarBodyLengthM;
+            CarCouplerFaceLengthM = copy.CarCouplerFaceLengthM;
+            CarAirHoseLengthM = copy.CarAirHoseLengthM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
             WagonNumAxles = copy.WagonNumAxles;
+            WagonNumBogies = copy.WagonNumBogies;
             MSTSWagonNumWheels = copy.MSTSWagonNumWheels;
             MassKG = copy.MassKG;
             InitialMassKG = copy.InitialMassKG;
@@ -1430,6 +1571,11 @@ namespace Orts.Simulation.RollingStocks
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
             if (copy.WeightLoadController != null) WeightLoadController = new MSTSNotchController(copy.WeightLoadController);
 
+            if (copy.PassengerCarPowerSupply != null)
+            {
+                PowerSupply = new ScriptedPassengerCarPowerSupply(this);
+                PassengerCarPowerSupply.Copy(copy.PassengerCarPowerSupply);
+            }
         }
 
         protected void ParseWagonInside(STFReader stf)
@@ -1519,6 +1665,7 @@ namespace Orts.Simulation.RollingStocks
             foreach (MSTSCoupling coupler in Couplers)
                 coupler.Save(outf);
             Pantographs.Save(outf);
+            PassengerCarPowerSupply?.Save(outf);
             if (FreightAnimations != null)
             {
                 FreightAnimations.Save(outf);
@@ -1530,7 +1677,7 @@ namespace Orts.Simulation.RollingStocks
                 else outf.Write(false);
             }
             outf.Write(CurrentSteamHeatBoilerFuelCapacityL);
-            outf.Write(CarCurrentCarriageHeatTempC);
+            outf.Write(CarInsideTempC);
             outf.Write(CurrentCarSteamHeatBoilerWaterCapacityL);
 
             base.Save(outf);
@@ -1562,6 +1709,7 @@ namespace Orts.Simulation.RollingStocks
             MaxHandbrakeForceN = inf.ReadSingle();
             Couplers = ReadCouplersFromSave(inf).ToList();
             Pantographs.Restore(inf);
+            PassengerCarPowerSupply?.Restore(inf);
             if (FreightAnimations != null)
             {
                 FreightAnimations.Restore(inf);
@@ -1573,13 +1721,10 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             CurrentSteamHeatBoilerFuelCapacityL = inf.ReadSingle();
-            CarCurrentCarriageHeatTempC = inf.ReadSingle();
+            CarInsideTempC = inf.ReadSingle();
             CurrentCarSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
 
             base.Restore(inf);
-
-            // always set aux power on due to error in PowerSupplyClass
-            AuxPowerOn = true;
         }
 
         /// <summary>
@@ -1604,6 +1749,8 @@ namespace Orts.Simulation.RollingStocks
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
+
+            PassengerCarPowerSupply?.Update(elapsedClockSeconds);
 
             ConfirmSteamLocomotiveTender(); // Confirms that a tender is connected to the steam locomotive
 
@@ -2266,11 +2413,16 @@ namespace Orts.Simulation.RollingStocks
             // Determine Axle loading of Car
             if (WagonType == WagonTypes.Engine && IsPlayerTrain && Simulator.PlayerLocomotive is MSTSLocomotive locoParameters)
             {
+                // This only takes into account the driven axles for 100% accuracy the non driven axles should also be considered
                 AxleLoadKg = locoParameters.DrvWheelWeightKg / locoParameters.LocoNumDrvAxles;
             }
             else
             {
-                AxleLoadKg = MassKG / WagonNumAxles;
+                // Typically this loop should only be processed when it is a car of some description, and therefore it will use the wagon axles as it reference.
+                if (WagonNumAxles > 0)
+                {
+                    AxleLoadKg = MassKG / WagonNumAxles;
+                }
             }
 
             // Calculate the track gradient based on wagon axle loading

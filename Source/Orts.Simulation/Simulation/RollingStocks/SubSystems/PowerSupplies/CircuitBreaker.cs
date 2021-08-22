@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2020 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -26,10 +26,11 @@ using System.IO;
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
 
-    public class ScriptedCircuitBreaker
+    public class ScriptedCircuitBreaker : ISubSystem<ScriptedCircuitBreaker>
     {
-        readonly MSTSElectricLocomotive Locomotive;
-        readonly Simulator Simulator;
+        public ScriptedLocomotivePowerSupply PowerSupply { get; protected set; }
+        public MSTSLocomotive Locomotive => PowerSupply.Locomotive;
+        public Simulator Simulator => PowerSupply.Locomotive.Simulator;
 
         public bool Activated = false;
         string ScriptName = "Automatic";
@@ -37,7 +38,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         private float DelayS = 0f;
 
-        public CircuitBreakerState State { get; private set; }
+        public CircuitBreakerState State { get; private set; } = CircuitBreakerState.Open;
         public bool DriverClosingOrder { get; private set; }
         public bool DriverOpeningOrder { get; private set; }
         public bool DriverClosingAuthorization { get; private set; }
@@ -45,8 +46,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                MSTSLocomotive locomotive = Locomotive.Train.LeadLocomotive as MSTSLocomotive;
-                if (locomotive != null)
+                if (Locomotive.Train.LeadLocomotive is MSTSLocomotive locomotive)
                     return locomotive.TrainControlSystem.CircuitBreakerClosingOrder;
                 else
                     return false;
@@ -56,8 +56,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                MSTSLocomotive locomotive = Locomotive.Train.LeadLocomotive as MSTSLocomotive;
-                if (locomotive != null)
+                if (Locomotive.Train.LeadLocomotive is MSTSLocomotive locomotive)
                     return locomotive.TrainControlSystem.CircuitBreakerOpeningOrder;
                 else
                     return false;
@@ -67,8 +66,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                MSTSLocomotive locomotive = Locomotive.Train.LeadLocomotive as MSTSLocomotive;
-                if (locomotive != null)
+                if (Locomotive.Train.LeadLocomotive is MSTSLocomotive locomotive)
                     return locomotive.TrainControlSystem.PowerAuthorization;
                 else
                     return false;
@@ -76,10 +74,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
         public bool ClosingAuthorization { get; private set; }
 
-        public ScriptedCircuitBreaker(MSTSElectricLocomotive locomotive)
+        public ScriptedCircuitBreaker(ScriptedLocomotivePowerSupply powerSupply)
         {
-            Simulator = locomotive.Simulator;
-            Locomotive = locomotive;
+            PowerSupply = powerSupply;
         }
 
         public void Copy(ScriptedCircuitBreaker other)
@@ -94,10 +91,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (lowercasetoken)
             {
                 case "engine(ortscircuitbreaker":
-                    if (Locomotive.Train as AITrain == null)
-                    {
-                        ScriptName = stf.ReadStringBlock(null);
-                    }
+                    ScriptName = stf.ReadStringBlock(null);
                     break;
 
                 case "engine(ortscircuitbreakerclosingdelay":
@@ -150,18 +144,31 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                 };
 
-                // CircuitBreaker getters
+                // TractionCutOffSubsystem getters
+                Script.SupplyType = () => PowerSupply.Type;
                 Script.CurrentState = () => State;
-                Script.CurrentPantographState = () => Locomotive.Pantographs.State;
-                Script.CurrentPowerSupplyState = () => Locomotive.PowerSupply.State;
+                Script.CurrentPantographState = () => Locomotive?.Pantographs.State ?? PantographState.Unavailable;
+                Script.CurrentDieselEngineState = () => (Locomotive as MSTSDieselLocomotive)?.DieselEngines.State ?? DieselEngineState.Unavailable;
+                Script.CurrentPowerSupplyState = () => PowerSupply.MainPowerSupplyState;
                 Script.DriverClosingOrder = () => DriverClosingOrder;
                 Script.DriverOpeningOrder = () => DriverOpeningOrder;
                 Script.DriverClosingAuthorization = () => DriverClosingAuthorization;
-                Script.TCSClosingOrder = () => TCSClosingOrder;
-                Script.TCSOpeningOrder = () => TCSOpeningOrder;
                 Script.TCSClosingAuthorization = () => TCSClosingAuthorization;
                 Script.ClosingAuthorization = () => ClosingAuthorization;
+                Script.IsLowVoltagePowerSupplyOn = () => PowerSupply.LowVoltagePowerSupplyOn;
+                Script.IsCabPowerSupplyOn = () => PowerSupply.CabPowerSupplyOn;
                 Script.ClosingDelayS = () => DelayS;
+
+                // TractionCutOffSubsystem setters
+                Script.SetDriverClosingOrder = (value) => DriverClosingOrder = value;
+                Script.SetDriverOpeningOrder = (value) => DriverOpeningOrder = value;
+                Script.SetDriverClosingAuthorization = (value) => DriverClosingAuthorization = value;
+                Script.SetClosingAuthorization = (value) => ClosingAuthorization = value;
+
+                // CircuitBreaker getters
+                Script.CurrentState = () => State;
+                Script.TCSClosingOrder = () => TCSClosingOrder;
+                Script.TCSOpeningOrder = () => TCSOpeningOrder;
 
                 // CircuitBreaker setters
                 Script.SetCurrentState = (value) =>
@@ -170,10 +177,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     TCSEvent CircuitBreakerEvent = State == CircuitBreakerState.Closed ? TCSEvent.CircuitBreakerClosed : TCSEvent.CircuitBreakerOpen;
                     Locomotive.TrainControlSystem.HandleEvent(CircuitBreakerEvent);
                 };
-                Script.SetDriverClosingOrder = (value) => DriverClosingOrder = value;
-                Script.SetDriverOpeningOrder = (value) => DriverOpeningOrder = value;
-                Script.SetDriverClosingAuthorization = (value) => DriverClosingAuthorization = value;
-                Script.SetClosingAuthorization = (value) => ClosingAuthorization = value;
 
                 Script.Initialize();
                 Activated = true;
@@ -182,6 +185,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void InitializeMoving()
         {
+            Script?.InitializeMoving();
+
             State = CircuitBreakerState.Closed;
         }
 

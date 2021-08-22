@@ -67,9 +67,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="PIEHidDotNet, Version=2.2.3.26389, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\PIEHidDotNet.dll</HintPath>
+    <Reference Include="RailDriver, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RailDriver.0.7.10\lib\netstandard2.0\RailDriver.dll</HintPath>
     </Reference>
     <Reference Include="Swan.Lite, Version=3.0.0.0, Culture=neutral, PublicKeyToken=30c707c872729fff, processorArchitecture=MSIL">
       <HintPath>..\packages\Unosquare.Swan.Lite.3.0.0\lib\net461\Swan.Lite.dll</HintPath>
@@ -759,9 +758,6 @@
     <Content Include="Readme.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Version.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Viewer3D\WebServices\Web\APISample\index.css" />
     <Content Include="Viewer3D\WebServices\Web\APISample\index.html" />
     <Content Include="Viewer3D\WebServices\Web\APISample\index.js" />
@@ -854,10 +850,7 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
-date /t&gt;&gt;Revision.txt
-time /t&gt;&gt;Revision.txt
-CD ..\
+    <PostBuildEvent>CD ..\
 IF EXIST "Program\Content\Web" RMDIR "Program\Content\Web" /S /Q
 IF NOT EXIST "Program\Content\Web" MKDIR "Program\Content\Web"
 XCOPY "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web" /S /Y</PostBuildEvent>

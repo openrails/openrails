@@ -606,6 +606,45 @@ to the oscillation from center point to an oscillation end point. The file shoul
 one cue point at its beginning and one after the time interval of a complete bell swing 
 forward and backward, and should have a final fadeoff for best result. 
 
+Coupler and Airhose Animation
+=============================
+
+Open Rails supports animation of couplers and air hoses. Coupler animation will move the 
+couplers and air hoses as the train moves and the coupler slack increases or decreases. 
+Couplers will also rotate as the train travels around a curve.
+
+To implement this separate models need to be provided for the couplers and air hoses. A 
+separate model for the coupled and uncoupled state is suggested.
+
+To enable coupler animation the following parameters need to be included in the coupler 
+code section of the WAG file:
+
+``FrontCouplerAnim`` - Coupler shape to be displayed at the front of the car when it is coupled.
+``FrontCouplerOpenAnim`` - Coupler shape to be displayed at the front of the car when it is uncoupled.
+``RearCouplerAnim`` - Coupler shape to be displayed at the rear of the car when it is coupled.
+``RearCouplerOpenAnim`` - Coupler shape to be displayed at the rear of the car when it is uncoupled
+
+All four of the above will have the following format:
+
+CouplerAnimation ( couplershape.s, x, y, z ) where the coupler shape file name is included along with 
+x, y, z values that offset the coupler in the three axis.
+
+For the airhose animation the following parameters must be included in the coupler code section of 
+the WAG file:
+
+``FrontAirHoseAnim`` - Air hose shape to be displayed at the front of the car when it is coupled.
+``FrontAirHoseDisconnectedAnim`` - Air hose shape to be displayed at the front of the car when it is uncoupled.
+``RearAirHoseAnim`` - Air hose shape to be displayed at the rear of the car when it is coupled.
+``RearAirHoseDisconnectedAnim`` - Air hose shape to be displayed at the rear of the car when it is uncoupled.
+
+Each of these parameters will have the same format as indicated above for the coupler shapes.
+
+Open rails uses some defaults to calculate the required movement and angles for coupler and air hose 
+shape movement, however for greater accuracy the modeler can add specific values such as 
+``ORTSLengthAirHose``. In addition the length values suggested in the Derailment Coefficient should 
+also be added.
+
+
 C# engine scripting
 ===================
 .. _features-scripting-csharp:
@@ -619,7 +658,9 @@ Scripts will run if referenced by OR-specific fields in the .eng file.
 
 .. index::
    single: ORTSTrainBrakeController
+   single: ORTSEngineBrakeController
    single: ORTSCircuitBreaker
+   single: ORTSTractionCutOffRelay
    single: ORTSPowerSupply
    single: ORTSTrainControlSystem
 
@@ -630,15 +671,27 @@ Scripts will run if referenced by OR-specific fields in the .eng file.
    * - System
      - C# class
      - .eng block
-   * - Brakes
+   * - Train brake controller
      - ``ORTS.Scripting.Api.BrakeController``
      - ``Engine ( ORTSTrainBrakeController ( "DemoBrakes.cs" ) )``
+   * - Engine brake controller
+     - ``ORTS.Scripting.Api.BrakeController``
+     - ``Engine ( ORTSEngineBrakeController ( "DemoBrakes.cs" ) )``
    * - Circuit breaker
      - ``ORTS.Scripting.Api.CircuitBreaker``
      - ``Engine ( ORTSCircuitBreaker ( "DemoBreaker.cs" ) )``
+   * - Traction cut-off relay
+     - ``ORTS.Scripting.Api.TractionCutOffRelay``
+     - ``Engine ( ORTSTractionCutOffRelay ( "DemoRelay.cs" ) )``
+   * - Diesel power supply
+     - ``ORTS.Scripting.Api.DieselPowerSupply``
+     - ``Engine ( ORTSPowerSupply ( "DemoPower.cs" ) )``
    * - Electric power supply
      - ``ORTS.Scripting.Api.ElectricPowerSupply``
      - ``Engine ( ORTSPowerSupply ( "DemoPower.cs" ) )``
+   * - Passenger car power supply
+     - ``ORTS.Scripting.Api.PassengerCarPowerSupply``
+     - ``Wagon ( ORTSPowerSupply ( "DemoPower.cs" ) )``
    * - Train Control System
      - ``ORTS.Scripting.Api.TrainControlSystem``
      - ``Engine ( ORTSTrainControlSystem ( "DemoTCS.cs" ) )``
@@ -738,8 +791,6 @@ script, which will be caught by RunActivity.exe if run inside Visual Studio.
 Note that Visual Studio uses relative paths, so if you ever move any folders, 
 you'll need to fix the references by hand.
 
-.. _features-scripting-cb:
-
 Brake controller
 ----------------
 
@@ -750,6 +801,7 @@ of the brake controls and set the air pressures of the brake reservoirs.
 
 .. index::
    single: ORTSTrainBrakeController
+   single: ORTSEngineBrakeController
 
 Use the following .eng parameter to load a brake controller script::
 
@@ -766,6 +818,8 @@ or::
 The .cs extension is optional. "MSTS" loads the default MSTS-compatible 
 implementation, so do `not` use this name for your own script.
 
+.. _features-scripting-cb:
+
 Circuit breaker
 ---------------
 
@@ -780,31 +834,126 @@ Use the following .eng parameter to load a circuit breaker script::
 
   Engine (
       ORTSCircuitBreaker ( "YourCB.cs" )
+      ORTSCircuitBreakerClosingDelay ( 2s )
   )
 
-The .cs extension is optional. "Automatic" and "Manual" load the generic OR 
+``ORTSCircuitBreaker`` refers to the circuit breaker script in the engine's ``Script`` 
+subfolder. For this field, the .cs extension is optional. "Automatic" and "Manual" load the generic OR 
 circuit breaker implementation, so do `not` use these names for your own script.
 
-.. _features-scripting-eps:
+``ORTSCircuitBreakerClosingDelay`` refers to the delay between the closing command of the circuit breaker
+and the effective closing of the circuit breaker.
 
-Electric power supply
----------------------
+.. _features-scripting-tcor:
 
-Available for electric locomotives only. The power supply script determines 
-whether or not the locomotive :ref:`is serviceable <physics-power-supply>` given 
+Traction cut-off relay
+----------------------
+
+Available for diesel locomotives only. The traction cut-off relay script controls 
+the behavior of the locomotive's 
+:ref:`traction cut-off relay <physics-traction-cut-off-relay>`.
+
+.. index::
+   single: ORTSTractionCutOffRelay
+
+Use the following .eng parameter to load a traction cut-off relay script::
+
+  Engine (
+      ORTSTractionCutOffRelay ( "YourTCOR.cs" )
+      ORTSTractionCutOffRelayClosingDelay ( 2s )
+  )
+
+``ORTSTractionCutOffRelay`` refers to the traction cut-off relay script in the engine's ``Script`` 
+subfolder. For this field, the .cs extension is optional. "Automatic" and "Manual" load the generic OR 
+traction cut-off relay implementation, so do `not` use these names for your own script.
+
+``ORTSTractionCutOffRelayClosingDelay`` refers to the delay between the closing command of the traction cut-off relay
+and the effective closing of the relay.
+
+.. _features-scripting-powersupply:
+
+Diesel and electric power supply
+--------------------------------
+
+Available for diesel and electric locomotives only. The power supply script determines 
+whether or not the locomotive is serviceable (see also the description of :ref:`the diesel power supply <physics-diesel-power-supply>`
+and :ref:`the electric power supply <physics-electric-power-supply>`) given 
 the current line voltage, pantograph position, circuit breaker state, etc.
+It is also capable of forbidding some operations related to the power supply if some conditions
+are not met.
 
 .. index::
    single: ORTSPowerSupply
+   single: ORTSPowerOnDelay
+   single: ORTSAuxPowerOnDelay
 
-Use the following .eng paramater to load an electric power supply script::
+Use the following .eng parameter to load a power supply script::
 
   Engine (
       ORTSPowerSupply ( "YourEPS.cs" )
+      ORTSPowerOnDelay ( 5s )
+      ORTSAuxPowerOnDelay ( 10s )
   )
 
-The .cs extension is optional. "Default" will load the generic OR power supply 
+``ORTSPowerSupply`` refers to the power supply script in the engine's ``Script`` 
+subfolder. For this field, the .cs extension is optional. "Default" will load the generic OR power supply 
 implementation, so do `not` use this name for your own script.
+
+``ORTSPowerOnDelay`` refers to the delay between the closing of the circuit breaker or the traction cut-off relay
+and the availability of the power for traction.
+
+``ORTSAuxPowerOnDelay`` refers to the delay between the closing of the circuit breaker or the traction cut-off relay
+and the availability of the power for auxiliary systems.
+
+.. _features-scripting-passenger-car-power-supply:
+
+Passenger car power supply
+--------------------------
+
+Available for passenger cars using electric heating. The power supply script determines
+whether or not the systems of the cars have power and calculates the power consumption
+on the :ref:`Electric Train Supply <physics-electric-train-supply>`.
+
+.. index::
+   single: ORTSPowerSupply
+   single: ORTSPowerOnDelay
+   single: ORTSPowerSupplyContinuousPower
+   single: ORTSPowerSupplyHeatingPower
+   single: ORTSPowerSupplyAirConditioningPower
+   single: ORTSPowerSupplyAirConditioningYield
+   single: ORTSHeatingCompartmentTemperatureSet
+
+If the locomotive is a diesel locomotive, the power consumed by the cars is no longer available for traction.
+
+Use the following .wag parameter to load a power supply script::
+
+  Wagon (
+      ORTSPowerSupply ( "YourEPS.cs" )
+      ORTSPowerOnDelay ( 5s )
+      ORTSPowerSupplyContinuousPower ( 500W )
+      ORTSPowerSupplyHeatingPower ( 2kW )
+      ORTSPowerSupplyAirConditioningPower ( 3kW )
+      ORTSPowerSupplyAirConditioningYield ( 0.9 )
+      ORTSHeatingCompartmentTemperatureSet ( 20degC )
+  )
+
+``ORTSPowerSupply`` refers to the power supply script in the wagon's ``Script`` 
+subfolder. For this field, the .cs extension is optional. "Default" will load the generic OR power supply 
+implementation, so do `not` use this name for your own script.
+
+``ORTSPowerOnDelay`` refers to the delay between the availability of the power on the Electric Train Supply
+cable and the availability of the power for the systems (for example, start-up of the static power converter).
+
+``ORTSPowerSupplyContinuousPower`` refers to the power which is consumed continuously (for example, battery chargers, lights, etc.).
+
+``ORTSPowerSupplyHeatingPower`` refers to the power which is consumed when the heating is active.
+
+``ORTSPowerSupplyAirConditioningPower`` refers to the power which is consumed when the air conditioning (cooling) is active.
+
+``ORTSPowerSupplyAirConditioningYield`` refers to the yield of the air conditioning (ratio of the heat flow rate
+by the electric power of the air conditioning system).
+
+``ORTSHeatingCompartmentTemperatureSet`` refers to the desired temperature inside the car.
 
 
 .. _features-scripting-tcs:
@@ -943,6 +1092,38 @@ to be displayed in the ETCS DMI. For example, the following block orders the DMI
    single: State
    single: Style
    single: SwitchVal
+
+Emergency braking triggered by the simulator
+''''''''''''''''''''''''''''''''''''''''''''
+
+The emergency brakings triggered by the simulator are always sent to the TCS script.
+
+Two functions are used to transmit this information:
+
+.. code-block:: csharp
+
+    public override void HandleEvent(TCSEvent evt, string message)
+
+The events sent are ``EmergencyBrakingRequestedBySimulator``, ``EmergencyBrakingReleasedBySimulator`` and ``ManualResetOutOfControlMode``.
+For the first event, the reason of the emergency braking is also sent:
+
+- ``SPAD``: The train has passed a signal at danger at the front of the train
+- ``SPAD_REAR``: The train has passed a signal at danger at the rear of the train
+- ``MISALIGNED_SWITCH``: The train has trailed a misaligned switch
+- ``OUT_OF_AUTHORITY``: The train has passed the limit of authority
+- ``OUT_OF_PATH``: The train has ran off its allocated path
+- ``SLIPPED_INTO_PATH``: The train has slipped back into the path of another train
+- ``SLIPPED_TO_ENDOFTRACK``: The train has slipped off the end of the track
+- ``OUT_OF_TRACK``: The train has moved off the track
+- ``OTHER_TRAIN_IN_PATH``: Another train has entered the train's path
+- ``SLIPPED_INTO_TURNTABLE``: The train has entered a misaligned turntable
+- ``TRAIN_ON_MOVING_TURNTABLE``: The train has started moving on a moving turntable
+
+.. code-block:: csharp
+
+    public override void SetEmergency(bool emergency)
+
+This function is deprecated and will be deleted in a future version. The parameter indicates if the emergency braking is requested (true) or released (false).
 
 Generic cabview controls
 ''''''''''''''''''''''''
@@ -1216,7 +1397,7 @@ The blinker ``On`` property will alternate between ``true`` and ``false`` at the
 
 .. code-block:: csharp
 
-    SetCabDisplayControl(0, RSOBlinker.On ? 1 : 0);
+    SetCabDisplayControl(0, MyBlinker.On ? 1 : 0);
 
 Please note that, when the blinker is stopped, the ``On`` property is ``false``.
 
