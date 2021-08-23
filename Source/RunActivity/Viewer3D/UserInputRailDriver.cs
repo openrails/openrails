@@ -23,14 +23,14 @@ using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Common.Input;
-using PIEHidDotNet;
+using RailDriver;
 
 namespace Orts.Viewer3D
 {
     /// <summary>
     /// Class to get data from RailDriver and translate it into something useful for UserInput
     /// </summary>
-    public class UserInputRailDriver : PIEDataHandler, PIEErrorHandler
+    public class UserInputRailDriver : IDataHandler, IErrorHandler
     {
         PIEDevice Device;                   // Our RailDriver
         byte[] WriteBuffer;                 // Buffer for sending data to RailDriver
@@ -69,7 +69,7 @@ namespace Orts.Viewer3D
         {
             try
             {
-                PIEDevice[] devices = PIEHidDotNet.PIEDevice.EnumeratePIE();
+                PIEDevice[] devices = PIEDevice.EnumeratePIE();
                 for (int i = 0; i < devices.Length; i++)
                 {
                     if (devices[i].HidUsagePage == 0xc && devices[i].Pid == 210)
@@ -77,7 +77,7 @@ namespace Orts.Viewer3D
                         Device = devices[i];
                         Device.SetupInterface();
                         Device.SetErrorCallback(this);
-                        Device.SetDataCallback(this, DataCallbackFilterType.callOnChangedData);
+                        Device.SetDataCallback(this);
                         WriteBuffer = new byte[Device.WriteLength];
                         State = new RailDriverState();
                         SetLEDs(0x40, 0x40, 0x40);
@@ -98,38 +98,29 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="data"></param>
         /// <param name="sourceDevice"></param>
-        public void HandlePIEHidData(Byte[] data, PIEDevice sourceDevice)
+        public void HandleHidData(byte[] data, PIEDevice sourceDevice, int error)
         {
             if (sourceDevice != Device)
                 return;
             State.SaveButtonData();
-            byte[] rdata = null;
-            while (0 == sourceDevice.ReadData(ref rdata)) //do this so don't ever miss any data
-            {
-#if false
-                    String output = "Callback: " + sourceDevice.Pid + ", ID: " + Device.ToString() + ", data=";
-                    for (int i = 0; i < sourceDevice.ReadLength; i++)
-                        output = output + rdata[i].ToString() + "  ";
-                    Console.WriteLine(output);
-#endif
-                State.DirectionPercent = Percentage(rdata[1], FullReversed, Neutral, FullForward);
 
-                State.ThrottlePercent = Percentage(rdata[2], ThrottleIdle, FullThrottle);
+            State.DirectionPercent = Percentage(data[1], FullReversed, Neutral, FullForward);
 
-                State.DynamicBrakePercent = Percentage(rdata[2], ThrottleIdle, DynamicBrakeSetup, DynamicBrake);
-                State.TrainBrakePercent = Percentage(rdata[3], AutoBrakeRelease, FullAutoBrake);
-                State.EngineBrakePercent = Percentage(rdata[4], IndependentBrakeRelease, IndependentBrakeFull);
-                float a = .01f * State.EngineBrakePercent;
-                float calOff = (1 - a) * BailOffDisengagedRelease + a * BailOffDisengagedFull;
-                float calOn = (1 - a) * BailOffEngagedRelease + a * BailOffEngagedFull;
-                State.BailOff = Percentage(rdata[5], calOff, calOn) > 50;
-                if (State.TrainBrakePercent >= 100)
-                    State.Emergency = Percentage(rdata[3], FullAutoBrake, EmergencyBrake) > 50;
+            State.ThrottlePercent = Percentage(data[2], ThrottleIdle, FullThrottle);
 
-                State.Wipers = (int)(.01 * Percentage(rdata[6], Rotary1Position1, Rotary1Position2, Rotary1Position3) + 2.5);
-                State.Lights = (int)(.01 * Percentage(rdata[7], Rotary2Position1, Rotary2Position2, Rotary2Position3) + 2.5);
-                State.AddButtonData(rdata);
-            }
+            State.DynamicBrakePercent = Percentage(data[2], ThrottleIdle, DynamicBrakeSetup, DynamicBrake);
+            State.TrainBrakePercent = Percentage(data[3], AutoBrakeRelease, FullAutoBrake);
+            State.EngineBrakePercent = Percentage(data[4], IndependentBrakeRelease, IndependentBrakeFull);
+            float a = .01f * State.EngineBrakePercent;
+            float calOff = (1 - a) * BailOffDisengagedRelease + a * BailOffDisengagedFull;
+            float calOn = (1 - a) * BailOffEngagedRelease + a * BailOffEngagedFull;
+            State.BailOff = Percentage(data[5], calOff, calOn) > 50;
+            if (State.TrainBrakePercent >= 100)
+                State.Emergency = Percentage(data[3], FullAutoBrake, EmergencyBrake) > 50;
+
+            State.Wipers = (int)(.01 * Percentage(data[6], Rotary1Position1, Rotary1Position2, Rotary1Position3) + 2.5);
+            State.Lights = (int)(.01 * Percentage(data[7], Rotary2Position1, Rotary2Position2, Rotary2Position3) + 2.5);
+            State.AddButtonData(data);
 
             if (State.IsPressed(4, 0x30))
                 State.Emergency = true;
@@ -157,7 +148,7 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="error"></param>
         /// <param name="sourceDevice"></param>
-        public void HandlePIEHidError(Int32 error, PIEDevice sourceDevice)
+        public void HandleHidError(PIEDevice sourceDevice, int error)
         {
             Trace.TraceWarning("RailDriver Error: {0}", error);
         }

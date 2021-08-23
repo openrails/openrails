@@ -486,6 +486,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.GamePause] = new UserCommandKeyInput(Keys.Pause);
             Commands[(int)UserCommand.GamePauseMenu] = new UserCommandKeyInput(0x01);
             Commands[(int)UserCommand.GameQuit] = new UserCommandKeyInput(0x3E, KeyModifiers.Alt);
+            Commands[(int)UserCommand.GameResetOutOfControlMode] = new UserCommandKeyInput(0x0E, KeyModifiers.Shift);
             Commands[(int)UserCommand.GameRequestControl] = new UserCommandKeyInput(0x12, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameResetSignalBackward] = new UserCommandKeyInput(0x0F, KeyModifiers.Control | KeyModifiers.Shift);
             Commands[(int)UserCommand.GameResetSignalForward] = new UserCommandKeyInput(0x0F, KeyModifiers.Control);

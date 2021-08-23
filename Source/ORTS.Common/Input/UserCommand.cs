@@ -25,6 +25,7 @@
         [GetString("Game Multi Player Dispatcher")] GameMultiPlayerDispatcher,
         [GetString("Game Multi Player Texting")] GameMultiPlayerTexting,
         [GetString("Game Switch Manual Mode")] GameSwitchManualMode,
+        [GetString("Game Reset Out Of Control Mode")] GameResetOutOfControlMode,
         [GetString("Game Clear Signal Forward")] GameClearSignalForward,
         [GetString("Game Clear Signal Backward")] GameClearSignalBackward,
         [GetString("Game Reset Signal Forward")] GameResetSignalForward,

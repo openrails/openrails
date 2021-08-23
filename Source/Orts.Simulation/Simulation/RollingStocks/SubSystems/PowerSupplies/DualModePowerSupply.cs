@@ -23,7 +23,7 @@ using System.IO;
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
 
-    public class ScriptedDualModePowerSupply : ScriptedLocomotivePowerSupply, ISubSystem<ScriptedDualModePowerSupply>
+    public class ScriptedDualModePowerSupply : ScriptedLocomotivePowerSupply
     {
         public MSTSElectricLocomotive DualModeLocomotive => Locomotive as MSTSElectricLocomotive;
         public Pantographs Pantographs => Locomotive.Pantographs;
@@ -61,11 +61,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        public void Copy(ScriptedDualModePowerSupply other)
+        public override void Copy(IPowerSupply other)
         {
-            base.Copy(other);            
-            CircuitBreaker.Copy(other.CircuitBreaker);
-            TractionCutOffRelay.Copy(other.TractionCutOffRelay);
+            base.Copy(other);
+
+            if (other is ScriptedDualModePowerSupply scriptedOther)
+            {
+                CircuitBreaker.Copy(scriptedOther.CircuitBreaker);
+                TractionCutOffRelay.Copy(scriptedOther.TractionCutOffRelay);
+            }
         }
 
         public override void Initialize()

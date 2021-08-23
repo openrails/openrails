@@ -41,6 +41,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.AIs
@@ -1164,7 +1165,7 @@ namespace Orts.Simulation.AIs
             float validSpeed = AllowedMaxSpeedMpS;
             List<ObjectItemInfo> processedList = new List<ObjectItemInfo>();
 
-            foreach (ObjectItemInfo thisInfo in SignalObjectItems)
+            foreach (ObjectItemInfo thisInfo in SignalObjectItems.Where(item => !item.speed_isWarning))
             {
 
                 // check speedlimit
