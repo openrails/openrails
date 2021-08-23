@@ -363,10 +363,9 @@ namespace Orts.Viewer3D.Popups
                         // Clickable symbol
                         if (hbox.Position.Y == TimeHboxPositionY)
                         {
-                            var expandWindow = '\u23FA';// ⏺ toggle window
+                            var expandWindow = normalTextMode ? '\u25C4' : '\u25BA';// ◀ : ▶
                             hbox.Add(ExpandWindow = new Label(hbox.RemainingWidth - TextSize, 0, TextSize, hbox.RemainingHeight, expandWindow.ToString(), LabelAlignment.Right));
                             ExpandWindow.Color = Color.Yellow;
-                            ExpandWindow.Click += new Action<Control, Point>(ExpandWindow_Click);
                         }
                         // Separator line
                         if (data.FirstCol.Contains("Sprtr"))
@@ -386,7 +385,12 @@ namespace Orts.Viewer3D.Popups
             UpdateWindowSize();
         }
 
-        void ExpandWindow_Click(Control arg1, Point arg2)
+        public override void TabAction() => CycleMode();
+
+        /// <summary>
+        /// Change between full and abbreviated text mode.
+        /// </summary>
+        public void CycleMode()
         {
             normalTextMode = !normalTextMode;
             UpdateWindowSize();
