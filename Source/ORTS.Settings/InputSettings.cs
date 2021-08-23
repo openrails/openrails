@@ -304,7 +304,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.CameraBrowseBackwards] = new UserCommandKeyInput(0x4F, KeyModifiers.Shift | KeyModifiers.Alt);
             Commands[(int)UserCommand.CameraBrowseForwards] = new UserCommandKeyInput(0x47, KeyModifiers.Shift | KeyModifiers.Alt);
             Commands[(int)UserCommand.CameraCab] = new UserCommandKeyInput(0x02);
-			Commands[(int)UserCommand.CameraToggleThreeDimensionalCab] = new UserCommandKeyInput(0x02, KeyModifiers.Alt);
+            Commands[(int)UserCommand.CameraToggleThreeDimensionalCab] = new UserCommandKeyInput(0x02, KeyModifiers.Alt);
             Commands[(int)UserCommand.CameraCarFirst] = new UserCommandKeyInput(0x47, KeyModifiers.Alt);
             Commands[(int)UserCommand.CameraCarLast] = new UserCommandKeyInput(0x4F, KeyModifiers.Alt);
             Commands[(int)UserCommand.CameraCarNext] = new UserCommandKeyInput(0x49, KeyModifiers.Alt);
@@ -464,12 +464,11 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DebugToggleConfirmations] = new UserCommandKeyInput(0x44, KeyModifiers.Control | KeyModifiers.Alt);
 
             Commands[(int)UserCommand.DisplayTrainListWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Alt);
-            Commands[(int)UserCommand.DisplayBasicHUDToggle] = new UserCommandKeyInput(0x3F, KeyModifiers.Alt);
             Commands[(int)UserCommand.DisplayCarLabels] = new UserCommandModifiableKeyInput(0x41, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);
             Commands[(int)UserCommand.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommand.DisplayNextWindowTab]);
-            Commands[(int)UserCommand.DisplayHUD] = new UserCommandModifiableKeyInput(0x3F, Commands[(int)UserCommand.DisplayNextWindowTab]);
-            Commands[(int)UserCommand.DisplayTrainDrivingWindow] = new UserCommandModifiableKeyInput(0x3F, KeyModifiers.Control);
+            Commands[(int)UserCommand.DisplayHUD] = new UserCommandModifiableKeyInput(0x3F, KeyModifiers.Alt, Commands[(int)UserCommand.DisplayNextWindowTab]);
+            Commands[(int)UserCommand.DisplayTrainDrivingWindow] = new UserCommandModifiableKeyInput(0x3F, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
             Commands[(int)UserCommand.DisplayStationLabels] = new UserCommandModifiableKeyInput(0x40, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplaySwitchWindow] = new UserCommandKeyInput(0x42);

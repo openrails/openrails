@@ -44,7 +44,6 @@
         [GetString("Display Train Operations Window")] DisplayTrainOperationsWindow,
         [GetString("Display Next Station Window")] DisplayNextStationWindow,
         [GetString("Display Compass Window")] DisplayCompassWindow,
-        [GetString("Display Basic HUD Toggle")] DisplayBasicHUDToggle,
         [GetString("Display Train List Window")] DisplayTrainListWindow,
 
         [GetString("Debug Speed Up")] DebugSpeedUp,
