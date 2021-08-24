@@ -421,44 +421,48 @@ By pressing ``<F5>`` you get some important data displayed in a dedicated window
 
 Pressing ``<Shift+F5>`` toggles from the full and the abbreviated text mode. Default mode set to full text.
 
-.. image:: images/tdi-regular-windglassON-fulltext.png
-.. image:: images/tdi-regular-windglassON-abbrvtext.png
-
+.. image:: images/tdi-regular-windglass-on.png
+   :align: center
+   :scale: 90%
+ 
+ 
 Each type of locomotive uses a different data set, to display.
-
+ 
 The Steam locomotive:
 
-.. image:: images/tdi-steam-loco-auto-fulltext.png
-.. image:: images/tdi-steam-loco-auto-abbrvtext.png
+.. image:: images/tdi-steam-loco-auto.png
+   :align: center
+   :scale: 80%
 
 The Steam locomotive using manual firing and AI Fireman:
 
-.. image:: images/tdi-steam-loco-fulltext.png
-.. image:: images/tdi-steam-loco-abbrvtext.png
+.. image:: images/tdi-steam-loco.png
+    :align: center
 
 Boiler pressure indicator:
 
 .. image:: images/boiler-heat-input-output.png
    :align: center
-   :scale: 50%
+   :scale: 60%
 
 The Electric locomotive:
 
-.. image:: images/tdi-electric-loco-fulltext.png
-.. image:: images/tdi-electric-loco-abbrvtext.png
+.. image:: images/tdi-electric-loco.png
+   :align: center
 
 The Diesel locomotive:
 
-.. image:: images/tdi-diesel-loco-fulltext.png
-.. image:: images/tdi-diesel-loco-abbrvtext.png
+.. image:: images/tdi-diesel-loco.png
+   :align: center
+   :scale: 80%
 
 To help the user with ageing eyesight, the Time value is clickable, to toggle between the Regular
 and Bold font-style. Once toggled, this window and external Messages-window changes all them
 to Bold font-style, also, the Window Glass (transparency) is disabled.
 
-.. image:: images/tdi-bold-windglassOFF-fulltext.png
-.. image:: images/tdi-bold-windglassOFF-abbrvtext.png
-
+.. image:: images/tdi-bold-windglass-off.png
+   :align: center
+   :scale: 80%
 
 .. table:: ABBREVIATIONS TABLE
    :align: center
