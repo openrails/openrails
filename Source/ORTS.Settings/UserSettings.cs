@@ -220,7 +220,7 @@ namespace ORTS.Settings
         public int DistantMountainsViewingDistance { get; set; }
         [Default(45)] // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
         public int ViewingFOV { get; set; }
-        [Default(10)]
+        [Default(99)]
         public int WorldObjectDensity { get; set; }
         [Default("1024x768")]
         public string WindowSize { get; set; }
