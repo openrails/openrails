@@ -2027,7 +2027,7 @@ namespace Orts.Simulation.Timetables
 
                 // in prerun, also perform turntable update as simulation is not yet running
                 // also perform turntable update if this is not the active moving table
-                bool performUpdate = parentTrain.AI.PreUpdate;
+                bool performUpdate = parentTrain.Simulator.PreUpdate;
                 if (!performUpdate)
                 {
                     if (parentPool.Simulatorref.ActiveMovingTable == null)

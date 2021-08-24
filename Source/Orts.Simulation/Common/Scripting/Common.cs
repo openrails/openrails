@@ -15,10 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using Orts.Common;
 using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
+using System;
 
 namespace ORTS.Scripting.Api
 {
@@ -35,6 +35,10 @@ namespace ORTS.Scripting.Api
         /// Clock value (in seconds) for the simulation. Starts with a value = 0.
         /// </summary>
         public Func<float> GameTime;
+        /// <summary>
+        /// Simulator is in pre-update mode (update during loading screen).
+        /// </summary>
+        public Func<bool> PreUpdate;
     }
     /// <summary>
     /// Base class for scripts related to train subsystems.
