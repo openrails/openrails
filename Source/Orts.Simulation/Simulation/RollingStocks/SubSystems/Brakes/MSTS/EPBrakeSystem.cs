@@ -33,9 +33,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void Update(float elapsedClockSeconds)
         {
             MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
-            if (lead != null && lead.SEMBrakeFitted)
+            if (lead != null && lead.SMEBrakeFitted)
             {
-                DebugType = "SEM";
+                DebugType = "SME";
             }
             else
             {

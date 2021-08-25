@@ -70,9 +70,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "epfullservicestart": Type = ControllerState.EPFullServ; break;
                 case "epholdstart": Type = ControllerState.SelfLap; break;
 
-                case "semholdstart": Type = ControllerState.SEMSelfLap; break;
-                case "semonlystart": Type = ControllerState.SEMOnly; break;
-                case "semfullservicestart": Type = ControllerState.SEMFullServ; break;
+                case "smeholdstart": Type = ControllerState.SMESelfLap; break;
+                case "smeonlystart": Type = ControllerState.SMEOnly; break;
+                case "smefullservicestart": Type = ControllerState.SMEFullServ; break;
 
                 case "vacuumcontinuousservicestart": Type = ControllerState.VacContServ; break;
                 case "vacuumapplycontinuousservicestart": Type = ControllerState.VacApplyContServ; break;
