@@ -144,7 +144,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             return new string[] {
                 DebugType,
-                FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true),
+                string.Format("{0}{1}",FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true), (Car as MSTSWagon).WheelBrakeSlideProtectionActive ? "???" : ""),
                 FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
                 FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true),
                 (Car as MSTSWagon).EmergencyReservoirPresent ? FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.EmergencyReservoir], true) : string.Empty,
@@ -377,7 +377,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 UpdateTripleValveState(threshold);
 
             // triple valve is set to charge the brake cylinder
-            if (TripleValveState == ValveState.Apply || TripleValveState == ValveState.Emergency)
+            if ((TripleValveState == ValveState.Apply || TripleValveState == ValveState.Emergency) && !Car.WheelBrakeSlideProtectionActive)
             {
                 float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                 if (AuxResPressurePSI - dp / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
@@ -452,6 +452,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     BrakeLine1PressurePSI += dp * AuxBrakeLineVolumeRatio;
                 }
             }
+
+            // Charge Auxiliary reservoir for MRP
             if (TwoPipes
                 && !NoMRPAuxResCharging
                 && AuxResPressurePSI < BrakeLine2PressurePSI
@@ -487,6 +489,45 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             else
                 CylPressurePSI = AutoCylPressurePSI;
 
+            // During braking wheelslide control is effected throughout the train by additional equipment on each vehicle. In the piping to each pair of brake cylinders are fitted electrically operated 
+            // dump valves. When axle rotations which are sensed electrically, differ by a predetermined speed the dump valves are operated releasing brake cylinder pressure to both axles of the affected 
+            // bogie.
+
+            // Dump valve operation will cease when differences in axle rotations arewithin specified limits or the axle accelerates faster than a specified rate. The dump valve resets whenever the wheel
+            // creep speed drops to normal. The dump valve will only operate continuously for a maximum period of seven seconds after which time it will be de-energised and the dump valve will not 
+            // re-operate until the train has stopped or the throttle operated. 
+
+            // Dump valve operation is prevented under the following conditions:-
+            // (i) When the Power Controller is open.
+
+            // (ii) When Brake Pipe Pressure has been reduced below 250 kPa (36.25psi). 
+
+            if (Car.WheelBrakeSlideProtectionFitted && Car.Train.IsPlayerDriven)
+            {
+                // WSP dump valve active
+                if ((Car.BrakeSkidWarning || Car.BrakeSkid) && CylPressurePSI > 0 && !Car.WheelBrakeSlideProtectionDumpValveLockout && ( (!Car.WheelBrakeSlideProtectionLimitDisabled && BrakeLine1PressurePSI > 36.25) || Car.WheelBrakeSlideProtectionLimitDisabled) )
+                {
+                    Car.WheelBrakeSlideProtectionActive = true;
+                    AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
+                    CylPressurePSI = AutoCylPressurePSI;
+                    Car.WheelBrakeSlideProtectionTimerS -= elapsedClockSeconds;
+
+                    // Lockout WSP dump valve if it is open for greater then 7 seconds continuously
+                    if (Car.WheelBrakeSlideProtectionTimerS <= 0)
+                    {
+                        Car.WheelBrakeSlideProtectionDumpValveLockout = true;
+                    }
+
+                }
+                else if (!Car.WheelBrakeSlideProtectionDumpValveLockout)
+                {
+                    // WSP dump valve stops
+                    Car.WheelBrakeSlideProtectionActive = false;
+                    Car.WheelBrakeSlideProtectionTimerS = Car.wheelBrakeSlideTimerResetValueS; // Reset WSP timer if 
+                }
+
+            }
+                       
             // Record HUD display values for brake cylinders depending upon whether they are wagons or locomotives/tenders (which are subject to their own engine brakes)   
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)
             {
@@ -569,6 +610,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 prevCylPressurePSI = AutoCylPressurePSI;
                 prevBrakePipePressurePSI = BrakeLine1PressurePSI;
+
+                var lead = Car as MSTSLocomotive;
+
+                if (lead != null && Car.WagonType == MSTSWagon.WagonTypes.Engine)
+                {
+                    if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Overcharge && !lead.BrakeOverchargeSoundOn)
+                    {
+                        Car.SignalEvent(Event.OverchargeBrakingOn);
+                        lead.BrakeOverchargeSoundOn = true;
+                    }
+                    else if (lead.TrainBrakeController.TrainBrakeControllerState != ControllerState.Overcharge && lead.BrakeOverchargeSoundOn)
+                    {
+                        Car.SignalEvent(Event.OverchargeBrakingOff);
+                        lead.BrakeOverchargeSoundOn = false;
+                    }
+                }
+
             }
             SoundTriggerCounter = SoundTriggerCounter + elapsedClockSeconds;
         }
@@ -740,7 +798,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             int last = -1;
             train.FindLeadLocomotives(ref first, ref last);
             float sumpv = 0;
+            float summainrespv = 0;
             float sumv = 0;
+            float summainresv = 0;
             int continuousFromInclusive = 0;
             int continuousToExclusive = train.Cars.Count;
             for (int i = 0; i < train.Cars.Count; i++)
@@ -767,11 +827,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     sumv += brakeSystem.BrakePipeVolumeM3;
                     sumpv += brakeSystem.BrakePipeVolumeM3 * brakeSystem.BrakeLine2PressurePSI;
+
+                    summainresv += brakeSystem.BrakePipeVolumeM3;
+
+                    if (lead != null)
+                    {
+                        summainrespv += brakeSystem.BrakePipeVolumeM3 * lead.MainResPressurePSI;
+                    }
+
                     var eng = train.Cars[i] as MSTSLocomotive;
                     if (eng != null)
                     {
                         sumv += eng.MainResVolumeM3;
                         sumpv += eng.MainResVolumeM3 * eng.MainResPressurePSI;
+
+                        summainresv += eng.MainResVolumeM3;
+                        summainrespv += eng.MainResVolumeM3 * eng.MainResPressurePSI;
                     }
                 }
 
@@ -820,11 +891,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
             }
             if (sumv > 0)
+            {
                 sumpv /= sumv;
+                summainrespv /= summainresv;
+            }
 
             if (!train.Cars[continuousFromInclusive].BrakeSystem.FrontBrakeHoseConnected && train.Cars[continuousFromInclusive].BrakeSystem.AngleCockAOpen
                 || (continuousToExclusive == train.Cars.Count || !train.Cars[continuousToExclusive].BrakeSystem.FrontBrakeHoseConnected) && train.Cars[continuousToExclusive - 1].BrakeSystem.AngleCockBOpen)
+            {
                 sumpv = 0;
+                summainrespv = 0;
+            }
 
             // Propagate main reservoir pipe (2) data
             train.BrakeLine2PressurePSI = sumpv;
@@ -832,12 +909,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 if (first <= i && i <= last || twoPipes && continuousFromInclusive <= i && i < continuousToExclusive)
                 {
+
+                    if (lead != null && sumpv > lead.MaximumMainReservoirPipePressurePSI)
+                    {
+                        sumpv = lead.MaximumMainReservoirPipePressurePSI;
+                    }
+
                     train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = sumpv;
                     if (sumpv != 0 && train.Cars[i] is MSTSLocomotive)
-                        (train.Cars[i] as MSTSLocomotive).MainResPressurePSI = sumpv;
+                        (train.Cars[i] as MSTSLocomotive).MainResPressurePSI = summainrespv;
                 }
                 else
-                    train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = train.Cars[i] is MSTSLocomotive ? (train.Cars[i] as MSTSLocomotive).MainResPressurePSI : 0;
+                {
+                    // train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = train.Cars[i] is MSTSLocomotive ? (train.Cars[i] as MSTSLocomotive).MainResPressurePSI : 0;
+                    train.Cars[i].BrakeSystem.BrakeLine2PressurePSI = train.Cars[i] is MSTSLocomotive ? (train.Cars[i] as MSTSLocomotive).MaximumMainReservoirPipePressurePSI : 0;
+                }
             }
         }
 

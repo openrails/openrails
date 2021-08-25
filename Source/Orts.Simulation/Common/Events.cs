@@ -240,6 +240,10 @@ namespace Orts.Common
         HeatingOn,
         AirConditioningOff,
         AirConditioningOn,
+
+        OverchargeBrakingOn,
+        OverchargeBrakingOff,
+
     }
 
     public static class Events
@@ -495,6 +499,9 @@ namespace Orts.Common
                         case 233: return Event.HeatingOff;
                         case 234: return Event.AirConditioningOn;
                         case 235: return Event.AirConditioningOff;
+
+                        case 250: return Event.OverchargeBrakingOn;
+                        case 251: return Event.OverchargeBrakingOff;
 
                         default: return 0;
                     }
