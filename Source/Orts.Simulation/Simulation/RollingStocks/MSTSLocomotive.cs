@@ -245,6 +245,7 @@ namespace Orts.Simulation.RollingStocks
         public bool LargeEjectorControllerFitted = false;
         public float VacuumPumpChargingRateInHgpS = 0.0f;
         public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
+        public bool SEMBrakeFitted = false;  // Flag to indicate that SEM brake fitted
         public float HUDNetBPLossGainPSI;
         public float SmallEjectorBrakePipeChargingRatePSIorInHgpS;
         public float LargeEjectorBrakePipeChargingRatePSIorInHgpS;
@@ -924,13 +925,18 @@ namespace Orts.Simulation.RollingStocks
                     foreach (var brakestrainbraketype in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
                     {
                         switch (brakestrainbraketype)
-                            {
-                                case "vacuum_single_pipe_eq":
-                                    VacuumBrakeEQFitted = true;
-                                    break;
-                                 default:
-                                    break;
-                            }
+                        {
+                            case "vacuum_single_pipe_eq":
+                                VacuumBrakeEQFitted = true;
+                                break;
+
+                            case "sem":
+                                SEMBrakeFitted = true;
+                                break;
+
+                            default:
+                                break;
+                        }
                     }
                     break;
 
@@ -1004,6 +1010,7 @@ namespace Orts.Simulation.RollingStocks
             MSTSLocoNumDrvWheels = locoCopy.MSTSLocoNumDrvWheels;
             AntiSlip = locoCopy.AntiSlip;
             VacuumPumpFitted = locoCopy.VacuumPumpFitted;
+            SEMBrakeFitted = locoCopy.SEMBrakeFitted;
             FastVacuumExhausterFitted = locoCopy.FastVacuumExhausterFitted;
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
             InitialDrvWheelWeightKg = locoCopy.InitialDrvWheelWeightKg;

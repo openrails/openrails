@@ -27,11 +27,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public EPBrakeSystem(TrainCar car)
             : base(car)
         {
-            DebugType = "EP";
+
         }
 
         public override void Update(float elapsedClockSeconds)
         {
+            MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
+            if (lead != null && lead.SEMBrakeFitted)
+            {
+                DebugType = "SEM";
+            }
+            else
+            {
+                DebugType = "EP";
+            }
+
             float demandedAutoCylPressurePSI = 0;
             if (BrakeLine3PressurePSI >= 1000f || Car.Train.BrakeLine4 < 0)
             {
