@@ -114,6 +114,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("Circuit breaker")] = Viewer.Catalog.GetString("CIRC"),
             [Viewer.Catalog.GetString("Cylinder cocks")] = Viewer.Catalog.GetString("CCOK"),
             [Viewer.Catalog.GetString("Direction")] = Viewer.Catalog.GetString("DIRC"),
+            [Viewer.Catalog.GetString("DerailCoeff")] = Viewer.Catalog.GetString("DRLC"),
             [Viewer.Catalog.GetString("Doors open")] = Viewer.Catalog.GetString("DOOR"),
             [Viewer.Catalog.GetString("Dynamic brake")] = Viewer.Catalog.GetString("BDYN"),
             [Viewer.Catalog.GetString("Electric train supply")] = Viewer.Catalog.GetString("TSUP"),
@@ -170,6 +171,9 @@ namespace Orts.Viewer3D.Popups
         bool wheelLabelVisible = false;// Wheel label visible
         double clockWheelTime; // Wheel hide timing
 
+        bool derailLabelVisible = false;// DerailCoeff label visible
+        double clockDerailTime; //  DerailCoeff label visible
+
         bool doorsLabelVisible = false; // Doors label visible
         double clockDoorsTime; // Doors hide timing
 
@@ -222,6 +226,8 @@ namespace Orts.Viewer3D.Popups
             outf.Write(ctrlAIFiremanReset);
             outf.Write(clockWheelTime);
             outf.Write(wheelLabelVisible);
+            outf.Write(clockDerailTime);
+            outf.Write(derailLabelVisible);
             outf.Write(clockDoorsTime);
             outf.Write(doorsLabelVisible);
         }
@@ -241,6 +247,8 @@ namespace Orts.Viewer3D.Popups
             ctrlAIFiremanReset = inf.ReadBoolean();
             clockWheelTime = inf.ReadDouble();
             wheelLabelVisible = inf.ReadBoolean();
+            clockDerailTime = inf.ReadDouble();
+            derailLabelVisible = inf.ReadBoolean();
             clockDoorsTime = inf.ReadDouble();
             doorsLabelVisible = inf.ReadBoolean();
 
@@ -1113,6 +1121,7 @@ namespace Orts.Viewer3D.Popups
                 }
             }
 
+
             // Wheel
             if (train.IsWheelSlip || train.IsWheelSlipWarninq || train.IsBrakeSkid)
             {
@@ -1159,6 +1168,62 @@ namespace Orts.Viewer3D.Popups
                     });
                 }
             }
+
+            //Derailment Coefficient. Changed the float value output by a text label.
+            var maxDerailCoeff = 0.0f;
+            var carIDerailCoeff = "";
+            for (var i = 0; i < train.Cars.Count; i++)
+            {
+                var carDerailCoeff = train.Cars[i].DerailmentCoefficient;
+                carDerailCoeff = float.IsInfinity(carDerailCoeff) || float.IsNaN(carDerailCoeff) ? 0 : carDerailCoeff;
+                if (carDerailCoeff > maxDerailCoeff)
+                {
+                    maxDerailCoeff = carDerailCoeff;
+                    carIDerailCoeff = train.Cars[i].CarID;
+                }
+            }
+
+            if (maxDerailCoeff > 0.66)
+            {
+                derailLabelVisible = true;
+                clockDerailTime = Owner.Viewer.Simulator.ClockTime;
+            }
+
+            if (maxDerailCoeff > 0.66)
+            {
+                if (maxDerailCoeff > 1)
+                {
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("DerailCoeff"),
+                        LastCol = $"{Viewer.Catalog.GetString("Derailed")} {carIDerailCoeff}" + ColorCode[Color.OrangeRed],
+                    });
+                }
+                else if (maxDerailCoeff < 1 && maxDerailCoeff > 0.66)
+                {
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("DerailCoeff"),
+                        LastCol = $"{Viewer.Catalog.GetString("Warning")} {carIDerailCoeff}" + ColorCode[Color.Yellow],
+                    });
+                }
+            }
+            else
+            {
+                // delay to hide the derailcoeff label
+                if (derailLabelVisible && clockDerailTime + 3 < Owner.Viewer.Simulator.ClockTime)
+                    derailLabelVisible = false;
+
+                if (derailLabelVisible)
+                {
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("DerailCoeff") + ColorCode[Color.White],
+                        LastCol = Viewer.Catalog.GetString("Normal") + ColorCode[Color.White]
+                    });
+                }
+            }
+
 
             // Doors
             var wagon = (MSTSWagon)locomotive;
