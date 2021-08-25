@@ -419,6 +419,8 @@ namespace ORTS.Settings
         [Default(new[] { 100, 0 })]
         public int[] WindowPosition_TrackMonitor { get; set; }
         [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_TrainDriving { get; set; }
+        [Default(new[] { 50, 50 })]
         public int[] WindowPosition_TrainOperations { get; set; }
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_CarOperations { get; set; }
