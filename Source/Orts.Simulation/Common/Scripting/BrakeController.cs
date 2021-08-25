@@ -260,6 +260,10 @@ namespace ORTS.Scripting.Api
         EPOnly,             // TrainBrakesControllerEPOnlyStart
         EPFullServ,         // TrainBrakesControllerEPFullServiceStart
         SlowService,        // TrainBrakesControllerSlowServiceStart
+        SEMOnly,             // TrainBrakesControllerSEMOnlyStart
+        SEMFullServ,         // TrainBrakesControllerSEMFullServiceStart
+        SEMSelfLap,             // TrainBrakesControllerSEMHoldStart
+
     };
 
     public static class ControllerStateDictionary
@@ -302,6 +306,9 @@ namespace ORTS.Scripting.Api
             {ControllerState.BrakeNotch, Catalog.GetString("Notch")},
             {ControllerState.EPOnly, Catalog.GetString("EP Service")},
             {ControllerState.EPFullServ, Catalog.GetString("EP Full Service")},
+            {ControllerState.SEMOnly, Catalog.GetString("SEM Service")},
+            {ControllerState.SEMFullServ, Catalog.GetString("SEM Full Service")},
+            {ControllerState.SEMSelfLap, Catalog.GetString("SEM Self Lap")},
             {ControllerState.SlowService, Catalog.GetString("Slow service")}
         };
     }

@@ -918,6 +918,35 @@ namespace Orts.Viewer3D.Popups
 
                 }
             }
+            else if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is EPBrakeSystem && (Viewer.PlayerLocomotive as MSTSLocomotive).SEMBrakeFitted)
+            {
+                TableSetCells(table, 0,
+                Viewer.Catalog.GetString("Car"),
+                Viewer.Catalog.GetString("Type"),
+                Viewer.Catalog.GetString("BrkCyl"),
+                Viewer.Catalog.GetString("SrvPipe"),
+                Viewer.Catalog.GetString("AuxRes"),
+                Viewer.Catalog.GetString("ErgRes"),
+                Viewer.Catalog.GetString("MRPipe"),
+                Viewer.Catalog.GetString("RetValve"),
+                Viewer.Catalog.GetString("TripleValve"),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString("Handbrk"),
+                Viewer.Catalog.GetString("Conn"),
+                Viewer.Catalog.GetString("AnglCock"),
+                Viewer.Catalog.GetString("BleedOff"));
+                TableAddLine(table);
+
+                var n = train.Cars.Count; // Number of lines to show
+                for (var i = 0; i < n; i++)
+                {
+                    var j = i < 2 ? i : i * (train.Cars.Count - 1) / (n - 1);
+                    var car = train.Cars[j];
+                    TableSetCell(table, 0, "{0}", car.CarID);
+                    TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits));
+                    TableAddLine(table);
+                }
+            }
             else  // default air braked
             {
                 TableSetCells(table, 0,
