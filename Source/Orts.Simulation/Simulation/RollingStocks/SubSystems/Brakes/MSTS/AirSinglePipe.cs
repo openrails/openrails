@@ -144,16 +144,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
 
-                if (lead != null && lead.BrakeSystem is EPBrakeSystem && lead.SEMBrakeFitted)
+                if (lead != null && lead.BrakeSystem is EPBrakeSystem && lead.SMEBrakeFitted)
             {
-                // Set values for SEM type brake
+                // Set values for SME type brake
                 return new string[] {
                 DebugType,
                 FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true),
-                FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
+                FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
                 FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true),
                 (Car as MSTSWagon).EmergencyReservoirPresent ? FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.EmergencyReservoir], true) : string.Empty,
-                TwoPipes ? FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.MainPipe], true) : string.Empty,
+                TwoPipes ? FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.MainPipe], true) : string.Empty,
                 (Car as MSTSWagon).RetainerPositions == 0 ? string.Empty : RetainerDebugState,
                 Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(TripleValveState)),
                 string.Empty, // Spacer because the state above needs 2 columns.

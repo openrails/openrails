@@ -918,16 +918,16 @@ namespace Orts.Viewer3D.Popups
 
                 }
             }
-            else if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is EPBrakeSystem && (Viewer.PlayerLocomotive as MSTSLocomotive).SEMBrakeFitted)
+            else if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is EPBrakeSystem && (Viewer.PlayerLocomotive as MSTSLocomotive).SMEBrakeFitted)
             {
                 TableSetCells(table, 0,
                 Viewer.Catalog.GetString("Car"),
                 Viewer.Catalog.GetString("Type"),
                 Viewer.Catalog.GetString("BrkCyl"),
-                Viewer.Catalog.GetString("SrvPipe"),
+                Viewer.Catalog.GetString("BrkPipe"),
                 Viewer.Catalog.GetString("AuxRes"),
                 Viewer.Catalog.GetString("ErgRes"),
-                Viewer.Catalog.GetString("MRPipe"),
+                Viewer.Catalog.GetString("StrPipe"),
                 Viewer.Catalog.GetString("RetValve"),
                 Viewer.Catalog.GetString("TripleValve"),
                 Viewer.Catalog.GetString(""),

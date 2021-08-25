@@ -184,10 +184,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             break;
                         case ControllerState.EPApply:
                         case ControllerState.EPOnly:
-                        case ControllerState.SEMOnly:
+                        case ControllerState.SMEOnly:
                         case ControllerState.ContServ:
                         case ControllerState.EPFullServ:
-                        case ControllerState.SEMFullServ:
+                        case ControllerState.SMEFullServ:
 
                             epState = x;
                             if (notch.Type == ControllerState.EPApply || notch.Type == ControllerState.ContServ)
