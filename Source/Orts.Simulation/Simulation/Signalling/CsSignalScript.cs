@@ -334,6 +334,7 @@ namespace Orts.Simulation.Signalling
             // Build AbstractScriptClass API functions
             ClockTime = () => (float)SignalObject.signalRef.Simulator.ClockTime;
             GameTime = () => (float)SignalObject.signalRef.Simulator.GameTime;
+            PreUpdate = () => SignalObject.signalRef.Simulator.PreUpdate;
         }
 
         // Functions to be implemented in script
