@@ -1356,14 +1356,13 @@ namespace Orts.Simulation.RollingStocks
             if (IsPlayerTrain)
             {
                 WagonCouplerAngleDerailRad = Math.Abs(WagonRearCouplerAngleRad);
-                var numWheels = WagonNumAxles * 2;
-
-                // Trace.TraceInformation("Wagon Values - CarID {0} Axles {1} Bogies {2} Wheels {3}", CarID, WagonNumAxles, WagonNumBogies, numWheels);
+                var numAxles = LocoNumDrvAxles + WagonNumAxles;
+                var numWheels = numAxles * 2;
 
                 if (CurrentCurveRadius != 0)
                 {
                     var A = MassKG * GravitationalAccelerationMpS2 / numWheels;
-                    var B1 = (MassKG / WagonNumAxles) * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                    var B1 = (MassKG / numAxles) * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
                     var B2 = GravitationalAccelerationMpS2 * (float)Math.Cos(SuperElevationAngleRad);
                     var B3 = CentreOfGravityM.Y / TrackGaugeM;
 
@@ -1375,7 +1374,7 @@ namespace Orts.Simulation.RollingStocks
                     if (CarAhead != null)
                     {
                         var AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
-                        var BB1 = MassKG / WagonNumAxles;
+                        var BB1 = MassKG / numAxles;
                         var BB2 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
                         var BB3 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
 
