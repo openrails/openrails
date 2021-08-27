@@ -32,6 +32,7 @@ using System.Text;
 
 using System.Threading;
 using System.IO;
+using Orts.MultiPlayer;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -60,7 +61,6 @@ namespace Orts.Viewer3D.Popups
 
         string keyPressed;// display a symbol when a control key is pressed.
 
-        Label ExpandWindow;
         Label indicator;
         Label LabelFontToBold;
         public static bool FontToBold = false;
@@ -361,6 +361,17 @@ namespace Orts.Viewer3D.Popups
                         LastCol = ""
                     });
                 }
+                AddLabel(new ListLabel());
+            }
+            else if(Orts.MultiPlayer.MPManager.Simulator.Confirmer != null)
+            {
+                var status = $"{Viewer.Catalog.GetString("Status")}: {MPManager.Catalog.GetString("Connection to the server is lost, will play as single mode")}";
+                AddLabel(new ListLabel
+                {
+                    FirstCol = status,
+                    LastCol = ""
+                });
+
                 AddLabel(new ListLabel());
             }
 
