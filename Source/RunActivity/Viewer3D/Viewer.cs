@@ -86,7 +86,7 @@ namespace Orts.Viewer3D
         public TrackMonitorWindow TrackMonitorWindow { get; private set; } // F4 window
         public HUDWindow HUDWindow { get; private set; } // F5 hud
         public TrainDrivingWindow TrainDrivingWindow { get; private set; } // F5 train driving window
-        public MultiPlayerWindow MultiPlayerWindow { get; private set; } // MultiPlayer data windowed
+        public MultiPlayerWindow MultiPlayerWindow { get; private set; } // Shift+9 MultiPlayer data windowed
         public OSDLocations OSDLocations { get; private set; } // F6 platforms/sidings OSD
         public OSDCars OSDCars { get; private set; } // F7 cars OSD
         public SwitchWindow SwitchWindow { get; private set; } // F8 window
@@ -950,7 +950,7 @@ namespace Orts.Viewer3D
                 if (ComposeMessageWindow == null) ComposeMessageWindow = new ComposeMessage(WindowManager);
                 ComposeMessageWindow.InitMessage();
             }
-            if (MPManager.IsMultiPlayer()) MultiPlayerWindow.Visible = TrainDrivingWindow.Visible ? true : false;
+            if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.DisplayMultiPlayerWindow)){ MultiPlayerWindow.Visible = !MultiPlayerWindow.Visible; }
             if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GamePauseMenu)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
             if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GamePauseMenu)) { if (Simulator.Confirmer != null) Simulator.Confirmer.Information(Viewer.Catalog.GetString("In MP, use Alt-F4 to quit directly")); }
 

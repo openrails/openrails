@@ -38,6 +38,7 @@
         [GetString("Display Track Monitor Window")] DisplayTrackMonitorWindow,
         [GetString("Display HUD")] DisplayHUD,
         [GetString("Display Train Driving Window")] DisplayTrainDrivingWindow,
+        [GetString("Display Multi Player Window")] DisplayMultiPlayerWindow,
         [GetString("Display Car Labels")] DisplayCarLabels,
         [GetString("Display Station Labels")] DisplayStationLabels,
         [GetString("Display Switch Window")] DisplaySwitchWindow,
