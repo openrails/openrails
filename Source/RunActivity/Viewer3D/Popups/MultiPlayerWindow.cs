@@ -43,56 +43,47 @@ namespace Orts.Viewer3D.Popups
         int LastColLenght = 0;
         int LastColOverFlow = 0;
         int LinesCount = 0;
-        const int TrainDrivingInfoHeightInLinesOfText = 1;
+        const int heightInLinesOfText = 1;
         bool UpdateDataEnded = false;
 
-        public static bool StandardHUD = true;// Standard full text or not.
+        public static bool MultiplayerUpdating = false;
 
+        const int TextSize = 15;
+        public int keyPresLenght;
+        public int OffSetX = 0;
+        int maxFirstColWidth = 0;
+        int maxLastColWidth = 0;
         int WindowHeightMax = 0;
         int WindowHeightMin = 0;
         int WindowWidthMin = 0;
         int WindowWidthMax = 0;
 
-        char expandWindow;
-        const int TextSize = 15;
-        public int keyPresLenght;
-        public int OffSetX = 0;
         string keyPressed;// display a symbol when a control key is pressed.
 
         Label ExpandWindow;
         Label indicator;
         Label LabelFontToBold;
-        public static bool FontToBold;
+        public static bool FontToBold = false;
         public static bool MonoFont;
 
+        /// <summary>
+        /// A Multiplayer row with data fields.
+        /// </summary>
         public struct ListLabel
         {
-            public string FirstCol { get; set; }
-            public int FirstColWidth { get; set; }
-            public string LastCol { get; set; }
-            public int LastColWidth { get; set; }
-            public string SymbolCol { get; set; }
-            public bool ChangeColWidth { get; set; }
-            public string keyPressed { get; set; }
+            public string FirstCol;
+            public int FirstColWidth;
+            public string LastCol;
+            public int LastColWidth;
+            public string SymbolCol;
+            public bool ChangeColWidth;
+            public string KeyPressed;
         }
-        List<ListLabel> ListToLabel = new List<ListLabel>();
+        List<ListLabel> labels = new List<ListLabel>();
 
-        // Change text color
-        Dictionary<string, Color> ColorCode = new Dictionary<string, Color>
-        {
-            { "!!!", Color.OrangeRed },
-            { "!!?", Color.Orange },
-            { "!??", Color.White },
-            { "?!?", Color.Black },
-            { "???", Color.Yellow },
-            { "??!", Color.Green },
-            { "?!!", Color.PaleGreen },
-            { "$$$", Color.LightSkyBlue},
-            { "%%%", Color.Cyan}
-        };
 
         public MultiPlayerWindow(WindowManager owner)
-            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 10, Window.DecorationSize.Y + (owner.TextFontDefault.Height * (TrainDrivingInfoHeightInLinesOfText)), Viewer.Catalog.GetString("MultiPlayer Info"))
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 10, Window.DecorationSize.Y + (owner.TextFontDefault.Height * (heightInLinesOfText)), Viewer.Catalog.GetString("MultiPlayer Info"))
         {
             WindowHeightMin = Location.Height;
             WindowHeightMax = Location.Height + owner.TextFontDefault.Height * 20; // 20 lines
@@ -103,7 +94,6 @@ namespace Orts.Viewer3D.Popups
         protected internal override void Save(BinaryWriter outf)
         {
             base.Save(outf);
-            outf.Write(StandardHUD);
             outf.Write(Location.X);
             outf.Write(Location.Y);
             outf.Write(Location.Width);
@@ -114,7 +104,6 @@ namespace Orts.Viewer3D.Popups
         {
             base.Restore(inf);
             Rectangle LocationRestore;
-            StandardHUD = inf.ReadBoolean();
             LocationRestore.X = inf.ReadInt32();
             LocationRestore.Y = inf.ReadInt32();
             LocationRestore.Width = inf.ReadInt32();
@@ -136,11 +125,11 @@ namespace Orts.Viewer3D.Popups
         {
             // Display main HUD data
             var vbox = base.Layout(layout).AddLayoutVertical();
-            if (ListToLabel.Count > 0)
+            if (labels.Count > 0)
             {
-                var colWidth = ListToLabel.Max(x => x.FirstColWidth) + (StandardHUD ? FontToBold ? 19 : 16 : 8);
+                var colWidth = labels.Max(x => x.FirstColWidth) + (FontToBold ? 19 : 16);
                 var TimeHboxPositionY = 0;
-                foreach (var data in ListToLabel)
+                foreach (var data in labels)
                 {
                     if (data.FirstCol.Contains(Viewer.Catalog.GetString("NwLn")))
                     {
@@ -158,48 +147,13 @@ namespace Orts.Viewer3D.Popups
                         var LastCol = data.LastCol;
                         var SymbolCol = data.SymbolCol;
 
-                        if (ColorCode.Keys.Any(FirstCol.EndsWith) || ColorCode.Keys.Any(LastCol.EndsWith) || ColorCode.Keys.Any(data.keyPressed.EndsWith) || ColorCode.Keys.Any(data.SymbolCol.EndsWith))
-                        {
-                            //var colorFirstColEndsWith = ColorCode.Keys.Any(FirstCol.EndsWith) ? ColorCode[FirstCol.Substring(FirstCol.Length - 3)] : Color.White;
-                            //var colorLastColEndsWith = ColorCode.Keys.Any(LastCol.EndsWith) ? ColorCode[LastCol.Substring(LastCol.Length - 3)] : Color.White;
-                            //var colorKeyPressed = ColorCode.Keys.Any(data.keyPressed.EndsWith) ? ColorCode[data.keyPressed.Substring(data.keyPressed.Length - 3)] : Color.White;
-                            //var colorSymbolCol = ColorCode.Keys.Any(data.SymbolCol.EndsWith) ? ColorCode[data.SymbolCol.Substring(data.SymbolCol.Length - 3)] : Color.White;
-
-                            //// Erase the color code at the string end
-                            //FirstCol = ColorCode.Keys.Any(FirstCol.EndsWith) ? FirstCol.Substring(0, FirstCol.Length - 3) : FirstCol;
-                            //LastCol = ColorCode.Keys.Any(LastCol.EndsWith) ? LastCol.Substring(0, LastCol.Length - 3) : LastCol;
-                            //keyPressed = ColorCode.Keys.Any(data.keyPressed.EndsWith) ? data.keyPressed.Substring(0, data.keyPressed.Length - 3) : data.keyPressed;
-                            //SymbolCol = ColorCode.Keys.Any(data.SymbolCol.EndsWith) ? data.SymbolCol.Substring(0, data.SymbolCol.Length - 3) : data.SymbolCol;
-
-                            //hbox.Add(indicator = new Label(TextSize, hbox.RemainingHeight, keyPressed, LabelAlignment.Center));
-                            //indicator.Color = colorKeyPressed;
-                            //hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, FirstCol));
-                            //indicator.Color = colorFirstColEndsWith;
-
-                            //if (data.keyPressed != null && data.keyPressed != "")
-                            //{
-                            //    hbox.Add(indicator = new Label(-TextSize, 0, TextSize, hbox.RemainingHeight, keyPressed, LabelAlignment.Right));
-                            //    indicator.Color = colorKeyPressed;
-                            //}
-
-                            //if (data.SymbolCol != null && data.SymbolCol != "")
-                            //{
-                            //    hbox.Add(indicator = new Label(-(TextSize + 3), 0, TextSize, hbox.RemainingHeight, SymbolCol, LabelAlignment.Right));
-                            //    indicator.Color = colorSymbolCol;
-                            //}
-
-                            //// Apply color to LastCol
-                            //hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, LastCol));
-                            //indicator.Color = colorFirstColEndsWith == Color.White ? colorLastColEndsWith : colorFirstColEndsWith;
-                        }
-                        else
                         {   // blanck space
                             keyPressed = "";
                             hbox.Add(indicator = new Label(TextSize, hbox.RemainingHeight, keyPressed, LabelAlignment.Center));
                             indicator.Color = Color.White; // Default color
 
                             //Avoids troubles when the Main Scale (Windows DPI settings) is not set to 100%
-                            if (FirstCol.Contains(StandardHUD? Viewer.Catalog.GetString("Time"): Viewer.Catalog.GetString("Status"))) TimeHboxPositionY = hbox.Position.Y;
+                            if (FirstCol.Contains(Viewer.Catalog.GetString("Time"))) TimeHboxPositionY = hbox.Position.Y;
 
                             hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, FirstCol));
                             indicator.Color = Color.White; // Default color
@@ -207,7 +161,6 @@ namespace Orts.Viewer3D.Popups
                             // Font to bold
                             if (hbox.Position.Y == TimeHboxPositionY && FirstCol.Contains(Viewer.Catalog.GetString("Time"))) // Time line.
                             {
-                                var expandWindow = StandardHUD ? '\u25C4' : '\u25BA';// ◀ : ▶
                                 hbox.Add(LabelFontToBold = new Label(-colWidth, 0, data.FirstColWidth, hbox.RemainingHeight, " "));
                                 LabelFontToBold.Color = Color.White;
                                 LabelFontToBold.Click += new Action<Control, Point>(FontToBold_Click);
@@ -219,13 +172,6 @@ namespace Orts.Viewer3D.Popups
                             }
                         }
 
-                        // Clickable symbol
-                        if (hbox.Position.Y == TimeHboxPositionY)
-                        {
-                            hbox.Add(ExpandWindow = new Label(hbox.RemainingWidth - TextSize, 0, TextSize, hbox.RemainingHeight, expandWindow.ToString(), LabelAlignment.Right));
-                            ExpandWindow.Color = Color.Yellow;
-                            ExpandWindow.Click += new Action<Control, Point>(ExpandWindow_Click);
-                        }
                         // Separator line
                         if (data.FirstCol.Contains("Sprtr"))
                         {
@@ -239,18 +185,13 @@ namespace Orts.Viewer3D.Popups
 
         void FontToBold_Click(Control arg1, Point arg2)
         {
-            FontToBold = FontToBold ? false : true;
-        }
-
-        void ExpandWindow_Click(Control arg1, Point arg2)
-        {
-            StandardHUD = !StandardHUD;
+            FontToBold = !FontToBold; 
             UpdateWindowSize();
         }
 
         private void UpdateWindowSize()
         {
-            UpdateData();
+            labels = MultiPlayerWindowList(Owner.Viewer).ToList();
             ModifyWindowSize();
         }
 
@@ -259,19 +200,21 @@ namespace Orts.Viewer3D.Popups
         /// </summary>
         private void ModifyWindowSize()
         {
-            if (ListToLabel.Count > 0)
+            if (labels.Count > 0)
             {
-                var textwidth = Owner.TextFontDefault.Height;
-                FirstColLenght = ListToLabel.Max(x => x.FirstColWidth);
-                LastColLenght = ListToLabel.Max(x => x.LastColWidth);
+                FirstColLenght = labels.Max(x => x.FirstColWidth);
+                LastColLenght = labels.Max(x => x.LastColWidth);
 
-                var desiredHeight = FontToBold? Owner.TextFontDefaultBold.Height * (ListToLabel.Count(x => x.FirstCol != null) + 2)
-                    : Owner.TextFontDefault.Height * (ListToLabel.Count(x => x.FirstCol != null) + 2);
+                // Validates rows with windows DPI settings
+                var dpiOffset = (System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiY / 96) > 1.00f ? 1 : 0;// values from testing
+                var rowCount = labels.Where(x => x.FirstCol != null || x.FirstColWidth == 0).Count() - dpiOffset;
+                var desiredHeight = FontToBold ? Owner.TextFontDefaultBold.Height * rowCount
+                    : Owner.TextFontDefault.Height * rowCount;
 
-                var desiredWidth = FirstColLenght + LastColLenght + (StandardHUD? FontToBold? 30 : 35 : 60);
+                var desiredWidth = FirstColLenght + LastColLenght + 35;
 
-                var newHeight = (int)MathHelper.Clamp(desiredHeight, (StandardHUD ? WindowHeightMin : 55), WindowHeightMax);
-                var newWidth = (int)MathHelper.Clamp(desiredWidth, (StandardHUD ? WindowWidthMin : 100), WindowWidthMax);
+                var newHeight = (int)MathHelper.Clamp(desiredHeight, WindowHeightMin, WindowHeightMax);
+                var newWidth = (int)MathHelper.Clamp(desiredWidth, WindowWidthMin, WindowWidthMax);
 
                 // Move the dialog up if we're expanding it, or down if not; this keeps the center in the same place.
                 var newTop = Location.Y + (Location.Height - newHeight) / 2;
@@ -280,6 +223,21 @@ namespace Orts.Viewer3D.Popups
                 SizeTo(newWidth, newHeight);
                 MoveTo(Location.X, newTop);
             }
+        }
+
+        /// <summary>
+        /// Sanitize the fields of a <see cref="ListLabel"/> in-place.
+        /// </summary>
+        /// <param name="label">A reference to the <see cref="ListLabel"/> to check.</param>
+        private void CheckLabel(ref ListLabel label)
+        {
+            void CheckString(ref string s) => s = s ?? "";
+            CheckString(ref label.FirstCol);
+            CheckString(ref label.LastCol);
+            CheckString(ref label.SymbolCol);
+            CheckString(ref label.KeyPressed);
+
+            UpdateColsWidth(label);
         }
 
         /// <summary>
@@ -292,131 +250,123 @@ namespace Orts.Viewer3D.Popups
         /// <param name="changecolwidth"></param>
         /// <param name="lastkeyactivated"></param>
         ///
-        private void InfoToLabel(string firstkeyactivated, string firstcol, string lastcol, string symbolcol, bool changecolwidth, string lastkeyactivated)
+        private void UpdateColsWidth(ListLabel label)
         {
             if (!UpdateDataEnded)
             {
                 var firstColWidth = 0;
                 var lastColWidth = 0;
+                var firstCol = label.FirstCol;
+                var lastCol = label.LastCol;
+                var symbolCol = label.SymbolCol;
+                var keyPressed = label.KeyPressed;
+                var changeColwidth = label.ChangeColWidth;
 
-                if (!firstcol.Contains("Sprtr"))
+                if (!firstCol.Contains("Sprtr"))
                 {
-                    if (firstcol.Contains("?") || firstcol.Contains("!") || firstcol.Contains("$"))
+                    firstColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(firstCol.TrimEnd())
+                        : Owner.TextFontDefault.MeasureString(firstCol.TrimEnd());
+
+                    if (firstCol.ToUpper().Contains("TIME"))
                     {
-                        firstColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(firstcol.Replace("?", "").Replace("!", "").Replace("$", "").TrimEnd())
-                            : Owner.TextFontDefault.MeasureString(firstcol.Replace("?", "").Replace("!", "").Replace("$", "").TrimEnd());
+                        lastColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(lastCol.TrimEnd())
+                        : Owner.TextFontDefault.MeasureString(lastCol.TrimEnd());
                     }
-                    else
+                    //Set a minimum value for LastColWidth to avoid overlap between time value
+                    if (labels.Count == 1)
                     {
-                        firstColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(firstcol.TrimEnd())
-                            : Owner.TextFontDefault.MeasureString(firstcol.TrimEnd());
-                    }
-                    if (firstcol.ToUpper().Contains("TIME"))
-                    {
-                        if (lastcol.Contains("?") || lastcol.Contains("!") || lastcol.Contains("$"))
-                        {
-                            lastColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(lastcol.Replace("?", "").Replace("!", "").Replace("$", "").TrimEnd())
-                                : Owner.TextFontDefault.MeasureString(lastcol.Replace("?", "").Replace("!", "").Replace("$", "").TrimEnd());
-                        }
-                        else
-                        {
-                            lastColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(lastcol.TrimEnd())
-                                : Owner.TextFontDefault.MeasureString(lastcol.TrimEnd());
-                        }
-                    }
-                    //Set a minimum value for LastColWidth to avoid overlap between time value and clickable symbol
-                    if (ListToLabel.Count == 1)
-                    {
-                        lastColWidth = ListToLabel.First().LastColWidth + 15;// time value + clickable symbol
+                        lastColWidth = labels.First().LastColWidth + 15;// time value +  symbol
                     }
                 }
 
-                ListToLabel.Add(new ListLabel
+                labels.Add(new ListLabel
                 {
-                    FirstCol = firstcol,
+                    FirstCol = firstCol,
                     FirstColWidth = firstColWidth,
-                    LastCol = lastcol,
+                    LastCol = lastCol,
                     LastColWidth = lastColWidth,
-                    SymbolCol = symbolcol,
-                    ChangeColWidth = changecolwidth,
-                    keyPressed = keyPressed
+                    SymbolCol = symbolCol,
+                    ChangeColWidth = changeColwidth,
+                    KeyPressed = keyPressed
                 });
-            }
-            else
-            {
-                //ResizeWindow, when the string spans over the right boundary of the window
-                var maxFirstColWidth = ListToLabel.Max(x => x.FirstColWidth);
-                var maxLastColWidth = ListToLabel.Max(x => x.LastColWidth);
 
-                if (!ResizeWindow & (FirstColOverFlow != maxFirstColWidth || (LastColOverFlow != maxLastColWidth)))
+                //ResizeWindow, when the string spans over the right boundary of the window
+                if (!ResizeWindow)
                 {
-                    LastColOverFlow = maxLastColWidth;
-                    FirstColOverFlow = maxFirstColWidth;
+                    if (maxFirstColWidth < firstColWidth) FirstColOverFlow = maxFirstColWidth;
+                    if (maxLastColWidth < lastColWidth) LastColOverFlow = maxLastColWidth;
                     ResizeWindow = true;
                 }
             }
         }
 
-        private void UpdateData()
-        {   //Update data
-            expandWindow = '\u23FA';// ⏺ toggle window
-
+        /// <summary>
+        /// Retrieve a formatted list <see cref="ListLabel"/>s to be displayed as an in-browser Track Monitor.
+        /// </summary>
+        /// <param name="viewer">The Viewer to read train data from.</param>
+        /// <returns>A list of <see cref="ListLabel"/>s, one per row of the popup.</returns>
+        public IEnumerable<ListLabel> MultiPlayerWindowList(Viewer viewer)
+        {
+            //Update data
             keyPressed = "";
-            ListToLabel.Clear();
-            UpdateDataEnded = false;
-
-			// First Block
-            // Client and server may have a time difference.
-            keyPressed = "";
-            if (StandardHUD)
+            labels = new List<ListLabel>();
+            void AddLabel(ListLabel label)
             {
-                if (Orts.MultiPlayer.MPManager.IsClient())
-                    InfoToLabel(keyPressed, Viewer.Catalog.GetString("Time") + ": " + FormatStrings.FormatTime(Owner.Viewer.Simulator.ClockTime + Orts.MultiPlayer.MPManager.Instance().serverTimeDifference), "", "", false, keyPressed);
-                else
-                {
-                    InfoToLabel(keyPressed, Viewer.Catalog.GetString("Time") + ": " + FormatStrings.FormatTime(Owner.Viewer.Simulator.ClockTime), "", "", false, keyPressed);
-                }
+                CheckLabel(ref label);
             }
+            void AddSeparator() => AddLabel(new ListLabel
+            {
+                FirstCol = Viewer.Catalog.GetString("Sprtr"),
+            });
+
+            labels.Clear();
+            UpdateDataEnded = false;
+            // First Block
+            // Client and server may have a time difference.
+            var time = FormatStrings.FormatTime(viewer.Simulator.ClockTime + (MultiPlayer.MPManager.IsClient() ? MultiPlayer.MPManager.Instance().serverTimeDifference : 0));
+            AddLabel(new ListLabel
+            {
+                FirstCol = $"{Viewer.Catalog.GetString("Time")}: {time}",
+                LastCol = ""
+            });
+
+            // Separator
+            AddSeparator();
 
             // MultiPlayer
             if (Orts.MultiPlayer.MPManager.IsMultiPlayer())
             {
                 var text = Orts.MultiPlayer.MPManager.Instance().GetOnlineUsersInfo();
+                var multiPlayerStatus = Orts.MultiPlayer.MPManager.IsServer()
+                    ? $"{Viewer.Catalog.GetString("Dispatcher")} ({Orts.MultiPlayer.MPManager.Server.UserName})" : Orts.MultiPlayer.MPManager.Instance().AmAider
+                    ? Viewer.Catalog.GetString("Helper") : Orts.MultiPlayer.MPManager.IsClient()
+                    ? $"{Viewer.Catalog.GetString("Client")} ({Orts.MultiPlayer.MPManager.Client.UserName})" : "";
 
-                if (StandardHUD)
+                var status = $"{Viewer.Catalog.GetString("Status")}: {multiPlayerStatus}";
+
+                AddLabel(new ListLabel
                 {
-                    InfoToLabel("", Viewer.Catalog.GetString("Sprtr"), "", "", false, keyPressed);
-                    InfoToLabel(" ", Viewer.Catalog.GetString("MultiPlayerStatus:") + " " + (Orts.MultiPlayer.MPManager.IsServer()
-                        ? Viewer.Catalog.GetString("Dispatcher") : Orts.MultiPlayer.MPManager.Instance().AmAider
-                        ? Viewer.Catalog.GetString("Helper") : Orts.MultiPlayer.MPManager.IsClient()
-                        ? Viewer.Catalog.GetString("Client") : ""), "", "", true, keyPressed);
-                }
-                else
-                {
-                    InfoToLabel(" ", Viewer.Catalog.GetString("Status:") + " " + (Orts.MultiPlayer.MPManager.IsServer()
-                        ? Viewer.Catalog.GetString("Dispatcher") : Orts.MultiPlayer.MPManager.Instance().AmAider
-                        ? Viewer.Catalog.GetString("Helper") : Orts.MultiPlayer.MPManager.IsClient()
-                        ? Viewer.Catalog.GetString("Client") : ""), "", "", true, keyPressed);
-                }
+                    FirstCol = status,
+                    LastCol = ""
+                });
+
+                AddLabel(new ListLabel());
+
                 // Number of player and trains
-                InfoToLabel("", "NwLn", "", "", false, keyPressed);
                 foreach (var t in text.Split('\t'))
                 {
-                    if (StandardHUD)
+                    AddLabel(new ListLabel
                     {
-                        InfoToLabel(" ", (t), "", "", true, keyPressed);
-                    }
-                    else
-                    {
-                        InfoToLabel(" ", (t), "", "", true, keyPressed);
-                        break;
-                    }
+                        FirstCol = $"{t}",
+                        LastCol = ""
+                    });
                 }
+                AddLabel(new ListLabel());
             }
 
+            AddLabel(new ListLabel());
             UpdateDataEnded = true;
-            keyPressed = "";
-            InfoToLabel(keyPressed, "", "", "", true, keyPressed);
+            return labels;
         }
 
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
@@ -428,17 +378,21 @@ namespace Orts.Viewer3D.Popups
                    UserInput.MouseY >= Location.Y && UserInput.MouseY <= Location.Y + Location.Height ?
                    true : false;
 
-            if (!MovingCurrentWindow & updateFull)
+            // Avoid to updateFull when the window is moving
+            if (!MovingCurrentWindow && !MultiplayerUpdating && updateFull)
             {
-                UpdateData();
+                MultiplayerUpdating = true;
+                labels = MultiPlayerWindowList(Owner.Viewer).ToList();
+                MultiplayerUpdating = false;
 
                 // Ctrl + F (FiringIsManual)
-                if (ResizeWindow || LinesCount != ListToLabel.Count())
+                if (ResizeWindow || LinesCount != labels.Count())
                 {
                     ResizeWindow = false;
                     UpdateWindowSize();
-                    LinesCount = ListToLabel.Count();
+                    LinesCount = labels.Count();
                 }
+
 
                 //Update Layout
                 Layout();
