@@ -480,8 +480,9 @@ to Bold font-style, also, the Window Glass (transparency) is disabled.
    Boiler water level      LEVL             Steam                  BTRN            Train brake
    Circuit breaker         CIRC             Electric               CCOK            Cylinder cocks
    Cylinder cocks          CCOK             Steam                  CIRC            Circuit breaker
-   Direction               DIRC             All                    DIRC            Direction
-   Doors open              DOOR             All                    DOOR            Doors open
+   DerailCoeff             DRLC             All                    DIRC            Direction
+   Direction               DIRC             All                    DOOR            Doors open
+   Doors open              DOOR             All                    DRLC            DerailCoeff 
    Dynamic brake           BDYN             Diesel and Electric    ENGN            Engine
    Electric train supply   TSUP             Diesel and Electric    FIRE            Fire mass
    Engine                  ENGN             Diesel                 FPS             FPS
