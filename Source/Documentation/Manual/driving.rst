@@ -458,7 +458,7 @@ The Diesel locomotive:
 
 To help the user with ageing eyesight, the Time value is clickable, to toggle between the Regular
 and Bold font-style. Once toggled, this window and external Messages-window changes all them
-to Bold font-style, also, the Window Glass (transparency) is disabled.
+to Bold font-style.
 
 .. image:: images/tdi-bold-windglass-off.png
    :align: center
