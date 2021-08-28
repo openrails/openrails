@@ -200,6 +200,7 @@ namespace Orts.Viewer3D.Popups
         public bool normalTextMode = true;// Standard text
         public bool TrainDrivingUpdating = false;
         public static bool MonoFont;
+        public static bool FontChanged;
         public static bool FontToBold;
         string keyPressed;// display a symbol when a control key is pressed.
 
@@ -388,8 +389,8 @@ namespace Orts.Viewer3D.Popups
 
         void FontToBold_Click(Control arg1, Point arg2)
         {
+            FontChanged = true;
             FontToBold = !FontToBold;
-            Owner.Viewer.Settings.WindowGlass = !Owner.Viewer.Settings.WindowGlass;// to help user with ageing eyesight.
             UpdateWindowSize();
         }
 
@@ -1288,7 +1289,13 @@ namespace Orts.Viewer3D.Popups
                     UpdateWindowSize();
                     LinesCount = labels.Count();
                 }
-
+                //Resize this window after the font has been changed externally
+                if (MultiPlayerWindow.FontChanged)
+                {
+                    MultiPlayerWindow.FontChanged = false;
+                    FontToBold = !FontToBold;
+                    UpdateWindowSize();
+                }
                 //Update Layout
                 Layout();
             }

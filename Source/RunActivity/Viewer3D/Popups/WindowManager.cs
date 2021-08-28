@@ -240,7 +240,7 @@ namespace Orts.Viewer3D.Popups
 				var xnaWorld = window.XNAWorld;
 
                 var oldTargets = graphicsDevice.GetRenderTargets();
-                if (Viewer.Settings.WindowGlass && Screen != null)
+                if (Viewer.Settings.WindowGlass)
                 {
                     graphicsDevice.SetRenderTarget(Screen);
                     graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
@@ -255,7 +255,7 @@ namespace Orts.Viewer3D.Popups
                 SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
                 window.Draw(SpriteBatch);
                 SpriteBatch.End();
-                if (Viewer.Settings.WindowGlass && Screen != null)
+                if (Viewer.Settings.WindowGlass)
                 {
                     graphicsDevice.SetRenderTargets(oldTargets);
                     SpriteBatchMaterial.SetState(graphicsDevice, null);
