@@ -2894,6 +2894,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Engine(ORTSBrakePipeTimeFactor`` -- Time in seconds for a difference in
   pipe pressure between adjacent cars to equalize to about 1/3
   (default .003).
+- ``Engine(AirBrakeMaxMainResPipePressure`` -- Pressure in Main Reservoir 
+  Pipe for twin pipe braking systems (default = Main Reservoir Pressure).
 
 .. _physics-retainers:
 
@@ -3192,6 +3194,30 @@ To control the application and release rates on the brake use the ``EngineBrakes
 
 The ``SteamBrakeFX`` special effect, if added to the wagon, will turn on and off with the brake operation 
 and can be used to model steam leakage of the steam brake cylinder, etc.
+
+Wheel Slide Protection
+----------------------
+
+Open Rails supports the use of Wheel Slide Protection (WSP) on trains with air brakes. WSP operates as described below.
+
+During braking wheelslide control is effected throughout the train by additional equipment on each vehicle. In the piping to each 
+pair of brake cylinders are fitted electrically operated dump valves. When axle rotations which are sensed electrically, differ 
+by a predetermined speed the dump valves are operated releasing brake cylinder pressure to both axles of the affected bogie.
+
+Dump valve operation will cease when differences in axle rotations are within specified limits or the axle accelerates faster than 
+a specified rate. The dump valve will only operate for a maximum period of seven seconds after which time it will be de-energised 
+and the dump valve will not re-operate until the train has stopped or the throttle operated. 
+
+Dump valve operation is prevented under the following conditions:
+
+- When the Power Controller is open.
+- When Brake Pipe Pressure has been reduced below 36 psi (250 kPa).
+
+To enable WSP ``ORTSWheelBrakeSlideProtection (1)``. If it is desired that emergency braking should not be impacted by WSP, then use 
+the ``ORTSEmergencyBrakingDisablesWSP (1)`` parameter.
+
+When WSP is active the brake cylinder pressure reading will go yellow in the extended HuD on the BRAKE INFORMATION screen.
+
 
 Dynamically Evolving Tractive Force
 ===================================

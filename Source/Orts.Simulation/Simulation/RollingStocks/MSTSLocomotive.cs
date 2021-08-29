@@ -131,6 +131,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxSpeedMpS = 1e3f;
         public float UnloadingSpeedMpS;
         public float MainResPressurePSI = 130;
+        public float MaximumMainReservoirPipePressurePSI;
         public bool CompressorIsOn;
         public float AverageForceN;
         public float PowerOnDelayS;
@@ -353,6 +354,7 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
         public bool UsingRearCab;
+        public bool BrakeOverchargeSoundOn = false;
 
         protected bool DynamicBrakeBlended; // dynamic brake blending is currently active
         protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
@@ -843,6 +845,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
                 case "engine(airbrakesmainresvolume": MainResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(airbrakemaxmainrespipepressure": MaximumMainReservoirPipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakesaircompressorpowerrating": CompressorChargingRateM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
@@ -1027,7 +1030,8 @@ namespace Orts.Simulation.RollingStocks
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
             TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
             MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
-            MainResPressurePSI = MaxMainResPressurePSI;
+            MainResPressurePSI = locoCopy.MaxMainResPressurePSI;
+            MaximumMainReservoirPipePressurePSI = locoCopy.MaximumMainReservoirPipePressurePSI;
             MainResVolumeM3 = locoCopy.MainResVolumeM3;
             MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
             BrakePipeDischargeTimeFactor = locoCopy.BrakePipeDischargeTimeFactor;
@@ -1390,6 +1394,11 @@ namespace Orts.Simulation.RollingStocks
                 {
                     BrakeServiceTimeFactorS = 1.009f; // Air brakes
                 }
+            }
+
+            if (MaximumMainReservoirPipePressurePSI == 0)
+            {
+                MaximumMainReservoirPipePressurePSI = MaxMainResPressurePSI;
             }
 
             // Check TrainBrakesControllerMaxSystemPressure parameter for "correct" value 
@@ -4442,6 +4451,11 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.MAIN_RES:
                     {
                         data = ConvertFromPSI(cvc, MainResPressurePSI);
+                        break;
+                    }
+                case CABViewControlTypes.MAIN_RES_PIPE:
+                    {
+                        data = ConvertFromPSI(cvc, this.BrakeSystem.BrakeLine2PressurePSI);
                         break;
                     }
                 case CABViewControlTypes.BRAKE_PIPE:

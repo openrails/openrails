@@ -1068,6 +1068,30 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsbrakeshoefriction": BrakeShoeFrictionFactor = new Interpolator(stf); break;
                 case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(ortswheelbrakeslideprotection":
+                  // stf.MustMatch("(");
+                    var brakeslideprotection = stf.ReadFloatBlock(STFReader.UNITS.None, null);
+                    if (brakeslideprotection == 1)
+                    {
+                        WheelBrakeSlideProtectionFitted = true;
+                    }
+                    else
+                    {
+                        WheelBrakeSlideProtectionFitted = false;
+                    }
+                    break;
+                case "wagon(ortswheelbrakesslideprotectionlimitdisable":
+                    // stf.MustMatch("(");
+                    var brakeslideprotectiondisable = stf.ReadFloatBlock(STFReader.UNITS.None, null);
+                    if (brakeslideprotectiondisable == 1)
+                    {
+                        WheelBrakeSlideProtectionLimitDisabled = true;
+                    }
+                    else
+                    {
+                        WheelBrakeSlideProtectionLimitDisabled = false;
+                    }
+                    break;
                 case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.Resistance, null); break;
                 case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, null); break;
@@ -1347,11 +1371,15 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortspowersupplyheatingpower":
                 case "wagon(ortspowersupplyairconditioningpower":
                 case "wagon(ortspowersupplyairconditioningyield":
-                    if (PassengerCarPowerSupply == null)
+                    if (this is MSTSLocomotive)
+                    {
+                        Trace.TraceWarning($"Defining the {lowercasetoken} parameter is forbidden for locomotives (in {stf.FileName}:line {stf.LineNumber})");
+                    }
+                    else if (PassengerCarPowerSupply == null)
                     {
                         PowerSupply = new ScriptedPassengerCarPowerSupply(this);
                     }
-                    PassengerCarPowerSupply.Parse(lowercasetoken, stf);
+                    PassengerCarPowerSupply?.Parse(lowercasetoken, stf);
                     break;
 
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
@@ -1454,6 +1482,8 @@ namespace Orts.Simulation.RollingStocks
             DriverWheelRadiusM = copy.DriverWheelRadiusM;
             MainSoundFileName = copy.MainSoundFileName;
             BrakeShoeFrictionFactor = copy.BrakeShoeFrictionFactor;
+            WheelBrakeSlideProtectionFitted = copy.WheelBrakeSlideProtectionFitted;
+            WheelBrakeSlideProtectionLimitDisabled = copy.WheelBrakeSlideProtectionLimitDisabled;
             InitialMaxBrakeForceN = copy.InitialMaxBrakeForceN;
             InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
@@ -1676,6 +1706,9 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(CarInsideTempC);
             outf.Write(CurrentCarSteamHeatBoilerWaterCapacityL);
 
+            outf.Write(WheelBrakeSlideProtectionActive);
+            outf.Write(WheelBrakeSlideProtectionTimerS);
+
             base.Save(outf);
         }
 
@@ -1719,6 +1752,9 @@ namespace Orts.Simulation.RollingStocks
             CurrentSteamHeatBoilerFuelCapacityL = inf.ReadSingle();
             CarInsideTempC = inf.ReadSingle();
             CurrentCarSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
+
+            WheelBrakeSlideProtectionActive = inf.ReadBoolean();
+            WheelBrakeSlideProtectionTimerS = inf.ReadInt32();
 
             base.Restore(inf);
         }

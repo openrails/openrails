@@ -175,6 +175,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             outf.Write(ElectricTrainSupplyState.ToString());
             outf.Write(LowVoltagePowerSupplyState.ToString());
             outf.Write(BatteryState.ToString());
+            outf.Write(VentilationState.ToString());
+            outf.Write(HeatingState.ToString());
+            outf.Write(AirConditioningState.ToString());
+
+            outf.Write(HeatFlowRateW);
         }
 
         public virtual void Restore(BinaryReader inf)
@@ -184,7 +189,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             FrontElectricTrainSupplyCableConnected = inf.ReadBoolean();
 
             ElectricTrainSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
+            LowVoltagePowerSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
             BatteryState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
+            VentilationState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
+            HeatingState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
+            AirConditioningState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
+
+            HeatFlowRateW = inf.ReadSingle();
 
             IsFirstUpdate = false;
         }
@@ -291,6 +302,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             // AbstractScriptClass
             Script.ClockTime = () => (float)Simulator.ClockTime;
             Script.GameTime = () => (float)Simulator.GameTime;
+            Script.PreUpdate = () => Simulator.PreUpdate;
             Script.DistanceM = () => Wagon.DistanceM;
             Script.SpeedMpS = () => Math.Abs(Wagon.SpeedMpS);
             Script.Confirm = Simulator.Confirmer.Confirm;
