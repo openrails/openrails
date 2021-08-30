@@ -22,18 +22,18 @@ using System.Collections.Generic;
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
 
-    public class EPBrakeSystem : AirTwinPipe
+    public class SMEBrakeSystem : AirTwinPipe
     {
-        public EPBrakeSystem(TrainCar car)
+        public SMEBrakeSystem(TrainCar car)
             : base(car)
         {
-            DebugType = "EP";
+            DebugType = "SME";
         }
 
         public override void Update(float elapsedClockSeconds)
         {
             MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
-            if (lead != null && lead.BrakeSystem is EPBrakeSystem)
+            if (lead != null && lead.BrakeSystem is SMEBrakeSystem)
             {
 
                 float demandedAutoCylPressurePSI = 0;

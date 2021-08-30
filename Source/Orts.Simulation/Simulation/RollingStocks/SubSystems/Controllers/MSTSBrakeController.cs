@@ -128,6 +128,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             epState = -1;
                             break;
                         case ControllerState.FullQuickRelease:
+                        case ControllerState.SMEReleaseStart:
                             IncreasePressure(ref pressureBar, MaxPressureBar(), QuickReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
                             epState = -1;
@@ -184,8 +185,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             break;
                         case ControllerState.EPApply:
                         case ControllerState.EPOnly:
+                        case ControllerState.SMEOnly:
                         case ControllerState.ContServ:
                         case ControllerState.EPFullServ:
+                        case ControllerState.SMEFullServ:
                             epState = x;
                             if (notch.Type == ControllerState.EPApply || notch.Type == ControllerState.ContServ)
                             {
