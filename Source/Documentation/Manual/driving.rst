@@ -419,14 +419,14 @@ F5 Train Driving Info
 ---------------------
 By pressing ``<F5>`` you get some important data displayed in a dedicated window.
 
-Pressing ``<Shift+F5>`` toggles from the full and the abbreviated text mode. Default mode set to full text.
+Pressing ``<Shift+F5>`` toggles between the full and the abbreviated text mode. The default mode is full text.
 
 .. image:: images/tdi-regular-windglass-on.png
    :align: center
    :scale: 90%
  
  
-Each type of locomotive uses a different data set, to display.
+The window displays data appropriate to each type of locomotive as follows.
  
 The Steam locomotive:
 
@@ -457,8 +457,7 @@ The Diesel locomotive:
    :scale: 80%
 
 To help the user with ageing eyesight, the Time value is clickable, to toggle between the Regular
-and Bold font-style. Once toggled, this window and external Messages-window changes all them
-to Bold font-style.
+Once toggled, the Bold font style is used in this window and also the Multiplayer Info window if it’s open.
 
 .. image:: images/tdi-bold-windglass-off.png
    :align: center

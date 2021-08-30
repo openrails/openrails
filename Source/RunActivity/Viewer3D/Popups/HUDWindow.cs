@@ -1073,8 +1073,7 @@ namespace Orts.Viewer3D.Popups
 
                 if (train.TrainWindResistanceDependent) // Only show this information if wind resistance is selected
                 {
-                    TableAddLine(table, "Wind Speed: {0:N2} mph   Wind Direction: {1:N2} Deg   Train Direction: {2:N2} Deg    ResWind: {3:N2} Deg   ResSpeed {4:N2} mph", Me.ToMi(pS.TopH(train.PhysicsWindSpeedMpS)), train.PhysicsWindDirectionDeg, train.PhysicsTrainLocoDirectionDeg, train.ResultantWindComponentDeg, Me.ToMi(pS.TopH(train.WindResultantSpeedMpS)));
-
+                    TableAddLine(table, $"{Viewer.Catalog.GetString("Wind Speed:")} {Me.ToMi(pS.TopH(train.PhysicsWindSpeedMpS)):N2} mph   {Viewer.Catalog.GetString("Wind Direction:")} {train.PhysicsWindDirectionDeg:N2} Deg   {Viewer.Catalog.GetString("Train Direction:")} {train.PhysicsTrainLocoDirectionDeg:N2} Deg    {Viewer.Catalog.GetString("ResWind:")} {train.ResultantWindComponentDeg:N2} Deg   {Viewer.Catalog.GetString("ResSpeed:")} {Me.ToMi(pS.TopH(train.WindResultantSpeedMpS)):N2} mph");
                     TableAddLine(table);
                 }
 
