@@ -800,7 +800,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 dp = train.BrakeLine3PressurePSI - p;
                             p += dp;
                             lead.EngineBrakeState = ValveState.Apply;
-                            sumpv -= dp * brakeSystem.GetCylVolumeM3() / lead.MainResVolumeM3;
+                            sumpv -= dp * brakeSystem.GetCylVolumeM3() / lead.MainResVolumeM3;  // TODO - On control cars there may not be a main reservoir, so this value is may not be correct
                         }
                         else if (p > train.BrakeLine3PressurePSI)  // Release the engine brake as the pressure increases in the brake cylinder
                         {
