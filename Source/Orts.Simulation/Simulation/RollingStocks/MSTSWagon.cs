@@ -247,6 +247,11 @@ namespace Orts.Simulation.RollingStocks
         public bool AuxiliaryReservoirPresent;
 
         /// <summary>
+        /// Active locomotive for a control trailer
+        /// </summary>
+        public MSTSLocomotive ControlActiveLocomotive { get; private set; }
+
+        /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
         /// </summary>
         public MSTSSteamLocomotive TendersSteamLocomotive { get; private set; }
@@ -3422,6 +3427,42 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
         }
 
+        public void FindControlActiveLocomotive()
+        {
+            // Find the active locomotive associated with a control car
+            if (Train == null || Train.Cars == null || Train.Cars.Count == 1)
+            {
+                ControlActiveLocomotive = null;
+                return;
+            }
+
+            var controlIndex = 0;
+            var activeIndex = 0;
+            bool controlCar = false;
+            bool activeLocomotive = false;
+
+            // Check to see if this car is an active locomotive, if so then set linkage to relevant control car.
+            for (var i = 0; i < Train.Cars.Count; i++)
+            {
+                if (Train.Cars[i] == this && activeIndex == 0 && Train.Cars[i].EngineType == TrainCar.EngineTypes.Diesel)
+                {
+                    activeIndex = i;
+                    activeLocomotive = true;
+                }
+
+                if (Train.Cars[i] == this && controlIndex == 0 && Train.Cars[i].EngineType == TrainCar.EngineTypes.Control)
+                {
+                    controlIndex = i;
+                    controlCar = true;
+                }
+
+                if (activeLocomotive && controlCar)
+                {
+                    ControlActiveLocomotive = Train.Cars[activeIndex] as MSTSDieselLocomotive;
+                    return;
+                }
+            }
+        }
 
         public void FindTendersSteamLocomotive()
         {

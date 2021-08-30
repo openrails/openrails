@@ -2869,7 +2869,7 @@ namespace Orts.Simulation.RollingStocks
         {
             return Sander;
         }
-
+                                 
         #region Reverser
         public void SetDirection(Direction direction)
         {
@@ -4480,9 +4480,27 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.RPM:
                     {
-                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                        if (mstsDieselLocomotive.DieselEngines[0] != null)
-                            data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
+                        if (EngineType == EngineTypes.Control)
+                        {
+                            FindControlActiveLocomotive();
+                            if (ControlActiveLocomotive != null)
+                            {
+                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
+                                if (activeloco.DieselEngines[0] != null)
+                                    data = activeloco.DieselEngines[0].RealRPM;
+                          //      Trace.TraceInformation("Data#1 CarID {0}  RPM {1}", CarID, data);
+                                       
+                            }
+
+                        }
+                        else
+                        {
+                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                            if (mstsDieselLocomotive.DieselEngines[0] != null)
+                                data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
+
+                           // Trace.TraceInformation("Data#2 CarID {0}  RPM {1}", CarID, data);
+                        }
                         break;
                     }
                 case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
