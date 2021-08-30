@@ -119,13 +119,14 @@ you check the *Client* radio button and the you click on  *Start MP*.
 In-Game Controls
 ================
 
-Once the dispatcher and clients have started and connected, to display 
-MultiPlayer status you must press F5 to display the basic HUD; at the bottom 
-of it you will see the information. You can watch how many players and trains 
+Once the dispatcher and clients have started and connected, to display the
+MultiPlayer status, you must press ``<Shift+9>`` to display the MultiPlayer Info window,
+at the bottom of it you will see the information. You can watch how many players and trains
 are present and how far away you are from others. You can also look if you 
-are acting as dispatcher or as client.
+are acting as dispatcher or as client and the username of each one.
 
-.. image:: images/multiplayer-hud-basic.png
+.. image:: images/multiplayer-info.png
+    :align: center
 
 A player joined will have the same weather, time and season as the dispatcher, no 
 matter what are the original choices.
@@ -273,6 +274,10 @@ Possible Problems
   train wants to pass it.
 - Coupling/uncoupling the same set of trains may end up with weird things.
 - ``<Ctrl+E>`` locomotive switch may have train cars flipped.
+- When the server connection is lost, a message appears in the MultiPlayer Info window:
+
+.. image:: images/multiplayer-info-server-lost.png
+    :align: center
 
 .. _multiplayer-public-server:
 
