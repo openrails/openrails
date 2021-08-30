@@ -419,7 +419,7 @@ F5 Train Driving Info
 ---------------------
 By pressing ``<F5>`` you get some important data displayed in a dedicated window.
 
-Pressing ``<Shift+F5>`` toggles from the full and the abbreviated text mode. Default mode set to full text.
+Pressing ``<Shift+F5>`` toggles between the full and the abbreviated text mode. The default mode is full text.
 
 .. image:: images/tdi-regular-windglass-on.png
    :align: center
