@@ -457,7 +457,7 @@ The Diesel locomotive:
    :scale: 80%
 
 To help the user with ageing eyesight, the Time value is clickable, to toggle between the Regular
-and Bold font-style. Once toggled, this window and external Messages-window changes all them
+Once toggled, the Bold font style is used in this window and also the Multiplayer Info window if it’s open.
 to Bold font-style.
 
 .. image:: images/tdi-bold-windglass-off.png
