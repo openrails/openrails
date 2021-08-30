@@ -426,7 +426,7 @@ Pressing ``<Shift+F5>`` toggles between the full and the abbreviated text mode. 
    :scale: 90%
  
  
-Each type of locomotive uses a different data set, to display.
+The window displays data appropriate to each type of locomotive as follows.
  
 The Steam locomotive:
 
