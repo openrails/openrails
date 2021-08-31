@@ -328,8 +328,8 @@ namespace Orts.Simulation.RollingStocks
         // ENG file data
         public string CabSoundFileName;
         public string CVFFileName;
-        public float MaxMainResPressurePSI = 130;
-        public float MainResVolumeM3 = 0.3f;
+        public float MaxMainResPressurePSI;
+        public float MainResVolumeM3;
         public float TrainBrakePipeLeakPSIorInHgpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
@@ -1319,6 +1319,42 @@ namespace Orts.Simulation.RollingStocks
             // Calculate minimum speed to pickup water
             const float Aconst = 2;
             WaterScoopMinSpeedMpS = Me.FromFt((float)Math.Sqrt(Aconst * GravitationalAccelerationFtpSpS * Me.ToFt(WaterScoopFillElevationM)));
+
+
+            if (MaxMainResPressurePSI == 0)
+            {
+                if (EngineType == EngineTypes.Control)
+                {
+                    FindControlActiveLocomotive();
+
+                    if( ControlActiveLocomotive != null)
+                    {
+                        MaxMainResPressurePSI = ControlActiveLocomotive.MaxMainResPressurePSI; // Set maximum reservoir pressure from active locomotive
+                    }
+                    else
+                    {
+                        MaxMainResPressurePSI = 130;
+                    }
+                }
+                else
+                {
+                    MaxMainResPressurePSI = 130;
+                }
+
+            }
+
+            if (MainResVolumeM3 == 0)
+            {
+                if (EngineType == EngineTypes.Control)
+                {
+                    MainResVolumeM3 = 0.01f;
+                }
+                else
+                {
+                    MainResVolumeM3 = 0.3f;
+                }
+
+            }
 
             // Initialise Brake Pipe Charging Rate
             if (BrakePipeChargingRatePSIorInHgpS == 0) // Check to see if BrakePipeChargingRate has been set in the ENG file.
