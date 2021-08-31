@@ -4453,18 +4453,19 @@ namespace Orts.Simulation.RollingStocks
                         data = ConvertFromPSI(cvc, BrakeSystem.GetVacResPressurePSI());
                         break;
                     }
+
                 case CABViewControlTypes.RPM:
                     {
+
                         if (EngineType == EngineTypes.Control)
                         {
                             FindControlActiveLocomotive();
+
                             if (ControlActiveLocomotive != null)
                             {
                                 var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
                                 if (activeloco.DieselEngines[0] != null)
                                     data = activeloco.DieselEngines[0].RealRPM;
-                          //      Trace.TraceInformation("Data#1 CarID {0}  RPM {1}", CarID, data);
-                                       
                             }
 
                         }
@@ -4473,11 +4474,35 @@ namespace Orts.Simulation.RollingStocks
                             var mstsDieselLocomotive = this as MSTSDieselLocomotive;
                             if (mstsDieselLocomotive.DieselEngines[0] != null)
                                 data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
-
-                           // Trace.TraceInformation("Data#2 CarID {0}  RPM {1}", CarID, data);
                         }
                         break;
                     }
+
+                case CABViewControlTypes.RPM_2:
+                    {
+
+                        FindControlActiveLocomotive();
+
+                        if (ControlActiveLocomotive != null)
+                        {
+                            var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
+                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+
+                            if (EngineType == EngineTypes.Control && activeloco.DieselEngines.NumOfActiveEngines > 1)
+                            {
+                             
+                                if (activeloco.DieselEngines[1] != null)
+                                    data = activeloco.DieselEngines[1].RealRPM;
+                            }
+                            else if (EngineType == EngineTypes.Diesel && mstsDieselLocomotive.DieselEngines.NumOfActiveEngines > 1)
+                            {                      
+                                if (mstsDieselLocomotive.DieselEngines[1] != null)
+                                    data = mstsDieselLocomotive.DieselEngines[1].RealRPM;
+                            }
+                        }
+                        break;
+                    }
+
                 case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
                     {
                         var mstsDieselLocomotive = this as MSTSDieselLocomotive;
