@@ -1009,11 +1009,13 @@ namespace Orts.Viewer3D.Popups
 
                 if (train.TrainWindResistanceDependent) // Only show this information if wind resistance is selected
                 {
-                    TableAddLine(table, $"{Viewer.Catalog.GetString("Wind Speed:")} {Me.ToMi(pS.TopH(train.PhysicsWindSpeedMpS)):N2} mph   {Viewer.Catalog.GetString("Wind Direction:")} {train.PhysicsWindDirectionDeg:N2} Deg   {Viewer.Catalog.GetString("Train Direction:")} {train.PhysicsTrainLocoDirectionDeg:N2} Deg    {Viewer.Catalog.GetString("ResWind:")} {train.ResultantWindComponentDeg:N2} Deg   {Viewer.Catalog.GetString("ResSpeed:")} {Me.ToMi(pS.TopH(train.WindResultantSpeedMpS)):N2} mph");
+                    TableAddLine(table, $"{Viewer.Catalog.GetString("Wind Speed:")} {Viewer.Catalog.GetStringFmt("{0:N2} mph", Me.ToMi(pS.TopH(train.PhysicsWindSpeedMpS)))}   " +
+                                        $"{Viewer.Catalog.GetString("Wind Direction:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.PhysicsWindDirectionDeg)}   " +
+                                        $"{Viewer.Catalog.GetString("Train Direction:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.PhysicsTrainLocoDirectionDeg)}   " +
+                                        $"{Viewer.Catalog.GetString("ResWind:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.ResultantWindComponentDeg)}   " +
+                                        $"{Viewer.Catalog.GetString("ResSpeed:")} {Viewer.Catalog.GetStringFmt("{0:N2} mph", Me.ToMi(pS.TopH(train.WindResultantSpeedMpS)))}");
                     TableAddLine(table);
                 }
-
-
             }
 
             TableSetCells(table, 0,
