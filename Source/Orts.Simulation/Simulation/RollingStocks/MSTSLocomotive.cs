@@ -130,7 +130,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxCurrentA = 0;
         public float MaxSpeedMpS = 1e3f;
         public float UnloadingSpeedMpS;
-        public float MainResPressurePSI = 130;
+        public float MainResPressurePSI;
         public bool CompressorIsOn;
         public float AverageForceN;
         public float PowerOnDelayS;
@@ -1325,14 +1325,25 @@ namespace Orts.Simulation.RollingStocks
                 {
                     MaxMainResPressurePSI = 130;
                 }
-
             }
+
+            MainResPressurePSI = MaxMainResPressurePSI;
 
             if (MainResVolumeM3 == 0)
             {
                 if (EngineType == EngineTypes.Control)
                 {
-                    MainResVolumeM3 = 0.01f;
+                    FindControlActiveLocomotive();
+
+                    if (ControlActiveLocomotive != null)
+                    {
+                        MainResVolumeM3 = ControlActiveLocomotive.MainResVolumeM3;
+                    }
+                    else
+                    {
+                        MainResVolumeM3 = 0.3f;
+                    }
+
                 }
                 else
                 {
@@ -1798,7 +1809,7 @@ namespace Orts.Simulation.RollingStocks
                 }
 
             }
-            else if (EngineType != EngineTypes.Control) // TODO - Control trailers would not have compressors, but if they do then need to be linked to power supply requirements
+            else // if (EngineType != EngineTypes.Control) // TODO - Control trailers would not have compressors, but if they do then need to be linked to power supply requirements
             {
                 UpdateCompressor(elapsedClockSeconds);
             }
