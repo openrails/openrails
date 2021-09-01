@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2021-06-26 12:00:35+0300\n"
-"PO-Revision-Date: 2021-06-26 12:13+0300\n"
+"POT-Creation-Date: 2021-08-21 11:05:56+0300\n"
+"PO-Revision-Date: 2021-08-21 12:30+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -1823,7 +1823,7 @@ msgstr "Выбрать язык"
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:123
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:150
 msgid "Highlight last-drawn section"
-msgstr ""
+msgstr "Подсвечивать крайний сегмент"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:124
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:151
@@ -1833,7 +1833,7 @@ msgstr "Разрешить редактирование"
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:125
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:152
 msgid "Show current mouse action"
-msgstr ""
+msgstr "Отображать текущее действие мыши"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:153
@@ -1963,15 +1963,15 @@ msgstr "Поиск"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
 msgid "Shows tileX and tileZ of the world location at the mouse pointer"
-msgstr ""
+msgstr "Координаты квадрата под указателем мыши"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:41
 msgid "Shows X-coordinate (without tileX) at the mouse pointer"
-msgstr ""
+msgstr "Долгота точки под указателем мыши"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:48
 msgid "Shows Z-coordinate (without tileZ) at the mouse pointer"
-msgstr ""
+msgstr "Широта точки под указателем мыши"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:54
 msgid "Trackindex"
