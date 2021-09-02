@@ -1638,6 +1638,8 @@ namespace Orts.Simulation.RollingStocks
                     controlTrailerBrakeSystemSet = true;
                     CompressorRestartPressurePSI = ControlActiveLocomotive.CompressorRestartPressurePSI;
                     MainResChargingRatePSIpS = ControlActiveLocomotive.MainResChargingRatePSIpS;
+                    BrakePipeChargingRatePSIorInHgpS = ControlActiveLocomotive.BrakePipeChargingRatePSIorInHgpS;
+                    TrainBrakePipeLeakPSIorInHgpS = ControlActiveLocomotive.TrainBrakePipeLeakPSIorInHgpS;
                 }
             }
 
