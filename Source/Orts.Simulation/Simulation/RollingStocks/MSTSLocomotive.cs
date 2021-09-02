@@ -368,6 +368,8 @@ namespace Orts.Simulation.RollingStocks
         public float CombinedControlSplitPosition;
         public bool HasSmoothStruc;
 
+        bool controlTrailerBrakeSystemSet = false;
+
         public float MaxContinuousForceN;
         public float SpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs
         public float MSTSSpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs - MSTS parameter if used
@@ -1323,48 +1325,14 @@ namespace Orts.Simulation.RollingStocks
 
             if (MaxMainResPressurePSI == 0)
             {
-                if (EngineType == EngineTypes.Control)
-                {
-                    FindControlActiveLocomotive();
-
-                    if( ControlActiveLocomotive != null)
-                    {
-                        MaxMainResPressurePSI = ControlActiveLocomotive.MaxMainResPressurePSI; // Set maximum reservoir pressure from active locomotive
-                    }
-                    else
-                    {
-                        MaxMainResPressurePSI = 130;
-                    }
-                }
-                else
-                {
-                    MaxMainResPressurePSI = 130;
-                }
-
+                MaxMainResPressurePSI = 130;
             }
 
             MainResPressurePSI = MaxMainResPressurePSI;
 
             if (MainResVolumeM3 == 0)
             {
-                if (EngineType == EngineTypes.Control)
-                {
-                    FindControlActiveLocomotive();
-
-                    if (ControlActiveLocomotive != null)
-                    {
-                        MainResVolumeM3 = ControlActiveLocomotive.MainResVolumeM3;
-                    }
-                    else
-                    {
-                        MainResVolumeM3 = 0.3f;
-                    }
-                }
-                else
-                {
-                    MainResVolumeM3 = 0.3f;
-                }
-
+                MainResVolumeM3 = 0.3f;
             }
 
             // Initialise Brake Pipe Charging Rate
@@ -1650,6 +1618,30 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            // A control car typically doesn't have its own compressor and relies on the attached power car. However OR uses the lead locomotive as the reference car for compressor calculations.
+            // Hence whilst users are encouraged to leave these parameters out of the ENG file, they need to be setup for OR to work correctly.
+            // Some parameters need to be split across the unpowered and powered car for correct timing and volume calculations.
+            // This setup loop is only processed the first time that update is run.
+            if (EngineType == EngineTypes.Control && !controlTrailerBrakeSystemSet)
+            {
+                FindControlActiveLocomotive();
+
+                if (ControlActiveLocomotive != null)
+                {
+                    // Split reservoir volume across the power car and the active locomotive
+                    MainResVolumeM3 = ControlActiveLocomotive.MainResVolumeM3 / 2;
+                    ControlActiveLocomotive.MainResVolumeM3 = MainResVolumeM3;
+
+                    MaxMainResPressurePSI = ControlActiveLocomotive.MaxMainResPressurePSI;
+                    MainResPressurePSI = MaxMainResPressurePSI;
+                    ControlActiveLocomotive.MainResPressurePSI = MainResPressurePSI;
+                    controlTrailerBrakeSystemSet = true;
+                    CompressorRestartPressurePSI = ControlActiveLocomotive.CompressorRestartPressurePSI;
+                    MainResChargingRatePSIpS = ControlActiveLocomotive.MainResChargingRatePSIpS;
+                }
+            }
+
+
             TrainControlSystem.Update(elapsedClockSeconds);
 
             LocomotivePowerSupply?.Update(elapsedClockSeconds);
