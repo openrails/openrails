@@ -336,7 +336,7 @@ Engine -- Classes of Motive Power
 =================================
 
 Open Rails software provides for different classes of engines: diesel,
-electric, steam and default. If needed, additional classes can be created
+electric, steam, control and default. If needed, additional classes can be created
 with unique performance characteristics.
 
 Diesel Locomotives
@@ -1990,6 +1990,23 @@ When the auxiliary tender is coupled to the locomotive the *tender* line in the 
 
 To allow the auxiliary tender to be filled at a water fuelling point, a water freight animation will be need to be added to the WAG file as well. (Refer to *Freight Animations* for more details).
 
+Unpowered Control Car
+---------------------
+
+This module simulates the control cab of a DMU set of cars. The cab typically would be located in an unpowered 
+trailer car which is attached to a powered car for the provision of its motive force to drive the train forward.
+
+Apart from producing motive force the car (and cabin controls) should behave exactly the same as a locomotive.
+
+To set a control car up it is necessary to produce an ENG file which has the ``Type ( Control )`` parameter set in 
+the engine section of the ENG file.
+
+The Control car uses most of the same parameters for its configuration as a powered locomotive. The major items that 
+can be left out are those parameters associated with power, motive force, diesel engines, some braking items, such 
+as the compressor and main air reservoir, and some of the diesel effects (as it has no diesel engine).
+
+Some of the cab monitoring gauges provide visibility of what is happening on the powered car. To do this OR searches for 
+the "closest" powered car near the Control car and uses its infromation.
 
 
 Engines -- Multiple Units in Same Consist or AI Engines
