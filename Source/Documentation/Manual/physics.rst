@@ -3218,6 +3218,21 @@ the ``ORTSEmergencyBrakingDisablesWSP (1)`` parameter.
 
 When WSP is active the brake cylinder pressure reading will go yellow in the extended HuD on the BRAKE INFORMATION screen.
 
+SME (sometimes also called SEM) Brake System
+--------------------------------------------
+
+SME braking is a straight air-brake system having an automatic emergency feature by means of which the simplicity of the straight air brake 
+is retained for service operation, but it also has the additional protection afforded by the automatic application of the brake in 
+case of a break-in-two or the bursting of a hose. SME braking is typically used on short DMU rail sets. SME braking is a form of electro-pneumatic (EP)
+brake system, however EP and SME equipped cars cannot be mixed together in the same consist.
+
+To activate SME braking, set ``BrakeSystemType ( SME )``. 
+
+The following brake tokens can be used with it:
+``TrainBrakesControllerSMEOnlyStart``
+``TrainBrakesControllerSMEFullServiceStart``
+``TrainBrakesControllerSMEHoldStart``
+``TrainBrakesControllerSMEReleaseStart``
 
 Dynamically Evolving Tractive Force
 ===================================

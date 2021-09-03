@@ -263,7 +263,7 @@ namespace ORTS.Scripting.Api
         SMEOnly,            // TrainBrakesControllerSMEOnlyStart
         SMEFullServ,        // TrainBrakesControllerSMEFullServiceStart
         SMESelfLap,         // TrainBrakesControllerSMEHoldStart
-        SMEReleaseStart,    // TrainBrakesControllerSEMReleaseStart
+        SMEReleaseStart,    // TrainBrakesControllerSMEReleaseStart
     };
 
     public static class ControllerStateDictionary
