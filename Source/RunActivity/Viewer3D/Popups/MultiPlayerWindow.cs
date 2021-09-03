@@ -119,7 +119,8 @@ namespace Orts.Viewer3D.Popups
         {
             base.Initialize();
             // Reset window size
-            UpdateWindowSize();
+            if(!Owner.Viewer.Simulator.TimetableMode)
+                UpdateWindowSize();
         }
 
         protected override ControlLayout Layout(ControlLayout layout)
@@ -365,7 +366,7 @@ namespace Orts.Viewer3D.Popups
                 }
                 AddLabel(new ListLabel());
             }
-            else if(Orts.MultiPlayer.MPManager.Simulator.Confirmer != null)
+            else if (Orts.MultiPlayer.MPManager.Simulator.Confirmer != null)
             {
                 var status = $"{Viewer.Catalog.GetString("Status")}: {MPManager.Catalog.GetString("Connection to the server is lost, will play as single mode")}";
                 AddLabel(new ListLabel
