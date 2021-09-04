@@ -162,17 +162,14 @@ player during train operation.
 Basic Head Up Display (HUD)
 ---------------------------
 
-By pressing ``<F5>`` you get some important data displayed at the top left 
+By pressing ``<Alt+F5>`` you get some important data displayed at the top left
 of the display in the so-called Head Up Display (HUD). If you want the HUD 
-to disappear, press ``<F5>`` again.
+to disappear, press ``<Alt+F5>`` again.
 
 The HUD has 6 different pages. The basic page is shown at game start. To 
-sequentially switch to the other pages press ``<Shift+F5>``. After having 
+sequentially switch to the other pages press ``<Shift+Alt+F5>``. After having
 cycled through all of the extended HUD pages, the basic page is displayed 
 again. 
-
-To hide or redisplay the current extended HUD data while continuing to show 
-the basic HUD, press ``<Alt+F5>``.
 
 The basic page shows fundamental information. The other pages go into more 
 detail, and are used mainly for debugging or to get deeper information on 
@@ -418,6 +415,104 @@ the locations of signals, mileposts, permanent speed limits, sidings, and
 stations. This level of assistance reflects the route knowledge that a train 
 driver could be expected to know by memory.
 
+F5 Train Driving Info
+---------------------
+By pressing ``<F5>`` you get some important data displayed in a dedicated window.
+
+Pressing ``<Shift+F5>`` toggles between the full and the abbreviated text mode. The default mode is full text.
+
+.. image:: images/tdi-regular-windglass-on.png
+   :align: center
+   :scale: 90%
+ 
+ 
+The window displays data appropriate to each type of locomotive as follows.
+ 
+The Steam locomotive:
+
+.. image:: images/tdi-steam-loco-auto.png
+   :align: center
+   :scale: 80%
+
+The Steam locomotive using manual firing and AI Fireman:
+
+.. image:: images/tdi-steam-loco.png
+    :align: center
+
+Boiler pressure indicator:
+
+.. image:: images/boiler-heat-input-output.png
+   :align: center
+   :scale: 60%
+
+The Electric locomotive:
+
+.. image:: images/tdi-electric-loco.png
+   :align: center
+
+The Diesel locomotive:
+
+.. image:: images/tdi-diesel-loco.png
+   :align: center
+   :scale: 80%
+
+To help the user with ageing eyesight, the Time value is clickable, to toggle between the Regular
+Once toggled, the Bold font style is used in this window and also the Multiplayer Info window if it’s open.
+
+.. image:: images/tdi-bold-windglass-off.png
+   :align: center
+   :scale: 80%
+
+.. table:: ABBREVIATIONS TABLE
+   :align: center
+   :widths: auto
+
+   ======================  ==============   ===================    ==============  ======================
+    Ordered by:                             Locomotive             Ordered by:
+    Field names             Abbreviations   Type                   Abbreviations   Field names
+   ======================  ==============   ===================    ==============  ======================
+   AI Fireman              AIFR             Steam                  AIFR            AI Fireman
+   Autopilot               AUTO             All                    AUTO            Autopilot
+   Battery switch          BATT             Diesel and Electric    BATT            Battery switch
+   Boiler pressure         PRES             Steam                  BDYN            Dynamic brake
+   Boiler water glass      WATR             Steam                  BLOC            Engine brake
+   Boiler water level      LEVL             Steam                  BTRN            Train brake
+   Circuit breaker         CIRC             Electric               CCOK            Cylinder cocks
+   Cylinder cocks          CCOK             Steam                  CIRC            Circuit breaker
+   DerailCoeff             DRLC             All                    DIRC            Direction
+   Direction               DIRC             All                    DOOR            Doors open
+   Doors open              DOOR             All                    DRLC            DerailCoeff 
+   Dynamic brake           BDYN             Diesel and Electric    ENGN            Engine
+   Electric train supply   TSUP             Diesel and Electric    FIRE            Fire mass
+   Engine                  ENGN             Diesel                 FPS             FPS
+   Engine brake            BLOC             All                    FUEL            Fuel levels
+   Fire mass               FIRE             Steam                  GEAR            Fixed gear
+   Fixed gear              GEAR             Steam                  GEAR            Gear
+   FPS                     FPS              All                    GRAD            Gradient
+   Fuel levels             FUEL             Steam                  GRAT            Grate limit
+   Gear                    GEAR             Diesel                 LEVL            Boiler water level
+   Gradient                GRAD             All                    MAST            Master key
+   Grate limit             GRAT             Steam                  PANT            Pantographs
+   Master key              MAST             Diesel and Electric    POWR            Power
+   Pantographs             PANT             Electric               PRES            Boiler pressure
+   Power                   POWR             Electric               REGL            Regulator
+   Regulator               REGL             Steam                  RETN            Retainers
+   Replay                  RPLY             All                    REVR            Reverser
+   Retainers               RETN             If set on all cars     RPLY            Replay
+   Reverser                REVR             Steam                  SAND            Sander
+   Sander                  SAND             All                    SPED            Speed
+   Speed                   SPED             All                    STEM            Steam usage
+   Steam usage             STEM             Steam                  THRO            Throttle
+   Throttle                THRO             Diesel and Electric    TIME            Time
+   Time                    TIME             All                    TRAC            Traction cut-off relay
+   Traction cut-off relay  TRAC             Diesel                 TSUP            Electric train supply
+   Train brake             BTRN             All                    WATR            Boiler water glass
+   Wheel                   WHEL             All                    WHEL            Wheel
+   ======================  ==============   ===================    ==============  ======================
+
+
+
+
 F6 Siding and Platform Names
 ----------------------------
 
@@ -543,7 +638,7 @@ consist) is maintained. The remaining consist will then not go into
 
 When working with cars in a switch yard, cars can be coupled, moved and 
 uncoupled without connecting them to the train's air braking system (see 
-the :ref:`F5 HUD for Braking <driving-hud-brake>`). Braking must then be 
+the :ref:`Alt+F5 HUD for Braking <driving-hud-brake>`). Braking must then be
 provided by the locomotive's independent brakes. A car or group of cars 
 can be uncoupled with air brakes active so that they can be recoupled 
 after a short time without recharging the entire brake line (``Bottling 
@@ -558,7 +653,7 @@ selected cars, and also bypasses the air system around the cars if they are
 not at the end of the consist so that the rest of the consist remains 
 connected to the main system. In real systems the bypass action is 
 performed by a separate valve in each car. In the 
-:ref:`F5 HUD for Braking <driving-hud-brake>` display, the text ``Bleed`` 
+:ref:`Alt+F5 HUD for Braking <driving-hud-brake>` display, the text ``Bleed``
 appears on the car's display line until the air pressure has fallen to zero.
 
 More information about manipulating the brakes during coupling and 
@@ -1743,7 +1838,7 @@ it can find and replays from that point onwards. You might use it to play
 back a 5 minute segment which starts an hour into an activity.
 
 A warning is given when the replay starts and a replay countdown appears 
-in the F5 Head Up Display.
+in the Alt+F5 Head Up Display.
 
 .. figure:: images/driving-replay-warning.png
     :align: left
@@ -1807,11 +1902,8 @@ The extended HUDs provide a rich amount of information for analysis,
 evaluation and to assist in troubleshooting.
 
 You can move through the sequence of HUD displays by repeatedly pressing 
-``<Shift+F5>``.
+``<Shift+Alt+F5>``.
 
-You can turn off any extended HUD, while continuing to show the basic HUD, 
-by pressing ``<Alt+F5>``. Pressing ``<Alt+F5>`` again returns the 
-display of the currently active extended HUD.
 
 In the extended HUDs the trainsets (locos and cars) are identified by the 
 trainset UiD as defined in the consist file, preceded by a train identification.

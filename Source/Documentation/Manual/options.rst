@@ -351,9 +351,13 @@ values correspond roughly to a zoom out effect. The default is 45 degrees.
 World object density
 --------------------
 
-This value can be set from 0 to 10; when 10 is selected, all objects
-defined in the route files are displayed. Lower values do not display some
-categories of objects.
+This value can be set from 0 to 99 and the default value is 49.
+When 49 is selected, all content defined in the route files and intended for the player to see is visible. 
+Lower values will hide some categories of objects which tends to increase frame rates.
+
+In legacy routes, all the content was assigned to categories 0-10.
+In more modern routes, content may be assigned to categories between 0 and 49.
+Content builders are advised to reserve values 50 to 99 for objects used in building the route.
 
 Window size
 -----------

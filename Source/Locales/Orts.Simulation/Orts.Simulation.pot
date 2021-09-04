@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-06-21 18:41:23-0700\n"
-"PO-Revision-Date: 2021-06-21 18:41:25-0700\n"
+"POT-Creation-Date: 2021-07-28 20:23:25+0200\n"
+"PO-Revision-Date: 2021-07-28 20:23:36+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -1268,96 +1268,96 @@ msgid ""
 "service {3}"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1759
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1758
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1762
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1761
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2199
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2198
 msgid ""
 "The steam usage has exceeded the capacity of the steam boiler. Steam boiler "
 "locked out."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6566
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6571
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6601
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6606
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7436
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7471
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8152
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9317
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8187
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9352
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8160
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8195
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8221
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8256
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8329
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9437
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8364
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9472
 msgid "No switch found"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9795
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9830
 msgid "You cannot enter manual mode when autopiloted"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9800
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9835
 msgid "You cannot use this command for pathless trains"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9812
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9847
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9821
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9856
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9841
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9876
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9928
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9963
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10200
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10235
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:15920
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:15955
 msgid "Car "
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:15994
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:15999
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16029
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16034
 msgid "Locomotive "
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2147
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2146
 #, csharp-format
 msgid "Carriage {0} temperature is too cold, the passengers are freezing."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2151
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2150
 #, csharp-format
 msgid "Car {0} temperature is too cold for the freight."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10683
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10718
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -1504,36 +1504,36 @@ msgstr ""
 msgid "Auxiliary power"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2466
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2467
 msgid "No water scoop on this loco"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2473
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2474
 msgid "Scoop is broken, can't refill"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2480
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2481
 msgid "Scoop is broken by junction track"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2490
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2491
 msgid "Scoop is not over trough, can't refill"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2813
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2814
 msgid "Sand supply has been exhausted"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2501
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2502
 msgid "Refill: Loco must be moving forward."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2510
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2511
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0} for water to enter tender."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2520
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2521
 msgid "Refill: Water supply now replenished."
 msgstr ""
 
@@ -1931,8 +1931,8 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6645
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6666
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6668
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1541
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1543
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1741
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1743
 msgid "Yes"
 msgstr ""
 
@@ -1957,8 +1957,8 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6645
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6666
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6668
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1541
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1543
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1741
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1743
 msgid "No"
 msgstr ""
 
@@ -2413,20 +2413,20 @@ msgstr ""
 msgid "Preparing for unload"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1332
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1532
 msgid ""
 "You were travelling too fast for this curve, and have snapped a brake hose on "
 "Car "
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1294
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1494
 #, csharp-format
 msgid ""
 "You are travelling too fast for this curve. Slow down, your freight car {0} "
 "may be damaged. The recommended speed for this curve is {1}"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1298
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1498
 #, csharp-format
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers in car "

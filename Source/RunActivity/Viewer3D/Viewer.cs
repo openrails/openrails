@@ -85,6 +85,8 @@ namespace Orts.Viewer3D
         public HelpWindow HelpWindow { get; private set; } // F1 window
         public TrackMonitorWindow TrackMonitorWindow { get; private set; } // F4 window
         public HUDWindow HUDWindow { get; private set; } // F5 hud
+        public TrainDrivingWindow TrainDrivingWindow { get; private set; } // F5 train driving window
+        public MultiPlayerWindow MultiPlayerWindow { get; private set; } // Shift+9 MultiPlayer data windowed
         public OSDLocations OSDLocations { get; private set; } // F6 platforms/sidings OSD
         public OSDCars OSDCars { get; private set; } // F7 cars OSD
         public SwitchWindow SwitchWindow { get; private set; } // F8 window
@@ -445,10 +447,12 @@ namespace Orts.Viewer3D
             HelpWindow = new HelpWindow(WindowManager);
             TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
             HUDWindow = new HUDWindow(WindowManager);
+            TrainDrivingWindow = new TrainDrivingWindow(WindowManager);
             OSDLocations = new OSDLocations(WindowManager);
             OSDCars = new OSDCars(WindowManager);
             SwitchWindow = new SwitchWindow(WindowManager);
             TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
+            MultiPlayerWindow = new MultiPlayerWindow(WindowManager);
             CarOperationsWindow = new CarOperationsWindow(WindowManager);
             NextStationWindow = new NextStationWindow(WindowManager);
             CompassWindow = new CompassWindow(WindowManager);
@@ -946,6 +950,7 @@ namespace Orts.Viewer3D
                 if (ComposeMessageWindow == null) ComposeMessageWindow = new ComposeMessage(WindowManager);
                 ComposeMessageWindow.InitMessage();
             }
+            if ((MPManager.IsMultiPlayer() || (Settings.MultiplayerClient && MPManager.Simulator.Confirmer != null)) && UserInput.IsPressed(UserCommand.DisplayMultiPlayerWindow)){ MultiPlayerWindow.Visible = !MultiPlayerWindow.Visible; }
             if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GamePauseMenu)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
             if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GamePauseMenu)) { if (Simulator.Confirmer != null) Simulator.Confirmer.Information(Viewer.Catalog.GetString("In MP, use Alt-F4 to quit directly")); }
 
@@ -969,6 +974,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.GameSave)) { GameStateRunActivity.Save(); }
             if (UserInput.IsPressed(UserCommand.DisplayHelpWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayTrainDrivingWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainDrivingWindow.TabAction(); else TrainDrivingWindow.Visible = !TrainDrivingWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayHUD)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) HUDWindow.TabAction(); else HUDWindow.Visible = !HUDWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayStationLabels))
             {
@@ -1022,7 +1028,6 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.DisplayCompassWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugTracks)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugSignalling)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
-            if (UserInput.IsPressed(UserCommand.DisplayBasicHUDToggle)) HUDWindow.ToggleBasicHUD();
             if (UserInput.IsPressed(UserCommand.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
 
 

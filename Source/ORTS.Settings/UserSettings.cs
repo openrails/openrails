@@ -220,7 +220,7 @@ namespace ORTS.Settings
         public int DistantMountainsViewingDistance { get; set; }
         [Default(45)] // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
         public int ViewingFOV { get; set; }
-        [Default(10)]
+        [Default(49)]
         public int WorldObjectDensity { get; set; }
         [Default("1024x768")]
         public string WindowSize { get; set; }
@@ -410,6 +410,8 @@ namespace ORTS.Settings
         public int[] WindowPosition_DriverAid { get; set; }
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_Help { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_MultiPlayer { get; set; }
         [Default(new[] { 0, 100 })]
         public int[] WindowPosition_NextStation { get; set; }
         [Default(new[] { 50, 50 })]
@@ -418,6 +420,8 @@ namespace ORTS.Settings
         public int[] WindowPosition_Switch { get; set; }
         [Default(new[] { 100, 0 })]
         public int[] WindowPosition_TrackMonitor { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_TrainDriving { get; set; }
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_TrainOperations { get; set; }
         [Default(new[] { 50, 50 })]
