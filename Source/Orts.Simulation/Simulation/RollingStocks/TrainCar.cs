@@ -1358,32 +1358,32 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // Calculate angle adjustments
-                var rearairhoseangleadjustmentreferenceRad = (float)Math.Asin(CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
-                var frontairhoseangleadjustmentreferenceRad = (float)Math.Asin(CarBehind.CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
+                var rearAirhoseAngleAdjustmentReferenceRad = (float)Math.Asin(CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
+                var frontAirhoseAngleAdjustmentReferenceRad = (float)Math.Asin(CarBehind.CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
 
                 RearAirHoseZAngleAdjustmentRad = (float)Math.Asin((CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
                 CarBehind.FrontAirHoseZAngleAdjustmentRad = (float)Math.Asin((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
 
                 // refererence adjustment angles to rest position
-                if (RearAirHoseZAngleAdjustmentRad >= rearairhoseangleadjustmentreferenceRad)
+                if (RearAirHoseZAngleAdjustmentRad >= rearAirhoseAngleAdjustmentReferenceRad)
                 {
-                    RearAirHoseZAngleAdjustmentRad -= rearairhoseangleadjustmentreferenceRad;
+                    RearAirHoseZAngleAdjustmentRad -= rearAirhoseAngleAdjustmentReferenceRad;
                 }
                 else
                 {
-                    RearAirHoseZAngleAdjustmentRad = (rearairhoseangleadjustmentreferenceRad - RearAirHoseZAngleAdjustmentRad);
+                    RearAirHoseZAngleAdjustmentRad = (rearAirhoseAngleAdjustmentReferenceRad - RearAirHoseZAngleAdjustmentRad);
                 }
 
                 // The Y axis angle adjustment should be the same as the z axis
                 RearAirHoseYAngleAdjustmentRad = RearAirHoseZAngleAdjustmentRad;
 
-                if (CarBehind.FrontAirHoseZAngleAdjustmentRad >= frontairhoseangleadjustmentreferenceRad)
+                if (CarBehind.FrontAirHoseZAngleAdjustmentRad >= frontAirhoseAngleAdjustmentReferenceRad)
                 {
-                    CarBehind.FrontAirHoseZAngleAdjustmentRad -= frontairhoseangleadjustmentreferenceRad;
+                    CarBehind.FrontAirHoseZAngleAdjustmentRad -= frontAirhoseAngleAdjustmentReferenceRad;
                 }
                 else
                 {
-                    CarBehind.FrontAirHoseZAngleAdjustmentRad = (frontairhoseangleadjustmentreferenceRad - CarBehind.FrontAirHoseZAngleAdjustmentRad);
+                    CarBehind.FrontAirHoseZAngleAdjustmentRad = (frontAirhoseAngleAdjustmentReferenceRad - CarBehind.FrontAirHoseZAngleAdjustmentRad);
                 }
 
                 // The Y axis angle adjustment should be the same as the z axis
