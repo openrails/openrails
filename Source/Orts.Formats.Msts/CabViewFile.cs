@@ -137,6 +137,7 @@ namespace Orts.Formats.Msts
         STEAMHEAT_PRESSURE,
         FIREBOX,
         RPM,
+        RPM_2,
         FIREHOLE,
         CUTOFF,
         VACUUM_RESERVOIR_PRESSURE,
