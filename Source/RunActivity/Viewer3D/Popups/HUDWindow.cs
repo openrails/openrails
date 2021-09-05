@@ -840,7 +840,6 @@ namespace Orts.Viewer3D.Popups
                     var car = train.Cars[i];
                     if (car is MSTSLocomotive && car != Viewer.PlayerLocomotive)
                     {
-
                         if ((car as MSTSLocomotive).EngineType == TrainCar.EngineTypes.Control)
                         {
                             // Control cars typically don't have reservoirs
@@ -848,6 +847,17 @@ namespace Orts.Viewer3D.Popups
                             Viewer.Catalog.GetString("Loco"),
                             car.CarID
                             ));
+                        }
+                        else if ((car as MSTSLocomotive).CompressorIsMechanical)
+                        {
+                            // Mechanical compressor run continuously so no point having on and off indication.
+                            TableAddLines(table, String.Format("{0}\t{1}\t{2}\t\t{3}",
+                            Viewer.Catalog.GetString("Loco"),
+                            car.CarID,
+
+                            Viewer.Catalog.GetString("Main reservoir"),
+                            FormatStrings.FormatPressure((car as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (car as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true)));
+                        
                         }
                         else
                         {
@@ -858,9 +868,7 @@ namespace Orts.Viewer3D.Popups
                             Viewer.Catalog.GetString("Main reservoir"),
                             FormatStrings.FormatPressure((car as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (car as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
                             Viewer.Catalog.GetString("Compressor"),
-                            (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
-
-
+                            (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));                            
                         }
                     }
                 }
