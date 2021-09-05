@@ -23,12 +23,16 @@ using ORTS.Scripting.Api;
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
 
-    public class EPBrakeSystem : AirTwinPipe
+    // Detailed description of the operation of a SME brake system can be found in:  "Air brakes, an up-to-date treatise on the Westinghouse air brake as designed for passenger and 
+    // freight service and for electric cars" by Ludy, Llewellyn V., 1875- [from old catalog]; American Technical Society
+    // https://archive.org/details/airbrakesuptodat00ludy/page/174/mode/2up?q=%22SME+brake%22
+    
+    public class SMEBrakeSystem : AirTwinPipe
     {
-        public EPBrakeSystem(TrainCar car)
+        public SMEBrakeSystem(TrainCar car)
             : base(car)
         {
-            DebugType = "EP";
+            DebugType = "SME";
         }
 
         public override void Update(float elapsedClockSeconds)
@@ -36,7 +40,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
 
             // Only allow brakes to operate if car is connected to an SME system
-            if (lead != null && lead.BrakeSystem is EPBrakeSystem && Car.BrakeSystem is EPBrakeSystem && (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.EPFullServ || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.EPOnly || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.EPApply))
+            if (lead != null && lead.BrakeSystem is SMEBrakeSystem && Car.BrakeSystem is SMEBrakeSystem && (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMEFullServ || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMEOnly || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMEReleaseStart || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMESelfLap))
             {
 
                 float demandedAutoCylPressurePSI = 0;
