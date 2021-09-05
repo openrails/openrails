@@ -1081,12 +1081,13 @@ namespace Orts.Viewer3D.Popups
 
                 if (train.TrainWindResistanceDependent) // Only show this information if wind resistance is selected
                 {
-                    TableAddLine(table, "Wind Speed: {0:N2} mph   Wind Direction: {1:N2} Deg   Train Direction: {2:N2} Deg    ResWind: {3:N2} Deg   ResSpeed {4:N2} mph", Me.ToMi(pS.TopH(train.PhysicsWindSpeedMpS)), train.PhysicsWindDirectionDeg, train.PhysicsTrainLocoDirectionDeg, train.ResultantWindComponentDeg, Me.ToMi(pS.TopH(train.WindResultantSpeedMpS)));
-
+                    TableAddLine(table, $"{Viewer.Catalog.GetString("Wind Speed:")} {Viewer.Catalog.GetStringFmt("{0:N2} mph", Me.ToMi(pS.TopH(train.PhysicsWindSpeedMpS)))}   " +
+                                        $"{Viewer.Catalog.GetString("Wind Direction:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.PhysicsWindDirectionDeg)}   " +
+                                        $"{Viewer.Catalog.GetString("Train Direction:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.PhysicsTrainLocoDirectionDeg)}   " +
+                                        $"{Viewer.Catalog.GetString("ResWind:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.ResultantWindComponentDeg)}   " +
+                                        $"{Viewer.Catalog.GetString("ResSpeed:")} {Viewer.Catalog.GetStringFmt("{0:N2} mph", Me.ToMi(pS.TopH(train.WindResultantSpeedMpS)))}");
                     TableAddLine(table);
                 }
-
-
             }
 
             TableSetCells(table, 0,
