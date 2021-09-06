@@ -142,6 +142,13 @@ namespace ORTS.Updater
 
             try
             {
+                // Update latest version details in registry
+                UpdateStoredLatestVersionNumber();
+            }
+            catch { }
+
+            try
+            {
                 // If we're not at the appropriate time for the next check (and we're not forced), we reconstruct the cached update/error and exit.
                 if (DateTime.Now < State.NextCheck && !Force)
                 {
@@ -190,6 +197,23 @@ namespace ORTS.Updater
                 Trace.WriteLine(error);
 
                 ResetCachedUpdate();
+            }
+        }
+
+        void UpdateStoredLatestVersionNumber()
+        {
+            if (Settings.Channel.Length > 0 && VersionInfo.Version.Length > 0)
+            {
+                var store = SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Version");
+                var oldVersion = (long)(store.GetUserValue(Settings.Channel, typeof(long)) ?? 0L);
+                var newVersion = VersionInfo.GetVersionLong(VersionInfo.ParseVersion(VersionInfo.Version));
+                if (newVersion > oldVersion)
+                {
+                    store.SetUserValue(Settings.Channel, newVersion);
+                    store.SetUserValue(Settings.Channel + "_Version", VersionInfo.Version);
+                    store.SetUserValue(Settings.Channel + "_Build", VersionInfo.Build);
+                    store.SetUserValue(Settings.Channel + "_Updated", DateTime.UtcNow);
+                }
             }
         }
 
@@ -550,7 +574,7 @@ namespace ORTS.Updater
             var commonName = subjectLines.FirstOrDefault(line => line.StartsWith("CN="));
             var country = subjectLines.FirstOrDefault(line => line.StartsWith("C="));
             return certificate.Verify() + "\n" + commonName + "\n" + country;
-         }
+        }
 
         static List<X509Certificate2> GetCertificatesFromFile(string filename)
         {

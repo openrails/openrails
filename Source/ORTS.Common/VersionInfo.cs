@@ -132,5 +132,15 @@ namespace ORTS.Common
             // parsedVersion.Build will be -1 if the version only has major and minor, but we need the build number >= 0 here
             return new Version(parsedVersion.Major, parsedVersion.Minor, Math.Max(0, parsedVersion.Build), commits);
         }
+
+        public static long GetVersionLong(Version version)
+        {
+            long number = 0;
+            if (version.Major > 0) number += (long)(version.Major & 0xFFFF) << 48;
+            if (version.Minor > 0) number += (long)(version.Minor & 0xFFFF) << 32;
+            if (version.Build > 0) number += (version.Build & 0xFFFF) << 16;
+            if (version.Revision > 0) number += (version.Revision & 0xFFFF);
+            return number;
+        }
     }
 }
