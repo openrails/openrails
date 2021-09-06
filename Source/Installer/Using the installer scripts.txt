@@ -2,51 +2,50 @@ Using the installer scripts.txt
 Last updated: 2014-05-02 by Chris Jakeman
 
 1. Download and install Inno Setup from http://www.jrsoftware.org/isdl.php
-Initial trials (Apr 2014) used v5.5.4
+Initial trials (Apr 2014) used v5.5.4. Open Rails v1.4 uses 6.1.2
 
-2. Download .NET Framework Redistributable 3.5 SP1 from
-   http://www.microsoft.com/en-gb/download/details.aspx?id=25150 
+2. Download Microsoft .NET Framework 4.7.2 web installer for Windows from
+    https://support.microsoft.com/en-us/topic/microsoft-net-framework-4-7-2-web-installer-for-windows-dda5cddc-b85e-545d-8d4a-d213349b7775
    and save in
-  <A>\Microsoft .NET Framework Redistributable 3.5 SP1\dotnetfx35.exe
-where <A> is any folder.
-
-3. Download .NET Framework Redistributable 3.5 SP1 Download Manager from
-   http://www.microsoft.com/en-us/download/details.aspx?id=21
-   and save in
-  <A>\Microsoft .NET Framework Redistributable 3.5 SP1 download manager\dotnetfx35setup.exe
-
-4. Download XNA Framework Redistributable 3.1 from 
-   http://www.microsoft.com/en-gb/download/details.aspx?id=15163 and save in
-  <A>\Microsoft XNA Framework Redistributable 3.1\xnafx31_redist.msi
-
-5. If you wish to update the version name from "OR_pre-v1.0", then edit the line
-     #define MyAppVersion "pre-v1.0" in the file
-   <A>\<B>\Installer\OpenRails shared\OpenRails.iss"
+  <A>\.NET Framework 4.7.2 web installer\ndp472-kb4054531-web.exe
+  where <A> is any folder.
   
-6. Repeat the following as often as required:
-  A. Download OR zip file from http://openrails.org/files/OR_X.zip
+2. Make a chain of folders inside folder <A>: <A>\Temp\Installer\
+   From Source\Installer, copy OpenRails.iss and Version.iss into <A>\Temp\Installer
+
+3. If you wish to update the version name from "1.4", then edit the line
+     #define MyAppVersion "1.4"
+	 in the file 
+   <A>\Temp\Installer\Version.iss
+  
+4. Repeat the following as often as required:
+  A. Download OR zip file from http://openrails.org/files/OpenRails-Testing.zip
 
   B. Unzip into folder 
     <A>\Open Rails\Program\
 
   C. Remove 
-    <A>\Open Rails\Program\Update.ini 
+    <A>\Open Rails\Program\Updater.ini 
   as James Ross advises because the updater cannot update an installed version yet.
 
-  D. Download source from http://openrails.org/files/OR_X_source.zip and extract 
+  D. Download source from http://openrails.org/files/OpenRails-Testing-Source.zip and extract 
   folder Documentation.
 
   E. Copy contents into folder
-    <A>\Open Rails\Documentation\
+    <A>\Open Rails\Program\Documentation\
 
-  F. Use Inno Setup > Build > Compile to compile the installer script
-    <A>\<B>\Installer\OpenRails from download\OpenRails from download.iss
-  where <B> is any folder.
-
-  G. The installer file will be found in <a>\<B>\Installer\OpenRails from download\Output\setup_OR_pre-v1.0_from_download.exe
+  F. Use Inno Setup > Project > Compile to compile the installer script
+    <A>\Temp\Installer\Installer.iss
   
-  H. Use Inno Setup > Build > Compile to compile the installer script
-    <A>\<B>\Installer\OpenRails from download\OpenRails from DVD.iss
-  where <B> is any folder.
+  G. The installer file will be found in <A>\Temp\Installer\Output\OpenRailsSetup.exe
+ 
+5. Test the installer by building Virtual Machines with a fresh copy of Windows.
+Open Rails v1.4 is compatible with Windows from 7 (SP1) to 10 (1809) and, hopefully, beyond.
 
-  I. The installer file will be found in <A>\<B>\Installer\OpenRails from DVD\Output\setup_OR_pre-v1.0_from_DVD.exe
+Arrange for the VM to have Internet access and a shared folder.
+Copy OpenRailsSetup.exe to the shared folder.
+Copy a VM with a fresh copy of Windows to make a sacrificial trial platform.
+VirtualBox has Remove and Clone options on the right mouse button.
+VMWare finds a copy made using File Explorer and asks if that was a Copy or Move operation.
+From inside the VM, copy the OpenRailsSetup.exe file from the shared folder to a new folder C:\_tmp\
+That avoids a ShellExecuteEx error code 3 "The system cannot find the path specified."

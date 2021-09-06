@@ -26,7 +26,7 @@ ECHO [UTS] indicates which build modes need the tool: unstable, testing, and sta
 SET CheckToolInPath.Missing=0
 SET CheckToolInPath.Check=0
 :check-tools
-CALL :list-or-check-tool "svn.exe" "[UTS] Subversion tool"
+CALL :list-or-check-tool "git.exe" "[UTS] Git version control tool"
 CALL :list-or-check-tool "nuget.exe" "[UTS] .NET package manager tool"
 CALL :list-or-check-tool "MSBuild.exe" "[UTS] Microsoft Visual Studio build tool"
 CALL :list-or-check-tool "lazbuild.exe" "[UTS] Lazarus compiler"
@@ -70,19 +70,10 @@ IF NOT EXIST "Source\ORTS.sln" (
 )
 
 IF "%Mode%" == "Stable" (
-	CALL :create "Microsoft .NET Framework Redistributable 3.5 SP1"
-	CALL :create "Microsoft .NET Framework Redistributable 3.5 SP1 download manager"
-	CALL :create "Microsoft XNA Framework Redistributable 3.1"
-	IF NOT EXIST "Microsoft .NET Framework Redistributable 3.5 SP1\dotnetfx35.exe" (
-		>&2 ECHO ERROR: Missing required file for "%Mode%" build: "Microsoft .NET Framework Redistributable 3.5 SP1\dotnetfx35.exe".
-		EXIT /B 1
-	)
-	IF NOT EXIST "Microsoft .NET Framework Redistributable 3.5 SP1 download manager\dotnetfx35setup.exe" (
-		>&2 ECHO ERROR: Missing required file for "%Mode%" build: "Microsoft .NET Framework Redistributable 3.5 SP1 download manager\dotnetfx35setup.exe".
-		EXIT /B 1
-	)
-	IF NOT EXIST "Microsoft XNA Framework Redistributable 3.1\xnafx31_redist.msi" (
-		>&2 ECHO ERROR: Missing required file for "%Mode%" build: "Microsoft XNA Framework Redistributable 3.1\xnafx31_redist.msi".
+	CALL :create ".NET Framework 4.7.2 web installer"
+	IF NOT EXIST ".NET Framework 4.7.2 web installer\ndp472-kb4054531-web.exe" (
+		>&2 ECHO ERROR: Missing required file for "%Mode%" build: ".NET Framework 4.7.2 web installer\ndp472-kb4054531-web.exe".
+		>&2 ECHO "Download from http://go.microsoft.com/fwlink/?LinkId=863262"
 		EXIT /B 1
 	)
 )
@@ -118,13 +109,12 @@ IF "%ERRORLEVEL%" == "9009" GOTO :error
 
 CALL :copy "Program\RunActivity.exe" "Program\RunActivityLAA.exe" || GOTO :error
 editbin /NOLOGO /LARGEADDRESSAWARE "Program\RunActivityLAA.exe" || GOTO :error
-copy "Program\RunActivity.exe.config" "Program\RunActivityLAA.exe.config" || GOTO :error
+CALL :copy "Program\RunActivity.exe.config" "Program\RunActivityLAA.exe.config" || GOTO :error
 ECHO Created large address aware version of RunActivity.exe.
 
-REM Copy the Web content, empty the destination folder first
-IF EXIST "Program\Content\Web" RMDIR "Program\Content\Web" /S /Q
-IF NOT EXIST "Program\Content\Web" MKDIR "Program\Content\Web"
-XCOPY "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web" /S /Y || GOTO :error
+REM Copy the web content
+ROBOCOPY /MIR /NJH /NJS "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web"
+IF %ERRORLEVEL% GEQ 8 GOTO :error
 
 REM Copy version number from OpenRails.exe into all other 1st party files
 FOR %%F IN ("Program\*.exe", "Program\Orts.*.dll", "Program\Contrib.*.dll", "Program\Tests.dll") DO (
@@ -153,7 +143,9 @@ IF NOT "%Mode%" == "Unstable" (
 	PUSHD "Source\Documentation\Manual" && CALL make.bat latexpdf && POPD || GOTO :error
 
 	REM Copy the documentation.
-	FOR /R "Source\Documentation" %%F IN (*.pdf *.txt) DO CALL :copy "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
+	FOR /R "Source\Documentation" %%F IN (*.pdf) DO CALL :copy "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
+	CALL :create "Program\Documentation\es"
+	CALL :copy "Source\Documentation\Manual\es\Manual.pdf" "Program\Documentation\es\Manual.pdf" || GOTO :error
 	ROBOCOPY /MIR /NJH /NJS "Source\Documentation\SampleFiles" "Program\Documentation\SampleFiles"
 	IF %ERRORLEVEL% GEQ 8 GOTO :error
 
@@ -166,14 +158,11 @@ IF "%Mode%" == "Stable" (
 	IF %ERRORLEVEL% GEQ 8 GOTO :error
 	ROBOCOPY /MIR /NJH /NJS "Program\Documentation" "Open Rails\Documentation"
 	IF %ERRORLEVEL% GEQ 8 GOTO :error
-	>"Source\Installer\OpenRails shared\Version.iss" ECHO #define MyAppVersion "%Version%" || GOTO :error
-	iscc "Source\Installer\OpenRails from download\OpenRails from download.iss" || GOTO :error
-	iscc "Source\Installer\OpenRails from DVD\OpenRails from DVD.iss" || GOTO :error
-	CALL :move "Source\Installer\OpenRails from download\Output\OpenRailsTestingSetup.exe" "OpenRails-%Mode%-Setup.exe" || GOTO :error
-	CALL :move "Source\Installer\OpenRails from DVD\Output\OpenRailsTestingDVDSetup.exe" "OpenRails-%Mode%-DVDSetup.exe" || GOTO :error
+	>"Source\Installer\Version.iss" ECHO #define MyAppVersion "%Version%" || GOTO :error
+	iscc "Source\Installer\Installer.iss" || GOTO :error
+	CALL :move "Source\Installer\Output\OpenRailsSetup.exe" "OpenRails-%Mode%-Setup.exe" || GOTO :error
 	REM *** Special build step: signs binaries ***
 	IF NOT "%JENKINS_TOOLS%" == "" CALL "%JENKINS_TOOLS%\sign.cmd" "OpenRails-%Mode%-Setup.exe" || GOTO :error
-	IF NOT "%JENKINS_TOOLS%" == "" CALL "%JENKINS_TOOLS%\sign.cmd" "OpenRails-%Mode%-DVDSetup.exe" || GOTO :error
 )
 
 REM Create binary and source zips.
