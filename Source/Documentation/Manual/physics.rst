@@ -2006,7 +2006,7 @@ can be left out are those parameters associated with power, motive force, diesel
 as the compressor and main air reservoir, and some of the diesel effects (as it has no diesel engine).
 
 Some of the cab monitoring gauges provide visibility of what is happening on the powered car. To do this OR searches for 
-the "closest" powered car near the Control car and uses its infromation.
+the "closest" powered car near the Control car and uses its information.
 
 
 Engines -- Multiple Units in Same Consist or AI Engines

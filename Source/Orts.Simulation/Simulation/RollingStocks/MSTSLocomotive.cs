@@ -1643,7 +1643,8 @@ namespace Orts.Simulation.RollingStocks
                     MaxMainResPressurePSI = ControlActiveLocomotive.MaxMainResPressurePSI;
                     MainResPressurePSI = MaxMainResPressurePSI;
                     ControlActiveLocomotive.MainResPressurePSI = MainResPressurePSI;
-                    controlTrailerBrakeSystemSet = true;
+                    controlTrailerBrakeSystemSet = true; // Ensure this loop is only processes the first time update routine run
+                    MaximumMainReservoirPipePressurePSI = ControlActiveLocomotive.MaximumMainReservoirPipePressurePSI;
                     CompressorRestartPressurePSI = ControlActiveLocomotive.CompressorRestartPressurePSI;
                     MainResChargingRatePSIpS = ControlActiveLocomotive.MainResChargingRatePSIpS;
                     BrakePipeChargingRatePSIorInHgpS = ControlActiveLocomotive.BrakePipeChargingRatePSIorInHgpS;
