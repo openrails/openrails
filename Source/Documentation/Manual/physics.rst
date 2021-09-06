@@ -1224,12 +1224,33 @@ options:
   controls, such as blower, injector, fuel rate, are available to the
   player, and can be adjusted accordingly.
 
+Use the keys ``<Crtl+F>`` to switch between Manual and Automatic firing
+modes.
+
 A full listing of the keyboard controls for use when in manual mode is
 provided on the *Keyboard* tab of the Open Rails :ref:`Options <options>`
 panel.
 
-Use the keys ``<Crtl+F>`` to switch between Manual and Automatic firing
-modes.
+Boiler Management
+'''''''''''''''''
+In Open Rails, the safe operating range for the boiler water level is 75-90%
+and this is maintained automatically by the AI Fireman.
+
+In manual mode, you must keep the boiler water level below 90%. 
+A level of 91% or more pulls water into the steam pipes and,
+being incompressible, will damage the cylinders.
+Open Rails does not model the damage but issues confirmation messages:
+"Boiler overfull and priming" and "Boiler no longer priming" on rising to 91% and falling below 90%
+
+In manual mode, you must keep the boiler water level above 70%.
+A level below 70% uncovers the firebox crown. In real life, this is a catastrophic failure
+which melts the fusible plugs in the crown and that releases steam into the firebox 
+and from there onto the footplate.
+
+Open Rails does not model the steam but drops the boiler pressure and the fire
+and issues a confirmation message: 
+"Water level dropped too far. Plug has fused and loco has failed."
+Basically the loco is coasting thereafter and nothing can be done to recover.
 
 Hot or Cold Start
 .................
