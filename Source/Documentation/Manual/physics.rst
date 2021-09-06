@@ -336,7 +336,7 @@ Engine -- Classes of Motive Power
 =================================
 
 Open Rails software provides for different classes of engines: diesel,
-electric, steam and default. If needed, additional classes can be created
+electric, steam, control and default. If needed, additional classes can be created
 with unique performance characteristics.
 
 Diesel Locomotives
@@ -1990,6 +1990,23 @@ When the auxiliary tender is coupled to the locomotive the *tender* line in the 
 
 To allow the auxiliary tender to be filled at a water fuelling point, a water freight animation will be need to be added to the WAG file as well. (Refer to *Freight Animations* for more details).
 
+Unpowered Control Car
+---------------------
+
+This module simulates the control cab of a DMU set of cars. The cab typically would be located in an unpowered 
+trailer car which is attached to a powered car for the provision of its motive force to drive the train forward.
+
+Apart from producing motive force the car (and cabin controls) should behave exactly the same as a locomotive.
+
+To set a control car up it is necessary to produce an ENG file which has the ``Type ( Control )`` parameter set in 
+the engine section of the ENG file.
+
+The Control car uses most of the same parameters for its configuration as a powered locomotive. The major items that 
+can be left out are those parameters associated with power, motive force, diesel engines, some braking items, such 
+as the compressor and main air reservoir, and some of the diesel effects (as it has no diesel engine).
+
+Some of the cab monitoring gauges provide visibility of what is happening on the powered car. To do this OR searches for 
+the "closest" powered car near the Control car and uses its information.
 
 
 Engines -- Multiple Units in Same Consist or AI Engines
@@ -3218,6 +3235,21 @@ the ``ORTSEmergencyBrakingDisablesWSP (1)`` parameter.
 
 When WSP is active the brake cylinder pressure reading will go yellow in the extended HuD on the BRAKE INFORMATION screen.
 
+SME (sometimes also called SEM) Brake System
+--------------------------------------------
+
+SME braking is a straight air-brake system having an automatic emergency feature by means of which the simplicity of the straight air brake 
+is retained for service operation, but it also has the additional protection afforded by the automatic application of the brake in 
+case of a break-in-two or the bursting of a hose. SME braking is typically used on short DMU rail sets. SME braking is a form of electro-pneumatic (EP)
+brake system, however EP and SME equipped cars cannot be mixed together in the same consist.
+
+To activate SME braking, set ``BrakeSystemType ( SME )``. 
+
+The following brake tokens can be used with it:
+``TrainBrakesControllerSMEOnlyStart``
+``TrainBrakesControllerSMEFullServiceStart``
+``TrainBrakesControllerSMEHoldStart``
+``TrainBrakesControllerSMEReleaseStart``
 
 Dynamically Evolving Tractive Force
 ===================================

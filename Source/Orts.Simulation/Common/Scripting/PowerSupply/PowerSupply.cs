@@ -153,6 +153,7 @@ namespace ORTS.Scripting.Api
         [GetParticularString("PowerSupply", "DieselElectric")] DieselElectric,
         [GetParticularString("PowerSupply", "Electric")] Electric,
         [GetParticularString("PowerSupply", "DualMode")] DualMode,
+        [GetParticularString("PowerSupply", "ControlCar")] ControlCar,
     }
 
     public enum PowerSupplyState

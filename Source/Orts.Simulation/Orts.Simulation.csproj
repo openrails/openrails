@@ -65,6 +65,7 @@
     <Compile Include="Common\Scripting\BrakeController.cs" />
     <Compile Include="Common\Scripting\Commands.cs" />
     <Compile Include="Common\Scripting\Common.cs" />
+    <Compile Include="Common\Scripting\PowerSupply\ControlCarPowerSupply.cs" />
     <Compile Include="Common\Scripting\PowerSupply\DualModePowerSupply.cs" />
     <Compile Include="Common\Scripting\PowerSupply\LocomotivePowerSupply.cs" />
     <Compile Include="Common\Scripting\PowerSupply\PassengerCarPowerSupply.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="Simulation\LevelCrossing.cs" />
     <Compile Include="Simulation\Physics\Train.cs" />
     <Compile Include="Simulation\RollingStocks\LocomotiveAttributes.cs" />
+    <Compile Include="Simulation\RollingStocks\MSTSControlTrailerCar.cs" />
     <Compile Include="Simulation\RollingStocks\MSTSDieselLocomotive.cs" />
     <Compile Include="Simulation\RollingStocks\MSTSElectricLocomotive.cs" />
     <Compile Include="Simulation\RollingStocks\MSTSLocomotive.cs" />
@@ -111,6 +113,7 @@
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\ManualBraking.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\MSTSBrakeSystem.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\SingleTransferPipe.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\SMEBrakeSystem.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\StraightVacuumSinglePipe.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\VacuumSinglePipe.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\BrakeController.cs" />
@@ -119,6 +122,7 @@
     <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\MSTSBrakeController.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\MSTSNotchController.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\FreightAnimations.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ControlCarPowerSupply.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ElectricTrainSupplySwitch.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\BatterySwitch.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\DualModePowerSupply.cs" />

@@ -196,7 +196,6 @@ namespace Orts.Simulation.RollingStocks
         public float CarBodyLengthM;
         public float CarCouplerFaceLengthM;
         public float DerailmentCoefficient;
-        public float CarAirHoseLengthM;
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
@@ -251,8 +250,13 @@ namespace Orts.Simulation.RollingStocks
 
         public float FrontAirHoseHeightAdjustmentM;
         public float RearAirHoseHeightAdjustmentM;
-        public float FrontAirHoseAngleAdjustmentRad;
-        public float RearAirHoseAngleAdjustmentRad;
+        public float FrontAirHoseYAngleAdjustmentRad;
+        public float FrontAirHoseZAngleAdjustmentRad;
+        public float RearAirHoseYAngleAdjustmentRad;
+        public float RearAirHoseZAngleAdjustmentRad;
+
+        public float CarAirHoseLengthM;
+        public float CarAirHoseHorizontalLengthM;
 
         // Used to calculate Carriage Steam Heat Loss
         public const float BogieHeightM = 1.06f; // Height reduced by 1.06m to allow for bogies, etc
@@ -666,6 +670,7 @@ namespace Orts.Simulation.RollingStocks
             Steam,
             Diesel,
             Electric,
+            Control,
         }
         public EngineTypes EngineType;
 
@@ -1321,21 +1326,26 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-                // Calculate airhose angles and height
-                var rearairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow(CouplerDistanceThisCarM, 2));
-                var frontairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow(CouplerDistanceBehindCarM, 2));
+                // Calculate airhose angles and height adjustment values for the air hose.  Firstly the "rest point" is calculated, and then the real time point. 
+                // The height and angle variation are then calculated against "at rest" reference point. The air hose angle is used to rotate the hose in two directions, ie the Y and Z axis. 
 
-                RearAirHoseHeightAdjustmentM =  (float)Math.Sqrt( (float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CouplerDistanceThisCarM + CouplerSlackM / 2.0f), 2));
-                CarBehind.FrontAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CouplerDistanceBehindCarM + CouplerSlackM / 2.0f), 2));
+                // Calculate height adjustment.
+                var rearairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow(CarAirHoseHorizontalLengthM, 2));
+                var frontairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow(CarBehind.CarAirHoseHorizontalLengthM, 2));
+
+                // actual airhose height
+                RearAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
+                CarBehind.FrontAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
 
                 // refererence adjustment heights to rest position
+                // If higher then rest position, then +ve adjustment
                 if (RearAirHoseHeightAdjustmentM >= rearairhoseheightadjustmentreferenceM)
                 {
                     RearAirHoseHeightAdjustmentM -= rearairhoseheightadjustmentreferenceM;
                 }
-                else
+                else // if lower then the rest position, then -ve adjustment
                 {
-                    RearAirHoseHeightAdjustmentM = rearairhoseheightadjustmentreferenceM - RearAirHoseHeightAdjustmentM;
+                    RearAirHoseHeightAdjustmentM = (rearairhoseheightadjustmentreferenceM - RearAirHoseHeightAdjustmentM);
                 }
 
                 if (CarBehind.FrontAirHoseHeightAdjustmentM >= frontairhoseheightadjustmentreferenceM)
@@ -1347,30 +1357,37 @@ namespace Orts.Simulation.RollingStocks
                     CarBehind.FrontAirHoseHeightAdjustmentM = frontairhoseheightadjustmentreferenceM - CarBehind.FrontAirHoseHeightAdjustmentM;
                 }
 
-                var rearairhoseangleadjustmentreferenceRad = (float)Math.Cos(CouplerDistanceThisCarM / CarAirHoseLengthM);
-                var frontairhoseangleadjustmentreferenceRad = (float)Math.Cos(CouplerDistanceBehindCarM / CarAirHoseLengthM);
+                // Calculate angle adjustments
+                var rearAirhoseAngleAdjustmentReferenceRad = (float)Math.Asin(CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
+                var frontAirhoseAngleAdjustmentReferenceRad = (float)Math.Asin(CarBehind.CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
 
-                RearAirHoseAngleAdjustmentRad = (float)Math.Cos((CouplerDistanceThisCarM + CouplerSlackM / 2.0f)/ CarAirHoseLengthM);
-                CarBehind.FrontAirHoseAngleAdjustmentRad = (float)Math.Cos((CouplerDistanceBehindCarM + CouplerSlackM / 2.0f) / CarAirHoseLengthM);
+                RearAirHoseZAngleAdjustmentRad = (float)Math.Asin((CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
+                CarBehind.FrontAirHoseZAngleAdjustmentRad = (float)Math.Asin((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
 
                 // refererence adjustment angles to rest position
-                if (RearAirHoseAngleAdjustmentRad >= rearairhoseangleadjustmentreferenceRad)
+                if (RearAirHoseZAngleAdjustmentRad >= rearAirhoseAngleAdjustmentReferenceRad)
                 {
-                    RearAirHoseAngleAdjustmentRad -= rearairhoseangleadjustmentreferenceRad;
+                    RearAirHoseZAngleAdjustmentRad -= rearAirhoseAngleAdjustmentReferenceRad;
                 }
                 else
                 {
-                    RearAirHoseAngleAdjustmentRad = rearairhoseangleadjustmentreferenceRad - RearAirHoseAngleAdjustmentRad;
+                    RearAirHoseZAngleAdjustmentRad = (rearAirhoseAngleAdjustmentReferenceRad - RearAirHoseZAngleAdjustmentRad);
                 }
 
-                if (CarBehind.FrontAirHoseAngleAdjustmentRad >= frontairhoseangleadjustmentreferenceRad)
+                // The Y axis angle adjustment should be the same as the z axis
+                RearAirHoseYAngleAdjustmentRad = RearAirHoseZAngleAdjustmentRad;
+
+                if (CarBehind.FrontAirHoseZAngleAdjustmentRad >= frontAirhoseAngleAdjustmentReferenceRad)
                 {
-                    CarBehind.FrontAirHoseAngleAdjustmentRad -= frontairhoseangleadjustmentreferenceRad;
+                    CarBehind.FrontAirHoseZAngleAdjustmentRad -= frontAirhoseAngleAdjustmentReferenceRad;
                 }
                 else
                 {
-                    CarBehind.FrontAirHoseAngleAdjustmentRad = frontairhoseangleadjustmentreferenceRad - CarBehind.FrontAirHoseAngleAdjustmentRad;
+                    CarBehind.FrontAirHoseZAngleAdjustmentRad = (frontAirhoseAngleAdjustmentReferenceRad - CarBehind.FrontAirHoseZAngleAdjustmentRad);
                 }
+
+                // The Y axis angle adjustment should be the same as the z axis
+                CarBehind.FrontAirHoseYAngleAdjustmentRad = CarBehind.FrontAirHoseZAngleAdjustmentRad;
 
             }
 
@@ -1384,14 +1401,13 @@ namespace Orts.Simulation.RollingStocks
             if (IsPlayerTrain)
             {
                 WagonCouplerAngleDerailRad = Math.Abs(WagonRearCouplerAngleRad);
-                var numWheels = WagonNumAxles * 2;
-
-                // Trace.TraceInformation("Wagon Values - CarID {0} Axles {1} Bogies {2} Wheels {3}", CarID, WagonNumAxles, WagonNumBogies, numWheels);
+                var numAxles = LocoNumDrvAxles + WagonNumAxles;
+                var numWheels = numAxles * 2;
 
                 if (CurrentCurveRadius != 0)
                 {
                     var A = MassKG * GravitationalAccelerationMpS2 / numWheels;
-                    var B1 = (MassKG / WagonNumAxles) * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                    var B1 = (MassKG / numAxles) * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
                     var B2 = GravitationalAccelerationMpS2 * (float)Math.Cos(SuperElevationAngleRad);
                     var B3 = CentreOfGravityM.Y / TrackGaugeM;
 
@@ -1403,7 +1419,7 @@ namespace Orts.Simulation.RollingStocks
                     if (CarAhead != null)
                     {
                         var AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
-                        var BB1 = MassKG / WagonNumAxles;
+                        var BB1 = MassKG / numAxles;
                         var BB2 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
                         var BB3 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
 
@@ -1916,7 +1932,13 @@ namespace Orts.Simulation.RollingStocks
         public virtual string GetStatus() { return null; }
         public virtual string GetDebugStatus()
         {
-            return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t",
+            string locomotivetypetext = "";
+            if (EngineType == EngineTypes.Control)
+            {
+                locomotivetypetext = "Unpowered Control Trailer Car";
+            }
+            
+            return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t{8}\t",
                 CarID,
                 Flipped ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
@@ -1925,7 +1947,10 @@ namespace Orts.Simulation.RollingStocks
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
                 FormatStrings.FormatPower((MotiveForceN) * SpeedMpS, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""));
+                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
+                Simulator.Catalog.GetString(locomotivetypetext)
+
+                );
         }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }

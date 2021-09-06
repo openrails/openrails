@@ -53,6 +53,7 @@ namespace ORTS.Common
             Debug.Assert(new[] {
                 typeof(bool),
                 typeof(int),
+                typeof(long),
                 typeof(DateTime),
                 typeof(TimeSpan),
                 typeof(string),
@@ -87,6 +88,13 @@ namespace ORTS.Common
         /// <param name="name">name of the setting</param>
         /// <param name="value">value of the setting</param>
         public abstract void SetUserValue(string name, int value);
+
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
+        public abstract void SetUserValue(string name, long value);
 
         /// <summary>
         /// Set a value of a user setting
@@ -229,6 +237,16 @@ namespace ORTS.Common
         public override void SetUserValue(string name, int value)
         {
             Key.SetValue(name, value, RegistryValueKind.DWord);
+        }
+
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
+        public override void SetUserValue(string name, long value)
+        {
+            Key.SetValue(name, value, RegistryValueKind.QWord);
         }
 
         /// <summary>
@@ -390,6 +408,9 @@ namespace ORTS.Common
                     case "int":
                         userValue = int.Parse(Uri.UnescapeDataString(value[1]), CultureInfo.InvariantCulture);
                         break;
+                    case "long":
+                        userValue = long.Parse(Uri.UnescapeDataString(value[1]), CultureInfo.InvariantCulture);
+                        break;
                     case "DateTime":
                         userValue = DateTime.FromBinary(long.Parse(Uri.UnescapeDataString(value[1]), CultureInfo.InvariantCulture));
                         break;
@@ -438,6 +459,16 @@ namespace ORTS.Common
         public override void SetUserValue(string name, int value)
         {
             NativeMethods.WritePrivateProfileString(Section, name, "int:" + Uri.EscapeDataString(value.ToString(CultureInfo.InvariantCulture)), FilePath);
+        }
+
+        /// <summary>
+        /// Set a value of a user setting
+        /// </summary>
+        /// <param name="name">name of the setting</param>
+        /// <param name="value">value of the setting</param>
+        public override void SetUserValue(string name, long value)
+        {
+            NativeMethods.WritePrivateProfileString(Section, name, "long:" + Uri.EscapeDataString(value.ToString(CultureInfo.InvariantCulture)), FilePath);
         }
 
         /// <summary>

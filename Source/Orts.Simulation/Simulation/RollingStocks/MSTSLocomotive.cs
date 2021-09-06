@@ -133,6 +133,7 @@ namespace Orts.Simulation.RollingStocks
         public float MainResPressurePSI = 130;
         public float MaximumMainReservoirPipePressurePSI;
         public bool CompressorIsOn;
+        public bool CompressorIsMechanical = false;
         public float AverageForceN;
         public float PowerOnDelayS;
         public bool CabLightOn;
@@ -328,8 +329,8 @@ namespace Orts.Simulation.RollingStocks
         // ENG file data
         public string CabSoundFileName;
         public string CVFFileName;
-        public float MaxMainResPressurePSI = 130;
-        public float MainResVolumeM3 = 0.3f;
+        public float MaxMainResPressurePSI;
+        public float MainResVolumeM3;
         public float TrainBrakePipeLeakPSIorInHgpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
@@ -367,6 +368,8 @@ namespace Orts.Simulation.RollingStocks
         public CombinedControl CombinedControlType;
         public float CombinedControlSplitPosition;
         public bool HasSmoothStruc;
+
+        bool controlTrailerBrakeSystemSet = false;
 
         public float MaxContinuousForceN;
         public float SpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs
@@ -848,6 +851,12 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(airbrakemaxmainrespipepressure": MaximumMainReservoirPipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakesaircompressorpowerrating": CompressorChargingRateM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
+                case "engine(airbrakesiscompressorelectricormechanical": var compressorMechanical = stf.ReadIntBlock(null);
+                    if (compressorMechanical == 1)
+                    {
+                        CompressorIsMechanical = true;
+                    }
+                    break;
                 case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(vacuumbrakesvacuumpumpresistance": VacuumPumpResistanceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
 
@@ -1027,6 +1036,7 @@ namespace Orts.Simulation.RollingStocks
 
             WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
 
+            CompressorIsMechanical = locoCopy.CompressorIsMechanical;
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
             TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
             MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
@@ -1320,6 +1330,19 @@ namespace Orts.Simulation.RollingStocks
             const float Aconst = 2;
             WaterScoopMinSpeedMpS = Me.FromFt((float)Math.Sqrt(Aconst * GravitationalAccelerationFtpSpS * Me.ToFt(WaterScoopFillElevationM)));
 
+
+            if (MaxMainResPressurePSI == 0)
+            {
+                MaxMainResPressurePSI = 130;
+            }
+
+            MainResPressurePSI = MaxMainResPressurePSI;
+
+            if (MainResVolumeM3 == 0)
+            {
+                MainResVolumeM3 = 0.3f;
+            }
+
             // Initialise Brake Pipe Charging Rate
             if (BrakePipeChargingRatePSIorInHgpS == 0) // Check to see if BrakePipeChargingRate has been set in the ENG file.
             {
@@ -1603,6 +1626,33 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            // A control car typically doesn't have its own compressor and relies on the attached power car. However OR uses the lead locomotive as the reference car for compressor calculations.
+            // Hence whilst users are encouraged to leave these parameters out of the ENG file, they need to be setup for OR to work correctly.
+            // Some parameters need to be split across the unpowered and powered car for correct timing and volume calculations.
+            // This setup loop is only processed the first time that update is run.
+            if (EngineType == EngineTypes.Control && !controlTrailerBrakeSystemSet)
+            {
+                FindControlActiveLocomotive();
+
+                if (ControlActiveLocomotive != null)
+                {
+                    // Split reservoir volume across the power car and the active locomotive
+                    MainResVolumeM3 = ControlActiveLocomotive.MainResVolumeM3 / 2;
+                    ControlActiveLocomotive.MainResVolumeM3 = MainResVolumeM3;
+
+                    MaxMainResPressurePSI = ControlActiveLocomotive.MaxMainResPressurePSI;
+                    MainResPressurePSI = MaxMainResPressurePSI;
+                    ControlActiveLocomotive.MainResPressurePSI = MainResPressurePSI;
+                    controlTrailerBrakeSystemSet = true; // Ensure this loop is only processes the first time update routine run
+                    MaximumMainReservoirPipePressurePSI = ControlActiveLocomotive.MaximumMainReservoirPipePressurePSI;
+                    CompressorRestartPressurePSI = ControlActiveLocomotive.CompressorRestartPressurePSI;
+                    MainResChargingRatePSIpS = ControlActiveLocomotive.MainResChargingRatePSIpS;
+                    BrakePipeChargingRatePSIorInHgpS = ControlActiveLocomotive.BrakePipeChargingRatePSIorInHgpS;
+                    TrainBrakePipeLeakPSIorInHgpS = ControlActiveLocomotive.TrainBrakePipeLeakPSIorInHgpS;
+                }
+            }
+
+
             TrainControlSystem.Update(elapsedClockSeconds);
 
             LocomotivePowerSupply?.Update(elapsedClockSeconds);
@@ -1721,8 +1771,8 @@ namespace Orts.Simulation.RollingStocks
                     }
 
 
-
-                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics) // SimpleControlPhysics will "disable" advanced adhesion if set.
+                    // SimpleControlPhysics and if locomotive is a control car advanced adhesion will be "disabled".
+                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control) 
                     {
                         AdvancedAdhesion(elapsedClockSeconds); // Use advanced adhesion model
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
@@ -1768,23 +1818,23 @@ namespace Orts.Simulation.RollingStocks
                  }
 
             // If the train is vacuumed braked then no need to update the compressor, but udate the ejector instead
-              if (BrakeSystem is VacuumSinglePipe)
-                 {
-                    
-                    if (VacuumBrakeEQFitted) // Only update exhauster/main reservoir on locomotives fitted ith an EQ reservoir
-                    {
+            if (BrakeSystem is VacuumSinglePipe)
+            {
+
+                if (VacuumBrakeEQFitted) // Only update exhauster/main reservoir on locomotives fitted ith an EQ reservoir
+                {
                     UpdateVacuumExhauster(elapsedClockSeconds);
-                    }
-                    else
-                    {
-                        UpdateSteamEjector(elapsedClockSeconds);
-                    }
-                
-                 }
-                 else
-                 {
-                   UpdateCompressor(elapsedClockSeconds);
-                 }
+                }
+                else
+                {
+                    UpdateSteamEjector(elapsedClockSeconds);
+                }
+
+            }
+            else // if (EngineType != EngineTypes.Control) // TODO - Control trailers would not have compressors, but if they do then need to be linked to power supply requirements
+            {
+                UpdateCompressor(elapsedClockSeconds);
+            }
 
             UpdateHornAndBell(elapsedClockSeconds);
 
@@ -2259,13 +2309,48 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateCompressor(float elapsedClockSeconds)
         {
-            if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
-                SignalEvent(Event.CompressorOn);
-            else if ((MainResPressurePSI > MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
-                SignalEvent(Event.CompressorOff);
 
-            if (CompressorIsOn)
-                MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
+            if (CompressorIsMechanical && (EngineType == EngineTypes.Control || EngineType == EngineTypes.Diesel))
+            {                
+                // For a mechanical compressor (typically fitted to a diesel locomotive) the charging rate will be related to the RpM of the diesel engine, and therefore 
+                // derated by an amount equivalent to the diesel RpM.
+                // All other locomotive types it will be the full charging rate for the reservoir
+                var reservoirChargingRate = MainResChargingRatePSIpS;
+
+                // Control car uses the attached active locomotive
+                if (EngineType == EngineTypes.Control)
+                {
+                    FindControlActiveLocomotive();
+
+                    if (ControlActiveLocomotive != null)
+                    {
+                        var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
+                        reservoirChargingRate = (activeloco.DieselEngines[0].RealRPM / activeloco.DieselEngines[0].MaxRPM) * MainResChargingRatePSIpS;
+                    }
+                }
+                else
+                {
+                    // Powered locomotive use thereselves
+                    var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                    reservoirChargingRate = (mstsDieselLocomotive.DieselEngines[0].RealRPM / mstsDieselLocomotive.DieselEngines[0].MaxRPM) * MainResChargingRatePSIpS;
+                }
+
+                MainResPressurePSI += elapsedClockSeconds * reservoirChargingRate;
+
+                // Compressor runs continuously, and excess air pressure is exhausted to atmosphere once max pressure is reached.
+                MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.0f, MaxMainResPressurePSI);
+
+            }
+            else // Non-mechanical compressors
+            {
+                if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+                    SignalEvent(Event.CompressorOn);
+                else if ((MainResPressurePSI > MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
+                    SignalEvent(Event.CompressorOff);
+
+                if (CompressorIsOn)
+                    MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
+            }
         }
 
         /// <summary>
@@ -2869,7 +2954,7 @@ namespace Orts.Simulation.RollingStocks
         {
             return Sander;
         }
-
+                                 
         #region Reverser
         public void SetDirection(Direction direction)
         {
@@ -4478,13 +4563,56 @@ namespace Orts.Simulation.RollingStocks
                         data = ConvertFromPSI(cvc, BrakeSystem.GetVacResPressurePSI());
                         break;
                     }
+
                 case CABViewControlTypes.RPM:
                     {
-                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                        if (mstsDieselLocomotive.DieselEngines[0] != null)
-                            data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
+
+                        if (EngineType == EngineTypes.Control)
+                        {
+                            FindControlActiveLocomotive();
+
+                            if (ControlActiveLocomotive != null)
+                            {
+                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
+                                if (activeloco.DieselEngines[0] != null)
+                                    data = activeloco.DieselEngines[0].RealRPM;
+                            }
+
+                        }
+                        else
+                        {
+                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                            if (mstsDieselLocomotive.DieselEngines[0] != null)
+                                data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
+                        }
                         break;
                     }
+
+                case CABViewControlTypes.RPM_2:
+                    {
+
+                        FindControlActiveLocomotive();
+
+                        if (ControlActiveLocomotive != null)
+                        {
+                            var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
+                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+
+                            if (EngineType == EngineTypes.Control && activeloco.DieselEngines.NumOfActiveEngines > 1)
+                            {
+                             
+                                if (activeloco.DieselEngines[1] != null)
+                                    data = activeloco.DieselEngines[1].RealRPM;
+                            }
+                            else if (EngineType == EngineTypes.Diesel && mstsDieselLocomotive.DieselEngines.NumOfActiveEngines > 1)
+                            {                      
+                                if (mstsDieselLocomotive.DieselEngines[1] != null)
+                                    data = mstsDieselLocomotive.DieselEngines[1].RealRPM;
+                            }
+                        }
+                        break;
+                    }
+
                 case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
                     {
                         var mstsDieselLocomotive = this as MSTSDieselLocomotive;

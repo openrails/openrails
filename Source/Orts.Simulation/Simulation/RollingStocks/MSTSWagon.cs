@@ -247,6 +247,11 @@ namespace Orts.Simulation.RollingStocks
         public bool AuxiliaryReservoirPresent;
 
         /// <summary>
+        /// Active locomotive for a control trailer
+        /// </summary>
+        public MSTSLocomotive ControlActiveLocomotive { get; private set; }
+
+        /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
         /// </summary>
         public MSTSSteamLocomotive TendersSteamLocomotive { get; private set; }
@@ -472,14 +477,9 @@ namespace Orts.Simulation.RollingStocks
 
             var couplerlength = ((CarCouplerFaceLengthM - CarBodyLengthM) / 2) + 0.1f; // coupler length at rest, allow 0.1m also for slack
 
-            if (CarAirHoseLengthM < couplerlength)
+            if (CarAirHoseHorizontalLengthM == 0)
             {
-                CarCouplerFaceLengthM = CarBodyLengthM + (0.4f * 2.0f); // Assume a coupler length of 400mm at each end and add to car body length
-
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                {
-                    Trace.TraceInformation("Coupler length exceeded brake air hose length, so  ORTSLengthCouplerFace decreased to {0}", CarCouplerFaceLengthM);
-                }
+                CarAirHoseHorizontalLengthM = 0.3862f; // 15.2 inches
             }
             
             // Ensure Drive Axles is set to a default if no OR value added to WAG file
@@ -1013,6 +1013,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortshorizontallengthairhose": CarAirHoseHorizontalLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcouplerface": CarCouplerFaceLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortstrackgauge":
                     stf.MustMatch("(");
@@ -1470,6 +1471,7 @@ namespace Orts.Simulation.RollingStocks
             CarBodyLengthM = copy.CarBodyLengthM;
             CarCouplerFaceLengthM = copy.CarCouplerFaceLengthM;
             CarAirHoseLengthM = copy.CarAirHoseLengthM;
+            CarAirHoseHorizontalLengthM = copy.CarAirHoseHorizontalLengthM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
@@ -3425,6 +3427,45 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
         }
 
+        public void FindControlActiveLocomotive()
+        {
+            // Find the active locomotive associated with a control car
+            if (Train == null || Train.Cars == null || Train.Cars.Count == 1)
+            {
+                ControlActiveLocomotive = null;
+                return;
+            }
+            var controlIndex = 0;
+            var activeIndex = 0;
+            bool controlCar = false;
+            bool activeLocomotive = false;
+
+            // Check to see if this car is an active locomotive, if so then set linkage to relevant control car.
+            // Note this only checks the "closest" locomotive to the control car. Hence it could be "fooled" if there is another locomotive besides the two DMU locomotives.
+
+            for (var i = 0; i < Train.Cars.Count; i++)
+            {
+
+                if (activeIndex == 0 && Train.Cars[i].EngineType == TrainCar.EngineTypes.Diesel)
+                {
+                    activeIndex = i;
+                    activeLocomotive = true;
+                }
+
+                if (controlIndex == 0 && Train.Cars[i].EngineType == TrainCar.EngineTypes.Control)
+                {
+                    controlIndex = i;
+                    controlCar = true;
+                }
+
+                // As soon as the control and active locomotive have been identified, then stop loop.
+                if (activeLocomotive && controlCar)
+                {
+                    ControlActiveLocomotive = Train.Cars[activeIndex] as MSTSDieselLocomotive;                 
+                    return;
+                }
+            }
+        }
 
         public void FindTendersSteamLocomotive()
         {

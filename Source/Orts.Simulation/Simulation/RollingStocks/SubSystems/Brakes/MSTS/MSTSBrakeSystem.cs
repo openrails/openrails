@@ -33,6 +33,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "air_single_pipe": return new AirSinglePipe(car);
                 case "ecp":
                 case "ep": return new EPBrakeSystem(car);
+                case "sme": return new SMEBrakeSystem(car);
                 case "air_piped":
                 case "vacuum_piped": return new SingleTransferPipe(car);
                 default: return new SingleTransferPipe(car);
