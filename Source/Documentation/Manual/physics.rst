@@ -1234,11 +1234,12 @@ panel.
 Boiler Management
 '''''''''''''''''
 In Open Rails, the safe operating range for the boiler water level is 75-90%
-and this is maintained automatically by the AI Fireman.
+and this is maintained automatically by the AI Fireman. 
+(Note: this is not the reading of the boiler water glass gauge but the %age full of the boiler.) 
 
 In manual mode, you must keep the boiler water level below 90%. 
-A level of 91% or more pulls water into the steam pipes and,
-being incompressible, will damage the cylinders.
+A level of 91% or more drags water into the steam pipes and,
+being incompressible, the water will damage the cylinders.
 Open Rails does not model the damage but issues confirmation messages:
 "Boiler overfull and priming" and "Boiler no longer priming" on rising to 91% and falling below 90%
 
