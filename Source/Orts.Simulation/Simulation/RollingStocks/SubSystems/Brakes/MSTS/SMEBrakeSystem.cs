@@ -38,12 +38,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void Update(float elapsedClockSeconds)
         {
             MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
+            float demandedAutoCylPressurePSI = 0;
 
-            // Only allow brakes to operate if car is connected to an SME system
+            // Only allow SME brake tokens to operate if car is connected to an SME system
             if (lead != null && lead.BrakeSystem is SMEBrakeSystem && Car.BrakeSystem is SMEBrakeSystem && (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMEFullServ || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMEOnly || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMEReleaseStart || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMESelfLap))
-            {
-
-                float demandedAutoCylPressurePSI = 0;
+            {                
                 if (BrakeLine3PressurePSI >= 1000f || Car.Train.BrakeLine4 < 0)
                 {
                     HoldingValve = ValveState.Release;
@@ -57,9 +56,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI;
                     HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
                 }
+            }
+                base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
 
-                base.Update(elapsedClockSeconds);
-
+            // Only allow SME brake tokens to operate if car is connected to an SME system
+            if (lead != null && lead.BrakeSystem is SMEBrakeSystem && Car.BrakeSystem is SMEBrakeSystem && (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMEFullServ || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMEOnly || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMEReleaseStart || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.SMESelfLap))
+            {
                 if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
                 {
                     float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
