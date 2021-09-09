@@ -2431,17 +2431,16 @@ namespace Orts.Simulation.RollingStocks
             }
 
             //Curtius-Kniffler computation for the basic model
-    //        float max0 = 1.0f;  //Adhesion conditions [N]
+            //        float max0 = 1.0f;  //Adhesion conditions [N]
 
-            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared )
-             {
+            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
+            {
                 // Steam locomotive details updated in UpdateTractiveForce method, and inserted into adhesion module
                 // ****************  NB WheelSpeed updated within Steam Locomotive module at the moment - to be fixed to prevent discrepancies ******************
             }
-            
-            else 
+            else
             {
-               
+
                 //Compute axle inertia from parameters if possible
                 if (AxleInertiaKgm2 > 10000.0f) // if axleinertia value supplied in ENG file, then use in calculations
                 {
@@ -2476,7 +2475,7 @@ namespace Orts.Simulation.RollingStocks
                 LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle model
                 LocomotiveAxle.Update(elapsedClockSeconds);             //Main updater of the axle model
-         
+
                 // Output
                 MotiveForceN = LocomotiveAxle.CompensatedAxleForceN; //Get the Axle force and use it for the motion (use compensated value as it is independent of brake force)
 
