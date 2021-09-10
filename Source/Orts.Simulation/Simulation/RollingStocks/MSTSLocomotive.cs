@@ -2431,17 +2431,16 @@ namespace Orts.Simulation.RollingStocks
             }
 
             //Curtius-Kniffler computation for the basic model
-    //        float max0 = 1.0f;  //Adhesion conditions [N]
+            //        float max0 = 1.0f;  //Adhesion conditions [N]
 
-            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared )
-             {
+            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
+            {
                 // Steam locomotive details updated in UpdateTractiveForce method, and inserted into adhesion module
                 // ****************  NB WheelSpeed updated within Steam Locomotive module at the moment - to be fixed to prevent discrepancies ******************
             }
-            
-            else 
+            else
             {
-               
+
                 //Compute axle inertia from parameters if possible
                 if (AxleInertiaKgm2 > 10000.0f) // if axleinertia value supplied in ENG file, then use in calculations
                 {
@@ -2476,7 +2475,7 @@ namespace Orts.Simulation.RollingStocks
                 LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle model
                 LocomotiveAxle.Update(elapsedClockSeconds);             //Main updater of the axle model
-         
+
                 // Output
                 MotiveForceN = LocomotiveAxle.CompensatedAxleForceN; //Get the Axle force and use it for the motion (use compensated value as it is independent of brake force)
 
@@ -4615,18 +4614,51 @@ namespace Orts.Simulation.RollingStocks
 
                 case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
                     {
-                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                        if (mstsDieselLocomotive.DieselEngines[0] != null)
-                            data = mstsDieselLocomotive.DieselEngines[0].DieselTemperatureDeg;
+
+                        if (EngineType == EngineTypes.Control)
+                        {
+                            FindControlActiveLocomotive();
+
+                            if (ControlActiveLocomotive != null)
+                            {
+                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
+                                if (activeloco.DieselEngines[0] != null)
+                                    data = activeloco.DieselEngines[0].DieselTemperatureDeg;
+                            }
+
+                        }
+                        else
+                        {
+                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                            if (mstsDieselLocomotive.DieselEngines[0] != null)
+                                data = mstsDieselLocomotive.DieselEngines[0].DieselTemperatureDeg;
+                        }
                         break;
                     }
+
                 case CABViewControlTypes.ORTS_OIL_PRESSURE:
                     {
-                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                        if (mstsDieselLocomotive.DieselEngines[0] != null)
-                            data = ConvertFromPSI(cvc, mstsDieselLocomotive.DieselEngines[0].DieselOilPressurePSI);
+                        if (EngineType == EngineTypes.Control)
+                        {
+                            FindControlActiveLocomotive();
+
+                            if (ControlActiveLocomotive != null)
+                            {
+                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
+                                if (activeloco.DieselEngines[0] != null)
+                                    data = activeloco.DieselEngines[0].DieselOilPressurePSI;
+                            }
+
+                        }
+                        else
+                        {
+                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                            if (mstsDieselLocomotive.DieselEngines[0] != null)
+                                data = mstsDieselLocomotive.DieselEngines[0].DieselOilPressurePSI;
+                        }
                         break;
                     }
+
                 case CABViewControlTypes.THROTTLE:
                 case CABViewControlTypes.THROTTLE_DISPLAY:
                 case CABViewControlTypes.CPH_DISPLAY:
@@ -4766,10 +4798,31 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                        if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                            data = LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
+                        if (EngineType == EngineTypes.Control)
+                        {
+                            FindControlActiveLocomotive();
+
+                            if (ControlActiveLocomotive != null)
+                            {
+                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
+                                if (activeloco.DieselEngines[0] != null)
+                                {
+                                    if (activeloco.AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
+                                        data = activeloco.LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
+                                    else
+                                        data = activeloco.WheelSlip ? 1 : 0;
+
+                                }
+                            }
+
+                        }
                         else
-                            data = WheelSlip ? 1 : 0;
+                        {
+                            if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
+                                data = LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
+                            else
+                                data = WheelSlip ? 1 : 0;
+                        }
                         break;
                     }
 
