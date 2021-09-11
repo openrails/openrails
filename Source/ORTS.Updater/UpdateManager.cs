@@ -222,11 +222,16 @@ namespace ORTS.Updater
             if (LastUpdate != null)
             {
                 var uri = new Uri(LastUpdate.Url, UriKind.RelativeOrAbsolute);
-                if (uri.IsAbsoluteUri)
-                {
-                    LastUpdate = null;
-                    LastCheckError = new InvalidDataException("Update URL must be relative to channel URL.");
-                }
+
+                // All relative URLs are valid
+                if (!uri.IsAbsoluteUri) return;
+
+                // Official GitHub URLs are valid
+                if (uri.Scheme == "https" && uri.Host == "github.com" && uri.AbsolutePath.StartsWith("/openrails/openrails/releases")) return;
+
+                // Everything else is invalid
+                LastUpdate = null;
+                LastCheckError = new InvalidDataException("Update URL must be relative to channel URL or from https://github.com/openrails/openrails/releases.");
             }
         }
 
