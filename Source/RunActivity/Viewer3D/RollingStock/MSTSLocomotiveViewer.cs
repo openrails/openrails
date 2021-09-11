@@ -2997,11 +2997,11 @@ namespace Orts.Viewer3D.RollingStock
             CABViewControlTypes controltype = CVFR.GetControlType();
             Material material = null;
 
-            if (AceFile != "")
+            if (Alert) { imageName = "alert.ace"; }
+            else if (AceFile != "")
             {
                 imageName = AceFile;
             }
-            else if (Alert) { imageName = "alert.ace"; }
             else
             {
                 switch (controltype)
