@@ -1392,7 +1392,8 @@ namespace Orts.Viewer3D
     }
 
     /// <summary>
-    /// A <c>ShapePrimitive</c> that permits manipulation of the vertex and index buffers to change geometry efficiently.
+    /// A <c>ShapePrimitive</c> that permits manipulation of vertex and index buffers to change geometry efficiently.
+    /// It permits also change of material
     /// </summary>
     public class MutableShapePrimitive : ShapePrimitive
     {
@@ -1417,6 +1418,11 @@ namespace Orts.Viewer3D
         public void SetIndexData(short[] data)
         {
             IndexBuffer.SetData(data);
+        }
+
+        public void SetMaterial(Material material)
+        {
+            Material = material;
         }
     }
 
