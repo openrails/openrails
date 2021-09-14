@@ -1468,7 +1468,7 @@ namespace Orts.Viewer3D.RollingStock
         /// Gets the requested Locomotive data and returns it as a fraction (from 0 to 1) of the range between Min and Max values.
         /// </summary>
         /// <returns>Data value as fraction (from 0 to 1) of the range between Min and Max values</returns>
-        public float GetRangeFraction(bool offsetFromZero = false)
+        public float GetRangeFraction()
         {
             var data = Locomotive.GetDataOf(Control);
             if (data < Control.MinValue)
@@ -1479,7 +1479,7 @@ namespace Orts.Viewer3D.RollingStock
             if (Control.MaxValue == Control.MinValue)
                 return 0;
 
-            return (float)((data - (offsetFromZero && Control.MinValue < 0 ? 0 : Control.MinValue)) / (Control.MaxValue - Control.MinValue));
+            return (float)((data - Control.MinValue) / (Control.MaxValue - Control.MinValue));
         }
 
         public CABViewControlStyles GetStyle()
@@ -1630,8 +1630,7 @@ namespace Orts.Viewer3D.RollingStock
 
         public color GetColor(out bool positive)
         {
-            if (Locomotive.GetDataOf(Control) < 0)
-            { positive = false; return Gauge.NegativeColor; }
+            if (Locomotive.GetDataOf(Control) < 0) { positive = false; return Gauge.NegativeColor; }
             else { positive = true; return Gauge.PositiveColor; }
         }
 
@@ -2455,7 +2454,8 @@ namespace Orts.Viewer3D.RollingStock
             if (Control.ControlType == CABViewControlTypes.CLOCK)
                 Alignment = LabelAlignment.Center;
             Alignment = digital.Justification == 1 ? LabelAlignment.Center : digital.Justification == 2 ? LabelAlignment.Left : digital.Justification == 3 ? LabelAlignment.Right : Alignment;
-
+            // Used for 3D cabs
+            Alignment = digital.Justification == 4 ? LabelAlignment.Cab3DCenter : digital.Justification == 5 ? LabelAlignment.Cab3DLeft : digital.Justification == 6 ? LabelAlignment.Cab3DRight : Alignment;
             Format1 = "{0:0" + new String('0', digital.LeadingZeros) + (digital.Accuracy > 0 ? "." + new String('0', (int)digital.Accuracy) : "") + "}";
             Format2 = "{0:0" + new String('0', digital.LeadingZeros) + (digital.AccuracySwitch > 0 ? "." + new String('0', (int)(digital.Accuracy + 1)) : "") + "}";
         }
@@ -2680,6 +2680,10 @@ namespace Orts.Viewer3D.RollingStock
             return "";
         }
 
+        public LabelAlignment GetAlignment() //used in 3D cab, to get alignment
+        {
+            return Alignment;
+        }
     }
 
     /// <summary>
@@ -2987,7 +2991,7 @@ namespace Orts.Viewer3D.RollingStock
 
             //create the shape primitive
             shapePrimitive = new MutableShapePrimitive(Material, NumVertices, NumIndices, new[] { -1 }, 0);
-            UpdateShapePrimitive(Material);
+            UpdateShapePrimitive();
 
         }
 
@@ -2998,11 +3002,11 @@ namespace Orts.Viewer3D.RollingStock
             CABViewControlTypes controltype = CVFR.GetControlType();
             Material material = null;
 
-            if (Alert) { imageName = "alert.ace"; }
-            else if (AceFile != "")
+            if (AceFile != "")
             {
                 imageName = AceFile;
             }
+            else if (Alert) { imageName = "alert.ace"; }
             else
             {
                 switch (controltype)
@@ -3051,13 +3055,31 @@ namespace Orts.Viewer3D.RollingStock
         //update the digits with current speed or time
         public void UpdateDigit()
         {
-            NumVertices = NumIndices = 0;
 
             Material UsedMaterial = Material; //use default material
 
             //update text string
             bool Alert;
             string speed = CVFR.Get3DDigits(out Alert);
+
+            NumVertices = NumIndices = 0;
+
+            // add leading blanks to consider alignment
+            // for backwards compatibiliy with preceding OR releases all Justification values defined by MSTS are considered as left justified
+            var leadingBlankCount = 0;
+            switch (CVFR.GetAlignment())
+            {
+                case LabelAlignment.Cab3DRight:
+                    leadingBlankCount = MaxDigits - speed.Length;
+                    break;
+                case LabelAlignment.Cab3DCenter:
+                    leadingBlankCount = (MaxDigits - speed.Length + 1) / 2;
+                    break;
+                default:
+                    break;
+            }
+            for (int i = leadingBlankCount; i > 0; i--)
+                speed = speed.Insert(0, " ");
 
             if (Alert)//alert use alert meterial
             {
@@ -3086,11 +3108,11 @@ namespace Orts.Viewer3D.RollingStock
             }
 
             //update the shape primitive
-            UpdateShapePrimitive(UsedMaterial);
+            UpdateShapePrimitive();
 
         }
 
-        private void UpdateShapePrimitive(Material material)
+        private void UpdateShapePrimitive()
         {
             var indexData = new short[NumIndices];
             Array.Copy(TriangleListIndices, indexData, NumIndices);
@@ -3099,8 +3121,6 @@ namespace Orts.Viewer3D.RollingStock
             var vertexData = new VertexPositionNormalTexture[NumVertices];
             Array.Copy(VertexList, vertexData, NumVertices);
             shapePrimitive.SetVertexData(vertexData, 0, NumVertices, NumIndices / 3);
-
-            shapePrimitive.SetMaterial(material);
         }
 
         //ACE MAP:
@@ -3219,9 +3239,8 @@ namespace Orts.Viewer3D.RollingStock
 
 
             //create the shape primitive
-            var material = FindMaterial();
-            shapePrimitive = new MutableShapePrimitive(material, NumVertices, NumIndices, new[] { -1 }, 0);
-            UpdateShapePrimitive(material);
+            shapePrimitive = new MutableShapePrimitive(FindMaterial(), NumVertices, NumIndices, new[] { -1 }, 0);
+            UpdateShapePrimitive();
 
         }
 
@@ -3233,14 +3252,13 @@ namespace Orts.Viewer3D.RollingStock
             {
                 if (PositiveMaterial == null)
                 {
-                    PositiveMaterial = new SolidColorMaterial(this.Viewer, c.A, c.R, c.G, c.B);
+                    PositiveMaterial = new SolidColorMaterial(this.Viewer, 0f, c.R, c.G, c.B);
                 }
                 return PositiveMaterial;
             }
             else
             {
-                if (NegativeMaterial == null)
-                    NegativeMaterial = new SolidColorMaterial(this.Viewer, c.A, c.R, c.G, c.B);
+                if (NegativeMaterial == null) NegativeMaterial = new SolidColorMaterial(this.Viewer, c.A, c.R, c.G, c.B);
                 return NegativeMaterial;
             }
         }
@@ -3252,12 +3270,11 @@ namespace Orts.Viewer3D.RollingStock
 
             Material UsedMaterial = FindMaterial();
 
-            float length = CVFR.GetRangeFraction(true);
+            float length = CVFR.GetRangeFraction();
 
             CVCGauge gauge = CVFR.GetGauge();
 
             var len = maxLen * length;
-            var absLen = Math.Abs(len);
             Vertex v1, v2, v3, v4;
 
             //the left-bottom vertex if ori=0;dir=0, right-bottom if ori=0,dir=1; left-top if ori=1,dir=0; left-bottom if ori=1,dir=1;
@@ -3265,33 +3282,33 @@ namespace Orts.Viewer3D.RollingStock
 
             if (Orientation == 0)
             {
-                if (Direction == 0 ^ len < 0)//moving right
+                if (Direction == 0)//moving right
                 {
                     //other vertices
                     v2 = new Vertex(0f, width, 0.002f, 0, 0, 1, 0f, 0f);
-                    v3 = new Vertex(absLen, width, 0.002f, 0, 0, 1, 0f, 0f);
-                    v4 = new Vertex(absLen, 0f, 0.002f, 0, 0, 1, 0f, 0f);
+                    v3 = new Vertex(len, width, 0.002f, 0, 0, 1, 0f, 0f);
+                    v4 = new Vertex(len, 0f, 0.002f, 0, 0, 1, 0f, 0f);
                 }
                 else //moving left
                 {
                     v4 = new Vertex(0f, width, 0.002f, 0, 0, 1, 0f, 0f);
-                    v3 = new Vertex(-absLen, width, 0.002f, 0, 0, 1, 0f, 0f);
-                    v2 = new Vertex(-absLen, 0f, 0.002f, 0, 0, 1, 0f, 0f);
+                    v3 = new Vertex(-len, width, 0.002f, 0, 0, 1, 0f, 0f);
+                    v2 = new Vertex(-len, 0f, 0.002f, 0, 0, 1, 0f, 0f);
                 }
             }
             else
             {
-                if (Direction == 1 ^ len < 0)//up
+                if (Direction == 1)//up
                 {
                     //other vertices
-                    v2 = new Vertex(0f, absLen, 0.002f, 0, 0, 1, 0f, 0f);
-                    v3 = new Vertex(width, absLen, 0.002f, 0, 0, 1, 0f, 0f);
+                    v2 = new Vertex(0f, len, 0.002f, 0, 0, 1, 0f, 0f);
+                    v3 = new Vertex(width, len, 0.002f, 0, 0, 1, 0f, 0f);
                     v4 = new Vertex(width, 0f, 0.002f, 0, 0, 1, 0f, 0f);
                 }
                 else //moving down
                 {
-                    v4 = new Vertex(0f, -absLen, 0.002f, 0, 0, 1, 0f, 0f);
-                    v3 = new Vertex(width, -absLen, 0.002f, 0, 0, 1, 0f, 0f);
+                    v4 = new Vertex(0f, -len, 0.002f, 0, 0, 1, 0f, 0f);
+                    v3 = new Vertex(width, -len, 0.002f, 0, 0, 1, 0f, 0f);
                     v2 = new Vertex(width, 0, 0.002f, 0, 0, 1, 0f, 0f);
                 }
             }
@@ -3304,7 +3321,7 @@ namespace Orts.Viewer3D.RollingStock
             NumVertices += 4;
 
             //update the shape primitive
-            UpdateShapePrimitive(UsedMaterial);
+            UpdateShapePrimitive();
 
         }
 
@@ -3336,7 +3353,7 @@ namespace Orts.Viewer3D.RollingStock
             return 1.0f;
         }
 
-        private void UpdateShapePrimitive(Material material)
+        private void UpdateShapePrimitive()
         {
             var indexData = new short[NumIndices];
             Array.Copy(TriangleListIndices, indexData, NumIndices);
@@ -3345,8 +3362,6 @@ namespace Orts.Viewer3D.RollingStock
             var vertexData = new VertexPositionNormalTexture[NumVertices];
             Array.Copy(VertexList, vertexData, NumVertices);
             shapePrimitive.SetVertexData(vertexData, 0, NumVertices, NumIndices / 3);
-
-            shapePrimitive.SetMaterial(material);
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
