@@ -335,6 +335,34 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     SignalEventToBatterySwitch(PowerSupplyEvent.OpenBatterySwitch);
                     break;
 
+                case PowerSupplyEvent.TogglePlayerEngine:
+                    switch (CurrentDieselEngineState(0))
+                    {
+                        case DieselEngineState.Stopped:
+                        case DieselEngineState.Stopping:
+                            SignalEventToDieselEngine(PowerSupplyEvent.StartEngine, 0);
+                            Confirm(CabControl.PlayerDiesel, CabSetting.On);
+                            break;
+
+                        case DieselEngineState.Starting:
+                            SignalEventToDieselEngine(PowerSupplyEvent.StopEngine, 0);
+                            Confirm(CabControl.PlayerDiesel, CabSetting.Off);
+                            break;
+
+                        case DieselEngineState.Running:
+                            if (ThrottlePercent() < 1)
+                            {
+                                SignalEventToDieselEngine(PowerSupplyEvent.StopEngine, 0);
+                                Confirm(CabControl.PlayerDiesel, CabSetting.Off);
+                            }
+                            else
+                            {
+                                Confirm(CabControl.PlayerDiesel, CabSetting.Warn1);
+                            }
+                            break;
+                    }
+                    break;
+
                 default:
                     base.HandleEvent(evt);
                     break;
