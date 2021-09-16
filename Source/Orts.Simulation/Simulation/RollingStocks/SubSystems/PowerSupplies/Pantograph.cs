@@ -347,7 +347,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             default:
                             case 1:
                                 soundEvent = Event.Pantograph1Up;
-                                Confirm(CabControl.Pantograph4, CabSetting.On);
+                                Confirm(CabControl.Pantograph1, CabSetting.On);
                                 break;
 
                             case 2:
