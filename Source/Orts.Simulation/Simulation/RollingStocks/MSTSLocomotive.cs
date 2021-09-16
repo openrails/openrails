@@ -4114,6 +4114,46 @@ namespace Orts.Simulation.RollingStocks
             TrainControlSystem.AlerterPressed(pressed);
         }
 
+        //put here because you can have diesel helpers and electric player locomotive
+        public void ToggleHelpersEngine()
+        {
+            bool helperFound = false; //this avoids that locomotive engines toggle in opposite directions
+            bool powerOn = false;
+
+            foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where((MSTSLocomotive locomotive) => { return locomotive.AcceptMUSignals; }))
+            {
+                if (locomotive == Simulator.PlayerLocomotive)
+                {
+                    // Engine number 1 or above are helper engines
+                    for (int i = 1; i < locomotive.DieselEngines.Count; i++)
+                    {
+                        if (!helperFound)
+                        {
+                            helperFound = true;
+                            powerOn = !locomotive.DieselEngines[i].PowerOn;
+                        }
+
+                        locomotive.DieselEngines.HandleEvent(powerOn ? PowerSupplyEvent.StartEngine : PowerSupplyEvent.StopEngine, i);
+                    }
+                }
+                else
+                {
+                    if (!helperFound)
+                    {
+                        helperFound = true;
+                        powerOn = !locomotive.DieselEngines[0].PowerOn;
+                    }
+
+                    locomotive.DieselEngines.HandleEvent(powerOn ? PowerSupplyEvent.StartEngine : PowerSupplyEvent.StopEngine);
+                }
+            }
+            
+            if (helperFound)
+            {
+                Simulator.Confirmer.Confirm(CabControl.HelperDiesel, powerOn ? CabSetting.On : CabSetting.Off);
+            }
+        }
+
         public override void SignalEvent(Event evt)
         {
             switch (evt)

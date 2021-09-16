@@ -109,8 +109,6 @@ namespace ORTS.Scripting.Api
     {
         QuickPowerOn,
         QuickPowerOff,
-        TogglePlayerEngine,
-        ToggleHelperEngine,
         CloseBatterySwitch,
         OpenBatterySwitch,
         CloseBatterySwitchButtonPressed,

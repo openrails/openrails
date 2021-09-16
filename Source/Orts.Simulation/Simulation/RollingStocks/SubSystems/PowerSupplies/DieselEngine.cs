@@ -361,9 +361,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void HandleEvent(PowerSupplyEvent evt, int id)
         {
-            if (id >= 0 && id < DEList.Count)
+            if (id <= DEList.Count)
             {
-                DEList[id].HandleEvent(evt);
+                DEList[id - 1].HandleEvent(evt);
             }
         }
 
@@ -383,7 +383,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             result.AppendFormat(Simulator.Catalog.GetString("Status"));
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0}", Simulator.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(eng.State)));
+                result.AppendFormat("\t{0}", Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(eng.State)));
 
             result.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), FormatStrings.FormatPower(MaxOutputPowerW, Locomotive.IsMetric, false, false));
             foreach (var eng in DEList)

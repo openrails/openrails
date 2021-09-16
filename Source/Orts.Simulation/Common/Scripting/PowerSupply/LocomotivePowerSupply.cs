@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Simulation;
 using System;
 
 namespace ORTS.Scripting.Api
@@ -37,17 +36,9 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<PowerSupplyState> CurrentCabPowerSupplyState;
         /// <summary>
-        /// Current state of the helper engines
-        /// </summary>
-        public Func<DieselEngineState> CurrentHelperEnginesState;
-        /// <summary>
         /// Current availability of the dynamic brake
         /// </summary>
         public Func<bool> CurrentDynamicBrakeAvailability;
-        /// <summary>
-        /// Current throttle percentage
-        /// </summary>
-        public Func<float> ThrottlePercent;
         /// <summary>
         /// Main supply power on delay
         /// </summary>
@@ -124,10 +115,6 @@ namespace ORTS.Scripting.Api
         /// Sends an event to the power supplies of other train vehicles
         /// </summary>
         public Action<PowerSupplyEvent, int> SignalEventToOtherTrainVehiclesWithId;
-        /// <summary>
-        /// Sends an event to all helper engines
-        /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToHelperEngines;
 
         /// <summary>
         /// Called when the driver (or the train's systems) want something to happen on the power supply system
@@ -135,35 +122,13 @@ namespace ORTS.Scripting.Api
         /// <param name="evt">The event</param>
         public override void HandleEvent(PowerSupplyEvent evt)
         {
-            switch (evt)
-            {
-                case PowerSupplyEvent.ToggleHelperEngine:
-                    switch (CurrentHelperEnginesState())
-                    {
-                        case DieselEngineState.Stopped:
-                        case DieselEngineState.Stopping:
-                            SignalEventToHelperEngines(PowerSupplyEvent.StartEngine);
-                            Confirm(CabControl.HelperDiesel, CabSetting.On);
-                            break;
+            base.HandleEvent(evt);
 
-                        case DieselEngineState.Starting:
-                        case DieselEngineState.Running:
-                            SignalEventToHelperEngines(PowerSupplyEvent.StopEngine);
-                            Confirm(CabControl.HelperDiesel, CabSetting.Off);
-                            break;
-                    }
-                    break;
-
-                default:
-                    base.HandleEvent(evt);
-
-                    // By default, send the event to every component
-                    SignalEventToMasterKey(evt);
-                    SignalEventToElectricTrainSupplySwitch(evt);
-                    SignalEventToTcs(evt);
-                    SignalEventToOtherTrainVehicles(evt);
-                    break;
-            }
+            // By default, send the event to every component
+            SignalEventToMasterKey(evt);
+            SignalEventToElectricTrainSupplySwitch(evt);
+            SignalEventToTcs(evt);
+            SignalEventToOtherTrainVehicles(evt);
         }
 
         public override void HandleEvent(PowerSupplyEvent evt, int id)
