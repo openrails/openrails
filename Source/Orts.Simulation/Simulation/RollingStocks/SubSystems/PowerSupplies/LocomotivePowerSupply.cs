@@ -274,7 +274,34 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AbstractScript.CurrentLowVoltagePowerSupplyState = () => LowVoltagePowerSupplyState;
             AbstractScript.CurrentBatteryState = () => BatteryState;
             AbstractScript.CurrentCabPowerSupplyState = () => CabPowerSupplyState;
+            AbstractScript.CurrentHelperEnginesState = () =>
+            {
+                DieselEngineState state = DieselEngineState.Unavailable;
+
+                foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where((MSTSLocomotive locomotive) => { return locomotive.AcceptMUSignals; }))
+                {
+                    if (locomotive == Simulator.PlayerLocomotive)
+                    {
+                        foreach (DieselEngine dieselEngine in locomotive.DieselEngines.DEList.Where(de => de != locomotive.DieselEngines[0]))
+                        {
+                            if (dieselEngine.State > state)
+                                state = dieselEngine.State;
+                        }
+                    }
+                    else
+                    {
+                        foreach (DieselEngine dieselEngine in locomotive.DieselEngines)
+                        {
+                            if (dieselEngine.State > state)
+                                state = dieselEngine.State;
+                        }
+                    }
+                }
+
+                return state;
+            };
             AbstractScript.CurrentDynamicBrakeAvailability = () => DynamicBrakeAvailable;
+            AbstractScript.ThrottlePercent = () => Locomotive.ThrottlePercent;
             AbstractScript.PowerOnDelayS = () => PowerOnDelayS;
             AbstractScript.AuxPowerOnDelayS = () => AuxPowerOnDelayS;
             AbstractScript.BatterySwitchOn = () => BatterySwitch.On;
@@ -347,6 +374,41 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             car.PowerSupply?.HandleEventFromLeadLocomotive(evt, id);
                         }
                     }
+                }
+            };
+            AbstractScript.SignalEventToHelperEngines = (evt) =>
+            {
+                bool helperFound = false; //this avoids that locomotive engines toggle in opposite directions
+
+                foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where((MSTSLocomotive locomotive) => { return locomotive.AcceptMUSignals; }))
+                {
+                    if (locomotive == Simulator.PlayerLocomotive)
+                    {
+                        // Engine number 1 or above are helper engines
+                        for (int i = 1; i < locomotive.DieselEngines.Count; i++)
+                        {
+                            if (!helperFound)
+                            {
+                                helperFound = true;
+                            }
+
+                            locomotive.DieselEngines.HandleEvent(evt);
+                        }
+                    }
+                    else
+                    {
+                        if (!helperFound)
+                        {
+                            helperFound = true;
+                        }
+
+                        locomotive.DieselEngines.HandleEvent(evt);
+                    }
+                }
+
+                if (helperFound && (evt == PowerSupplyEvent.StartEngine || evt == PowerSupplyEvent.StopEngine))
+                {
+                    Simulator.Confirmer.Confirm(CabControl.HelperDiesel, evt == PowerSupplyEvent.StartEngine ? CabSetting.On : CabSetting.Off);
                 }
             };
         }
