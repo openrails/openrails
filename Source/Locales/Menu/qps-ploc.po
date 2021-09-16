@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2020-08-07 00:22:44+0200\n"
-"PO-Revision-Date: 2020-08-07 00:22:45+0200\n"
+"POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
+"PO-Revision-Date: 2021-09-15 03:48:20+0200\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -115,7 +115,7 @@ msgid "Rain"
 msgstr "[Ráïñ !!!]"
 
 #: ../../Menu/MainForm.cs:160
-#: ../../Menu/Options.cs:606
+#: ../../Menu/Options.cs:614
 msgid "Easy"
 msgstr "[Éáƨ¥ !!!]"
 
@@ -124,7 +124,7 @@ msgid "Medium"
 msgstr "[Mèδïú₥ !!!]"
 
 #: ../../Menu/MainForm.cs:162
-#: ../../Menu/Options.cs:612
+#: ../../Menu/Options.cs:620
 msgid "Hard"
 msgstr "[Hářδ !!!]"
 
@@ -156,11 +156,11 @@ msgstr "[§áƭúřδá¥ !!!]"
 msgid "Sunday"
 msgstr "[§úñδá¥ !!!]"
 
-#: ../../Menu/MainForm.cs:305
+#: ../../Menu/MainForm.cs:326
 msgid "Update check failed"
 msgstr "[Ûƥδáƭè çλèçƙ ƒáïℓèδ !!!]"
 
-#: ../../Menu/MainForm.cs:500
+#: ../../Menu/MainForm.cs:521
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -168,16 +168,16 @@ msgstr ""
 "[Ûƨèř ñá₥è ₥úƨƭ βè 4-10 çλářáçƭèřƨ ℓôñϱ, çáññôƭ çôñƭáïñ ƨƥáçè, ', \" ôř - áñδ "
 "₥úƨƭ ñôƭ ƨƭářƭ ωïƭλ á δïϱïƭ. !!!]"
 
-#: ../../Menu/MainForm.cs:1128
+#: ../../Menu/MainForm.cs:1149
 msgid "Activity Briefing"
 msgstr "[ÂçƭïƲïƭ¥ ßřïèƒïñϱ !!!]"
 
-#: ../../Menu/MainForm.cs:307
+#: ../../Menu/MainForm.cs:328
 #, csharp-format
 msgid "Update to {0}"
 msgstr "[Ûƥδáƭè ƭô {0} !!!]"
 
-#: ../../Menu/MainForm.cs:513
+#: ../../Menu/MainForm.cs:534
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -188,7 +188,7 @@ msgstr ""
 "\n"
 "{0} !!!]"
 
-#: ../../Menu/MainForm.cs:521
+#: ../../Menu/MainForm.cs:542
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -199,54 +199,54 @@ msgstr ""
 "\n"
 "{0} !!!]"
 
-#: ../../Menu/MainForm.cs:1117
+#: ../../Menu/MainForm.cs:1138
 #, csharp-format
 msgid "Route: {0}"
 msgstr "[Rôúƭè: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1123
-#: ../../Menu/MainForm.cs:1156
+#: ../../Menu/MainForm.cs:1144
+#: ../../Menu/MainForm.cs:1176
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "[£ôçô₥ôƭïƲè: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1127
+#: ../../Menu/MainForm.cs:1148
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "[ÂçƭïƲïƭ¥: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1132
-#: ../../Menu/MainForm.cs:1161
+#: ../../Menu/MainForm.cs:1153
+#: ../../Menu/MainForm.cs:1179
 #, csharp-format
 msgid "Path: {0}"
 msgstr "[Þáƭλ: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1133
+#: ../../Menu/MainForm.cs:1154
 #, csharp-format
 msgid "Starting at: {0}"
 msgstr "[§ƭářƭïñϱ áƭ: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1134
+#: ../../Menu/MainForm.cs:1155
 #, csharp-format
 msgid "Heading to: {0}"
 msgstr "[Hèáδïñϱ ƭô: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1142
+#: ../../Menu/MainForm.cs:1162
 #, csharp-format
 msgid "Timetable set: {0}"
 msgstr "[Tï₥èƭáβℓè ƨèƭ: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1146
+#: ../../Menu/MainForm.cs:1166
 #, csharp-format
 msgid "Timetable: {0}"
 msgstr "[Tï₥èƭáβℓè: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1150
+#: ../../Menu/MainForm.cs:1170
 #, csharp-format
 msgid "Train: {0}"
 msgstr "[Třáïñ: {0} !!!]"
 
-#: ../../Menu/MainForm.cs:1153
+#: ../../Menu/MainForm.cs:1174
 #, csharp-format
 msgid "Consist: {0}"
 msgstr "[Çôñƨïƨƭ: {0} !!!]"
@@ -269,7 +269,7 @@ msgid "Logging"
 msgstr "[£ôϱϱïñϱ !!!]"
 
 #: ../../Menu/MainForm.Designer.cs:173
-#: ../../Menu/Options.Designer.cs:2306
+#: ../../Menu/Options.Designer.cs:2585
 msgid "Options"
 msgstr "[Óƥƭïôñƨ !!!]"
 
@@ -405,7 +405,7 @@ msgid "Timetable set:"
 msgstr "[Tï₥èƭáβℓè ƨèƭ: !!!]"
 
 #: ../../Menu/MainForm.Designer.cs:900
-#: ../../Menu/Options.cs:270
+#: ../../Menu/Options.cs:277
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
 msgstr "[Tèƨƭïñϱ !!!]"
@@ -414,141 +414,141 @@ msgstr "[Tèƨƭïñϱ !!!]"
 msgid "What's new?"
 msgstr "[Wλáƭ'ƨ ñèω? !!!]"
 
-#: ../../Menu/Options.cs:100
+#: ../../Menu/Options.cs:104
 #: ../../Menu/TestingForm.Designer.cs:184
 msgid "Route"
 msgstr "[Rôúƭè !!!]"
 
-#: ../../Menu/Options.cs:101
+#: ../../Menu/Options.cs:105
 msgid "Player's location"
 msgstr "[Þℓá¥èř'ƨ ℓôçáƭïôñ !!!]"
 
-#: ../../Menu/Options.cs:102
+#: ../../Menu/Options.cs:106
 msgid "Metric"
 msgstr "[Mèƭřïç !!!]"
 
-#: ../../Menu/Options.cs:103
+#: ../../Menu/Options.cs:107
 msgid "Imperial US"
 msgstr "[Ì₥ƥèřïáℓ Û§ !!!]"
 
-#: ../../Menu/Options.cs:104
+#: ../../Menu/Options.cs:108
 msgid "Imperial UK"
 msgstr "[Ì₥ƥèřïáℓ ÛK !!!]"
 
-#: ../../Menu/Options.cs:111
+#: ../../Menu/Options.cs:115
 msgid "Automatic"
 msgstr "[Âúƭô₥áƭïç !!!]"
 
-#: ../../Menu/Options.cs:112
+#: ../../Menu/Options.cs:116
 msgid "bar"
 msgstr "[βář !!!]"
 
-#: ../../Menu/Options.cs:113
+#: ../../Menu/Options.cs:117
 msgid "psi"
 msgstr "[ƥƨï !!!]"
 
-#: ../../Menu/Options.cs:114
+#: ../../Menu/Options.cs:118
 msgid "inHg"
 msgstr "[ïñHϱ !!!]"
 
-#: ../../Menu/Options.cs:115
+#: ../../Menu/Options.cs:119
 msgid "kgf/cm²"
 msgstr "[ƙϱƒ/ç₥² !!!]"
 
-#: ../../Menu/Options.cs:204
+#: ../../Menu/Options.cs:211
 msgid "comma"
 msgstr "[çô₥₥á !!!]"
 
-#: ../../Menu/Options.cs:205
+#: ../../Menu/Options.cs:212
 msgid "semicolon"
 msgstr "[ƨè₥ïçôℓôñ !!!]"
 
-#: ../../Menu/Options.cs:206
+#: ../../Menu/Options.cs:213
 msgid "tab"
 msgstr "[ƭáβ !!!]"
 
-#: ../../Menu/Options.cs:207
+#: ../../Menu/Options.cs:214
 msgid "space"
 msgstr "[ƨƥáçè !!!]"
 
-#: ../../Menu/Options.cs:213
+#: ../../Menu/Options.cs:220
 msgid "route"
 msgstr "[řôúƭè !!!]"
 
-#: ../../Menu/Options.cs:214
+#: ../../Menu/Options.cs:221
 msgid "m/s"
 msgstr "[₥/ƨ !!!]"
 
-#: ../../Menu/Options.cs:215
+#: ../../Menu/Options.cs:222
 msgid "km/h"
 msgstr "[ƙ₥/λ !!!]"
 
-#: ../../Menu/Options.cs:216
+#: ../../Menu/Options.cs:223
 msgid "mph"
 msgstr "[₥ƥλ !!!]"
 
-#: ../../Menu/Options.cs:235
+#: ../../Menu/Options.cs:242
 #: ../../Menu/ResumeForm.Designer.cs:398
 msgid "Time"
 msgstr "[Tï₥è !!!]"
 
-#: ../../Menu/Options.cs:236
+#: ../../Menu/Options.cs:243
 msgid "Train Speed"
 msgstr "[Třáïñ §ƥèèδ !!!]"
 
-#: ../../Menu/Options.cs:237
+#: ../../Menu/Options.cs:244
 msgid "Max. Speed"
 msgstr "[Máж. §ƥèèδ !!!]"
 
-#: ../../Menu/Options.cs:238
+#: ../../Menu/Options.cs:245
 msgid "Signal State"
 msgstr "[§ïϱñáℓ §ƭáƭè !!!]"
 
-#: ../../Menu/Options.cs:239
+#: ../../Menu/Options.cs:246
 msgid "Track Elevation"
 msgstr "[Třáçƙ ÉℓèƲáƭïôñ !!!]"
 
-#: ../../Menu/Options.cs:240
+#: ../../Menu/Options.cs:247
 msgid "Direction"
 msgstr "[Ðïřèçƭïôñ !!!]"
 
-#: ../../Menu/Options.cs:241
+#: ../../Menu/Options.cs:248
 msgid "Control Mode"
 msgstr "[Çôñƭřôℓ Môδè !!!]"
 
-#: ../../Menu/Options.cs:242
+#: ../../Menu/Options.cs:249
 msgid "Distance Travelled"
 msgstr "[Ðïƨƭáñçè TřáƲèℓℓèδ !!!]"
 
-#: ../../Menu/Options.cs:243
+#: ../../Menu/Options.cs:250
 msgid "Throttle %"
 msgstr "[Tλřôƭƭℓè % !!!]"
 
-#: ../../Menu/Options.cs:244
+#: ../../Menu/Options.cs:251
 msgid "Brake Cyl Press"
 msgstr "[ßřáƙè Ç¥ℓ Þřèƨƨ !!!]"
 
-#: ../../Menu/Options.cs:245
+#: ../../Menu/Options.cs:252
 msgid "Dyn Brake %"
 msgstr "[Ð¥ñ ßřáƙè % !!!]"
 
-#: ../../Menu/Options.cs:246
+#: ../../Menu/Options.cs:253
 msgid "Gear Setting"
 msgstr "[Gèář §èƭƭïñϱ !!!]"
 
-#: ../../Menu/Options.cs:269
+#: ../../Menu/Options.cs:276
 msgid "Stable (recommended)"
 msgstr "[§ƭáβℓè (řèçô₥₥èñδèδ) !!!]"
 
-#: ../../Menu/Options.cs:271
+#: ../../Menu/Options.cs:278
 msgid "Unstable"
 msgstr "[Ûñƨƭáβℓè !!!]"
 
-#: ../../Menu/Options.cs:272
+#: ../../Menu/Options.cs:279
 msgid "None"
 msgstr "[Nôñè !!!]"
 
-#: ../../Menu/Options.cs:275
+#: ../../Menu/Options.cs:282
 msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
@@ -556,25 +556,25 @@ msgstr ""
 "[Ìñƒřè9úèñƭ úƥδáƭèƨ ƭô ôƒƒïçïáℓ, λáñδ-ƥïçƙèδ Ʋèřƨïôñƨ. Rèçô₥₥èñδèδ ƒôř ₥ôƨƭ "
 "úƨèřƨ. !!!]"
 
-#: ../../Menu/Options.cs:276
+#: ../../Menu/Options.cs:283
 msgid ""
 "Weekly updates which may contain noticable defects. For project supporters."
 msgstr ""
 "[Wèèƙℓ¥ úƥδáƭèƨ ωλïçλ ₥á¥ çôñƭáïñ ñôƭïçáβℓè δèƒèçƭƨ. Fôř ƥřôJèçƭ ƨúƥƥôřƭèřƨ. !!!]"
 
-#: ../../Menu/Options.cs:277
+#: ../../Menu/Options.cs:284
 msgid "Daily updates which may contain serious defects. For developers only."
 msgstr "[Ðáïℓ¥ úƥδáƭèƨ ωλïçλ ₥á¥ çôñƭáïñ ƨèřïôúƨ δèƒèçƭƨ. Fôř δèƲèℓôƥèřƨ ôñℓ¥. !!!]"
 
-#: ../../Menu/Options.cs:278
+#: ../../Menu/Options.cs:285
 msgid "No updates."
 msgstr "[Nô úƥδáƭèƨ. !!!]"
 
-#: ../../Menu/Options.cs:405
+#: ../../Menu/Options.cs:412
 msgid "Click to change this key"
 msgstr "[Çℓïçƙ ƭô çλáñϱè ƭλïƨ ƙè¥ !!!]"
 
-#: ../../Menu/Options.cs:421
+#: ../../Menu/Options.cs:428
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
@@ -582,11 +582,11 @@ msgstr ""
 "[Çôñƭïñúè ωïƭλ çôñƒℓïçƭïñϱ ƙè¥ áƨƨïϱñ₥èñƭƨ?\n"
 "\n !!!]"
 
-#: ../../Menu/Options.cs:557
+#: ../../Menu/Options.cs:565
 msgid "Remove all custom key assignments?"
 msgstr "[Rè₥ôƲè áℓℓ çúƨƭô₥ ƙè¥ áƨƨïϱñ₥èñƭƨ? !!!]"
 
-#: ../../Menu/Options.cs:568
+#: ../../Menu/Options.cs:576
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
@@ -594,35 +594,35 @@ msgstr ""
 "[Â ℓïƨƭïñϱ ôƒ áℓℓ ƙè¥βôářδ çô₥₥áñδƨ áñδ ƙè¥ƨ λáƨ βèèñ ƥℓáçèδ λèřè:\n"
 "\n !!!]"
 
-#: ../../Menu/Options.cs:577
+#: ../../Menu/Options.cs:585
 msgid "No errors found."
 msgstr "[Nô èřřôřƨ ƒôúñδ. !!!]"
 
-#: ../../Menu/Options.cs:604
+#: ../../Menu/Options.cs:612
 msgid "Very easy"
 msgstr "[Vèř¥ èáƨ¥ !!!]"
 
-#: ../../Menu/Options.cs:608
+#: ../../Menu/Options.cs:616
 msgid "MSTS Compatible"
 msgstr "[M§T§ Çô₥ƥáƭïβℓè !!!]"
 
-#: ../../Menu/Options.cs:610
+#: ../../Menu/Options.cs:618
 msgid "Normal"
 msgstr "[Nôř₥áℓ !!!]"
 
-#: ../../Menu/Options.cs:614
+#: ../../Menu/Options.cs:622
 msgid "Very Hard"
 msgstr "[Vèř¥ Hářδ !!!]"
 
-#: ../../Menu/Options.cs:616
+#: ../../Menu/Options.cs:624
 msgid "Good luck!"
 msgstr "[Gôôδ ℓúçƙ! !!!]"
 
-#: ../../Menu/Options.cs:676
+#: ../../Menu/Options.cs:714
 msgid "Select an installation profile (MSTS folder) to add:"
 msgstr "[§èℓèçƭ áñ ïñƨƭáℓℓáƭïôñ ƥřôƒïℓè (M§T§ ƒôℓδèř) ƭô áδδ: !!!]"
 
-#: ../../Menu/Options.cs:582
+#: ../../Menu/Options.cs:590
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
@@ -633,475 +633,488 @@ msgstr ""
 "{1:F0}° λôřïƺôñƭáℓ FÓV ôñ 4:3\n"
 "{2:F0}° λôřïƺôñƭáℓ FÓV ôñ 16:9 !!!]"
 
-#: ../../Menu/Options.cs:626
+#: ../../Menu/Options.cs:634
 #, csharp-format
 msgid "{0}%"
 msgstr "[{0}% !!!]"
 
-#: ../../Menu/Options.cs:632
+#: ../../Menu/Options.cs:670
 #, csharp-format
 msgid "No detail (-{0}%)"
 msgstr "[Nô δèƭáïℓ (-{0}%) !!!]"
 
-#: ../../Menu/Options.cs:634
+#: ../../Menu/Options.cs:672
 #, csharp-format
 msgid "Less detail (-{0}%)"
 msgstr "[£èƨƨ δèƭáïℓ (-{0}%) !!!]"
 
-#: ../../Menu/Options.cs:636
+#: ../../Menu/Options.cs:674
 #, csharp-format
 msgid "Default detail (+{0}%)"
 msgstr "[Ðèƒáúℓƭ δèƭáïℓ (+{0}%) !!!]"
 
-#: ../../Menu/Options.cs:638
+#: ../../Menu/Options.cs:676
 #, csharp-format
 msgid "More detail (+{0}%)"
 msgstr "[Môřè δèƭáïℓ (+{0}%) !!!]"
 
-#: ../../Menu/Options.cs:640
+#: ../../Menu/Options.cs:678
 #, csharp-format
 msgid "All detail (+{0}%)"
 msgstr "[Âℓℓ δèƭáïℓ (+{0}%) !!!]"
 
-#: ../../Menu/Options.Designer.cs:243
+#: ../../Menu/Options.Designer.cs:274
 msgid "OK"
 msgstr "[ÓK !!!]"
 
-#: ../../Menu/Options.Designer.cs:277
-msgid "Brake pipe charging rate (PSI/s)"
-msgstr "[ßřáƙè ƥïƥè çλářϱïñϱ řáƭè (Þ§Ì/ƨ) !!!]"
+#: ../../Menu/Options.Designer.cs:308
+msgid "Brake pipe charging rate (PSI/s)             "
+msgstr "[ßřáƙè ƥïƥè çλářϱïñϱ řáƭè (Þ§Ì/ƨ)              !!!]"
 
-#: ../../Menu/Options.Designer.cs:286
-msgid "Graduated release air brakes"
-msgstr "[Gřáδúáƭèδ řèℓèáƨè áïř βřáƙèƨ !!!]"
+#: ../../Menu/Options.Designer.cs:319
+msgid "Graduated release air brakes                                "
+msgstr "[Gřáδúáƭèδ řèℓèáƨè áïř βřáƙèƨ                                 !!!]"
 
-#: ../../Menu/Options.Designer.cs:297
+#: ../../Menu/Options.Designer.cs:332
 #: ../../Menu/TestingForm.Designer.cs:87
 msgid "Cancel"
 msgstr "[Çáñçèℓ !!!]"
 
-#: ../../Menu/Options.Designer.cs:307
-msgid "Alerter in cab"
-msgstr "[Âℓèřƭèř ïñ çáβ !!!]"
+#: ../../Menu/Options.Designer.cs:342
+msgid "Alerter in cab                                                        "
+msgstr "[Âℓèřƭèř ïñ çáβ                                                         !!!]"
 
-#: ../../Menu/Options.Designer.cs:318
-msgid "Control confirmations"
-msgstr "[Çôñƭřôℓ çôñƒïř₥áƭïôñƨ !!!]"
+#: ../../Menu/Options.Designer.cs:355
+msgid "Control confirmations                                            "
+msgstr "[Çôñƭřôℓ çôñƒïř₥áƭïôñƨ                                             !!!]"
 
-#: ../../Menu/Options.Designer.cs:328
-msgid "Dispatcher window"
-msgstr "[Ðïƨƥáƭçλèř ωïñδôω !!!]"
+#: ../../Menu/Options.Designer.cs:367
+msgid "Map window                                                        "
+msgstr "[Máƥ ωïñδôω                                                         !!!]"
 
-#: ../../Menu/Options.Designer.cs:379
+#: ../../Menu/Options.Designer.cs:433
 msgid "General"
 msgstr "[Gèñèřáℓ !!!]"
 
-#: ../../Menu/Options.Designer.cs:389
-msgid "Port Number"
-msgstr "[Þôřƭ Nú₥βèř !!!]"
+#: ../../Menu/Options.Designer.cs:599
+msgid "Port number                                       "
+msgstr "[Þôřƭ ñú₥βèř                                        !!!]"
 
-#: ../../Menu/Options.Designer.cs:420
-msgid "Enable WebServer"
-msgstr "[Éñáβℓè Wèβ§èřƲèř !!!]"
+#: ../../Menu/Options.Designer.cs:630
+msgid "Enable webserver                                                "
+msgstr "[Éñáβℓè ωèβƨèřƲèř                                                 !!!]"
 
-#: ../../Menu/Options.Designer.cs:430
-msgid "Speed control"
-msgstr "[§ƥèèδ çôñƭřôℓ !!!]"
+#: ../../Menu/Options.Designer.cs:642
+msgid "Overspeed monitor                                                     "
+msgstr "[ÓƲèřƨƥèèδ ₥ôñïƭôř                                                      !!!]"
 
-#: ../../Menu/Options.Designer.cs:440
-msgid "Disable TCS scripts"
-msgstr "[Ðïƨáβℓè TÇ§ ƨçřïƥƭƨ !!!]"
+#: ../../Menu/Options.Designer.cs:654
+msgid "Disable TCS scripts                                              "
+msgstr "[Ðïƨáβℓè TÇ§ ƨçřïƥƭƨ                                               !!!]"
 
-#: ../../Menu/Options.Designer.cs:451
-msgid "Other units"
-msgstr "[Óƭλèř úñïƭƨ !!!]"
+#: ../../Menu/Options.Designer.cs:667
+msgid "Other units                        "
+msgstr "[Óƭλèř úñïƭƨ                         !!!]"
 
-#: ../../Menu/Options.Designer.cs:461
-msgid "Pressure unit"
-msgstr "[Þřèƨƨúřè úñïƭ !!!]"
+#: ../../Menu/Options.Designer.cs:679
+msgid "Pressure unit                     "
+msgstr "[Þřèƨƨúřè úñïƭ                      !!!]"
 
-#: ../../Menu/Options.Designer.cs:479
-msgid "Large address aware binaries (for all 64bit and 3GB tuning on 32bit)"
-msgstr "[£ářϱè áδδřèƨƨ áωářè βïñářïèƨ (ƒôř áℓℓ 64βïƭ áñδ 3Gß ƭúñïñϱ ôñ 32βïƭ) !!!]"
+#: ../../Menu/Options.Designer.cs:722
+msgid "Language                         "
+msgstr "[£áñϱúáϱè                          !!!]"
 
-#: ../../Menu/Options.Designer.cs:499
-msgid "Language"
-msgstr "[£áñϱúáϱè !!!]"
+#: ../../Menu/Options.Designer.cs:743
+msgid "Also in external views                                    "
+msgstr "[Âℓƨô ïñ èжƭèřñáℓ Ʋïèωƨ                                     !!!]"
 
-#: ../../Menu/Options.Designer.cs:518
-msgid "Also in external views"
-msgstr "[Âℓƨô ïñ èжƭèřñáℓ Ʋïèωƨ !!!]"
+#: ../../Menu/Options.Designer.cs:753
+msgid "Retainer valve on all cars                                     "
+msgstr "[Rèƭáïñèř ƲáℓƲè ôñ áℓℓ çářƨ                                      !!!]"
 
-#: ../../Menu/Options.Designer.cs:528
-msgid "Retainer valve on all cars"
-msgstr "[Rèƭáïñèř ƲáℓƲè ôñ áℓℓ çářƨ !!!]"
-
-#: ../../Menu/Options.Designer.cs:545
+#: ../../Menu/Options.Designer.cs:772
 msgid "Audio"
 msgstr "[Âúδïô !!!]"
 
-#: ../../Menu/Options.Designer.cs:574
+#: ../../Menu/Options.Designer.cs:801
 msgid "% external sound heard internally"
 msgstr "[% èжƭèřñáℓ ƨôúñδ λèářδ ïñƭèřñáℓℓ¥ !!!]"
 
-#: ../../Menu/Options.Designer.cs:607
+#: ../../Menu/Options.Designer.cs:834
 msgid "% sound volume"
 msgstr "[% ƨôúñδ Ʋôℓú₥è !!!]"
 
-#: ../../Menu/Options.Designer.cs:617
+#: ../../Menu/Options.Designer.cs:844
 msgid "Sound detail level"
 msgstr "[§ôúñδ δèƭáïℓ ℓèƲèℓ !!!]"
 
-#: ../../Menu/Options.Designer.cs:638
+#: ../../Menu/Options.Designer.cs:865
 msgid "MSTS Bin compatible sound"
 msgstr "[M§T§ ßïñ çô₥ƥáƭïβℓè ƨôúñδ !!!]"
 
-#: ../../Menu/Options.Designer.cs:673
+#: ../../Menu/Options.Designer.cs:903
 msgid "Video"
 msgstr "[Vïδèô !!!]"
 
-#: ../../Menu/Options.Designer.cs:683
-msgid "Shadow for all shapes"
-msgstr "[§λáδôω ƒôř áℓℓ ƨλáƥèƨ !!!]"
-
-#: ../../Menu/Options.Designer.cs:693
-msgid "Double overhead wires"
-msgstr "[Ðôúβℓè ôƲèřλèáδ ωïřèƨ !!!]"
-
-#: ../../Menu/Options.Designer.cs:704
-msgid "Ambient daylight brightness:"
-msgstr "[Â₥βïèñƭ δá¥ℓïϱλƭ βřïϱλƭñèƨƨ: !!!]"
-
-#: ../../Menu/Options.Designer.cs:722
-msgid "Model instancing"
-msgstr "[Môδèℓ ïñƨƭáñçïñϱ !!!]"
-
-#: ../../Menu/Options.Designer.cs:749
-msgid "Vertical sync"
-msgstr "[Vèřƭïçáℓ ƨ¥ñç !!!]"
-
-#: ../../Menu/Options.Designer.cs:760
-msgid "Viewing distance (km)"
-msgstr "[Vïèωïñϱ δïƨƭáñçè (ƙ₥) !!!]"
-
-#: ../../Menu/Options.Designer.cs:798
-msgid "Fast full-screen alt-tab"
-msgstr "[Fáƨƭ ƒúℓℓ-ƨçřèèñ áℓƭ-ƭáβ !!!]"
-
-#: ../../Menu/Options.Designer.cs:808
-msgid "Distant mountains"
-msgstr "[Ðïƨƭáñƭ ₥ôúñƭáïñƨ !!!]"
-
-#: ../../Menu/Options.Designer.cs:820
-msgid "Viewing distance (m)"
-msgstr "[Vïèωïñϱ δïƨƭáñçè (₥) !!!]"
-
-#: ../../Menu/Options.Designer.cs:857
+#: ../../Menu/Options.Designer.cs:914
+#: ../../Menu/Options.Designer.cs:1125
 msgid "XXX"
 msgstr "[XXX !!!]"
 
-#: ../../Menu/Options.Designer.cs:890
+#: ../../Menu/Options.Designer.cs:925
+msgid "Anti-aliasing:"
+msgstr "[Âñƭï-áℓïáƨïñϱ: !!!]"
+
+#: ../../Menu/Options.Designer.cs:951
+msgid "Shadow for all shapes"
+msgstr "[§λáδôω ƒôř áℓℓ ƨλáƥèƨ !!!]"
+
+#: ../../Menu/Options.Designer.cs:961
+msgid "Double overhead wires"
+msgstr "[Ðôúβℓè ôƲèřλèáδ ωïřèƨ !!!]"
+
+#: ../../Menu/Options.Designer.cs:972
+msgid "Ambient daylight brightness:"
+msgstr "[Â₥βïèñƭ δá¥ℓïϱλƭ βřïϱλƭñèƨƨ: !!!]"
+
+#: ../../Menu/Options.Designer.cs:990
+msgid "Model instancing"
+msgstr "[Môδèℓ ïñƨƭáñçïñϱ !!!]"
+
+#: ../../Menu/Options.Designer.cs:1017
+msgid "Vertical sync"
+msgstr "[Vèřƭïçáℓ ƨ¥ñç !!!]"
+
+#: ../../Menu/Options.Designer.cs:1028
+msgid "Viewing distance (km)"
+msgstr "[Vïèωïñϱ δïƨƭáñçè (ƙ₥) !!!]"
+
+#: ../../Menu/Options.Designer.cs:1066
+msgid "Fast full-screen alt-tab"
+msgstr "[Fáƨƭ ƒúℓℓ-ƨçřèèñ áℓƭ-ƭáβ !!!]"
+
+#: ../../Menu/Options.Designer.cs:1076
+msgid "Distant mountains"
+msgstr "[Ðïƨƭáñƭ ₥ôúñƭáïñƨ !!!]"
+
+#: ../../Menu/Options.Designer.cs:1088
+msgid "Viewing distance (m)"
+msgstr "[Vïèωïñϱ δïƨƭáñçè (₥) !!!]"
+
+#: ../../Menu/Options.Designer.cs:1158
 msgid "Viewing vertical FOV"
 msgstr "[Vïèωïñϱ Ʋèřƭïçáℓ FÓV !!!]"
 
-#: ../../Menu/Options.Designer.cs:914
+#: ../../Menu/Options.Designer.cs:1182
 msgid "% cab 2D stretch"
 msgstr "[% çáβ 2Ð ƨƭřèƭçλ !!!]"
 
-#: ../../Menu/Options.Designer.cs:924
+#: ../../Menu/Options.Designer.cs:1192
 msgid "World object density"
 msgstr "[Wôřℓδ ôβJèçƭ δèñƨïƭ¥ !!!]"
 
-#: ../../Menu/Options.Designer.cs:968
+#: ../../Menu/Options.Designer.cs:1236
 msgid "Glass on in-game windows"
 msgstr "[Gℓáƨƨ ôñ ïñ-ϱá₥è ωïñδôωƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:979
+#: ../../Menu/Options.Designer.cs:1247
 msgid "Window size (type WIDTHxHEIGHT for custom size)"
 msgstr "[Wïñδôω ƨïƺè (ƭ¥ƥè WÌÐTHжHÉÌGHT ƒôř çúƨƭô₥ ƨïƺè) !!!]"
 
-#: ../../Menu/Options.Designer.cs:988
+#: ../../Menu/Options.Designer.cs:1256
 msgid "Dynamic shadows"
 msgstr "[Ð¥ñá₥ïç ƨλáδôωƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:998
+#: ../../Menu/Options.Designer.cs:1266
 msgid "Overhead wire"
 msgstr "[ÓƲèřλèáδ ωïřè !!!]"
 
-#: ../../Menu/Options.Designer.cs:1020
+#: ../../Menu/Options.Designer.cs:1289
 msgid "Simulation"
 msgstr "[§ï₥úℓáƭïôñ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1034
+#: ../../Menu/Options.Designer.cs:1299
+msgid "Diesel engines stopped after startup"
+msgstr "[Ðïèƨèℓ èñϱïñèƨ ƨƭôƥƥèδ áƒƭèř ƨƭářƭúƥ !!!]"
+
+#: ../../Menu/Options.Designer.cs:1313
 msgid "Activity Options"
 msgstr "[ÂçƭïƲïƭ¥ Óƥƭïôñƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1044
+#: ../../Menu/Options.Designer.cs:1323
+msgid "Location-linked passing path processing"
+msgstr "[£ôçáƭïôñ-ℓïñƙèδ ƥáƨƨïñϱ ƥáƭλ ƥřôçèƨƨïñϱ !!!]"
+
+#: ../../Menu/Options.Designer.cs:1334
 msgid "Open/close doors in AI trains"
 msgstr "[Óƥèñ/çℓôƨè δôôřƨ ïñ ÂÌ ƭřáïñƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1055
+#: ../../Menu/Options.Designer.cs:1345
 msgid "Forced red at station stops"
 msgstr "[Fôřçèδ řèδ áƭ ƨƭáƭïôñ ƨƭôƥƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1065
+#: ../../Menu/Options.Designer.cs:1355
 msgid "Steam locomotive hot start"
 msgstr "[§ƭèá₥ ℓôçô₥ôƭïƲè λôƭ ƨƭářƭ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1075
-msgid "Simple Control and Physics"
-msgstr "[§ï₥ƥℓè Çôñƭřôℓ áñδ Þλ¥ƨïçƨ !!!]"
+#: ../../Menu/Options.Designer.cs:1365
+msgid "Simple controls and physics"
+msgstr "[§ï₥ƥℓè çôñƭřôℓƨ áñδ ƥλ¥ƨïçƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1085
+#: ../../Menu/Options.Designer.cs:1375
 msgid "Curve dependent speed limit"
 msgstr "[ÇúřƲè δèƥèñδèñƭ ƨƥèèδ ℓï₥ïƭ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1095
+#: ../../Menu/Options.Designer.cs:1385
 msgid "Curve dependent resistance"
 msgstr "[ÇúřƲè δèƥèñδèñƭ řèƨïƨƭáñçè !!!]"
 
-#: ../../Menu/Options.Designer.cs:1105
+#: ../../Menu/Options.Designer.cs:1395
 msgid "Tunnel dependent resistance"
 msgstr "[Túññèℓ δèƥèñδèñƭ řèƨïƨƭáñçè !!!]"
 
-#: ../../Menu/Options.Designer.cs:1115
+#: ../../Menu/Options.Designer.cs:1405
 msgid "Wind dependent resistance"
 msgstr "[Wïñδ δèƥèñδèñƭ řèƨïƨƭáñçè !!!]"
 
-#: ../../Menu/Options.Designer.cs:1125
+#: ../../Menu/Options.Designer.cs:1415
 msgid "Override non-electrified route line-voltage"
 msgstr "[ÓƲèřřïδè ñôñ-èℓèçƭřïƒïèδ řôúƭè ℓïñè-Ʋôℓƭáϱè !!!]"
 
-#: ../../Menu/Options.Designer.cs:1136
+#: ../../Menu/Options.Designer.cs:1426
 msgid "Adhesion moving average filter size"
 msgstr "[Âδλèƨïôñ ₥ôƲïñϱ áƲèřáϱè ƒïℓƭèř ƨïƺè !!!]"
 
-#: ../../Menu/Options.Designer.cs:1163
+#: ../../Menu/Options.Designer.cs:1453
 msgid "Break couplers"
 msgstr "[ßřèáƙ çôúƥℓèřƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1173
+#: ../../Menu/Options.Designer.cs:1463
 msgid "Advanced adhesion model"
 msgstr "[ÂδƲáñçèδ áδλèƨïôñ ₥ôδèℓ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1189
+#: ../../Menu/Options.Designer.cs:1479
 msgid "Keyboard"
 msgstr "[Kè¥βôářδ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1199
+#: ../../Menu/Options.Designer.cs:1489
 msgid "Export"
 msgstr "[Éжƥôřƭ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1212
+#: ../../Menu/Options.Designer.cs:1502
 msgid "Defaults"
 msgstr "[Ðèƒáúℓƭƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1224
+#: ../../Menu/Options.Designer.cs:1514
 msgid "Check"
 msgstr "[Çλèçƙ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1258
+#: ../../Menu/Options.Designer.cs:1548
 msgid "Data logger"
 msgstr "[Ðáƭá ℓôϱϱèř !!!]"
 
-#: ../../Menu/Options.Designer.cs:1289
+#: ../../Menu/Options.Designer.cs:1579
 msgid "Speed units"
 msgstr "[§ƥèèδ úñïƭƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1311
+#: ../../Menu/Options.Designer.cs:1601
 msgid "Log miscellaneous data"
 msgstr "[£ôϱ ₥ïƨçèℓℓáñèôúƨ δáƭá !!!]"
 
-#: ../../Menu/Options.Designer.cs:1321
+#: ../../Menu/Options.Designer.cs:1611
 msgid "Log performance data"
 msgstr "[£ôϱ ƥèřƒôř₥áñçè δáƭá !!!]"
 
-#: ../../Menu/Options.Designer.cs:1331
+#: ../../Menu/Options.Designer.cs:1621
 msgid "Start logging with the simulation start"
 msgstr "[§ƭářƭ ℓôϱϱïñϱ ωïƭλ ƭλè ƨï₥úℓáƭïôñ ƨƭářƭ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1342
+#: ../../Menu/Options.Designer.cs:1632
 msgid "Separator"
 msgstr "[§èƥářáƭôř !!!]"
 
-#: ../../Menu/Options.Designer.cs:1351
+#: ../../Menu/Options.Designer.cs:1641
 msgid "Log physics data"
 msgstr "[£ôϱ ƥλ¥ƨïçƨ δáƭá !!!]"
 
-#: ../../Menu/Options.Designer.cs:1361
+#: ../../Menu/Options.Designer.cs:1651
 msgid "Log Steam performance data"
 msgstr "[£ôϱ §ƭèá₥ ƥèřƒôř₥áñçè δáƭá !!!]"
 
-#: ../../Menu/Options.Designer.cs:1371
+#: ../../Menu/Options.Designer.cs:1661
 msgid "Verbose ENG/WAG configuration messages"
 msgstr "[Vèřβôƨè ÉNG/WÂG çôñƒïϱúřáƭïôñ ₥èƨƨáϱèƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1386
+#: ../../Menu/Options.Designer.cs:1676
 msgid "Evaluation"
 msgstr "[ÉƲáℓúáƭïôñ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1406
+#: ../../Menu/Options.Designer.cs:1696
 msgid "Interval (sec)"
 msgstr "[ÌñƭèřƲáℓ (ƨèç) !!!]"
 
-#: ../../Menu/Options.Designer.cs:1415
+#: ../../Menu/Options.Designer.cs:1705
 msgid "Log station stops"
 msgstr "[£ôϱ ƨƭáƭïôñ ƨƭôƥƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1448
+#: ../../Menu/Options.Designer.cs:1738
 msgid "Log train speed"
 msgstr "[£ôϱ ƭřáïñ ƨƥèèδ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1464
+#: ../../Menu/Options.Designer.cs:1754
 msgid "Content"
 msgstr "[Çôñƭèñƭ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1487
+#: ../../Menu/Options.Designer.cs:1777
 #: ../../Menu/ResumeForm.Designer.cs:155
 msgid "Delete"
 msgstr "[Ðèℓèƭè !!!]"
 
-#: ../../Menu/Options.Designer.cs:1505
+#: ../../Menu/Options.Designer.cs:1795
 msgid "Installation profile"
 msgstr "[Ìñƨƭáℓℓáƭïôñ ƥřôƒïℓè !!!]"
 
-#: ../../Menu/Options.Designer.cs:1514
+#: ../../Menu/Options.Designer.cs:1804
 msgid "Change..."
 msgstr "[Çλáñϱè... !!!]"
 
-#: ../../Menu/Options.Designer.cs:1535
+#: ../../Menu/Options.Designer.cs:1825
 msgid "Name:"
 msgstr "[Ná₥è: !!!]"
 
-#: ../../Menu/Options.Designer.cs:1544
+#: ../../Menu/Options.Designer.cs:1834
 msgid "Path:"
 msgstr "[Þáƭλ: !!!]"
 
-#: ../../Menu/Options.Designer.cs:1563
+#: ../../Menu/Options.Designer.cs:1853
 msgid "Add..."
 msgstr "[Âδδ... !!!]"
 
-#: ../../Menu/Options.Designer.cs:1651
+#: ../../Menu/Options.Designer.cs:1941
 msgid "Updater"
 msgstr "[Ûƥδáƭèř !!!]"
 
-#: ../../Menu/Options.Designer.cs:1662
+#: ../../Menu/Options.Designer.cs:1952
 msgid "Update mode:"
 msgstr "[Ûƥδáƭè ₥ôδè: !!!]"
 
-#: ../../Menu/Options.Designer.cs:1714
+#: ../../Menu/Options.Designer.cs:2004
 msgid "Experimental"
 msgstr "[Éжƥèřï₥èñƭáℓ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1725
-#: ../../Menu/Options.Designer.cs:1769
-#: ../../Menu/Options.Designer.cs:2232
+#: ../../Menu/Options.Designer.cs:2015
+#: ../../Menu/Options.Designer.cs:2059
+#: ../../Menu/Options.Designer.cs:2522
 msgid "Level"
 msgstr "[£èƲèℓ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1749
+#: ../../Menu/Options.Designer.cs:2039
 msgid "Activity weather randomization"
 msgstr "[ÂçƭïƲïƭ¥ ωèáƭλèř řáñδô₥ïƺáƭïôñ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1759
+#: ../../Menu/Options.Designer.cs:2049
 msgid "Activity randomization"
 msgstr "[ÂçƭïƲïƭ¥ řáñδô₥ïƺáƭïôñ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1792
+#: ../../Menu/Options.Designer.cs:2082
 msgid "Correct questionable braking parameters"
 msgstr "[Çôřřèçƭ 9úèƨƭïôñáβℓè βřáƙïñϱ ƥářá₥èƭèřƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1803
+#: ../../Menu/Options.Designer.cs:2093
 msgid "Precipitation box length (m)"
 msgstr "[Þřèçïƥïƭáƭïôñ βôж ℓèñϱƭλ (₥) !!!]"
 
-#: ../../Menu/Options.Designer.cs:1840
+#: ../../Menu/Options.Designer.cs:2130
 msgid "Precipitation box width (m)"
 msgstr "[Þřèçïƥïƭáƭïôñ βôж ωïδƭλ (₥) !!!]"
 
-#: ../../Menu/Options.Designer.cs:1877
+#: ../../Menu/Options.Designer.cs:2167
 msgid "Precipitation box height (m)"
 msgstr "[Þřèçïƥïƭáƭïôñ βôж λèïϱλƭ (₥) !!!]"
 
-#: ../../Menu/Options.Designer.cs:1914
+#: ../../Menu/Options.Designer.cs:2204
 msgid "Adhesion factor random change:"
 msgstr "[Âδλèƨïôñ ƒáçƭôř řáñδô₥ çλáñϱè: !!!]"
 
-#: ../../Menu/Options.Designer.cs:1924
+#: ../../Menu/Options.Designer.cs:2214
 msgid "Adhesion factor correction:"
 msgstr "[Âδλèƨïôñ ƒáçƭôř çôřřèçƭïôñ: !!!]"
 
-#: ../../Menu/Options.Designer.cs:1934
+#: ../../Menu/Options.Designer.cs:2224
 msgid "Level of detail bias:"
 msgstr "[£èƲèℓ ôƒ δèƭáïℓ βïáƨ: !!!]"
 
-#: ../../Menu/Options.Designer.cs:1970
+#: ../../Menu/Options.Designer.cs:2260
 msgid "Show shape warnings"
 msgstr "[§λôω ƨλáƥè ωářñïñϱƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1995
+#: ../../Menu/Options.Designer.cs:2285
 msgid "Load day/night textures only when needed"
 msgstr "[£ôáδ δá¥/ñïϱλƭ ƭèжƭúřèƨ ôñℓ¥ ωλèñ ñèèδèδ !!!]"
 
-#: ../../Menu/Options.Designer.cs:2013
+#: ../../Menu/Options.Designer.cs:2303
 msgid "Level:"
 msgstr "[£èƲèℓ: !!!]"
 
-#: ../../Menu/Options.Designer.cs:2053
+#: ../../Menu/Options.Designer.cs:2343
 msgid "Adhesion proportional to rain/snow/fog"
 msgstr "[Âδλèƨïôñ ƥřôƥôřƭïôñáℓ ƭô řáïñ/ƨñôω/ƒôϱ !!!]"
 
-#: ../../Menu/Options.Designer.cs:2064
+#: ../../Menu/Options.Designer.cs:2354
 msgid "ETCS circular speed gauge"
 msgstr "[ÉTÇ§ çïřçúℓář ƨƥèèδ ϱáúϱè !!!]"
 
-#: ../../Menu/Options.Designer.cs:2074
+#: ../../Menu/Options.Designer.cs:2364
 msgid "Signal light glow"
 msgstr "[§ïϱñáℓ ℓïϱλƭ ϱℓôω !!!]"
 
-#: ../../Menu/Options.Designer.cs:2084
+#: ../../Menu/Options.Designer.cs:2374
 msgid "MSTS environments"
 msgstr "[M§T§ èñƲïřôñ₥èñƭƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:2095
+#: ../../Menu/Options.Designer.cs:2385
 msgid "Target frame rate"
 msgstr "[Tářϱèƭ ƒřá₥è řáƭè !!!]"
 
-#: ../../Menu/Options.Designer.cs:2133
+#: ../../Menu/Options.Designer.cs:2423
 msgid "Automatically tune settings to keep performance level"
 msgstr "[Âúƭô₥áƭïçáℓℓ¥ ƭúñè ƨèƭƭïñϱƨ ƭô ƙèèƥ ƥèřƒôř₥áñçè ℓèƲèℓ !!!]"
 
-#: ../../Menu/Options.Designer.cs:2144
+#: ../../Menu/Options.Designer.cs:2434
 msgid "Extend object maximum viewing distance to horizon"
 msgstr "[Éжƭèñδ ôβJèçƭ ₥áжï₥ú₥ Ʋïèωïñϱ δïƨƭáñçè ƭô λôřïƺôñ !!!]"
 
-#: ../../Menu/Options.Designer.cs:2155
+#: ../../Menu/Options.Designer.cs:2445
 msgid "Gauge (mm)"
 msgstr "[Gáúϱè (₥₥) !!!]"
 
-#: ../../Menu/Options.Designer.cs:2193
+#: ../../Menu/Options.Designer.cs:2483
 msgid "Minimum length (m)"
 msgstr "[Mïñï₥ú₥ ℓèñϱƭλ (₥) !!!]"
 
-#: ../../Menu/Options.Designer.cs:2244
+#: ../../Menu/Options.Designer.cs:2534
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
 "[Éжƥèřï₥èñƭáℓ ƒèáƭúřèƨ ƭλáƭ ₥á¥ ƨℓôω δôωñ ƭλè ϱá₥è, úƨè áƭ ¥ôúř ôωñ řïƨƙ. !!!]"
 
-#: ../../Menu/Options.Designer.cs:2268
+#: ../../Menu/Options.Designer.cs:2558
 msgid "Super-elevation"
 msgstr "[§úƥèř-èℓèƲáƭïôñ !!!]"
 
-#: ../../Menu/Options.Designer.cs:2277
+#: ../../Menu/Options.Designer.cs:2567
 msgid "Load DDS textures in preference to ACE"
 msgstr "[£ôáδ ÐÐ§ ƭèжƭúřèƨ ïñ ƥřèƒèřèñçè ƭô ÂÇÉ !!!]"
 
-#: ../../Menu/Options.Designer.cs:2288
-msgid "Location-linked passing path processing"
-msgstr "[£ôçáƭïôñ-ℓïñƙèδ ƥáƨƨïñϱ ƥáƭλ ƥřôçèƨƨïñϱ !!!]"
+#: ../../Menu/Options.Designer.cs:699
+msgid ""
+"Large address aware binaries (for all 64bit and 3GB tuning on 32bit)          "
+"                                                     "
+msgstr ""
+"[£ářϱè áδδřèƨƨ áωářè βïñářïèƨ (ƒôř áℓℓ 64βïƭ áñδ 3Gß ƭúñïñϱ ôñ 32βïƭ)          "
+"                                                      !!!]"
 
-#: ../../Menu/Options.Designer.cs:1301
+#: ../../Menu/Options.Designer.cs:1591
 msgid ""
 "Use data logger to record your simulation data (in-game command: F12).\r\n"
 "Please remember that the size of the dump file grows with the simulation "
@@ -1111,7 +1124,7 @@ msgstr ""
 "Þℓèáƨè řè₥è₥βèř ƭλáƭ ƭλè ƨïƺè ôƒ ƭλè δú₥ƥ ƒïℓè ϱřôωƨ ωïƭλ ƭλè ƨï₥úℓáƭïôñ "
 "ƭï₥è! !!!]"
 
-#: ../../Menu/Options.Designer.cs:1477
+#: ../../Menu/Options.Designer.cs:1767
 msgid ""
 "Installation profiles tell Open Rails where to look for game content. Add "
 "each full and mini-route MSTS installation."
@@ -1119,16 +1132,16 @@ msgstr ""
 "[Ìñƨƭáℓℓáƭïôñ ƥřôƒïℓèƨ ƭèℓℓ Óƥèñ Ráïℓƨ ωλèřè ƭô ℓôôƙ ƒôř ϱá₥è çôñƭèñƭ. Âδδ "
 "èáçλ ƒúℓℓ áñδ ₥ïñï-řôúƭè M§T§ ïñƨƭáℓℓáƭïôñ. !!!]"
 
-#: ../../Menu/Options.Designer.cs:1626
+#: ../../Menu/Options.Designer.cs:1916
 msgid "Name"
 msgstr "[Ná₥è !!!]"
 
-#: ../../Menu/Options.Designer.cs:1634
+#: ../../Menu/Options.Designer.cs:1924
 #: ../../Menu/ResumeForm.Designer.cs:390
 msgid "Path"
 msgstr "[Þáƭλ !!!]"
 
-#: ../../Menu/Options.Designer.cs:559
+#: ../../Menu/Options.Designer.cs:786
 msgid ""
 "Min 0 Max 100. Higher: louder sound\r\n"
 "\r\n"
@@ -1136,29 +1149,33 @@ msgstr ""
 "[Mïñ 0 Máж 100. Hïϱλèř: ℓôúδèř ƨôúñδ\r\n"
 "\r\n !!!]"
 
-#: ../../Menu/Options.Designer.cs:592
+#: ../../Menu/Options.Designer.cs:819
 msgid "Sound Volume 0-100"
 msgstr "[§ôúñδ Vôℓú₥è 0-100 !!!]"
 
-#: ../../Menu/Options.Designer.cs:738
+#: ../../Menu/Options.Designer.cs:940
+msgid "Default is 2x MSAA"
+msgstr "[Ðèƒáúℓƭ ïƨ 2ж M§ÂÂ !!!]"
+
+#: ../../Menu/Options.Designer.cs:1006
 msgid "Default is 100%"
 msgstr "[Ðèƒáúℓƭ ïƨ 100% !!!]"
 
-#: ../../Menu/Options.Designer.cs:784
-#: ../../Menu/Options.Designer.cs:2119
+#: ../../Menu/Options.Designer.cs:1052
+#: ../../Menu/Options.Designer.cs:2409
 msgid "Distance to see mountains"
 msgstr "[Ðïƨƭáñçè ƭô ƨèè ₥ôúñƭáïñƨ !!!]"
 
-#: ../../Menu/Options.Designer.cs:1213
+#: ../../Menu/Options.Designer.cs:1503
 msgid "Load the factory default key assignments."
 msgstr "[£ôáδ ƭλè ƒáçƭôř¥ δèƒáúℓƭ ƙè¥ áƨƨïϱñ₥èñƭƨ. !!!]"
 
-#: ../../Menu/Options.Designer.cs:1225
+#: ../../Menu/Options.Designer.cs:1515
 msgid "Check for incorrect key assignments."
 msgstr "[Çλèçƙ ƒôř ïñçôřřèçƭ ƙè¥ áƨƨïϱñ₥èñƭƨ. !!!]"
 
-#: ../../Menu/Options.Designer.cs:1739
-#: ../../Menu/Options.Designer.cs:1783
+#: ../../Menu/Options.Designer.cs:2029
+#: ../../Menu/Options.Designer.cs:2073
 msgid ""
 "0: no randomization, 1: moderate, 2: significant; 3: high (may be "
 "unrealistic)"
@@ -1166,27 +1183,27 @@ msgstr ""
 "[0: ñô řáñδô₥ïƺáƭïôñ, 1: ₥ôδèřáƭè, 2: ƨïϱñïƒïçáñƭ; 3: λïϱλ (₥á¥ βè "
 "úñřèáℓïƨƭïç) !!!]"
 
-#: ../../Menu/Options.Designer.cs:1985
+#: ../../Menu/Options.Designer.cs:2275
 msgid "Default is 0%"
 msgstr "[Ðèƒáúℓƭ ïƨ 0% !!!]"
 
-#: ../../Menu/Options.Designer.cs:2026
+#: ../../Menu/Options.Designer.cs:2316
 msgid "Default is 10%"
 msgstr "[Ðèƒáúℓƭ ïƨ 10% !!!]"
 
-#: ../../Menu/Options.Designer.cs:2042
+#: ../../Menu/Options.Designer.cs:2332
 msgid "Default is 130%"
 msgstr "[Ðèƒáúℓƭ ïƨ 130% !!!]"
 
-#: ../../Menu/Options.Designer.cs:2217
+#: ../../Menu/Options.Designer.cs:2507
 msgid "Shortest curve to have elevation"
 msgstr "[§λôřƭèƨƭ çúřƲè ƭô λáƲè èℓèƲáƭïôñ !!!]"
 
-#: ../../Menu/Options.Designer.cs:2258
+#: ../../Menu/Options.Designer.cs:2548
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
 msgstr "[0: ñô èℓèƲáƭïôñ, 1: 9ç₥ ₥áж; 10: 18ç₥ ₥áж !!!]"
 
-#: ../../Menu/Options.Designer.cs:903
+#: ../../Menu/Options.Designer.cs:1171
 msgid ""
 "0 to clip cab view, 100 to stretch it. For cab views that match the display, "
 "use 100."
@@ -1194,7 +1211,7 @@ msgstr ""
 "[0 ƭô çℓïƥ çáβ Ʋïèω, 100 ƭô ƨƭřèƭçλ ïƭ. Fôř çáβ Ʋïèωƨ ƭλáƭ ₥áƭçλ ƭλè δïƨƥℓá¥, "
 "úƨè 100. !!!]"
 
-#: ../../Menu/Options.Designer.cs:1200
+#: ../../Menu/Options.Designer.cs:1490
 msgid ""
 "Generate a listing of your keyboard assignments.  \r\n"
 "The output is placed on your desktop."
@@ -1207,11 +1224,11 @@ msgid "Explore in Activity Mode"
 msgstr "[Éжƥℓôřè ïñ ÂçƭïƲïƭ¥ Môδè !!!]"
 
 #: ../../Menu/ResumeForm.cs:160
-#: ../../Menu/ResumeForm.cs:196
+#: ../../Menu/ResumeForm.cs:195
 msgid "Explore Route"
 msgstr "[Éжƥℓôřè Rôúƭè !!!]"
 
-#: ../../Menu/ResumeForm.cs:243
+#: ../../Menu/ResumeForm.cs:242
 msgid ""
 "To prevent crashes and unexpected behaviour, Open Rails invalidates games "
 "saved from older versions if they fail to restore.\n"
@@ -1219,7 +1236,7 @@ msgstr ""
 "[Tô ƥřèƲèñƭ çřáƨλèƨ áñδ úñèжƥèçƭèδ βèλáƲïôúř, Óƥèñ Ráïℓƨ ïñƲáℓïδáƭèƨ ϱá₥èƨ "
 "ƨáƲèδ ƒřô₥ ôℓδèř Ʋèřƨïôñƨ ïƒ ƭλè¥ ƒáïℓ ƭô řèƨƭôřè.\n !!!]"
 
-#: ../../Menu/ResumeForm.cs:231
+#: ../../Menu/ResumeForm.cs:230
 #, csharp-format
 msgid ""
 "Warning: Save {0} found from a route with an unexpected name:\n"
@@ -1230,12 +1247,12 @@ msgstr ""
 "{1}.\n"
 "\n !!!]"
 
-#: ../../Menu/ResumeForm.cs:245
+#: ../../Menu/ResumeForm.cs:244
 #, csharp-format
 msgid "{0} of {1} saves for this route are no longer valid."
 msgstr "[{0} ôƒ {1} ƨáƲèƨ ƒôř ƭλïƨ řôúƭè ářè ñô ℓôñϱèř Ʋáℓïδ. !!!]"
 
-#: ../../Menu/ResumeForm.cs:255
+#: ../../Menu/ResumeForm.cs:254
 #, csharp-format
 msgid ""
 "Restoring from a save made by version {1} of {0} may be incompatible with "
@@ -1248,7 +1265,7 @@ msgstr ""
 "\n"
 "Çôñƭïñúè? !!!]"
 
-#: ../../Menu/ResumeForm.cs:263
+#: ../../Menu/ResumeForm.cs:262
 msgid ""
 "The selected file contains Debrief Eval data.\n"
 "But Debrief Evaluation checkbox (Main menu) is unchecked.\n"
@@ -1262,7 +1279,7 @@ msgstr ""
 "\n"
 "Çôñƭïñúè? !!!]"
 
-#: ../../Menu/ResumeForm.cs:443
+#: ../../Menu/ResumeForm.cs:441
 #, csharp-format
 msgid "{0} invalid saves have been deleted."
 msgstr "[{0} ïñƲáℓïδ ƨáƲèƨ λáƲè βèèñ δèℓèƭèδ. !!!]"

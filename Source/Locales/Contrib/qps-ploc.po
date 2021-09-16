@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2019-05-19 02:21:30+0200\n"
-"PO-Revision-Date: 2019-05-19 02:21:31+0200\n"
+"POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
+"PO-Revision-Date: 2021-09-15 03:48:20+0200\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -122,7 +122,7 @@ msgstr "[HôřñÞřôƥèřƭïèƨ !!!]"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:111
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:339
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:92
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:92
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:91
 msgid "Activity Description"
 msgstr "[ÂçƭïƲïƭ¥ Ðèƨçřïƥƭïôñ !!!]"
 
@@ -200,7 +200,7 @@ msgstr "[WÂÌT ÂçƭïƲïƭ¥ Ðèƨçřïƥƭïôñ !!!]"
 msgid "WaitActivity"
 msgstr "[WáïƭÂçƭïƲïƭ¥ !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:530
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:524
 msgid "NoMoreAct"
 msgstr "[NôMôřèÂçƭ !!!]"
 
@@ -283,8 +283,8 @@ msgid "Status"
 msgstr "[§ƭáƭúƨ !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2025
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2127
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2026
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2128
 msgid "v"
 msgstr "[Ʋ !!!]"
 
@@ -365,25 +365,25 @@ msgstr "[Çℓïçƙ ƭô Éδïƭ Mèƭáδáƭá ƒôř á ƨƥèçïƒïèδ 
 msgid "Form1"
 msgstr "[Fôř₥1 !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:164
 msgid "Route MetaData"
 msgstr "[Rôúƭè MèƭáÐáƭá !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2003
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2092
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2004
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2093
 msgid "Display"
 msgstr "[Ðïƨƥℓá¥ !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2014
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2116
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2015
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2117
 msgid "x"
 msgstr "[ж !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2041
 msgid "Tag"
 msgstr "[Táϱ !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2106
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2107
 msgid "Station"
 msgstr "[§ƭáƭïôñ !!!]"
 
@@ -592,19 +592,19 @@ msgid "TrackSegmentInterface"
 msgstr "[Třáçƙ§èϱ₥èñƭÌñƭèřƒáçè !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:108
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:108
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:107
 msgid "Activity Name"
 msgstr "[ÂçƭïƲïƭ¥ Ná₥è !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:124
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:69
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:123
 #: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:69
 msgid "Route Path"
 msgstr "[Rôúƭè Þáƭλ !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:141
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:141
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:140
 msgid "Activity Editor: Create new activity"
 msgstr "[ÂçƭïƲïƭ¥ Éδïƭôř: Çřèáƭè ñèω áçƭïƲïƭ¥ !!!]"
 
@@ -674,17 +674,17 @@ msgstr "[£ôáδïñϱ... !!!]"
 msgid "Open Rails Content Manager"
 msgstr "[Óƥèñ Ráïℓƨ Çôñƭèñƭ Máñáϱèř !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:626
+#: ../../Contrib/TrackViewer/TrackViewer.cs:625
 msgid ""
 "The path you are working on has un-saved changes.\n"
 msgstr ""
 "[Tλè ƥáƭλ ¥ôú ářè ωôřƙïñϱ ôñ λáƨ úñ-ƨáƲèδ çλáñϱèƨ.\n !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:628
+#: ../../Contrib/TrackViewer/TrackViewer.cs:627
 msgid "Do you really want to Quit?"
 msgstr "[Ðô ¥ôú řèáℓℓ¥ ωáñƭ ƭô Qúïƭ? !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:731
+#: ../../Contrib/TrackViewer/TrackViewer.cs:730
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
@@ -693,7 +693,7 @@ msgstr ""
 "[Rôúƭè çáññôƭ βè ℓôáδèδ.\n"
 "Éжƭèñƨïôñ {0} ïƨ ñôƭ ƨúƥƥôřƭèδ !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:738
+#: ../../Contrib/TrackViewer/TrackViewer.cs:737
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
@@ -702,7 +702,7 @@ msgstr ""
 "[Rôúƭè çáññôƭ βè ℓôáδèδ.\n"
 "{0} δôèƨ ñôƭ èжïƨƭ !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:744
+#: ../../Contrib/TrackViewer/TrackViewer.cs:743
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
@@ -713,7 +713,7 @@ msgstr ""
 "Wλïℓè ƭř¥ïñϱ ƭô ôƥèñ {0} ƭλè ƒôℓδèř {1} ωáƨ ïñƒèřřèδ áƨ (M§T§ ôř ƨï₥ïℓář) "
 "ïñƨƭáℓℓ ƒôℓδèř βúƭ δôèƨ ñôƭ çôñƭáïñ èжƥèçƭèδ ƒïℓèƨ !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:769
+#: ../../Contrib/TrackViewer/TrackViewer.cs:768
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
@@ -722,7 +722,7 @@ msgstr ""
 "[Rôúƭè çáññôƭ βè ℓôáδèδ.\n"
 "{0} ƨô₥èλôω çôúℓδ ñôƭ βè ƭřáñƨℓáƭèδ ïñƭô á ℓôáδáβℓè řôúƭè !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:810
+#: ../../Contrib/TrackViewer/TrackViewer.cs:809
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -730,40 +730,40 @@ msgstr ""
 "[Ðïřèçƭôř¥ ïƨ ñôƭ á Ʋáℓïδ ïñƨƭáℓℓ δïřèçƭôř¥.\n"
 "Tλè ïñƨƭáℓℓ δïřèçƭôř¥ ñèèδƨ ƭô çôñƭáïñ RÓÛTÉ§, G£ÓßÂ£, ... !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:884
+#: ../../Contrib/TrackViewer/TrackViewer.cs:883
 msgid "Loading route..."
 msgstr "[£ôáδïñϱ řôúƭè... !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:909
+#: ../../Contrib/TrackViewer/TrackViewer.cs:908
 msgid "Route cannot be loaded. Sorry"
 msgstr "[Rôúƭè çáññôƭ βè ℓôáδèδ. §ôřř¥ !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:980
+#: ../../Contrib/TrackViewer/TrackViewer.cs:979
 msgid "Loading .pat file ..."
 msgstr "[£ôáδïñϱ .ƥáƭ ƒïℓè ... !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:983
+#: ../../Contrib/TrackViewer/TrackViewer.cs:982
 msgid "Processing .pat file ..."
 msgstr "[Þřôçèƨƨïñϱ .ƥáƭ ƒïℓè ... !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1011
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1010
 msgid "Path has been modified. Loading a new path will discard changes."
 msgstr "[Þáƭλ λáƨ βèèñ ₥ôδïƒïèδ. £ôáδïñϱ á ñèω ƥáƭλ ωïℓℓ δïƨçářδ çλáñϱèƨ. !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1012
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1093
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1011
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1092
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:99
 msgid "Do you want to continue?"
 msgstr "[Ðô ¥ôú ωáñƭ ƭô çôñƭïñúè? !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1013
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1094
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1012
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1093
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:85
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:102
 msgid "Trackviewer Path Editor"
 msgstr "[TřáçƙƲïèωèř Þáƭλ Éδïƭôř !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1090
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1089
 msgid ""
 "This will open every single .pat file for this route, (try to) fix all broken "
 "nodes, and save the modified path. "
@@ -771,11 +771,11 @@ msgstr ""
 "[Tλïƨ ωïℓℓ ôƥèñ èƲèř¥ ƨïñϱℓè .ƥáƭ ƒïℓè ƒôř ƭλïƨ řôúƭè, (ƭř¥ ƭô) ƒïж áℓℓ βřôƙèñ "
 "ñôδèƨ, áñδ ƨáƲè ƭλè ₥ôδïƒïèδ ƥáƭλ.  !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1091
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1090
 msgid "Potentially it will therefore change all .pat files on disc."
 msgstr "[Þôƭèñƭïáℓℓ¥ ïƭ ωïℓℓ ƭλèřèƒôřè çλáñϱè áℓℓ .ƥáƭ ƒïℓèƨ ôñ δïƨç. !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1092
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1091
 msgid ""
 "This can be useful when a route has been changed and you want all paths to be "
 "corrected."
@@ -867,12 +867,12 @@ msgstr "[§èℓèçƭ ƨƥèèδƥôƨƭ çôℓôř !!!]"
 msgid "Select other-paths color"
 msgstr "[§èℓèçƭ ôƭλèř-ƥáƭλƨ çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:633
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:625
 #, csharp-format
 msgid "Loading terrain ace-files {0}-{1} (scaled down with a factor {2})"
 msgstr "[£ôáδïñϱ ƭèřřáïñ áçè-ƒïℓèƨ {0}-{1} (ƨçáℓèδ δôωñ ωïƭλ á ƒáçƭôř {2}) !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:659
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:651
 msgid "Rescaling previously loaded ace-files"
 msgstr "[Rèƨçáℓïñϱ ƥřèƲïôúƨℓ¥ ℓôáδèδ áçè-ƒïℓèƨ !!!]"
 
@@ -1105,8 +1105,8 @@ msgid "1"
 msgstr "[1 !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:148
-msgid "10"
-msgstr "[10 !!!]"
+msgid "11"
+msgstr "[11 !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:269
 msgid "99"
@@ -1531,7 +1531,6 @@ msgid " cars, and wait"
 msgstr "[ çářƨ, áñδ ωáïƭ !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
 msgid "seconds. "
 msgstr "[ƨèçôñδƨ.  !!!]"
 
@@ -1550,6 +1549,10 @@ msgstr "[ÂÌ ƭřáïñ řè9úèƨƭ ƭô ƥáƨƨ řèδ ƨïϱñáℓ !!!]"
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:44
 msgid "Blow horn for"
 msgstr "[ßℓôω λôřñ ƒôř !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
+msgid "seconds.  11 = American horn sequence."
+msgstr "[ƨèçôñδƨ.  11 = Â₥èřïçáñ λôřñ ƨè9úèñçè. !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:50
 msgid "Wait time code as decimal ="
