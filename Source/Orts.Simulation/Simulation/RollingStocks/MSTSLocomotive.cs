@@ -2431,17 +2431,16 @@ namespace Orts.Simulation.RollingStocks
             }
 
             //Curtius-Kniffler computation for the basic model
-    //        float max0 = 1.0f;  //Adhesion conditions [N]
+            //        float max0 = 1.0f;  //Adhesion conditions [N]
 
-            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared )
-             {
+            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
+            {
                 // Steam locomotive details updated in UpdateTractiveForce method, and inserted into adhesion module
                 // ****************  NB WheelSpeed updated within Steam Locomotive module at the moment - to be fixed to prevent discrepancies ******************
             }
-            
-            else 
+            else
             {
-               
+
                 //Compute axle inertia from parameters if possible
                 if (AxleInertiaKgm2 > 10000.0f) // if axleinertia value supplied in ENG file, then use in calculations
                 {
@@ -2476,7 +2475,7 @@ namespace Orts.Simulation.RollingStocks
                 LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle model
                 LocomotiveAxle.Update(elapsedClockSeconds);             //Main updater of the axle model
-         
+
                 // Output
                 MotiveForceN = LocomotiveAxle.CompensatedAxleForceN; //Get the Axle force and use it for the motion (use compensated value as it is independent of brake force)
 
@@ -4113,46 +4112,6 @@ namespace Orts.Simulation.RollingStocks
         public void AlerterPressed(bool pressed)
         {
             TrainControlSystem.AlerterPressed(pressed);
-        }
-
-        //put here because you can have diesel helpers and electric player locomotive
-        public void ToggleHelpersEngine()
-        {
-            bool helperFound = false; //this avoids that locomotive engines toggle in opposite directions
-            bool powerOn = false;
-
-            foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where((MSTSLocomotive locomotive) => { return locomotive.AcceptMUSignals; }))
-            {
-                if (locomotive == Simulator.PlayerLocomotive)
-                {
-                    // Engine number 1 or above are helper engines
-                    for (int i = 1; i < locomotive.DieselEngines.Count; i++)
-                    {
-                        if (!helperFound)
-                        {
-                            helperFound = true;
-                            powerOn = !locomotive.DieselEngines[i].PowerOn;
-                        }
-
-                        locomotive.DieselEngines.HandleEvent(powerOn ? PowerSupplyEvent.StartEngine : PowerSupplyEvent.StopEngine, i);
-                    }
-                }
-                else
-                {
-                    if (!helperFound)
-                    {
-                        helperFound = true;
-                        powerOn = !locomotive.DieselEngines[0].PowerOn;
-                    }
-
-                    locomotive.DieselEngines.HandleEvent(powerOn ? PowerSupplyEvent.StartEngine : PowerSupplyEvent.StopEngine);
-                }
-            }
-            
-            if (helperFound)
-            {
-                Simulator.Confirmer.Confirm(CabControl.HelperDiesel, powerOn ? CabSetting.On : CabSetting.Off);
-            }
         }
 
         public override void SignalEvent(Event evt)

@@ -1740,8 +1740,7 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            if (Receiver == null) return;
-            Receiver.LocomotivePowerSupply.HandleEvent(Receiver.DieselEngines.PowerOn ? PowerSupplyEvent.StopEngine : PowerSupplyEvent.StartEngine);
+            Receiver?.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.TogglePlayerEngine);
         }
     }
 
@@ -1759,9 +1758,7 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            if (Receiver == null) return;
-            Receiver.ToggleHelpersEngine();
-            // Report();
+            Receiver?.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.ToggleHelperEngine);
         }
     }
 

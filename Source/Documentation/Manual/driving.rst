@@ -157,137 +157,6 @@ Driving aids
 Open Rails provides a large number of driving aids, which support the 
 player during train operation.
 
-.. _driving-hud:
-
-Basic Head Up Display (HUD)
----------------------------
-
-By pressing ``<Alt+F5>`` you get some important data displayed at the top left
-of the display in the so-called Head Up Display (HUD). If you want the HUD 
-to disappear, press ``<Alt+F5>`` again.
-
-The HUD has 6 different pages. The basic page is shown at game start. To 
-sequentially switch to the other pages press ``<Shift+Alt+F5>``. After having
-cycled through all of the extended HUD pages, the basic page is displayed 
-again. 
-
-The basic page shows fundamental information. The other pages go into more 
-detail, and are used mainly for debugging or to get deeper information on 
-how OR behaves. They are listed in the 
-:ref:`Analysis tools <driving-analysis>` subchapter.
-
-The following information is displayed in the basic display:
-
-.. index::
-   single: version
-   single: time
-   single: speed
-   single: gradient
-   single: direction
-   single: throttle
-   single: train brake
-   single: engine brake
-   single: dynamic brake
-   single: fps
-
-
-- Version = The version of the Open Rails software you are running
-- Time = Game time of the Activity
-- Speed = the speed in Miles/Hr. or Kilometers/Hr.
-- Gradient = Route gradient in % in that point
-- Direction = Position of the Reverser - Electric, Diesel and Steam. 
-- Throttle = Displays the current position of the throttle, expressed as a 
-  percentage of full throttle. Throttle correctly uses Notches and configured 
-  % of power for Diesel engines or % of throttle for steam engines.
-- Train Brake = Shows the current position of the train brake system and 
-  the pressure value of the train brakes. Braking correctly reflects the 
-  braking system used; hold/release, self-lapping or graduated release. The 
-  Train brake HUD line has two Brake Reservoir pressure numbers: the first is 
-  the Equalization Reservoir (EQ) and the second is the Brake Cylinder (BC) 
-  pressure. The two BP numbers report the brake pressure in the lead engine 
-  and in the last car of the train. The unit of measure used for brake 
-  pressure is defined by the option :ref:`Pressure unit <options-pressure>`.
-- Engine Brake = percentage of independent engine brake. Not fully 
-  releasing the engine brake will affect train brake pressures.
-- Dynamic brake = if engaged, shows % of dynamic brake
-- Engine = shows the running status of the engine. 
-  In case of a gear-based engine, after the ``Engine`` line a ``Gear`` line 
-  appears displaying the actual gear. ``N`` means no gear inserted.
-- FPS = Number of frames rendered per second
-
-When applicable, an additional line indicationg whether Autopilot is active or not 
-will be shown.
-
-An example of the basic HUD for Diesel locomotives:
-
-.. image:: images/driving-hud-diesel.png
-  :align: center
-  :scale: 80%
-
-Electric Locomotives -- Additional information
-----------------------------------------------
-
-For electric locomotives information about the pantograph state is also 
-shown, as well as info about the circuit breaker state and whether the 
-locomotive has power (at least one pantograph raised and circuit breaker closed) 
-or not.
-
-.. image:: images/driving-hud-electric.png
-    :align: center
-    :scale: 80%
-
-Steam Engine -- Additional Information
---------------------------------------
-
-When using a steam engine the following additional information is displayed 
-in the HUD:
-
-- Steam Usage in lbs/h, based on entirely new physics code developed by the 
-  Open Rails team. It is calculated by parsing the .eng file for the 
-  following parameters: number of cylinders; cylinder stroke; cylinder 
-  diameter; boiler volume; maximum boiler pressure; maximum boiler output; 
-  exhaust limit; and basic steam usage.
-- Boiler pressure. 
-- Water level.
-- Levels of coal and water in %.
-
-An example of the basic HUD for Steam locomotives:
-
-.. image:: images/driving-hud-steam.png
-    :align: center
-    :scale: 80%
-
-For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
-
-The default :ref:`firing <physics-steam-firing>` setting is automatic fireman. 
-If manual firing is engaged with ``<Ctrl+F>``, then additional information 
-is included:
-
-.. image:: images/driving-hud-steam-manual-firing.png
-    :align: center
-    :scale: 80%
-
-Multiplayer -- Additional Information
--------------------------------------
-
-If a multiplayer session is active, the following additional information is 
-shown: the actual status of the player (dispatcher, helper or client), the 
-number of players connected and the list of trains with their distances 
-from the train of the player viewing the computer.
-
-Compass Window
---------------
-
-Open Rails software displays a compass that provides a heading based on the 
-camera's direction together with its latitude and longitude. 
-
-.. image:: images/driving-compass.png
-    :align: center
-    :scale: 60%
-
-To activate the compass window press the ``<0>`` key. To deactivate the 
-compass window, press the ``<0>`` key a second time.
-
 .. _driving-help:
 
 F1 Information Monitor
@@ -323,11 +192,16 @@ completed, the string ``Done`` appears in the last column:
 
 ``Procedures``: basic instructions for driving trains in Open Rails.
 
+
+F3 
+----------------
+This key is not currently used.
+
+
 .. _driving-track-monitor:
 
 F4 Track Monitor
 ----------------
-
 This window, which is displayed by pressing F4, has two different layouts 
 according the the train's :ref:`control mode <operation-control-mode>`:
 ``Auto Signal`` mode, ``Manual`` mode or ``Explorer`` mode. 
@@ -419,7 +293,9 @@ F5 Train Driving Info
 ---------------------
 By pressing ``<F5>`` you get some important data displayed in a dedicated window.
 
-Pressing ``<Shift+F5>`` toggles between the full and the abbreviated text mode. The default mode is full text.
+Pressing ``<Shift+F5>`` toggles between the full and the abbreviated text mode. 
+You may also switch mode by clicking on the yellow arrow symbol.
+The default mode is full text.
 
 .. image:: images/tdi-regular-windglass-on.png
    :align: center
@@ -456,8 +332,9 @@ The Diesel locomotive:
    :align: center
    :scale: 80%
 
-To help the user with ageing eyesight, the Time value is clickable, to toggle between the Regular
-Once toggled, the Bold font style is used in this window and also the Multiplayer Info window if it’s open.
+To help the user with ageing eyesight, the Time value is clickable as indicated by the white arrow below.
+This action toggles between Regular and Bold font styles.
+The style of font used in this window is also applied to the Multiplayer Info window if it's open.
 
 .. image:: images/tdi-bold-windglass-off.png
    :align: center
@@ -509,8 +386,6 @@ Once toggled, the Bold font style is used in this window and also the Multiplaye
    Train brake             BTRN             All                    WATR            Boiler water glass
    Wheel                   WHEL             All                    WHEL            Wheel
    ======================  ==============   ===================    ==============  ======================
-
-
 
 
 F6 Siding and Platform Names
@@ -675,6 +550,21 @@ with a whistle or other departure sound.
   :align: center
   :scale: 80%
 
+
+Compass Window
+--------------
+
+Open Rails software displays a compass that provides a heading based on the 
+camera's direction together with its latitude and longitude. 
+
+.. image:: images/driving-compass.png
+    :align: center
+    :scale: 60%
+
+To activate the compass window press the ``<0>`` key. To deactivate the 
+compass window, press the ``<0>`` key a second time.
+
+
 Odometer
 --------
 
@@ -758,7 +648,7 @@ In case that Debrief evaluation was checked, **Actual status: (**\ |darr| **)**\
 
    \newpage
    
-Cliking **Actual status: (**\ |darr| **)**\  expanded real-time display appears.
+Clicking **Actual status: (**\ |darr| **)**\  expanded real-time display appears.
 
 
 .. image:: images/dbfeval-evaluation-expanded.png
@@ -798,6 +688,123 @@ In such case the activity saves will have the "Eval" checkbox checked in the res
    :scale: 100%
    :align: center
 
+.. _driving-hud:
+
+Basic Head Up Display (HUD)
+---------------------------
+
+By pressing ``<Alt+F5>`` you get some important data displayed at the top left
+of the display in the so-called Head Up Display (HUD). If you want the HUD 
+to disappear, press ``<Alt+F5>`` again.
+
+The HUD has 6 different pages. The basic page is shown at game start. To 
+sequentially switch to the other pages press ``<Shift+Alt+F5>``. After having
+cycled through all of the extended HUD pages, the basic page is displayed 
+again. 
+
+The basic page shows fundamental information. The other pages go into more 
+detail, and are used mainly for debugging or to get deeper information on 
+how OR behaves. They are listed in the 
+:ref:`Analysis tools <driving-analysis>` subchapter.
+
+The following information is displayed in the basic display:
+
+.. index::
+   single: version
+   single: time
+   single: speed
+   single: gradient
+   single: direction
+   single: throttle
+   single: train brake
+   single: engine brake
+   single: dynamic brake
+   single: fps
+
+
+- Version = The version of the Open Rails software you are running
+- Time = Game time of the Activity
+- Speed = the speed in Miles/Hr. or Kilometers/Hr.
+- Gradient = Route gradient in % in that point
+- Direction = Position of the Reverser - Electric, Diesel and Steam. 
+- Throttle = Displays the current position of the throttle, expressed as a 
+  percentage of full throttle. Throttle correctly uses Notches and configured 
+  % of power for Diesel engines or % of throttle for steam engines.
+- Train Brake = Shows the current position of the train brake system and 
+  the pressure value of the train brakes. Braking correctly reflects the 
+  braking system used; hold/release, self-lapping or graduated release. The 
+  Train brake HUD line has two Brake Reservoir pressure numbers: the first is 
+  the Equalization Reservoir (EQ) and the second is the Brake Cylinder (BC) 
+  pressure. The two BP numbers report the brake pressure in the lead engine 
+  and in the last car of the train. The unit of measure used for brake 
+  pressure is defined by the option :ref:`Pressure unit <options-pressure>`.
+- Engine Brake = percentage of independent engine brake. Not fully 
+  releasing the engine brake will affect train brake pressures.
+- Dynamic brake = if engaged, shows % of dynamic brake
+- Engine = shows the running status of the engine. 
+  In case of a gear-based engine, after the ``Engine`` line a ``Gear`` line 
+  appears displaying the actual gear. ``N`` means no gear inserted.
+- FPS = Number of frames rendered per second
+
+When applicable, an additional line indicationg whether Autopilot is active or not 
+will be shown.
+
+An example of the basic HUD for Diesel locomotives:
+
+.. image:: images/driving-hud-diesel.png
+  :align: center
+  :scale: 80%
+
+Electric Locomotives -- Additional information
+----------------------------------------------
+
+For electric locomotives information about the pantograph state is also 
+shown, as well as info about the circuit breaker state and whether the 
+locomotive has power (at least one pantograph raised and circuit breaker closed) 
+or not.
+
+.. image:: images/driving-hud-electric.png
+    :align: center
+    :scale: 80%
+
+Steam Engine -- Additional Information
+--------------------------------------
+
+When using a steam engine the following additional information is displayed 
+in the HUD:
+
+- Steam Usage in lbs/h, based on entirely new physics code developed by the 
+  Open Rails team. It is calculated by parsing the .eng file for the 
+  following parameters: number of cylinders; cylinder stroke; cylinder 
+  diameter; boiler volume; maximum boiler pressure; maximum boiler output; 
+  exhaust limit; and basic steam usage.
+- Boiler pressure. 
+- Water level.
+- Levels of coal and water in %.
+
+An example of the basic HUD for Steam locomotives:
+
+.. image:: images/driving-hud-steam.png
+    :align: center
+    :scale: 80%
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
+The default :ref:`firing <physics-steam-firing>` setting is automatic fireman. 
+If manual firing is engaged with ``<Ctrl+F>``, then additional information 
+is included:
+
+.. image:: images/driving-hud-steam-manual-firing.png
+    :align: center
+    :scale: 80%
+
+Multiplayer -- Additional Information
+-------------------------------------
+
+If a multiplayer session is active, the following additional information is 
+shown: the actual status of the player (dispatcher, helper or client), the 
+number of players connected and the list of trains with their distances 
+from the train of the player viewing the computer.
 
 
 

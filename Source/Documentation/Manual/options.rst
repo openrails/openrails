@@ -227,16 +227,22 @@ Video Options
 Dynamic shadows
 ---------------
 
-With this option it is possible to enable or disable the display of
-dynamic shadows. Disabling can be helpful if low frame rates are
-experienced.
+The default setting is unchecked.
+Check this option to cast shadows from movable objects such as trains.
+
+Note: This may reduce the frame rate.
 
 Shadow for all shapes
 ---------------------
 
-When this option is selected and also the Dynamic shadows option is selected,
-OR displays a shadow also for the objects that don't have a shadow defined in
-the .ref file, and also for forest trees. This may reduce game performance.
+The default setting is unchecked.
+Check this option to cast shadows from static objects.
+
+Note: This may reduce the frame rate.
+
+Note: Static objects provided with shadows (in the file <route>.ref) 
+will cast shadows anyway. This option adds shadows for other static objects.
+
 
 .. _options-fullscreen:
 
@@ -284,9 +290,15 @@ that OR will show the two overhead wires that are more common.
 Vertical sync
 -------------
 
-When this option is selected, the OR update rate cannot be higher than the
-monitor vertical sync frequency (typically 60 Hz). This reduces CPU energy
-consumption in fast PCs.
+Vertical Sync (VSync) attempts to lock Open Rails’ output frame rate 
+to your monitor's refresh rate for the smoothest image and to resist 
+image "tearing”.
+VSync may help keep the frame rate more stable on complex routes, 
+reducing sudden frame rate drops and apparent control lag in some cases.
+If Open Rails' frame rate drops below your monitor's frame rate, you 
+may see stuttering or image "tearing". To prevent this, either turn off 
+the VSync option or reduce the values for video options such as view 
+distance, anti-aliasing, or world object density.
 
 .. _options-cab-stretch:
 
@@ -327,9 +339,12 @@ Viewing distance
 ----------------
 
 This option defines the maximum distance at which terrain is displayed. At
-higher distances Distant Mountains will be displayed (see below). This
-parameter increases CPU and GPU load. Also, some routes are optimized for
-the standard MSTS maximum viewing distance (2000m).
+higher distances Distant Mountains will be displayed (see below). 
+Increasing this parameter tends to increase CPU and GPU load. 
+Also, some routes are optimized for the standard MSTS maximum viewing distance (2000m).
+
+Note: When the option to tune settings automatically is applied, then this 
+value will be overridden and dynamically changed to maintain a target frame rate.
 
 Distant mountains
 -----------------
@@ -457,13 +472,10 @@ When this option is selected, resistance to train motion is influenced by
 the wind speed, and the direction that it is blowing. This option is
 described in detail :ref:`here <physics-wind-resistance>`
 
+Run electric locos on non-electrified routes
+--------------------------------------------
 
-
-Override non-electrified route line-voltage
--------------------------------------------
-
-This option allows running (in a non-prototypical way) electric
-locomotives on non-electrified routes.
+This option allows the running of electric locomotives on non-electrified routes.
 
 Steam locomotive hot start
 --------------------------
@@ -484,9 +496,10 @@ until the train has stopped and then hold it as red from that time up to
 two minutes before starting time. This is useful in organizing train meets
 and takeovers, however it does not always correspond to reality nor to
 MSTS operation. So with this option the player can decide which behavior
-the start signal will have. This option is checked by default. Unchecking
-the option has an effect on simulation behavior only if no
-:ref:`Timetable mode <timetable>` operation is under way.
+the start signal will have. This option is checked by default. 
+
+Unchecking the option has no effect when in 
+:ref:`Timetable mode <timetable>`.
 
 .. _options-open-doors-ai:
 
@@ -630,27 +643,28 @@ described below.
 Super-elevation
 ---------------
 
-If the value set for *Level* is greater than zero, OR supports super
-elevation for long curved tracks. The value *Minimum Length* determines
+If the value set for *Level* is greater than zero, OR supports super-elevation 
+for long curved tracks. The value *Minimum Length* determines
 the length of the shortest curve to have super-elevation. You need to
 choose the correct gauge for your route, otherwise some tracks may not be
 properly shown.
 
-When superelevation is selected, two viewing effects occur at runtime:
+When super-elevation is selected, two viewing effects occur at runtime:
 
 1. If an external camera view is selected, the tracks and the running
-   train will be shown inclined towards the internal part of the curve.
+   train will be shown inclined towards the inside of the curve.
 2. When the cab view is selected, the external world will be
-   shown as inclined towards the external part of the curve.
+   shown as inclined towards the outside of the curve.
 
 .. image:: images/options-superelevation_1.png
 .. image:: images/options-superelevation_2.png
 
-OR implements super elevated tracks using Dynamic Tracks. You can change
+OR implements super-elevated tracks using Dynamic Tracks. You can change
 the appearance of tracks by creating a ``<route folder>/TrackProfiles/
 TrProfile.stf`` file. The document ``How to Provide Track Profiles for
-Open Rails Dynamic Track.docm`` describing the creation of track profiles
-can be found in the OpenRails ``/Source/Documentation/`` folder. Forum
+Open Rails Dynamic Track.pdf`` describing the creation of track profiles
+can be found in the *Menu > Documents* drop-down or the 
+Open Rails ``/Source/Documentation/`` folder. Forum
 discussions about track profiles can also be found on `Elvas Tower
 <http://www.elvastower.com/forums/index.php?/topic/21119-superelevation/
 page__view__findpost__p__115247>`_.
@@ -824,10 +838,22 @@ and therefore a more difficult, but more challenging driving experience.
 Level of detail bias
 --------------------
 
-This option is an expansion (and replacement) of an earlier experimental
-option: *Always use highest level of detail*. The new option allows you to
-increase or reduce the level of detail generally shown independently of
-the viewing distance and world object density.
+Many visual objects are modelled at more than one level of detail (LOD) so, 
+when they are seen at a distance, Open Rails can switch to the lesser level 
+of detail without compromising the view. This use of multiple LODs reduces 
+the processing load and so may increase frame rates.
+
+Lowering the LOD Bias setting below 0 reduces the distance at which a lower 
+level of detail comes into view, and so boosts frame rates but there may be 
+some loss of sharpness.
+
+Raising the LOD Bias setting above 0 increases the distance at which a lower 
+level of detail comes into view. This may be useful to sharpen distant content 
+that was created for a smaller screen or a wider field of view than you are 
+currently using.
+
+If your content does not use multiple LODs, then this option will have no effect.
+
 
 Adhesion proportional to rain/snow/fog
 --------------------------------------

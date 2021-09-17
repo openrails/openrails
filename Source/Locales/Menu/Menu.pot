@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-05-09 16:19:47+0200\n"
-"PO-Revision-Date: 2021-05-09 16:19:47+0200\n"
+"POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
+"PO-Revision-Date: 2021-09-15 03:48:20+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -1188,17 +1188,17 @@ msgid "Explore in Activity Mode"
 msgstr ""
 
 #: ../../Menu/ResumeForm.cs:160
-#: ../../Menu/ResumeForm.cs:196
+#: ../../Menu/ResumeForm.cs:195
 msgid "Explore Route"
 msgstr ""
 
-#: ../../Menu/ResumeForm.cs:243
+#: ../../Menu/ResumeForm.cs:242
 msgid ""
 "To prevent crashes and unexpected behaviour, Open Rails invalidates games "
 "saved from older versions if they fail to restore.\n"
 msgstr ""
 
-#: ../../Menu/ResumeForm.cs:231
+#: ../../Menu/ResumeForm.cs:230
 #, csharp-format
 msgid ""
 "Warning: Save {0} found from a route with an unexpected name:\n"
@@ -1206,12 +1206,12 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../../Menu/ResumeForm.cs:245
+#: ../../Menu/ResumeForm.cs:244
 #, csharp-format
 msgid "{0} of {1} saves for this route are no longer valid."
 msgstr ""
 
-#: ../../Menu/ResumeForm.cs:255
+#: ../../Menu/ResumeForm.cs:254
 #, csharp-format
 msgid ""
 "Restoring from a save made by version {1} of {0} may be incompatible with "
@@ -1220,7 +1220,7 @@ msgid ""
 "Continue?"
 msgstr ""
 
-#: ../../Menu/ResumeForm.cs:263
+#: ../../Menu/ResumeForm.cs:262
 msgid ""
 "The selected file contains Debrief Eval data.\n"
 "But Debrief Evaluation checkbox (Main menu) is unchecked.\n"
@@ -1229,7 +1229,7 @@ msgid ""
 "Continue?"
 msgstr ""
 
-#: ../../Menu/ResumeForm.cs:443
+#: ../../Menu/ResumeForm.cs:441
 #, csharp-format
 msgid "{0} invalid saves have been deleted."
 msgstr ""

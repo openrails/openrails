@@ -1009,19 +1009,6 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        public void TogglePlayerEngine()
-        {
-            if (ThrottlePercent < 1)
-            {
-                DieselEngines.HandleEvent(DieselEngines.PowerOn ? PowerSupplyEvent.StopEngine : PowerSupplyEvent.StartEngine);
-                Simulator.Confirmer.Confirm(CabControl.PlayerDiesel, DieselEngines.PowerOn ? CabSetting.On : CabSetting.Off);
-            }
-            else
-            {
-                Simulator.Confirmer.Warning(CabControl.PlayerDiesel, CabSetting.Warn1);
-            }
-        }
-
         //used by remote diesels to update their exhaust
         public void RemoteUpdate(float exhPart, float exhMag, float exhColorR, float exhColorG, float exhColorB)
         {
