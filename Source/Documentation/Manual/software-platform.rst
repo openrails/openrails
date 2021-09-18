@@ -21,21 +21,16 @@ experience.
 Open Rails Game Engine
 ======================
 
-The Open Rails software is built on Microsoft's XNA game platform using XNA 
-Framework 3.1 and .NET Framework 3.5 SP1. Source code is developed in 
-Microsoft's Visual C# programming language.
+The Open Rails software is built on the MonoGame platform. 
+MonoGame is an open source implementation of the Microsoft XNA 4 Framework and provides:
 
-The XNA Framework is based on the native implementation of .NET Compact 
-Framework for Xbox 360 development and .NET Framework on Windows. It includes 
-an extensive set of class libraries, specific to game development, to promote 
-maximum code reuse across target platforms. The framework runs on a version 
-of the Common Language Runtime that is optimized for gaming to provide a 
-managed execution environment. The runtime is available for Windows XP, 
-Windows Vista, Windows 7, Windows 8, and Xbox 360. Since XNA games are 
-written for the runtime, they can run on any platform that supports the XNA 
-Framework with minimal or no modification of the Game engine.
+  - Game framework
+  - 2D and 3D rendering
+  - Sound effect and music playback
+  - Keyboard, mouse, touch, and controller inputs
+  - Content building and optimization
+  - Math library optimized for games
 
-.. warning:: A license fee is payable to Microsoft to use XNA Game Studio for Xbox 360 games. At this time, the Open Rails team has not investigated whether the Open Rails software is suitable for Xbox.
 
 Frames per Second (FPS) Performance
 ===================================
@@ -60,7 +55,7 @@ members' computer systems.
 Resource Utilization
 ====================
 
-Because Open Rails software is designed for Microsoft's XNA game framework, 
+Because Open Rails software is designed for the MonoGame framework, 
 it natively exploits today's graphics cards' ability to offload much of the 
 display rendering workload from the computer's CPU.
 
