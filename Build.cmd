@@ -136,21 +136,22 @@ IF NOT "%Mode%" == "Unstable" (
 	CALL :recreate "Program\Documentation" || GOTO :error
 
 	REM Compile the documentation.
-	FOR /R "Source\Documentation" %%F IN (*.doc *.docx *.docm *.xls *.xlsx *.xlsm *.odt) DO ECHO %%~F && OfficeToPDF.exe /bookmarks /print "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
+	FOR %%E IN (doc docx docm xls xlsx xlsm odt) DO FOR %%F IN ("Source\Documentation\*.%%E") DO ECHO %%~F && OfficeToPDF.exe /bookmarks /print "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
 	>"Source\Documentation\Manual\version.py" ECHO version = '%Version%' || GOTO :error
 	>>"Source\Documentation\Manual\version.py" ECHO release = '%Revision%' || GOTO :error
 	PUSHD "Source\Documentation\Manual" && CALL make.bat clean & POPD || GOTO :error
 	PUSHD "Source\Documentation\Manual" && CALL make.bat latexpdf && POPD || GOTO :error
 
 	REM Copy the documentation.
-	FOR /R "Source\Documentation" %%F IN (*.pdf) DO CALL :copy "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
+	FOR %%F IN ("Source\Documentation\*.pdf") DO CALL :copy "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
+	CALL :copy "Source\Documentation\Manual\_build\latex\Manual.pdf" "Program\Documentation\Manual.pdf" || GOTO :error
 	CALL :create "Program\Documentation\es"
 	CALL :copy "Source\Documentation\Manual\es\Manual.pdf" "Program\Documentation\es\Manual.pdf" || GOTO :error
 	ROBOCOPY /MIR /NJH /NJS "Source\Documentation\SampleFiles" "Program\Documentation\SampleFiles"
 	IF %ERRORLEVEL% GEQ 8 GOTO :error
 
 	REM Copy the documentation separately.
-	FOR /R "Program\Documentation" %%F IN (*.pdf) DO CALL :copy "%%~F" "OpenRails-%Mode%-%%~nxF" || GOTO :error
+	FOR %%F IN ("Program\Documentation\*.pdf") DO CALL :copy "%%~F" "OpenRails-%Mode%-%%~nxF" || GOTO :error
 )
 
 IF "%Mode%" == "Stable" (
