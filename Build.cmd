@@ -103,9 +103,8 @@ ECHO Set update channel to "%Mode%".
 REM Build locales.
 PUSHD Source\Locales && CALL Update.bat non-interactive && POPD || GOTO :error
 
-REM Run unit tests (9009 means XUnit itself wasn't found, which is an error).
-xunit.console.x86 Program\Tests.dll -nunit xunit.xml
-IF "%ERRORLEVEL%" == "9009" GOTO :error
+REM Run unit tests.
+xunit.console.x86 Program\Tests.dll -nunit xunit.xml || GOTO :error
 
 CALL :copy "Program\RunActivity.exe" "Program\RunActivityLAA.exe" || GOTO :error
 editbin /NOLOGO /LARGEADDRESSAWARE "Program\RunActivityLAA.exe" || GOTO :error
