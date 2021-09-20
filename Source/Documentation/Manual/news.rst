@@ -14,7 +14,7 @@ Headlines
 
 - Monogame graphics replace XNA with `support for ReShade <https://reshade.me/>`_ and more memory
 - Web server providing train data for web pages on other devices
-- Train Driving display on other devices
+- Train Driving display in-game and on other devices
 - More realistic vacuum braking
 - Trainspotting camera including train-following car
 
