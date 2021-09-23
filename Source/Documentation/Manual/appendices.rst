@@ -22,7 +22,7 @@ Measure                 Default unit    Applies to  OR accepts  MSTS accepts    
 ======================= =============== =========== =========== =============== ==============================
 Mass                    kg                          kg          kg                
 \                                                   t           t               metric tonne (1000 kg)
-\                                                   lb          lb                                    
+\                                                   lb          lb
 \                                                   t-uk                        Imperial ton (2240 lb)
 \                                                   t-us                        US ton (2000 lb)
 Distance                                            mm
