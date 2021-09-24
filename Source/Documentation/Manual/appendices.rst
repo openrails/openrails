@@ -1,8 +1,7 @@
-.. _appendices:
-
 **********
 Appendices
 **********
+
 .. _appendices-units-of-measure:
 
 Units of Measure
@@ -23,7 +22,7 @@ Measure                 Default unit    Applies to  OR accepts  MSTS accepts    
 ======================= =============== =========== =========== =============== ==============================
 Mass                    kg                          kg          kg                
 \                                                   t           t               metric tonne (1000 kg)
-\                                                   lb          lb                
+\                                                   lb          lb
 \                                                   t-uk                        Imperial ton (2240 lb)
 \                                                   t-us                        US ton (2000 lb)
 Distance                                            mm
@@ -99,6 +98,33 @@ Angle                   radians                     --
 Angular Speed           rad/s                       --          rad/s
 Other                                               --          lb/hp/h         e.g. CoalBurnage
 ======================= =============== =========== =========== =============== ==============================
+
+
+.. _appendices-folders_used:
+
+Folders used by Open Rails
+==========================
+
+The following folders are also written to by Open Rails.
+
+(In this table, we assume a user called Joe.)
+
+.. table:: Folders Table
+   :align: center
+   :widths: auto
+
+   ==================== ========================================================================================
+   **Purpose**              **Folder** (all beginning C:\\Users\\Joe\\) + **Sample File**
+   ==================== ========================================================================================
+   Logs                 Desktop\\OpenRailsLog.txt
+   Data dumps           Desktop\\OpenRailsDump.csv
+   Screenshots          Pictures\\Open Rails\\Open Rails 2021-09-21 07-26-58.png
+   Saves                AppData\\Roaming\\Open Rails\\shunt_1 2021-07-18 19.46.35.save
+   Save images          AppData\\Roaming\\Open Rails\\shunt_1 2021-07-18 19.46.35.png
+   Replays              AppData\\Roaming\\Open Rails\\shunt_1 2021-07-18 19.46.35.replay
+   Evaluations          AppData\\Roaming\\Open Rails\\shunt_1 2021-07-18 19.46.35.dbfeval
+   Loading progress bar AppData\\Roaming\\Open Rails\\Load Cache\\3cd9... ...0ce2.dat
+   ==================== ========================================================================================
 
 
 .. _appendices-signal-functions:
