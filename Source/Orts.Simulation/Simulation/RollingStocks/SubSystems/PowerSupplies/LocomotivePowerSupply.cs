@@ -392,7 +392,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                 helperFound = true;
                             }
 
-                            locomotive.DieselEngines.HandleEvent(evt, i);
+                            locomotive.DieselEngines.HandleEvent(evt);
                         }
                     }
                     else
