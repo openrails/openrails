@@ -37,44 +37,40 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float demandedAutoCylPressurePSI = 0;
 
             // Only allow EP brake tokens to operate if car is connected to an EP system
-            if (lead == null || !(lead.BrakeSystem is EPBrakeSystem))
+            if (lead != null && lead.BrakeSystem is EPBrakeSystem && Car.BrakeSystem is EPBrakeSystem && (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.EPFullServ || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.EPOnly || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.EPApply))
             {
-                HoldingValve = ValveState.Release;
-                base.Update(elapsedClockSeconds);
-                return;
-            }
 
-            // process valid EP brake tokens
-
-            if (BrakeLine3PressurePSI >= 1000f || Car.Train.BrakeLine4 < 0)
-            {
-                HoldingValve = ValveState.Release;
+                if (BrakeLine3PressurePSI >= 1000f || Car.Train.BrakeLine4 < 0)
+                {
+                    HoldingValve = ValveState.Release;
+                }
+                else if (Car.Train.BrakeLine4 == 0)
+                {
+                    HoldingValve = ValveState.Lap;
+                }
+                else
+                {
+                    demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI;
+                    HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
+                }
             }
-            else if (Car.Train.BrakeLine4 == 0)
-            {
-                HoldingValve = ValveState.Lap;
-            }
-            else
-            {
-                demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI;
-                HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
-            }
-            
 
                 base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
 
-
-            if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
+            // Only allow EP brake tokens to operate if car is connected to an EP system
+            if (lead != null && lead.BrakeSystem is EPBrakeSystem && Car.BrakeSystem is EPBrakeSystem && (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.EPFullServ || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.EPOnly || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.EPApply))
             {
-                float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
-                    dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
-                if (dp > demandedAutoCylPressurePSI - AutoCylPressurePSI)
-                    dp = demandedAutoCylPressurePSI - AutoCylPressurePSI;
-                BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
-                AutoCylPressurePSI += dp;
+                if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
+                {
+                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+                    if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
+                        dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
+                    if (dp > demandedAutoCylPressurePSI - AutoCylPressurePSI)
+                        dp = demandedAutoCylPressurePSI - AutoCylPressurePSI;
+                    BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
+                    AutoCylPressurePSI += dp;
+                }
             }
-            
         }
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
