@@ -500,6 +500,28 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Should always be at least one bogie on rolling stock. If is zero then NaN error occurs.
+            if (WagonNumBogies == 0)
+            {
+                WagonNumBogies = 1;
+            }
+
+            // Set wheel flange parameters to default values.
+            if (MaximumWheelFlangeAngleRad == 0)
+            {
+                MaximumWheelFlangeAngleRad = 1.09956f; // Default = 63.36 deg.
+            }
+            else
+            {
+                const float convertDegtoRad = 0.01745329252f;
+                MaximumWheelFlangeAngleRad = convertDegtoRad * MaximumWheelFlangeAngleRad; // Assume that input has been in degrees - TO ADD - appropriate input parameters
+            }
+
+            if (WheelFlangeLengthM == 0)
+            {
+                WheelFlangeLengthM = 0.026194f; // Height = 1.031in
+            }
+
             // Initialise steam heat parameters
             if (TrainHeatBoilerWaterUsageGalukpH == null) // If no table entered in WAG file, then use the default table
             {
@@ -1015,6 +1037,8 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortshorizontallengthairhose": CarAirHoseHorizontalLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcouplerface": CarCouplerFaceLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortswheelflangelength": WheelFlangeLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsmaximumwheelflangeangle": MaximumWheelFlangeAngleRad = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortstrackgauge":
                     stf.MustMatch("(");
                     TrackGaugeM = stf.ReadFloat(STFReader.UNITS.Distance, null);
@@ -1472,6 +1496,8 @@ namespace Orts.Simulation.RollingStocks
             CarCouplerFaceLengthM = copy.CarCouplerFaceLengthM;
             CarAirHoseLengthM = copy.CarAirHoseLengthM;
             CarAirHoseHorizontalLengthM = copy.CarAirHoseHorizontalLengthM;
+            MaximumWheelFlangeAngleRad = copy.MaximumWheelFlangeAngleRad;
+            WheelFlangeLengthM = copy.WheelFlangeLengthM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
@@ -1710,6 +1736,11 @@ namespace Orts.Simulation.RollingStocks
 
             outf.Write(WheelBrakeSlideProtectionActive);
             outf.Write(WheelBrakeSlideProtectionTimerS);
+            outf.Write(AngleOfAttackRad);
+            outf.Write(DerailClimbDistanceM);
+            outf.Write(DerailPossible);
+            outf.Write(DerailExpected);
+            outf.Write(DerailElapsedTimeS);
 
             base.Save(outf);
         }
@@ -1757,6 +1788,11 @@ namespace Orts.Simulation.RollingStocks
 
             WheelBrakeSlideProtectionActive = inf.ReadBoolean();
             WheelBrakeSlideProtectionTimerS = inf.ReadInt32();
+            AngleOfAttackRad = inf.ReadSingle();
+            DerailClimbDistanceM = inf.ReadSingle();
+            DerailPossible = inf.ReadBoolean();
+            DerailExpected = inf.ReadBoolean();
+            DerailElapsedTimeS = inf.ReadSingle();
 
             base.Restore(inf);
         }
