@@ -196,6 +196,14 @@ namespace Orts.Simulation.RollingStocks
         public float CarBodyLengthM;
         public float CarCouplerFaceLengthM;
         public float DerailmentCoefficient;
+        public float NadalDerailmentCoefficient;
+        public float MaximumWheelFlangeAngleRad;
+        public float WheelFlangeLengthM;
+        public float AngleOfAttackRad;
+        public float DerailClimbDistanceM;
+        public bool DerailPossible = false;
+        public bool DerailExpected = false;
+        public float DerailElapsedTimeS;
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
@@ -852,7 +860,7 @@ namespace Orts.Simulation.RollingStocks
             UpdateCurveForce(elapsedClockSeconds);
             UpdateTunnelForce();
             UpdateBrakeSlideCalculation();
-            UpdateTrainDerailmentRisk();
+            UpdateTrainDerailmentRisk(elapsedClockSeconds);
 
             // acceleration
             if (elapsedClockSeconds > 0.0f)
@@ -1173,9 +1181,24 @@ namespace Orts.Simulation.RollingStocks
         ///
         /// This section calculates the coupler angle behind the current car (ie the rear coupler on this car and the front coupler on the following car. The coupler angle will be used for
         /// coupler automation as well as calculating Lateral forces on the car.
+        /// 
+        /// In addition Chapter 2 - Flange Climb Derailment Criteria of the TRB’s Transit Cooperative Research Program (TCRP) Report 71, examines flange climb derailment criteria for transit 
+        /// vehicles that include lateral-to-vertical ratio limits and a corresponding flange-climb-distance limit. The report also includes guidance to transit agencies on wheel and rail 
+        /// maintenance practices.
+        /// 
+        /// Some of the concepts described in this publication have also been used to calculate the derailment likelihood.
+        /// 
+        /// https://www.nap.edu/read/13841/chapter/4
+        /// 
+        /// It should be noted that car derailment is a very complex process that is impacted by many diferent factors, including the track structure and train conditions. To model all of 
+        /// these factors is not practical so only some of the key factors are considered. For eaxmple, wheel wear may determine whether a particular car will derial or not. So the same 
+        /// type of car can either derail or not under similar circumstances.
+        /// 
+        /// Hence these calculations provide a "generic" approach to determining whether a car will derial or not.
+        /// 
         /// </summary>
 
-        public void UpdateTrainDerailmentRisk()
+        public void UpdateTrainDerailmentRisk(float elapsedClockSeconds)
         {
             // Calculate coupler angle when travelling around curve
             // To achieve an accurate coupler angle calculation the following length need to be calculated. These values can be included in the ENG/WAG file for greatest accuracy, or alternatively OR will
@@ -1438,13 +1461,70 @@ namespace Orts.Simulation.RollingStocks
                         DerailmentCoefficient *= 2.0f;
                     }
 
+                    var wagonAdhesion = Train.WagonCoefficientFriction;
+
+                    // Calculate Nadal derailment coefficient limit
+                    NadalDerailmentCoefficient = ((float) Math.Tan(MaximumWheelFlangeAngleRad) - wagonAdhesion) / (1f + wagonAdhesion * (float) Math.Tan(MaximumWheelFlangeAngleRad));
+
+                    // Calculate Angle of Attack - AOA = sin-1(2 * bogie wheel base / curve radius)
+                    AngleOfAttackRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadius);
+                    var angleofAttackmRad = AngleOfAttackRad * 1000f; // Convert to micro radians
+
+                    // Calculate the derail climb distance - uses the general form equation 2.4 from the above publication
+                    var parameterA_1 = ((100 / (-1.9128f * MathHelper.ToDegrees(MaximumWheelFlangeAngleRad) + 146.56f)) + 3.1f) * Me.ToIn(WheelFlangeLengthM);
+
+                    var parameterA_2 = (1.0f / (-0.0092f * Math.Pow(MathHelper.ToDegrees(MaximumWheelFlangeAngleRad), 2) + 1.2125f * MathHelper.ToDegrees(MaximumWheelFlangeAngleRad) - 39.031f)) + 1.23f;
+
+                    var parameterA = parameterA_1 + parameterA_2;
+
+                    var parameterB_1 = ((10f / (-21.157f * Me.ToIn(WheelFlangeLengthM) + 2.1052f)) + 0.05f) * MathHelper.ToDegrees(MaximumWheelFlangeAngleRad);
+
+                    var parameterB_2 = (10 / (0.2688f * Me.ToIn(WheelFlangeLengthM) - 0.0266f)) - 5f;
+
+                    var parameterB = parameterB_1 + parameterB_2;
+
+                    DerailClimbDistanceM = Me.FromFt( (float)((parameterA * parameterB * Me.ToIn(WheelFlangeLengthM)) / ((angleofAttackmRad + (parameterB * Me.ToIn(WheelFlangeLengthM))))) );
+
+                    // calculate the time taken to travel the derail climb distance
+                    var derailTimeS = AbsSpeedMpS / DerailClimbDistanceM;
+
+                    // Set indication that a derail may occur
+                    if (DerailmentCoefficient > NadalDerailmentCoefficient)
+                    {
+                        DerailPossible = true;
+                    }
+                    else
+                    {
+                        DerailPossible = false;
+                    }
+
+                    // If derail climb time exceeded, then derail happens
+                    if (DerailPossible && DerailElapsedTimeS > derailTimeS)
+                    {
+                        DerailExpected = true;
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("Car {0} has derailed on the curve.", CarID));
+
+                    }
+                    else if (DerailPossible)
+                    {
+                        DerailElapsedTimeS += elapsedClockSeconds;
+                    }
+                    else
+                    {
+                        DerailElapsedTimeS = 0; // Reset timer if derail is not possible
+                    }
                 }
                 else
                 {
                     TotalWagonLateralDerailForceN = 0;
                     TotalWagonVerticalDerailForceN = 0;
                     DerailmentCoefficient = 0;
+                    DerailExpected = false;
+                    DerailPossible = false;
+                    DerailElapsedTimeS = 0;
                 }
+
+
 
                 if (TotalWagonLateralDerailForceN > TotalWagonVerticalDerailForceN)
                 {
@@ -1690,7 +1770,7 @@ namespace Orts.Simulation.RollingStocks
                                     }
                                     else
                                     {
-                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your passengers in car {0} are feeling uncomfortable. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric))); ;
+                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your passengers in car {0} are feeling uncomfortable. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric))); 
                                     }
 
                                     if (dbfmaxsafecurvespeedmps != MaxSafeCurveSpeedMps)//Debrief eval
