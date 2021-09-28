@@ -160,7 +160,7 @@ namespace ORTS.Scripting.Api
 
     public enum PowerSupplyState
     {
-        [GetString("Unavailable")] Unavailable,
+        [GetString("Unavailable")] Unavailable = -1,
         [GetParticularString("PowerSupply", "Off")] PowerOff,
         [GetParticularString("PowerSupply", "On ongoing")] PowerOnOngoing,
         [GetParticularString("PowerSupply", "On")] PowerOn
@@ -168,7 +168,7 @@ namespace ORTS.Scripting.Api
 
     public enum PantographState
     {
-        [GetString("Unavailable")] Unavailable,
+        [GetString("Unavailable")] Unavailable = -1,
         [GetParticularString("Pantograph", "Down")] Down,
         [GetParticularString("Pantograph", "Lowering")] Lowering,
         [GetParticularString("Pantograph", "Raising")] Raising,
@@ -177,7 +177,7 @@ namespace ORTS.Scripting.Api
 
     public enum DieselEngineState
     {
-        [GetString("Unavailable")] Unavailable,
+        [GetString("Unavailable")] Unavailable = -1,
         [GetParticularString("Engine", "Stopped")] Stopped,
         [GetParticularString("Engine", "Stopping")] Stopping,
         [GetParticularString("Engine", "Starting")] Starting,
