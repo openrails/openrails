@@ -44,7 +44,7 @@ namespace ORTS.Scripting.Api
 
     public enum TractionCutOffRelayState
     {
-        [GetString("Unavailable")] Unavailable = -1,
+        [GetString("Unavailable")] Unavailable,
         [GetParticularString("TractionCutOffRelay", "Open")] Open,
         [GetParticularString("TractionCutOffRelay", "Closing")] Closing,
         [GetParticularString("TractionCutOffRelay", "Closed")] Closed

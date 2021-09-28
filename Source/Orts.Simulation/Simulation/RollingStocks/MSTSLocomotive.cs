@@ -2310,21 +2310,14 @@ namespace Orts.Simulation.RollingStocks
         protected virtual void UpdateCompressor(float elapsedClockSeconds)
         {
 
-            var reservoirChargingRate = MainResChargingRatePSIpS;
-
-            // For a mechanical compressor (typically fitted to a diesel locomotive) the charging rate will be related to the RpM of the diesel engine, and therefore 
-            // derated by an amount equivalent to the diesel RpM.
-            // All other locomotive types it will be the full charging rate for the reservoir
-
-            // TO DO - For v1.4 this code uses the "electric" compressor code to control the compressor. The only additional feature is the addition of a variable 
-            // charging rate based upon the diesel engine rpm. Note that the diesel compressor code operates regardless of whether the engine is running or not. 
-            // This needs to be corrected in a future implementation.
-
-            // If mechanical compressor then calculate charging rate based upon engine rpm
             if (CompressorIsMechanical && (EngineType == EngineTypes.Control || EngineType == EngineTypes.Diesel))
             {
+                // For a mechanical compressor (typically fitted to a diesel locomotive) the charging rate will be related to the RpM of the diesel engine, and therefore 
+                // derated by an amount equivalent to the diesel RpM.
+                // All other locomotive types it will be the full charging rate for the reservoir
+                var reservoirChargingRate = MainResChargingRatePSIpS;
 
-                // Control car uses the attached active locomotive to set the charging rate
+                // Control car uses the attached active locomotive
                 if (EngineType == EngineTypes.Control)
                 {
                     FindControlActiveLocomotive();
@@ -2333,28 +2326,51 @@ namespace Orts.Simulation.RollingStocks
                     {
                         var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
 
+                        // Compressors only operate when the diesel engine is running, otherwise they are off
+                        if (activeloco.DieselEngines[0].State == DieselEngineState.Running && !CompressorIsOn)
+                            SignalEvent(Event.CompressorOn);
+                        else if (activeloco.DieselEngines[0].State != DieselEngineState.Running && CompressorIsOn)
+                            SignalEvent(Event.CompressorOff);
+
                         // Set charging rate depending upon compressor rpm
                         reservoirChargingRate = (activeloco.DieselEngines[0].RealRPM / activeloco.DieselEngines[0].MaxRPM) * MainResChargingRatePSIpS;
                     }
                 }
                 else
                 {
-                    // Powered locomotive use themselves
+                    // Powered locomotive use thereselves
                     var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+
+                    // Compressors only operate when the diesel engine is running, otherwise they are off
+                    if (mstsDieselLocomotive.DieselEngines[0].State == DieselEngineState.Running && !CompressorIsOn)
+                        SignalEvent(Event.CompressorOn);
+                    else if (mstsDieselLocomotive.DieselEngines[0].State != DieselEngineState.Running && CompressorIsOn)
+                        SignalEvent(Event.CompressorOff);
 
                     // Set charging rate depending upon compressor rpm
                     reservoirChargingRate = (mstsDieselLocomotive.DieselEngines[0].RealRPM / mstsDieselLocomotive.DieselEngines[0].MaxRPM) * MainResChargingRatePSIpS;
                 }
+
+                // Only change reservoir pressure if compressor is running
+                if (CompressorIsOn)
+                {
+                    MainResPressurePSI += elapsedClockSeconds * reservoirChargingRate;
+                }
+
+                // Compressor runs continuously, and excess air pressure is exhausted to atmosphere once max pressure is reached.
+                MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.0f, MaxMainResPressurePSI);
+
             }
+            else // Non-mechanical compressors
+            {
+                if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+                    SignalEvent(Event.CompressorOn);
+                else if ((MainResPressurePSI > MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
+                    SignalEvent(Event.CompressorOff);
 
-            // Turn compressor on and off
-            if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
-                SignalEvent(Event.CompressorOn);
-            else if ((MainResPressurePSI > MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
-                SignalEvent(Event.CompressorOff);
-
-            if (CompressorIsOn)
-                MainResPressurePSI += elapsedClockSeconds * reservoirChargingRate;
+                if (CompressorIsOn)
+                    MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
+            }
         }
 
         /// <summary>
