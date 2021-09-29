@@ -1038,7 +1038,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortshorizontallengthairhose": CarAirHoseHorizontalLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcouplerface": CarCouplerFaceLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortswheelflangelength": WheelFlangeLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(ortsmaximumwheelflangeangle": MaximumWheelFlangeAngleRad = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsmaximumwheelflangeangle": MaximumWheelFlangeAngleRad = stf.ReadFloatBlock(STFReader.UNITS.Angle, null); break;
                 case "wagon(ortstrackgauge":
                     stf.MustMatch("(");
                     TrackGaugeM = stf.ReadFloat(STFReader.UNITS.Distance, null);
