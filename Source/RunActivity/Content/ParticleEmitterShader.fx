@@ -169,7 +169,7 @@ float4 PSParticles(in VERTEX_OUTPUT In) : COLOR0
 	
 	float alpha = (1 - In.Color_Age.a);
 	float4 tex = tex2D(ParticleSamp, In.TexCoord);
-	tex.rgb *= In.Color_Age.rgb;
+	tex.rgb = In.Color_Age.rgb * tex.a;
 	_PSApplyDay2Night(tex.rgb);
 	tex.a *= alpha;
 	return tex;
