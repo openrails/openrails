@@ -253,6 +253,9 @@ namespace Orts.Formats.Msts
         ORTS_TCS47,
         ORTS_TCS48,
         ORTS_ETCS,
+        ORTS_ODOMETER,
+        ORTS_ODOMETER_RESET,
+        ORTS_ODOMETER_DIRECTION,
 
         // Further CabViewControlTypes must be added above this line, to avoid their malfunction in 3DCabs
         EXTERNALWIPERS,
@@ -310,7 +313,13 @@ namespace Orts.Formats.Msts
         INCHES_OF_MERCURY,
         MILI_AMPS,
         RPM,
-        LBS
+        LBS,
+
+        KILOMETRES,
+        METRES,
+        MILES,
+        FEET,
+        YARDS
     }
 
     public enum DiscreteStates
