@@ -102,9 +102,7 @@ namespace Orts.Viewer3D.RollingStock
         public MSTSWagonViewer(Viewer viewer, MSTSWagon car)
             : base(viewer, car)
         {
-            
-            string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
-            string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
+            var smokeTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
 
             // Particle Drawers called in Wagon so that wagons can also have steam effects.
             ParticleDrawers = (
@@ -131,7 +129,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 foreach (var drawer in HeatingSteamBoiler)
                 {
-                    drawer.Initialize(dieselTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
                 // Exhaust for HEP/Power Generator
@@ -140,7 +138,7 @@ namespace Orts.Viewer3D.RollingStock
                 
                 foreach (var drawer in WagonGenerator)
                 {
-                    drawer.Initialize(dieselTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
                 // Smoke for wood/coal fire
@@ -149,7 +147,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 foreach (var drawer in WagonSmoke)
                 {
-                    drawer.Initialize(steamTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
                 // Smoke for bearing hot box
@@ -158,7 +156,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 foreach (var drawer in BearingHotBox)
                 {
-                    drawer.Initialize(steamTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
                 // Steam leak in heating hose 
@@ -168,7 +166,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 foreach (var drawer in HeatingHose)
                 {
-                    drawer.Initialize(steamTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
                 // Steam leak in heating compartment steam trap
@@ -178,7 +176,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 foreach (var drawer in HeatingCompartmentSteamTrap)
                 {
-                    drawer.Initialize(steamTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
                 // Steam leak in heating steam trap
@@ -188,7 +186,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 foreach (var drawer in HeatingMainPipeSteamTrap)
                 {
-                    drawer.Initialize(steamTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
                 // Water spray for when water scoop is in use (use steam effects for the time being) 
@@ -198,7 +196,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 foreach (var drawer in WaterScoop)
                 {
-                    drawer.Initialize(steamTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
                 // Reverse motion
@@ -208,7 +206,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 foreach (var drawer in WaterScoopReverse)
                 {
-                    drawer.Initialize(steamTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
                 // Water overflow when tender is over full during water trough filling (use steam effects for the time being) 
@@ -218,7 +216,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 foreach (var drawer in TenderWaterOverflow)
                 {
-                    drawer.Initialize(steamTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
                 if (emitter.Key.ToLowerInvariant() == "steambrakefx")
@@ -226,7 +224,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 foreach (var drawer in SteamBrake)
                 {
-                    drawer.Initialize(steamTexture);
+                    drawer.Initialize(smokeTexture);
                 }
 
             }
