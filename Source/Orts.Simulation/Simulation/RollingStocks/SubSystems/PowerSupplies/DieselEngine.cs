@@ -129,6 +129,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case "engine(gearboxenginebraking":
                 case "engine(gearboxmaxspeedforgears":
                 case "engine(gearboxmaxtractiveforceforgears":
+                case "engine(ortsgearboxtractiveforceatspeed":
                 case "engine(gearboxoverspeedpercentageforfailure":
                 case "engine(gearboxbackloadforce":
                 case "engine(gearboxcoastingforce":
@@ -625,6 +626,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Maximal RPM
         /// </summary>
         public float MaxRPM;
+         /// <summary>
+        /// Govenor RPM - maximum speed that engine is held to
+        /// </summary>
+        public float GovenorRPM;
         /// <summary>
         /// RPM change rate from ENG file
         /// </summary>
@@ -681,6 +686,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Engine load table - Max output power vs. RPM
         /// </summary>
         public Interpolator DieselPowerTab;
+         /// <summary>
+        /// Rail power table - Max rail output power vs. RPM
+        /// </summary>
+        public Interpolator RailPowerTab;
         /// <summary>
         /// Engine consumption table - Consumption vs. RPM
         /// </summary>
@@ -831,6 +840,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     case "idlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.IdleRPM; break;
                     case "maxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.MaxRPM; break;
+                    case "govenorrpm": GovenorRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
                     case "startingrpm": StartingRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingRPM; break;
                     case "startingconfirmrpm": StartingConfirmationRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingConfirmRPM; break;
                     case "changeuprpmps": ChangeUpRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.ChangeUpRPMpS; break;
@@ -878,6 +888,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             IdleRPM = other.IdleRPM;
             MaxRPM = other.MaxRPM;
+            GovenorRPM = other.GovenorRPM;
             StartingRPM = other.StartingRPM;
             StartingConfirmationRPM = other.StartingConfirmationRPM;
             ChangeUpRPMpS = other.ChangeUpRPMpS;
@@ -887,6 +898,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             MaximumDieselPowerW = other.MaximumDieselPowerW;
             MaximumRailOutputPowerW = other.MaximumRailOutputPowerW;
             initLevel = other.initLevel;
+            RailPowerTab = new Interpolator(other.RailPowerTab);
             DieselPowerTab = new Interpolator(other.DieselPowerTab);
             DieselConsumptionTab = new Interpolator(other.DieselConsumptionTab);
             ThrottleRPMTab = new Interpolator(other.ThrottleRPMTab);
@@ -1221,6 +1233,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public void InitFromMSTS()
         {
+            if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
+            {
+                MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
+            }
+            else
+            {
+                MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is about 80% of the prime mover output power
+            }
+
+            if (Locomotive.GovenorRPM != 0)
+            {
+                GovenorRPM = Locomotive.GovenorRPM;
+            }
+
             if ((initLevel & SettingsFlags.IdleRPM) == 0)
             {
                 if (DieselEngineConfigured && Locomotive.IdleRPM != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
@@ -1556,6 +1582,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 int count = 11;
                 float[] rpm = new float[count + 1];
+                float[] railpower = new float[] { 0.02034f, 0.09302f, 0.36628f, 0.60756f, 0.69767f, 0.81395f, 0.93023f, 0.9686f, 0.99418f, 0.99418f, 1f, 0.5f };
                 float[] power = new float[] { 0.02034f, 0.09302f, 0.36628f, 0.60756f, 0.69767f, 0.81395f, 0.93023f, 0.9686f, 0.99418f, 0.99418f, 1f, 0.5f };
                 float[] torque = new float[] { 0.05f, 0.2f, 0.7f, 0.95f, 1f, 1f, 0.98f, 0.95f, 0.9f, 0.86f, 0.81f, 0.3f };
 
@@ -1565,10 +1592,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         rpm[i] = IdleRPM;
                     else
                         rpm[i] = rpm[i - 1] + (MaxRPM - IdleRPM) / (count - 1);
+
+                    railpower[i] *= MaximumRailOutputPowerW;
                     power[i] *= MaximumDieselPowerW;
                     torque[i] *= MaximumDieselPowerW / (MaxRPM * 2f * 3.1415f / 60f) / 0.81f;
                 }
                 rpm[count] = MaxRPM * 1.5f;
+                railpower[count] *= MaximumDieselPowerW;
+                power[count] *= MaximumDieselPowerW;
+                torque[count] *= MaximumDieselPowerW / (MaxRPM * 3f * 3.1415f / 60f) / 0.81f;
+
+                RailPowerTab = new Interpolator(rpm, railpower);
                 DieselPowerTab = new Interpolator(rpm, power);
                 DieselTorqueTab = new Interpolator(rpm, torque);
                 if (DieselEngineConfigured)
@@ -1646,16 +1680,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Locomotive.MaximumDieselEnginePowerW = DieselPowerTab[MaxRPM];
                 if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set by DieselPowerTab {0} value", FormatStrings.FormatPower(DieselPowerTab[MaxRPM], Locomotive.IsMetric, false, false));
-            }
-
-            // Check whether this code check is really required.
-            if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
-            {
-                MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
-            }
-            else 
-            {
-                MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is about 80% of the prime mover output power
             }
 
             InitialExhaust = Locomotive.InitialExhaust;

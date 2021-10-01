@@ -3360,10 +3360,22 @@ namespace Orts.Simulation.RollingStocks
         {
             if (GearBoxController != null)
             {
-                GearBoxController.StartIncrease();
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
-                AlerterReset(TCSEvent.GearBoxChanged);
-                SignalGearBoxChangeEvents();
+                if (this is MSTSDieselLocomotive)
+                {
+                    var dieselloco = this as MSTSDieselLocomotive;
+                    if (ThrottlePercent == 0)
+                    {
+                        GearBoxController.StartIncrease();
+                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                        AlerterReset(TCSEvent.GearBoxChanged);
+                        SignalGearBoxChangeEvents();
+                        dieselloco.DieselEngines[0].GearBox.clutchOn = false;
+                    }
+                    else
+                    {
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Throttle must be reduced to Idle before gear change can happen."));
+                    }
+                }
             }
 
             ChangeGearUp();
@@ -3385,10 +3397,22 @@ namespace Orts.Simulation.RollingStocks
         {
             if (GearBoxController != null)
             {
-                GearBoxController.StartDecrease();
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
-                AlerterReset(TCSEvent.GearBoxChanged);
-                SignalGearBoxChangeEvents();
+                if (this is MSTSDieselLocomotive)
+                {
+                    var dieselloco = this as MSTSDieselLocomotive;
+                    if (ThrottlePercent == 0)
+                    {
+                        GearBoxController.StartDecrease();
+                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                        AlerterReset(TCSEvent.GearBoxChanged);
+                        SignalGearBoxChangeEvents();
+                        dieselloco.DieselEngines[0].GearBox.clutchOn = false;
+                    }
+                    else
+                    {
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Throttle must be reduced to Idle before gear change can happen."));
+                    }
+                }
             }
 
             ChangeGearDown();
