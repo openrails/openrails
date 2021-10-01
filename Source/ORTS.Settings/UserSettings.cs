@@ -270,6 +270,10 @@ namespace ORTS.Settings
         [Default(false)]
         public bool DataLogSteamPerformance { get; set; }
         [Default(false)]
+        public bool DataLogDieselPerformance { get; set; }
+        [Default(1)]
+        public int PerformanceSpeedRecording { get; set; }
+        [Default(false)]
         public bool VerboseConfigurationMessages { get; set; }
 
         // Evaluation settings:

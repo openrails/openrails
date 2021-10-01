@@ -6,6 +6,7 @@ using ORTS.Scripting.Api;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -16,14 +17,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxEngineBraking GearBoxEngineBraking = GearBoxEngineBraking.None;
         public List<float> GearBoxMaxSpeedForGearsMpS = new List<float>();
+        public List<float> GearBoxChangeUpSpeedRpM = new List<float>();
+        public List<float> GearBoxChangeDownSpeedRpM = new List<float>();
         public List<float> GearBoxMaxTractiveForceForGearsN = new List<float>();
+        public List<float> GearBoxTractiveForceAtSpeedN = new List<float>();
         public float GearBoxOverspeedPercentageForFailure = 150f;
         public float GearBoxBackLoadForceN = 1000;
         public float GearBoxCoastingForceN = 500;
         public float GearBoxUpGearProportion = 0.85f;
         public float GearBoxDownGearProportion = 0.35f;
-
+                
         int initLevel;
+
+        public bool MaxTEFound = false;
 
         public bool IsInitialized { get { return initLevel >= 5; } }
         public bool AtLeastOneParamFound { get { return initLevel >= 1; } }
@@ -72,6 +78,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         initLevel++;
                     }
                     break;
+                // gearboxmaxtractiveforceforgears purely retained for legacy reasons
                 case "engine(gearboxmaxtractiveforceforgears":
                     temp = stf.ReadItem();
                     if (temp == ")")
@@ -87,6 +94,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         initLevel++;
                     }
                     break;
+                case "engine(ortsgearboxtractiveforceatspeed":
+                    MaxTEFound = true;
+                    temp = stf.ReadItem();
+                    if (temp == ")")
+                    {
+                        stf.StepBackOneItem();
+                    }
+                    if (temp == "(")
+                    {
+                        GearBoxTractiveForceAtSpeedN.Clear();
+                        for (int i = 0; i < GearBoxNumberOfGears; i++)
+                        {
+                            GearBoxTractiveForceAtSpeedN.Add(stf.ReadFloat(STFReader.UNITS.Force, 0f));
+                        }
+                        stf.SkipRestOfBlock();
+                        initLevel++;
+                    }
+                    break;
+
                 case "engine(gearboxoverspeedpercentageforfailure": GearBoxOverspeedPercentageForFailure = stf.ReadFloatBlock(STFReader.UNITS.None, 150f); break; // initLevel++; break;
                 case "engine(gearboxbackloadforce": GearBoxBackLoadForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); break;
                 case "engine(gearboxcoastingforce": GearBoxCoastingForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); break;
@@ -103,7 +129,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             GearBoxOperation = copy.GearBoxOperation;
             GearBoxEngineBraking = copy.GearBoxEngineBraking;
             GearBoxMaxSpeedForGearsMpS = new List<float>(copy.GearBoxMaxSpeedForGearsMpS);
+            GearBoxChangeUpSpeedRpM = new List<float>(copy.GearBoxChangeUpSpeedRpM);
+            GearBoxChangeDownSpeedRpM = new List<float>(copy.GearBoxChangeDownSpeedRpM);
             GearBoxMaxTractiveForceForGearsN = new List<float>(copy.GearBoxMaxTractiveForceForGearsN);
+            GearBoxTractiveForceAtSpeedN = new List<float>(copy.GearBoxTractiveForceAtSpeedN);
             GearBoxOverspeedPercentageForFailure = copy.GearBoxOverspeedPercentageForFailure;
             GearBoxBackLoadForceN = copy.GearBoxBackLoadForceN;
             GearBoxCoastingForceN = copy.GearBoxCoastingForceN;
@@ -361,15 +390,43 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 for (int i = 0; i < GearBoxParams.GearBoxNumberOfGears; i++)
                 {
                     Gears.Add(new Gear(this));
-                    Gears[i].BackLoadForceN = GearBoxParams.GearBoxBackLoadForceN;
-                    Gears[i].CoastingForceN = GearBoxParams.GearBoxCoastingForceN;
                     Gears[i].DownGearProportion = GearBoxParams.GearBoxDownGearProportion;
                     Gears[i].IsDirectDriveGear = (GearBoxParams.GearBoxDirectDriveGear == GearBoxParams.GearBoxNumberOfGears);
                     Gears[i].MaxSpeedMpS = GearBoxParams.GearBoxMaxSpeedForGearsMpS[i];
-                    Gears[i].MaxTractiveForceN = GearBoxParams.GearBoxMaxTractiveForceForGearsN[i];
+
+                    // Maximum torque (tractive effort) actually occurs at less then the maximum engine rpm, so this section uses either 
+                    // the TE at gear maximum speed, or if the user has entered the maximum TE
+                    if (!GearBoxParams.MaxTEFound)
+                    {
+                        // If user has entered this value then assume that they have already put the maximum torque value in
+                        Gears[i].MaxTractiveForceN = GearBoxParams.GearBoxMaxTractiveForceForGearsN[i];
+                    }
+                    else
+                    {
+                        // if they entered the TE at maximum gear speed, then increase the value accordingly 
+                        Gears[i].MaxTractiveForceN = GearBoxParams.GearBoxTractiveForceAtSpeedN[i] * 1.234f;
+                    }
                     Gears[i].OverspeedPercentage = GearBoxParams.GearBoxOverspeedPercentageForFailure;
                     Gears[i].UpGearProportion = GearBoxParams.GearBoxUpGearProportion;
-                    Gears[i].Ratio = GearBoxParams.GearBoxMaxSpeedForGearsMpS[i] / DieselEngine.MaxRPM;
+
+                    // Calculate gear ratio, based on premise that drive wheel rpm @ max speed will be when engine is operating at max rpm
+                    var driveWheelCircumferenceM = 2 * Math.PI * Locomotive.DriverWheelRadiusM;
+                    var driveWheelRpm = pS.TopM(Gears[i].MaxSpeedMpS) / driveWheelCircumferenceM;
+                    float apparentGear = (float)(DieselEngine.MaxRPM / driveWheelRpm);
+                    Gears[i].Ratio = apparentGear;
+
+                    Gears[i].BackLoadForceN = Gears[i].Ratio * GearBoxParams.GearBoxBackLoadForceN;
+                    Gears[i].CoastingForceN = Gears[i].Ratio * GearBoxParams.GearBoxCoastingForceN;
+
+                    Gears[i].ChangeUpSpeedRpM = DieselEngine.MaxRPM;
+
+                    Gears[0].ChangeDownSpeedRpM = DieselEngine.IdleRPM;
+
+                    if (i > 0)
+                    {
+                        driveWheelRpm = pS.TopM(Gears[i - 1].MaxSpeedMpS) / driveWheelCircumferenceM;
+                        Gears[i].ChangeDownSpeedRpM = (float)driveWheelRpm * Gears[i].Ratio;
+                    }
                 }
                 GearBoxOperation = GearBoxParams.GearBoxOperation;
                 OriginalGearBoxOperation = GearBoxParams.GearBoxOperation;
@@ -493,6 +550,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     {
         public bool IsDirectDriveGear;
         public float MaxSpeedMpS;
+        public float ChangeUpSpeedRpM;
+        public float ChangeDownSpeedRpM;
         public float MaxTractiveForceN;
         public float OverspeedPercentage;
         public float BackLoadForceN;
