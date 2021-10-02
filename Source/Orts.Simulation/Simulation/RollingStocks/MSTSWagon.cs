@@ -509,17 +509,12 @@ namespace Orts.Simulation.RollingStocks
             // Set wheel flange parameters to default values.
             if (MaximumWheelFlangeAngleRad == 0)
             {
-                MaximumWheelFlangeAngleRad = 1.09956f; // Default = 63.36 deg.
-            }
-            else
-            {
-                const float convertDegtoRad = 0.01745329252f;
-                MaximumWheelFlangeAngleRad = convertDegtoRad * MaximumWheelFlangeAngleRad; // Assume that input has been in degrees - TO ADD - appropriate input parameters
+                MaximumWheelFlangeAngleRad = 1.22173f; // Default = 70 deg - Pre 1990 AAR 1:20 wheel
             }
 
             if (WheelFlangeLengthM == 0)
             {
-                WheelFlangeLengthM = 0.026194f; // Height = 1.031in
+                WheelFlangeLengthM = 0.0254f; // Height = 1.00in - Pre 1990 AAR 1:20 wheel
             }
 
             // Initialise steam heat parameters

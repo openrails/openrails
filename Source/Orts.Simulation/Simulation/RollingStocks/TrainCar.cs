@@ -1513,6 +1513,18 @@ namespace Orts.Simulation.RollingStocks
                     {
                         DerailElapsedTimeS = 0; // Reset timer if derail is not possible
                     }
+
+                    if (AbsSpeedMpS < 0.01)
+                    {
+                        DerailExpected = false;
+                        DerailPossible = false;
+                    }
+
+//                    if (CarID == "0 - 84" || CarID == "0 - 83" || CarID == "0 - 82" || CarID == "0 - 81" || CarID == "0 - 80" || CarID == "0 - 79")
+//                    {
+//                        Trace.TraceInformation("Nadal - {0}, Adhesion {1} Flange Angle {2}", NadalDerailmentCoefficient, wagonAdhesion, MaximumWheelFlangeAngleRad);
+//                        Trace.TraceInformation("Derailment - CarID {0}, Nadal {1}, Derail {2} Possible {3} Expected {4} Derail Distance {5} ElapsedTime {6} DerailTime {7}", CarID, NadalDerailmentCoefficient, DerailmentCoefficient, DerailPossible, DerailExpected, DerailClimbDistanceM, DerailElapsedTimeS, derailTimeS);
+//                    }
                 }
                 else
                 {
