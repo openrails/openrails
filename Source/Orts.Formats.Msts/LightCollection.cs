@@ -31,7 +31,7 @@ namespace Orts.Formats.Msts
     public class LightState
     {
         public float Duration;
-        public uint Color;
+        public Color Color;
         public Vector3 Position;
         public float Radius;
         public Vector3 Azimuth;
@@ -44,7 +44,7 @@ namespace Orts.Formats.Msts
             stf.MustMatch("(");
             stf.ParseBlock(new[] {
                 new STFReader.TokenProcessor("duration", ()=>{ Duration = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("lightcolour", ()=>{ Color = stf.ReadHexBlock(null); }),
+                new STFReader.TokenProcessor("lightcolour", ()=>{ Color = stf.ReadColorBlock(null); }),
                 new STFReader.TokenProcessor("position", ()=>{ Position = stf.ReadVector3Block(STFReader.UNITS.None, Vector3.Zero); }),
                 new STFReader.TokenProcessor("radius", ()=>{ Radius = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("azimuth", ()=>{ Azimuth = stf.ReadVector3Block(STFReader.UNITS.None, Vector3.Zero); }),
@@ -52,14 +52,6 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("transition", ()=>{ Transition = 1 <= stf.ReadFloatBlock(STFReader.UNITS.None, 0); }),
                 new STFReader.TokenProcessor("angle", ()=>{ Angle = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
             });
-            // Color byte order changed in XNA 4 from BGRA to RGBA
-            Color = new Color()
-            {
-                B = (byte)(Color),
-                G = (byte)(Color >> 8),
-                R = (byte)(Color >> 16),
-                A = (byte)(Color >> 24)
-            }.PackedValue;
         }
 
         public LightState(LightState state, bool reverse)
