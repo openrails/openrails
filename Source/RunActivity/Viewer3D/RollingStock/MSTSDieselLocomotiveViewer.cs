@@ -41,7 +41,7 @@ namespace Orts.Viewer3D.RollingStock
             // Now all the particle drawers have been setup, assign them textures based
             // on what emitters we know about.
 
-            var smokeTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
+            string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
 
 
             // Diesel Exhaust
@@ -52,7 +52,7 @@ namespace Orts.Viewer3D.RollingStock
                 Exhaust.AddRange(drawers);
             }
             foreach (var drawer in Exhaust)
-                drawer.Initialize(smokeTexture);
+                drawer.Initialize(dieselTexture);
 
             if (car.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
                 ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
