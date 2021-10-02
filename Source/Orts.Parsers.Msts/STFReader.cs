@@ -813,7 +813,7 @@ namespace Orts.Parsers.Msts
             /// Valid Units: deg, rad
             /// <para>Scaled to Radians</para>
             /// </summary>            
-            Angle = 1 << 28,    // "Temperature", note above TemperatureDifference, is different
+            Angle = 1 << 28,
 
             // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values.
             // or interpreting locomotive cab attributes from the ORTSExtendedCVF experimental mechanism.
