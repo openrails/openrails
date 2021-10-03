@@ -202,7 +202,7 @@ namespace Orts.Viewer3D
             angle = MathHelper.ToRadians(lightState.Angle) / 2;
             radius = lightState.Radius / 2;
             distance = (float)(radius / Math.Sin(angle));
-            color = new Color() { PackedValue = lightState.Color }.ToVector4();
+            color = lightState.Color.ToVector4();
         }
 
 #if DEBUG_LIGHT_STATES
@@ -535,11 +535,11 @@ namespace Orts.Viewer3D
 
                     var position1 = state1.Position; position1.Z *= -1;
                     var normal1 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state1.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state1.Azimuth.Y)));
-                    var color1 = new Color() { PackedValue = state1.Color }.ToVector4();
+                    var color1 = state1.Color.ToVector4();
 
                     var position2 = state2.Position; position2.Z *= -1;
                     var normal2 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state2.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state2.Azimuth.Y)));
-                    var color2 = new Color() { PackedValue = state2.Color }.ToVector4();
+                    var color2 = state2.Color.ToVector4();
 
                     vertexData[6 * state + 0] = new LightGlowVertex(new Vector2(1, 1), position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
                     vertexData[6 * state + 1] = new LightGlowVertex(new Vector2(0, 0), position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
