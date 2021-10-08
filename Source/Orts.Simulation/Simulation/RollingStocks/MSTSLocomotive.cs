@@ -2351,7 +2351,7 @@ namespace Orts.Simulation.RollingStocks
             // Turn compressor on and off
             if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
                 SignalEvent(Event.CompressorOn);
-            else if ((MainResPressurePSI > MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
+            else if ((MainResPressurePSI >= MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
 
             if (CompressorIsOn)
