@@ -1429,8 +1429,28 @@ namespace Orts.Simulation.RollingStocks
 
                 if (CurrentCurveRadius != 0)
                 {
-                    var A = MassKG * GravitationalAccelerationMpS2 / numWheels;
-                    var B1 = (MassKG / numAxles) * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                    float A = 0;
+                    float B1 = 0;
+
+                    // Prevent NaN if numWheels = 0
+                    if (numWheels != 0)
+                    {
+                        A = MassKG * GravitationalAccelerationMpS2 / numWheels;
+                    }
+                    else
+                    {
+                        A = MassKG * GravitationalAccelerationMpS2;
+                    }
+
+                    // Prevent NaN if numAxles = 0
+                    if (numAxles != 0)
+                    {
+                        B1 = (MassKG / numAxles) * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                    }
+                    else
+                    {
+                        B1 = MassKG * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                    }
                     var B2 = GravitationalAccelerationMpS2 * (float)Math.Cos(SuperElevationAngleRad);
                     var B3 = CentreOfGravityM.Y / TrackGaugeM;
 
@@ -1441,8 +1461,28 @@ namespace Orts.Simulation.RollingStocks
 
                     if (CarAhead != null)
                     {
-                        var AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
-                        var BB1 = MassKG / numAxles;
+                        float AA1 = 0;
+                        float BB1 = 0;
+
+                        // Prevent NaN if WagonNumBogies = 0
+                        if ( WagonNumBogies != 0)
+                        {
+                            AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
+                        }
+                        else
+                        {
+                            AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad);
+                        }
+
+                        // Prevent NaN if numAxles = 0
+                        if (numAxles != 0)
+                        {
+                            BB1 = MassKG / numAxles;
+                        }
+                        else
+                        {
+                            BB1 = MassKG;
+                        }
                         var BB2 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
                         var BB3 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
 
