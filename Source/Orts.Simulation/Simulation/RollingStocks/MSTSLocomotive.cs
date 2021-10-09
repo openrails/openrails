@@ -5109,16 +5109,16 @@ namespace Orts.Simulation.RollingStocks
                     switch (cvc.Units)
                     {
                         case CABViewControlUnits.KILOMETRES:
-                            data = float.Parse(Math.Round(OdometerM / 1000, 0).ToString());
+                            data = OdometerM / 1000;
                             break;
                         case CABViewControlUnits.MILES:
-                            data = (float)Math.Round(Me.ToMi(OdometerM), 0);
+                            data = (float)Me.ToMi(OdometerM);
                             break;
                         case CABViewControlUnits.FEET:
-                            data = (float)Math.Round(Me.ToFt(OdometerM), 0);
+                            data = (float)Me.ToFt(OdometerM);
                             break;
                         case CABViewControlUnits.YARDS:
-                            data = (float)Math.Round(Me.ToYd(OdometerM), 0);
+                            data = (float)Me.ToYd(OdometerM);
                             break;
                         case CABViewControlUnits.METRES:
                         default:
