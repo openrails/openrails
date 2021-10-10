@@ -46,7 +46,7 @@ namespace ORTS.Scripting.Api
 
     public enum CircuitBreakerState
     {
-        [GetString("Unavailable")] Unavailable,
+        [GetString("Unavailable")] Unavailable = -1,
         [GetParticularString("CircuitBreaker", "Open")] Open,
         [GetParticularString("CircuitBreaker", "Closing")] Closing,
         [GetParticularString("CircuitBreaker", "Closed")] Closed

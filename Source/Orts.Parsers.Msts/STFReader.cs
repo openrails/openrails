@@ -1169,6 +1169,20 @@ namespace Orts.Parsers.Msts
             return defaultValue;
         }
 
+        /// <summary>Read a hexadecimal encoded color from the STF format '( {color_constant} ... )'
+        /// </summary>
+        /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
+        /// <returns>The STF block with the first {item} converted to a color constant.</returns>
+        public Color ReadColorBlock(Color? defaultValue)
+        {
+            var hex = this.ReadHexBlock(STFReader.SwapColorBytes(defaultValue.GetValueOrDefault(Color.Black).PackedValue));
+            return new Color() { PackedValue = STFReader.SwapColorBytes(hex) };
+        }
+
+        static uint SwapColorBytes(uint color) {
+            return (color & 0xFF00FF00) + (byte)(color >> 16) + (uint)((byte)color << 16);
+        }
+
         /// <summary>Read an hexidecimal encoded number from the STF format '( {int_constant} ... )'
         /// </summary>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
