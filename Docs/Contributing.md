@@ -103,13 +103,13 @@ A member of [our developer team](https://launchpad.net/~ordevs/+members) will ma
 
 ### Road-map cards
 
-We highly recommend that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically allow at least a week for discussion and identification of any issues.
+We require that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically allow at least a week for discussion and identification of any issues.
 
 A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, classify it by type (using labels), and place it into an appropriate list in Trello. In the rare event that we do not agree with the feature being added to Open Rails, it will be placed in the "Not planned at this time" list and a comment added explaining why.
 
 ### Blueprints
 
-We highly recommend that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically allow at least a week for discussion and identification of any issues.
+We require that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically allow at least a week for discussion and identification of any issues.
 
 A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, and approve its direction if appropriate.
 
