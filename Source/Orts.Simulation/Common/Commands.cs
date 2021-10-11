@@ -1598,7 +1598,6 @@ namespace Orts.Common
         public override void Redo()
         {
             Receiver.OdometerToggle();
-            // Report();
         }
 
         public override string ToString()
@@ -1621,7 +1620,6 @@ namespace Orts.Common
         public override void Redo()
         {
             Receiver.OdometerReset(ToState);
-            // Report();
         }
 
         public override string ToString()
@@ -1644,7 +1642,6 @@ namespace Orts.Common
         public override void Redo()
         {
             Receiver.OdometerToggleDirection();
-            // Report();
         }
 
         public override string ToString()

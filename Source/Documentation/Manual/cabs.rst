@@ -347,6 +347,8 @@ ORTS_SIGNED_TRACTION_BRAKING, with the only difference that the braking
 force does include also the train brake force in addition to the dynamic 
 brake force.
 
+.. _cabs-odometer:
+
 Odometer controls
 -----------------
 
@@ -378,7 +380,7 @@ Here is an example of use of the odometer control blocks within a .cvf file::
     MouseControl ( 1 )
   )
   TwoState (
-    Type ( ORTS_ODOMETER_DIRECTION )
+    Type ( ORTS_ODOMETER_DIRECTION TWO_STATE)
     Position ( 320 100 13 15 )
     Graphic ( OdoDirectionSwitch.ace )
     NumFrames ( 2 2 1 )
@@ -386,7 +388,7 @@ Here is an example of use of the odometer control blocks within a .cvf file::
     MouseControl ( 1 )
   )
   Digital (
-    Type ( ORTS_ODOMETER )
+    Type ( ORTS_ODOMETER DIGITAL)
     Position ( 377 100 26 17 )
     ScaleRange ( 0 100000 )
     Accuracy ( 0 )
