@@ -585,7 +585,7 @@ will know, without switching views, that the other end of the train has
 just reached the same point, e.g. the entrance to a siding, etc. 
 
 The odometer can be accessed also through cabview controls, if they are defined 
-within the cabview.
+within the cabview, see :ref:`here <cabs-odometer>`.
 
 
 .. |uarr|   unicode:: U+02191 .. UPWARDS ARROW
