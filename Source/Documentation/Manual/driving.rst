@@ -564,6 +564,7 @@ camera's direction together with its latitude and longitude.
 To activate the compass window press the ``<0>`` key. To deactivate the 
 compass window, press the ``<0>`` key a second time.
 
+.. _driving-odometer:
 
 Odometer
 --------
@@ -582,6 +583,9 @@ For example, if the odometer is set for counting down and you click Ctrl+Z
 as the front of the train passes a location, then when it reaches zero you 
 will know, without switching views, that the other end of the train has 
 just reached the same point, e.g. the entrance to a siding, etc. 
+
+The odometer can be accessed also through cabview controls, if they are defined 
+within the cabview, see :ref:`here <cabs-odometer>`.
 
 
 .. |uarr|   unicode:: U+02191 .. UPWARDS ARROW

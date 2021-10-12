@@ -347,6 +347,62 @@ ORTS_SIGNED_TRACTION_BRAKING, with the only difference that the braking
 force does include also the train brake force in addition to the dynamic 
 brake force.
 
+.. _cabs-odometer:
+
+Odometer controls
+-----------------
+
+Following cabview controls are available:
+
+
+- ORTS_ODOMETER: used to digitally display the odometer value
+- ORTS_ODOMETER_RESET: used to reset the odometer
+- ORTS_ODOMETER_DIRECTION_CHANGE: used to change direction (up/down) of the odometer.
+
+Following units of measure are available for ORTS_ODOMETER:
+
+- KILOMETRES
+- METRES
+- MILES
+- FEET
+- YARDS
+  
+The operation of the odometer is explained :ref:`here <driving-odometer>`.
+
+Here is an example of use of the odometer control blocks within a .cvf file::
+
+  TwoState (
+    Type ( ORTS_ODOMETER_RESET TWO_STATE )
+    Position ( 320 70 24 22 )
+    Graphic ( OdoResetButton.ace )
+    NumFrames ( 2 2 1 )
+    Style ( WHILE_PRESSED )
+    MouseControl ( 1 )
+  )
+  TwoState (
+    Type ( ORTS_ODOMETER_DIRECTION TWO_STATE)
+    Position ( 320 100 13 15 )
+    Graphic ( OdoDirectionSwitch.ace )
+    NumFrames ( 2 2 1 )
+    Style ( ONOFF )
+    MouseControl ( 1 )
+  )
+  Digital (
+    Type ( ORTS_ODOMETER DIGITAL)
+    Position ( 377 100 26 17 )
+    ScaleRange ( 0 100000 )
+    Accuracy ( 0 )
+    AccuracySwitch ( 0 )
+    LeadingZeros ( 0 )
+    Justification ( 1 )
+    PositiveColour ( 1
+     ControlColour ( 255 255 255 )
+    )
+    NegativeColour ( 0 )
+    DecreaseColour ( 0 )
+    Units ( FEET )
+  )
+
 Animated 2D Wipers
 ------------------
 
