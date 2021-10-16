@@ -47,6 +47,18 @@ Existing types of content from previous official versions of Open Rails will con
 <p>
 English documents and text use American spelling (license, color etc.).
 </p>
+
+<h2>Keyboard Assignments</h2>
+<p>
+New key assignments should obey the following rules where that is possible.
+<ul>
+  <li>Reserve digit keys for camera operations.</li>
+  <li>Reserve Fn keys for pop-up windows.</li>
+  <li>Reserve the Alt modifier for debug operations.</li>
+  <li>Reserve modifier+space (e.g. Ctrl+space) for future expansion using sequences of keys.</li>
+</ul>
+Existing key assignments may not be changed without community discussion and approval of the Open Rails Management Team.
+</p>
 <?php include "../../shared/tail.php" ?>
 <?php include "../../shared/banners/preload_next_banner.php" ?>
   </body>
