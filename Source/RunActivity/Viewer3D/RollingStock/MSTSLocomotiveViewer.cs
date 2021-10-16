@@ -176,7 +176,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlImmediateRefill, new Action[] { () => StopImmediateRefilling(Viewer.Log), () => ImmediateRefill() });
             UserInputCommands.Add(UserCommand.ControlWaterScoop, new Action[] { Noop, () => new ToggleWaterScoopCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlOdoMeterShowHide, new Action[] { Noop, () => new ToggleOdometerCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommand.ControlOdoMeterReset, new Action[] { Noop, () => new ResetOdometerCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlOdoMeterReset, new Action[] { () => new ResetOdometerCommand(Viewer.Log, false), () => new ResetOdometerCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlOdoMeterDirection, new Action[] { Noop, () => new ToggleOdometerDirectionCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlCabRadio, new Action[] { Noop, () => new CabRadioCommand(Viewer.Log, !Locomotive.CabRadioOn) });
             UserInputCommands.Add(UserCommand.ControlDieselHelper, new Action[] { Noop, () => new ToggleHelpersEngineCommand(Viewer.Log) });
@@ -2041,6 +2041,8 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_SERVICE_RETENTION_CANCELLATION_BUTTON:
                 case CABViewControlTypes.ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH:
                 case CABViewControlTypes.ORTS_ELECTRIC_TRAIN_SUPPLY_ON:
+                case CABViewControlTypes.ORTS_ODOMETER_DIRECTION:
+                case CABViewControlTypes.ORTS_ODOMETER_RESET:
                     index = (int)data;
                     break;
 
@@ -2284,6 +2286,9 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH:
                     new ElectricTrainSupplyCommand(Viewer.Log, ChangedValue(Locomotive.LocomotivePowerSupply.ElectricTrainSupplySwitch.CommandSwitch ? 1 : 0) > 0);
                     break;
+                case CABViewControlTypes.ORTS_ODOMETER_DIRECTION: if (ChangedValue(1) == 0) new ToggleOdometerDirectionCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_ODOMETER_RESET:
+                    new ResetOdometerCommand(Viewer.Log, ChangedValue(Locomotive.OdometerResetButtonPressed ? 1 : 0) > 0); break;
 
                 // Train Control System controls
                 case CABViewControlTypes.ORTS_TCS1:

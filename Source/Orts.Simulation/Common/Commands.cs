@@ -1598,7 +1598,6 @@ namespace Orts.Common
         public override void Redo()
         {
             Receiver.OdometerToggle();
-            // Report();
         }
 
         public override string ToString()
@@ -1608,20 +1607,19 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public sealed class ResetOdometerCommand : Command
+    public sealed class ResetOdometerCommand : BooleanCommand
     {
         public static MSTSLocomotive Receiver { get; set; }
 
-        public ResetOdometerCommand(CommandLog log)
-            : base(log)
+        public ResetOdometerCommand(CommandLog log, bool toState)
+            : base(log, toState)
         {
             Redo();
         }
 
         public override void Redo()
         {
-            Receiver.OdometerReset();
-            // Report();
+            Receiver.OdometerReset(ToState);
         }
 
         public override string ToString()
@@ -1644,7 +1642,6 @@ namespace Orts.Common
         public override void Redo()
         {
             Receiver.OdometerToggleDirection();
-            // Report();
         }
 
         public override string ToString()

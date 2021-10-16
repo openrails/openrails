@@ -133,7 +133,7 @@ namespace Orts.Viewer3D.Popups
                 var TimeHboxPositionY = 0;
                 foreach (var data in labels)
                 {
-                    if (data.FirstCol.Contains(Viewer.Catalog.GetString("NwLn")))
+                    if (data.FirstCol.Contains("NwLn"))
                     {
                         var hbox = vbox.AddLayoutHorizontalLineOfText();
                         hbox.Add(new Label(colWidth * 2, hbox.RemainingHeight, " "));
@@ -319,7 +319,7 @@ namespace Orts.Viewer3D.Popups
             }
             void AddSeparator() => AddLabel(new ListLabel
             {
-                FirstCol = Viewer.Catalog.GetString("Sprtr"),
+                FirstCol = "Sprtr",
             });
 
             labels.Clear();
