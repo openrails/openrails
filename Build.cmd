@@ -91,7 +91,9 @@ CALL :recreate "Program" || GOTO :error
 
 REM Build main program.
 REM Disable warning CS1591 "Missing XML comment for publicly visible type or member".
-MSBuild Source\ORTS.sln /t:Clean;Build /p:Configuration=Release /p:NoWarn=1591 || GOTO :error
+SET BuildConfiguration=Release
+IF "%Mode%" == "Unstable" SET BuildConfiguration=Debug
+MSBuild Source\ORTS.sln /t:Clean;Build /p:Configuration=%BuildConfiguration% /p:NoWarn=1591 || GOTO :error
 
 REM Build contributed Timetable Editor.
 PUSHD Source\Contrib\TimetableEditor && CALL Build.cmd && POPD || GOTO :error
