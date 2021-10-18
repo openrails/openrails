@@ -1420,6 +1420,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Calculate the vertical force on the wheel of the car, to determine whether wagon derails or not
             // To calculate vertical force on outer wheel = (WagMass / NumWheels) * gravity + WagMass / NumAxles * ( (Speed^2 / CurveRadius) - (gravity * superelevation angle)) * (height * track width)
+            // Equation 5
 
             if (IsPlayerTrain)
             {
@@ -1435,7 +1436,7 @@ namespace Orts.Simulation.RollingStocks
                     // Prevent NaN if numWheels = 0
                     if (numWheels != 0)
                     {
-                        A = MassKG * GravitationalAccelerationMpS2 / numWheels;
+                        A = (MassKG / numWheels) * GravitationalAccelerationMpS2;
                     }
                     else
                     {
@@ -1445,16 +1446,17 @@ namespace Orts.Simulation.RollingStocks
                     // Prevent NaN if numAxles = 0
                     if (numAxles != 0)
                     {
-                        B1 = (MassKG / numAxles) * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                        B1 = (MassKG / numAxles);
                     }
                     else
                     {
-                        B1 = MassKG * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                        B1 = MassKG;
                     }
-                    var B2 = GravitationalAccelerationMpS2 * (float)Math.Cos(SuperElevationAngleRad);
-                    var B3 = CentreOfGravityM.Y / TrackGaugeM;
+                    var B2 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
+                    var B3 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                    var B4 = CentreOfGravityM.Y / TrackGaugeM;
 
-                    TotalWagonVerticalDerailForceN = A + (B1 - B2) * B3;
+                    TotalWagonVerticalDerailForceN = A + B1 * (B3 - B2) * B4;
 
                     // Calculate lateral force per wheelset on the first bogie
                     // Lateral Force = (Coupler force x Sin (Coupler Angle) / NumBogies) + WagMass / NumAxles * ( (Speed^2 / CurveRadius) - (gravity * superelevation angle))
@@ -1467,11 +1469,13 @@ namespace Orts.Simulation.RollingStocks
                         // Prevent NaN if WagonNumBogies = 0
                         if ( WagonNumBogies != 0)
                         {
-                            AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
+                            // AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
+                            AA1 = Math.Abs(CarAhead.CouplerForceUSmoothed.SmoothedValue) * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
                         }
                         else
                         {
-                            AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad);
+                           // AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad);
+                            AA1 = Math.Abs(CarAhead.CouplerForceUSmoothed.SmoothedValue) * (float)Math.Sin(WagonCouplerAngleDerailRad);
                         }
 
                         // Prevent NaN if numAxles = 0
@@ -1486,19 +1490,21 @@ namespace Orts.Simulation.RollingStocks
                         var BB2 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
                         var BB3 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
 
-                        TotalWagonLateralDerailForceN = AA1 + BB1 * (BB2 - BB3);
+                        TotalWagonLateralDerailForceN = Math.Abs(AA1 + BB1 * (BB2 - BB3));
                     }
 
-                    DerailmentCoefficient = Math.Abs(TotalWagonLateralDerailForceN / TotalWagonVerticalDerailForceN);
+                    DerailmentCoefficient = TotalWagonLateralDerailForceN / TotalWagonVerticalDerailForceN;
 
-                    // use the dynamic multiplication coefficient to calculate final derailment coefficient
+                    // use the dynamic multiplication coefficient to calculate final derailment coefficient, the above method calculated using quasi-static factors.
+                    // The quasi-static do not include allowance for wheel unloading due to static carbody pitch. Hence the following factors have been used to adjust to dynamic effects.
+                    // They have been adjusted slightly based upon derailment accident reports. Original figures quoted were 2 x for standard curves, and 3.1 x for turnouts. 
                     if (IsOverJunction())
                     {
-                        DerailmentCoefficient *= 3.1f;
+                        DerailmentCoefficient *= 2.17f;
                     }
                     else
                     {
-                        DerailmentCoefficient *= 2.0f;
+                        DerailmentCoefficient *= 1.4f;
                     }
 
                     var wagonAdhesion = Train.WagonCoefficientFriction;
@@ -1543,11 +1549,13 @@ namespace Orts.Simulation.RollingStocks
                     {
                         DerailExpected = true;
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("Car {0} has derailed on the curve.", CarID));
-
+                      //  Trace.TraceInformation("Car Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5} Nadal {6} Coeff {7}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, NadalDerailmentCoefficient, DerailmentCoefficient);
+                     //   Trace.TraceInformation("Car Ahead Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}", CarAhead.CarID, CarAhead.CouplerForceU, CarAhead.CouplerForceUSmoothed.SmoothedValue, CarAhead.TotalWagonLateralDerailForceN, CarAhead.TotalWagonVerticalDerailForceN, CarAhead.WagonCouplerAngleDerailRad);
                     }
                     else if (DerailPossible)
                     {
                         DerailElapsedTimeS += elapsedClockSeconds;
+                     //   Trace.TraceInformation("Car Derail Time - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}, Elapsed {6}, DeratilTime {7}, Distance {8} Nadal {9} Coeff {10}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, DerailElapsedTimeS, derailTimeS, DerailClimbDistanceM, NadalDerailmentCoefficient, DerailmentCoefficient);
                     }
                     else
                     {
@@ -1767,7 +1775,7 @@ namespace Orts.Simulation.RollingStocks
 
                     SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.0001f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value, having a value of zero causes problems with calculations
 
-                    SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Total superelevation includes both balanced and unbalanced superelevation
+                    SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Balanced superelevation only angle
 
                     MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM); // Used for calculating curve resistance
 
