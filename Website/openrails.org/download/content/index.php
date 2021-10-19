@@ -50,9 +50,9 @@ There are more than 40 of these parameters (identified by the prefix "ORTS") whi
 <p>
 The Spanish websites <a href="http://viajerosaltren.es">Viajeros al Tren</a> and <a href="http://www.spaintrainzrutas.com/">Spain Trainz Rutas</a> are some of the first to offer Open Rails-specific products.
 </p><p>
-<a href="http://www.dekosoft.com">Dekosoft Trains</a> have since offered GP30 locos with 3D cabs exclusively for Open Rails.
+<a href="http://www.dekosoft.com">Dekosoft Trains</a> offer GP30 locos with 3D cabs exclusively for Open Rails.
 </p><p>
-Peter Newell has just released (June 2015) the <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a>, a steam route for Open Rails v1.0 (this 120MB download requires no other files).
+Peter Newell has published the <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a>, a steam route for Open Rails v1.0 (this 120MB download requires no other files).
 </p><p>
 Some Australian routes (New South Wales) have been packaged by Peter Newell to work just with Open Rails:
 </p>
@@ -62,14 +62,16 @@ Some Australian routes (New South Wales) have been packaged by Peter Newell to w
 <li><a href="http://www.manning-river.coalstonewcastle.com.au/">Manning River Breakwall Railway</a></li>
 <li><a href="http://www.tweed.coalstonewcastle.com.au/">Tweed Railway</a></li>
 </ul>
+<p>
+See <a href="/trade">our Trade page</a> for links to commercial vendors.
+</p>
 <h3>Library Files</h3>
 <ul>
-<li>A search for "ORTS" or "Open Rails" on <a href="http://www.elvastower.com">Elvas Tower</a> forum finds 146 files.</li>
-<li>A search for "ORTS" or "Open Rails" on <a href="http://www.trainsim.com">TrainSim</a> forum finds 31 files.</li>
-<li>A search for "Open" with simulator = OpenRails on <a href="http://www.uktrainsim.com">UKTrainSim</a> forum finds 6 files.</li>
+<li>A search for "Open Rails" on <a href="http://www.elvastower.com">Elvas Tower</a> forum finds 450 files.</li>
+<li>A search for "Open Rails" on <a href="http://www.trainsim.com">TrainSim</a> forum finds 519 files.</li>
 </ul>
 <p>
-<small>[Searches made 6-May-2015]</small>
+<small>[Searches made 28-May-2021]</small>
 </p>
         </div>
       </div>
