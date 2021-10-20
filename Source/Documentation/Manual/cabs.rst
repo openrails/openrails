@@ -808,3 +808,13 @@ Here below is an example of an entry for a 3D cab::
   ScaleRange ( 0 5000 )
   Units ( LBS )
   ) 
+
+Alignment for digital controls
+------------------------------
+
+For backwards compatibility reasons, ``Justification ( 1 )``, ``Justification ( 2 )`` and 
+``Justification ( 3 )`` all lead to a left alignment of the digital in 3Dcabs.
+
+``Justification ( 5 )`` must be used for center alignment, and ``Justification ( 6 )`` 
+must be used for right alignment. ``Justification ( 4 )`` leads to left alignment. 
+
