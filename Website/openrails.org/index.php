@@ -44,7 +44,7 @@
             <!-- Button to trigger modal -->
             <a href="#modal1" role="button" class='btn download_button' data-toggle="modal">
               <span class='glyphicon glyphicon-download'></span>&nbsp; Download the installer
-              <?php echo '08 December 2018, ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB)'; ?>
+              <?php echo '19 Oct 2021, ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB)'; ?>
 			</a>
           </div>
         </div>
