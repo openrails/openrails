@@ -572,7 +572,10 @@ namespace Orts.Simulation.RollingStocks
         public float TotalWagonLateralDerailForceN;
         public float LateralWindForceN;
         public float WagonFrontCouplerAngleRad;
+        public float WagonFrontCouplerBuffAngleRad;
         public float WagonRearCouplerAngleRad;
+        public float WagonRearCouplerBuffAngleRad;
+        public float CarTrackPlayM = Me.FromIn(2.0f);
         public float AdjustedWagonFrontCouplerAngleRad;
         public float AdjustedWagonRearCouplerAngleRad;
         public float WagonFrontCouplerCurveExtM;
@@ -1196,6 +1199,10 @@ namespace Orts.Simulation.RollingStocks
         /// 
         /// Hence these calculations provide a "generic" approach to determining whether a car will derial or not.
         /// 
+        /// Buff Coupler angle calculated from this publication: In-Train Force Limit Study by National Research Council Canada
+        /// 
+        /// https://nrc-publications.canada.ca/eng/view/ft/?id=8cc206d0-5dbd-42ed-9b4e-35fd9f8b8efb
+        /// 
         /// </summary>
 
         public void UpdateTrainDerailmentRisk(float elapsedClockSeconds)
@@ -1336,6 +1343,69 @@ namespace Orts.Simulation.RollingStocks
                         AdjustedWagonRearCouplerAngleRad = WagonRearCouplerAngleRad;
                         CarBehind.AdjustedWagonFrontCouplerAngleRad = CarBehind.WagonFrontCouplerAngleRad;
                     }
+
+                    // Only process this code segment if coupler is in compression
+                    if (CouplerForceU > 0 && CouplerSlackM < 0)
+                    {
+
+                        // Calculate Buff coupler angles. Car1 is current car, and Car2 is the car behind
+                        // Car ahead rear coupler angle
+                        var ThiscarCouplerlengthft = Me.ToFt(CarCouplerFaceLengthM - CarBodyLengthM) + CouplerSlackM / 2;
+                        var CarbehindCouplerlengthft = Me.ToFt(CarBehind.CarCouplerFaceLengthM - CarBehind.CarBodyLengthM) + CouplerSlackM / 2;
+                        var A1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var A2 = (Me.ToFt(CarCouplerFaceLengthM) / 2.0f) - ThiscarCouplerlengthft;
+                        var A = (float)Math.Atan(A1 / A2);
+
+                        var B = (float)Math.Asin(2.0f * Me.ToFt(CarTrackPlayM) / Me.ToFt(CarBogieCentreLengthM));
+                        var C1 = Math.Pow(ThiscarCouplerlengthft + CarbehindCouplerlengthft, 2);
+
+                        var C2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var C2_2 = (2.0f * Me.ToFt(CarTrackPlayM) * (Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft)) / Me.ToFt(CarBogieCentreLengthM);
+                        var C2 = Math.Pow((C2_1 + C2_2), 2);
+
+                        var C3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var C3_2 = (2.0f * Me.ToFt(CarBehind.CarTrackPlayM) * (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft)) / Me.ToFt(CarBehind.CarBogieCentreLengthM);
+                        var C3 = Math.Pow((C3_1 + C3_2), 2);
+
+                        var C4 = 2.0f * (ThiscarCouplerlengthft + CarbehindCouplerlengthft) * (C2_1 + C2_2);
+
+                        var C = (float)Math.Acos((C1 + C2 - C3) / C4);
+
+                        WagonRearCouplerBuffAngleRad = MathHelper.ToRadians(180.0f) - A + B - C;
+
+
+                        //   Trace.TraceInformation("Buff - CarId {0} Carahead {1} A {2} B {3} C {4} 180 {5}", CarID, CarAhead.WagonRearCouplerBuffAngleRad, A, B, C, MathHelper.ToRadians(180.0f));
+
+
+
+                        // This car front coupler angle
+                        var X1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var X2 = (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f) - CarbehindCouplerlengthft;
+                        var X = (float)Math.Atan(X1 / X2);
+
+                        var Y = (float)Math.Asin(2.0f * Me.ToFt(CarBehind.CarTrackPlayM) / Me.ToFt(CarBehind.CarBogieCentreLengthM));
+
+                        var Z1 = Math.Pow(ThiscarCouplerlengthft + CarbehindCouplerlengthft, 2);
+                        var Z2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var Z2_2 = (2.0f * Me.ToFt(CarBehind.CarTrackPlayM) * (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft)) / Me.ToFt(CarBehind.CarBogieCentreLengthM);
+                        var Z2 = Math.Pow((Z2_1 + Z2_2), 2);
+
+                        var Z3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var Z3_2 = (2.0f * Me.ToFt(CarTrackPlayM) * (Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft)) / Me.ToFt(CarBogieCentreLengthM);
+                        var Z3 = Math.Pow((Z3_1 + Z3_2), 2);
+
+                        var Z4 = 2.0f * (ThiscarCouplerlengthft + CarbehindCouplerlengthft) * (Z2_1 + Z2_2);
+
+                        var Z = (float)Math.Acos((Z1 + Z2 - Z3) / Z4);
+
+                        CarBehind.WagonFrontCouplerBuffAngleRad = MathHelper.ToRadians(180.0f) - X + Y - Z;
+
+                        //     Trace.TraceInformation("Buff - CarId {0} Thiscar {1} A {2} B {3} C {4} 180 {5}", CarID, WagonFrontCouplerBuffAngleRad, X, Y, Z, MathHelper.ToRadians(180.0f));
+
+                       // Trace.TraceInformation("Buff - CarId {0} StringThis {1} StringBehind {2} BuffThis {3} BuffAhead {4}", CarID, WagonRearCouplerAngleRad, CarBehind.WagonFrontCouplerAngleRad, WagonRearCouplerBuffAngleRad, CarBehind.WagonFrontCouplerBuffAngleRad);
+
+                    }
+
                 }
                 else if (CarAhead != null)
                 {
@@ -1344,6 +1414,9 @@ namespace Orts.Simulation.RollingStocks
                         AdjustedWagonRearCouplerAngleRad = 0.0f;
                         CarBehind.AdjustedWagonFrontCouplerAngleRad = 0.0f;
                         WagonRearCouplerAngleRad = 0;
+                        WagonFrontCouplerAngleRad = 0;
+                        WagonRearCouplerBuffAngleRad = 0;
+                        WagonFrontCouplerBuffAngleRad = 0;
                         CarBehind.WagonFrontCouplerAngleRad = 0;
                         CarAhead.WagonRearCouplerAngleRad = 0;
                     }
@@ -1424,7 +1497,16 @@ namespace Orts.Simulation.RollingStocks
 
             if (IsPlayerTrain)
             {
-                WagonCouplerAngleDerailRad = Math.Abs(WagonRearCouplerAngleRad);
+                if (CouplerForceU > 0 && CouplerSlackM < 0) // If car coupler is in compression, use the buff angle
+                {
+                    WagonCouplerAngleDerailRad = Math.Abs(WagonRearCouplerBuffAngleRad);
+                }
+                else // if coupler in tension, then use tension angle
+                {
+                    WagonCouplerAngleDerailRad = Math.Abs(WagonRearCouplerAngleRad);
+                }
+
+
                 var numAxles = LocoNumDrvAxles + WagonNumAxles;
                 var numWheels = numAxles * 2;
 
@@ -1504,7 +1586,8 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else
                     {
-                        DerailmentCoefficient *= 1.4f;
+                       // DerailmentCoefficient *= 1.4f;
+                        DerailmentCoefficient *= 2.0f;
                     }
 
                     var wagonAdhesion = Train.WagonCoefficientFriction;
