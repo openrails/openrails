@@ -4499,7 +4499,7 @@ Open Rails calculates when it is likely that a train derailment has occurred. Th
 when the train is in a curve. Light (empty wagons) can sometimes derail due to 'string lining' where the train forces attempt to pull the train 
 in a straight line, rather then following the curve.
 
-OR calculates the Nadal Critera for each wagon, and then calculates the actual L/V ratio based upon the wagon weight and the relevant 
+OR calculates the Nadal Criteria for each wagon, and then calculates the actual L/V ratio based upon the wagon weight and the relevant 
 "in train" forces. Open Rails uses some calculated default parameters for the various parameters required to determine the actual L/V
 ratio, however more accurate results will be obtained if actual parameters are entered into the ENG or WAG file. The derailment calculations 
 use information relating to the wagon dimensions, weight and wheel profile information.

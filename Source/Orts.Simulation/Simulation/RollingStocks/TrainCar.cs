@@ -1197,7 +1197,7 @@ namespace Orts.Simulation.RollingStocks
         /// these factors is not practical so only some of the key factors are considered. For eaxmple, wheel wear may determine whether a particular car will derial or not. So the same 
         /// type of car can either derail or not under similar circumstances.
         /// 
-        /// Hence these calculations provide a "generic" approach to determining whether a car will derial or not.
+        /// Hence these calculations provide a "generic" approach to determining whether a car will derail or not.
         /// 
         /// Buff Coupler angle calculated from this publication: In-Train Force Limit Study by National Research Council Canada
         /// 
@@ -1578,16 +1578,18 @@ namespace Orts.Simulation.RollingStocks
                     DerailmentCoefficient = TotalWagonLateralDerailForceN / TotalWagonVerticalDerailForceN;
 
                     // use the dynamic multiplication coefficient to calculate final derailment coefficient, the above method calculated using quasi-static factors.
-                    // The quasi-static do not include allowance for wheel unloading due to static carbody pitch. Hence the following factors have been used to adjust to dynamic effects.
-                    // They have been adjusted slightly based upon derailment accident reports. Original figures quoted were 2 x for standard curves, and 3.1 x for turnouts. 
-                    if (IsOverJunction())
+                    // The differences between quasi-static and dynamic limits are due to effects of creepage, curve, conicity, wheel unloading ratio, track geometry, 
+                    // car configurations and the share of wheel load changes which are not taken into account in the static analysis etc. 
+                    // Hence the following factors have been used to adjust to dynamic effects.
+                    // Original figures quoted - Static Draft = 0.389, Static Buff = 0.389, Dynamic Draft = 0.29, Dynamic Buff = 0.22. 
+                    // Hence use the following multiplication factors, Buff = 1.77, Draft = 1.34.
+                    if (CouplerForceU > 0 && CouplerSlackM < 0)
                     {
-                        DerailmentCoefficient *= 2.17f;
+                        DerailmentCoefficient *= 1.77f; // coupler in buff condition
                     }
                     else
                     {
-                       // DerailmentCoefficient *= 1.4f;
-                        DerailmentCoefficient *= 2.0f;
+                        DerailmentCoefficient *= 1.34f;
                     }
 
                     var wagonAdhesion = Train.WagonCoefficientFriction;
