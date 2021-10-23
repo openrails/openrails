@@ -15,7 +15,7 @@ Programs compiled for 32-bit Windows are always limited to using a maximum of 2G
 <li>Processor : 2.0 GHz (32 or 64-bit)</li>
 <li>Memory : minimum = 0.5 GB, recommended = 4 GB</li>
 <li>Hard drive : 50 MB (but models require lots of space. The 6 routes in Microsoft Train Simulator require 1.4 GB)</li>
-<li>Graphics : any compatible with Windows 7 upwards</li>
+<li>Graphics : any compatible with Windows 7 upwards. (more than 0.3GB graphics RAM recommended)</li>
 </ul>
 <h3>Do I need Microsoft Train Simulator installed to use Open Rails?</h3>
 <p>
