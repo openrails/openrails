@@ -196,6 +196,14 @@ namespace Orts.Simulation.RollingStocks
         public float CarBodyLengthM;
         public float CarCouplerFaceLengthM;
         public float DerailmentCoefficient;
+        public float NadalDerailmentCoefficient;
+        public float MaximumWheelFlangeAngleRad;
+        public float WheelFlangeLengthM;
+        public float AngleOfAttackRad;
+        public float DerailClimbDistanceM;
+        public bool DerailPossible = false;
+        public bool DerailExpected = false;
+        public float DerailElapsedTimeS;
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
@@ -564,7 +572,10 @@ namespace Orts.Simulation.RollingStocks
         public float TotalWagonLateralDerailForceN;
         public float LateralWindForceN;
         public float WagonFrontCouplerAngleRad;
+        public float WagonFrontCouplerBuffAngleRad;
         public float WagonRearCouplerAngleRad;
+        public float WagonRearCouplerBuffAngleRad;
+        public float CarTrackPlayM = Me.FromIn(2.0f);
         public float AdjustedWagonFrontCouplerAngleRad;
         public float AdjustedWagonRearCouplerAngleRad;
         public float WagonFrontCouplerCurveExtM;
@@ -852,7 +863,7 @@ namespace Orts.Simulation.RollingStocks
             UpdateCurveForce(elapsedClockSeconds);
             UpdateTunnelForce();
             UpdateBrakeSlideCalculation();
-            UpdateTrainDerailmentRisk();
+            UpdateTrainDerailmentRisk(elapsedClockSeconds);
 
             // acceleration
             if (elapsedClockSeconds > 0.0f)
@@ -1173,9 +1184,28 @@ namespace Orts.Simulation.RollingStocks
         ///
         /// This section calculates the coupler angle behind the current car (ie the rear coupler on this car and the front coupler on the following car. The coupler angle will be used for
         /// coupler automation as well as calculating Lateral forces on the car.
+        /// 
+        /// In addition Chapter 2 - Flange Climb Derailment Criteria of the TRB’s Transit Cooperative Research Program (TCRP) Report 71, examines flange climb derailment criteria for transit 
+        /// vehicles that include lateral-to-vertical ratio limits and a corresponding flange-climb-distance limit. The report also includes guidance to transit agencies on wheel and rail 
+        /// maintenance practices.
+        /// 
+        /// Some of the concepts described in this publication have also been used to calculate the derailment likelihood.
+        /// 
+        /// https://www.nap.edu/read/13841/chapter/4
+        /// 
+        /// It should be noted that car derailment is a very complex process that is impacted by many diferent factors, including the track structure and train conditions. To model all of 
+        /// these factors is not practical so only some of the key factors are considered. For eaxmple, wheel wear may determine whether a particular car will derial or not. So the same 
+        /// type of car can either derail or not under similar circumstances.
+        /// 
+        /// Hence these calculations provide a "generic" approach to determining whether a car will derail or not.
+        /// 
+        /// Buff Coupler angle calculated from this publication: In-Train Force Limit Study by National Research Council Canada
+        /// 
+        /// https://nrc-publications.canada.ca/eng/view/ft/?id=8cc206d0-5dbd-42ed-9b4e-35fd9f8b8efb
+        /// 
         /// </summary>
 
-        public void UpdateTrainDerailmentRisk()
+        public void UpdateTrainDerailmentRisk(float elapsedClockSeconds)
         {
             // Calculate coupler angle when travelling around curve
             // To achieve an accurate coupler angle calculation the following length need to be calculated. These values can be included in the ENG/WAG file for greatest accuracy, or alternatively OR will
@@ -1313,6 +1343,69 @@ namespace Orts.Simulation.RollingStocks
                         AdjustedWagonRearCouplerAngleRad = WagonRearCouplerAngleRad;
                         CarBehind.AdjustedWagonFrontCouplerAngleRad = CarBehind.WagonFrontCouplerAngleRad;
                     }
+
+                    // Only process this code segment if coupler is in compression
+                    if (CouplerForceU > 0 && CouplerSlackM < 0)
+                    {
+
+                        // Calculate Buff coupler angles. Car1 is current car, and Car2 is the car behind
+                        // Car ahead rear coupler angle
+                        var ThiscarCouplerlengthft = Me.ToFt(CarCouplerFaceLengthM - CarBodyLengthM) + CouplerSlackM / 2;
+                        var CarbehindCouplerlengthft = Me.ToFt(CarBehind.CarCouplerFaceLengthM - CarBehind.CarBodyLengthM) + CouplerSlackM / 2;
+                        var A1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var A2 = (Me.ToFt(CarCouplerFaceLengthM) / 2.0f) - ThiscarCouplerlengthft;
+                        var A = (float)Math.Atan(A1 / A2);
+
+                        var B = (float)Math.Asin(2.0f * Me.ToFt(CarTrackPlayM) / Me.ToFt(CarBogieCentreLengthM));
+                        var C1 = Math.Pow(ThiscarCouplerlengthft + CarbehindCouplerlengthft, 2);
+
+                        var C2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var C2_2 = (2.0f * Me.ToFt(CarTrackPlayM) * (Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft)) / Me.ToFt(CarBogieCentreLengthM);
+                        var C2 = Math.Pow((C2_1 + C2_2), 2);
+
+                        var C3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var C3_2 = (2.0f * Me.ToFt(CarBehind.CarTrackPlayM) * (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft)) / Me.ToFt(CarBehind.CarBogieCentreLengthM);
+                        var C3 = Math.Pow((C3_1 + C3_2), 2);
+
+                        var C4 = 2.0f * (ThiscarCouplerlengthft + CarbehindCouplerlengthft) * (C2_1 + C2_2);
+
+                        var C = (float)Math.Acos((C1 + C2 - C3) / C4);
+
+                        WagonRearCouplerBuffAngleRad = MathHelper.ToRadians(180.0f) - A + B - C;
+
+
+                        //   Trace.TraceInformation("Buff - CarId {0} Carahead {1} A {2} B {3} C {4} 180 {5}", CarID, CarAhead.WagonRearCouplerBuffAngleRad, A, B, C, MathHelper.ToRadians(180.0f));
+
+
+
+                        // This car front coupler angle
+                        var X1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var X2 = (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f) - CarbehindCouplerlengthft;
+                        var X = (float)Math.Atan(X1 / X2);
+
+                        var Y = (float)Math.Asin(2.0f * Me.ToFt(CarBehind.CarTrackPlayM) / Me.ToFt(CarBehind.CarBogieCentreLengthM));
+
+                        var Z1 = Math.Pow(ThiscarCouplerlengthft + CarbehindCouplerlengthft, 2);
+                        var Z2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var Z2_2 = (2.0f * Me.ToFt(CarBehind.CarTrackPlayM) * (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft)) / Me.ToFt(CarBehind.CarBogieCentreLengthM);
+                        var Z2 = Math.Pow((Z2_1 + Z2_2), 2);
+
+                        var Z3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var Z3_2 = (2.0f * Me.ToFt(CarTrackPlayM) * (Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft)) / Me.ToFt(CarBogieCentreLengthM);
+                        var Z3 = Math.Pow((Z3_1 + Z3_2), 2);
+
+                        var Z4 = 2.0f * (ThiscarCouplerlengthft + CarbehindCouplerlengthft) * (Z2_1 + Z2_2);
+
+                        var Z = (float)Math.Acos((Z1 + Z2 - Z3) / Z4);
+
+                        CarBehind.WagonFrontCouplerBuffAngleRad = MathHelper.ToRadians(180.0f) - X + Y - Z;
+
+                        //     Trace.TraceInformation("Buff - CarId {0} Thiscar {1} A {2} B {3} C {4} 180 {5}", CarID, WagonFrontCouplerBuffAngleRad, X, Y, Z, MathHelper.ToRadians(180.0f));
+
+                       // Trace.TraceInformation("Buff - CarId {0} StringThis {1} StringBehind {2} BuffThis {3} BuffAhead {4}", CarID, WagonRearCouplerAngleRad, CarBehind.WagonFrontCouplerAngleRad, WagonRearCouplerBuffAngleRad, CarBehind.WagonFrontCouplerBuffAngleRad);
+
+                    }
+
                 }
                 else if (CarAhead != null)
                 {
@@ -1321,6 +1414,9 @@ namespace Orts.Simulation.RollingStocks
                         AdjustedWagonRearCouplerAngleRad = 0.0f;
                         CarBehind.AdjustedWagonFrontCouplerAngleRad = 0.0f;
                         WagonRearCouplerAngleRad = 0;
+                        WagonFrontCouplerAngleRad = 0;
+                        WagonRearCouplerBuffAngleRad = 0;
+                        WagonFrontCouplerBuffAngleRad = 0;
                         CarBehind.WagonFrontCouplerAngleRad = 0;
                         CarAhead.WagonRearCouplerAngleRad = 0;
                     }
@@ -1397,54 +1493,183 @@ namespace Orts.Simulation.RollingStocks
 
             // Calculate the vertical force on the wheel of the car, to determine whether wagon derails or not
             // To calculate vertical force on outer wheel = (WagMass / NumWheels) * gravity + WagMass / NumAxles * ( (Speed^2 / CurveRadius) - (gravity * superelevation angle)) * (height * track width)
+            // Equation 5
 
             if (IsPlayerTrain)
             {
-                WagonCouplerAngleDerailRad = Math.Abs(WagonRearCouplerAngleRad);
+                if (CouplerForceU > 0 && CouplerSlackM < 0) // If car coupler is in compression, use the buff angle
+                {
+                    WagonCouplerAngleDerailRad = Math.Abs(WagonRearCouplerBuffAngleRad);
+                }
+                else // if coupler in tension, then use tension angle
+                {
+                    WagonCouplerAngleDerailRad = Math.Abs(WagonRearCouplerAngleRad);
+                }
+
+
                 var numAxles = LocoNumDrvAxles + WagonNumAxles;
                 var numWheels = numAxles * 2;
 
                 if (CurrentCurveRadius != 0)
                 {
-                    var A = MassKG * GravitationalAccelerationMpS2 / numWheels;
-                    var B1 = (MassKG / numAxles) * (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
-                    var B2 = GravitationalAccelerationMpS2 * (float)Math.Cos(SuperElevationAngleRad);
-                    var B3 = CentreOfGravityM.Y / TrackGaugeM;
+                    float A = 0;
+                    float B1 = 0;
 
-                    TotalWagonVerticalDerailForceN = A + (B1 - B2) * B3;
+                    // Prevent NaN if numWheels = 0
+                    if (numWheels != 0)
+                    {
+                        A = (MassKG / numWheels) * GravitationalAccelerationMpS2;
+                    }
+                    else
+                    {
+                        A = MassKG * GravitationalAccelerationMpS2;
+                    }
+
+                    // Prevent NaN if numAxles = 0
+                    if (numAxles != 0)
+                    {
+                        B1 = (MassKG / numAxles);
+                    }
+                    else
+                    {
+                        B1 = MassKG;
+                    }
+                    var B2 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
+                    var B3 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                    var B4 = CentreOfGravityM.Y / TrackGaugeM;
+
+                    TotalWagonVerticalDerailForceN = A + B1 * (B3 - B2) * B4;
 
                     // Calculate lateral force per wheelset on the first bogie
                     // Lateral Force = (Coupler force x Sin (Coupler Angle) / NumBogies) + WagMass / NumAxles * ( (Speed^2 / CurveRadius) - (gravity * superelevation angle))
 
                     if (CarAhead != null)
                     {
-                        var AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
-                        var BB1 = MassKG / numAxles;
+                        float AA1 = 0;
+                        float BB1 = 0;
+
+                        // Prevent NaN if WagonNumBogies = 0
+                        if ( WagonNumBogies != 0)
+                        {
+                            // AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
+                            AA1 = Math.Abs(CarAhead.CouplerForceUSmoothed.SmoothedValue) * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
+                        }
+                        else
+                        {
+                           // AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad);
+                            AA1 = Math.Abs(CarAhead.CouplerForceUSmoothed.SmoothedValue) * (float)Math.Sin(WagonCouplerAngleDerailRad);
+                        }
+
+                        // Prevent NaN if numAxles = 0
+                        if (numAxles != 0)
+                        {
+                            BB1 = MassKG / numAxles;
+                        }
+                        else
+                        {
+                            BB1 = MassKG;
+                        }
                         var BB2 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
                         var BB3 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
 
-                        TotalWagonLateralDerailForceN = AA1 + BB1 * (BB2 - BB3);
+                        TotalWagonLateralDerailForceN = Math.Abs(AA1 + BB1 * (BB2 - BB3));
                     }
 
-                    DerailmentCoefficient = Math.Abs(TotalWagonLateralDerailForceN / TotalWagonVerticalDerailForceN);
+                    DerailmentCoefficient = TotalWagonLateralDerailForceN / TotalWagonVerticalDerailForceN;
 
-                    // use the dynamic multiplication coefficient to calculate final derailment coefficient
-                    if (IsOverJunction())
+                    // use the dynamic multiplication coefficient to calculate final derailment coefficient, the above method calculated using quasi-static factors.
+                    // The differences between quasi-static and dynamic limits are due to effects of creepage, curve, conicity, wheel unloading ratio, track geometry, 
+                    // car configurations and the share of wheel load changes which are not taken into account in the static analysis etc. 
+                    // Hence the following factors have been used to adjust to dynamic effects.
+                    // Original figures quoted - Static Draft = 0.389, Static Buff = 0.389, Dynamic Draft = 0.29, Dynamic Buff = 0.22. 
+                    // Hence use the following multiplication factors, Buff = 1.77, Draft = 1.34.
+                    if (CouplerForceU > 0 && CouplerSlackM < 0)
                     {
-                        DerailmentCoefficient *= 3.1f;
+                        DerailmentCoefficient *= 1.77f; // coupler in buff condition
                     }
                     else
                     {
-                        DerailmentCoefficient *= 2.0f;
+                        DerailmentCoefficient *= 1.34f;
                     }
 
+                    var wagonAdhesion = Train.WagonCoefficientFriction;
+
+                    // Calculate Nadal derailment coefficient limit
+                    NadalDerailmentCoefficient = ((float) Math.Tan(MaximumWheelFlangeAngleRad) - wagonAdhesion) / (1f + wagonAdhesion * (float) Math.Tan(MaximumWheelFlangeAngleRad));
+
+                    // Calculate Angle of Attack - AOA = sin-1(2 * bogie wheel base / curve radius)
+                    AngleOfAttackRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadius);
+                    var angleofAttackmRad = AngleOfAttackRad * 1000f; // Convert to micro radians
+
+                    // Calculate the derail climb distance - uses the general form equation 2.4 from the above publication
+                    var parameterA_1 = ((100 / (-1.9128f * MathHelper.ToDegrees(MaximumWheelFlangeAngleRad) + 146.56f)) + 3.1f) * Me.ToIn(WheelFlangeLengthM);
+
+                    var parameterA_2 = (1.0f / (-0.0092f * Math.Pow(MathHelper.ToDegrees(MaximumWheelFlangeAngleRad), 2) + 1.2125f * MathHelper.ToDegrees(MaximumWheelFlangeAngleRad) - 39.031f)) + 1.23f;
+
+                    var parameterA = parameterA_1 + parameterA_2;
+
+                    var parameterB_1 = ((10f / (-21.157f * Me.ToIn(WheelFlangeLengthM) + 2.1052f)) + 0.05f) * MathHelper.ToDegrees(MaximumWheelFlangeAngleRad);
+
+                    var parameterB_2 = (10 / (0.2688f * Me.ToIn(WheelFlangeLengthM) - 0.0266f)) - 5f;
+
+                    var parameterB = parameterB_1 + parameterB_2;
+
+                    DerailClimbDistanceM = Me.FromFt( (float)((parameterA * parameterB * Me.ToIn(WheelFlangeLengthM)) / ((angleofAttackmRad + (parameterB * Me.ToIn(WheelFlangeLengthM))))) );
+
+                    // calculate the time taken to travel the derail climb distance
+                    var derailTimeS = DerailClimbDistanceM / AbsSpeedMpS;
+
+                    // Set indication that a derail may occur
+                    if (DerailmentCoefficient > NadalDerailmentCoefficient)
+                    {
+                        DerailPossible = true;
+                    }
+                    else
+                    {
+                        DerailPossible = false;
+                    }
+
+                    // If derail climb time exceeded, then derail happens
+                    if (DerailPossible && DerailElapsedTimeS > derailTimeS)
+                    {
+                        DerailExpected = true;
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("Car {0} has derailed on the curve.", CarID));
+                      //  Trace.TraceInformation("Car Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5} Nadal {6} Coeff {7}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, NadalDerailmentCoefficient, DerailmentCoefficient);
+                     //   Trace.TraceInformation("Car Ahead Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}", CarAhead.CarID, CarAhead.CouplerForceU, CarAhead.CouplerForceUSmoothed.SmoothedValue, CarAhead.TotalWagonLateralDerailForceN, CarAhead.TotalWagonVerticalDerailForceN, CarAhead.WagonCouplerAngleDerailRad);
+                    }
+                    else if (DerailPossible)
+                    {
+                        DerailElapsedTimeS += elapsedClockSeconds;
+                     //   Trace.TraceInformation("Car Derail Time - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}, Elapsed {6}, DeratilTime {7}, Distance {8} Nadal {9} Coeff {10}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, DerailElapsedTimeS, derailTimeS, DerailClimbDistanceM, NadalDerailmentCoefficient, DerailmentCoefficient);
+                    }
+                    else
+                    {
+                        DerailElapsedTimeS = 0; // Reset timer if derail is not possible
+                    }
+
+                    if (AbsSpeedMpS < 0.01)
+                    {
+                        DerailExpected = false;
+                        DerailPossible = false;
+                    }
+
+//                    if (CarID == "0 - 84" || CarID == "0 - 83" || CarID == "0 - 82" || CarID == "0 - 81" || CarID == "0 - 80" || CarID == "0 - 79")
+//                    {
+//                        Trace.TraceInformation("Nadal - {0}, Adhesion {1} Flange Angle {2}", NadalDerailmentCoefficient, wagonAdhesion, MaximumWheelFlangeAngleRad);
+//                        Trace.TraceInformation("Derailment - CarID {0}, Nadal {1}, Derail {2} Possible {3} Expected {4} Derail Distance {5} ElapsedTime {6} DerailTime {7}", CarID, NadalDerailmentCoefficient, DerailmentCoefficient, DerailPossible, DerailExpected, DerailClimbDistanceM, DerailElapsedTimeS, derailTimeS);
+//                    }
                 }
                 else
                 {
                     TotalWagonLateralDerailForceN = 0;
                     TotalWagonVerticalDerailForceN = 0;
                     DerailmentCoefficient = 0;
+                    DerailExpected = false;
+                    DerailPossible = false;
+                    DerailElapsedTimeS = 0;
                 }
+
+
 
                 if (TotalWagonLateralDerailForceN > TotalWagonVerticalDerailForceN)
                 {
@@ -1635,7 +1860,7 @@ namespace Orts.Simulation.RollingStocks
 
                     SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.0001f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value, having a value of zero causes problems with calculations
 
-                    SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Total superelevation includes both balanced and unbalanced superelevation
+                    SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Balanced superelevation only angle
 
                     MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM); // Used for calculating curve resistance
 
@@ -1690,7 +1915,7 @@ namespace Orts.Simulation.RollingStocks
                                     }
                                     else
                                     {
-                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your passengers in car {0} are feeling uncomfortable. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric))); ;
+                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your passengers in car {0} are feeling uncomfortable. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric))); 
                                     }
 
                                     if (dbfmaxsafecurvespeedmps != MaxSafeCurveSpeedMps)//Debrief eval

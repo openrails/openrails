@@ -4490,3 +4490,25 @@ Two other parameters in the Engine section of the ENG file are used by the TCS:
 
 - ``DoesBrakeCutPower( x )`` sets whether applying brake on the locomotive cuts the traction (1 for enabled, 0 for disabled)
 - ``BrakeCutsPowerAtBrakeCylinderPressure( x )`` sets the minimum pressure in the brake cylinder that cuts the traction (by default 4 PSI)
+
+
+Train Derailment
+----------------
+
+Open Rails calculates when it is likely that a train derailment has occurred. The derailment modeled is based upon the wheel climbing the rail 
+when the train is in a curve. Light (empty wagons) can sometimes derail due to 'string lining' where the train forces attempt to pull the train 
+in a straight line, rather then following the curve.
+
+OR calculates the Nadal Criteria for each wagon, and then calculates the actual L/V ratio based upon the wagon weight and the relevant 
+"in train" forces. Open Rails uses some calculated default parameters for the various parameters required to determine the actual L/V
+ratio, however more accurate results will be obtained if actual parameters are entered into the ENG or WAG file. The derailment calculations 
+use information relating to the wagon dimensions, weight and wheel profile information.
+
+Wheel profile details can be entered with the following two parameters:
+
+- ``ORTSMaximumWheelFlangeAngle`` - Wheel flange angle is defined as the maximum angle of the wheel flange relative to the horizontal axis.
+UoM - Angle (deg, radians) - default is rad. Typically this value maybe between approx 60 and 75 degrees.
+
+- ``ORTSWheelFlangeLength`` - Wheel flange length is defined as the length of flange starting from the beginning of the maximum flange angle 
+to the point where flange angle reduces to 26.6 degrees. UoM - Distance (m, in, ft, etc) - default is m
+
