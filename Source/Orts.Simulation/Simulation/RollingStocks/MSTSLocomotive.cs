@@ -45,7 +45,6 @@
 //#define DEBUG_ADHESION
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
@@ -119,7 +118,6 @@ namespace Orts.Simulation.RollingStocks
         public bool FastVacuumExhausterFitted = false;
 
         public bool AlerterSnd;
-        public bool VigilanceMonitor;
         public bool Sander;
         public bool Wiper;
         public bool BailOff;
@@ -251,7 +249,6 @@ namespace Orts.Simulation.RollingStocks
         public float LargeEjectorBrakePipeChargingRatePSIorInHgpS;
         public float ExhausterHighSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
         public float ExhausterLowSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
-        public bool VacuumBrakeCutoffActivated = false;
         public bool BrakeFlagDecrease = false;
         public bool BrakeFlagIncrease = false;
 
@@ -387,12 +384,6 @@ namespace Orts.Simulation.RollingStocks
         public bool EmergencyCausesThrottleDown { get; private set; }
         public bool EmergencyEngagesHorn { get; private set; }
         public bool WheelslipCausesThrottleDown { get; private set; }
-
-        public float BrakeRestoresPowerAtBrakePipePressurePSI;
-        public float BrakeCutsPowerAtBrakePipePressurePSI;
-        public bool DoesVacuumBrakeCutPower { get; private set; }
-        public bool DoesBrakeCutPower { get; private set; }
-        public float BrakeCutsPowerAtBrakeCylinderPressurePSI { get; private set; }
         public bool DoesHornTriggerBell { get; private set; }
 
         protected const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
@@ -444,7 +435,6 @@ namespace Orts.Simulation.RollingStocks
           //  BrakePipeChargingRatePSIpS = Simulator.Settings.BrakePipeChargingRate;
                         
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
-            BrakeCutsPowerAtBrakeCylinderPressurePSI = 4.0f;
 
             LocomotiveAxle = new Axle();
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
@@ -845,7 +835,16 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(vigilancemonitor":
                 case "engine(emergencystopmonitor":
                 case "engine(awsmonitor":
-                case "engine(overspeedmonitor": VigilanceMonitor = true; TrainControlSystem.Parse(lowercasetoken, stf); break;
+                case "engine(overspeedmonitor":
+                case "engine(doesbrakecutpower":
+                case "engine(ortsdoesvacuumbrakecutpower":
+                case "engine(brakecutspoweratbrakecylinderpressure":
+                case "engine(ortsbrakecutspoweratbrakepipepressure":
+                case "engine(ortsbrakerestorespoweratbrakepipepressure":
+                case "engine(ortsbrakecutspowerforminimumspeed":
+                case "engine(ortsbrakecutspoweruntiltractioncommandcancelled":
+                    TrainControlSystem.Parse(lowercasetoken, stf);
+                    break;
                 case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
                 case "engine(airbrakesmainresvolume": MainResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -904,11 +903,6 @@ namespace Orts.Simulation.RollingStocks
                     HeadOutViewpoints.Add(new ViewPoint(HeadOutViewpoints[0], true));
                     break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
-                case "engine(ortsdoesvacuumbrakecutpower": DoesVacuumBrakeCutPower = stf.ReadBoolBlock(false); break;
-                case "engine(doesbrakecutpower": DoesBrakeCutPower = stf.ReadBoolBlock(false); break;
-                case "engine(brakecutspoweratbrakecylinderpressure": BrakeCutsPowerAtBrakeCylinderPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
-                case "engine(ortsbrakecutspoweratbrakepipepressure": BrakeCutsPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
-                case "engine(ortsbrakerestorespoweratbrakepipepressure": BrakeRestoresPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break;
                 case "engine(brakesenginecontrollers":
                     foreach (var brakesenginecontrollers in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
@@ -1348,7 +1342,7 @@ namespace Orts.Simulation.RollingStocks
             if (BrakePipeChargingRatePSIorInHgpS == 0) // Check to see if BrakePipeChargingRate has been set in the ENG file.
             {
                 // Set Default BrakePipe Charging Rate depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
-                if ((BrakeSystem is VacuumSinglePipe))
+                if (BrakeSystem is VacuumSinglePipe)
                 {
                     BrakePipeChargingRatePSIorInHgpS = 0.32f; // Vacuum brakes
                 }
@@ -1376,7 +1370,7 @@ namespace Orts.Simulation.RollingStocks
             // Initialise BrakePipeDischargeTimeFactor
             if (BrakePipeDischargeTimeFactor == 0)
             {
-                if ((BrakeSystem is VacuumSinglePipe))
+                if (BrakeSystem is VacuumSinglePipe)
                 {
                     BrakePipeDischargeTimeFactor = 1.5f; // Vacuum brakes
                 }
@@ -1396,7 +1390,7 @@ namespace Orts.Simulation.RollingStocks
             if (BrakeEmergencyTimeFactorS == 0) // Check to see if BrakeEmergencyTimeFactorS has been set in the ENG file.
             {
                 // Set Default Brake Emergency Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
-                if ((BrakeSystem is VacuumSinglePipe))
+                if (BrakeSystem is VacuumSinglePipe)
                 {
                     BrakeEmergencyTimeFactorS = 1.0f; // Vacuum brakes
                 }
@@ -1410,7 +1404,7 @@ namespace Orts.Simulation.RollingStocks
             if (BrakeServiceTimeFactorS == 0) // Check to see if BrakeServiceTimeFactorS has been set in the ENG file.
             {
                 // Set Default Brake Service Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
-                if ((BrakeSystem is VacuumSinglePipe))
+                if (BrakeSystem is VacuumSinglePipe)
                 {
                     BrakeServiceTimeFactorS = 10.0f; // Vacuum brakes
                 }
@@ -1457,7 +1451,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Check TrainBrakesControllerMaxSystemPressure parameter for "correct" value 
             // This is only done for vacuum brakes as the UoM can be confusing - it defaults to psi due to way parameter is read, and if units are entered then a InHG value can be incorrectly converted.
-            if ((BrakeSystem is VacuumSinglePipe))
+            if (BrakeSystem is VacuumSinglePipe)
             {
                 if (TrainBrakeController.MaxPressurePSI == 21 || TrainBrakeController.MaxPressurePSI == 25) // If 21 or 25 has been entered assume that it is 21InHg or 25InHg, and convert it to the correct psi equivalent
                 {
@@ -1480,34 +1474,13 @@ namespace Orts.Simulation.RollingStocks
                     }
                     TrainBrakeController.MaxPressurePSI = Bar.ToPSI(Bar.FromInHg(21.0f));
                 }
-
-            }
-
-            if (DoesBrakeCutPower && BrakeCutsPowerAtBrakePipePressurePSI > BrakeRestoresPowerAtBrakePipePressurePSI)
-            {
-                BrakeCutsPowerAtBrakePipePressurePSI = BrakeRestoresPowerAtBrakePipePressurePSI - 1.0f;
-
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                {
-                    Trace.TraceInformation("BrakeCutsPowerAtBrakePipePressure is greater then BrakeRestoresPowerAtBrakePipePressurePSI, and has been set to value of {0} InHg", Bar.ToInHg(Bar.FromPSI(BrakeCutsPowerAtBrakePipePressurePSI)));
-                }
-            }
-
-            if (DoesBrakeCutPower && (BrakeSystem is VacuumSinglePipe) && (BrakeRestoresPowerAtBrakePipePressurePSI == 0 || BrakeRestoresPowerAtBrakePipePressurePSI > OneAtmospherePSI))
-            {
-                BrakeRestoresPowerAtBrakePipePressurePSI = Bar.ToPSI(Bar.FromInHg(15.0f)); // Power can be restored once brake pipe rises above 15 InHg
-
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                {
-                    Trace.TraceInformation("BrakeRestoresPowerAtBrakePipePressure appears out of limits, and has been set to value of {0} InHg", Bar.ToInHg(Bar.FromPSI(BrakeRestoresPowerAtBrakePipePressurePSI)));
-                }
             }
 
             // Initialise Brake Time Factor
             if (BrakePipeTimeFactorS == 0) // Check to see if BrakePipeTimeFactorS has been set in the ENG file.
             {
                 // Set Default Brake Pipe Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
-                if ((BrakeSystem is VacuumSinglePipe))
+                if (BrakeSystem is VacuumSinglePipe)
                 {
                     BrakePipeTimeFactorS = 0.02f; // Vacuum brakes
                 }
@@ -1522,7 +1495,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 // Set Default Train Brake Pipe Leak depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 // Default currently set to zero - means that by default function is off, and a value must be entered into the ENG file to get it to work
-                if ((BrakeSystem is VacuumSinglePipe))
+                if (BrakeSystem is VacuumSinglePipe)
                 {
                     TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Vacuum brakes
                 }
@@ -1533,8 +1506,8 @@ namespace Orts.Simulation.RollingStocks
             }
 
             base.Initialize();
-            if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;
 
+            if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;
         }
 
         //================================================================================================//
