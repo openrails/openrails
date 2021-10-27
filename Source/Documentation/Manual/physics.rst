@@ -4485,12 +4485,56 @@ the tables below.
 .. index::
    single: DoesBrakeCutPower
    single: BrakeCutsPowerAtBrakeCylinderPressure
+   single: ORTSDoesVacuumBrakeCutPower
+   single: ORTSBrakeCutsPowerAtBrakePipePressure
+   single: ORTSBrakeRestoresPowerAtBrakePipePressure
+   single: ORTSBrakeCutsPowerForMinimumSpeed
+   single: ORTSBrakeCutsPowerUntilTractionCommandCancelled
 
-Two other parameters in the Engine section of the ENG file are used by the TCS:
+Other parameters in the Engine section of the ENG file are used by the TCS:
 
-- ``DoesBrakeCutPower( x )`` sets whether applying brake on the locomotive cuts the traction (1 for enabled, 0 for disabled)
+- ``DoesBrakeCutPower( x )`` sets whether applying brake on the locomotive cuts the traction for air brake system (1 for enabled, 0 for disabled)
+- ``ORTSDoesVacuumBrakeCutPower( x )`` sets whether applying brake on the locomotive cuts the traction for vacuum brake system (1 for enabled, 0 for disabled)
 - ``BrakeCutsPowerAtBrakeCylinderPressure( x )`` sets the minimum pressure in the brake cylinder that cuts the traction (by default 4 PSI)
+- ``ORTSBrakeCutsPowerAtBrakePipePressure( x )`` sets the maximum pressure in the brake pipe that cuts the traction
+- ``ORTSBrakeRestoresPowerAtBrakePipePressure( x )`` sets the minimum pressure in the brake pipe that restores the traction
 
+Here's the different combinations that are supported:
+
+- Air brake pipe: brake cylinder pressure check
+
+  .. code-block::
+
+    DoesBrakeCutPower( 1 )
+    BrakeCutsPowerAtBrakeCylinderPressure( 0.5bar )
+
+- Air brake pipe: brake pipe pressure check
+
+  .. code-block::
+
+    DoesBrakeCutPower( 1 )
+    ORTSBrakeCutsPowerAtBrakePipePressure( 4.5bar )
+
+- Air brake pipe: brake pipe pressure check with hysteresis
+
+  .. code-block::
+
+    DoesBrakeCutPower( 1 )
+    ORTSBrakeCutsPowerAtBrakePipePressure( 4.4bar )
+    ORTSBrakeRestoresPowerAtBrakePipePressure( 4.8bar )
+
+- Vacuum brake pipe: brake pipe pressure check with hysteresis
+
+  .. code-block::
+
+    ORTSDoesVacuumBrakeCutPower( 1 )
+    ORTSBrakeCutsPowerAtBrakePipePressure( 13inHg )
+    ORTSBrakeRestoresPowerAtBrakePipePressure( 15inHg )
+
+The following parameters can be added to the combinations mentioned above:
+
+- ``ORTSBrakeCutsPowerForMinimumSpeed( x )`` sets the minimum speed of the train above which the pressure check can cut the traction (default unit is m/s)
+- ``ORTSBrakeCutsPowerUntilTractionCommandCancelled( x )`` sets whether the throttle must be brought back to 0 in order to restore the traction (1 for enabled, 0 for disabled)
 
 Train Derailment
 ----------------

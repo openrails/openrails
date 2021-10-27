@@ -33,7 +33,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
     public class VacuumSinglePipe : MSTSBrakeSystem
     {
-        protected readonly static float OneAtmospherePSI = Bar.ToPSI(1);
+        public readonly static float OneAtmospherePSI = Bar.ToPSI(1);
         protected float MaxForcePressurePSI = KPa.ToPSI(KPa.FromInHg(21));    // relative pressure difference for max brake force
         protected TrainCar Car;
         protected float HandbrakePercent;
@@ -409,36 +409,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         }
 
                         SteamBrakeCylinderPressurePSI = SteamBrakingCurrentFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI;
-                    }
-                }
-
-                // Brake cuts power
-                // IN real life cutting of power is an electric relay with a pressure sensor. The moment that vacuum drops below BO set point the contacts open and power to the 
-                // traction motors instantly drops to zero. The driver's power handle remains in whatever position it was in. If the brakes are then released the relay restores power to
-                // the traction motors back to whatever the throttle position happens to be.
-                // Convert restore and cutoff limit values to a value on our "pressure" scale
-                float BrakeCutoffPressurePSI = OneAtmospherePSI - lead.BrakeCutsPowerAtBrakePipePressurePSI;
-                float BrakeRestorePressurePSI = OneAtmospherePSI - lead.BrakeRestoresPowerAtBrakePipePressurePSI;
-
-                if (lead.DoesVacuumBrakeCutPower)
-                {
-
-                    // There are three zones of operation - (note logic reversed - O InHg = 14.73psi, and eg 21 InHg = 4.189psi)
-                    // Cutoff - exceeds set value, eg 12.5InHg (= 8.5psi)
-                    // Between cutoff and restore levels - only if cutoff has triggerd
-                    // Restore - when value exceeds set value, eg 17InHg (= 6.36 psi) - resets throttle
-                    if (BrakeLine1PressurePSI < BrakeRestorePressurePSI)
-                    {
-                        lead.VacuumBrakeCutoffActivated = false;
-                    }
-                    else if (BrakeLine1PressurePSI > BrakeCutoffPressurePSI)
-                    {
-                        lead.MotiveForceN = 0.0f;  // ToDO - This is not a good way to do it, better to be added to MotiveForce Update in MSTSLocomotive(s) when PRs Added
-                        lead.VacuumBrakeCutoffActivated = true;
-                    }
-                    else if (lead.VacuumBrakeCutoffActivated)
-                    {
-                        lead.MotiveForceN = 0.0f; // ToDO - This is not a good way to do it, better to be added to MotiveForce Update in MSTSLocomotive(s) when PRs Added
                     }
                 }
             }
