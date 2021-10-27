@@ -32,7 +32,6 @@ using Orts.MultiPlayer;
 using Orts.Parsers.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
-using Orts.Simulation.Timetables;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -1245,7 +1244,7 @@ namespace Orts.Simulation.Signalling
             {
                 if (signal != null)
                 {
-                    if (signal.isSignal)
+                    if (signal.isSignal || signal.isSpeedSignal)
                     {
                         foreach (SignalHead head in signal.SignalHeads)
                         {
