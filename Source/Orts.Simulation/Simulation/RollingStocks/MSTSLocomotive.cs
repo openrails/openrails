@@ -1430,7 +1430,7 @@ namespace Orts.Simulation.RollingStocks
                     MaximumMainReservoirPipePressurePSI = MaxMainResPressurePSI;
                     if (Simulator.Settings.VerboseConfigurationMessages)
                     {
-                        Trace.TraceInformation("AirBrakeMaxMainResPipePressure not set in ENG file, set to default pressure of {0} psi.", MaximumMainReservoirPipePressurePSI);
+                        Trace.TraceInformation("AirBrakeMaxMainResPipePressure not set in ENG file, set to default pressure of {0}.", FormatStrings.FormatPressure(MaximumMainReservoirPipePressurePSI, PressureUnit.PSI, MainPressureUnit, true));
                     }
 
                 }
@@ -1445,7 +1445,7 @@ namespace Orts.Simulation.RollingStocks
                     MaximumMainReservoirPipePressurePSI = MaxMainResPressurePSI;
                     if (Simulator.Settings.VerboseConfigurationMessages)
                     {
-                        Trace.TraceInformation("AirBrakeMaxMainResPipePressure is set in ENG file, but should not be normally used for AirSinglePipe system, reset to default pressure of {0} psi. Consider removing AirBrakeMaxMainResPipePressure parameter from ENG file", MaximumMainReservoirPipePressurePSI);
+                        Trace.TraceInformation("AirBrakeMaxMainResPipePressure is set in ENG file, but should not be normally used for AirSinglePipe system, reset to default pressure of {0}. Consider removing AirBrakeMaxMainResPipePressure parameter from ENG file", FormatStrings.FormatPressure(MaximumMainReservoirPipePressurePSI, PressureUnit.PSI, MainPressureUnit, true));
                     }
                 }
             }
