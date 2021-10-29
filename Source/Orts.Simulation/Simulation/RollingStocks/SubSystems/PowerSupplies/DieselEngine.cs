@@ -125,6 +125,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
                 case "engine(gearboxnumberofgears":
                 case "engine(gearboxdirectdrivegear":
+                case "engine(ortsgearboxtype":
                 case "engine(gearboxoperation":
                 case "engine(gearboxenginebraking":
                 case "engine(gearboxmaxspeedforgears":
@@ -1027,6 +1028,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             // Deleted to see what impact it has - was holding rpm artificialy high - http://www.elvastower.com/forums/index.php?/topic/33739-throttle-bug-in-recent-or-builds/page__gopid__256086#entry256086
 
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
+
+            if (HasGearBox && GearBox.GearBoxOperation == GearBoxOperation.Manual && GearBox.Gears[0].TypeGearBox == 2)
+            {
+
+                if (GearBox != null)
+                {
+
+                    if (RealRPM > IdleRPM && GearBox.IsClutchOn)
+                    {
+                        RealRPM = GearBox.ShaftRPM;
+                    }
+                }
+            }
+
+            // Govenor limits engine rpm
+            if (GovenorRPM != 0)
+            {
+                if (RealRPM > GovenorRPM)
+                {
+                    RealRPM = GovenorRPM;
+                }
+            }
 
             // Calculate the apparent throttle setting based upon the current rpm of the diesel prime mover. This allows the Tractive effort to increase with rpm to the throttle setting selected.
             // This uses the reverse Tab of the Throttle vs rpm Tab.

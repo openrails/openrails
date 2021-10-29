@@ -370,7 +370,7 @@ namespace Orts.Simulation.RollingStocks
                 if (DieselEngines.HasGearBox)
                 {
                     Trace.TraceInformation("==================================================== Locomotive has Gearbox =========================================================");
-                    Trace.TraceInformation("Gearbox Type: {0}, Number of Gears: {1}, Idle RpM: {2}, Max RpM: {3}, Gov RpM: {4}", DieselEngines[0].GearBox.GearBoxOperation, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovenorRPM);
+                    Trace.TraceInformation("Gearbox Type: {0}, Number of Gears: {1}, Idle RpM: {2}, Max RpM: {3}, Gov RpM: {4}, GearBoxType: {5}", DieselEngines[0].GearBox.GearBoxOperation, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovenorRPM, DieselEngines[0].GearBox.Gears[0].TypeGearBox);
 
                     Trace.TraceInformation("Gear\t Ratio\t Max Speed\t Max TE\t    Chg Up RpM\t Chg Dwn RpM\t Coast Force\t Back Force\t");
 

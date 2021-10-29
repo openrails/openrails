@@ -14,6 +14,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     {
         public int GearBoxNumberOfGears = 1;
         public int GearBoxDirectDriveGear = 1;
+        public int GearBoxType = 1;
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxEngineBraking GearBoxEngineBraking = GearBoxEngineBraking.None;
         public List<float> GearBoxMaxSpeedForGearsMpS = new List<float>();
@@ -41,6 +42,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 case "engine(gearboxnumberofgears": GearBoxNumberOfGears = stf.ReadIntBlock(1); initLevel++; break;
                 case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(1); break; // initLevel++; break;
+                case "engine(ortsgearboxtype": GearBoxType = stf.ReadIntBlock(1); break; // default = 1
                 case "engine(gearboxoperation":
                     temp = stf.ReadStringBlock("manual");
                     switch (temp)
@@ -126,6 +128,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             GearBoxNumberOfGears = copy.GearBoxNumberOfGears;
             GearBoxDirectDriveGear = copy.GearBoxDirectDriveGear;
+            GearBoxType = copy.GearBoxType;
             GearBoxOperation = copy.GearBoxOperation;
             GearBoxEngineBraking = copy.GearBoxEngineBraking;
             GearBoxMaxSpeedForGearsMpS = new List<float>(copy.GearBoxMaxSpeedForGearsMpS);
@@ -284,7 +287,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (CurrentGear == null)
                     return DieselEngine.RealRPM;
                 else
-                    return CurrentSpeedMpS / CurrentGear.Ratio; 
+                {
+                    if (Gears[0].TypeGearBox == 1)
+                    {
+                        return CurrentSpeedMpS / CurrentGear.Ratio;
+                    }
+                    else
+                    {
+                        const float perSectoPerMin = 60;
+                        var driveWheelCircumferenceM = 2 * Math.PI * Locomotive.DriverWheelRadiusM;
+                        var driveWheelRpm = Locomotive.AbsSpeedMpS * perSectoPerMin / driveWheelCircumferenceM;
+                        var shaftRPM = driveWheelRpm * CurrentGear.Ratio;
+                        return (float)(shaftRPM);
+                    }
+                }
             }
         }
 
@@ -325,25 +341,46 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 if (CurrentGear != null)
                 {
-                    if (ClutchPercent >= -20)
-                    {
-                        //float motiveForceN = DieselEngine.DemandedThrottlePercent / 100f * CurrentGear.MaxTractiveForceN;
-                        //if (CurrentSpeedMpS > 0)
-                        //{
-                        //    if (motiveForceN > (DieselEngine.MaxOutputPowerW / CurrentSpeedMpS))
-                        //        motiveForceN = DieselEngine.MaxOutputPowerW / CurrentSpeedMpS;
-                        //}
 
-                        float tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
-                        if (CurrentSpeedMpS > 0)
+                    if (Gears[0].TypeGearBox == 1)
+                    {
+                        if (ClutchPercent >= -20)
                         {
-                            if (tractiveForceN > (DieselEngine.CurrentDieselOutputPowerW/ CurrentSpeedMpS))
-                                tractiveForceN = DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS;
+                            float tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
+                            if (CurrentSpeedMpS > 0)
+                            {
+                                if (tractiveForceN > (DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS))
+                                    tractiveForceN = DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS;
+                            }
+                            return tractiveForceN;
                         }
-                        return tractiveForceN;
+                        else
+                            return -CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
+                    }
+                    else if (Gears[0].TypeGearBox == 2 || Gears[0].TypeGearBox == 3)
+                    {
+
+                        if (ClutchPercent >= -20)
+                        {
+                            float tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] / DieselEngine.DieselTorqueTab.MaxY() * CurrentGear.MaxTractiveForceN;
+
+                            if (CurrentSpeedMpS > 0)
+                            {
+                                if (tractiveForceN > (DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS))
+                                {
+                                    tractiveForceN = DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS;
+                                }
+
+                            }
+
+                            return tractiveForceN;
+
+                        }
+                        else
+                            return -CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
                     }
                     else
-                        return -CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
+                        return 0;
                 }
                 else
                     return 0;
@@ -392,6 +429,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     Gears.Add(new Gear(this));
                     Gears[i].DownGearProportion = GearBoxParams.GearBoxDownGearProportion;
                     Gears[i].IsDirectDriveGear = (GearBoxParams.GearBoxDirectDriveGear == GearBoxParams.GearBoxNumberOfGears);
+                    Gears[i].TypeGearBox = GearBoxParams.GearBoxType;
                     Gears[i].MaxSpeedMpS = GearBoxParams.GearBoxMaxSpeedForGearsMpS[i];
 
                     // Maximum torque (tractive effort) actually occurs at less then the maximum engine rpm, so this section uses either 
@@ -413,7 +451,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     var driveWheelCircumferenceM = 2 * Math.PI * Locomotive.DriverWheelRadiusM;
                     var driveWheelRpm = pS.TopM(Gears[i].MaxSpeedMpS) / driveWheelCircumferenceM;
                     float apparentGear = (float)(DieselEngine.MaxRPM / driveWheelRpm);
-                    Gears[i].Ratio = apparentGear;
+
+                    if (Gears[0].TypeGearBox == 1) // Legacy default operation
+                    {
+                        Gears[i].Ratio = GearBoxParams.GearBoxMaxSpeedForGearsMpS[i] / DieselEngine.MaxRPM;
+                    }
+                    else
+                    {
+                        Gears[i].Ratio = apparentGear;
+                    }
 
                     Gears[i].BackLoadForceN = Gears[i].Ratio * GearBoxParams.GearBoxBackLoadForceN;
                     Gears[i].CoastingForceN = Gears[i].Ratio * GearBoxParams.GearBoxCoastingForceN;
@@ -473,7 +519,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 switch (GearBoxOperation)
                 {
                     case GearBoxOperation.Manual:
-                        if (DieselEngine.Locomotive.ThrottlePercent == 0)
+                        if (DieselEngine.GearBox.Gears[1].TypeGearBox == 3 &&  DieselEngine.Locomotive.ThrottlePercent == 0)
+                        {
+                            clutchOn = false;
+                            ClutchPercent = 0f;
+                        }
+                        else
                         {
                             clutchOn = false;
                             ClutchPercent = 0f;
@@ -549,6 +600,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     public class Gear
     {
         public bool IsDirectDriveGear;
+        public int TypeGearBox;
         public float MaxSpeedMpS;
         public float ChangeUpSpeedRpM;
         public float ChangeDownSpeedRpM;
