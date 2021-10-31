@@ -692,16 +692,20 @@ namespace ORTS.Scripting.Api
     public struct SignalFeatures
     {
         public readonly string MainHeadSignalTypeName;
+        public readonly string SignalTypeName;
         public readonly Aspect Aspect;
+        public readonly string DrawStateName;
         public readonly float DistanceM;
         public readonly float SpeedLimitMpS;
         public readonly float AltitudeM;
         public readonly string TextAspect;
 
-        public SignalFeatures(string mainHeadSignalTypeName, Aspect aspect, float distanceM, float speedLimitMpS, float altitudeM, string textAspect = "")
+        public SignalFeatures(string mainHeadSignalTypeName, string signalTypeName, Aspect aspect, string drawStateName, float distanceM, float speedLimitMpS, float altitudeM, string textAspect = "")
         {
             MainHeadSignalTypeName = mainHeadSignalTypeName;
+            SignalTypeName = signalTypeName;
             Aspect = aspect;
+            DrawStateName = drawStateName;
             DistanceM = distanceM;
             SpeedLimitMpS = speedLimitMpS;
             AltitudeM = altitudeM;
