@@ -159,6 +159,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdieselengines":
                 case "engine(gearboxnumberofgears":
                 case "engine(gearboxdirectdrivegear":
+                case "engine(ortsgearboxtype":
                 case "engine(gearboxoperation":
                 case "engine(gearboxenginebraking":
                 case "engine(gearboxmaxspeedforgears":
