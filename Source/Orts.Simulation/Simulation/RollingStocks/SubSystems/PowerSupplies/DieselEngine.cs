@@ -997,10 +997,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     else
                         GearBox.ClutchPercent = 100f;
 
-                    if (GearBox.CurrentGear != null)
+                    if (GearBox.CurrentGear != null && !GearBox.ManualGearChange)
                     {
+                        // When clutch is engage (true) engine rpm should follow wheel shaft speed
                         if (GearBox.IsClutchOn)
                             DemandedRPM = GearBox.ShaftRPM;
+                    }
+                    else if (GearBox.ManualGearChange)
+                    {
+                        // During a manual gear change reduce engine shaft speed to match wheel shaft speed
+                        DemandedRPM = IdleRPM;
+                        if (RealRPM <= GearBox.ShaftRPM)
+                        {
+                            GearBox.ManualGearChange = false;
+                        }
+                    }
+
+                    if (RealRPM < 0.8f * IdleRPM && ThrottlePercent > 0)
+                    {
+                        HandleEvent(PowerSupplyEvent.StopEngine);
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Diesel Engine has stalled."));
                     }
                 }
 
@@ -1201,6 +1217,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             GearBox.NextGear = null;
                     }
                 }
+
                 if (GearBox.CurrentGear == null)
                     OutputPowerW = 0f;
 

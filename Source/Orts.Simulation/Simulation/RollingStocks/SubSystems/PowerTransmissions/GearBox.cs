@@ -47,7 +47,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 case "engine(gearboxnumberofgears": GearBoxNumberOfGears = stf.ReadIntBlock(1); initLevel++; break;
                 case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(1); break; // initLevel++; break;
-                case "engine(ortsgearboxtype": GearBoxType = stf.ReadIntBlock(1); Trace.TraceInformation("Read - {0}", GearBoxType); break; // default = 1
+                case "engine(ortsgearboxtype": GearBoxType = stf.ReadIntBlock(1); break; // default = 1
                 case "engine(gearboxoperation":
                     temp = stf.ReadStringBlock("manual");
                     switch (temp)
@@ -254,6 +254,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         /// <summary>
+        /// Indicates when a manual gear change has been initiated
+        /// </summary>
+        public bool ManualGearChange;
+
+        /// <summary>
         /// ClutchOn is true when clutch is fully engaged, and false when slipping
         /// </summary>
         public bool clutchOn;
@@ -392,7 +397,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                         if (GearBoxOperation == GearBoxOperation.Manual || (GearBoxOperation != GearBoxOperation.Manual && ClutchPercent >= -20))
                         {
-                            float tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] / DieselEngine.DieselTorqueTab.MaxY() * CurrentGear.MaxTractiveForceN;
+                            // Allow rpm to go below idle for display purposes, but not for calculation - creates -ve te
+                            float dieselRpM = 0;
+                            if (DieselEngine.RealRPM < DieselEngine.IdleRPM)
+                            {
+                                dieselRpM = DieselEngine.IdleRPM;
+                            }
+                            else
+                            {
+                                dieselRpM = DieselEngine.RealRPM;
+                            }
+                            float tractiveForceN = DieselEngine.DieselTorqueTab[dieselRpM] / DieselEngine.DieselTorqueTab.MaxY() * CurrentGear.MaxTractiveForceN;
 
 
                             // Limit tractive force if engine is governed, ie speed cannot exceed the governed speed
@@ -408,7 +423,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                 tractiveForceN = MathHelper.Clamp(tractiveForceN, 0.0f, CurrentGear.MaxTractiveForceN);  // Clamp tractive effort so that it doesn't go below zero
                             }
 
-//                            Trace.TraceInformation("Geared Tractive Effort #1 - Driving - TE: {0} lbf, RpM: {1}, Torque: {2} lb-ft, Throttle%: {3}, MaxTorque: {4} lb-ft, MaxTE {5} lbf, Speed: {6} mph, Clutch {7}, Gear: {8} IsClutchOn {9} Shaft RpM {10}", tractiveForceN * 0.224809f, DieselEngine.RealRPM, DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * 0.737562f, DieselEngine.DemandedThrottlePercent, DieselEngine.DieselTorqueTab.MaxY(), CurrentGear.MaxTractiveForceN * 0.224809f, CurrentSpeedMpS * 2.23694f, ClutchPercent, Locomotive.GearBoxController.CurrentNotch, IsClutchOn, ShaftRPM);
+                        //    Trace.TraceInformation("Geared Tractive Effort #1 - Driving - TE: {0} lbf, RpM: {1}, Torque: {2} lb-ft, Throttle%: {3}, MaxTorque: {4} lb-ft, MaxTE {5} lbf, Speed: {6} mph, Clutch {7}, Gear: {8} IsClutchOn {9} Shaft RpM {10} DemandedRpM {11}", tractiveForceN * 0.224809f, DieselEngine.RealRPM, DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * 0.737562f, DieselEngine.DemandedThrottlePercent, DieselEngine.DieselTorqueTab.MaxY(), CurrentGear.MaxTractiveForceN * 0.224809f, CurrentSpeedMpS * 2.23694f, ClutchPercent, Locomotive.GearBoxController.CurrentNotch, IsClutchOn, ShaftRPM, DieselEngine.DemandedRPM);
 
                             if (CurrentSpeedMpS > 0)
                             {
@@ -417,6 +432,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                     tractiveForceN = DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS;
                                 }
 
+                            }
+
+                            // When a manual gear change is initiated, then reduce motive to zero whilst gear change is occurring
+                            if (ManualGearChange)
+                            {
+                                tractiveForceN = 0;
                             }
 
                             return tractiveForceN;
