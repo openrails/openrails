@@ -3380,6 +3380,7 @@ namespace Orts.Simulation.RollingStocks
                         AlerterReset(TCSEvent.GearBoxChanged);
                         SignalGearBoxChangeEvents();
                         dieselloco.DieselEngines[0].GearBox.clutchOn = false;
+                        dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
 
                     }
                     else if (dieselloco.DieselEngines[0].GearBox.Gears[0].TypeGearBox == 3)
@@ -3439,6 +3440,7 @@ namespace Orts.Simulation.RollingStocks
                         AlerterReset(TCSEvent.GearBoxChanged);
                         SignalGearBoxChangeEvents();
                         dieselloco.DieselEngines[0].GearBox.clutchOn = false;
+                        dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
                     }
                     else if (dieselloco.DieselEngines[0].GearBox.Gears[0].TypeGearBox == 3)
                     {
