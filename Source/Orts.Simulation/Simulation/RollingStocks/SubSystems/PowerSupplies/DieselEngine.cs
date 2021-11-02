@@ -992,6 +992,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 else // for gear box type 2 & 3
                 {
+                    // When a manual gear change is initiated, then reduce motive to zero (done in gear box class) whilst gear change is occurring, allow time delay for gears to change
+                    if (GearBox.ManualGearChange && !GearBox.ManualGearBoxChangeOn) // Initially set gear change 
+                    {
+                        GearBox.ManualGearBoxChangeOn = true;
+                    }
+                    else if (GearBox.ManualGearBoxChangeOn && GearBox.ManualGearTimerS < GearBox.ManualGearTimerResetS)
+                    {
+                        GearBox.ManualGearTimerS += elapsedClockSeconds; // Increment timer
+                    }
+                    else if (GearBox.ManualGearBoxChangeOn && GearBox.ManualGearTimerS > GearBox.ManualGearTimerResetS)
+                    {
+                        GearBox.ManualGearBoxChangeOn = false;
+                        GearBox.ManualGearTimerS = 0; // Reset timer
+                    }
+
+
                     if (RealRPM > 0)
                         GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
                     else
@@ -1013,8 +1029,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         }
                     }
 
-                    if (RealRPM < 0.8f * IdleRPM && ThrottlePercent > 0)
+                    // Simulate stalled engine if RpM decreases too far, by stopping engine
+                    if (RealRPM < 0.9f * IdleRPM)
                     {
+                        Trace.TraceInformation("Diesel Engine has stalled");
                         HandleEvent(PowerSupplyEvent.StopEngine);
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Diesel Engine has stalled."));
                     }

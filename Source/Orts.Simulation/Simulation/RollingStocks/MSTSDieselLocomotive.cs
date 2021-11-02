@@ -758,6 +758,10 @@ namespace Orts.Simulation.RollingStocks
                     DieselEngines[0].GearBox.AutoGearUp();
                     GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
                 }
+                else if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Manual)
+                {
+                    DieselEngines[0].GearBox.ManualGearUp = true;
+                }
             }
         }
 
@@ -771,6 +775,11 @@ namespace Orts.Simulation.RollingStocks
                     DieselEngines[0].GearBox.AutoGearDown();
                     GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
                 }
+                else if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Manual)
+                {
+                    DieselEngines[0].GearBox.ManualGearDown = true;
+                }
+
             }
         }
 

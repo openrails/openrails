@@ -157,6 +157,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         protected MSTSGearBoxParams GearBoxParams => Locomotive.DieselEngines.MSTSGearBoxParams;
         public List<Gear> Gears = new List<Gear>();
 
+        public float ManualGearTimerResetS = 1;  // Allow gear change to take 1 seconds
+        public float ManualGearTimerS; // Time for gears to change
+        public bool ManualGearBoxChangeOn = false;
+        public bool ManualGearUp = false;
+        public bool ManualGearDown = false;
+
         public Gear CurrentGear
         {
             get
@@ -409,14 +415,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             }
                             float tractiveForceN = DieselEngine.DieselTorqueTab[dieselRpM] / DieselEngine.DieselTorqueTab.MaxY() * CurrentGear.MaxTractiveForceN;
 
+                            Locomotive.HuDGearMaximumTractiveForce = CurrentGear.MaxTractiveForceN;
 
-                            // Limit tractive force if engine is governed, ie speed cannot exceed the governed speed
-                            if (DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM)
+                            // Limit tractive force if engine is governed, ie speed cannot exceed the governed speed or the throttled speed
+                           
+                            if ((DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM) || (DieselEngine.RealRPM < DieselEngine.GovenorRPM && DieselEngine.RealRPM > DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent]))
                             {
                                 // use decay function to decrease tractive effort if RpM exceeds governed RpM value.
                                 // y = original amount ( 1 - decay rate)^length of prediction
+                                float decayRpM = 0;
 
-                                var decayRpM = ShaftRPM - DieselEngine.GovenorRPM;
+                                if (DieselEngine.RealRPM < DieselEngine.GovenorRPM && DieselEngine.RealRPM > DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent])
+                                {
+                                    decayRpM = ShaftRPM - DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent];
+                                }
+                                else
+                                {
+                                    decayRpM = ShaftRPM - DieselEngine.GovenorRPM;
+                                }
+                                
                                 var teDecline = Math.Pow((1.0f - 0.05f), decayRpM);
 
                                 tractiveForceN = (float)Math.Abs(CurrentGear.MaxTractiveForceN * teDecline);
@@ -434,8 +451,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                             }
 
-                            // When a manual gear change is initiated, then reduce motive to zero whilst gear change is occurring
-                            if (ManualGearChange)
+                            // Set TE to zero if gear change happening
+                            if (ManualGearBoxChangeOn)
                             {
                                 tractiveForceN = 0;
                             }
@@ -573,20 +590,44 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public void Update(float elapsedClockSeconds)
         {
-            if ((clutch <= 0.05) || (clutch >= 1f))
+            if (GearBoxOperation == GearBoxOperation.Automatic || GearBoxOperation == GearBoxOperation.Semiautomatic)
             {
-                if (currentGearIndex < nextGearIndex)
+                if ((clutch <= 0.05) || (clutch >= 1f))
                 {
-                    DieselEngine.Locomotive.SignalEvent(Event.GearUp);
-                    currentGearIndex = nextGearIndex;
+                    if (currentGearIndex < nextGearIndex)
+                    {
+                        DieselEngine.Locomotive.SignalEvent(Event.GearUp);
+                        currentGearIndex = nextGearIndex;
+                    }
+                }
+                if ((clutch <= 0.05) || (clutch >= 0.5f))
+                {
+                    if (currentGearIndex > nextGearIndex)
+                    {
+                        DieselEngine.Locomotive.SignalEvent(Event.GearDown);
+                        currentGearIndex = nextGearIndex;
+                    }
                 }
             }
-            if ((clutch <= 0.05) || (clutch >= 0.5f))
+            else if (GearBoxOperation == GearBoxOperation.Manual)
             {
-                if (currentGearIndex > nextGearIndex)
+                if (ManualGearUp)
                 {
-                    DieselEngine.Locomotive.SignalEvent(Event.GearDown);
-                    currentGearIndex = nextGearIndex;
+                    if (currentGearIndex < nextGearIndex)
+                    {
+                        DieselEngine.Locomotive.SignalEvent(Event.GearUp);
+                        currentGearIndex = nextGearIndex;
+                        ManualGearUp = false;
+                    }
+                }
+                if (ManualGearDown)
+                {
+                    if (currentGearIndex > nextGearIndex)
+                    {
+                        DieselEngine.Locomotive.SignalEvent(Event.GearDown);
+                        currentGearIndex = nextGearIndex;
+                        ManualGearDown = false;
+                    }
                 }
             }
 
