@@ -294,6 +294,7 @@ namespace Orts.Simulation.RollingStocks
         // Set values for display in HUD
         public float WagonCoefficientFrictionHUD;
         public float LocomotiveCoefficientFrictionHUD;
+        public float HuDGearMaximumTractiveForce;
 
         public PressureUnit MainPressureUnit = PressureUnit.None;
         public Dictionary<BrakeSystemComponent, PressureUnit> BrakeSystemPressureUnits = new Dictionary<BrakeSystemComponent, PressureUnit>
