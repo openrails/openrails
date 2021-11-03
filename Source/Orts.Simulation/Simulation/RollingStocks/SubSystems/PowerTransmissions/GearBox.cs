@@ -47,7 +47,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 case "engine(gearboxnumberofgears": GearBoxNumberOfGears = stf.ReadIntBlock(1); initLevel++; break;
                 case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(1); break; // initLevel++; break;
-                case "engine(ortsgearboxtype": GearBoxType = stf.ReadIntBlock(1); break; // default = 1
+                case "engine(ortsgearboxtype": GearBoxType = stf.ReadIntBlock(1); initLevel++; break; // default = 1
                 case "engine(gearboxoperation":
                     temp = stf.ReadStringBlock("manual");
                     switch (temp)
@@ -66,7 +66,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         case "all_gears": GearBoxEngineBraking = GearBoxEngineBraking.AllGears; break;
                         case "direct_drive": GearBoxEngineBraking = GearBoxEngineBraking.DirectDrive; break;
                     }
-                    initLevel++;
                     break;
                 case "engine(gearboxmaxspeedforgears":
                     temp = stf.ReadItem();
@@ -329,7 +328,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     return DieselEngine.RealRPM;
                 else
                 {
-                    if (Gears[0].TypeGearBox == 1)
+                    if (Gears[0].TypeGearBox == 1 || GearBoxOperation == GearBoxOperation.Automatic)
                     {
                         return CurrentSpeedMpS / CurrentGear.Ratio;
                     }
@@ -636,12 +635,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 switch (GearBoxOperation)
                 {
                     case GearBoxOperation.Manual:
-                        if (DieselEngine.GearBox.Gears[1].TypeGearBox == 1 &&  DieselEngine.Locomotive.ThrottlePercent == 0)
+                        if (DieselEngine.GearBox.Gears[1].TypeGearBox == 1 && DieselEngine.Locomotive.ThrottlePercent == 0)
                         {
                             clutchOn = false;
                             ClutchPercent = 0f;
                         }
-                        else if (DieselEngine.Locomotive.ThrottlePercent == 0)
+                        else if (DieselEngine.Locomotive.ThrottlePercent == 0) // Type 2 and 3 gear boxes
                         {
                             clutchOn = false;
                             ClutchPercent = 0f;
@@ -687,6 +686,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             }
                         }
                         break;
+                }
+            }
+            // If diesel engine is stopped (potentially after a stall) on a manual gearbox then allow gears to be changed
+            else if (DieselEngine.State == DieselEngineState.Stopped)
+            {
+                switch (GearBoxOperation)
+                {
+                    case GearBoxOperation.Manual:
+                        clutchOn = false;
+                        ClutchPercent = 0f;
+                        break;
+
+
                 }
             }
             else
