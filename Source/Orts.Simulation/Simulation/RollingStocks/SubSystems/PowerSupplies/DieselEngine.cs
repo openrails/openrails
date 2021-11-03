@@ -1030,7 +1030,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
 
                     // Simulate stalled engine if RpM decreases too far, by stopping engine
-                    if (RealRPM < 0.9f * IdleRPM)
+                    if (RealRPM < 0.9f * IdleRPM && State == DieselEngineState.Running)
                     {
                         Trace.TraceInformation("Diesel Engine has stalled");
                         HandleEvent(PowerSupplyEvent.StopEngine);
