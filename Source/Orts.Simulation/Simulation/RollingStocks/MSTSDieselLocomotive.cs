@@ -103,6 +103,8 @@ namespace Orts.Simulation.RollingStocks
         public float DieselMaxTemperatureDeg;
         public DieselEngine.Cooling DieselEngineCooling = DieselEngine.Cooling.Proportional;
 
+        float CalculatedMaxContinuousForceN;
+
         // diesel performance reporting
         public float DieselPerformanceTimeS = 0.0f; // Records the time since starting movement
 
@@ -239,8 +241,7 @@ namespace Orts.Simulation.RollingStocks
                 DieselEngines[0].InitFromMSTS();
                 DieselEngines[0].Initialize();
             }
-
-
+            
             // Check initialization of power values for diesel engines
             for (int i = 0; i < DieselEngines.Count; i++)
             {
@@ -307,15 +308,12 @@ namespace Orts.Simulation.RollingStocks
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Maximum Force set to {0} value, calcuated from Tractive Force Tables", FormatStrings.FormatForce(MaxForceN, IsMetric));
                 }
-
-
             }
-
-
+                       
             // Check force assumptions set for diesel
             if (Simulator.Settings.VerboseConfigurationMessages)
             {
-                float CalculatedMaxContinuousForceN = 0;
+                CalculatedMaxContinuousForceN = 0;
                 float ThrottleSetting = 1.0f; // Must be at full throttle for these calculations
                 if (TractiveForceCurves == null)  // Basic configuration - ie no force and Power tables, etc
                 {
@@ -366,29 +364,6 @@ namespace Orts.Simulation.RollingStocks
 
                     Trace.TraceInformation("Apparent (Design) Adhesion: Zero - {0:N2} @ {1}, Max Continuous Speed - {2:N2} @ {3}, Drive Wheel Weight - {4}", designadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
                     Trace.TraceInformation("OR Calculated Adhesion Setting: Zero Speed - {0:N2} @ {1}, Dropoff Speed - {2:N2} @ {3}, Max Continuous Speed - {4:N2} @ {5}", configuredadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), configuredadhesiondropoffspeed, FormatStrings.FormatSpeedDisplay(dropoffspeed, IsMetric), configuredadhesionmaxcontinuousspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
-                }
-
-                if (DieselEngines.HasGearBox)
-                {
-                    Trace.TraceInformation("==================================================== Locomotive has Gearbox =========================================================");
-                    Trace.TraceInformation("Gearbox Type: {0}, Number of Gears: {1}, Idle RpM: {2}, Max RpM: {3}, Gov RpM: {4}, GearBoxType: {5}", DieselEngines[0].GearBox.GearBoxOperation, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovenorRPM, DieselEngines[0].GearBox.Gears[0].TypeGearBox);
-
-                    Trace.TraceInformation("Gear\t Ratio\t Max Speed\t Max TE\t    Chg Up RpM\t Chg Dwn RpM\t Coast Force\t Back Force\t");
-
-                    for (int i = 0; i < DieselEngines[0].GearBox.NumOfGears; i++)
-                    {
-                        Trace.TraceInformation("\t{0}\t\t\t {1:N2}\t\t{2:N2}\t\t{3:N2}\t\t\t{4}\t\t\t\t{5:N0}\t\t\t\t\t{6}\t\t\t{7}", i + 1, DieselEngines[0].GearBox.Gears[i].Ratio, FormatStrings.FormatSpeedDisplay(DieselEngines[0].GearBox.Gears[i].MaxSpeedMpS, IsMetric), FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].MaxTractiveForceN, IsMetric), DieselEngines[0].GearBox.Gears[i].ChangeUpSpeedRpM, DieselEngines[0].GearBox.Gears[i].ChangeDownSpeedRpM, FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].CoastingForceN, IsMetric), FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].BackLoadForceN, IsMetric));
-
-                    }
-
-                                       
-
-                    var calculatedmaxcontinuousforcekN = DieselEngines[0].GearBox.Gears[0].MaxTractiveForceN / 1000.0f;
-                    var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
-
-                    Trace.TraceInformation("Apparent (Design) Adhesion for Gear 1: {0:N2} @ {1}, Drive Wheel Weight - {2}", designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(DieselEngines[0].GearBox.Gears[0].MaxSpeedMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
-
-
                 }
 
                 Trace.TraceInformation("===================================================================================================================\n\n");
@@ -458,6 +433,33 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
+                }
+            }
+
+            if (Simulator.Settings.VerboseConfigurationMessages)
+            {
+
+                if (DieselEngines.HasGearBox)
+                {
+                    Trace.TraceInformation("==================================================== {0} has Gearbox =========================================================", LocomotiveName);
+                    Trace.TraceInformation("Gearbox Type: {0}, Number of Gears: {1}, Idle RpM: {2}, Max RpM: {3}, Gov RpM: {4}, GearBoxType: {5}", DieselEngines[0].GearBox.GearBoxOperation, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovenorRPM, DieselEngines[0].GearBox.Gears[0].TypeGearBox);
+
+                    Trace.TraceInformation("Gear\t Ratio\t Max Speed\t Max TE\t    Chg Up RpM\t Chg Dwn RpM\t Coast Force\t Back Force\t");
+
+                    for (int i = 0; i < DieselEngines[0].GearBox.NumOfGears; i++)
+                    {
+                        Trace.TraceInformation("\t{0}\t\t\t {1:N2}\t\t{2:N2}\t\t{3:N2}\t\t\t{4}\t\t\t\t{5:N0}\t\t\t\t\t{6}\t\t\t{7}", i + 1, DieselEngines[0].GearBox.Gears[i].Ratio, FormatStrings.FormatSpeedDisplay(DieselEngines[0].GearBox.Gears[i].MaxSpeedMpS, IsMetric), FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].MaxTractiveForceN, IsMetric), DieselEngines[0].GearBox.Gears[i].ChangeUpSpeedRpM, DieselEngines[0].GearBox.Gears[i].ChangeDownSpeedRpM, FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].CoastingForceN, IsMetric), FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].BackLoadForceN, IsMetric));
+
+                    }
+
+
+
+                    var calculatedmaxcontinuousforcekN = DieselEngines[0].GearBox.Gears[0].MaxTractiveForceN / 1000.0f;
+                    var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
+
+                    Trace.TraceInformation("Apparent (Design) Adhesion for Gear 1: {0:N2} @ {1}, Drive Wheel Weight - {2}", designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(DieselEngines[0].GearBox.Gears[0].MaxSpeedMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
+
+                    Trace.TraceInformation("===================================================================================================================\n\n");
                 }
             }
         }
