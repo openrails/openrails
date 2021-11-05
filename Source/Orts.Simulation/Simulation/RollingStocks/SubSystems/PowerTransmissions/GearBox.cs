@@ -156,7 +156,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         protected MSTSGearBoxParams GearBoxParams => Locomotive.DieselEngines.MSTSGearBoxParams;
         public List<Gear> Gears = new List<Gear>();
 
-        public float ManualGearTimerResetS = 1;  // Allow gear change to take 1 seconds
+        public float ManualGearTimerResetS = 2;  // Allow gear change to take 2 seconds
         public float ManualGearTimerS; // Time for gears to change
         public bool ManualGearBoxChangeOn = false;
         public bool ManualGearUp = false;
@@ -439,13 +439,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                 tractiveForceN = MathHelper.Clamp(tractiveForceN, 0.0f, CurrentGear.MaxTractiveForceN);  // Clamp tractive effort so that it doesn't go below zero
                             }
 
-                        //    Trace.TraceInformation("Geared Tractive Effort #1 - Driving - TE: {0} lbf, RpM: {1}, Torque: {2} lb-ft, Throttle%: {3}, MaxTorque: {4} lb-ft, MaxTE {5} lbf, Speed: {6} mph, Clutch {7}, Gear: {8} IsClutchOn {9} Shaft RpM {10} DemandedRpM {11}", tractiveForceN * 0.224809f, DieselEngine.RealRPM, DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * 0.737562f, DieselEngine.DemandedThrottlePercent, DieselEngine.DieselTorqueTab.MaxY(), CurrentGear.MaxTractiveForceN * 0.224809f, CurrentSpeedMpS * 2.23694f, ClutchPercent, Locomotive.GearBoxController.CurrentNotch, IsClutchOn, ShaftRPM, DieselEngine.DemandedRPM);
+                        // Trace.TraceInformation("Geared Tractive Effort #1 - Driving - TE: {0} lbf, RpM: {1}, Torque: {2} lb-ft, Throttle%: {3}, MaxTorque: {4} lb-ft, MaxTE {5} lbf, Speed: {6} mph, Clutch {7}, Gear: {8} IsClutchOn {9} Shaft RpM {10} DemandedRpM {11}", tractiveForceN * 0.224809f, DieselEngine.RealRPM, DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * 0.737562f, DieselEngine.DemandedThrottlePercent, DieselEngine.DieselTorqueTab.MaxY(), CurrentGear.MaxTractiveForceN * 0.224809f, CurrentSpeedMpS * 2.23694f, ClutchPercent, Locomotive.GearBoxController.CurrentNotch, IsClutchOn, ShaftRPM, DieselEngine.DemandedRPM);
 
                             if (CurrentSpeedMpS > 0)
                             {
                                 if (tractiveForceN > (DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS))
                                 {
                                     tractiveForceN = DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS;
+                                    Trace.TraceInformation("Power Reduction - RailPower {0} Speed {1} tractiveForce {2} Calculated {3} rpM {4}", DieselEngine.RailPowerTab[DieselEngine.RealRPM], CurrentSpeedMpS, tractiveForceN, DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS, DieselEngine.RealRPM);
                                 }
 
                             }

@@ -1302,7 +1302,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         /// <summary>
-        /// Fix or define a diesel prime mover engine code block. If the user has not defned a diesel eng, then OR will use this section to create one.
+        /// Fix or define a diesel prime mover engine code block. If the user has not defined a diesel eng, then OR will use this section to create one.
         /// If the user has left a parameter out of the code, then OR uses this section to try and set the missing values to a default value.
         /// Error code has been provided that will provide the user with an indication if a parameter has been left out.
         /// </summary>
@@ -1657,7 +1657,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 int count = 11;
                 float[] rpm = new float[count + 1];
-                float[] railpower = new float[] { 0.02034f, 0.09302f, 0.36628f, 0.60756f, 0.69767f, 0.81395f, 0.93023f, 0.9686f, 0.99418f, 0.99418f, 1f, 0.5f };
                 float[] power = new float[] { 0.02034f, 0.09302f, 0.36628f, 0.60756f, 0.69767f, 0.81395f, 0.93023f, 0.9686f, 0.99418f, 0.99418f, 1f, 0.5f };
                 float[] torque = new float[] { 0.05f, 0.2f, 0.7f, 0.95f, 1f, 1f, 0.98f, 0.95f, 0.9f, 0.86f, 0.81f, 0.3f };
 
@@ -1668,16 +1667,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     else
                         rpm[i] = rpm[i - 1] + (MaxRPM - IdleRPM) / (count - 1);
 
-                    railpower[i] *= MaximumRailOutputPowerW;
                     power[i] *= MaximumDieselPowerW;
                     torque[i] *= MaximumDieselPowerW / (MaxRPM * 2f * 3.1415f / 60f) / 0.81f;
                 }
                 rpm[count] = MaxRPM * 1.5f;
-                railpower[count] *= MaximumDieselPowerW;
                 power[count] *= MaximumDieselPowerW;
                 torque[count] *= MaximumDieselPowerW / (MaxRPM * 3f * 3.1415f / 60f) / 0.81f;
 
-                RailPowerTab = new Interpolator(rpm, railpower);
                 DieselPowerTab = new Interpolator(rpm, power);
                 DieselTorqueTab = new Interpolator(rpm, torque);
                 if (DieselEngineConfigured)
@@ -1816,6 +1812,49 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     loco.MaxRPM = 600.0f;
                 }
+            }
+
+            if (GovenorRPM == 0)
+            {
+                if (MaxRPM != 0)
+                {
+                    GovenorRPM = MaxRPM;
+                }
+                else
+                {
+                    GovenorRPM = Locomotive.MaxRPM;
+                }
+            }
+
+            // Check to see if RailPowerTab has been set up, typically won't have been if a diesel engine block has been set in the ENG
+            if (RailPowerTab == null)
+            {
+                if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
+                {
+                    MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
+                }
+                else
+                {
+                    MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is about 80% of the prime mover output power
+                }
+
+                int count = 11;
+                float[] rpm = new float[count + 1];
+                float[] railpower = new float[] { 0.02034f, 0.09302f, 0.36628f, 0.60756f, 0.69767f, 0.81395f, 0.93023f, 0.9686f, 0.99418f, 0.99418f, 1f, 0.5f };
+
+                for (int i = 0; i < count; i++)
+                {
+                    if (i == 0)
+                        rpm[i] = IdleRPM;
+                    else
+                        rpm[i] = rpm[i - 1] + (MaxRPM - IdleRPM) / (count - 1);
+
+                    railpower[i] *= MaximumRailOutputPowerW;
+                }
+                rpm[count] = MaxRPM * 1.5f;
+                railpower[count] *= MaximumDieselPowerW;
+
+                RailPowerTab = new Interpolator(rpm, railpower);
             }
         }
     }
