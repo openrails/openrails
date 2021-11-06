@@ -143,7 +143,6 @@ namespace Orts.Simulation.Signalling
                 usedCsSignalScript = Signals.CsSignalScripts.LoadSignalScript(signalType.Script)
                     ?? Signals.CsSignalScripts.LoadSignalScript(signalType.Name);
                 usedCsSignalScript?.AttachToHead(this);
-                usedCsSignalScript?.Initialize();
 
                 // set signal speeds
                 foreach (SignalAspect thisAspect in signalType.Aspects)
@@ -188,8 +187,11 @@ namespace Orts.Simulation.Signalling
                 Trace.TraceWarning("SignalObject trItem={0}, trackNode={1} has SignalHead with undefined SignalType {2}.",
                                   mainSignal.trItem, mainSignal.trackNode, sigItem.SignalType);
             }
+        }
 
-
+        public void Initialize()
+        {
+            usedCsSignalScript?.Initialize();
         }
 
         /// <summary>
