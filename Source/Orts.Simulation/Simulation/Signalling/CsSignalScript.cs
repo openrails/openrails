@@ -2,6 +2,7 @@
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Orts.Simulation.Signalling
 {
@@ -108,6 +109,10 @@ namespace Orts.Simulation.Signalling
         /// Name of this signal type, as defined in sigcfg
         /// </summary>
         public string SignalTypeName => SignalHead.SignalTypeName;
+        /// <summary>
+        /// Name of the signal shape, as defined in sigcfg
+        /// </summary>
+        public string SignalShapeName => Path.GetFileNameWithoutExtension(SignalObject.WorldObject.SFileName);
         /// <summary>
         /// Local storage of this signal, which can be accessed from other signals
         /// </summary>
