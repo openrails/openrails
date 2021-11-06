@@ -1960,10 +1960,10 @@ namespace Orts.Viewer3D.Debugging
 		  switch (type)
 		  {
 			  case 0:
-                  signal.clearHoldSignalDispatcher();
+                  signal.ClearHoldSignalDispatcher();
 				  break;
 			  case 1:
-                  signal.requestHoldSignalDispatcher(true);
+                  signal.RequestHoldSignalDispatcher(true);
 				  break;
 			  case 2:
                   signal.holdState = SignalObject.HoldState.ManualApproach;

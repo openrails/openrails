@@ -136,7 +136,7 @@ namespace Orts.Simulation.Signalling
             get
             {
                 if (MPManager.IsMultiPlayer() && MPManager.PreferGreen == true) return true;
-                return (enabledTrain != null);
+                return enabledTrain != null;
             }
         }
 
@@ -159,7 +159,7 @@ namespace Orts.Simulation.Signalling
                         break;
                 }
 
-                return (lstate);
+                return lstate;
             }
         }
 
@@ -435,7 +435,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public MstsBlockState block_state()
         {
-            return (blockState);
+            return blockState;
         }
 
         /// <summary>
@@ -443,7 +443,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public bool isStationHold()
         {
-            return (StationHold);
+            return StationHold;
         }
 
         /// <summary>
@@ -668,7 +668,7 @@ namespace Orts.Simulation.Signalling
                         {
                             File.AppendAllText(dumpfile, "NEXT_NSIG_LR : returned : " + foundAspect + "\n");
                         }
-                        return (foundAspect);
+                        return foundAspect;
                     }
                 }
 
@@ -687,7 +687,7 @@ namespace Orts.Simulation.Signalling
             {
                 File.AppendAllText(dumpfile, "NEXT_NSIG_LR : while loop exited ; last found index : " + foundsignal + "\n");
             }
-            return (MstsSignalAspect.STOP); // emergency exit - loop should normally have exited on return
+            return MstsSignalAspect.STOP; // emergency exit - loop should normally have exited on return
         }
 
 
@@ -699,7 +699,7 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect opp_sig_mr(int fn_type)
         {
             int signalFound = SONextSignalOpp(fn_type);
-            return (signalFound >= 0 ? signalObjects[signalFound].this_sig_mr(fn_type) : MstsSignalAspect.STOP);
+            return signalFound >= 0 ? signalObjects[signalFound].this_sig_mr(fn_type) : MstsSignalAspect.STOP;
         }//opp_sig_mr
 
         /// debug version
@@ -707,7 +707,7 @@ namespace Orts.Simulation.Signalling
         {
             int signalFound = SONextSignalOpp(fn_type);
             foundSignal = signalFound >= 0 ? signalObjects[signalFound] : null;
-            return (signalFound >= 0 ? signalObjects[signalFound].this_sig_mr(fn_type) : MstsSignalAspect.STOP);
+            return signalFound >= 0 ? signalObjects[signalFound].this_sig_mr(fn_type) : MstsSignalAspect.STOP;
         }//opp_sig_mr
 
 
@@ -719,7 +719,7 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect opp_sig_lr(int fn_type)
         {
             int signalFound = SONextSignalOpp(fn_type);
-            return (signalFound >= 0 ? signalObjects[signalFound].this_sig_lr(fn_type) : MstsSignalAspect.STOP);
+            return signalFound >= 0 ? signalObjects[signalFound].this_sig_lr(fn_type) : MstsSignalAspect.STOP;
         }//opp_sig_lr
 
         /// debug version
@@ -727,7 +727,7 @@ namespace Orts.Simulation.Signalling
         {
             int signalFound = SONextSignalOpp(fn_type);
             foundSignal = signalFound >= 0 ? signalObjects[signalFound] : null;
-            return (signalFound >= 0 ? signalObjects[signalFound].this_sig_lr(fn_type) : MstsSignalAspect.STOP);
+            return signalFound >= 0 ? signalObjects[signalFound].this_sig_lr(fn_type) : MstsSignalAspect.STOP;
         }//opp_sig_lr
 
 
@@ -741,7 +741,7 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect this_sig_mr(int fn_type)
         {
             bool sigfound = false;
-            return (this_sig_mr(fn_type, ref sigfound));
+            return this_sig_mr(fn_type, ref sigfound);
         }
 
         /// <summary>
@@ -750,7 +750,7 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect this_sig_mr(MstsSignalFunction msfn_type)
         {
             bool sigfound = false;
-            return (this_sig_mr((int)msfn_type, ref sigfound));
+            return this_sig_mr((int)msfn_type, ref sigfound);
         }
 
         /// <summary>
@@ -840,7 +840,7 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect this_sig_lr(int fn_type)
         {
             bool sigfound = false;
-            return (this_sig_lr(fn_type, ref sigfound));
+            return this_sig_lr(fn_type, ref sigfound);
         }
 
         /// <summary>
@@ -849,7 +849,7 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect this_sig_lr(MstsSignalFunction msfn_type)
         {
             bool sigfound = false;
-            return (this_sig_lr((int)msfn_type, ref sigfound));
+            return this_sig_lr((int)msfn_type, ref sigfound);
         }
 
         /// <summary>
@@ -932,11 +932,11 @@ namespace Orts.Simulation.Signalling
                     }
                 }
 
-                return (nextSignal);
+                return nextSignal;
             }
             else
             {
-                return (-1);
+                return -1;
             }
         }
 
@@ -972,11 +972,11 @@ namespace Orts.Simulation.Signalling
 
             if (nextSignal >= 0 && foundsignal > 0)
             {
-                return (nextSignal);
+                return nextSignal;
             }
             else
             {
-                return (-1);
+                return -1;
             }
         }
 
@@ -986,7 +986,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public int opp_sig_id(int fn_type)
         {
-            return (SONextSignalOpp(fn_type));
+            return SONextSignalOpp(fn_type);
         }
 
 
@@ -1101,9 +1101,9 @@ namespace Orts.Simulation.Signalling
         {
             if (localStorage.ContainsKey(index))
             {
-                return (localStorage[index]);
+                return localStorage[index];
             }
-            return (0);
+            return 0;
         }
 
 
@@ -1123,11 +1123,11 @@ namespace Orts.Simulation.Signalling
                 SignalObject nextSignalObject = signalObjects[nextSignal];
                 if (nextSignalObject.localStorage.ContainsKey(index))
                 {
-                    return (nextSignalObject.localStorage[index]);
+                    return nextSignalObject.localStorage[index];
                 }
             }
 
-            return (0);
+            return 0;
         }
 
 
@@ -1145,10 +1145,10 @@ namespace Orts.Simulation.Signalling
             if (nextSignal >= 0)
             {
                 SignalObject nextSignalObject = signalObjects[nextSignal];
-                return (nextSignalObject.this_sig_hasnormalsubtype(reqSubtype));
+                return nextSignalObject.this_sig_hasnormalsubtype(reqSubtype);
             }
 
-            return (0);
+            return 0;
         }
 
 
@@ -1161,10 +1161,10 @@ namespace Orts.Simulation.Signalling
             {
                 if (thisHead.sigFunction == MstsSignalFunction.NORMAL && thisHead.ORTSNormalSubtypeIndex == reqSubtype)
                 {
-                    return (1);
+                    return 1;
                 }
             }
-            return (0);
+            return 0;
         }
 
 
@@ -1225,10 +1225,10 @@ namespace Orts.Simulation.Signalling
             if (nextSwitchIndex >= 0)
             {
                 TrackCircuitSection switchSection = signalRef.TrackCircuitList[nextSwitchIndex.Value];
-                return (switchSection.JunctionLastRoute == 0 ? aspect1 : aspect2);
+                return switchSection.JunctionLastRoute == 0 ? aspect1 : aspect2;
             }
 
-            return (aspect1);
+            return aspect1;
         }
 
 
@@ -1255,7 +1255,7 @@ namespace Orts.Simulation.Signalling
 
                         for (int iElement = 0; iElement < RoutePart.Count && !routeset; iElement++)
                         {
-                            routeset = (sectionIndex == RoutePart[iElement].TCSectionIndex && signalRef.TrackCircuitList[sectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Normal);
+                            routeset = sectionIndex == RoutePart[iElement].TCSectionIndex && signalRef.TrackCircuitList[sectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Normal;
                         }
                     }
                 }
@@ -1267,7 +1267,7 @@ namespace Orts.Simulation.Signalling
                     for (int iElement = 0; iElement <= signalRoute.Count - 1 && !routeset; iElement++)
                     {
                         TrackCircuitSection thisSection = signalRef.TrackCircuitList[signalRoute[iElement].TCSectionIndex];
-                        routeset = (thisSection.OriginalIndex == req_mainnode && thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Normal);
+                        routeset = thisSection.OriginalIndex == req_mainnode && thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Normal;
                     }
                 }
                 retry = !routeset;
@@ -1288,7 +1288,7 @@ namespace Orts.Simulation.Signalling
                 List<int> passedSections = new List<int>();
                 passedSections.Add(thisSection.Index);
 
-                routeset = (req_mainnode == thisSection.OriginalIndex);
+                routeset = req_mainnode == thisSection.OriginalIndex;
                 while (!routeset && thisSection != null)
                 {
                     if (thisSection.ActivePins[curDirection, 0].Link >= 0)
@@ -1343,7 +1343,7 @@ namespace Orts.Simulation.Signalling
                         passedSections.Add(sectionIndex);
                         thisSection = signalRef.TrackCircuitList[sectionIndex];
                         curDirection = newDirection;
-                        routeset = (req_mainnode == thisSection.OriginalIndex && thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Normal);
+                        routeset = req_mainnode == thisSection.OriginalIndex && thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Normal;
                     }
 
                     // no next section
@@ -1354,7 +1354,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            return (routeset);
+            return routeset;
         }
 
         /// <summary>
@@ -1380,7 +1380,7 @@ namespace Orts.Simulation.Signalling
                 }
                 else
                 {
-                    return (-1);
+                    return -1;
                 }
             }
 
@@ -1389,7 +1389,7 @@ namespace Orts.Simulation.Signalling
             else if (reqtype == (int)MstsSignalFunction.NORMAL)
             {
                 if (isSignalNormal())        // if this signal is normal : cannot be done using this route (set through sigfound variable)
-                    return (-1);
+                    return -1;
                 signalFound = SONextSignalNormal(TCReference);   // other types of signals (sigfound not used)
             }
 
@@ -1489,7 +1489,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            return (signalFound);
+            return signalFound;
         }
 
         /// <summary>
@@ -1502,18 +1502,18 @@ namespace Orts.Simulation.Signalling
             // signal not in train's route
             if (routeListIndex < 0)
             {
-                return (-1);
+                return -1;
             }
 
             // find next speed object
             TrackCircuitSignalItem foundItem = signalRef.Find_Next_Object_InRoute(enabledTrain.Train.ValidRoute[0], routeListIndex, TCOffset, -1, MstsSignalFunction.SPEED, enabledTrain);
             if (foundItem.SignalState == ObjectItemInfo.ObjectItemFindState.Object)
             {
-                return (foundItem.SignalRef.thisRef);
+                return foundItem.SignalRef.thisRef;
             }
             else
             {
-                return (-1);
+                return -1;
             }
         }
 
@@ -1586,7 +1586,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            return (signalFound);
+            return signalFound;
         }
 
         /// <summary>
@@ -1650,7 +1650,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            return (signalFound);
+            return signalFound;
         }
 
         /// <summary>
@@ -2016,7 +2016,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            return (newRoute);
+            return newRoute;
         }
 
         /// <summary>
@@ -2262,7 +2262,7 @@ namespace Orts.Simulation.Signalling
                 ((AITrain)thisTrain.Train).AuxActionsContain.CheckGenActions(this.GetType(), location, 0f, 0f, this.tdbtraveller.TrackNodeIndex);
             }
 
-            return (this_sig_mr(MstsSignalFunction.NORMAL) != MstsSignalAspect.STOP);
+            return this_sig_mr(MstsSignalFunction.NORMAL) != MstsSignalAspect.STOP;
         }
 
         /// <summary>
@@ -2271,7 +2271,7 @@ namespace Orts.Simulation.Signalling
         public void checkRouteState(bool isPropagated, Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain, bool sound = true)
         {
             // check if signal must be hold
-            bool signalHold = (holdState != HoldState.None);
+            bool signalHold = holdState != HoldState.None;
             if (enabledTrain != null && enabledTrain.Train.HoldingSignals.Contains(thisRef) && holdState < HoldState.ManualLock)
             {
                 holdState = HoldState.StationStop;
@@ -2433,7 +2433,7 @@ namespace Orts.Simulation.Signalling
                 // reserve partial sections if signal clears on occupied track or permission is granted
 
                 else if ((signalState > MstsSignalAspect.STOP || hasPermission == Permission.Granted) &&
-                         (internalBlockState != InternalBlockstate.Reserved && internalBlockState < InternalBlockstate.ReservedOther))
+                         internalBlockState != InternalBlockstate.Reserved && internalBlockState < InternalBlockstate.ReservedOther)
                 {
 
                     // reserve upto available section
@@ -2779,11 +2779,11 @@ namespace Orts.Simulation.Signalling
         {
             if (signalRef.UseLocationPassingPaths)
             {
-                return (getBlockState_locationBased(thisRoute, thisTrain, AIPermissionRequest));
+                return getBlockState_locationBased(thisRoute, thisTrain, AIPermissionRequest);
             }
             else
             {
-                return (getBlockState_pathBased(thisRoute, thisTrain));
+                return getBlockState_pathBased(thisRoute, thisTrain);
             }
         }
 
@@ -2956,7 +2956,7 @@ namespace Orts.Simulation.Signalling
             }
 
             internalBlockState = blockstate;
-            return (returnvalue);
+            return returnvalue;
         }
 
         /// <summary>
@@ -3096,7 +3096,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            return (returnvalue);
+            return returnvalue;
         }
 
         /// <summary>
@@ -3127,12 +3127,12 @@ namespace Orts.Simulation.Signalling
 
                 switch (thisType)
                 {
-                    case (TrackCircuitSection.TrackCircuitType.EndOfTrack):
+                    case TrackCircuitSection.TrackCircuitType.EndOfTrack:
                         end_of_info = true;
                         break;
 
-                    case (TrackCircuitSection.TrackCircuitType.Junction):
-                    case (TrackCircuitSection.TrackCircuitType.Crossover):
+                    case TrackCircuitSection.TrackCircuitType.Junction:
+                    case TrackCircuitSection.TrackCircuitType.Crossover:
                         end_of_info = true;
                         break;
 
@@ -3326,7 +3326,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, "APPROACH CONTROL : no train approaching");
                 }
 
-                return (false);
+                return false;
             }
 
             // signal is not first signal for train - check only if not forced
@@ -3344,7 +3344,7 @@ namespace Orts.Simulation.Signalling
                     }
 
                     ApproachControlSet = true;  // approach control is selected but train is yet further out, so assume approach control has locked signal
-                    return (false);
+                    return false;
                 }
             }
 
@@ -3355,7 +3355,7 @@ namespace Orts.Simulation.Signalling
                 ApproachControlSet = false;
                 ClaimLocked = false;
                 ForcePropOnApproachControl = false;
-                return (true);
+                return true;
             }
 
             bool found = false;
@@ -3411,7 +3411,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
                 ApproachControlSet = true;
-                return (false);
+                return false;
             }
 
             // test distance
@@ -3430,7 +3430,7 @@ namespace Orts.Simulation.Signalling
                 ApproachControlCleared = true;
                 ClaimLocked = false;
                 ForcePropOnApproachControl = false;
-                return (true);
+                return true;
             }
             else
             {
@@ -3443,7 +3443,7 @@ namespace Orts.Simulation.Signalling
                 }
 
                 ApproachControlSet = true;
-                return (false);
+                return false;
             }
         }
 
@@ -3460,7 +3460,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, "APPROACH CONTROL : no train approaching");
                 }
 
-                return (false);
+                return false;
             }
 
             // signal is not first signal for train
@@ -3476,7 +3476,7 @@ namespace Orts.Simulation.Signalling
                 }
 
                 ApproachControlSet = true;
-                return (false);
+                return false;
             }
 
             // if already cleared - return true
@@ -3485,7 +3485,7 @@ namespace Orts.Simulation.Signalling
             {
                 ApproachControlSet = false;
                 ForcePropOnApproachControl = false;
-                return (true);
+                return true;
             }
 
             // check if distance is valid
@@ -3501,7 +3501,7 @@ namespace Orts.Simulation.Signalling
                 }
 
                 ApproachControlSet = true;
-                return (false);
+                return false;
             }
 
             // test distance
@@ -3538,7 +3538,7 @@ namespace Orts.Simulation.Signalling
                     ApproachControlSet = false;
                     ClaimLocked = false;
                     ForcePropOnApproachControl = false;
-                    return (true);
+                    return true;
                 }
                 else
                 {
@@ -3551,7 +3551,7 @@ namespace Orts.Simulation.Signalling
                     }
 
                     ApproachControlSet = true;
-                    return (false);
+                    return false;
                 }
             }
             else
@@ -3565,7 +3565,7 @@ namespace Orts.Simulation.Signalling
                 }
 
                 ApproachControlSet = true;
-                return (false);
+                return false;
             }
         }
 
@@ -3582,7 +3582,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, "APPROACH CONTROL : no train approaching\n");
                 }
 
-                return (false);
+                return false;
             }
 
             // signal is not first signal for train
@@ -3599,7 +3599,7 @@ namespace Orts.Simulation.Signalling
 
                 ApproachControlSet = true;
                 ForcePropOnApproachControl = true;
-                return (false);
+                return false;
             }
 
             // if already cleared - return true
@@ -3611,7 +3611,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, "APPROACH CONTROL : cleared\n");
                 }
 
-                return (true);
+                return true;
             }
 
             // check if distance is valid
@@ -3627,7 +3627,7 @@ namespace Orts.Simulation.Signalling
                 }
 
                 ApproachControlSet = true;
-                return (false);
+                return false;
             }
 
             // test distance
@@ -3664,7 +3664,7 @@ namespace Orts.Simulation.Signalling
                     ApproachControlSet = false;
                     ClaimLocked = false;
                     ForcePropOnApproachControl = false;
-                    return (true);
+                    return true;
                 }
                 else
                 {
@@ -3678,7 +3678,7 @@ namespace Orts.Simulation.Signalling
 
                     ApproachControlSet = true;
                     ForcePropOnApproachControl = true;
-                    return (false);
+                    return false;
                 }
             }
             else
@@ -3693,7 +3693,7 @@ namespace Orts.Simulation.Signalling
 
                 ApproachControlSet = true;
                 ForcePropOnApproachControl = true;
-                return (false);
+                return false;
             }
         }
 
@@ -3728,7 +3728,7 @@ namespace Orts.Simulation.Signalling
                 File.AppendAllText(dumpfile, sob.ToString());
             }
 
-            return (triggerExceeded);
+            return triggerExceeded;
         }
 
         /// <summary>
@@ -3744,7 +3744,7 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, "CALL ON : no train approaching \n");
                 }
 
-                return (false);
+                return false;
             }
 
             // signal is not first signal for train
@@ -3761,13 +3761,13 @@ namespace Orts.Simulation.Signalling
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
 
-                return (false);
+                return false;
             }
 
             if (enabledTrain.Train != null && signalRoute != null)
             {
                 bool callOnValid = enabledTrain.Train.TestCallOn(this, allowOnNonePlatform, signalRoute, dumpfile);
-                return (callOnValid);
+                return callOnValid;
             }
 
             if (!String.IsNullOrEmpty(dumpfile))
@@ -3776,7 +3776,7 @@ namespace Orts.Simulation.Signalling
                 sob.AppendFormat("CALL ON : Train {0} : not valid \n", enabledTrain.Train.Name);
                 File.AppendAllText(dumpfile, sob.ToString());
             }
-            return (false);
+            return false;
         }
 
         /// <summary>
@@ -3800,7 +3800,7 @@ namespace Orts.Simulation.Signalling
                     sob.AppendFormat("REQ_NEXT_SIGNAL : FALSE : no enabled train \n");
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
-                return (false);
+                return false;
             }
 
             if (!String.IsNullOrEmpty(dumpfile))
@@ -3820,7 +3820,7 @@ namespace Orts.Simulation.Signalling
                     sob.AppendFormat("REQ_NEXT_SIGNAL : FALSE : train has no valid route \n");
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
-                return (false);
+                return false;
             }
 
             // next signal is not valid
@@ -3832,7 +3832,7 @@ namespace Orts.Simulation.Signalling
                     sob.AppendFormat("REQ_NEXT_SIGNAL : FALSE : signal is not NORMAL signal \n");
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
-                return (false);
+                return false;
             }
 
             // trains present position is unknown
@@ -3847,7 +3847,7 @@ namespace Orts.Simulation.Signalling
                         reqTrain.ValidRoute[enabledTrain.TrainRouteDirectionIndex].Count);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
-                return (false);
+                return false;
             }
 
             // check if section beyond or ahead of next signal is within trains path ahead of present position of train
@@ -3863,7 +3863,7 @@ namespace Orts.Simulation.Signalling
                         signalObjects[nextSignalId].TCNextTC, sectionIndex);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
-                return (true);
+                return true;
             }
 
             if (!String.IsNullOrEmpty(dumpfile))
@@ -3873,7 +3873,7 @@ namespace Orts.Simulation.Signalling
                     signalObjects[nextSignalId].TCNextTC, sectionIndex);
                 File.AppendAllText(dumpfile, sob.ToString());
             }
-            return (false);
+            return false;
         }
 
         /// <summary>
@@ -3972,7 +3972,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            return (foundSignal);
+            return foundSignal;
         }
 
         /// <summary>
@@ -4078,7 +4078,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            return (routeState);
+            return routeState;
         }
 
         /// <summary>
@@ -4099,7 +4099,7 @@ namespace Orts.Simulation.Signalling
 
         public bool HasLockForTrain(int trainNumber, int subpath = 0)
         {
-            bool info = (LockedTrains.Count > 0 && LockedTrains.Exists(item => item.Key.Equals(trainNumber) && item.Value.Equals(subpath)));
+            bool info = LockedTrains.Count > 0 && LockedTrains.Exists(item => item.Key.Equals(trainNumber) && item.Value.Equals(subpath));
             return info;
         }
 
@@ -4120,9 +4120,9 @@ namespace Orts.Simulation.Signalling
             if (WorldObject == null || WorldObject.HeadsSet == null)
             {
                 Trace.TraceInformation("Signal {0} (TDB {1}) has no heads", thisRef, SignalHeads[0].TDBIndex);
-                return (0);
+                return 0;
             }
-            return ((requiredHeadIndex < WorldObject.HeadsSet.Length) ? (WorldObject.HeadsSet[requiredHeadIndex] ? 1 : 0) : 0);
+            return (requiredHeadIndex < WorldObject.HeadsSet.Length) ? (WorldObject.HeadsSet[requiredHeadIndex] ? 1 : 0) : 0;
         }
 
         /// <summary>
@@ -4178,7 +4178,7 @@ namespace Orts.Simulation.Signalling
         ///            field [0] : if true, hold state is set
         ///            field [1] : if true, signal is reset (always returns false if reset not requested)
         /// </summary>
-        public bool[] requestHoldSignalDispatcher(bool requestResetSignal)
+        public bool[] RequestHoldSignalDispatcher(bool requestResetSignal)
         {
             bool[] returnValue = new bool[2] { false, false };
             MstsSignalAspect thisAspect = this_sig_lr(MstsSignalFunction.NORMAL);
@@ -4186,39 +4186,31 @@ namespace Orts.Simulation.Signalling
             SetManualCallOn(false);
 
             // signal not enabled - set lock, reset if cleared (auto signal can clear without enabling)
-
             if (enabledTrain == null || enabledTrain.Train == null)
             {
                 holdState = HoldState.ManualLock;
                 if (thisAspect > MstsSignalAspect.STOP) ResetSignal(true);
                 returnValue[0] = true;
             }
-
             // if enabled, cleared and reset not requested : no action
-
             else if (!requestResetSignal && thisAspect > MstsSignalAspect.STOP)
             {
                 holdState = HoldState.ManualLock; //just in case this one later will be set to green by the system
                 returnValue[0] = true;
             }
-
             // if enabled and not cleared : set hold, no reset required
-
             else if (thisAspect == MstsSignalAspect.STOP)
             {
                 holdState = HoldState.ManualLock;
                 returnValue[0] = true;
             }
-
             // enabled, cleared , reset required : check train speed
             // if train is moving : no action
             //temporarily removed by JTang, before the full revision is ready
             //          else if (Math.Abs(enabledTrain.Train.SpeedMpS) > 0.1f)
             //          {
             //          }
-
             // if train is stopped : reset signal, breakdown train route, set holdstate
-
             else
             {
                 int signalRouteIndex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCNextTC, 0);
@@ -4237,13 +4229,13 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            return (returnValue);
+            return returnValue;
         }
 
         /// <summary>
         /// Reset HOLD state for dispatcher control
         /// </summary>
-        public void clearHoldSignalDispatcher()
+        public void ClearHoldSignalDispatcher()
         {
             holdState = HoldState.None;
         }
@@ -4258,7 +4250,7 @@ namespace Orts.Simulation.Signalling
                 if (state && CallOnEnabled)
                 {
                     enabledTrain.Train.AllowedCallOnSignal = this;
-                    clearHoldSignalDispatcher();
+                    ClearHoldSignalDispatcher();
                 }
                 else if (enabledTrain.Train.AllowedCallOnSignal == this)
                 {
