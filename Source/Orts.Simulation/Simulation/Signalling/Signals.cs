@@ -121,6 +121,8 @@ namespace Orts.Simulation.Signalling
                 // Add World info
                 AddWorldInfo();
 
+                InitializeSignals();
+
                 // check for any backfacing heads in signals
                 // if found, split signal
                 SplitBackfacing(trackDB.TrItemTable, trackDB.TrackNodes);
@@ -1175,6 +1177,20 @@ namespace Orts.Simulation.Signalling
                             }
                             SpeedPostRefList.Remove(head.TDBIndex);
                         }
+                    }
+                }
+            }
+        }
+        
+        private void InitializeSignals()
+        {
+            foreach (SignalObject signal in SignalObjects)
+            {
+                if (signal != null)
+                {
+                    if (signal.isSignal || signal.isSpeedSignal)
+                    {
+                        signal.Initialize();
                     }
                 }
             }
