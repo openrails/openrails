@@ -1897,6 +1897,14 @@ namespace Orts.Simulation.Signalling
             }
         }
 
+        public void Initialize()
+        {
+            foreach (SignalHead head in SignalHeads)
+            {
+                head.Initialize();
+            }
+        }
+
         /// <summary>
         /// Gets the display aspect for the track monitor.
         /// </summary>
