@@ -446,7 +446,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                 if (tractiveForceN > (DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS))
                                 {
                                     tractiveForceN = DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS;
-                                    Trace.TraceInformation("Power Reduction - RailPower {0} Speed {1} tractiveForce {2} Calculated {3} rpM {4}", DieselEngine.RailPowerTab[DieselEngine.RealRPM], CurrentSpeedMpS, tractiveForceN, DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS, DieselEngine.RealRPM);
+                               //     Trace.TraceInformation("Power Reduction - RailPower {0} Speed {1} tractiveForce {2} Calculated {3} rpM {4}", DieselEngine.RailPowerTab[DieselEngine.RealRPM], CurrentSpeedMpS, tractiveForceN, DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS, DieselEngine.RealRPM);
                                 }
 
                             }
