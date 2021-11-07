@@ -1,8 +1,9 @@
 <h3>Which platforms does Open Rails run on?</h3>
 <p>
-Open Rails works well on Windows PCs from Windows XP* onwards (including Windows 10). It does not work on Windows XBox, Windows Phone or non-Windows platforms.
+Open Rails works well on Windows PCs from Windows 7* onwards (including Windows 11). 
+It does not work on Windows XBox, Windows Phone or non-Windows platforms.
 </p><p>
-* <small>Windows XP requires Service Pack 3 (SP3).</small>
+* <small>Windows 7 requires Service Pack 1 (SP1).</small>
 </p>
 <h3>32-bit or 64-bit Windows?</h3>
 <p>Open Rails is currently a 32-bit program that will run on either 32-bit Windows or 64-bit Windows. When run on a 64-bit Windows system there are some benefits as follows.
@@ -12,11 +13,9 @@ Programs compiled for 32-bit Windows are always limited to using a maximum of 2G
 <h3><span id="hardware_requirements">What hardware does Open Rails require?</span></h3>
 <ul>
 <li>Processor : 2.0 GHz (32 or 64-bit)</li>
-<li>Memory : minimum = 0.5 GB, recommended = 2 GB</li>
-<li>Hard drive : 40 MB (but models require lots of space. The 6 routes in Microsoft Train Simulator require 1.4 GB)</li>
-<li>Graphics Hardware : minimum = 128 MB dedicated video RAM with Pixel Shader 2.0, recommended = 256 MB RAM with Pixel Shader 3.0</li>
-<li>Graphics Software : as provided by Windows. Open Rails currently uses DirectX<sup>&reg;</sup> - version 9.0c</li>
-<li>Sound : compatible with DirectX<sup>&reg;</sup> - version 9.0c</li>
+<li>Memory : minimum = 0.5 GB, recommended = 4 GB</li>
+<li>Hard drive : 50 MB (but models require lots of space. The 6 routes in Microsoft Train Simulator require 1.4 GB)</li>
+<li>Graphics : any compatible with Windows 7 upwards. (more than 0.3GB graphics RAM recommended)</li>
 </ul>
 <h3>Do I need Microsoft Train Simulator installed to use Open Rails?</h3>
 <p>

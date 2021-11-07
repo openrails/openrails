@@ -25,7 +25,7 @@ A good way to get starting in coding work is to find a current bug on the <a hre
 </p><p>
 Although we get notified automatically, it's a good idea to post a message on the <a href="http://www.elvastower.com/forums/index.php?/forum/192-discussion/">Elvas Tower forum</a> because members often respond with ideas for navigating the code, understanding the bug, fixing it or testing it. 
 </p><p>
-If your solution appears to fix the problem, then <a href="../developing-code/#submitting_a_change">upload a change file</a> to the forum so we can include it in the code.
+If your solution appears to fix the problem, then <a href="../developing-code/#submitting_a_change">make a Pull Request</a> to the repository so we can review it and include it in the code.
 </p>
 			</div>
 			<div class="col-md-1"></div>

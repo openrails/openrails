@@ -17,9 +17,6 @@
           <p>
             This is a list of all the code changes since the last stable version. Those since the previous testing version are <span class="text-primary">highlighted</span>.
           </p>
-          <p>
-            <strong>For users on X4081 and earlier:</strong> Due to an issue with the updater, you will need to <a href="../program/confirm.php?file=OpenRails-Testing.zip">manually download the latest version</a> once before you can continue updating within the application.
-          </p>
           <ul class="revisions">
             <?php include "../../api/update/testing/changelog_stable.html" ?>
           </ul>

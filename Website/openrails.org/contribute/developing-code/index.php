@@ -51,7 +51,7 @@ The main folders in the repository are:
     </p>
       <ul>
         <li>Addons - accessory files shipped with the installation package</li>
-        <li>Architecture - an incomplete experiment in restructuring the program</li>
+        <li>Design - documents recording the design of OR components</li>
         <li>Documentation - operations manual and other documentation</li>
         <li>Program - empty space for executables once they are compiled</li>
         <li>Source - the principal source code files</li>
@@ -68,11 +68,10 @@ To compile and debug the Open Rails source code, ensure you have the following M
         <li>Visual Studio 2017 or 2019, any edition. The 
           <a href="https://www.visualstudio.com/downloads/">Community Edition</a> 
          is free
-		 <br />(Note 1: To save on disk space, all you need is the option Windows > .NET Development)
-		 <br />(Note 2: Install this before Microsoft XNA Framework Redistributable 3.1)
+		 <br />(Note: To save on disk space, all you need is the option Windows > .NET Development)
         </li>
-        <li><a href="https://www.microsoft.com/en-gb/download/details.aspx?id=15163">Microsoft XNA Framework Redistributable 3.1</a></li>
       </ul>
+      <br>
       <p>
 After you have downloaded the code:
       </p>
@@ -128,22 +127,10 @@ On the Visual Studio menu,
     <a href=# id="code_policy"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Policy for Code Changes</h2></a>
     <div class="accordion_body">
       <p>
-        To allow many people to contribute directly to Open Rails successfully, we have a policy in place to keep tabs on where changes come from and which changes are allowed. The policy is as follows:
+        To allow many people to contribute directly to Open Rails successfully, we have a policy in place to keep tabs on where 
+        changes come from and which changes are allowed. 
+        The policy is set out in the document <a href="https://github.com/openrails/openrails/blob/master/Docs/Contributing.md">Contributing.md</a>.
       </p>
-      <ol>
-        <li>All changes must be one of:
-          <ul>
-            <li><em>Simple</em> bug fixes, with a link to the bug</li>
-            <li><em>Targeted</em> bug fixes, with a link to the bug</li>
-            <li><em>Approved</em> blueprints, with a link to the blueprint</li>
-            <li>Documentation or localisation updates (kept separate from code changes)</li>
-          </ul>
-        </li>
-        <li><em>Simple</em> means no more than a few lines changes and no uncertainty over the logic change.</li>
-        <li><em>Targeted</em> means "Milestone" is set to the next planned stable version.</li>
-        <li><em>Approved</em> means "Direction" is "Approved", "Milestone target" is unset or set to the next planned stable version, and at least 7 days of discussion has taken place.</li>
-      </ol>
-      <br>
       <p>
         For members of the <a href="../../discover/project-team/">Development Team</a>, these policies are defined in more detail in
         <a href="http://www.elvastower.com/forums/index.php?/topic/26392-new-policy-for-code-changes/">Policy for code changes</a>

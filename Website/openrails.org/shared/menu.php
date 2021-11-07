@@ -32,7 +32,8 @@ function in_directory($cwd, $name) {
                 <!--<li><a href="/discover/version-1-0/">Version 1.0</a></li>-->
                 <!--<li><a href="/discover/version-1-1/">Version 1.1</a></li>-->
                 <!-- <li><a href="/discover/version-1-2/">Version 1.2</a></li> -->
-                <li><a href="/discover/version-1-3/">Version 1.3</a></li>
+                <!-- <li><a href="/discover/version-1-3/">Version 1.3</a></li> -->
+                <li><a href="/discover/version-1-4/">Version 1.4</a></li>
                 <li><a href="/discover/project-team/">Project Team</a></li>
                 <li><a href="/discover/news/">News</a></li>
                 <li><a href="/discover/license/">License</a></li>
@@ -59,7 +60,6 @@ function in_directory($cwd, $name) {
 <?php if (in_directory($cwd, "share")) { echo "<li class='active dropdown'>"; }else{ echo "<li class='dropdown'>"; } ?>
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Share <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="/share/gallery/">Gallery</a></li>
                 <li><a href="/share/community/">Community</a></li>
                 <li><a href="/share/multiplayer/">Multi-Player</a></li>
               </ul>

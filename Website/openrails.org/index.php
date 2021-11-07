@@ -6,14 +6,15 @@
     <div class="container"><!-- Centres content and sets fixed width to suit device -->
       <div class="row">
         <div class="col-md-9 header">
-          <img class="totally_free_software" src="shared/totally_free_software3.png" alt="Totally free software"/>
-          <!--<img class="totally_free_software" src="shared/now_at_version_1_0b.png" alt="Now at Version 1.0"/>-->
-          <!--<img class="totally_free_software" src="shared/now_at_version_1_1.png" alt="Now at Version 1.1"/>-->
-          <!--<img class="totally_free_software" src="shared/now_at_version_1_2.png" alt="Now at Version 1.2"/>-->
+          <!-- <img class="totally_free_software" src="shared/totally_free_software3.png" alt="Totally free software"/> -->
+          <!-- <img class="totally_free_software" src="shared/now_at_version_1_0b.png" alt="Now at Version 1.0"/>-->
+          <!-- <img class="totally_free_software" src="shared/now_at_version_1_1.png" alt="Now at Version 1.1"/>-->
+          <!-- <img class="totally_free_software" src="shared/now_at_version_1_2.png" alt="Now at Version 1.2"/>-->
           <!-- <img class="totally_free_software" src="shared/now_at_version_1_3.png" alt="Now at Version 1.3"/> -->
+          <img class="totally_free_software" src="shared/now_at_version_1_4.png" alt="Now at Version 1.4"/>
           <a href="/">
             <img class="logo" src='shared/logos/or_logo.png' alt='logo for Open Rails'/>
-            <div class="logo_text">Open Rails</div>
+          <div class="logo_text">Open Rails</div>
           </a>
         </div>
         <div class="col-md-3 header">
@@ -25,7 +26,7 @@
       </div>
 <?php include "shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRails-1.3.1-Setup.exe';
+  $download_stable = 'OpenRails-1.4-Setup.exe';
   $file_path = "files";
 ?>
       <div class="row">
@@ -43,7 +44,7 @@
             <!-- Button to trigger modal -->
             <a href="#modal1" role="button" class='btn download_button' data-toggle="modal">
               <span class='glyphicon glyphicon-download'></span>&nbsp; Download the installer
-              <?php echo '08 December 2018, ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB)'; ?>
+              <?php echo '19 Oct 2021, ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB)'; ?>
 			</a>
           </div>
         </div>
@@ -51,20 +52,18 @@
       <div class="row">
         <div class="col-md-4 divider">
           <div class="heading">
-            <h4>Key Changes in v1.3</h4>
+            <h4>Key Changes in v1.4</h4>
           </div>
           <p>
-            Timetables can join and split trains to form new trains
+            Monogame graphics replace XNA with support for <a href="https://reshade.me/">ReShade</a> and more memory
           </p><p>
-            Mouse control for 3D cabs
+            Web server providing train data for web pages on other devices
           </p><p>
-            Working transfer tables
+            Map window for timetabled trains
           </p><p>
-            Activity evaluation
+            Vacuum braking
           </p><p>
-            Separate files for extensions to activity files
-          </p><p>
-            Many <a href="/discover/version-1-3/">more additions and improvements</a> are listed here.
+            Many <a href="/discover/version-1-4/">more additions and improvements</a> are listed here.
           </p>
         </div>
         <div class="col-md-4 divider">
@@ -94,10 +93,6 @@
               <strong>Mar 2018</strong>
               Geoff Rowlands found a way to model 3D controls so they can be grabbed by the handle <a href="https://www.youtube.com/watch?v=UO9XrBz3iD0&feature=youtu.be">as in this video</a>.
             </p>
-            <p>
-              <strong>Nov 2017</strong>
-              Open Rails trialled <a href="http://www.monogame.net/">with Monogame instead of XNA</a> uses less RAM and give higher frame rates.
-            </p>
           </div>
         </div>
         <div class="col-md-4 divider">
@@ -105,6 +100,11 @@
             <h4>Videos</h4>
           </div>
           <div class="headed_content">
+            <h5><a href="https://youtu.be/8RGw7hKdNPM" target="_blank">New features in Release 1.4</a></h5>
+          </div>
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+          <div>
             <h5>Video Review <a href="http://www.attherailyard.com" target="_blank">At The Railyard</a></h5>
             <p>
               In his Series 5, Nicholas Ozorak publishes
