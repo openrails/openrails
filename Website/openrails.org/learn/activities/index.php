@@ -32,8 +32,10 @@
           </p>
           <h3>Developing Activities - 1</h3>
           <p>
-            A great place to start would be the free Siskiyou Route from the USA. The creator, Dale Rickert, has assembled <a href="http://www.siskurail.org/news.php">a package of instructions, examples
-            and even videos</a> to show how to create both simple and demanding activities.
+            A great place to start would be the free Siskiyou Route from the USA. 
+            The creator, Dale Rickert, has assembled <a href="https://web.archive.org/web/20210227144933/http://www.siskurail.org/news.php">a package of instructions, examples
+            and even videos</a> to show how to create both simple and demanding activities. 
+            (The <a href="https://web.archive.org/web/20200502123851/http://www.siskurail.org/vault/Activity_Creation_Kit.rar">download is still available</a> through the amazing Wayback Machine even though the website has died.)
           </p><p align="center">
             <img id="guide" src="guideexample.jpg"/>
           </p><p>
