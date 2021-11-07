@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2021-10-24 02:41:10+0300\n"
-"PO-Revision-Date: 2021-10-24 02:52+0300\n"
+"POT-Creation-Date: 2021-11-03 02:28:15+0300\n"
+"PO-Revision-Date: 2021-11-05 20:58+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -271,7 +271,7 @@ msgstr "Ассист"
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:417
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1126
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1175
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1230
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1241
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:718
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:766
 msgid "Normal"
@@ -1104,8 +1104,8 @@ msgstr "Пескоподача включена"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:497
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:118
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1251
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1265
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1262
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1276
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:786
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:800
@@ -1313,7 +1313,7 @@ msgstr "Цепи упр"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:648
 msgid "ETS"
-msgstr "Эл.отопл"
+msgstr "Эл.Отопл"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:649
 msgid "ETSCable"
@@ -1641,9 +1641,9 @@ msgstr "Темп.подш"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1102
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:117
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1206
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1214
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1229
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1217
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1225
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1240
 msgid "DerailCoeff"
 msgstr ""
 
@@ -2204,7 +2204,7 @@ msgstr "ДВЕРИ"
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:119
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
 msgid "BDYN"
-msgstr "Э/Д Торм"
+msgstr "Э/Д Тор"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:120
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
@@ -2529,7 +2529,7 @@ msgid "slip warning"
 msgstr "на грани боксования"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:158
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1215
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1226
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:130
 msgid "Warning"
 msgstr "Оповещение"
@@ -2595,7 +2595,7 @@ msgid "Open"
 msgstr "Откр"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:728
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1266
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1277
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:801
 msgid "Closed"
@@ -2702,7 +2702,7 @@ msgstr "Сброс"
 msgid "Exceeded"
 msgstr "Превышение"
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1207
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1218
 msgid "Derailed"
 msgstr "Сход"
 

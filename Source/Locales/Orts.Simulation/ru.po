@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2021-09-27 00:54:37+0300\n"
-"PO-Revision-Date: 2021-10-01 18:45+0300\n"
+"POT-Creation-Date: 2021-11-03 02:28:12+0300\n"
+"PO-Revision-Date: 2021-11-05 20:56+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -168,7 +168,7 @@ msgstr "Толкач-отпуск"
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:278
 msgctxt "Brake Controller"
 msgid "Running"
-msgstr "Поездное"
+msgstr "Перекрыша СП"
 
 #: ../../Orts.Simulation/Common/Scripting/PowerSupply/CircuitBreaker.cs:49
 #: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:163
@@ -869,10 +869,10 @@ msgstr "невозможно исправить. Сначала останови
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:230
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:139
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:80
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:84
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:92
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:101
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:82
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:87
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:141
 msgid "Handbrake"
 msgstr "Ручной тормоз"
@@ -1423,7 +1423,7 @@ msgstr "Передача"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:817
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:351
 msgid "Battery switch"
-msgstr "Разъед.АБ"
+msgstr "АкБ"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:818
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:821
@@ -1448,7 +1448,7 @@ msgstr "Откл"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:826
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:360
 msgid "Electric train supply"
-msgstr "Конт.Отопл"
+msgstr "Э/Отопл"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:842
 msgid "Fuel"
@@ -1524,7 +1524,7 @@ msgstr "Нейтраль"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:364
 msgctxt "PowerSupply"
 msgid "Power"
-msgstr "Напряжение"
+msgstr "Ц.Упр"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:346
 msgid "Pantographs"
@@ -1552,36 +1552,36 @@ msgstr ""
 msgid "Auxiliary power"
 msgstr "Питание ВЦ"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2570
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2575
 msgid "No water scoop on this loco"
 msgstr "Локомотив не оборудован черпаком"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2577
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2582
 msgid "Scoop is broken, can't refill"
 msgstr "Черпак повреждён, набор воды невозможен"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2584
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2589
 msgid "Scoop is broken by junction track"
 msgstr "Черпак разбит об рельсы"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2594
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2599
 msgid "Scoop is not over trough, can't refill"
 msgstr "Черпак не над канавой, набор воды невозможен"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2917
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2922
 msgid "Sand supply has been exhausted"
 msgstr "Песочный бункер экипировочного устройства пуст"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2605
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2610
 msgid "Refill: Loco must be moving forward."
 msgstr "Для набора двигайтесь вперёд."
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2614
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2619
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0} for water to enter tender."
 msgstr "Для набора воды, скорость движения должна превышать {0}."
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2624
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2629
 msgid "Refill: Water supply now replenished."
 msgstr "Запасы воды пополнены."
 
@@ -1980,8 +1980,8 @@ msgstr "Заглушка"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6645
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6666
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6668
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1942
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1944
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2167
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2169
 msgid "Yes"
 msgstr "Да"
 
@@ -2006,8 +2006,8 @@ msgstr "Да"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6645
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6666
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6668
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1942
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1944
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2167
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2169
 msgid "No"
 msgstr "Нет"
 
@@ -2446,29 +2446,34 @@ msgctxt "HUD"
 msgid "Power"
 msgstr "Мощн"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1950
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1981
 msgid "Starting unload"
 msgstr "Начинается разгрузка"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4009
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4040
 msgid "Incompatible data"
 msgstr "Несовместимо"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4023
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4054
 msgid "Starting refill"
 msgstr "Экипировка начата"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4032
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4063
 msgid "Preparing for unload"
 msgstr "Подготовка к выгрузке"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1726
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1951
 msgid ""
 "You were travelling too fast for this curve, and have snapped a brake hose "
 "on Car "
 msgstr "Скорость в кривой превышена. Разъединился тормозной рукав у вагона "
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1688
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1635
+#, csharp-format
+msgid "Car {0} has derailed on the curve."
+msgstr "Вагон {0} сошёл с рельсов в кривой."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1913
 #, csharp-format
 msgid ""
 "You are travelling too fast for this curve. Slow down, your freight car {0} "
@@ -2477,7 +2482,7 @@ msgstr ""
 "Скорость в кривой превышена. Притормозите,груз в вагоне {0} может быть "
 "повреждён. Рекомендуется скорость {1}"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1692
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1917
 #, csharp-format
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers in "
@@ -2489,8 +2494,8 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:126
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:134
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:78
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:80
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:82
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:85
 msgid "BC"
 msgstr "ТЦ"
 
@@ -2527,7 +2532,7 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:134
 msgid "Lead BP"
-msgstr "ГВ ТМ"
+msgstr "ГолВ ТМ"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/CircuitBreaker.cs:413
 msgid "Circuit breaker closing not authorized"

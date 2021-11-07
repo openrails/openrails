@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-10-11 16:55:19+0200\n"
-"PO-Revision-Date: 2021-10-11 16:55:21+0200\n"
+"POT-Creation-Date: 2021-11-03 02:28:15+0300\n"
+"PO-Revision-Date: 2021-11-03 02:28:17+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -260,7 +260,7 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:417
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1126
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1175
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1230
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1241
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:718
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:766
 msgid "Normal"
@@ -1082,8 +1082,8 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:497
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:118
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1251
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1265
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1262
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1276
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:786
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:800
@@ -1617,9 +1617,9 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1102
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:117
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1206
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1214
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1229
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1217
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1225
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1240
 msgid "DerailCoeff"
 msgstr ""
 
@@ -2500,7 +2500,7 @@ msgid "slip warning"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:158
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1215
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1226
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:130
 msgid "Warning"
 msgstr ""
@@ -2566,7 +2566,7 @@ msgid "Open"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:728
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1266
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1277
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:801
 msgid "Closed"
@@ -2673,7 +2673,7 @@ msgstr ""
 msgid "Exceeded"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1207
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1218
 msgid "Derailed"
 msgstr ""
 
