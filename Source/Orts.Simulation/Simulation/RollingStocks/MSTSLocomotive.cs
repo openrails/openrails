@@ -3367,14 +3367,14 @@ namespace Orts.Simulation.RollingStocks
                     var dieselloco = this as MSTSDieselLocomotive;
 
                     // default gear
-                    if (dieselloco.DieselEngines[0].GearBox.Gears[0].TypeGearBox == 1)
+                    if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypeGearBox.A)
                     {
                         GearBoxController.StartIncrease();
                         Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
                         AlerterReset(TCSEvent.GearBoxChanged);
                         SignalGearBoxChangeEvents();
                     }
-                    else if (dieselloco.DieselEngines[0].GearBox.Gears[0].TypeGearBox == 2)
+                    else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypeGearBox.B)
                     {
                         GearBoxController.StartIncrease();
                         Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
@@ -3384,7 +3384,7 @@ namespace Orts.Simulation.RollingStocks
                         dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
 
                     }
-                    else if (dieselloco.DieselEngines[0].GearBox.Gears[0].TypeGearBox == 3)
+                    else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypeGearBox.C)
                     {
 
                         if (ThrottlePercent == 0)
@@ -3427,14 +3427,14 @@ namespace Orts.Simulation.RollingStocks
                     var dieselloco = this as MSTSDieselLocomotive;
 
                     // default gear
-                    if (dieselloco.DieselEngines[0].GearBox.Gears[0].TypeGearBox == 1)
+                    if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypeGearBox.A)
                     {
                         GearBoxController.StartDecrease();
                         Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
                         AlerterReset(TCSEvent.GearBoxChanged);
                         SignalGearBoxChangeEvents();
                     }
-                    else if (dieselloco.DieselEngines[0].GearBox.Gears[0].TypeGearBox == 2)
+                    else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypeGearBox.B)
                     {
                         GearBoxController.StartDecrease();
                         Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
@@ -3443,7 +3443,7 @@ namespace Orts.Simulation.RollingStocks
                         dieselloco.DieselEngines[0].GearBox.clutchOn = false;
                         dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
                     }
-                    else if (dieselloco.DieselEngines[0].GearBox.Gears[0].TypeGearBox == 3)
+                    else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypeGearBox.C)
                     {
                         if (ThrottlePercent == 0)
                         {

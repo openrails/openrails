@@ -442,7 +442,7 @@ namespace Orts.Simulation.RollingStocks
                 if (DieselEngines.HasGearBox)
                 {
                     Trace.TraceInformation("==================================================== {0} has Gearbox =========================================================", LocomotiveName);
-                    Trace.TraceInformation("Gearbox Type: {0}, Number of Gears: {1}, Idle RpM: {2}, Max RpM: {3}, Gov RpM: {4}, GearBoxType: {5}", DieselEngines[0].GearBox.GearBoxOperation, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovenorRPM, DieselEngines[0].GearBox.Gears[0].TypeGearBox);
+                    Trace.TraceInformation("Gearbox Type: {0}, Number of Gears: {1}, Idle RpM: {2}, Max RpM: {3}, Gov RpM: {4}, GearBoxType: {5}", DieselEngines[0].GearBox.GearBoxOperation, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovenorRPM, DieselEngines[0].GearBox.GearBoxType);
 
                     Trace.TraceInformation("Gear\t Ratio\t Max Speed\t Max TE\t    Chg Up RpM\t Chg Dwn RpM\t Coast Force\t Back Force\t");
 
@@ -755,7 +755,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (DieselEngines[0].GearBox != null)
             {
-                if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
+                if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic || DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Automatic)
                 {
                     DieselEngines[0].GearBox.AutoGearUp();
                     GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
@@ -772,7 +772,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (DieselEngines[0].GearBox != null)
             {
-                if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
+                if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic || DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Automatic)
                 {
                     DieselEngines[0].GearBox.AutoGearDown();
                     GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
