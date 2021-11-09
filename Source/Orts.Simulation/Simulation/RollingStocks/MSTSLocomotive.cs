@@ -3513,8 +3513,14 @@ namespace Orts.Simulation.RollingStocks
                 SignalEvent(change > 0 ? Event.GearUp : Event.GearDown);
                 AlerterReset(TCSEvent.GearBoxChanged);
             }
-            if (oldValue != controller.CurrentValue)
+            if (controller.CurrentValue > oldValue)
+            {
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+            }
+            else if (controller.CurrentValue < oldValue)
+            {
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+            }
         }
         #endregion
 
