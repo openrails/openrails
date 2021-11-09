@@ -61,22 +61,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     }
                     break;
                 case "engine(gearboxoperation":
-                    temp = stf.ReadStringBlock("manual");
-                    switch (temp)
+                    stf.MustMatch("(");
+                    var gearOperation = stf.ReadString();
+                    try
                     {
-                        case "manual": GearBoxOperation = GearBoxOperation.Manual; break;
-                        case "automatic": GearBoxOperation = GearBoxOperation.Automatic; break;
-                        case "semiautomatic": GearBoxOperation = GearBoxOperation.Semiautomatic; break;
+                        GearBoxOperation = (GearBoxOperation)Enum.Parse(typeof(GearBoxOperation), gearOperation);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Assumed unknown gear operation type " + gearOperation);
                     }
                     initLevel++;
                     break;
                 case "engine(gearboxenginebraking":
-                    temp = stf.ReadStringBlock("none");
-                    switch (temp)
+                    stf.MustMatch("(");
+                    var engineBraking = stf.ReadString();
+                    try
                     {
-                        case "none": GearBoxEngineBraking = GearBoxEngineBraking.None; break;
-                        case "all_gears": GearBoxEngineBraking = GearBoxEngineBraking.AllGears; break;
-                        case "direct_drive": GearBoxEngineBraking = GearBoxEngineBraking.DirectDrive; break;
+                        GearBoxEngineBraking = (GearBoxEngineBraking)Enum.Parse(typeof(GearBoxEngineBraking), engineBraking);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Assumed unknown gear operation type " + engineBraking);
                     }
                     break;
                 case "engine(gearboxmaxspeedforgears":
