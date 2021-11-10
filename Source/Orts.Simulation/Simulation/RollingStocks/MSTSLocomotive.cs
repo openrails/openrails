@@ -2762,6 +2762,7 @@ namespace Orts.Simulation.RollingStocks
         /// Dry track = 0.33 
         /// 
         /// The following values are indicatitive values only (sourced from Principles and Applications of Tribology).
+        /// https://books.google.com.au/books?id=LtYgBQAAQBAJ&pg=PA312&lpg=PA312&dq=Principles+and+Applications+of+Tribology+table+14.1&source=bl&ots=2hfz1WpEsM&sig=ACfU3U3U9y9Lwov9GORLaKCO10SCFHvjhA&hl=en&sa=X&ved=2ahUKEwi82NCF_Yr0AhWNTX0KHcGfB3QQ6AF6BAgMEAM#v=onepage&q=Principles%20and%20Applications%20of%20Tribology%20table%2014.1&f=false
         /// Wet track (clean) = 0.18 <=> 0.2
         /// Wet track (sand) = 0.22 <=> 0.25
         /// Dew or fog = 0.09 <=> 0.15
