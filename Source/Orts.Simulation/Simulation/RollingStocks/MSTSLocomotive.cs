@@ -3514,11 +3514,12 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        public void SetGearBoxValue(float value)
+        public void SetGearBoxValue(float value) // control for cabview
         {
             var controller = GearBoxController;
             var oldValue = controller.CurrentValue;
             var change = controller.SetValue(value);
+            var dieselloco = this as MSTSDieselLocomotive;
             if (change != 0)
             {
                 //new GarBoxCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
@@ -3528,10 +3529,15 @@ namespace Orts.Simulation.RollingStocks
             if (controller.CurrentValue > oldValue)
             {
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                if (dieselloco != null)
+                    dieselloco.DieselEngines[0].GearBox.ManualGearUp = true;
+
             }
             else if (controller.CurrentValue < oldValue)
             {
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                if (dieselloco != null)
+                    dieselloco.DieselEngines[0].GearBox.ManualGearDown = true;
             }
         }
         #endregion
