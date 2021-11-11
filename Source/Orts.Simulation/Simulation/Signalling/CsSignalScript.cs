@@ -6,6 +6,13 @@ using System.IO;
 
 namespace Orts.Simulation.Signalling
 {
+    public enum SignalEvent
+    {
+        RequestMostRestrictiveAspect,
+        RequestApproachAspect,
+        RequestLeastRestrictiveAspect,
+    }
+
     // The exchange of information is done through the TextSignalAspect property.
     // The MSTS signal aspect is only used for TCS scripts that do not support TextSignalAspect.
     public abstract class CsSignalScript : AbstractScriptClass
@@ -81,6 +88,10 @@ namespace Orts.Simulation.Signalling
         /// True if the signal link is activated
         /// </summary>
         public bool RouteSet => SignalHead.route_set() > 0;
+        /// <summary>
+        /// Hold state of the signal
+        /// </summary>
+        public HoldState HoldState => SignalObject.holdState;
         /// <summary>
         /// Set this variable to true to allow clear to partial route
         /// </summary>
@@ -359,5 +370,10 @@ namespace Orts.Simulation.Signalling
         /// <param name="message">Message sent to signal</param>
         /// <returns></returns>
         public virtual void HandleSignalMessage(int signalId, string message) {}
+        /// <summary>
+        /// Called when the simulator
+        /// </summary>
+        /// <param name="evt"></param>
+        public virtual void HandleEvent(SignalEvent evt, string message = "") { }
     }
 }

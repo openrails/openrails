@@ -574,31 +574,72 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         ///  Sets the state to the most restrictive aspect for this head.
         /// </summary>
-        public void SetMostRestrictiveAspect()
+        public void RequestMostRestrictiveAspect()
         {
-            if (signalType != null)
-                state = signalType.GetMostRestrictiveAspect();
+            if (usedCsSignalScript != null)
+            {
+                usedCsSignalScript.HandleEvent(SignalEvent.RequestMostRestrictiveAspect);
+                usedCsSignalScript.Update();
+            }
             else
-                state = MstsSignalAspect.STOP;
+            {
+                if (signalType != null)
+                    state = signalType.GetMostRestrictiveAspect();
+                else
+                    state = MstsSignalAspect.STOP;
 
-            TextSignalAspect = "";
+                draw_state = def_draw_state(state);
+            }
+        }
 
-            draw_state = def_draw_state(state);
+        public void RequestApproachAspect()
+        {
+            if (usedCsSignalScript != null)
+            {
+                usedCsSignalScript.HandleEvent(SignalEvent.RequestApproachAspect);
+                usedCsSignalScript.Update();
+            }
+            else
+            {
+                var drawstate1 = def_draw_state(MstsSignalAspect.APPROACH_1);
+                var drawstate2 = def_draw_state(MstsSignalAspect.APPROACH_2);
+
+                if (drawstate1 > 0)
+                {
+                    state = MstsSignalAspect.APPROACH_1;
+                }
+                else if (drawstate2 > 0)
+                {
+                    state = MstsSignalAspect.APPROACH_2;
+                }
+                else
+                {
+                    state = MstsSignalAspect.APPROACH_3;
+                }
+
+                draw_state = def_draw_state(state);
+            }
         }
 
         /// <summary>
         ///  Sets the state to the least restrictive aspect for this head.
         /// </summary>
-        public void SetLeastRestrictiveAspect()
+        public void RequestLeastRestrictiveAspect()
         {
-            if (signalType != null)
-                state = signalType.GetLeastRestrictiveAspect();
+            if (usedCsSignalScript != null)
+            {
+                usedCsSignalScript.HandleEvent(SignalEvent.RequestLeastRestrictiveAspect);
+                usedCsSignalScript.Update();
+            }
             else
-                state = MstsSignalAspect.CLEAR_2;
+            {
+                if (signalType != null)
+                    state = signalType.GetLeastRestrictiveAspect();
+                else
+                    state = MstsSignalAspect.CLEAR_2;
 
-            TextSignalAspect = "";
-
-            def_draw_state(state);
+                def_draw_state(state);
+            }
         }
 
         /// <summary>
