@@ -31,7 +31,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float GearBoxOverspeedPercentageForFailure = 150f;
         public float GearBoxBackLoadForceN = 1000;
         public float GearBoxCoastingForceN = 500;
-        public float GearBoxUpGearProportion = 0.85f;
+        public float GearBoxUpGearProportion = 1.0f;
         public float GearBoxDownGearProportion = 0.35f;
                 
         int initLevel;
@@ -289,7 +289,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                if (GearBoxType == TypesGearBox.A)
+                if (GearBoxOperation == GearBoxOperation.Automatic)
                 {
                     if (DieselEngine.Locomotive.ThrottlePercent > 0)
                     {
@@ -346,7 +346,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     return DieselEngine.RealRPM;
                 else
                 {
-                    if (GearBoxType == TypesGearBox.A || GearBoxOperation == GearBoxOperation.Automatic)
+                    if (GearBoxOperation == GearBoxOperation.Automatic)
                     {
                         return CurrentSpeedMpS / CurrentGear.Ratio;
                     }
@@ -401,7 +401,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (CurrentGear != null)
                 {
 
-                    if (GearBoxType == TypesGearBox.A)
+                    if (GearBoxOperation == GearBoxOperation.Automatic)
                     {
                         if (ClutchPercent >= -20)
                         {
@@ -416,7 +416,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         else
                             return -CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
                     }
-                    else if (GearBoxType == TypesGearBox.B || GearBoxType == TypesGearBox.C)
+                    else if (GearBoxOperation == GearBoxOperation.Manual)
                     {
 
                         if (GearBoxOperation == GearBoxOperation.Manual || (GearBoxOperation != GearBoxOperation.Manual && ClutchPercent >= -20))
@@ -470,8 +470,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                             }
 
-                            // Set TE to zero if gear change happening
-                            if (ManualGearBoxChangeOn)
+                            // Set TE to zero if gear change happening && type B gear box
+                            if (ManualGearBoxChangeOn && GearBoxType == TypesGearBox.B)
                             {
                                 tractiveForceN = 0;
                             }
@@ -566,14 +566,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     var driveWheelRpm = pS.TopM(Gears[i].MaxSpeedMpS) / driveWheelCircumferenceM;
                     float apparentGear = (float)(DieselEngine.MaxRPM / driveWheelRpm);
 
-                    if (GearBoxType == TypesGearBox.A) // Legacy default operation
-                    {
-                        Gears[i].Ratio = GearBoxParams.GearBoxMaxSpeedForGearsMpS[i] / DieselEngine.MaxRPM;
-                    }
-                    else
-                    {
-                        Gears[i].Ratio = apparentGear;
-                    }
+                    Gears[i].Ratio = apparentGear;
 
                     Gears[i].BackLoadForceN = Gears[i].Ratio * GearBoxParams.GearBoxBackLoadForceN;
                     Gears[i].CoastingForceN = Gears[i].Ratio * GearBoxParams.GearBoxCoastingForceN;
@@ -611,7 +604,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public void Update(float elapsedClockSeconds)
         {
-            if (GearBoxOperation == GearBoxOperation.Automatic || GearBoxOperation == GearBoxOperation.Semiautomatic || (GearBoxOperation == GearBoxOperation.Manual && GearBoxType == TypesGearBox.A))
+            if (GearBoxOperation == GearBoxOperation.Automatic || GearBoxOperation == GearBoxOperation.Semiautomatic)
             {
                 if ((clutch <= 0.05) || (clutch >= 1f))
                 {
@@ -658,12 +651,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 switch (GearBoxOperation)
                 {
                     case GearBoxOperation.Manual:
-                        if (GearBoxType == TypesGearBox.A && DieselEngine.Locomotive.ThrottlePercent == 0)
-                        {
-                            clutchOn = false;
-                            ClutchPercent = 0f;
-                        }
-                        else if (DieselEngine.Locomotive.ThrottlePercent == 0) // Type 2 and 3 gear boxes
+                        if (DieselEngine.Locomotive.ThrottlePercent == 0) // Type 2 and 3 gear boxes
                         {
                             clutchOn = false;
                             ClutchPercent = 0f;
