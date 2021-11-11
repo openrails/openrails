@@ -977,7 +977,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (GearBox != null)
             {
-                if (GearBox.GearBoxType == TypesGearBox.A)
+                if (GearBox.GearBoxOperation == GearBoxOperation.Automatic)
                 {
                     if (RealRPM > 0)
                         GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;

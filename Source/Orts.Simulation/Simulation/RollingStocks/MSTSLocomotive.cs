@@ -3366,15 +3366,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     var dieselloco = this as MSTSDieselLocomotive;
 
-                    // default gear
-                    if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.A)
-                    {
-                        GearBoxController.StartIncrease();
-                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
-                        AlerterReset(TCSEvent.GearBoxChanged);
-                        SignalGearBoxChangeEvents();
-                    }
-                    else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.B)
+                    if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.B || dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.A)
                     {
                         GearBoxController.StartIncrease();
                         Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
@@ -3426,15 +3418,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     var dieselloco = this as MSTSDieselLocomotive;
 
-                    // default gear
-                    if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.A)
-                    {
-                        GearBoxController.StartDecrease();
-                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
-                        AlerterReset(TCSEvent.GearBoxChanged);
-                        SignalGearBoxChangeEvents();
-                    }
-                    else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.B)
+                    if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.B || dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.A)
                     {
                         GearBoxController.StartDecrease();
                         Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
