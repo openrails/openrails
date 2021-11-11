@@ -1937,7 +1937,10 @@ namespace Orts.Viewer3D.RollingStock
                     if (Locomotive.DynamicBrakeController != null)
                     {
                         if (dynBrakePercent == -1)
+                        {
+                            index = 0;
                             break;
+                        }
                         if (!Locomotive.HasSmoothStruc)
                         {
                             index = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.CurrentNotch : 0;
