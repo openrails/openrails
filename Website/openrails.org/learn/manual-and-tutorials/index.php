@@ -25,10 +25,13 @@ echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_p
 				</p>
 				<h2>Test Environment for Models</h2>
 				<p>
-        One of our aims for Open Rails is that train performance should be as realistic as closely as possible. To help achieve this,
-        Peter Newell has developed <a href="http://www.coalstonewcastle.com.au/physics/">an environment for testing</a> the performance of locos and rolling stock. Do they perform as we expect?
+        One of our aims for Open Rails is that train performance should be as realistic as possible. 
+        To help achieve this,
+        Peter Newell has developed <a href="http://www.coalstonewcastle.com.au/physics/">an environment for testing</a> 
+        the performance of locos and rolling stock. Do they perform as we expect?
         </p><p>
-It may be the model that is not configured correctly or, as Open Rails develops, it may be that the simulator is lacking in realism.
+        It may be the model that is not configured correctly or, as Open Rails develops, it may be that the simulator is lacking 
+        in realism.
         </p><p>
         In either case, a neutral, repeatable test environment helps to pin down the issue and get it fixed. 
         </p>

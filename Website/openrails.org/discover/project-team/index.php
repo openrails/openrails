@@ -44,15 +44,13 @@ Less frequently, they get to add something entirely new and then stand ready to 
 			<div class="col-md-3">
         <p>&nbsp;</p>
           <table>
-          <tr><td>BillC</td></tr>
-          <tr><td>Cédric Gniewek (Serana)</td></tr>
-          <tr><td>Chris Jakeman * (cjakeman)</td></tr>
+          <tr><td>cesarbl</td></tr>
+          <tr><td>cjakeman *</td></tr>
           <tr><td>CSantucci</td></tr>
-          <tr><td>edwardk</td></tr>
-          <tr><td>Goku</td></tr>
-          <tr><td>Peter Gulyas (gpz)</td></tr>
+          <tr><td>gpz</td></tr>
           <tr><td>James Ross *</td></tr>
-          <tr><td>jeroenp</td></tr>
+          <tr><td>jonas</td></tr>
+          <tr><td>mbm_OR</td></tr>
           </table>
         <p class="small"><br>
           * Open Rails Management Team
@@ -61,16 +59,13 @@ Less frequently, they get to add something entirely new and then stand ready to 
 			<div class="col-md-3">
         <p>&nbsp;</p>
           <table>
-          <tr><td>JTang</td></tr>
-          <tr><td>Matej Pacha</td></tr>
-          <tr><td>Mauricio (mbm_OR)</td></tr>
-          <tr><td>PerpetualKid</td></tr>
-          <tr><td>rdamurphy</td></tr>
-          <tr><td>Rob Roeterdink (roeter)</td></tr>
-          <tr><td>Ryan Young (YoRyan)</td></tr>
+          <tr><td>paolo</td></tr>
+          <tr><td>perpetualKid</td></tr>
+          <tr><td>roeter</td></tr>
+          <tr><td>Serana</td></tr>
           <tr><td>steamer_ctn</td></tr>
-          <tr><td>Stefan PAITONI</td></tr>
           <tr><td>wacampbell</td></tr>
+          <tr><td>YoRyan</td></tr>
           </table>
       </div>
     </div>
@@ -94,7 +89,6 @@ These are the experts in creating buildings, locos, routes, signs, even grass. T
           <tr><td>chalky</td></tr>
           <tr><td>coonskin *</td></tr>
           <tr><td>Copperpen</td></tr>
-          <tr><td>Eldorado.Railroad</td></tr>
         </table>
         <p class="small"><br>
           * Open Rails Management Team
@@ -102,15 +96,14 @@ These are the experts in creating buildings, locos, routes, signs, even grass. T
       </div>
       <div class="col-md-3">
         <p>&nbsp;</p>
-          <table>
-            <tr><td>engmod</td></tr>
-            <tr><td>EugenR</td></tr>
-            <tr><td>Genma Saotome</td></tr>
-            <tr><td>plainsman</td></tr>
-            <tr><td>thegrindre</td></tr>
-            <tr><td>Turbo Bill</td></tr>
-            <tr><td>WaltN</td></tr>
-          </table>
+        <table>
+          <tr><td>Eldorado.Railroad</td></tr>
+          <tr><td>engmod</td></tr>
+          <tr><td>EugenR</td></tr>
+          <tr><td>Genma Saotome</td></tr>
+          <tr><td>plainsman</td></tr>
+          <tr><td>thegrindre</td></tr>
+        </table>
       </div>
     </div>
 		<div class="row">
@@ -123,9 +116,14 @@ A choice of language was added to OR in Spring 2014 and, very quickly, a cadre o
 			<div class="col-md-6">
         <p>&nbsp;</p>
         <table class="staff">
+          <tr><td>Brazilian</td><td>Diter</td></tr>
+          <tr><td>Czech</td><td>Howky</td></tr>
           <tr><td>French</td><td>Serana</td></tr>
-          <tr><td>German</td><td>Markus Gelbmann (markus_GE)</td></tr>
+          <tr><td>German</td><td>jonas</td></tr>
           <tr><td>Italian</td><td>strawberryfield</td></tr>
+          <tr><td>Portuguese</td><td>Aldarion</td></tr>
+          <tr><td>Russian</td><td>Weter</td></tr>
+          <tr><td>Spanish</td><td>xavivilla</td></tr>
         </table>
 			</div>
 			<div class="col-md-6">
