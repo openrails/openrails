@@ -2082,7 +2082,7 @@ namespace Orts.Simulation.AIs
 
             // first, check state of signal
 
-            if (thisStation.ExitSignal >= 0 && (thisStation.HoldSignal || signalRef.SignalObjects[thisStation.ExitSignal].holdState == SignalObject.HoldState.StationStop))
+            if (thisStation.ExitSignal >= 0 && (thisStation.HoldSignal || signalRef.SignalObjects[thisStation.ExitSignal].holdState == HoldState.StationStop))
             {
                 if (HoldingSignals.Contains(thisStation.ExitSignal)) HoldingSignals.Remove(thisStation.ExitSignal);
                 var nextSignal = signalRef.SignalObjects[thisStation.ExitSignal];
@@ -4949,7 +4949,6 @@ namespace Orts.Simulation.AIs
 
         public void RequestSignalPermission(TCSubpathRoute selectedRoute, int routeIndex)
         {
-
             // check if signal at danger
 
             TCRouteElement thisElement = selectedRoute[PresentPosition[0].RouteListIndex];
@@ -4965,7 +4964,7 @@ namespace Orts.Simulation.AIs
                 return;
 
             requestedSignal.enabledTrain = routeIndex == 0 ? routedForward : routedBackward;
-            requestedSignal.holdState = SignalObject.HoldState.None;
+            requestedSignal.holdState = HoldState.None;
             requestedSignal.hasPermission = SignalObject.Permission.Requested;
 
             requestedSignal.checkRouteState(false, requestedSignal.signalRoute, routedForward, false);
@@ -5451,7 +5450,7 @@ namespace Orts.Simulation.AIs
             else if (thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
             {
                 if (thisItem.ActiveItem.signal_state == MstsSignalAspect.STOP &&
-                    thisItem.ActiveItem.ObjectDetails.holdState == SignalObject.HoldState.StationStop)
+                    thisItem.ActiveItem.ObjectDetails.holdState == HoldState.StationStop)
                 {
                     actionValid = false;
 

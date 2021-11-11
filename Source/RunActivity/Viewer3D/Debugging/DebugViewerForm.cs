@@ -1853,8 +1853,10 @@ namespace Orts.Viewer3D.Debugging
         {
             if (signalPickedItem == null)
             {
-                UnHandleItemPick(); return;
+                UnHandleItemPick();
+                return;
             }
+
             var signal = signalPickedItem.Signal;
             var type = boxSetSignal.SelectedIndex;
             if (MPManager.Instance().AmAider)
@@ -1863,41 +1865,30 @@ namespace Orts.Viewer3D.Debugging
                 UnHandleItemPick();
                 return;
             }
+
             switch (type)
             {
                 case 0:
                     signal.ClearHoldSignalDispatcher();
                     break;
+
                 case 1:
                     signal.RequestHoldSignalDispatcher(true);
                     break;
+
                 case 2:
-                    signal.holdState = SignalObject.HoldState.ManualApproach;
-                    foreach (var sigHead in signal.SignalHeads)
-                    {
-                        var drawstate1 = sigHead.def_draw_state(MstsSignalAspect.APPROACH_1);
-                        var drawstate2 = sigHead.def_draw_state(MstsSignalAspect.APPROACH_2);
-                        var drawstate3 = sigHead.def_draw_state(MstsSignalAspect.APPROACH_3);
-                        if (drawstate1 > 0) { sigHead.state = MstsSignalAspect.APPROACH_1; }
-                        else if (drawstate2 > 0) { sigHead.state = MstsSignalAspect.APPROACH_2; }
-                        else { sigHead.state = MstsSignalAspect.APPROACH_3; }
-                        sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
-                        // Clear the text aspect so as not to leave C# scripted signals in an inconsistent state.
-                        sigHead.TextSignalAspect = "";
-                    }
+                    signal.RequestApproachAspect();
                     break;
+
                 case 3:
-                    signal.holdState = SignalObject.HoldState.ManualPass;
-                    foreach (var sigHead in signal.SignalHeads)
-                    {
-                        sigHead.SetLeastRestrictiveAspect();
-                        sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
-                    }
+                    signal.RequestLeastRestrictiveAspect();
                     break;
+
                 case 4:
                     signal.SetManualCallOn(true);
                     break;
             }
+
             UnHandleItemPick();
         }
 
@@ -2173,15 +2164,16 @@ namespace Orts.Viewer3D.Debugging
             {
                 int returnValue = 2;
 
-                foreach (var head in Signal.SignalHeads)
+                foreach (var head in Signal.SignalHeads.Where(x => x.sigFunction == MstsSignalFunction.NORMAL))
                 {
-                    if (head.state == MstsSignalAspect.CLEAR_1 ||
-                        head.state == MstsSignalAspect.CLEAR_2)
+                    if (head.state == MstsSignalAspect.CLEAR_1
+                        || head.state == MstsSignalAspect.CLEAR_2)
                     {
                         returnValue = 0;
                     }
-                    if (head.state == MstsSignalAspect.APPROACH_1 ||
-                        head.state == MstsSignalAspect.APPROACH_2 || head.state == MstsSignalAspect.APPROACH_3)
+                    if (head.state == MstsSignalAspect.APPROACH_1
+                        || head.state == MstsSignalAspect.APPROACH_2
+                        || head.state == MstsSignalAspect.APPROACH_3)
                     {
                         returnValue = 1;
                     }

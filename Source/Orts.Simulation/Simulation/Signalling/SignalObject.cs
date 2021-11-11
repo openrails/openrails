@@ -30,6 +30,16 @@ using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.Signalling
 {
+    public enum HoldState                // signal is locked in hold
+    {
+        None,                            // signal is clear
+        StationStop,                     // because of station stop
+        ManualLock,                      // because of manual lock. 
+        ManualPass,                      // Sometime you want to set a light green, especially in MP
+        ManualApproach,                  // Sometime to set approach, in MP again
+                                         //PLEASE DO NOT CHANGE THE ORDER OF THESE ENUMS
+    }
+
     public class SignalObject
     {
         public enum InternalBlockstate
@@ -49,16 +59,6 @@ namespace Orts.Simulation.Signalling
             Granted,
             Requested,
             Denied,
-        }
-
-        public enum HoldState                // signal is locked in hold
-        {
-            None,                            // signal is clear
-            StationStop,                     // because of station stop
-            ManualLock,                      // because of manual lock. 
-            ManualPass,                      // Sometime you want to set a light green, especially in MP
-            ManualApproach,                  // Sometime to set approach, in MP again
-            //PLEASE DO NOT CHANGE THE ORDER OF THESE ENUMS
         }
 
         public Signals signalRef;               // reference to overlaying Signal class
@@ -1664,33 +1664,41 @@ namespace Orts.Simulation.Signalling
         public void Update()
         {
             // perform route update for normal signals if enabled
-
             if (isSignalNormal())
             {
                 // if in hold, set to most restrictive for each head
-
                 if (holdState != HoldState.None)
                 {
                     foreach (SignalHead sigHead in SignalHeads)
                     {
-                        if (holdState == HoldState.ManualLock || holdState == HoldState.StationStop) sigHead.SetMostRestrictiveAspect();
+                        switch (holdState)
+                        {
+                            case HoldState.ManualLock:
+                            case HoldState.StationStop:
+                                sigHead.RequestMostRestrictiveAspect();
+                                break;
+
+                            case HoldState.ManualApproach:
+                                sigHead.RequestApproachAspect();
+                                break;
+
+                            case HoldState.ManualPass:
+                                sigHead.RequestLeastRestrictiveAspect();
+                                break;
+                        }
                     }
-                    return;
                 }
 
                 // if enabled - perform full update and propagate if not yet done
-
                 if (enabledTrain != null)
                 {
                     // if internal state is not reserved (route fully claimed), perform route check
-
                     if (internalBlockState != InternalBlockstate.Reserved)
                     {
                         checkRouteState(isPropagated, signalRoute, enabledTrain);
                     }
 
                     // propagate request
-
                     if (!isPropagated)
                     {
                         propagateRequest();
@@ -1699,26 +1707,21 @@ namespace Orts.Simulation.Signalling
                     StateUpdate();
 
                     // propagate request if not yet done
-
                     if (!propagated && enabledTrain != null)
                     {
                         propagateRequest();
                     }
                 }
-
                 // fixed route - check route and update
-
                 else if (hasFixedRoute)
                 {
                     // if internal state is not reserved (route fully claimed), perform route check
-
                     if (internalBlockState != InternalBlockstate.Reserved)
                     {
                         checkRouteState(true, fixedRoute, null);
                     }
 
                     StateUpdate();
-
                 }
                 // no route - perform update only
                 else
@@ -2276,7 +2279,7 @@ namespace Orts.Simulation.Signalling
         public void checkRouteState(bool isPropagated, Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain, bool sound = true)
         {
             // check if signal must be hold
-            bool signalHold = holdState != HoldState.None;
+            bool signalHold = holdState == HoldState.ManualLock || holdState == HoldState.StationStop;
             if (enabledTrain != null && enabledTrain.Train.HoldingSignals.Contains(thisRef) && holdState < HoldState.ManualLock)
             {
                 holdState = HoldState.StationStop;
@@ -4183,9 +4186,8 @@ namespace Orts.Simulation.Signalling
         ///            field [0] : if true, hold state is set
         ///            field [1] : if true, signal is reset (always returns false if reset not requested)
         /// </summary>
-        public bool[] RequestHoldSignalDispatcher(bool requestResetSignal)
+        public void RequestHoldSignalDispatcher(bool requestResetSignal)
         {
-            bool[] returnValue = new bool[2] { false, false };
             MstsSignalAspect thisAspect = this_sig_lr(MstsSignalFunction.NORMAL);
 
             SetManualCallOn(false);
@@ -4193,21 +4195,20 @@ namespace Orts.Simulation.Signalling
             // signal not enabled - set lock, reset if cleared (auto signal can clear without enabling)
             if (enabledTrain == null || enabledTrain.Train == null)
             {
-                holdState = HoldState.ManualLock;
-                if (thisAspect > MstsSignalAspect.STOP) ResetSignal(true);
-                returnValue[0] = true;
+                if (thisAspect > MstsSignalAspect.STOP)
+                    ResetSignal(true);
+
+                RequestMostRestrictiveAspect();
             }
             // if enabled, cleared and reset not requested : no action
             else if (!requestResetSignal && thisAspect > MstsSignalAspect.STOP)
             {
-                holdState = HoldState.ManualLock; //just in case this one later will be set to green by the system
-                returnValue[0] = true;
+                RequestMostRestrictiveAspect();
             }
             // if enabled and not cleared : set hold, no reset required
             else if (thisAspect == MstsSignalAspect.STOP)
             {
-                holdState = HoldState.ManualLock;
-                returnValue[0] = true;
+                RequestMostRestrictiveAspect();
             }
             // enabled, cleared , reset required : check train speed
             // if train is moving : no action
@@ -4223,18 +4224,38 @@ namespace Orts.Simulation.Signalling
                 {
                     signalRef.BreakDownRouteList(enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex], signalRouteIndex, enabledTrain);
                     ResetSignal(true);
-                    holdState = HoldState.ManualLock;
-                    returnValue[0] = true;
-                    returnValue[1] = true;
                 }
-                else //hopefully this does not happen
-                {
-                    holdState = HoldState.ManualLock;
-                    returnValue[0] = true;
-                }
-            }
 
-            return returnValue;
+                RequestMostRestrictiveAspect();
+            }
+        }
+
+        public void RequestMostRestrictiveAspect()
+        {
+            holdState = HoldState.ManualLock;
+            foreach (var sigHead in SignalHeads)
+            {
+                sigHead.RequestMostRestrictiveAspect();
+            }
+        }
+
+        public void RequestApproachAspect()
+        {
+            holdState = HoldState.ManualApproach;
+            foreach (var sigHead in SignalHeads)
+            {
+                sigHead.RequestApproachAspect();
+            }
+        }
+
+        public void RequestLeastRestrictiveAspect()
+        {
+            holdState = HoldState.ManualPass;
+            foreach (var sigHead in SignalHeads)
+            {
+                sigHead.RequestLeastRestrictiveAspect();
+                sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
+            }
         }
 
         /// <summary>

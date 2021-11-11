@@ -3549,6 +3549,7 @@ namespace Orts.MultiPlayer
         int index;
         int pick;
         string sender;
+
         //constructor to create a message from signal data
         public MSGSignalChange(SignalObject signal, int p)
         {
@@ -3569,40 +3570,28 @@ namespace Orts.MultiPlayer
         //how to handle the message?
         public override void HandleMsg() //only client will get message, thus will set states
         {
-            if (MPManager.Server != null && !MPManager.Instance().aiderList.Contains(sender)) return; //client will ignore it, also if not an aider, will ignore it
+            if (MPManager.Server != null && !MPManager.Instance().aiderList.Contains(sender))
+                return; //client will ignore it, also if not an aider, will ignore it
 
             var signal = MPManager.Simulator.Signals.SignalObjects[index];
             switch (pick)
             {
                 case 0:
-                    signal.holdState = SignalObject.HoldState.None;
+                    signal.holdState = HoldState.None;
                     break;
+
                 case 1:
-                    signal.holdState = SignalObject.HoldState.ManualLock;
+                    signal.RequestMostRestrictiveAspect();
                     break;
+
                 case 2:
-                    signal.holdState = SignalObject.HoldState.ManualApproach;
-                    foreach (var sigHead in signal.SignalHeads)
-                    {
-                        var drawstate1 = sigHead.def_draw_state(MstsSignalAspect.APPROACH_1);
-                        var drawstate2 = sigHead.def_draw_state(MstsSignalAspect.APPROACH_2);
-                        var drawstate3 = sigHead.def_draw_state(MstsSignalAspect.APPROACH_3);
-                        if (drawstate1 > 0) { sigHead.state = MstsSignalAspect.APPROACH_1; }
-                        else if (drawstate2 > 0) { sigHead.state = MstsSignalAspect.APPROACH_2; }
-                        else { sigHead.state = MstsSignalAspect.APPROACH_3; }
-                        sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
-                        // Clear the text aspect so as not to leave C# scripted signals in an inconsistent state.
-                        sigHead.TextSignalAspect = "";
-                    }
+                    signal.RequestApproachAspect();
                     break;
+
                 case 3:
-                    signal.holdState = SignalObject.HoldState.ManualPass;
-                    foreach (var sigHead in signal.SignalHeads)
-                    {
-                        sigHead.SetLeastRestrictiveAspect();
-                        sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
-                    }
+                    signal.RequestLeastRestrictiveAspect();
                     break;
+
                 case 4:
                     signal.SetManualCallOn(true);
                     break;
