@@ -1214,7 +1214,7 @@ namespace Orts.Simulation.Signalling
         ///   -6  : end of (sub)route
         /// </summary>
         public TrackCircuitSignalItem Find_Next_Object_InRoute(Train.TCSubpathRoute routePath,
-                int routeIndex, float routePosition, float maxDistance, MstsSignalFunction fn_type, Train.TrainRouted thisTrain)
+                int routeIndex, float routePosition, float maxDistance, MstsSignalFunction? fn_type, Train.TrainRouted thisTrain)
         {
             ObjectItemInfo.ObjectItemFindState locstate = ObjectItemInfo.ObjectItemFindState.None;
             // local processing state     //
@@ -1282,6 +1282,28 @@ namespace Orts.Simulation.Signalling
                                 foundObject = thisSpeedpost.SignalRef;
                                 totalLength += thisSpeedpost.SignalLocation - lengthOffset;
                             }
+                        }
+                    }
+                }
+                // all function types
+                else if (fn_type == null)
+                {
+                    List<TrackCircuitSignalItem> signalList = new List<TrackCircuitSignalItem>();
+
+                    signalList = thisSection.CircuitItems.TrackCircuitSignals[actDirection].Select(x => x.TrackCircuitItem).Aggregate((acc, list) => acc.Concat(list).ToList());
+
+                    signalList.Sort((a, b) => a.SignalLocation < b.SignalLocation ? -1 : a.SignalLocation > b.SignalLocation ? 1 : 0);
+
+                    locstate = ObjectItemInfo.ObjectItemFindState.None;
+
+                    foreach (TrackCircuitSignalItem thisSignal in signalList)
+                    {
+                        if (thisSignal.SignalLocation > lengthOffset)
+                        {
+                            locstate = ObjectItemInfo.ObjectItemFindState.Object;
+                            foundObject = thisSignal.SignalRef;
+                            totalLength += thisSignal.SignalLocation - lengthOffset;
+                            break;
                         }
                     }
                 }
@@ -1511,6 +1533,63 @@ namespace Orts.Simulation.Signalling
             else
             {
                 returnItem = new ObjectItemInfo(foundItem.SignalRef, foundItem.SignalLocation);
+            }
+
+            return returnItem;
+        }
+
+        public ObjectItemInfo GetNextSignal_InRoute(Train.TrainRouted thisTrain, Train.TCSubpathRoute routePath,
+            int routeIndex, float routePosition, float maxDistance, Train.TCPosition thisPosition, MstsSignalFunction? requiredSignalFunction = null)
+        {
+            Train.TCSubpathRoute usedRoute = routePath;
+
+            // if routeIndex is not valid, build temp route from present position to first node or signal
+            if (routeIndex < 0)
+            {
+                bool thisIsFreight = thisTrain != null ? thisTrain.Train.IsFreight : false;
+
+                List<int> tempSections = ScanRoute(thisTrain.Train, thisPosition.TCSectionIndex,
+                    thisPosition.TCOffset, thisPosition.TCDirection,
+                    true, 200f, false, true, true, false, true, false, false, true, false, thisIsFreight);
+
+
+                Train.TCSubpathRoute tempRoute = new Train.TCSubpathRoute();
+                int prevSection = -2;
+
+                foreach (int sectionIndex in tempSections)
+                {
+                    Train.TCRouteElement thisElement =
+                        new Train.TCRouteElement(TrackCircuitList[Math.Abs(sectionIndex)],
+                            sectionIndex > 0 ? 0 : 1, this, prevSection);
+                    tempRoute.Add(thisElement);
+                    prevSection = Math.Abs(sectionIndex);
+                }
+                usedRoute = tempRoute;
+                routeIndex = 0;
+            }
+
+            TrackCircuitSignalItem nextSignal = Find_Next_Object_InRoute(usedRoute, routeIndex, routePosition, maxDistance, requiredSignalFunction, thisTrain);
+
+            if (nextSignal.SignalState == ObjectItemInfo.ObjectItemFindState.Object)
+            {
+                if (thisTrain != null && nextSignal.SignalRef.enabledTrain != thisTrain)
+                {
+                    nextSignal.SignalState = ObjectItemInfo.ObjectItemFindState.PassedDanger;  // do not return OBJECT_FOUND - signal is not valid
+                }
+            }
+
+            ObjectItemInfo returnItem;
+            if (nextSignal == null)
+            {
+                returnItem = new ObjectItemInfo(ObjectItemInfo.ObjectItemFindState.None);
+            }
+            else if (nextSignal.SignalState != ObjectItemInfo.ObjectItemFindState.Object)
+            {
+                returnItem = new ObjectItemInfo(nextSignal.SignalState);
+            }
+            else
+            {
+                returnItem = new ObjectItemInfo(nextSignal.SignalRef, nextSignal.SignalLocation);
             }
 
             return returnItem;
