@@ -262,6 +262,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     temp += de.CurrentDieselOutputPowerW;
                 }
+                temp = MathHelper.Clamp(temp, 0.0f, temp);  // prevent -ve power
                 return temp;
             }
         }
@@ -1125,6 +1126,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 CurrentDieselOutputPowerW -= Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
                 CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
             }
+
+            CurrentDieselOutputPowerW = MathHelper.Clamp(CurrentDieselOutputPowerW, 0.0f, CurrentDieselOutputPowerW);  // prevent power going -ve
 
             if (State == DieselEngineState.Starting)
             {
