@@ -336,6 +336,30 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         /// <summary>
+        /// The HuD display value for ShaftRpM
+        /// </summary>
+        public float HuDShaftRPM
+        {
+            get
+            {
+                if (CurrentGear == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    var temp = ShaftRPM;
+                    if (ShaftRPM > DieselEngine.GovenorRPM + 2)
+                    {
+                        temp = DieselEngine.GovenorRPM + 2;
+                    }
+                    return temp;
+                }
+            }
+        }
+
+
+        /// <summary>
         /// ShaftRpM is the speed of the input shaft to the gearbox due to the speed of the wheel rotation
         /// </summary>
         public float ShaftRPM 
