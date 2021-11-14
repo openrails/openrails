@@ -2437,7 +2437,18 @@ namespace Orts.Viewer3D.RollingStock
     /// </summary>
     public class CabViewDigitalRenderer : CabViewControlRenderer
     {
-        readonly LabelAlignment Alignment;
+        public enum CVDigitalAlignment
+        {
+            Left,
+            Center,
+            Right,
+            // Next ones are used for 3D cabs; digitals of old 3D cab will continue to be displayed left aligned for compatibility
+            Cab3DLeft,
+            Cab3DCenter,
+            Cab3DRight
+        }
+
+        public readonly CVDigitalAlignment Alignment;
         string Format = "{0}";
         readonly string Format1 = "{0}";
         readonly string Format2 = "{0}";
@@ -2458,9 +2469,10 @@ namespace Orts.Viewer3D.RollingStock
 
             // Clock defaults to centered.
             if (Control.ControlType == CABViewControlTypes.CLOCK)
-                Alignment = LabelAlignment.Center;
-            Alignment = digital.Justification == 1 ? LabelAlignment.Center : digital.Justification == 2 ? LabelAlignment.Left : digital.Justification == 3 ? LabelAlignment.Right : Alignment;
-
+                Alignment = CVDigitalAlignment.Center;
+            Alignment = digital.Justification == 1 ? CVDigitalAlignment.Center : digital.Justification == 2 ? CVDigitalAlignment.Left : digital.Justification == 3 ? CVDigitalAlignment.Right : Alignment;
+            // Used for 3D cabs
+            Alignment = digital.Justification == 4 ? CVDigitalAlignment.Cab3DCenter : digital.Justification == 5 ? CVDigitalAlignment.Cab3DLeft : digital.Justification == 6 ? CVDigitalAlignment.Cab3DRight : Alignment;
             Format1 = "{0:0" + new String('0', digital.LeadingZeros) + (digital.Accuracy > 0 ? "." + new String('0', (int)digital.Accuracy) : "") + "}";
             Format2 = "{0:0" + new String('0', digital.LeadingZeros) + (digital.AccuracySwitch > 0 ? "." + new String('0', (int)(digital.Accuracy + 1)) : "") + "}";
         }
@@ -2540,7 +2552,8 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawRotation, DrawText, Alignment, DrawColor, Color.Black);
+            var alignment = (LabelAlignment)Alignment;
+            DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawRotation, DrawText, alignment, DrawColor, Color.Black);
         }
 
         public string GetDigits(out Color DrawColor)
@@ -3057,13 +3070,31 @@ namespace Orts.Viewer3D.RollingStock
         //update the digits with current speed or time
         public void UpdateDigit()
         {
-            NumVertices = NumIndices = 0;
 
             Material UsedMaterial = Material; //use default material
 
             //update text string
             bool Alert;
             string speed = CVFR.Get3DDigits(out Alert);
+
+            NumVertices = NumIndices = 0;
+
+            // add leading blanks to consider alignment
+            // for backwards compatibiliy with preceding OR releases all Justification values defined by MSTS are considered as left justified
+            var leadingBlankCount = 0;
+            switch (CVFR.Alignment)
+            {
+                case CabViewDigitalRenderer.CVDigitalAlignment.Cab3DRight:
+                    leadingBlankCount = MaxDigits - speed.Length;
+                    break;
+                case CabViewDigitalRenderer.CVDigitalAlignment.Cab3DCenter:
+                    leadingBlankCount = (MaxDigits - speed.Length + 1) / 2;
+                    break;
+                default:
+                    break;
+            }
+            for (int i = leadingBlankCount; i > 0; i--)
+                speed = speed.Insert(0, " ");
 
             if (Alert)//alert use alert meterial
             {
