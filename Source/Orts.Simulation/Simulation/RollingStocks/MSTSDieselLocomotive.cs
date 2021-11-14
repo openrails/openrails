@@ -906,11 +906,12 @@ namespace Orts.Simulation.RollingStocks
             var status = new StringBuilder(base.GetDebugStatus());
 
             if (DieselEngines.HasGearBox)
-                status.AppendFormat("\t{0} {1}", Simulator.Catalog.GetString("Gear"),
-                    DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString());
-            status.AppendFormat("\t{0} {1}\t\t{2}\n", 
-                Simulator.Catalog.GetString("Fuel"), 
-                FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
+                status.AppendFormat("\t{0} {1}-{2}", Simulator.Catalog.GetString("Gear"),
+                    DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString(),
+                    DieselEngines[0].GearBox.GearBoxType);
+                status.AppendFormat("\t{0} {1}\t\t{2}\n", 
+                    Simulator.Catalog.GetString("Fuel"), 
+                    FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
 
             if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {

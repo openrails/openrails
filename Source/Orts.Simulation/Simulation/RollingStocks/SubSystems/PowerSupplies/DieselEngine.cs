@@ -991,7 +991,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             DemandedRPM = GearBox.ShaftRPM;
                     }
                 }
-                else // for gear box type 2 & 3
+                else // for manual gear box types
                 {
                     // When a manual gear change is initiated, then reduce motive to zero (done in gear box class) whilst gear change is occurring, allow time delay for gears to change
                     if (GearBox.ManualGearChange && !GearBox.ManualGearBoxChangeOn) // Initially set gear change 
@@ -1030,7 +1030,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         }
                     }
 
-                    // Simulate stalled engine if RpM decreases too far, by stopping engine
+                    // Simulate stalled engine if RpM decreases too far, by stopping engine, only applies to Type D clutch
                     if (RealRPM < 0.9f * IdleRPM && State == DieselEngineState.Running)
                     {
                         Trace.TraceInformation("Diesel Engine has stalled");
@@ -1081,7 +1081,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
 
-            if (HasGearBox && GearBox.GearBoxOperation == GearBoxOperation.Manual && GearBox.GearBoxType == TypesGearBox.B)
+            // links engine rpm and shaft rpm togtehr when clutch is fully engaged
+            if (HasGearBox && GearBox.GearBoxOperation == GearBoxOperation.Manual)
             {
 
                 if (GearBox != null)
