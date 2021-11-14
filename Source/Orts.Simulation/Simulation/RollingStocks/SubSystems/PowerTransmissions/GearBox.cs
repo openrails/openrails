@@ -316,7 +316,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     }
 
                     // Set clutch disengaged (slip mode) if shaft rpm drops below idle speed (on type A, B and C clutches), Type D will not slip unless put into neutral
-                    if (ShaftRPM < DieselEngine.IdleRPM && GearBoxType != TypesGearBox.D)
+                    if (ShaftRPM <= DieselEngine.IdleRPM && GearBoxType != TypesGearBox.D)
                         clutchOn = false;
 
                     return clutchOn;
