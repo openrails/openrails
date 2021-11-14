@@ -20,6 +20,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         // GearboxType ( A ) - power is continuous during gear changes (and throttle does not need to be adjusted) - this is the MSTS legacy operation so possibly needs to be the default.
         // GearboxType ( B ) - power is interrupted during gear changes - but the throttle does not need to be adjusted when changing gear
         // GearboxType ( C ) - power is interrupted and if GearboxOperation is Manual throttle must be closed when changing gear
+        // GearboxType ( D ) - power is interrupted and if GearboxOperation is Manual throttle must be closed when changing gear, clutch will remain engaged, and can stall engine
 
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxEngineBraking GearBoxEngineBraking = GearBoxEngineBraking.None;
@@ -300,20 +301,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         clutchOn = false;
                     return clutchOn;
                 }
-                else
+                else  // Manual clutch operation
                 {
                     if (DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchOn)
                     {
                         return clutchOn;
                     }
 
+                    // Set clutch engaged when shaftrpm and engine rpm are equal
                     if (DieselEngine.Locomotive.ThrottlePercent > 0)
                     {
                         if (ShaftRPM >= DieselEngine.RealRPM)
                             clutchOn = true;
                     }
-                    if (ShaftRPM < DieselEngine.StartingRPM)
+
+                    // Set clutch disengaged (slip mode) if shaft rpm drops below idle speed (on type A, B and C clutches), Type D will not slip unless put into neutral
+                    if (ShaftRPM < DieselEngine.IdleRPM && GearBoxType != TypesGearBox.D)
                         clutchOn = false;
+
                     return clutchOn;
                 }
             }
@@ -751,7 +756,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     {
         A,
         B,
-        C
+        C,
+        D
     }
 
     public enum GearBoxOperation
