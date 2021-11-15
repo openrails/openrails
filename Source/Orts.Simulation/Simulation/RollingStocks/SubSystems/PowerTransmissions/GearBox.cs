@@ -547,6 +547,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             gearedDown = inf.ReadBoolean();
             clutchOn = inf.ReadBoolean();
             clutch = inf.ReadSingle();
+            ManualGearDown = inf.ReadBoolean();
+            ManualGearUp = inf.ReadBoolean();
+            ManualGearChange = inf.ReadBoolean();
+            ManualGearTimerS = inf.ReadSingle();
         }
 
         public void Save(BinaryWriter outf)
@@ -557,6 +561,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             outf.Write(gearedDown);
             outf.Write(clutchOn);
             outf.Write(clutch);
+            outf.Write(ManualGearDown);
+            outf.Write(ManualGearUp);
+            outf.Write(ManualGearChange);
+            outf.Write(ManualGearTimerS);
         }
 
         public void Initialize()
@@ -680,7 +688,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 switch (GearBoxOperation)
                 {
                     case GearBoxOperation.Manual:
-                        if (DieselEngine.Locomotive.ThrottlePercent == 0) // Type 2 and 3 gear boxes
+                        if (DieselEngine.Locomotive.ThrottlePercent == 0) // Manual gearboxes
                         {
                             clutchOn = false;
                             ClutchPercent = 0f;
