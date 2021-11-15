@@ -414,13 +414,12 @@ namespace Orts.Simulation.RollingStocks
 
         public override void Initialize()
         {
-            DieselEngines.Initialize();
+             DieselEngines.Initialize();
 
             if (DieselEngines[0].GearBox != null)
             {
                 GearBoxController = new MSTSNotchController(DieselEngines[0].GearBox.NumOfGears + 1);
             }
-
             base.Initialize();
 
             // Initialise water level in steam heat boiler
@@ -459,7 +458,7 @@ namespace Orts.Simulation.RollingStocks
 
                     Trace.TraceInformation("Apparent (Design) Adhesion for Gear 1: {0:N2} @ {1}, Drive Wheel Weight - {2}", designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(DieselEngines[0].GearBox.Gears[0].MaxSpeedMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
 
-                    Trace.TraceInformation("===================================================================================================================\n\n");
+                    Trace.TraceInformation("===================================================================================================================\n\n"); 
                 }
             }
         }
