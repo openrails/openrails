@@ -417,6 +417,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Demand"));
                 foreach (var eng in DEList)
                     result.AppendFormat("\t{0:F0}", eng.DemandedRPM);
+
+                result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Clutch"));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0:F0}", eng.GearBox.IsClutchOn);
+
             }
 
             return result.ToString();
@@ -636,7 +641,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// The RPM controller tries to reach this value
         /// </summary>
         public float DemandedRPM;           
-        float demandedThrottlePercent;
+        public float demandedThrottlePercent;
         /// <summary>
         /// Demanded throttle percent, usually token from parent locomotive
         /// </summary>
@@ -1024,11 +1029,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     else
                         GearBox.ClutchPercent = 100f;
 
-                    if (GearBox.CurrentGear != null)
+                    // When clutch is engaged (true) engine rpm should follow wheel shaft speed
+                    if (GearBox.IsClutchOn)
                     {
-                        if (GearBox.IsClutchOn)
-                            DemandedRPM = GearBox.ShaftRPM;
+                        DemandedRPM = GearBox.ShaftRPM;
                     }
+
                 }
                 else // for manual gear box types
                 {
@@ -1047,7 +1053,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         GearBox.ManualGearTimerS = 0; // Reset timer
                     }
 
-
                     if (RealRPM > 0)
                         GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
                     else
@@ -1055,14 +1060,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (GearBox.CurrentGear != null && !GearBox.ManualGearChange)
                     {
-                        // When clutch is engage (true) engine rpm should follow wheel shaft speed
+                        // When clutch is engaged (true) engine rpm should follow wheel shaft speed
                         if (GearBox.IsClutchOn)
+                        {
                             DemandedRPM = GearBox.ShaftRPM;
+                        }
                     }
                     else if (GearBox.ManualGearChange)
                     {
                         // During a manual gear change reduce engine shaft speed to match wheel shaft speed
                         DemandedRPM = IdleRPM;
+
+                        // once engine speed is less then shaft speed reset gear change
                         if (RealRPM <= GearBox.ShaftRPM)
                         {
                             GearBox.ManualGearChange = false;
@@ -1073,7 +1082,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (RealRPM < 0.9f * IdleRPM && State == DieselEngineState.Running)
                     {
                         Trace.TraceInformation("Diesel Engine has stalled");
-                        HandleEvent(PowerSupplyEvent.StopEngine);
+                        HandleEvent(PowerSupplyEvent.StallEngine);
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Diesel Engine has stalled."));
                     }
                 }
@@ -1308,6 +1317,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         State = DieselEngineState.Starting;
                     }
                     break;
+
+                case PowerSupplyEvent.StallEngine:
+                    if (State == DieselEngineState.Running)
+                    {
+                        DemandedRPM = 0;
+                        State = DieselEngineState.Stopped;
+                    }
+                    break;
+
             }
         }
 
