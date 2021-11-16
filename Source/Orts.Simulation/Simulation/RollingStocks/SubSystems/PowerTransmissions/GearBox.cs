@@ -180,7 +180,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool ManualGearBoxChangeOn = false;
         public bool ManualGearUp = false;
         public bool ManualGearDown = false;
-        public bool gearRestore = false;
         public int restoreCurrentGearIndex;
         
         public int currentGearIndex = -1;
