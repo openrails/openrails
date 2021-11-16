@@ -321,15 +321,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     }
 
                     // Set clutch engaged when shaftrpm and engine rpm are equal
-                    if (DieselEngine.Locomotive.ThrottlePercent > 0)
+                    if (DieselEngine.Locomotive.ThrottlePercent > 0 && CurrentGear != null)
                     {
                         if (ShaftRPM >= DieselEngine.RealRPM)
                             clutchOn = true;
                     }
-
-                    // Set clutch disengaged (slip mode) if shaft rpm drops below idle speed (on type A, B and C clutches), Type D will not slip unless put into neutral
-                    if (ShaftRPM <= DieselEngine.IdleRPM && GearBoxType != TypesGearBox.D)
+                    else if (CurrentGear == null )
+                    {
                         clutchOn = false;
+                    }
+
+                    // Set clutch disengaged (slip mode) if shaft rpm moves outside of acceptable bandwidth speed (on type A, B and C clutches), Type D will not slip unless put into neutral
+                    var clutchSlipBandwidth = 0.1f * DieselEngine.ThrottleRPMTab[DieselEngine.demandedThrottlePercent]; // Bandwidth 10%
+                    var speedVariationRpM = Math.Abs(DieselEngine.ThrottleRPMTab[DieselEngine.demandedThrottlePercent] - ShaftRPM);
+                    if (speedVariationRpM > clutchSlipBandwidth && GearBoxType != TypesGearBox.D)
+                    {
+                        clutchOn = false;
+                    }
 
                     return clutchOn;
                 }
