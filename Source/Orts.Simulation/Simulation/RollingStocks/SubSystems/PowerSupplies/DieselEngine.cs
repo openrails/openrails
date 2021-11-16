@@ -411,6 +411,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0}", FormatStrings.FormatPressure(eng.DieselOilPressurePSI, PressureUnit.PSI, Locomotive.MainPressureUnit, true));
 
+            // temporary debug purposes
+            if (HasGearBox)
+            {
+                result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Demand"));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0:F0}", eng.DemandedRPM);
+            }
+
             return result.ToString();
         }
 
@@ -512,7 +520,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         bool restoreManualGearUp;
         bool restoreManualGearChange;
         float restoreManualGearTimerS;
-        bool  gearRestore = false;
+        public bool  gearRestore = false;
 
         public enum Cooling
         {
@@ -954,6 +962,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 GearBox.Initialize();
             }
 
+            // TODO - fix restoration process for gearbox and gear controller
             // It appears that the gearbox is initialised in two different places to cater for Basic and Advanced ENG file configurations(?).
             // Hence the restore values recovered in gearbox class are being overwritten , and resume was not working
             // Hence restore values are read as part of the diesel and restored at this point
@@ -969,7 +978,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 GearBox.ManualGearUp = restoreManualGearUp;
                 GearBox.ManualGearChange = restoreManualGearChange;
                 GearBox.ManualGearTimerS = restoreManualGearTimerS;
-                gearRestore = false;
             }
         }
 
