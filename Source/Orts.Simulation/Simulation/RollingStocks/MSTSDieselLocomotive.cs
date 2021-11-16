@@ -426,7 +426,7 @@ namespace Orts.Simulation.RollingStocks
                 if (DieselEngines[0].gearRestore)
                 {
                     GearBoxController.SetValue((float)DieselEngines[0].GearBox.CurrentGearIndex);
-                    DieselEngines[0].gearRestore = false;
+                    DieselEngines[0].gearRestore = false; // Reset so that this loop doesn't get processed again
                 }
             }
 
