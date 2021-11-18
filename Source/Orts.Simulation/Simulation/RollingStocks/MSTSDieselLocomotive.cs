@@ -419,15 +419,6 @@ namespace Orts.Simulation.RollingStocks
             if (DieselEngines[0].GearBox != null)
             {
                 GearBoxController = new MSTSNotchController(DieselEngines[0].GearBox.NumOfGears + 1);
-
-                // TODO - fix restoration process for gearbox and gear controller
-                // When restoring the gearbox, set the gear controller value to correct value
-                // Earlier restore is overwritten
-                if (DieselEngines[0].gearRestore)
-                {
-                    GearBoxController.SetValue((float)DieselEngines[0].GearBox.CurrentGearIndex);
-                    DieselEngines[0].gearRestore = false; // Reset so that this loop doesn't get processed again
-                }
             }
 
             base.Initialize();
