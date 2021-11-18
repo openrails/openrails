@@ -180,7 +180,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool ManualGearBoxChangeOn = false;
         public bool ManualGearUp = false;
         public bool ManualGearDown = false;
-        public int restoreCurrentGearIndex;
         
         public int currentGearIndex = -1;
         public int nextGearIndex = -1;
@@ -244,8 +243,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public int NextGearIndex { get { return nextGearIndex; } }
 
-        public bool gearedUp;
-        public bool gearedDown;
+        private bool gearedUp;
+        private bool gearedDown;
         public bool GearedUp { get { return gearedUp; } }
         public bool GearedDown { get { return gearedDown; } }
 
@@ -430,7 +429,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
         }
 
-        public float clutch;
+        float clutch;
         public float ClutchPercent { set { clutch = (value > 100.0f ? 100f : (value < -100f ? -100f : value)) / 100f; }
             get { return clutch * 100f; } }
 
@@ -558,12 +557,30 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public void Restore(BinaryReader inf)
         {
-            // Restored in diesel engines
+            currentGearIndex = inf.ReadInt32();
+            nextGearIndex = inf.ReadInt32();
+            gearedUp = inf.ReadBoolean();
+            gearedDown = inf.ReadBoolean();
+            clutchOn = inf.ReadBoolean();
+            clutch = inf.ReadSingle();
+            ManualGearDown = inf.ReadBoolean();
+            ManualGearUp = inf.ReadBoolean();
+            ManualGearChange = inf.ReadBoolean();
+            ManualGearTimerS = inf.ReadSingle();
         }
 
         public void Save(BinaryWriter outf)
         {
-            // Saved in diesel engine
+            outf.Write(currentGearIndex);
+            outf.Write(nextGearIndex);
+            outf.Write(gearedUp);
+            outf.Write(gearedDown);
+            outf.Write(clutchOn);
+            outf.Write(clutch);
+            outf.Write(ManualGearDown);
+            outf.Write(ManualGearUp);
+            outf.Write(ManualGearChange);
+            outf.Write(ManualGearTimerS);
         }
 
         public void Initialize()

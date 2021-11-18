@@ -515,18 +515,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public class DieselEngine : ISubSystem<DieselEngine>
     {
 
-        int restoreCurrentGearIndex;
-        int restoreNextGearIndex;
-        bool restoreGearedUp;
-        bool restoreGearedDown;
-        bool restoreClutchOn;
-        float restoreClutch;
-        bool restoreManualGearDown;
-        bool restoreManualGearUp;
-        bool restoreManualGearChange;
-        float restoreManualGearTimerS;
-        public bool  gearRestore = false;
-
         public enum Cooling
         {
             NoCooling = 0,
@@ -966,24 +954,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 GearBox = new GearBox(this);
                 GearBox.Initialize();
             }
-
-            // TODO - fix restoration process for gearbox and gear controller
-            // It appears that the gearbox is initialised in two different places to cater for Basic and Advanced ENG file configurations(?).
-            // Hence the restore values recovered in gearbox class are being overwritten , and resume was not working
-            // Hence restore values are read as part of the diesel and restored at this point
-            if (GearBox != null && gearRestore)
-            {
-                GearBox.currentGearIndex = restoreCurrentGearIndex;
-                GearBox.nextGearIndex = restoreNextGearIndex;
-                GearBox.gearedUp = restoreGearedUp;
-                GearBox.gearedDown = restoreGearedDown;
-                GearBox.clutchOn = restoreClutchOn;
-                GearBox.clutch = restoreClutch;
-                GearBox.ManualGearDown = restoreManualGearDown;
-                GearBox.ManualGearUp = restoreManualGearUp;
-                GearBox.ManualGearChange = restoreManualGearChange;
-                GearBox.ManualGearTimerS = restoreManualGearTimerS;
-            }
         }
 
         public void InitializeMoving()
@@ -1343,19 +1313,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 GearBox = new GearBox(this);
                 GearBox.Restore(inf);
             }
-
-            // restore current values in the gear box
-            restoreCurrentGearIndex = inf.ReadInt32();
-            restoreNextGearIndex = inf.ReadInt32();
-            restoreGearedUp = inf.ReadBoolean();
-            restoreGearedDown = inf.ReadBoolean();
-            restoreClutchOn = inf.ReadBoolean();
-            restoreClutch = inf.ReadSingle();
-            restoreManualGearDown = inf.ReadBoolean();
-            restoreManualGearUp = inf.ReadBoolean();
-            restoreManualGearChange = inf.ReadBoolean();
-            restoreManualGearTimerS = inf.ReadSingle();
-            gearRestore = true;
         }
 
         public void Save(BinaryWriter outf)
@@ -1368,17 +1325,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 outf.Write(true);
                 GearBox.Save(outf);
-
-                outf.Write(GearBox.currentGearIndex);
-                outf.Write(GearBox.nextGearIndex);
-                outf.Write(GearBox.gearedUp);
-                outf.Write(GearBox.gearedDown);
-                outf.Write(GearBox.clutchOn);
-                outf.Write(GearBox.clutch);
-                outf.Write(GearBox.ManualGearDown);
-                outf.Write(GearBox.ManualGearUp);
-                outf.Write(GearBox.ManualGearChange);
-                outf.Write(GearBox.ManualGearTimerS);
             }
             else
             {
