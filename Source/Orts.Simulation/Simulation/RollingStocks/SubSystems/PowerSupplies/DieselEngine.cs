@@ -1006,7 +1006,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
 
                 }
-                else // for manual gear box types
+                else if (GearBox.GearBoxType == TypesGearBox.B) // for manual gear box types
                 {
                     // When a manual gear change is initiated, then reduce motive to zero (done in gear box class) whilst gear change is occurring, allow time delay for gears to change
                     if (GearBox.ManualGearChange && !GearBox.ManualGearBoxChangeOn) // Initially set gear change 
@@ -1028,7 +1028,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     else
                         GearBox.ClutchPercent = 100f;
 
-                    if (GearBox.CurrentGear != null && !GearBox.ManualGearChange)
+                    if (GearBox.CurrentGear != null && !GearBox.ManualGearBoxChangeOn)
                     {
                         // When clutch is engaged (true) engine rpm should follow wheel shaft speed
                         if (GearBox.IsClutchOn)
@@ -1036,9 +1036,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             DemandedRPM = GearBox.ShaftRPM;
                         }
                     }
-                    else if (GearBox.ManualGearChange)
+                    else if (GearBox.ManualGearBoxChangeOn && GearBox.GearBoxType == TypesGearBox.B)
                     {
-                        // During a manual gear change reduce engine shaft speed to match wheel shaft speed
+                        // During a manual gear change brake engine shaft speed to match wheel shaft speed
                         DemandedRPM = IdleRPM;
 
                         // once engine speed is less then shaft speed reset gear change
