@@ -126,6 +126,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("Gear")] = Viewer.Catalog.GetString("GEAR"),
             [Viewer.Catalog.GetString("Gradient")] = Viewer.Catalog.GetString("GRAD"),
             [Viewer.Catalog.GetString("Grate limit")] = Viewer.Catalog.GetString("GRAT"),
+            [Viewer.Catalog.GetString("Loco Groups")] = Viewer.Catalog.GetString("GRUP"),
             [Viewer.Catalog.GetString("Master key")] = Viewer.Catalog.GetString("MAST"),
             [Viewer.Catalog.GetString("Pantographs")] = Viewer.Catalog.GetString("PANT"),
             [Viewer.Catalog.GetString("Power")] = Viewer.Catalog.GetString("POWR"),
@@ -585,6 +586,7 @@ namespace Orts.Viewer3D.Popups
             string locomotiveStatus = locomotive.GetStatus();
             bool combinedControlType = locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic;
             bool showMUReverser = Math.Abs(train.MUReverserPercent) != 100f;
+            var multipleUnitsConfiguration = locomotive.GetMultipleUnitsConfiguration();
             bool showRetainers = train.RetainerSetting != RetainerSetting.Exhaust;
             bool stretched = train.Cars.Count > 1 && train.NPull == train.Cars.Count - 1;
             bool bunched = !stretched && train.Cars.Count > 1 && train.NPush == train.Cars.Count - 1;
@@ -708,7 +710,8 @@ namespace Orts.Viewer3D.Popups
                 AddLabel(new ListLabel
                 {
                     FirstCol = Viewer.Catalog.GetString(locomotive is MSTSSteamLocomotive ? "Regulator" : "Throttle"),
-                    LastCol = $"{Round(locomotive.ThrottlePercent)}%",
+                    LastCol = $"{Round(locomotive.ThrottlePercent)}%" +
+                    (train.DPMode == 1 ? $"({Round(train.DPThrottlePercent)}%)" : ""),
                     KeyPressed = throttleKey,
                     SymbolCol = ""//throttleKey,
                 });
@@ -920,7 +923,8 @@ namespace Orts.Viewer3D.Popups
                     AddLabel(new ListLabel
                     {
                         FirstCol = Viewer.Catalog.GetString("Dynamic brake"),
-                        LastCol = locomotive.DynamicBrake ? dynamicBrakeStatus : Viewer.Catalog.GetString("Setup") + ColorCode[Color.Cyan],
+                        LastCol = locomotive.DynamicBrake ? dynamicBrakeStatus : Viewer.Catalog.GetString("Setup") + ColorCode[Color.Cyan] +
+                         (train.DPMode == -1 ? string.Format("({0:F0}%)", train.DPDynamicBrakePercent) : string.Empty),
                     });
                 }
                 else
@@ -928,7 +932,7 @@ namespace Orts.Viewer3D.Popups
                     AddLabel(new ListLabel
                     {
                         FirstCol = Viewer.Catalog.GetString("Dynamic brake"),
-                        LastCol = Viewer.Catalog.GetString("Off"),
+                        LastCol = Viewer.Catalog.GetString("Off") + (train.DPMode == -1 ? string.Format("({0:F0}%)", train.DPDynamicBrakePercent) : string.Empty),
                     });
                 }
             }
@@ -1038,6 +1042,18 @@ namespace Orts.Viewer3D.Popups
             }
 
             AddSeparator();
+
+            // Distributed Power
+
+            if (multipleUnitsConfiguration != null)
+            {
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString("Loco Groups"),
+                    LastCol = $"{multipleUnitsConfiguration}"
+                });
+                AddSeparator();
+            }
 
             // FPS
             if (normalTextMode)

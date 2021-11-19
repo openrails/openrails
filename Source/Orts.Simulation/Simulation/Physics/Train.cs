@@ -123,9 +123,12 @@ namespace Orts.Simulation.Physics
         // These signals pass through to all cars and locomotives on the train
         public Direction MUDirection = Direction.N;      // set by player locomotive to control MU'd locomotives
         public float MUThrottlePercent;                  // set by player locomotive to control MU'd locomotives
+        public float DPThrottlePercent;                  // Distributed Power async/back group throttle control
         public int MUGearboxGearIndex;                   // set by player locomotive to control MU'd locomotives
         public float MUReverserPercent = 100;            // steam engine direction/cutoff control for MU'd locomotives
         public float MUDynamicBrakePercent = -1;         // dynamic brake control for MU'd locomotives, <0 for off
+        public float DPDynamicBrakePercent = -1;         // Distributed Power async/back group dynamic brake control
+        public int DPMode = 0;                           // Distributed Power mode: -1: Brake, 0: Idle, 1: Traction
         public float EqualReservoirPressurePSIorInHg = 90;   // Pressure in equalising reservoir - set by player locomotive - train brake pipe use this as a reference to set brake pressure levels
 
         // Class AirSinglePipe etc. use this property for pressure in PSI, 
@@ -682,8 +685,11 @@ namespace Orts.Simulation.Physics
             if (TrainType == TRAINTYPE.STATIC) ColdStart = true;
             MUDirection = (Direction)inf.ReadInt32();
             MUThrottlePercent = inf.ReadSingle();
+            DPThrottlePercent = inf.ReadSingle();
             MUGearboxGearIndex = inf.ReadInt32();
             MUDynamicBrakePercent = inf.ReadSingle();
+            DPDynamicBrakePercent = inf.ReadSingle();
+            DPMode = inf.ReadInt32();
             EqualReservoirPressurePSIorInHg = inf.ReadSingle();
             BrakeLine2PressurePSI = inf.ReadSingle();
             BrakeLine3PressurePSI = inf.ReadSingle();
@@ -929,6 +935,10 @@ namespace Orts.Simulation.Physics
                         Simulator.PlayerLocomotive = LeadLocomotive;
                 }
 
+                (LeadLocomotive as MSTSLocomotive).DPThrottleController.SetValue(DPThrottlePercent / 100f);
+                if ((LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController != null)
+                    (LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.SetValue(DPDynamicBrakePercent / 100f);
+
                 // restore logfile
                 if (DatalogTrainSpeed)
                 {
@@ -945,6 +955,7 @@ namespace Orts.Simulation.Physics
                 for (int i = 0; i < count; ++i)
                     Cars.Add(RollingStock.Restore(simulator, inf, this));
             }
+            SetDPUnitIDs();
         }
 
         static Traffic_Service_Definition RestoreTrafficSDefinition(BinaryReader inf)
@@ -1019,8 +1030,11 @@ namespace Orts.Simulation.Physics
             outf.Write((int)TrainType);
             outf.Write((int)MUDirection);
             outf.Write(MUThrottlePercent);
+            outf.Write(DPThrottlePercent);
             outf.Write(MUGearboxGearIndex);
             outf.Write(MUDynamicBrakePercent);
+            outf.Write(DPDynamicBrakePercent);
+            outf.Write(DPMode);
             outf.Write(EqualReservoirPressurePSIorInHg);
             outf.Write(BrakeLine2PressurePSI);
             outf.Write(BrakeLine3PressurePSI);
@@ -1498,6 +1512,184 @@ namespace Orts.Simulation.Physics
                 Cars[i].Flipped = !Cars[i].Flipped;
         }
 
+        /// <summary>
+        /// Set Distributed Power locomotive groups IDs, and reset async/back group assignments
+        /// </summary>
+        public void SetDPUnitIDs()
+        {
+            var id = 0;
+            foreach (var car in Cars)
+            {
+                //Console.WriteLine("___{0} {1}", car.CarID, id);
+                if (car is MSTSLocomotive)
+                {
+                    (car as MSTSLocomotive).DPUnitID = id;
+                    if (car.RemoteControlGroup == 1)
+                        car.RemoteControlGroup = 0;
+                }
+                else
+                    id++;
+            }
+        }
+
+        /// <summary>
+        /// Distributed Power: Move one locomotive group to syncron/front remote control group
+        /// </summary>
+        public void DPMoveToFront()
+        {
+            int idToMove = -1;
+            for (var i = 0; i < Cars.Count; i++)
+            {
+                if (!(Cars[i] is MSTSLocomotive))
+                    continue;
+                if (idToMove == -1 && Cars[i].RemoteControlGroup == 0)
+                    continue;
+                if (idToMove == -1 && Cars[i].RemoteControlGroup == 1)
+                    idToMove = (Cars[i] as MSTSLocomotive).DPUnitID;
+
+                if ((Cars[i] as MSTSLocomotive).DPUnitID == idToMove && Cars[i].RemoteControlGroup != -1)
+                    Cars[i].RemoteControlGroup = 0;
+                else if (idToMove > -1 && Cars[i].RemoteControlGroup == 0)
+                    Cars[i].RemoteControlGroup = 1;
+            }
+        }
+
+        /// <summary>
+        /// Distributed Power: Move one locomotive group to asyncron/back remote control group
+        /// </summary>
+        public void DPMoveToBack()
+        {
+            int idToMove = -1;
+            int idLead = LeadLocomotive != null ? (Cars[LeadLocomotiveIndex] as MSTSLocomotive).DPUnitID : -1;
+            for (var i = Cars.Count - 1; i >= 0; i--)
+            {
+                if (!(Cars[i] is MSTSLocomotive))
+                    continue;
+                if (idToMove == -1 && Cars[i].RemoteControlGroup == 1)
+                    continue;
+                if (idToMove == -1 && Cars[i].RemoteControlGroup == 0)
+                    idToMove = (Cars[i] as MSTSLocomotive).DPUnitID;
+
+                if (idToMove == idLead)
+                    idToMove = int.MaxValue;
+
+                if ((Cars[i] as MSTSLocomotive).DPUnitID == idToMove && Cars[i].RemoteControlGroup != -1)
+                    Cars[i].RemoteControlGroup = 1;
+                else if (idToMove > -1 && Cars[i].RemoteControlGroup == 1)
+                    Cars[i].RemoteControlGroup = 0;
+            }
+        }
+
+        /// <summary>
+        /// Distributed Power: Switch async/back group to traction mode, at least notch 1.
+        /// </summary>
+        public void DPTraction()
+        {
+            DPMode = 1;
+            DPDynamicBrakePercent = -1;
+            if (DPThrottlePercent == 0)
+                DPMore();
+            DistributedPowerUpdate();
+        }
+
+        /// <summary>
+        /// Distributed Power: Switch async/back group to idle.
+        /// </summary>
+        public void DPIdle()
+        {
+            DPMode = 0;
+            if (DPDynamicBrakePercent >= 0)
+                DPDynamicBrakePercent = 0;
+            DPThrottlePercent = 0;
+            (LeadLocomotive as MSTSLocomotive).DPThrottleController.SetValue(0);
+            if ((LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController != null)
+                (LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.SetValue(0);
+        }
+
+        /// <summary>
+        /// Distributed Power: Switch async/back group to dynamic brake mode, at least notch 1.
+        /// </summary>
+        public void DPDynamicBrake()
+        {
+            DPMode = -1;
+            DPThrottlePercent = 0;
+            if (DPDynamicBrakePercent == -1)
+                DPDynamicBrakePercent = 0;
+            if (DPDynamicBrakePercent == 0)
+                DPMore();
+            DistributedPowerUpdate();
+        }
+
+        /// <summary>
+        /// Distributed Power: Minimum step size
+        /// </summary>
+        const float DPNotchStepSize = 0.05f;
+
+        /// <summary>
+        /// Distributed Power: Increase async/back group throttle or dynamic brake by one step, depending on which one is active
+        /// </summary>
+        public void DPMore()
+        {
+            if (DPMode == 1)
+                DPMore((LeadLocomotive as MSTSLocomotive).DPThrottleController, ref DPThrottlePercent);
+            else if (DPMode == -1)
+                DPMore((LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController, ref DPDynamicBrakePercent);
+        }
+
+        protected void DPMore(RollingStocks.SubSystems.Controllers.MSTSNotchController controller, ref float percent)
+        {
+            if (controller == null)
+                return;
+            if (controller.DPSmoothMax() == null)
+            {
+                controller.StartIncrease();
+                controller.StopIncrease();
+            }
+            else
+                controller.SetValue(Math.Min(1f, percent / 100f + controller.StepSize));
+            percent = Math.Min(controller.CurrentValue * 100, 100);
+        }
+
+        /// <summary>
+        /// Distributed Power: Decrease async/back group throttle or dynamic brake by one step, depending on which one is active.
+        /// But never go below notch 1. That must be explicitly asked by the DPIdle() function.
+        /// </summary>
+        public void DPLess()
+        {
+            if (DPMode == 1)
+                DPLess((LeadLocomotive as MSTSLocomotive).DPThrottleController, ref DPThrottlePercent);
+            else if (DPMode == -1)
+                DPLess((LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController, ref DPDynamicBrakePercent);
+        }
+
+        protected void DPLess(RollingStocks.SubSystems.Controllers.MSTSNotchController controller, ref float percent)
+        {
+            if (controller == null)
+                return;
+            if (controller.SmoothMin() == null)
+            {
+                controller.StartDecrease();
+                controller.StopDecrease();
+            }
+            else
+                controller.SetValue(Math.Max(0f, percent / 100f - controller.StepSize));
+            percent = controller.CurrentValue * 100;
+            if (percent <= 0)
+            {
+                percent = 0;
+                DPMore(controller, ref percent);
+            }
+        }
+
+        /// <summary>
+        /// Distributed Power: Update constraints
+        /// </summary>
+        protected void DistributedPowerUpdate()
+        {
+            if (LeadLocomotive.Direction == Direction.N
+                || LeadLocomotive.BrakeSystem.GetCylPressurePSI() > 20)
+                DPIdle();
+        }
 
 
         //================================================================================================//
@@ -1679,6 +1871,8 @@ namespace Orts.Simulation.Physics
 
             // check position of train wrt tunnels
             ProcessTunnels();
+
+            DistributedPowerUpdate();
 
             // log train details
 

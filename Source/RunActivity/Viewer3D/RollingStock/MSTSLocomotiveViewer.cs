@@ -194,6 +194,16 @@ namespace Orts.Viewer3D.RollingStock
                     new TCSSwitchCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandSwitchOn[1], 1);
                 }
             });
+
+            //Distributed power
+            UserInputCommands.Add(UserCommand.ControlDPMoveToFront, new Action[] { Noop, () => new DPMoveToFrontCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlDPMoveToBack, new Action[] { Noop, () => new DPMoveToBackCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlDPTraction, new Action[] { Noop, () => new DPTractionCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlDPIdle, new Action[] { Noop, () => new DPIdleCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlDPBrake, new Action[] { Noop, () => new DPDynamicBrakeCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlDPMore, new Action[] { Noop, () => new DPMoreCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlDPLess, new Action[] { Noop, () => new DPLessCommand(Viewer.Log) });
+            
             base.InitializeUserInputCommands();
         }
 
@@ -2237,7 +2247,7 @@ namespace Orts.Viewer3D.RollingStock
                                             ChangedValue(1) == 0) new ToggleHelpersEngineCommand(Viewer.Log);
                                 break;
                             }
-                            else if (car != Viewer.Simulator.PlayerLocomotive)
+                            else if (car != Viewer.Simulator.PlayerLocomotive && dieselLoco.RemoteControlGroup >= 0)
                             {
                                 if ((dieselLoco.DieselEngines[0].State == DieselEngineState.Running ||
                                             dieselLoco.DieselEngines[0].State == DieselEngineState.Stopped) &&

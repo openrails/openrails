@@ -497,6 +497,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             return target;
         }
 
+        public float? DPSmoothMax()
+        {
+            float? target = null;
+            if (Notches.Count > 0 && CurrentNotch < Notches.Count - 1 && Notches[CurrentNotch].Smooth)
+                target = Notches[CurrentNotch + 1].Value;
+            else if (Notches.Count == 0 || CurrentNotch == Notches.Count - 1 && Notches[CurrentNotch].Smooth)
+                target = MaximumValue;
+            return target;
+        }
+
         public virtual string GetStatus()
         {
             if (Notches.Count == 0)
@@ -581,6 +591,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             for (int i = 0; i < Notches.Count; i++)
                 Notches[i].Value /= ratio;
+        }
+
+        /// <summary>
+        /// Get the nearest discrete notch position for a normalized input value.
+        /// This function is not dependent on notch controller actual (current) value, so can be queried for computer-intervened value as well.
+        /// </summary>
+        public int GetNearestNotch(float value)
+        {
+            var notch = 0;
+            for (notch = Notches.Count - 1; notch > 0; notch--)
+            {
+                if (Notches[notch].Value <= value)
+                {
+                    if (notch < Notches.Count - 1 && Notches[notch + 1].Value - value < value - Notches[notch].Value)
+                        notch++;
+                    break;
+                }
+            }
+            return notch;
         }
 
     }

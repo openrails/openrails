@@ -2031,18 +2031,82 @@ Some of the cab monitoring gauges provide visibility of what is happening on the
 the "closest" powered car near the Control car and uses its information.
 
 
-Engines -- Multiple Units in Same Consist or AI Engines
-=======================================================
+Multiple Units of Locomotives in Same Consist
+=============================================
 
-In an OR player train one locomotive is controlled by the player, while
-the other units are controlled by default by the train's MU (multiple
-unit) signals for braking and throttle position, etc. The
-player-controlled locomotive generates the MU signals which are passed
-along to every unit in the train. For AI trains, the AI software directly
-generates the MU signals, i.e. there is no player-controlled locomotive.
+In an OR player train one locomotive is controlled by the player, while 
+the other units are controlled by default by the train's MU (multiple 
+unit) signals for braking and throttle position, etc. The 
+player-controlled locomotive generates the MU signals which are passed 
+along to every unit in the train. 
+
+Distributed Power
+-----------------
+
+Remote engines can be controlled in two modes: *synchronous* or 
+*asynchronous*. Engines in the player consist can be arranged to be part of 
+one of the above control groups. The arrangement can be changed during run, 
+which in real life is performed by using the locomotive's onboard computer 
+(e.g. Locotrol).
+
+This functionality is necessary to be used in American long-train freight 
+operations. An example use case is when a train finished climbing a 
+mountain pass. At this point the lead locomotives have to start dynamic 
+braking driving downhill, while the trailing unit still needs to keep pushing 
+the train's end uphill. The locomotive driver has the possibility to build 
+the *fence up*, i.e. move the last locomotive to the *async* control group. 
+
+While locomotives in *sync* control group always copy the traction and dynamic 
+brake settings of the lead (man-controlled) locomotive, for locomotives in 
+*async* group these can be adjusted independently. Other controls, like 
+reverser and air brake is always synchronized throughout the whole train, 
+and changing reverser setting or applying air brakes will force *async* 
+controlled locomotives to fall back to idle. 
+
+The fence between *sync* and *async* groups can be moved back and forth 
+along the train. This is useful when there are one or more middle-train 
+locomotive groups in the consist. However it is not possible to move the 
+fence to separate two directly interconnected locomotives: such locomotives 
+can be rearranged only together. The lead locomotive group, naturally, will 
+always belong to *sync* group. 
+
+When all locomotive groups had been moved back to *sync* group, then the 
+driver dismantled the *fence down*, all locomotives will work in sync with 
+the leading one. All-sync operation is also the default, when the game 
+starts. 
+
+Traction and dynamic brake settings for *sync* group can be controlled by the 
+usual keys: ``<A>`` and ``<D>``. The following additional controls are 
+available for controlling the *async* group settings:
+
+- Move To Back -- ``<Ctrl+Shift+O>``: Move one locomotive group to back (*async*) 
+  control group.
+- Move To Front -- ``<Ctrl+O>``: Move one locomotive group to front (*sync*) 
+  control group.
+- Traction -- ``<Ctrl+L>``: Switch *async* group to traction mode.
+- Idle -- ``<Ctrl+Shift+'> (key two positions at the right of L)``: Switch *async* 
+  group to dynamic braking mode.
+- More -- ``<Ctrl+U>``: Increase *async* group traction or dynamic brake, 
+  depending on its mode setting.
+- Less -- ``<Ctrl+Shift+U>``: Decrease *async* group traction or dynamic brake, 
+  depending on its mode setting.
+
+HUD shows the sync--async configuration in line *Multiple Units* on main page.
+When it reads e.g. "2--2 | 1", then it means that front and middle-train 
+double-unit locomotives are controlled in *sync* with the leading unit, 
+while the trailing pushing unit is controlled *async* independently. 
+The set actual rate of traction or dynamic brake of *async* group is shown in 
+lines *Throttle* and *Dynamic Brake*, respectively, in brackets, e.g.: 
+Throttle: 0% (50%)
+
+Engines of AI Trains
+--------------------
+
+For AI trains, the AI software directly generates the remote control
+signals, i.e. there is no player-controlled locomotive. 
 In this way, all engines use the same physics code for power and friction.
 
-This software model will ensure that non-player controlled engines will
+This software model will ensure that non-player controlled engines will 
 behave exactly the same way as player controlled ones.
 
 .. _physics-braking:

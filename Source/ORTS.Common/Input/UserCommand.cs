@@ -210,5 +210,14 @@
         [GetString("Control AI Fire On")] ControlAIFireOn,
         [GetString("Control AI Fire Off")] ControlAIFireOff,
         [GetString("Control AI Fire Reset")] ControlAIFireReset,
+
+        //Distributed power
+        [GetString("Control DP Move To Front")] ControlDPMoveToFront,
+        [GetString("Control DP Move To Back")] ControlDPMoveToBack,
+        [GetString("Control DP Traction")] ControlDPTraction,
+        [GetString("Control DP Idle")] ControlDPIdle,
+        [GetString("Control DP Brake")] ControlDPBrake,
+        [GetString("Control DP More")] ControlDPMore,
+        [GetString("Control DP Less")] ControlDPLess,
     }
 }

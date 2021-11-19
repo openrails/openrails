@@ -525,7 +525,7 @@ namespace Orts.Simulation.RollingStocks
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
-            if (this.IsLeadLocomotive() || (!AcceptMUSignals))
+            if (this.IsLeadLocomotive() || (RemoteControlGroup == -1))
             {
                 if (GearBoxController != null)
                 {
@@ -881,6 +881,105 @@ namespace Orts.Simulation.RollingStocks
 
 
             return status.ToString();
+        }
+
+        public string GetDPDebugStatus()
+        {
+            string throttle = "";
+            if (ThrottlePercent > 0)
+            {
+                if (ThrottleController.NotchCount() > 3)
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "N") + ThrottleController.GetNearestNotch(ThrottlePercent / 100f);
+                else
+                    throttle = string.Format("{0:F0}%", ThrottlePercent);
+            }
+            else if (DynamicBrakePercent > 0 && DynamicBrake)
+            {
+                if (DynamicBrakeController.NotchCount() > 3)
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "B") + DynamicBrakeController.GetNearestNotch(DynamicBrakePercent / 100f);
+                else
+                    throttle = string.Format("{0:F0}%", DynamicBrakePercent);
+            }
+            else if (DynamicBrakePercent == 0 && !DynamicBrake)
+                throttle = Simulator.Catalog.GetString("Setup");
+            else
+                throttle = Simulator.Catalog.GetParticularString("Notch", "Idle");
+            if (DynamicBrakePercent >= 0)
+                throttle += "???";
+
+            var status = new StringBuilder();
+
+            status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
+            status.AppendFormat("{0} {1}\t", GetStringAttribute.GetPrettyName(Direction), Flipped ? Simulator.Catalog.GetString("(flipped)") : "");
+            status.AppendFormat("{0}\t", IsLeadLocomotive() || RemoteControlGroup < 0 ? "———" : RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : Simulator.Catalog.GetString("Async"));
+            status.AppendFormat("{0}\t", throttle);
+            status.AppendFormat("{0}\t", FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK));
+            status.AppendFormat("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerOverloaded ? "???" : "");
+            status.Append(DieselEngines.GetStatus());
+
+            return status.ToString();
+        }
+
+        public override string GetMultipleUnitsConfiguration()
+        {
+            if (Train == null)
+                return base.GetMultipleUnitsConfiguration();
+            var numberOfLocomotives = 0;
+            var group = 0;
+            var configuration = "";
+            var dpUnitId = 0;
+            var remoteControlGroup = 0;
+            for (var i = 0; i < Train.Cars.Count; i++)
+            {
+                if (Train.Cars[i] is MSTSDieselLocomotive)
+                {
+                    if (dpUnitId != (dpUnitId = (Train.Cars[i] as MSTSLocomotive).DPUnitID))
+                    {
+                        configuration += string.Format("{0}{1}",
+                            group,
+                            remoteControlGroup != (remoteControlGroup = Train.Cars[i].RemoteControlGroup)
+                                ? " | " : "\u2013"); // en-dash
+                        group = 0;
+                    }
+                    group++;
+                    numberOfLocomotives++;
+                }
+            }
+            if (group > 0)
+                configuration += string.Format("{0}", group);
+            return numberOfLocomotives > 0 ? configuration : null;
+        }
+
+        private static string[] DebugLabels;
+        private static int MaxNumberOfEngines;
+
+        private static void SetDebugLabels(int numberOfEngines)
+        {
+            MaxNumberOfEngines = numberOfEngines;
+            var labels = new StringBuilder();
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("ID"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetParticularString("NonSteam", "Reverser"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Remote"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Throttle"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Fuel"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Tractive Effort"));
+            labels.Append(DieselEngines.SetDebugLabels(numberOfEngines));
+            DebugLabels = labels.ToString().Split('\t');
+        }
+
+        public static string GetDebugTableBase(int locomotivesInTrain, int maxNumberOfEngines)
+        {
+            if (MaxNumberOfEngines != maxNumberOfEngines)
+                SetDebugLabels(maxNumberOfEngines);
+            string table = "";
+            for (var i = 0; i < DebugLabels.Length; i++)
+            {
+                table += DebugLabels[i];
+                for (var j = 0; j < locomotivesInTrain; j++)
+                    table += "\t\t";
+                table += "\n";
+            }
+            return table;
         }
 
         /// <summary>

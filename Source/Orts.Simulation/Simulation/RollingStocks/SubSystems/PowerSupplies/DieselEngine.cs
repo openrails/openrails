@@ -377,6 +377,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             return new DieselEnum(DEList.ToArray());
         }
 
+        public static string SetDebugLabels(int numberOfEngines)
+        {
+            var labels = new StringBuilder();
+            var tabs = "\t";
+            for (var i = 1; i < numberOfEngines; i++) tabs += "\t";
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Status"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Load"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("RPM"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Flow"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Temperature"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Oil Pressure"), tabs);
+            return labels.ToString();
+        }
+
         public string GetStatus()
         {
             var result = new StringBuilder();
