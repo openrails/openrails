@@ -441,7 +441,7 @@ namespace Orts.Viewer3D.Popups
             TableAddLabelValue(table, Viewer.Catalog.GetString("Direction"), showMUReverser ? "{1:F0} {0}" : "{0}", FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Viewer.PlayerLocomotive.Direction)), Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, Viewer.PlayerLocomotive is MSTSSteamLocomotive ? Viewer.Catalog.GetString("Regulator") : Viewer.Catalog.GetString("Throttle"), "{0:F0}% {1}",
                 Viewer.PlayerLocomotive.ThrottlePercent,
-                Viewer.PlayerLocomotive.Train.DPMode == 1 ? string.Format("({0}%)", Viewer.PlayerLocomotive.Train.DPThrottlePercent) : "");
+                Viewer.PlayerLocomotive is MSTSDieselLocomotive && Viewer.PlayerLocomotive.Train.DPMode == 1 ? string.Format("({0}%)", Viewer.PlayerLocomotive.Train.DPThrottlePercent) : "");
             if ((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeFitted)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Train brake"), "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
             if (showRetainers)
@@ -637,6 +637,7 @@ namespace Orts.Viewer3D.Popups
             TextPageHeading(table, Viewer.Catalog.GetString("DISTRIBUTED POWER INFORMATION"));
 
             var locomotive = Viewer.PlayerLocomotive;
+            if (!(locomotive is MSTSDieselLocomotive)) return;
             var train = locomotive.Train;
 
             int numberOfDieselLocomotives = 0;

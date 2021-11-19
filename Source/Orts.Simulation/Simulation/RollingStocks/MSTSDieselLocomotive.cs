@@ -895,10 +895,18 @@ namespace Orts.Simulation.RollingStocks
             }
             else if (DynamicBrakePercent > 0 && DynamicBrake)
             {
-                if (DynamicBrakeController.NotchCount() > 3)
-                    throttle = Simulator.Catalog.GetParticularString("Notch", "B") + DynamicBrakeController.GetNearestNotch(DynamicBrakePercent / 100f);
+                if (RemoteControlGroup == 1)
+                {
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((Train.LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.CurrentNotch, 1,  8);
+                }
                 else
-                    throttle = string.Format("{0:F0}%", DynamicBrakePercent);
+                {
+                    // The clause here below leads to possible differences of one notch near the notch value, and therefore is commented
+ //               if (DynamicBrakeController.NotchCount() > 3)
+ //                   throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((DynamicBrakeController.GetNearestNotch(DynamicBrakePercent / 100f)), 1, 8);
+ //               else
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((Train.LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.GetNotch(DynamicBrakePercent / 100f), 1, 8);
+                }
             }
             else if (DynamicBrakePercent == 0 && !DynamicBrake)
                 throttle = Simulator.Catalog.GetString("Setup");
@@ -915,7 +923,7 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0}\t", throttle);
             status.AppendFormat("{0}\t", FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK));
             status.AppendFormat("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerOverloaded ? "???" : "");
-            status.Append(DieselEngines.GetStatus());
+            status.Append(DieselEngines.GetDPStatus());
 
             return status.ToString();
         }

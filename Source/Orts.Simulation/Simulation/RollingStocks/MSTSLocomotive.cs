@@ -557,7 +557,10 @@ public List<CabView> CabViewList = new List<CabView>();
                 {
                     HasSmoothStruc = true;
                 }
-                DPDynamicBrakeController = (MSTSNotchController)DynamicBrakeController.Clone();
+                if (DynamicBrakeController.NotchCount() > 3)
+                    DPDynamicBrakeController = (MSTSNotchController)DynamicBrakeController.Clone();
+                else
+                    DPDynamicBrakeController = BuildDPDynamicBrakeController();
             }
             else
             {
@@ -583,6 +586,69 @@ public List<CabView> CabViewList = new List<CabView>();
                 DynamicBrakeForceCurves[1] = interp;
             }
         }
+         
+        protected MSTSNotchController BuildDPDynamicBrakeController()
+        {
+            var dpDynController = new MSTSNotchController();
+            CabView cabView = null;
+            CVCMultiStateDisplay msDisplay = null;
+            if (CabView3D != null)
+                cabView = CabView3D;
+            else if (CabViewList.Count > 0)
+            {
+                if (CabViewList[0].CabViewType == CabViewType.Front)
+                    cabView = CabViewList[0];
+                else
+                    cabView = CabViewList[1];
+            }
+            if (cabView != null)
+            {
+                try
+                {
+                    msDisplay = (CVCMultiStateDisplay) cabView.CVFFile.CabViewControls.Where(
+                        control => control is CVCMultiStateDisplay &&
+                        (((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY ||
+                        ((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.CPH_DISPLAY)).First();
+                }
+                catch
+                {
+
+                }
+                if (msDisplay != null)
+                {
+                    if (msDisplay.ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY)
+                    {
+                        foreach (var switchval in msDisplay.Values)
+                            dpDynController.AddNotch((float) switchval);
+                    }
+                    else
+                    {
+                        foreach (var switchval in msDisplay.Values)
+                        {
+                            if (switchval<CombinedControlSplitPosition)
+                                continue;
+                            dpDynController.AddNotch((float)(switchval - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
+                        }
+                    }
+                }
+            }
+            if (cabView == null || msDisplay == null)
+            // Use default Dash9 arrangement if no display is found
+            {
+                var switchval = 0f;
+                while (switchval <= 1)
+                {
+                    if (switchval == 0.99f)
+                        switchval = 1;
+                    dpDynController.AddNotch(switchval);
+                    switchval += 0.11f;
+                }
+            }
+
+
+            return dpDynController;
+        }
+
 
         protected void GetPressureUnit()
         {
@@ -1074,7 +1140,15 @@ public List<CabView> CabViewList = new List<CabView>();
             BrakemanBrakeController = locoCopy.BrakemanBrakeController != null ? locoCopy.BrakemanBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
             DPThrottleController = (MSTSNotchController)ThrottleController.Clone();
-            DPDynamicBrakeController = DynamicBrakeController != null ? (MSTSNotchController)DynamicBrakeController.Clone() : null;
+            if (DynamicBrakeController != null)
+            {
+                if (DynamicBrakeController.NotchCount() > 3)
+                    DPDynamicBrakeController = (MSTSNotchController)DynamicBrakeController.Clone();
+                else
+                    DPDynamicBrakeController = BuildDPDynamicBrakeController();
+            }
+            else
+                DPDynamicBrakeController = null;
 
             LocomotivePowerSupply.Copy(locoCopy.LocomotivePowerSupply);
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
@@ -1145,6 +1219,7 @@ public List<CabView> CabViewList = new List<CabView>();
             outf.Write(CurrentTrackSandBoxCapacityM3);
             outf.Write(SaveAdhesionFilter);
             outf.Write(RemoteControlGroup);
+            outf.Write(DPUnitID);
 
             base.Save(outf);
 
@@ -1194,6 +1269,7 @@ public List<CabView> CabViewList = new List<CabView>();
             
             AdhesionFilter.Reset(SaveAdhesionFilter);
             RemoteControlGroup = inf.ReadInt32();
+            DPUnitID = inf.ReadInt32();
 
             base.Restore(inf);
 
@@ -2072,7 +2148,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 ConfirmWheelslip(elapsedClockSeconds);
                 LocalThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
                 DPThrottleController.Update(elapsedClockSeconds);
-                DPDynamicBrakeController.Update(elapsedClockSeconds);
+                if (DPDynamicBrakeController != null) DPDynamicBrakeController.Update(elapsedClockSeconds);
             }
             else
             {
@@ -3997,7 +4073,7 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             if (DynamicBrakeController == null)
                 return null;
-            var dpStatus = Train.DPMode == -1 ? string.Format("({0:F0}%)", Train.DPDynamicBrakePercent) : string.Empty;
+            var dpStatus = this is MSTSDieselLocomotive && Train.DPMode == -1 ? string.Format("({0:F0}%)", Train.DPDynamicBrakePercent) : string.Empty;
             if (DynamicBrakePercent < 0)
                 return dpStatus;
             if (TrainControlSystem.FullDynamicBrakingOrder)

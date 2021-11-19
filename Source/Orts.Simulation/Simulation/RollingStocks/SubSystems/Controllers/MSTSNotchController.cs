@@ -245,6 +245,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 IntermediateValue - CurrentValue > StepSize) ? FastBoost : boost);
         }
 
+        public void AddNotch(float value)
+        {
+            Notches.Add(new MSTSNotch(value, false, (int)ControllerState.Dummy));
+        }
+
         /// <summary>
         /// Sets the actual value of the controller, and adjusts the actual notch to match.
         /// </summary>
@@ -607,6 +612,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     if (notch < Notches.Count - 1 && Notches[notch + 1].Value - value < value - Notches[notch].Value)
                         notch++;
                     break;
+                }
+            }
+            return notch;
+        }
+
+        /// <summary>
+        /// Get the discrete notch position for a normalized input value.
+        /// This function is not dependent on notch controller actual (current) value, so can be queried for computer-intervened value as well.
+        /// </summary>
+        public int GetNotch(float value)
+        {
+            var notch = 0;
+            for (notch = Notches.Count - 1; notch > 0; notch--)
+            {
+                if (Notches[notch].Value <= value)
+                {
+                     break;
                 }
             }
             return notch;
