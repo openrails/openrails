@@ -463,10 +463,10 @@ namespace Orts.Viewer3D
                         if (Program.Simulator.CarSpawnerLists != null && ((CarSpawnerObj)worldObject).ListName != null)
                         {
                             ((CarSpawnerObj)worldObject).CarSpawnerListIdx = Program.Simulator.CarSpawnerLists.FindIndex(x => x.ListName == ((CarSpawnerObj)worldObject).ListName);
-                            if (((CarSpawnerObj)worldObject).CarSpawnerListIdx < 0 || ((CarSpawnerObj)worldObject).CarSpawnerListIdx > Program.Simulator.CarSpawnerLists.Count-1) 
+                            if (((CarSpawnerObj)worldObject).CarSpawnerListIdx < 0 || ((CarSpawnerObj)worldObject).CarSpawnerListIdx > Program.Simulator.CarSpawnerLists.Count - 1)
                                 ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
                         }
-                        else 
+                        else
                             ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
                         carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
                     }
@@ -480,10 +480,16 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(StaticObj))
                     {
-                        //          preTestShape for lookup if it is an animated clock shape with subobjects named as clock hands 
+                        // preTestShape for lookup if it is an animated clock shape with subobjects named as clock hands 
                         StaticShape preTestShape = (new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
-                        var animNodes = preTestShape.SharedShape.Animations?[0]?.anim_nodes ?? new List<anim_node>();
-                        var isAnimatedClock = animNodes.Exists(node => Regex.IsMatch(node.Name, @"^orts_[hmsc]hand_clock", RegexOptions.IgnoreCase));
+                        var isAnimatedClock = false;
+                        if (preTestShape.SharedShape.Animations != null
+                            && preTestShape.SharedShape.Animations.Count > 0) // Since animations( 0 ) is a valid entry in *.s files
+                                                                              // and is included by MSTSexporter for Blender 2.8+ Release V4.0 or older
+                        {
+                            var animNodes = preTestShape.SharedShape.Animations[0]?.anim_nodes ?? new List<anim_node>();
+                            isAnimatedClock = animNodes.Exists(node => Regex.IsMatch(node.Name, @"^orts_[hmsc]hand_clock", RegexOptions.IgnoreCase));
+                        }
                         if (isAnimatedClock)
                         {
                             sceneryObjects.Add(new AnalogClockShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
