@@ -1160,7 +1160,7 @@ namespace Orts.Simulation.Timetables
             {
                 // read route
                 bool pathValid = true;
-                AIPath newPath = LoadPath(thisRoute, out pathValid);
+                LoadPathNoClone(thisRoute, out pathValid);
                 if (!pathValid) allPathsLoaded = false;
                 if (cancellation.IsCancellationRequested)
                     return (false);
@@ -1176,7 +1176,8 @@ namespace Orts.Simulation.Timetables
         /// <param name="pathstring"></param>
         /// <param name="validPath"></param>
         /// <returns></returns>
-        public AIPath LoadPath(string pathstring, out bool validPath)
+        public AIPath LoadPath(string pathstring, out bool validPath) => new AIPath(LoadPathNoClone(pathstring, out validPath));
+        public AIPath LoadPathNoClone(string pathstring, out bool validPath)
         {
             validPath = true;
 
@@ -1191,11 +1192,7 @@ namespace Orts.Simulation.Timetables
             bool binaryloaded = false;
             AIPath outPath = null;
 
-            if (Paths.ContainsKey(formedpathFilefull))
-            {
-                outPath = new AIPath(Paths[formedpathFilefull]);
-            }
-            else
+            if (!Paths.TryGetValue(formedpathFilefull, out outPath))
             {
                 string formedpathFilefullBinary = Path.Combine(Path.GetDirectoryName(formedpathFilefull), "OpenRails");
                 formedpathFilefullBinary = Path.Combine(formedpathFilefullBinary, Path.GetFileNameWithoutExtension(formedpathFilefull));
@@ -1213,7 +1210,7 @@ namespace Orts.Simulation.Timetables
 
                             if (outPath.Nodes != null)
                             {
-                                Paths.Add(formedpathFilefull, new AIPath(outPath));
+                                Paths.Add(formedpathFilefull, outPath);
                                 binaryloaded = true;
                             }
                         }
@@ -1235,7 +1232,7 @@ namespace Orts.Simulation.Timetables
                         {
                             try
                             {
-                                Paths.Add(formedpathFilefull, new AIPath(outPath));
+                                Paths.Add(formedpathFilefull, outPath);
                             }
                             catch (Exception e)
                             {
