@@ -1188,19 +1188,23 @@ namespace Orts.Simulation.Timetables
             if (String.IsNullOrEmpty(pathExtension))
                 formedpathFilefull = Path.ChangeExtension(formedpathFilefull, "pat");
 
-            // try to load binary path if required
-            bool binaryloaded = false;
-            AIPath outPath = null;
-
-            if (!Paths.TryGetValue(formedpathFilefull, out outPath))
+            if (!Paths.TryGetValue(formedpathFilefull, out var outPath))
             {
+                // try to load binary path if required
+                bool binaryloaded = false;
                 string formedpathFilefullBinary = Path.Combine(Path.GetDirectoryName(formedpathFilefull), "OpenRails");
                 formedpathFilefullBinary = Path.Combine(formedpathFilefullBinary, Path.GetFileNameWithoutExtension(formedpathFilefull));
                 formedpathFilefullBinary = Path.ChangeExtension(formedpathFilefullBinary, "or-binpat");
 
-                if (BinaryPaths)
+                if (BinaryPaths && File.Exists(formedpathFilefullBinary))
                 {
-                    if (File.Exists(formedpathFilefullBinary))
+                    var binaryLastWriteTime = File.GetLastWriteTime(formedpathFilefullBinary);
+                    if (binaryLastWriteTime < simulator.TDB.LastWriteTime ||
+                        File.Exists(formedpathFilefull) && binaryLastWriteTime < File.GetLastWriteTime(formedpathFilefull))
+                    {
+                        File.Delete(formedpathFilefullBinary);
+                    }
+                    else
                     {
                         try
                         {
