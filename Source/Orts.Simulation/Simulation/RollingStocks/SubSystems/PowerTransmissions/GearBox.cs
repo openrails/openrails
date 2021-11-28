@@ -15,6 +15,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     {
         public int GearBoxNumberOfGears = 1;
         public int GearBoxDirectDriveGear = 1;
+        public bool ScoopCouplingFitted = false;
+        public bool FreeWheelFitted = false;
 
         public TypesGearBox  GearBoxType = TypesGearBox.A;
         // GearboxType ( A ) - power is continuous during gear changes (and throttle does not need to be adjusted) - this is the MSTS legacy operation so possibly needs to be the default.
@@ -49,6 +51,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 case "engine(gearboxnumberofgears": GearBoxNumberOfGears = stf.ReadIntBlock(1); initLevel++; break;
                 case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(1); break; // initLevel++; break;
+                case "engine(ortsgearboxscoopcoupling":
+                    var scoopCoupling = stf.ReadIntBlock(null);
+                    if (scoopCoupling == 1)
+                    {
+                        ScoopCouplingFitted = true;
+                    }
+                    break;
+                case "engine(ortsgearboxfreewheel":
+                    var freeWheel = stf.ReadIntBlock(null);
+                    if (freeWheel == 1)
+                    {
+                        FreeWheelFitted = true;
+                    }
+                    break;
                 case "engine(ortsgearboxtype":
                     stf.MustMatch("(");
                     var gearType = stf.ReadString();
@@ -164,6 +180,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             GearBoxCoastingForceN = copy.GearBoxCoastingForceN;
             GearBoxUpGearProportion = copy.GearBoxUpGearProportion;
             GearBoxDownGearProportion = copy.GearBoxDownGearProportion;
+            FreeWheelFitted = copy.FreeWheelFitted;
+            ScoopCouplingFitted = copy.ScoopCouplingFitted;
             initLevel = copy.initLevel;
         }
     }
@@ -174,6 +192,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         protected readonly MSTSDieselLocomotive Locomotive;
         protected MSTSGearBoxParams GearBoxParams => Locomotive.DieselEngines.MSTSGearBoxParams;
         public List<Gear> Gears = new List<Gear>();
+
+        public bool GearBoxScoopCouplingFitted;
+        public bool GearBoxFreeWheelFitted;
 
         public float ManualGearTimerResetS = 2;  // Allow gear change to take 2 seconds
         public float ManualGearTimerS; // Time for gears to change
@@ -316,6 +337,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 {
                     if (DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchOn)
                     {
+                        clutchOn = false;
+                        return clutchOn;
+                    }
+
+                    if (ManualGearBoxChangeOn)
+                    {
+                        clutchOn = false;
                         return clutchOn;
                     }
 
@@ -324,20 +352,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     {
                         if (ShaftRPM >= DieselEngine.RealRPM)
                             clutchOn = true;
+                        return clutchOn;
                     }
-                    else if (CurrentGear == null )
+                    else if (GearBoxScoopCouplingFitted && CurrentGear == null )
                     {
                         clutchOn = false;
+                        return clutchOn;
                     }
 
                     // Set clutch disengaged (slip mode) if shaft rpm moves outside of acceptable bandwidth speed (on type A, B and C clutches), Type D will not slip unless put into neutral
                     var clutchSlipBandwidth = 0.1f * DieselEngine.ThrottleRPMTab[DieselEngine.demandedThrottlePercent]; // Bandwidth 10%
                     var speedVariationRpM = Math.Abs(DieselEngine.ThrottleRPMTab[DieselEngine.demandedThrottlePercent] - ShaftRPM);
-                    if (speedVariationRpM > clutchSlipBandwidth && GearBoxType != TypesGearBox.D)
+                    if (GearBoxFreeWheelFitted && speedVariationRpM > clutchSlipBandwidth && ( GearBoxType != TypesGearBox.D || GearBoxType != TypesGearBox.A ))
                     {
                         clutchOn = false;
+                        return clutchOn;
                     }
-
                     return clutchOn;
                 }
             }
@@ -510,7 +540,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                 if (tractiveForceN > (DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS))
                                 {
                                     tractiveForceN = DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS;
-                               //     Trace.TraceInformation("Power Reduction - RailPower {0} Speed {1} tractiveForce {2} Calculated {3} rpM {4}", DieselEngine.RailPowerTab[DieselEngine.RealRPM], CurrentSpeedMpS, tractiveForceN, DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS, DieselEngine.RealRPM);
                                 }
 
                             }
@@ -591,6 +620,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     Trace.TraceWarning("Some of the gearbox parameters are missing! Default physics will be used.");
 
                 GearBoxType = GearBoxParams.GearBoxType;
+                GearBoxFreeWheelFitted = GearBoxParams.FreeWheelFitted;
+                GearBoxScoopCouplingFitted = GearBoxParams.ScoopCouplingFitted;
 
                 for (int i = 0; i < GearBoxParams.GearBoxNumberOfGears; i++)
                 {
@@ -704,7 +735,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 switch (GearBoxOperation)
                 {
                     case GearBoxOperation.Manual:
-                        if (DieselEngine.Locomotive.ThrottlePercent == 0) // Manual gearboxes
+                        if (DieselEngine.Locomotive.ThrottlePercent == 0 && Locomotive.AbsSpeedMpS == 0) // Manual gearboxes
                         {
                             clutchOn = false;
                             ClutchPercent = 0f;

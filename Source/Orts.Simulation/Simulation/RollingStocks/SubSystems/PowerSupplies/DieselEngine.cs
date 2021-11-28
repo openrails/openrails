@@ -136,6 +136,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case "engine(gearboxcoastingforce":
                 case "engine(gearboxupgearproportion":
                 case "engine(gearboxdowngearproportion":
+                case "engine(ortsgearboxfreewheel":
+                case "engine(ortsgearboxscoopcoupling":
                     MSTSGearBoxParams.Parse(lowercasetoken, stf);
                     break;
             }
@@ -1006,7 +1008,40 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
 
                 }
-                else if (GearBox.GearBoxType == TypesGearBox.B) // for manual gear box types
+                else if (GearBox.GearBoxType == TypesGearBox.A)
+                {
+                    if (GearBox.ManualGearChange && !GearBox.ManualGearBoxChangeOn) // Initially set gear change 
+                    {
+                        GearBox.ManualGearBoxChangeOn = true;
+                    }
+
+                    if (RealRPM > 0)
+                        GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
+                    else
+                        GearBox.ClutchPercent = 100f;
+
+                    if (GearBox.CurrentGear != null && !GearBox.ManualGearBoxChangeOn)
+                    {
+                        // When clutch is engaged (true) engine rpm should follow wheel shaft speed
+                        if (GearBox.IsClutchOn)
+                        {
+                            DemandedRPM = GearBox.ShaftRPM;
+                        }
+                    }
+                    else if (GearBox.ManualGearBoxChangeOn)
+                    {
+                        // During a manual gear change brake engine shaft speed to match wheel shaft speed
+                        DemandedRPM = IdleRPM;
+
+                        // once engine speed is less then shaft speed reset gear change
+                        if (RealRPM <= GearBox.ShaftRPM && GearBox.ShaftRPM < MaxRPM)
+                        {
+                            GearBox.ManualGearChange = false;
+                            GearBox.ManualGearBoxChangeOn = false;
+                        }
+                    }
+                }
+                else if (GearBox.GearBoxType == TypesGearBox.B)
                 {
                     // When a manual gear change is initiated, then reduce motive to zero (done in gear box class) whilst gear change is occurring, allow time delay for gears to change
                     if (GearBox.ManualGearChange && !GearBox.ManualGearBoxChangeOn) // Initially set gear change 
@@ -1036,7 +1071,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             DemandedRPM = GearBox.ShaftRPM;
                         }
                     }
-                    else if (GearBox.ManualGearBoxChangeOn && GearBox.GearBoxType == TypesGearBox.B)
+                    else if (GearBox.ManualGearBoxChangeOn)
                     {
                         // During a manual gear change brake engine shaft speed to match wheel shaft speed
                         DemandedRPM = IdleRPM;
@@ -1048,15 +1083,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         }
                     }
 
-                    // Simulate stalled engine if RpM decreases too far, by stopping engine, only applies to Type D clutch
-                    if (RealRPM < 0.9f * IdleRPM && State == DieselEngineState.Running)
-                    {
-                        Trace.TraceInformation("Diesel Engine has stalled");
-                        HandleEvent(PowerSupplyEvent.StallEngine);
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Diesel Engine has stalled."));
-                    }
                 }
 
+                // Simulate stalled engine if RpM decreases too far, by stopping engine, only applies to Type D clutch
+                if (RealRPM < 0.9f * IdleRPM && State == DieselEngineState.Running)
+                {
+                    Trace.TraceInformation("Diesel Engine has stalled");
+                    HandleEvent(PowerSupplyEvent.StallEngine);
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Diesel Engine has stalled."));
+                }
             }
 
             if (RealRPM == IdleRPM)
