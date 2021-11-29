@@ -329,7 +329,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 return temp;
             }
         }
-
+        
+        /// <summary>
+        /// Returns the tractive effort output of the gear box.
+        /// </summary>
         public float TractiveForceN
         {
             get
@@ -338,7 +341,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 foreach (DieselEngine de in DEList)
                 {
                     if(de.GearBox != null)
-                        temp += (de.DemandedThrottlePercent * 0.01f * de.GearBox.TractiveForceN);
+                    {
+                        // For friction clutches, and ones without scoop coupling as soon as locomotive is put into gear some torque is transmitted to wheels
+                        if (de.DemandedThrottlePercent == 0 && !Locomotive.DieselEngines[0].GearBox.GearBoxScoopCouplingFitted)
+                        {
+                            temp += (de.GearBox.TractiveForceN);
+                        }
+                        else
+                        {
+                            temp += (de.DemandedThrottlePercent * 0.01f * de.GearBox.TractiveForceN);
+                        }
+                    }                  
                 }
                 return temp;
             }
@@ -1724,7 +1737,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 int count = 11;
                 float[] rpm = new float[count + 1];
                 float[] power = new float[] { 0.02034f, 0.09302f, 0.36628f, 0.60756f, 0.69767f, 0.81395f, 0.93023f, 0.9686f, 0.99418f, 0.99418f, 1f, 0.5f };
-                float[] torque = new float[] { 0.05f, 0.2f, 0.7f, 0.95f, 1f, 1f, 0.98f, 0.95f, 0.9f, 0.86f, 0.81f, 0.3f };
+                float[] torque = new float[] { 0.2f, 0.4f, 0.7f, 0.95f, 1f, 1f, 0.98f, 0.95f, 0.9f, 0.86f, 0.81f, 0.3f };
 
                 for (int i = 0; i < count; i++)
                 {
