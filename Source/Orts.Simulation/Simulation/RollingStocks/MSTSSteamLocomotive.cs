@@ -4615,10 +4615,10 @@ namespace Orts.Simulation.RollingStocks
             // Set "current" motive force based upon the throttle, cylinders, steam pressure, etc	
             MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
 
-            // On starting allow maximum motive force to be used, unless gear is in neutral (normally only geared locomotive will be zero).
+            // On starting allow maximum motive force to be used, unless gear is in neutral (normally only geared locomotive will be zero). Decrease force if steam pressure is not at maximum
             if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f && MotiveForceGearRatio != 0)
             {
-                MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * MaxForceN;
+                MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * MaxForceN * (BoilerPressurePSI / MaxBoilerPressurePSI);
             }
 
             if (absSpeedMpS == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
