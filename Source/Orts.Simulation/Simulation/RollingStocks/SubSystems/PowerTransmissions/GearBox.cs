@@ -550,19 +550,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                 tractiveForceN = 0;
                             }
 
-                            return tractiveForceN;
-
+                            // If throttle closed and in gear then coasting, the gear box and engine will apply a small force to retard the movement of the locomotive 
+                            if (CurrentGear != null && CurrentSpeedMpS > 0.01 && DieselEngine.demandedThrottlePercent == 0)
+                                tractiveForceN = - CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
+                            else if (CurrentGear != null && CurrentSpeedMpS < 0.01 && DieselEngine.demandedThrottlePercent == 0)
+                                tractiveForceN = CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
+                            
+                                return tractiveForceN;
                         }
                         else
                         {
-                            if (CurrentSpeedMpS > 0)
-                                return -CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
-                            else if (CurrentSpeedMpS < 0)
-                                return CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
-                            else
-                                return 0;
-
-                           
+                                return 0;                           
                         }
                     }
                     else
