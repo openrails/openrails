@@ -925,7 +925,7 @@ namespace Orts.MultiPlayer
 			try
 			{
 				string fileName = Simulator.RoutePath + @"\" + Simulator.TRK.Tr_RouteFile.FileName + ".tdb";
-				FileStream file = new FileStream(fileName, FileMode.Open);
+				var file = Vfs.OpenRead(fileName);
 				MD5 md5 = new MD5CryptoServiceProvider();
 				byte[] retVal = md5.ComputeHash(file);
 				file.Close();

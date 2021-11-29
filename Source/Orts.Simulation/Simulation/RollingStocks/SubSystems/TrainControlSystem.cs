@@ -253,7 +253,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     Path.Combine(Simulator.BasePath, "SOUND"),
                 };
                     var soundPath = ORTSPaths.GetFileFromFolders(soundPathArray, SoundFileName);
-                    if (File.Exists(soundPath))
+                    if (Vfs.FileExists(soundPath))
                         Sounds.Add(Script, soundPath);
                 }
 

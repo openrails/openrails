@@ -20,7 +20,7 @@ using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using ORTS.Common;
 
 namespace ORTS.Menu
 {
@@ -43,7 +43,7 @@ namespace ORTS.Menu
 
         protected TimetableInfo(string filePath)
         {
-            if (File.Exists(filePath))
+            if (Vfs.FileExists(filePath))
             {
                 try
                 {
@@ -64,7 +64,7 @@ namespace ORTS.Menu
 
         protected TimetableInfo(String filePath, String directory)
         {
-            if (File.Exists(filePath))
+            if (Vfs.FileExists(filePath))
             {
                 try
                 {
@@ -90,7 +90,7 @@ namespace ORTS.Menu
         }
 
         // get timetable information
-        public static List<TimetableInfo> GetTimetableInfo(Folder folder, Route route)
+        public static List<TimetableInfo> GetTimetableInfo(Route route)
         {
             var ORTTInfo = new List<TimetableInfo>();
             if (route != null)
@@ -98,9 +98,9 @@ namespace ORTS.Menu
                 var actdirectory = System.IO.Path.Combine(route.Path, "ACTIVITIES");
                 var directory = System.IO.Path.Combine(actdirectory, "OPENRAILS");
 
-                if (Directory.Exists(directory))
+                if (Vfs.DirectoryExists(directory))
                 {
-                    foreach (var ORTimetableFile in Directory.GetFiles(directory, "*.timetable_or"))
+                    foreach (var ORTimetableFile in Vfs.GetFiles(directory, "*.timetable_or"))
                     {
                         try
                         {
@@ -109,7 +109,7 @@ namespace ORTS.Menu
                         catch { }
                     }
 
-                    foreach (var ORTimetableFile in Directory.GetFiles(directory, "*.timetable-or"))
+                    foreach (var ORTimetableFile in Vfs.GetFiles(directory, "*.timetable-or"))
                     {
                         try
                         {
@@ -118,7 +118,7 @@ namespace ORTS.Menu
                         catch { }
                     }
 
-                    foreach (var ORMultitimetableFile in Directory.GetFiles(directory, "*.timetablelist_or"))
+                    foreach (var ORMultitimetableFile in Vfs.GetFiles(directory, "*.timetablelist_or"))
                     {
                         try
                         {
@@ -127,7 +127,7 @@ namespace ORTS.Menu
                         catch { }
                     }
 
-                    foreach (var ORMultitimetableFile in Directory.GetFiles(directory, "*.timetablelist-or"))
+                    foreach (var ORMultitimetableFile in Vfs.GetFiles(directory, "*.timetablelist-or"))
                     {
                         try
                         {
@@ -143,34 +143,34 @@ namespace ORTS.Menu
 
     public class WeatherFileInfo
     {
-        public FileInfo filedetails;
+        public string filedetails;
 
         public WeatherFileInfo(string filename)
         {
-            filedetails = new FileInfo(filename);
+            filedetails = filename;
         }
 
         public override string ToString()
         {
-            return (filedetails.Name);
+            return System.IO.Path.GetFileName(filedetails);
         }
 
         public string GetFullName()
         {
-            return (filedetails.FullName);
+            return filedetails;
         }
 
         // get weatherfiles
-        public static List<WeatherFileInfo> GetTimetableWeatherFiles(Folder folder, Route route)
+        public static List<WeatherFileInfo> GetTimetableWeatherFiles(Route route)
         {
             var weatherInfo = new List<WeatherFileInfo>();
             if (route != null)
             {
                 var directory = System.IO.Path.Combine(route.Path, "WeatherFiles");
 
-                if (Directory.Exists(directory))
+                if (Vfs.DirectoryExists(directory))
                 {
-                    foreach (var weatherFile in Directory.GetFiles(directory, "*.weather-or"))
+                    foreach (var weatherFile in Vfs.GetFiles(directory, "*.weather-or"))
                     {
                         weatherInfo.Add(new WeatherFileInfo(weatherFile));
                     }

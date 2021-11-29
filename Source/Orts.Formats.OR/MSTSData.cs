@@ -17,6 +17,7 @@
 
 using Orts.Formats.Msts;
 using System.IO;
+using ORTS.Common;
 
 namespace Orts.Formats.OR
 {
@@ -40,7 +41,7 @@ namespace Orts.Formats.OR
 
             string ORfilepath = System.IO.Path.Combine(RoutePath, "OpenRails");
 
-            if (File.Exists(ORfilepath + @"\sigcfg.dat"))
+            if (Vfs.FileExists(ORfilepath + @"\sigcfg.dat"))
             {
                 SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
             }
@@ -49,13 +50,13 @@ namespace Orts.Formats.OR
                 SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat", false);
             }
 
-            if (Directory.Exists(RoutePath + @"\Openrails") && File.Exists(RoutePath + @"\Openrails\TSECTION.DAT"))
+            if (Vfs.DirectoryExists(RoutePath + @"\Openrails") && Vfs.FileExists(RoutePath + @"\Openrails\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(RoutePath + @"\Openrails\TSECTION.DAT");
-            else if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
+            else if (Vfs.DirectoryExists(RoutePath + @"\GLOBAL") && Vfs.FileExists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
             else
                 TSectionDat = new TrackSectionsFile(MstsPath + @"\GLOBAL\TSECTION.DAT");
-            if (File.Exists(RoutePath + @"\TSECTION.DAT"))
+            if (Vfs.FileExists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
             Signals = new AESignals (this, SIGCFG);
         }

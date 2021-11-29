@@ -24,6 +24,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
@@ -637,7 +638,7 @@ namespace Orts.Viewer3D
         public ushort nBitsPerSample;
 
         public uint ulFormat;
-        public FileStream pFile;
+        public Stream pFile;
         public uint[] CuePoints;
 
         public WaveFileData()
@@ -670,7 +671,18 @@ namespace Orts.Viewer3D
         /// <returns>True if success</returns>
         private bool ParseWAV(string n)
         {
-            pFile = File.Open(n, FileMode.Open, FileAccess.Read, FileShare.Read);
+            pFile = Vfs.OpenRead(n);
+            if (!pFile.CanSeek)
+            {
+                /// SharpCompress has the <see cref="Stream.Seek(long, SeekOrigin)"/> unimplemented,
+                /// so for reading a wav within a VFS archive it needs to be loaded into memory first.
+                var stream = new MemoryStream();
+                pFile.CopyTo(stream);
+                pFile.Close();
+                pFile = stream;
+                pFile.Position = 0;
+            }
+
             if (pFile == null)
                 return false;
 
@@ -1138,7 +1150,7 @@ namespace Orts.Viewer3D
         /// <param name="retval">The filled structure</param>
         /// <param name="len">The bytes to read, -1 if the structure size must be filled</param>
         /// <returns>True if success</returns>
-        public static bool GetNextStructureValue<T>(FileStream fs, out T retval, int len)
+        public static bool GetNextStructureValue<T>(Stream fs, out T retval, int len)
         {
             byte[] buffer;
             retval = default(T);
