@@ -1046,8 +1046,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         // During a manual gear change brake engine shaft speed to match wheel shaft speed
                         DemandedRPM = IdleRPM;
 
-                        // once engine speed is less then shaft speed reset gear change
-                        if (RealRPM <= GearBox.ShaftRPM && GearBox.ShaftRPM < MaxRPM)
+                        // once engine speed is less then shaft speed reset gear change, or is at idle rpm, reset gear change
+                        if ((RealRPM <= GearBox.ShaftRPM && GearBox.ShaftRPM < MaxRPM) || RealRPM == IdleRPM)
                         {
                             GearBox.ManualGearChange = false;
                             GearBox.ManualGearBoxChangeOn = false;
@@ -1090,7 +1090,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         DemandedRPM = IdleRPM;
 
                         // once engine speed is less then shaft speed reset gear change
-                        if (RealRPM <= GearBox.ShaftRPM)
+                        if (RealRPM <= GearBox.ShaftRPM || RealRPM == IdleRPM)
                         {
                             GearBox.ManualGearChange = false;
                         }
