@@ -218,26 +218,12 @@ namespace Orts.Viewer3D.Popups
                                 var aspects = string.Join(" / ", signalObj.Signal.SignalHeads.Select(
                                     head => $"{head.state}" + (head.TextSignalAspect.Length > 0 ? $" ({head.TextSignalAspect})" : string.Empty)
                                     ));
-                                if (signalObj.Signal.isSpeedSignal)
-                                {
-                                    var speedInfoItem = signalObj.Signal.this_lim_speed(signalObj.Signal.SignalHeads[0].sigFunction);
-
-                                    primitives.Add(new DispatcherLabel(currentPosition.WorldLocation,
-                                               GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop ? Color.Red :
-                                                   GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Warning ? Color.Yellow :
-                                                   Color.Green,
-                                               $"Speed signal {signalObj.Signal.thisRef} / {FormatStrings.FormatSpeed(speedInfoItem.speed_pass, true)} / {FormatStrings.FormatSpeed(speedInfoItem.speed_freight, true)} / ({aspects})",
-                                               Owner.TextFontDefaultOutlined));
-                                }
-                                else
-                                {
-                                    primitives.Add(new DispatcherLabel(currentPosition.WorldLocation,
-                                               GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop ? Color.Red :
-                                                   GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Warning ? Color.Yellow :
-                                                   Color.Green,
-                                               $"Signal {signalObj.Signal.thisRef} ({aspects})",
-                                               Owner.TextFontDefaultOutlined));
-                                }
+                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation,
+                                           GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop ? Color.Red :
+                                               GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Warning ? Color.Yellow :
+                                               Color.Green,
+                                           $"Signal {signalObj.Signal.thisRef} ({aspects})",
+                                           Owner.TextFontDefaultOutlined));
                             }
 
                             if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
@@ -307,14 +293,13 @@ namespace Orts.Viewer3D.Popups
                 thisPosition.SetTCPosition(tn.TCCrossReference, offset, direction);
                 Train.TCSubpathRoute tempRoute = Owner.Viewer.Simulator.Signals.BuildTempRoute(null, thisPosition.TCSectionIndex, thisPosition.TCOffset, thisPosition.TCDirection, 5000.0f, true, false, false);
 
-                ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextObject_InRoute(null, tempRoute, 0,
-                    thisPosition.TCOffset, -1, ObjectItemInfo.ObjectItemType.Any, thisPosition);
+                ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextSignal_InRoute(null, tempRoute, 0, thisPosition.TCOffset, -1, thisPosition, null);
 
                 var signal = thisInfo.ObjectDetails;
                 if (signal == null)
                     break;
-                //if (signal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.UNKNOWN)
-                //    break;
+                if (signal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.UNKNOWN)
+                    break;
                 var signalDistance = thisInfo.distance_found;
 
                 if (signalDistance > 0)
