@@ -432,7 +432,7 @@ namespace Orts.Simulation.RollingStocks
             return new Interpolator(WorldLatitudeDeg, WorldTemperatureSummer);
         }
 
-        public bool AcceptMUSignals = true; //indicates if the car accepts multiple unit signals
+        public bool AcceptMUSignals = true; //indicates if the car accepts multiple unit signals; no more used
         /// <summary>
         /// Indicates which remote control group the car is in.
         /// -1: unconnected, 0: sync/front group, 1: async/rear group
@@ -532,7 +532,7 @@ namespace Orts.Simulation.RollingStocks
             }
             set
             {
-                if (AcceptMUSignals && Train != null)
+                if (RemoteControlGroup != -1 && Train != null)
                     Train.MUDynamicBrakePercent = value;
                 else
                     LocalDynamicBrakePercent = value;

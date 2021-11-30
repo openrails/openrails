@@ -2238,7 +2238,7 @@ namespace Orts.Viewer3D.RollingStock
                     foreach (var car in Locomotive.Train.Cars)
                     {
                         dieselLoco = car as MSTSDieselLocomotive;
-                        if (dieselLoco != null && dieselLoco.AcceptMUSignals)
+                        if (dieselLoco != null && dieselLoco.RemoteControlGroup != -1)
                         {
                             if (car == Viewer.Simulator.PlayerLocomotive && dieselLoco.DieselEngines.Count > 1)
                             {
