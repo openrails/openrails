@@ -794,6 +794,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
         /// <summary>
+        /// Governor has activiated
+        /// </summary>
+        public bool GovenorEnabled = false;
+        /// <summary>
         /// Minimal oil pressure at IdleRPM
         /// </summary>
         public float DieselMinOilPressurePSI;
@@ -1167,6 +1171,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 if (RealRPM > GovenorRPM)
                 {
                     RealRPM = GovenorRPM;
+                    GovenorEnabled = true;
+                }
+                else
+                {
+                    GovenorEnabled = false;
                 }
             }
 
@@ -1192,6 +1201,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 CurrentDieselOutputPowerW -= Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
                 CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
+            }
+
+            // If it is a geared locomotive, and rpm is greater then Max RpM, then output power should be reduced.
+            if (GovenorEnabled && HasGearBox)
+            {
+                if (DemandedRPM > MaxRPM)
+                {
+                    var excessRpM = DemandedRPM - MaxRPM;
+                    var reductionPowerFraction = 1.0f - (excessRpM / MaxRPM);
+                    CurrentDieselOutputPowerW *= reductionPowerFraction;
+
+                }
             }
 
             CurrentDieselOutputPowerW = MathHelper.Clamp(CurrentDieselOutputPowerW, 0.0f, CurrentDieselOutputPowerW);  // prevent power going -ve
