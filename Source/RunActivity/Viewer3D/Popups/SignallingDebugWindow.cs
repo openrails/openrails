@@ -298,8 +298,6 @@ namespace Orts.Viewer3D.Popups
                 var signal = thisInfo.ObjectDetails;
                 if (signal == null)
                     break;
-                if (signal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.UNKNOWN)
-                    break;
                 var signalDistance = thisInfo.distance_found;
 
                 if (signalDistance > 0)
