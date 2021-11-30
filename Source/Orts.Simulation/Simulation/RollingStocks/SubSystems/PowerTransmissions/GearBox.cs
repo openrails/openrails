@@ -494,7 +494,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     else if (GearBoxOperation == GearBoxOperation.Manual)
                     {
 
-                        if (GearBoxOperation == GearBoxOperation.Manual || (GearBoxOperation != GearBoxOperation.Manual && ClutchPercent >= -20))
+                        if (GearBoxOperation == GearBoxOperation.Manual)
                         {
                             // Allow rpm to go below idle for display purposes, but not for calculation - creates -ve te
                             float dieselRpM = 0;
@@ -552,11 +552,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                             // If throttle closed and in gear then coasting, the gear box and engine will apply a small force to retard the movement of the locomotive 
                             if (CurrentGear != null && CurrentSpeedMpS > 0.01 && DieselEngine.demandedThrottlePercent == 0)
-                                tractiveForceN = - CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
+                                tractiveForceN = - CurrentGear.CoastingForceN;
+                           // tractiveForceN = -CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
                             else if (CurrentGear != null && CurrentSpeedMpS < 0.01 && DieselEngine.demandedThrottlePercent == 0)
-                                tractiveForceN = CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
-                            
-                                return tractiveForceN;
+                                tractiveForceN = CurrentGear.CoastingForceN;
+                           // tractiveForceN = CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
+
+                            return tractiveForceN;
                         }
                         else
                         {
