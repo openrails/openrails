@@ -562,6 +562,76 @@ namespace ORTS.Scripting.Api
         /// Set at virtual to keep compatibility with scripts not providing this method.
         /// </summary>
         public virtual void Restore(BinaryReader inf) { }
+        /// <summary>
+        /// Called at every simulator update cycle in order to activate/deactivate the traction
+        /// when brakes are applied.
+        /// </summary>
+        public virtual void UpdateTractionCutOff()
+        {
+            // If BrakeCutsPowerForSpeedAbove is not set (== 0), the brake pressure check is always active.
+            if (SpeedMpS() >= BrakeCutsPowerForMinimumSpeedMpS())
+            {
+                switch (BrakeTractionCutOffMode())
+                {
+                    case BrakeTractionCutOffModeType.None:
+                        SetTractionAuthorization(true);
+                        break;
+
+                    case BrakeTractionCutOffModeType.AirBrakeCylinderSinglePressure:
+                        if (LocomotiveBrakeCylinderPressureBar() >= BrakeCutsPowerAtBrakeCylinderPressureBar())
+                        {
+                            SetTractionAuthorization(false);
+                        }
+                        else if (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f)
+                        {
+                            SetTractionAuthorization(true);
+                        }
+                        break;
+
+                    case BrakeTractionCutOffModeType.AirBrakePipeSinglePressure:
+                        if (BrakePipePressureBar() <= BrakeCutsPowerAtBrakePipePressureBar())
+                        {
+                            SetTractionAuthorization(false);
+                        }
+                        else if (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f)
+                        {
+                            SetTractionAuthorization(true);
+                        }
+                        break;
+
+                    case BrakeTractionCutOffModeType.AirBrakePipeHysteresis:
+                        if (BrakePipePressureBar() <= BrakeCutsPowerAtBrakePipePressureBar())
+                        {
+                            SetTractionAuthorization(false);
+                        }
+                        else if (BrakePipePressureBar() >= BrakeRestoresPowerAtBrakePipePressureBar()
+                            && (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f))
+                        {
+                            SetTractionAuthorization(true);
+                        }
+                        break;
+
+                    case BrakeTractionCutOffModeType.VacuumBrakePipeHysteresis:
+                        if (BrakePipePressureBar() >= BrakeCutsPowerAtBrakePipePressureBar())
+                        {
+                            SetTractionAuthorization(false);
+                        }
+                        else if (BrakePipePressureBar() <= BrakeRestoresPowerAtBrakePipePressureBar()
+                            && (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f))
+                        {
+                            SetTractionAuthorization(true);
+                        }
+                        break;
+                }
+            }
+            else
+            {
+                if (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f)
+                {
+                    SetTractionAuthorization(true);
+                }
+            }
+        }
     }
 
     // Represents the same enum as TrackMonitorSignalAspect
