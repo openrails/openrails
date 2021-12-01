@@ -2084,7 +2084,8 @@ available for controlling the *async* group settings:
 - Move To Front -- ``<Ctrl+O>``: Move one locomotive group to front (*sync*) 
   control group.
 - Traction -- ``<Ctrl+L>``: Switch *async* group to traction mode.
-- Idle -- ``<Ctrl+Shift+'> (key two positions at the right of L)``: Switch *async* 
+- Idle -- ``<Ctrl+Shift+L>``: Switch *async* group to idle state.
+- Brake -- ``<Ctrl+Shift+'> (key two positions at the right of L)``: Switch *async* 
   group to dynamic braking mode.
 - More -- ``<Ctrl+U>``: Increase *async* group traction or dynamic brake, 
   depending on its mode setting.
