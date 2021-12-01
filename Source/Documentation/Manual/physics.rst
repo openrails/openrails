@@ -2085,7 +2085,7 @@ available for controlling the *async* group settings:
   control group.
 - Traction -- ``<Ctrl+L>``: Switch *async* group to traction mode.
 - Idle -- ``<Ctrl+Shift+L>``: Switch *async* group to idle state.
-- Brake -- ``<Ctrl+Shift+'> (key two positions at the right of L)``: Switch *async* 
+- Brake -- ``<Ctrl+'> (key two positions at the right of L)``: Switch *async* 
   group to dynamic braking mode.
 - More -- ``<Ctrl+U>``: Increase *async* group traction or dynamic brake, 
   depending on its mode setting.
