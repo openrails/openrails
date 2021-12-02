@@ -45,6 +45,7 @@ using System.IO;
 using System.Text;
 using Event = Orts.Common.Event;
 using ORTS.Scripting.Api;
+using System.Linq;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -158,6 +159,19 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dieselsmokeeffectmaxsmokerate": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxmagnitude": MaxMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
 
+                case "engine(ortsdieseltransmissiontype":
+                     stf.MustMatch("(");
+                     var transmissionType = stf.ReadString();
+                    try
+                    {
+                        DieselTransmissionType = (DieselTransmissionTypes)Enum.Parse(typeof(DieselTransmissionTypes), transmissionType.First().ToString().ToUpper() + transmissionType.Substring(1));
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Skipped unknown diesel transmission type " + transmissionType);
+                    }
+                    break;
+                    
                 case "engine(ortsdieselengines":
                 case "engine(gearboxnumberofgears":
                 case "engine(gearboxdirectdrivegear":
@@ -392,6 +406,7 @@ namespace Orts.Simulation.RollingStocks
             MaximumDieselEnginePowerW = locoCopy.MaximumDieselEnginePowerW;
             PercentChangePerSec = locoCopy.PercentChangePerSec;
             LocomotiveMaxRailOutputPowerW = locoCopy.LocomotiveMaxRailOutputPowerW;
+            DieselTransmissionType = locoCopy.DieselTransmissionType;
 
             EngineRPMderivation = locoCopy.EngineRPMderivation;
             EngineRPMold = locoCopy.EngineRPMold;
@@ -444,7 +459,7 @@ namespace Orts.Simulation.RollingStocks
                 if (DieselEngines.HasGearBox)
                 {
                     Trace.TraceInformation("==================================================== {0} has Gearbox =========================================================", LocomotiveName);
-                    Trace.TraceInformation("Gearbox Type: {0}, Number of Gears: {1}, Idle RpM: {2}, Max RpM: {3}, Gov RpM: {4}, GearBoxType: {5}, ScoopCoupling: {6}, FreeWheel: {7}", DieselEngines[0].GearBox.GearBoxOperation, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovenorRPM, DieselEngines[0].GearBox.GearBoxType, DieselEngines[0].GearBox.GearBoxScoopCouplingFitted, DieselEngines[0].GearBox.GearBoxFreeWheelFitted);
+                    Trace.TraceInformation("Gearbox Type: {0}, Transmission Type: {1}, Number of Gears: {2}, Idle RpM: {3}, Max RpM: {4}, Gov RpM: {5}, GearBoxType: {6}, ScoopCoupling: {7}, FreeWheel: {8}", DieselEngines[0].GearBox.GearBoxOperation, DieselTransmissionType, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovenorRPM, DieselEngines[0].GearBox.GearBoxType, DieselEngines[0].GearBox.GearBoxScoopCouplingFitted, DieselEngines[0].GearBox.GearBoxFreeWheelFitted);
 
                     Trace.TraceInformation("Gear\t Ratio\t Max Speed\t Max TE\t    Chg Up RpM\t Chg Dwn RpM\t Coast Force\t Back Force\t");
 

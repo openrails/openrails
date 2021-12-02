@@ -506,13 +506,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             {
                                 dieselRpM = DieselEngine.RealRPM;
                             }
+
+                            // For diesel mechanic locomotives hold torque (TE) at the value requested by throttle
+                            if (Locomotive.DieselTransmissionType != TrainCar.DieselTransmissionTypes.Mechanic && dieselRpM > DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent])
+                            {
+                                dieselRpM = DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent];
+                            }
+                            
                             float tractiveForceN = DieselEngine.DieselTorqueTab[dieselRpM] / DieselEngine.DieselTorqueTab.MaxY() * CurrentGear.MaxTractiveForceN;
 
                             Locomotive.HuDGearMaximumTractiveForce = CurrentGear.MaxTractiveForceN;
 
                             // Limit tractive force if engine is governed, ie speed cannot exceed the governed speed or the throttled speed
-                           
-                            if ((DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM) || (DieselEngine.RealRPM < DieselEngine.GovenorRPM && DieselEngine.RealRPM > DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent]))
+                            // Diesel mechanical transmission are not "governed" at all engine speed settings, rather only at Idle and Max RpM. 
+                            // (See above where DM units TE held at constant value, unless overwritten by the following)
+                            if ((DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM) || (Locomotive.DieselTransmissionType != TrainCar.DieselTransmissionTypes.Mechanic &&  DieselEngine.RealRPM < DieselEngine.GovenorRPM && DieselEngine.RealRPM > DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent]))
                             {
                                 // use decay function to decrease tractive effort if RpM exceeds governed RpM value.
                                 // y = original amount ( 1 - decay rate)^length of prediction
