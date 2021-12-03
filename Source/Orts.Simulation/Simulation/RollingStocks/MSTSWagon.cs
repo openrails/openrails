@@ -3078,209 +3078,190 @@ namespace Orts.Simulation.RollingStocks
 
             var LocomotiveParameters = Simulator.PlayerLocomotive as MSTSLocomotive;
 
-            // if this is a heating steam boiler car then adjust steam pressure
-            // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, steam heating shouldn't already be present on diesel or steam locomotive
-            if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler && !LocomotiveParameters.IsSteamHeatFitted && LocomotiveParameters.SteamHeatController.CurrentValue > 0.05 && CurrentCarSteamHeatBoilerWaterCapacityL > 0 && CurrentSteamHeatBoilerFuelCapacityL > 0 && !IsSteamHeatBoilerLockedOut)
-            {
-                //   LocomotiveParameters.CurrentSteamHeatPressurePSI = LocomotiveParameters.SteamHeatController.CurrentValue * 100;
-                LocomotiveParameters.CurrentSteamHeatPressurePSI = 60.0f;
-                Train.CarSteamHeatOn = true; // turn on steam effects on wagons
-            }
-            else if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
-            {
-                LocomotiveParameters.CurrentSteamHeatPressurePSI = 0.0f;
-                Train.CarSteamHeatOn = false; // turn off steam effects on wagons
-                SteamHeatingBoilerOn = false;
-            }
-
-            // Turn on Heating steam boiler
-            if (Train.CarSteamHeatOn && LocomotiveParameters.SteamHeatController.CurrentValue > 0)
-            {
-                // Turn heating boiler on 
-                HeatingSteamBoilerDurationS = 1.0f * LocomotiveParameters.SteamHeatController.CurrentValue;
-                HeatingSteamBoilerVolumeM3pS = 1.5f * LocomotiveParameters.SteamHeatController.CurrentValue;
-            }
-            else
-            {
-                // Turn heating boiler off 
-                HeatingSteamBoilerVolumeM3pS = 0.0f;
-                HeatingSteamBoilerDurationS = 0.0f;
-            }
-
-            // Update Heating hose steam leaks Information
-            if (Train.CarSteamHeatOn && CarSteamHeatMainPipeSteamPressurePSI > 0)
-            {
-                // Turn wagon steam leaks on 
-                HeatingHoseParticleDurationS = 0.75f;
-                HeatingHoseSteamVelocityMpS = 15.0f;
-                HeatingHoseSteamVolumeM3pS = 4.0f * SteamHoseLeakRateRandom;
-            }
-            else
-            {
-                // Turn wagon steam leaks off 
-                HeatingHoseParticleDurationS = 0.0f;
-                HeatingHoseSteamVelocityMpS = 0.0f;
-                HeatingHoseSteamVolumeM3pS = 0.0f;
-            }
-
-            // Update Heating main pipe steam trap leaks Information
-            if (Train.CarSteamHeatOn && CarSteamHeatMainPipeSteamPressurePSI > 0)
-            {
-                // Turn wagon steam leaks on 
-                HeatingMainPipeSteamTrapDurationS = 0.75f;
-                HeatingMainPipeSteamTrapVelocityMpS = 15.0f;
-                HeatingMainPipeSteamTrapVolumeM3pS = 8.0f;
-            }
-            else
-            {
-                // Turn wagon steam leaks off 
-                HeatingMainPipeSteamTrapDurationS = 0.0f;
-                HeatingMainPipeSteamTrapVelocityMpS = 0.0f;
-                HeatingMainPipeSteamTrapVolumeM3pS = 0.0f;
-            }
-
-            // Update Heating compartment steam trap leaks Information
-            if (SteamHeatingCompartmentSteamTrapOn)
-            {
-                // Turn wagon steam leaks on 
-                HeatingCompartmentSteamTrapParticleDurationS = 0.75f;
-                HeatingCompartmentSteamTrapVelocityMpS = 15.0f;
-                HeatingCompartmentSteamTrapVolumeM3pS = 4.0f;
-            }
-            else
-            {
-                // Turn wagon steam leaks off 
-                HeatingCompartmentSteamTrapParticleDurationS = 0.0f;
-                HeatingCompartmentSteamTrapVelocityMpS = 0.0f;
-                HeatingCompartmentSteamTrapVolumeM3pS = 0.0f;
-            }
-
-            // Update Water Scoop Spray Information when scoop is down and filling from trough
-
-            bool ProcessWaterEffects = false; // Initialise test flag to see whether this wagon will have water sccop effects active
-            var LocomotiveIdentification = Simulator.PlayerLocomotive as MSTSLocomotive;
-
-            if (WagonType == WagonTypes.Tender || WagonType == WagonTypes.Engine)
+            if (LocomotiveParameters != null)
             {
 
-                if (WagonType == WagonTypes.Tender)
+                // if this is a heating steam boiler car then adjust steam pressure
+                // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, steam heating shouldn't already be present on diesel or steam locomotive
+                if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler && !LocomotiveParameters.IsSteamHeatFitted && LocomotiveParameters.SteamHeatController.CurrentValue > 0.05 && CurrentCarSteamHeatBoilerWaterCapacityL > 0 && CurrentSteamHeatBoilerFuelCapacityL > 0 && !IsSteamHeatBoilerLockedOut)
                 {
-                    // Find the associated steam locomotive for this tender
-                    if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
-
-                    if (TendersSteamLocomotive == LocomotiveIdentification && TendersSteamLocomotive.HasWaterScoop)
-                    {
-                        ProcessWaterEffects = true; // Set flag if this tender is attached to player locomotive
-                    }
-
+                    //   LocomotiveParameters.CurrentSteamHeatPressurePSI = LocomotiveParameters.SteamHeatController.CurrentValue * 100;
+                    LocomotiveParameters.CurrentSteamHeatPressurePSI = 60.0f;
+                    Train.CarSteamHeatOn = true; // turn on steam effects on wagons
                 }
-                else if (Simulator.PlayerLocomotive == this && LocomotiveIdentification.HasWaterScoop)
+                else if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
                 {
-                    ProcessWaterEffects = true; // Allow water effects to be processed
+                    LocomotiveParameters.CurrentSteamHeatPressurePSI = 0.0f;
+                    Train.CarSteamHeatOn = false; // turn off steam effects on wagons
+                    SteamHeatingBoilerOn = false;
+                }
+
+                // Turn on Heating steam boiler
+                if (Train.CarSteamHeatOn && LocomotiveParameters.SteamHeatController.CurrentValue > 0)
+                {
+                    // Turn heating boiler on 
+                    HeatingSteamBoilerDurationS = 1.0f * LocomotiveParameters.SteamHeatController.CurrentValue;
+                    HeatingSteamBoilerVolumeM3pS = 1.5f * LocomotiveParameters.SteamHeatController.CurrentValue;
                 }
                 else
                 {
-                    ProcessWaterEffects = false; // Default off
+                    // Turn heating boiler off 
+                    HeatingSteamBoilerVolumeM3pS = 0.0f;
+                    HeatingSteamBoilerDurationS = 0.0f;
                 }
 
-                // Tender Water overflow control
-                if (LocomotiveIdentification.RefillingFromTrough && ProcessWaterEffects)
+                // Update Heating hose steam leaks Information
+                if (Train.CarSteamHeatOn && CarSteamHeatMainPipeSteamPressurePSI > 0)
                 {
-                    float SpeedRatio = AbsSpeedMpS / MpS.FromMpH(100); // Ratio to reduce water disturbance with speed - an arbitary value of 100mph has been chosen as the reference
-
-                    // Turn tender water overflow on if water level is greater then 100% nominally and minimum water scoop speed is reached
-                    if (LocomotiveIdentification.TenderWaterLevelFraction >= 0.9999 && AbsSpeedMpS > LocomotiveIdentification.WaterScoopMinSpeedMpS)
-                    {
-                        float InitialTenderWaterOverflowParticleDurationS = 1.25f;
-                        float InitialTenderWaterOverflowVelocityMpS = 50.0f;
-                        float InitialTenderWaterOverflowVolumeM3pS = 10.0f;
-
-                        // Turn tender water overflow on - changes due to speed of train
-                        TenderWaterOverflowParticleDurationS = InitialTenderWaterOverflowParticleDurationS * SpeedRatio;
-                        TenderWaterOverflowVelocityMpS = InitialTenderWaterOverflowVelocityMpS * SpeedRatio;
-                        TenderWaterOverflowVolumeM3pS = InitialTenderWaterOverflowVolumeM3pS * SpeedRatio;
-                    }
+                    // Turn wagon steam leaks on 
+                    HeatingHoseParticleDurationS = 0.75f;
+                    HeatingHoseSteamVelocityMpS = 15.0f;
+                    HeatingHoseSteamVolumeM3pS = 4.0f * SteamHoseLeakRateRandom;
                 }
                 else
                 {
-                    // Turn tender water overflow off 
-                    TenderWaterOverflowParticleDurationS = 0.0f;
-                    TenderWaterOverflowVelocityMpS = 0.0f;
-                    TenderWaterOverflowVolumeM3pS = 0.0f;
+                    // Turn wagon steam leaks off 
+                    HeatingHoseParticleDurationS = 0.0f;
+                    HeatingHoseSteamVelocityMpS = 0.0f;
+                    HeatingHoseSteamVolumeM3pS = 0.0f;
                 }
 
-                // Water scoop spray effects control - always on when scoop over trough, regardless of whether above minimum speed or not
-                if (ProcessWaterEffects && LocomotiveIdentification.IsWaterScoopDown && IsOverTrough() && AbsSpeedMpS > 0.1)
+                // Update Heating main pipe steam trap leaks Information
+                if (Train.CarSteamHeatOn && CarSteamHeatMainPipeSteamPressurePSI > 0)
                 {
-                    float SpeedRatio = AbsSpeedMpS / MpS.FromMpH(100); // Ratio to reduce water disturbance with speed - an arbitary value of 100mph has been chosen as the reference
-
-                    float InitialWaterScoopParticleDurationS = 1.25f;
-                    float InitialWaterScoopWaterVelocityMpS = 50.0f;
-                    float InitialWaterScoopWaterVolumeM3pS = 10.0f;
-
-                    // Turn water scoop spray effects on
-                    if (AbsSpeedMpS <= MpS.FromMpH(10))
-                    {
-                        float SprayDecay = (MpS.FromMpH(25) / MpS.FromMpH(100)) / MpS.FromMpH(10); // Linear decay factor - based upon previous level starts @ a value @ 25mph
-                        SpeedRatio = (SprayDecay * AbsSpeedMpS) / MpS.FromMpH(100); // Decrease the water scoop spray effect to minimum level of visibility
-                        WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
-                        WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
-                        WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
-
-                    }
-                    // Below 25mph effect does not vary, above 25mph effect varies according to speed
-                    else if (AbsSpeedMpS < MpS.FromMpH(25) && AbsSpeedMpS > MpS.FromMpH(10))
-                    {
-                        SpeedRatio = MpS.FromMpH(25) / MpS.FromMpH(100); // Hold the water scoop spray effect to a minimum level of visibility
-                        WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
-                        WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
-                        WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
-                    }
-                    else
-                    {
-                        // Allow water sccop spray effect to vary with speed
-                        WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
-                        WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
-                        WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
-                    }
+                    // Turn wagon steam leaks on 
+                    HeatingMainPipeSteamTrapDurationS = 0.75f;
+                    HeatingMainPipeSteamTrapVelocityMpS = 15.0f;
+                    HeatingMainPipeSteamTrapVolumeM3pS = 8.0f;
                 }
                 else
                 {
-                    // Turn water scoop spray effects off 
-                    WaterScoopParticleDurationS = 0.0f;
-                    WaterScoopWaterVelocityMpS = 0.0f;
-                    WaterScoopWaterVolumeM3pS = 0.0f;
-
+                    // Turn wagon steam leaks off 
+                    HeatingMainPipeSteamTrapDurationS = 0.0f;
+                    HeatingMainPipeSteamTrapVelocityMpS = 0.0f;
+                    HeatingMainPipeSteamTrapVolumeM3pS = 0.0f;
                 }
 
-                // Update Steam Brake leaks Information
-                if (LocomotiveIdentification.EngineBrakeFitted && LocomotiveIdentification.SteamEngineBrakeFitted && (WagonType == WagonTypes.Tender || WagonType == WagonTypes.Engine))
+                // Update Heating compartment steam trap leaks Information
+                if (SteamHeatingCompartmentSteamTrapOn)
                 {
-                    // Find the steam leakage rate based upon valve opening and current boiler pressure
-                    float SteamBrakeLeakRate = LocomotiveIdentification.EngineBrakeController.CurrentValue * (LocomotiveIdentification.BoilerPressurePSI / LocomotiveIdentification.MaxBoilerPressurePSI);
+                    // Turn wagon steam leaks on 
+                    HeatingCompartmentSteamTrapParticleDurationS = 0.75f;
+                    HeatingCompartmentSteamTrapVelocityMpS = 15.0f;
+                    HeatingCompartmentSteamTrapVolumeM3pS = 4.0f;
+                }
+                else
+                {
+                    // Turn wagon steam leaks off 
+                    HeatingCompartmentSteamTrapParticleDurationS = 0.0f;
+                    HeatingCompartmentSteamTrapVelocityMpS = 0.0f;
+                    HeatingCompartmentSteamTrapVolumeM3pS = 0.0f;
+                }
 
-                    if (Simulator.PlayerLocomotive == this && LocomotiveIdentification.EngineBrakeController.CurrentValue > 0)
-                    {
-                        // Turn steam brake leaks on 
-                        SteamBrakeLeaksDurationS = 0.75f;
-                        SteamBrakeLeaksVelocityMpS = 15.0f;
-                        SteamBrakeLeaksVolumeM3pS = 4.0f * SteamBrakeLeakRate;
-                    }
-                    else
-                    {
-                        // Turn steam brake leaks off 
-                        SteamBrakeLeaksDurationS = 0.0f;
-                        SteamBrakeLeaksVelocityMpS = 0.0f;
-                        SteamBrakeLeaksVolumeM3pS = 0.0f;
-                    }
+                // Update Water Scoop Spray Information when scoop is down and filling from trough
+
+                bool ProcessWaterEffects = false; // Initialise test flag to see whether this wagon will have water sccop effects active
+
+                if (WagonType == WagonTypes.Tender || WagonType == WagonTypes.Engine)
+                {
 
                     if (WagonType == WagonTypes.Tender)
                     {
                         // Find the associated steam locomotive for this tender
                         if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
 
-                        // Turn steam brake effect on or off
-                        if (TendersSteamLocomotive == LocomotiveIdentification && LocomotiveIdentification.EngineBrakeController.CurrentValue > 0)
+                        if (TendersSteamLocomotive == LocomotiveParameters && TendersSteamLocomotive.HasWaterScoop)
+                        {
+                            ProcessWaterEffects = true; // Set flag if this tender is attached to player locomotive
+                        }
+
+                    }
+                    else if (Simulator.PlayerLocomotive == this && LocomotiveParameters.HasWaterScoop)
+                    {
+                        ProcessWaterEffects = true; // Allow water effects to be processed
+                    }
+                    else
+                    {
+                        ProcessWaterEffects = false; // Default off
+                    }
+
+                    // Tender Water overflow control
+                    if (LocomotiveParameters.RefillingFromTrough && ProcessWaterEffects)
+                    {
+                        float SpeedRatio = AbsSpeedMpS / MpS.FromMpH(100); // Ratio to reduce water disturbance with speed - an arbitary value of 100mph has been chosen as the reference
+
+                        // Turn tender water overflow on if water level is greater then 100% nominally and minimum water scoop speed is reached
+                        if (LocomotiveParameters.TenderWaterLevelFraction >= 0.9999 && AbsSpeedMpS > LocomotiveParameters.WaterScoopMinSpeedMpS)
+                        {
+                            float InitialTenderWaterOverflowParticleDurationS = 1.25f;
+                            float InitialTenderWaterOverflowVelocityMpS = 50.0f;
+                            float InitialTenderWaterOverflowVolumeM3pS = 10.0f;
+
+                            // Turn tender water overflow on - changes due to speed of train
+                            TenderWaterOverflowParticleDurationS = InitialTenderWaterOverflowParticleDurationS * SpeedRatio;
+                            TenderWaterOverflowVelocityMpS = InitialTenderWaterOverflowVelocityMpS * SpeedRatio;
+                            TenderWaterOverflowVolumeM3pS = InitialTenderWaterOverflowVolumeM3pS * SpeedRatio;
+                        }
+                    }
+                    else
+                    {
+                        // Turn tender water overflow off 
+                        TenderWaterOverflowParticleDurationS = 0.0f;
+                        TenderWaterOverflowVelocityMpS = 0.0f;
+                        TenderWaterOverflowVolumeM3pS = 0.0f;
+                    }
+
+                    // Water scoop spray effects control - always on when scoop over trough, regardless of whether above minimum speed or not
+                    if (ProcessWaterEffects && LocomotiveParameters.IsWaterScoopDown && IsOverTrough() && AbsSpeedMpS > 0.1)
+                    {
+                        float SpeedRatio = AbsSpeedMpS / MpS.FromMpH(100); // Ratio to reduce water disturbance with speed - an arbitary value of 100mph has been chosen as the reference
+
+                        float InitialWaterScoopParticleDurationS = 1.25f;
+                        float InitialWaterScoopWaterVelocityMpS = 50.0f;
+                        float InitialWaterScoopWaterVolumeM3pS = 10.0f;
+
+                        // Turn water scoop spray effects on
+                        if (AbsSpeedMpS <= MpS.FromMpH(10))
+                        {
+                            float SprayDecay = (MpS.FromMpH(25) / MpS.FromMpH(100)) / MpS.FromMpH(10); // Linear decay factor - based upon previous level starts @ a value @ 25mph
+                            SpeedRatio = (SprayDecay * AbsSpeedMpS) / MpS.FromMpH(100); // Decrease the water scoop spray effect to minimum level of visibility
+                            WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
+                            WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
+                            WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
+
+                        }
+                        // Below 25mph effect does not vary, above 25mph effect varies according to speed
+                        else if (AbsSpeedMpS < MpS.FromMpH(25) && AbsSpeedMpS > MpS.FromMpH(10))
+                        {
+                            SpeedRatio = MpS.FromMpH(25) / MpS.FromMpH(100); // Hold the water scoop spray effect to a minimum level of visibility
+                            WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
+                            WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
+                            WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
+                        }
+                        else
+                        {
+                            // Allow water sccop spray effect to vary with speed
+                            WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
+                            WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
+                            WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
+                        }
+                    }
+                    else
+                    {
+                        // Turn water scoop spray effects off 
+                        WaterScoopParticleDurationS = 0.0f;
+                        WaterScoopWaterVelocityMpS = 0.0f;
+                        WaterScoopWaterVolumeM3pS = 0.0f;
+
+                    }
+
+                    // Update Steam Brake leaks Information
+                    if (LocomotiveParameters.EngineBrakeFitted && LocomotiveParameters.SteamEngineBrakeFitted && (WagonType == WagonTypes.Tender || WagonType == WagonTypes.Engine))
+                    {
+                        // Find the steam leakage rate based upon valve opening and current boiler pressure
+                        float SteamBrakeLeakRate = LocomotiveParameters.EngineBrakeController.CurrentValue * (LocomotiveParameters.BoilerPressurePSI / LocomotiveParameters.MaxBoilerPressurePSI);
+
+                        if (Simulator.PlayerLocomotive == this && LocomotiveParameters.EngineBrakeController.CurrentValue > 0)
                         {
                             // Turn steam brake leaks on 
                             SteamBrakeLeaksDurationS = 0.75f;
@@ -3293,6 +3274,28 @@ namespace Orts.Simulation.RollingStocks
                             SteamBrakeLeaksDurationS = 0.0f;
                             SteamBrakeLeaksVelocityMpS = 0.0f;
                             SteamBrakeLeaksVolumeM3pS = 0.0f;
+                        }
+
+                        if (WagonType == WagonTypes.Tender)
+                        {
+                            // Find the associated steam locomotive for this tender
+                            if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
+
+                            // Turn steam brake effect on or off
+                            if (TendersSteamLocomotive == LocomotiveParameters && LocomotiveParameters.EngineBrakeController.CurrentValue > 0)
+                            {
+                                // Turn steam brake leaks on 
+                                SteamBrakeLeaksDurationS = 0.75f;
+                                SteamBrakeLeaksVelocityMpS = 15.0f;
+                                SteamBrakeLeaksVolumeM3pS = 4.0f * SteamBrakeLeakRate;
+                            }
+                            else
+                            {
+                                // Turn steam brake leaks off 
+                                SteamBrakeLeaksDurationS = 0.0f;
+                                SteamBrakeLeaksVelocityMpS = 0.0f;
+                                SteamBrakeLeaksVolumeM3pS = 0.0f;
+                            }
                         }
                     }
                 }
