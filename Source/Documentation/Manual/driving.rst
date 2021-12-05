@@ -1606,8 +1606,8 @@ key assignment list shown by pressing ``<F1>``.
 In addition, Open Rails offers functionality similar to the time 
 acceleration switch for MSTS. 
 
-Use ``<Alt+PgUp>`` or ``<Alt+PgDn>`` keys to increase or decrease the 
-speed of the game clock.
+Use ``<Ctrl+Alt+PgUp(Numkey)>`` or ``<Ctrl+Alt+PgDn(Numkey)>`` keys to increase or decrease the 
+speed of the game clock. ``<Ctrl+Alt+Home(Numkey)>`` resets the speed.
 
 In a multiplayer session, all clients' time, weather and season selections 
 are overridden by those set by the server.
