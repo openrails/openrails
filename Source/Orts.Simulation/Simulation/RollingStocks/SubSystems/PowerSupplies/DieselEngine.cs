@@ -1203,7 +1203,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
             }
 
-            // If it is a geared locomotive, and rpm is greater then Max RpM, then output power should be reduced.
+            // If it is a geared locomotive, and rpm is greater then Max RpM, then output power display should be reduced.
             if (GovenorEnabled && HasGearBox)
             {
                 if (DemandedRPM > MaxRPM)

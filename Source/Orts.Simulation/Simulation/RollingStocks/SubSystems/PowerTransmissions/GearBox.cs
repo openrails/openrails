@@ -196,6 +196,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool GearBoxScoopCouplingFitted;
         public bool GearBoxFreeWheelFitted;
 
+        public float previousThrottleSetting;
+        public float previousRpM;
+
         public float ManualGearTimerResetS = 2;  // Allow gear change to take 2 seconds
         public float ManualGearTimerS; // Time for gears to change
         public bool ManualGearBoxChangeOn = false;
@@ -469,6 +472,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxOperation OriginalGearBoxOperation = GearBoxOperation.Manual;
 
+        public float tractiveForceN;
         public float TractiveForceN
         {
             get
@@ -480,7 +484,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     {
                         if (ClutchPercent >= -20)
                         {
-                            float tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
+                            tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
                             if (CurrentSpeedMpS > 0)
                             {
                                 if (tractiveForceN > (DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS))
@@ -507,41 +511,127 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                 dieselRpM = DieselEngine.RealRPM;
                             }
 
-                            // For diesel mechanic locomotives hold torque (TE) at the value requested by throttle
-                            if (Locomotive.DieselTransmissionType != TrainCar.DieselTransmissionTypes.Mechanic && dieselRpM > DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent])
-                            {
-                                dieselRpM = DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent];
-                            }
-                            
-                            float tractiveForceN = DieselEngine.DieselTorqueTab[dieselRpM] / DieselEngine.DieselTorqueTab.MaxY() * CurrentGear.MaxTractiveForceN;
+                            float throttleFraction = 0;
 
-                            Locomotive.HuDGearMaximumTractiveForce = CurrentGear.MaxTractiveForceN;
+                            if (ShaftRPM != dieselRpM && !IsClutchOn && DieselEngine.ApparentThrottleSetting < DieselEngine.DemandedThrottlePercent)
+                            {
+                                // Use apparent throttle when accelerating, but use demenaded throttle at other times????
+                                throttleFraction = DieselEngine.ApparentThrottleSetting * 0.01f; // Convert from percentage to fraction, use the apparent throttle as this includes some delay for rpm increase
+                            }
+                            else
+                            {
+                                throttleFraction = DieselEngine.DemandedThrottlePercent * 0.01f;
+                            }
 
                             // Limit tractive force if engine is governed, ie speed cannot exceed the governed speed or the throttled speed
                             // Diesel mechanical transmission are not "governed" at all engine speed settings, rather only at Idle and Max RpM. 
                             // (See above where DM units TE held at constant value, unless overwritten by the following)
-                            if ((DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM) || (Locomotive.DieselTransmissionType != TrainCar.DieselTransmissionTypes.Mechanic &&  DieselEngine.RealRPM < DieselEngine.GovenorRPM && DieselEngine.RealRPM > DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent]))
+                            if (Locomotive.DieselTransmissionType == TrainCar.DieselTransmissionTypes.Mechanic)
                             {
-                                // use decay function to decrease tractive effort if RpM exceeds governed RpM value.
-                                // y = original amount ( 1 - decay rate)^length of prediction
-                                float decayRpM = 0;
-
-                                if (DieselEngine.RealRPM < DieselEngine.GovenorRPM && DieselEngine.RealRPM > DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent])
+                                if (DieselEngine.DemandedThrottlePercent > 0 && DieselEngine.RealRPM > DieselEngine.IdleRPM * 1.5)
                                 {
-                                    decayRpM = ShaftRPM - DieselEngine.ThrottleRPMTab[DieselEngine.DemandedThrottlePercent];
-                                }
-                                else
-                                {
-                                    decayRpM = ShaftRPM - DieselEngine.GovenorRPM;
-                                }
-                                
-                                var teDecline = Math.Pow((1.0f - 0.05f), decayRpM);
 
-                                tractiveForceN = (float)Math.Abs(CurrentGear.MaxTractiveForceN * teDecline);
-                                tractiveForceN = MathHelper.Clamp(tractiveForceN, 0.0f, CurrentGear.MaxTractiveForceN);  // Clamp tractive effort so that it doesn't go below zero
+                                    // Governor at maxRpM
+                                    if (DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM && ShaftRPM > previousRpM && tractiveForceN > 0)
+                                    {
+                                        throttleFraction = previousThrottleSetting - 0.1f; // reduce fuel admission by reducing throttle (calculation only, not displayed)
+                                        throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds, so it doesn't go negative
+                                        previousThrottleSetting = throttleFraction; // Set for next iteration
+                                        previousRpM = ShaftRPM;
+                                        //     Trace.TraceInformation("Decrease - RealRpm {0} GovernorRpM {1} previousRpM {2} Shaft {3} PrevThottle {4} ", DieselEngine.RealRPM, DieselEngine.GovenorRPM, previousRpM, ShaftRPM, previousThrottleSetting);
+                                    }
+                                    else if (DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM && ShaftRPM + 5.0f < previousRpM)
+                                    {
+                                        throttleFraction = previousThrottleSetting + 0.1f; // increase fuel admission by increasing the throttle (calculation only, not displayed)
+                                        throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds
+                                        previousThrottleSetting = throttleFraction; // Set for next iteration
+                                        previousRpM = ShaftRPM;
+                                        //      Trace.TraceInformation("Increase - RealRpm {0} GovernorRpM {1} previousRpM {2} Shaft {3} PrevThottle {4} ", DieselEngine.RealRPM, DieselEngine.GovenorRPM, previousRpM, ShaftRPM, previousThrottleSetting);
+                                    }
+                                    else if (DieselEngine.RealRPM < DieselEngine.GovenorRPM && ShaftRPM < DieselEngine.GovenorRPM)  // Reset
+                                    {
+                                        previousThrottleSetting = throttleFraction; // Set for next iteration
+                                        previousRpM = DieselEngine.RealRPM;
+                                        //   Trace.TraceInformation("Loop - RealRpm {0} Shaft {1} PrevThrottle {2}", DieselEngine.RealRPM, ShaftRPM, previousThrottleSetting);
+                                    }
+                                    else if (DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM && tractiveForceN < 0)
+                                    {
+                                        throttleFraction = previousThrottleSetting + 0.1f; // increase fuel admission by increasing the throttle (calculation only, not displayed)
+                                        throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds
+                                        previousThrottleSetting = throttleFraction; // Set for next iteration
+                                        previousRpM = ShaftRPM;
+                                        //  Trace.TraceInformation("Negative - RealRpm {0} GovernorRpM {1} previousRpM {2} Shaft {3} PrevThottle {4} ", DieselEngine.RealRPM, DieselEngine.GovenorRPM, previousRpM, ShaftRPM, previousThrottleSetting);
+                                    }
+                                    else // No Change
+                                    {
+
+                                        throttleFraction = previousThrottleSetting;
+                                        previousThrottleSetting = throttleFraction; // Set for next iteration
+                                                                                    //        previousRpM = DieselEngine.RealRPM;
+                                                                                    // Trace.TraceInformation("Loop#2 - RealRpm {0} Shaft {1} PrevThrottle {2}", DieselEngine.RealRPM, ShaftRPM, previousThrottleSetting);
+
+                                    }
+
+                                }
+
+                                if (DieselEngine.DemandedThrottlePercent > 0 && DieselEngine.RealRPM < DieselEngine.IdleRPM * 1.5)
+                                {
+                                    // Governor at IdleRpM
+
+                                    if (DieselEngine.RealRPM <= DieselEngine.IdleRPM && ShaftRPM < DieselEngine.IdleRPM && ShaftRPM < previousRpM && tractiveForceN > 0)
+                                    {
+                                        throttleFraction = previousThrottleSetting + 0.1f; // reduce fuel admission by reducing throttle (calculation only, not displayed)
+                                        throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds, so it doesn't go negative
+                                        previousThrottleSetting = throttleFraction; // Set for next iteration
+                                        previousRpM = ShaftRPM;
+                                    //    Trace.TraceInformation("Increase - RealRpm {0} GovernorRpM {1} previousRpM {2} Shaft {3} PrevThottle {4} TE {5}", DieselEngine.RealRPM, DieselEngine.GovenorRPM, previousRpM, ShaftRPM, previousThrottleSetting, tractiveForceN);
+                                    }
+                                    else if (DieselEngine.RealRPM <= DieselEngine.IdleRPM && ShaftRPM < DieselEngine.IdleRPM && ShaftRPM - 5.0f > previousRpM)
+                                    {
+                                        throttleFraction = previousThrottleSetting - 0.1f; // increase fuel admission by increasing the throttle (calculation only, not displayed)
+                                        throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds
+                                        previousThrottleSetting = throttleFraction; // Set for next iteration
+                                        previousRpM = ShaftRPM;
+                                     //   Trace.TraceInformation("Decrease - RealRpm {0} GovernorRpM {1} previousRpM {2} Shaft {3} PrevThottle {4} ", DieselEngine.RealRPM, DieselEngine.GovenorRPM, previousRpM, ShaftRPM, previousThrottleSetting);
+                                    }
+                                    else if (DieselEngine.RealRPM > DieselEngine.IdleRPM && ShaftRPM > DieselEngine.IdleRPM)  // Reset
+                                    {
+                                        previousThrottleSetting = throttleFraction; // Set for next iteration
+                                        previousRpM = DieselEngine.RealRPM;
+                                        //   Trace.TraceInformation("Loop - RealRpm {0} Shaft {1} PrevThrottle {2}", DieselEngine.RealRPM, ShaftRPM, previousThrottleSetting);
+                                    }
+                                    else // No Change
+                                    {
+
+                                        throttleFraction = previousThrottleSetting;
+                                        previousThrottleSetting = throttleFraction; // Set for next iteration
+                                                                                    //        previousRpM = DieselEngine.RealRPM;
+                                                                                    // Trace.TraceInformation("Loop#2 - RealRpm {0} Shaft {1} PrevThrottle {2}", DieselEngine.RealRPM, ShaftRPM, previousThrottleSetting);
+
+                                    }
+
+
+                                }
+
                             }
 
-                        // Trace.TraceInformation("Geared Tractive Effort #1 - Driving - TE: {0} lbf, RpM: {1}, Torque: {2} lb-ft, Throttle%: {3}, MaxTorque: {4} lb-ft, MaxTE {5} lbf, Speed: {6} mph, Clutch {7}, Gear: {8} IsClutchOn {9} Shaft RpM {10} DemandedRpM {11}", tractiveForceN * 0.224809f, DieselEngine.RealRPM, DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * 0.737562f, DieselEngine.DemandedThrottlePercent, DieselEngine.DieselTorqueTab.MaxY(), CurrentGear.MaxTractiveForceN * 0.224809f, CurrentSpeedMpS * 2.23694f, ClutchPercent, Locomotive.GearBoxController.CurrentNotch, IsClutchOn, ShaftRPM, DieselEngine.DemandedRPM);
+
+
+                            // A torque vs rpm family of curves has been built based on the information on this page
+                            // https://www.cm-labs.com/vortexstudiodocumentation/Vortex_User_Documentation/Content/Editor/editor_vs_configure_engine.html
+                            //
+                            // Calculate torque curve for throttle position and RpM
+                            var rpmRatio = (dieselRpM - DieselEngine.IdleRPM) / (DieselEngine.MaxRPM - DieselEngine.IdleRPM);
+                            var torqueCurveMultiplier = (0.824f * throttleFraction + 0.176f) + (0.785f * throttleFraction - 0.785f) * rpmRatio;
+
+                            // During normal operation fuel admission is fixed, and therefore TE follows curve as RpM varies
+                            tractiveForceN = torqueCurveMultiplier * CurrentGear.MaxTractiveForceN;
+
+                         //   Trace.TraceInformation("Tractive Force {0}, Throttle {1} TCM {2} RpM {3} Throttle% {4}", tractiveForceN, throttleFraction, torqueCurveMultiplier, dieselRpM, DieselEngine.DemandedThrottlePercent);
+
+                            Locomotive.HuDGearMaximumTractiveForce = CurrentGear.MaxTractiveForceN;
+                                                        
+//                            Trace.TraceInformation("Geared Tractive Effort #1 - Driving - TE: {0} lbf, RpM: {1}, Torque: {2} lb-ft, Throttle%: {3}, MaxTorque: {4} lb-ft, MaxTE {5} lbf, Speed: {6} mph, Clutch {7}, Gear: {8} IsClutchOn {9} Shaft RpM {10} DemandedRpM {11} rpmRatio {12} TCM {13}", tractiveForceN * 0.224809f, DieselEngine.RealRPM, DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * 0.737562f, DieselEngine.DemandedThrottlePercent, DieselEngine.DieselTorqueTab.MaxY(), CurrentGear.MaxTractiveForceN * 0.224809f, CurrentSpeedMpS * 2.23694f, ClutchPercent, Locomotive.GearBoxController.CurrentNotch, IsClutchOn, ShaftRPM, DieselEngine.DemandedRPM, rpmRatio, torqueCurveMultiplier);
 
                             if (CurrentSpeedMpS > 0)
                             {
@@ -557,20 +647,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             {
                                 tractiveForceN = 0;
                             }
-
-                            // If throttle closed and in gear then coasting, the gear box and engine will apply a small force to retard the movement of the locomotive 
-                            if (CurrentGear != null && CurrentSpeedMpS > 0.01 && DieselEngine.demandedThrottlePercent == 0)
-                                tractiveForceN = - CurrentGear.CoastingForceN;
-                           // tractiveForceN = -CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
-                            else if (CurrentGear != null && CurrentSpeedMpS < 0.01 && DieselEngine.demandedThrottlePercent == 0)
-                                tractiveForceN = CurrentGear.CoastingForceN;
-                           // tractiveForceN = CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
-
+                            
                             return tractiveForceN;
                         }
                         else
                         {
-                                return 0;                           
+                            return 0;
                         }
                     }
                     else
