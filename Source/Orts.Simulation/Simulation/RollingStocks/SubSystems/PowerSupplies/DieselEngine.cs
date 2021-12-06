@@ -397,6 +397,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public string GetStatus()
         {
+
             var result = new StringBuilder();
 
             result.AppendFormat(Simulator.Catalog.GetString("Status"));
@@ -411,8 +412,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0:F1}%", eng.LoadPercent);
 
-            foreach (var eng in DEList)
-                result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
+            if (Locomotive.DieselTransmissionType == TrainCar.DieselTransmissionTypes.Mechanic)
+            {
+                foreach (var eng in DEList)
+                {
+                    var governorEnabled = eng.GovernorEnabled ? "???" : "";
+                    result.AppendFormat("\t{0:F0} {2}{1}", eng.RealRPM, governorEnabled, FormatStrings.rpm);
+                }
+            }
+            else
+            {
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
+            }
 
             result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Flow"));
             foreach (var eng in DEList)
@@ -660,7 +672,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
          /// <summary>
         /// Govenor RPM - maximum speed that engine is held to
         /// </summary>
-        public float GovenorRPM;
+        public float GovernorRPM;
         /// <summary>
         /// RPM change rate from ENG file
         /// </summary>
@@ -796,7 +808,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Governor has activiated
         /// </summary>
-        public bool GovenorEnabled = false;
+        public bool GovernorEnabled = false;
         /// <summary>
         /// Minimal oil pressure at IdleRPM
         /// </summary>
@@ -875,7 +887,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     case "idlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.IdleRPM; break;
                     case "maxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.MaxRPM; break;
-                    case "govenorrpm": GovenorRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
+                    case "governorrpm": GovernorRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
                     case "startingrpm": StartingRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingRPM; break;
                     case "startingconfirmrpm": StartingConfirmationRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingConfirmRPM; break;
                     case "changeuprpmps": ChangeUpRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.ChangeUpRPMpS; break;
@@ -923,7 +935,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             IdleRPM = other.IdleRPM;
             MaxRPM = other.MaxRPM;
-            GovenorRPM = other.GovenorRPM;
+            GovernorRPM = other.GovernorRPM;
             StartingRPM = other.StartingRPM;
             StartingConfirmationRPM = other.StartingConfirmationRPM;
             ChangeUpRPMpS = other.ChangeUpRPMpS;
@@ -1102,8 +1114,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 }
 
-                // Simulate stalled engine if RpM decreases too far, by stopping engine, only applies to Type D clutch
-                if (RealRPM < 0.9f * IdleRPM && State == DieselEngineState.Running)
+                // Simulate stalled engine if RpM decreases too far or exceed the safe overrun speed, by stopping engine, only applies to Type D clutch
+                if ((RealRPM < 0.9f * IdleRPM || RealRPM > GovernorRPM) && State == DieselEngineState.Running)
                 {
                     Trace.TraceInformation("Diesel Engine has stalled");
                     HandleEvent(PowerSupplyEvent.StallEngine);
@@ -1151,6 +1163,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
 
+            if (State == DieselEngineState.Stopped)
+            {
+                RealRPM = 0;
+            }
+
             // links engine rpm and shaft rpm togtehr when clutch is fully engaged
             if (HasGearBox && GearBox.GearBoxOperation == GearBoxOperation.Manual)
             {
@@ -1163,19 +1180,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         RealRPM = GearBox.ShaftRPM;
                     }
                 }
-            }
 
-            // Govenor limits engine rpm
-            if (GovenorRPM != 0)
-            {
-                if (RealRPM > GovenorRPM)
+                // Govenor limits engine rpm
+                if (GovernorRPM != 0)
                 {
-                    RealRPM = GovenorRPM;
-                    GovenorEnabled = true;
-                }
-                else
-                {
-                    GovenorEnabled = false;
+                    if ((RealRPM > MaxRPM || RealRPM < IdleRPM) && !GovernorEnabled)
+                    {
+                        GovernorEnabled = true;
+                    }
+                    else if (RealRPM > IdleRPM && RealRPM < MaxRPM && GovernorEnabled)
+                    {
+                        GovernorEnabled = false;
+                    }
                 }
             }
 
@@ -1204,7 +1220,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
 
             // If it is a geared locomotive, and rpm is greater then Max RpM, then output power display should be reduced.
-            if (GovenorEnabled && HasGearBox)
+            if (GovernorEnabled && HasGearBox)
             {
                 if (DemandedRPM > MaxRPM)
                 {
@@ -1361,6 +1377,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (State == DieselEngineState.Running)
                     {
                         DemandedRPM = 0;
+                        RealRPM = 0;
                         State = DieselEngineState.Stopped;
                     }
                     break;
@@ -1417,9 +1434,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is about 80% of the prime mover output power
             }
 
-            if (Locomotive.GovenorRPM != 0)
+            if (Locomotive.GovernorRPM != 0)
             {
-                GovenorRPM = Locomotive.GovenorRPM;
+                GovernorRPM = Locomotive.GovernorRPM;
             }
 
             if ((initLevel & SettingsFlags.IdleRPM) == 0)
@@ -1914,15 +1931,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
 
-            if (GovenorRPM == 0)
+            if (GovernorRPM == 0)
             {
                 if (MaxRPM != 0)
                 {
-                    GovenorRPM = MaxRPM;
+                    GovernorRPM = MaxRPM * 1.309f;
                 }
                 else
                 {
-                    GovenorRPM = Locomotive.MaxRPM;
+                    GovernorRPM = 2000.0f ;
                 }
             }
 
