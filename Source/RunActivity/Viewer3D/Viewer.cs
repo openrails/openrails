@@ -92,6 +92,7 @@ namespace Orts.Viewer3D
         public SwitchWindow SwitchWindow { get; private set; } // F8 window
         public TrainOperationsWindow TrainOperationsWindow { get; private set; } // F9 window
         public CarOperationsWindow CarOperationsWindow { get; private set; } // F9 sub-window for car operations
+        public TrainDpuWindow TrainDpuWindow { get; private set; } // Shift + F9 train distributed power window
         public NextStationWindow NextStationWindow { get; private set; } // F10 window
         public CompassWindow CompassWindow { get; private set; } // 0 window
         public TracksDebugWindow TracksDebugWindow { get; private set; } // Control-Alt-F6
@@ -454,6 +455,7 @@ namespace Orts.Viewer3D
             TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
             MultiPlayerWindow = new MultiPlayerWindow(WindowManager);
             CarOperationsWindow = new CarOperationsWindow(WindowManager);
+            TrainDpuWindow = new TrainDpuWindow(WindowManager);
             NextStationWindow = new NextStationWindow(WindowManager);
             CompassWindow = new CompassWindow(WindowManager);
             TracksDebugWindow = new TracksDebugWindow(WindowManager);
@@ -1033,6 +1035,7 @@ namespace Orts.Viewer3D
             }
             if (UserInput.IsPressed(UserCommand.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else { TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible; if (!TrainOperationsWindow.Visible) CarOperationsWindow.Visible = false; }
+            if (UserInput.IsPressed(UserCommand.DisplayTrainDpuWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainDpuWindow.Visible = !TrainDpuWindow.Visible ; else TrainDpuWindow.TabAction();
             if (UserInput.IsPressed(UserCommand.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayCompassWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugTracks)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
