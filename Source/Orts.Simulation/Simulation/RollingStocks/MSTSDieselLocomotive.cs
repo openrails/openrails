@@ -62,7 +62,7 @@ namespace Orts.Simulation.RollingStocks
 
         public float IdleRPM;
         public float MaxRPM;
-        public float GovenorRPM;
+        public float GovernorRPM;
         public float MaxRPMChangeRate;
         public float PercentChangePerSec = .2f;
         public float InitialExhaust;
@@ -150,7 +150,7 @@ namespace Orts.Simulation.RollingStocks
 
                 case "engine(dieselengineidlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselenginemaxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(ortsdieselenginegovenorrpm": GovenorRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
+                case "engine(ortsdieselenginegovernorrpm": GovernorRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0);  Trace.TraceInformation("Gov Input {0}", GovernorRPM);  break;
                 case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsdieselenginemaxpower": MaximumDieselEnginePowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
@@ -401,7 +401,7 @@ namespace Orts.Simulation.RollingStocks
             EngineRPM = locoCopy.EngineRPM;
             IdleRPM = locoCopy.IdleRPM;
             MaxRPM = locoCopy.MaxRPM;
-            GovenorRPM = locoCopy.GovenorRPM;
+            GovernorRPM = locoCopy.GovernorRPM;
             MaxRPMChangeRate = locoCopy.MaxRPMChangeRate;
             MaximumDieselEnginePowerW = locoCopy.MaximumDieselEnginePowerW;
             PercentChangePerSec = locoCopy.PercentChangePerSec;
@@ -459,7 +459,7 @@ namespace Orts.Simulation.RollingStocks
                 if (DieselEngines.HasGearBox)
                 {
                     Trace.TraceInformation("==================================================== {0} has Gearbox =========================================================", LocomotiveName);
-                    Trace.TraceInformation("Gearbox Type: {0}, Transmission Type: {1}, Number of Gears: {2}, Idle RpM: {3}, Max RpM: {4}, Gov RpM: {5}, GearBoxType: {6}, ScoopCoupling: {7}, FreeWheel: {8}", DieselEngines[0].GearBox.GearBoxOperation, DieselTransmissionType, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovenorRPM, DieselEngines[0].GearBox.GearBoxType, DieselEngines[0].GearBox.GearBoxScoopCouplingFitted, DieselEngines[0].GearBox.GearBoxFreeWheelFitted);
+                    Trace.TraceInformation("Gearbox Type: {0}, Transmission Type: {1}, Number of Gears: {2}, Idle RpM: {3}, Max RpM: {4}, Gov RpM: {5}, GearBoxType: {6}, ScoopCoupling: {7}, FreeWheel: {8}", DieselEngines[0].GearBox.GearBoxOperation, DieselTransmissionType, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovernorRPM, DieselEngines[0].GearBox.GearBoxType, DieselEngines[0].GearBox.GearBoxScoopCouplingFitted, DieselEngines[0].GearBox.GearBoxFreeWheelFitted);
 
                     Trace.TraceInformation("Gear\t Ratio\t Max Speed\t Max TE\t    Chg Up RpM\t Chg Dwn RpM\t Coast Force\t Back Force\t");
 

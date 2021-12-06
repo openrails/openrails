@@ -403,10 +403,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 else
                 {
                     var temp = ShaftRPM;
-                    if (ShaftRPM > DieselEngine.GovenorRPM + 2)
-                    {
-                        temp = DieselEngine.GovenorRPM + 2;
-                    }
+
                     return temp;
                 }
             }
@@ -528,94 +525,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             // (See above where DM units TE held at constant value, unless overwritten by the following)
                             if (Locomotive.DieselTransmissionType == TrainCar.DieselTransmissionTypes.Mechanic)
                             {
-                                if (DieselEngine.DemandedThrottlePercent > 0 && DieselEngine.RealRPM > DieselEngine.IdleRPM * 1.5)
+                                
+                                // If engine RpM exceeds maximum rpm
+                                if (DieselEngine.GovernorEnabled && DieselEngine.DemandedThrottlePercent > 0 && DieselEngine.RealRPM > DieselEngine.MaxRPM)
                                 {
-
-                                    // Governor at maxRpM
-                                    if (DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM && ShaftRPM > previousRpM && tractiveForceN > 0)
-                                    {
-                                        throttleFraction = previousThrottleSetting - 0.1f; // reduce fuel admission by reducing throttle (calculation only, not displayed)
-                                        throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds, so it doesn't go negative
-                                        previousThrottleSetting = throttleFraction; // Set for next iteration
-                                        previousRpM = ShaftRPM;
-                                        //     Trace.TraceInformation("Decrease - RealRpm {0} GovernorRpM {1} previousRpM {2} Shaft {3} PrevThottle {4} ", DieselEngine.RealRPM, DieselEngine.GovenorRPM, previousRpM, ShaftRPM, previousThrottleSetting);
-                                    }
-                                    else if (DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM && ShaftRPM + 5.0f < previousRpM)
-                                    {
-                                        throttleFraction = previousThrottleSetting + 0.1f; // increase fuel admission by increasing the throttle (calculation only, not displayed)
-                                        throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds
-                                        previousThrottleSetting = throttleFraction; // Set for next iteration
-                                        previousRpM = ShaftRPM;
-                                        //      Trace.TraceInformation("Increase - RealRpm {0} GovernorRpM {1} previousRpM {2} Shaft {3} PrevThottle {4} ", DieselEngine.RealRPM, DieselEngine.GovenorRPM, previousRpM, ShaftRPM, previousThrottleSetting);
-                                    }
-                                    else if (DieselEngine.RealRPM < DieselEngine.GovenorRPM && ShaftRPM < DieselEngine.GovenorRPM)  // Reset
-                                    {
-                                        previousThrottleSetting = throttleFraction; // Set for next iteration
-                                        previousRpM = DieselEngine.RealRPM;
-                                        //   Trace.TraceInformation("Loop - RealRpm {0} Shaft {1} PrevThrottle {2}", DieselEngine.RealRPM, ShaftRPM, previousThrottleSetting);
-                                    }
-                                    else if (DieselEngine.RealRPM >= DieselEngine.GovenorRPM && ShaftRPM > DieselEngine.GovenorRPM && tractiveForceN < 0)
-                                    {
-                                        throttleFraction = previousThrottleSetting + 0.1f; // increase fuel admission by increasing the throttle (calculation only, not displayed)
-                                        throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds
-                                        previousThrottleSetting = throttleFraction; // Set for next iteration
-                                        previousRpM = ShaftRPM;
-                                        //  Trace.TraceInformation("Negative - RealRpm {0} GovernorRpM {1} previousRpM {2} Shaft {3} PrevThottle {4} ", DieselEngine.RealRPM, DieselEngine.GovenorRPM, previousRpM, ShaftRPM, previousThrottleSetting);
-                                    }
-                                    else // No Change
-                                    {
-
-                                        throttleFraction = previousThrottleSetting;
-                                        previousThrottleSetting = throttleFraction; // Set for next iteration
-                                                                                    //        previousRpM = DieselEngine.RealRPM;
-                                                                                    // Trace.TraceInformation("Loop#2 - RealRpm {0} Shaft {1} PrevThrottle {2}", DieselEngine.RealRPM, ShaftRPM, previousThrottleSetting);
-
-                                    }
-
+                                    var decayGradient = 1.0f / (DieselEngine.GovernorRPM - DieselEngine.MaxRPM);
+                                    var rpmOverRun = (DieselEngine.RealRPM - DieselEngine.MaxRPM);
+                                    throttleFraction = (1.0f - (decayGradient * rpmOverRun)) * throttleFraction;
+                                    throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds, so it doesn't go negative
+                                //    Trace.TraceInformation("Governor - throttle {0} Demand {1} Grad {2} Real {3} Max {4} GovRpM {5} Over {6}", throttleFraction, DieselEngine.DemandedThrottlePercent, decayGradient, DieselEngine.RealRPM, DieselEngine.MaxRPM, DieselEngine.GovernorRPM, rpmOverRun);
                                 }
 
-                                if (DieselEngine.DemandedThrottlePercent > 0 && DieselEngine.RealRPM < DieselEngine.IdleRPM * 1.5)
+                                // If engine RpM drops below idle rpm
+                                if (DieselEngine.GovernorEnabled && DieselEngine.DemandedThrottlePercent > 0 && DieselEngine.RealRPM < DieselEngine.IdleRPM)
                                 {
-                                    // Governor at IdleRpM
-
-                                    if (DieselEngine.RealRPM <= DieselEngine.IdleRPM && ShaftRPM < DieselEngine.IdleRPM && ShaftRPM < previousRpM && tractiveForceN > 0)
-                                    {
-                                        throttleFraction = previousThrottleSetting + 0.1f; // reduce fuel admission by reducing throttle (calculation only, not displayed)
-                                        throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds, so it doesn't go negative
-                                        previousThrottleSetting = throttleFraction; // Set for next iteration
-                                        previousRpM = ShaftRPM;
-                                    //    Trace.TraceInformation("Increase - RealRpm {0} GovernorRpM {1} previousRpM {2} Shaft {3} PrevThottle {4} TE {5}", DieselEngine.RealRPM, DieselEngine.GovenorRPM, previousRpM, ShaftRPM, previousThrottleSetting, tractiveForceN);
-                                    }
-                                    else if (DieselEngine.RealRPM <= DieselEngine.IdleRPM && ShaftRPM < DieselEngine.IdleRPM && ShaftRPM - 5.0f > previousRpM)
-                                    {
-                                        throttleFraction = previousThrottleSetting - 0.1f; // increase fuel admission by increasing the throttle (calculation only, not displayed)
-                                        throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds
-                                        previousThrottleSetting = throttleFraction; // Set for next iteration
-                                        previousRpM = ShaftRPM;
-                                     //   Trace.TraceInformation("Decrease - RealRpm {0} GovernorRpM {1} previousRpM {2} Shaft {3} PrevThottle {4} ", DieselEngine.RealRPM, DieselEngine.GovenorRPM, previousRpM, ShaftRPM, previousThrottleSetting);
-                                    }
-                                    else if (DieselEngine.RealRPM > DieselEngine.IdleRPM && ShaftRPM > DieselEngine.IdleRPM)  // Reset
-                                    {
-                                        previousThrottleSetting = throttleFraction; // Set for next iteration
-                                        previousRpM = DieselEngine.RealRPM;
-                                        //   Trace.TraceInformation("Loop - RealRpm {0} Shaft {1} PrevThrottle {2}", DieselEngine.RealRPM, ShaftRPM, previousThrottleSetting);
-                                    }
-                                    else // No Change
-                                    {
-
-                                        throttleFraction = previousThrottleSetting;
-                                        previousThrottleSetting = throttleFraction; // Set for next iteration
-                                                                                    //        previousRpM = DieselEngine.RealRPM;
-                                                                                    // Trace.TraceInformation("Loop#2 - RealRpm {0} Shaft {1} PrevThrottle {2}", DieselEngine.RealRPM, ShaftRPM, previousThrottleSetting);
-
-                                    }
-
-
+                                    var decayGradient = 1.0f / (DieselEngine.IdleRPM - DieselEngine.StartingRPM);
+                                    var rpmUnderRun = DieselEngine.IdleRPM - DieselEngine.RealRPM;
+                                    throttleFraction = decayGradient * rpmUnderRun + throttleFraction; // Increases throttle over current setting up to a maximum of 100%
+                                    throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds, so it doesn't go negative
+                                //    Trace.TraceInformation("Governor Up - throttle {0} Demand {1} Grad {2} Real {3} Start {4} GovRpM {5} Under {6}", throttleFraction, DieselEngine.DemandedThrottlePercent, decayGradient, DieselEngine.RealRPM, DieselEngine.StartingRPM, DieselEngine.GovernorRPM, rpmUnderRun);
                                 }
+
 
                             }
-
-
 
                             // A torque vs rpm family of curves has been built based on the information on this page
                             // https://www.cm-labs.com/vortexstudiodocumentation/Vortex_User_Documentation/Content/Editor/editor_vs_configure_engine.html
