@@ -182,7 +182,7 @@ namespace ORTS.Common
             {
                 if (string.IsNullOrWhiteSpace(line))
                     continue;
-                if (!(match = Regex.Match(line, @"^("".+""|\S+) +(/MSTS/)|(/OR/)([\S]+/)*")).Success)
+                if (!(match = Regex.Match(line, @"^("".+""|\S+) +(/MSTS/|/OR/)([\S]+/)*")).Success)
                 {
                     Trace.TraceWarning($"VFS mount: Cannot parse configuration line, skipping: {line}");
                     continue;
