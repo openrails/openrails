@@ -45,6 +45,7 @@ using System.IO;
 using System.Text;
 using Event = Orts.Common.Event;
 using ORTS.Scripting.Api;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -525,7 +526,7 @@ namespace Orts.Simulation.RollingStocks
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
-            if (this.IsLeadLocomotive() || (!AcceptMUSignals))
+            if (this.IsLeadLocomotive() || (RemoteControlGroup == -1))
             {
                 if (GearBoxController != null)
                 {
@@ -878,9 +879,241 @@ namespace Orts.Simulation.RollingStocks
                    Simulator.Catalog.GetString("NetHt"),
                    Train.LastCar.CarNetHeatFlowRateW);
             }
+            return status.ToString();
+        }
 
+        public string GetDPDebugStatus()
+        {
+            string throttle = "";
+            if (ThrottlePercent > 0)
+            {
+                if (ThrottleController.NotchCount() > 3)
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "N") + MathHelper.Clamp(ThrottleController.GetNearestNotch(ThrottlePercent / 100f), 1, 8);
+                else
+                    throttle = string.Format("{0:F0}%", ThrottlePercent);
+            }
+            else if (DynamicBrakePercent > 0 && DynamicBrake)
+            {
+                if (RemoteControlGroup == 1)
+                {
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((Train.LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.CurrentNotch, 1, 8);
+                }
+                else
+                {
+                    // The clause here below leads to possible differences of one notch near the notch value, and therefore is commented
+                    //               if (DynamicBrakeController.NotchCount() > 3)
+                    //                   throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((DynamicBrakeController.GetNearestNotch(DynamicBrakePercent / 100f)), 1, 8);
+                    //               else
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((Train.LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.GetNotch(DynamicBrakePercent / 100f), 1, 8);
+                }
+            }
+            else if (DynamicBrakePercent == 0 && !DynamicBrake)
+                throttle = Simulator.Catalog.GetString("Setup");
+            else
+                throttle = Simulator.Catalog.GetParticularString("Notch", "Idle");
+            if (DynamicBrakePercent >= 0)
+                throttle += "???";
+
+            var status = new StringBuilder();
+
+            status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
+            status.AppendFormat("{0} {1}\t", GetStringAttribute.GetPrettyName(Direction), Flipped ? Simulator.Catalog.GetString("(flipped)") : "");
+            status.AppendFormat("{0}\t", IsLeadLocomotive() || RemoteControlGroup < 0 ? "———" : RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : Simulator.Catalog.GetString("Async"));
+            status.AppendFormat("{0}\t", throttle);
+            status.AppendFormat("{0}\t", FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK));
+            status.AppendFormat("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerOverloaded ? "???" : "");
+            status.Append(DieselEngines.GetDPStatus());
 
             return status.ToString();
+        }
+
+        public string GetDpuStatus(bool dataDpu)// used by the TrainDpuInfo window
+        {
+            string throttle = "";
+            if (ThrottlePercent > 0)
+            {
+                if (ThrottleController.NotchCount() > 3)
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "N") + MathHelper.Clamp(ThrottleController.GetNearestNotch(ThrottlePercent / 100f), 1, 8);
+                else
+                    throttle = string.Format("{0:F0}%", ThrottlePercent);
+            }
+            else if (DynamicBrakePercent > 0 && DynamicBrake)
+            {
+                if (RemoteControlGroup == 1)
+                {
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((Train.LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.CurrentNotch, 1,  8);
+                }
+                else
+                {
+                    // The clause here below leads to possible differences of one notch near the notch value, and therefore is commented
+ //               if (DynamicBrakeController.NotchCount() > 3)
+ //                   throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((DynamicBrakeController.GetNearestNotch(DynamicBrakePercent / 100f)), 1, 8);
+ //               else
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((Train.LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.GetNotch(DynamicBrakePercent / 100f), 1, 8);
+                }
+            }
+            else if (DynamicBrakePercent == 0 && !DynamicBrake)
+                throttle = Simulator.Catalog.GetString("Setup");
+            else
+                throttle = Simulator.Catalog.GetParticularString("Notch", "Idle");
+            if (DynamicBrakePercent >= 0)
+                throttle += "???";
+
+            var status = new StringBuilder();
+            // ID
+            status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
+            // Throttle
+            status.AppendFormat("{0}\t", throttle);
+            // Load
+            foreach (var eng in DieselEngines.DEList)
+                status.AppendFormat("{0:F1}%\t", eng.LoadPercent);
+            // BP
+            var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("EOT"));
+            status.AppendFormat("{0:F0}\t", brakeInfoValue);
+
+            // Flow
+            foreach (var eng in DieselEngines.DEList)
+                status.AppendFormat("{0}/{1}\t", FormatStrings.FormatFuelVolume(pS.TopH(eng.DieselFlowLps), Simulator.PlayerLocomotive.IsMetric, Simulator.PlayerLocomotive.IsUK), FormatStrings.h);
+            // Remote
+            if (dataDpu)
+            {
+                status.AppendFormat("{0}\t", IsLeadLocomotive() || RemoteControlGroup < 0 ? "———" : RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : Simulator.Catalog.GetString("Async"));
+            }
+            else
+            {
+                status.AppendFormat("{0}", IsLeadLocomotive() || RemoteControlGroup < 0 ? "———" : RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : Simulator.Catalog.GetString("Async"));
+            }
+
+            if (dataDpu)
+            {   // ER
+                brakeInfoValue = brakeValue(Simulator.Catalog.GetString("EQ"), Simulator.Catalog.GetString("BC"));
+                status.AppendFormat("{0:F0}\t", brakeInfoValue);
+
+                // BC
+                brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BC"), Simulator.Catalog.GetString("BP"));
+                status.AppendFormat("{0:F0}\t", brakeInfoValue);
+
+                // MR
+                status.AppendFormat("{0:F0}", FormatStrings.FormatPressure((Simulator.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (Simulator.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true));
+            }
+            return status.ToString();
+        }
+
+        string brakeValue(string tokenIni, string tokenEnd) // used by GetDpuStatus(bool dataHud)
+        {
+            string trainBrakeStatus = Simulator.PlayerLocomotive.GetTrainBrakeStatus();
+            var brakeInfoValue = "-";
+            if (trainBrakeStatus.Contains(tokenIni) && trainBrakeStatus.Contains(tokenEnd))
+            {
+                var indexIni = trainBrakeStatus.IndexOf(tokenIni) + tokenIni.Length + 1;
+                var indexEnd = trainBrakeStatus.IndexOf(tokenEnd) - indexIni;
+                brakeInfoValue = trainBrakeStatus.Substring(indexIni, indexEnd).TrimEnd();
+            }
+            return brakeInfoValue;
+        }
+
+        public override string GetMultipleUnitsConfiguration()
+        {
+            if (Train == null)
+                return base.GetMultipleUnitsConfiguration();
+            var numberOfLocomotives = 0;
+            var group = 0;
+            var configuration = "";
+
+            var dpUnitId = 0;
+            var remoteControlGroup = 0;
+            for (var i = 0; i < Train.Cars.Count; i++)
+            {
+                if (Train.Cars[i] is MSTSDieselLocomotive)
+                {
+                    if (dpUnitId != (dpUnitId = (Train.Cars[i] as MSTSLocomotive).DPUnitID))
+                    {
+                        configuration += string.Format("{0}{1}",
+                            group,
+                            remoteControlGroup != (remoteControlGroup = Train.Cars[i].RemoteControlGroup)
+                                ? " | " : "\u2013"); // en-dash
+                        group = 0;
+                    }
+                    group++;
+                    numberOfLocomotives++;
+                }
+            }
+            if (group > 0)
+                configuration += string.Format("{0}", group);
+            return numberOfLocomotives > 0 ? configuration : null;
+        }
+
+        private static string[] DebugLabels;
+        private static int MaxNumberOfEngines;
+        private static string[] DpuLabels;
+        private static string[] DPULabels;
+
+        private static void SetDebugLabels(int numberOfEngines)
+        {
+            MaxNumberOfEngines = numberOfEngines;
+            var labels = new StringBuilder();
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("ID"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Throttle"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetParticularString("NonSteam", "Reverser"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Remote"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Fuel"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Tractive Effort"));
+            labels.Append(DieselEngines.SetDebugLabels(numberOfEngines));
+            DebugLabels = labels.ToString().Split('\t');
+        }
+
+        private static void SetDPULabels(bool dpuFull, int numberOfEngines)
+        {
+            MaxNumberOfEngines = numberOfEngines;
+            var labels = new StringBuilder();
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("ID"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Throttle"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Load"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("BP"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Flow"));
+            if (!dpuFull)
+            {
+                labels.AppendFormat("{0}", Simulator.Catalog.GetString("Remote"));
+                DpuLabels = labels.ToString().Split('\t');
+            }
+
+            if (dpuFull)
+            {
+                labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Remote"));
+                labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("ER"));
+                labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("BC"));
+                labels.AppendFormat("{0}", Simulator.Catalog.GetString("MR"));
+                DPULabels = labels.ToString().Split('\t');
+            }
+        }
+
+        public static string GetDebugTableBase(int locomotivesInTrain, int maxNumberOfEngines)
+        {
+            if (MaxNumberOfEngines != maxNumberOfEngines || DebugLabels == null)
+                SetDebugLabels(maxNumberOfEngines);
+            string table = "";
+            for (var i = 0; i < DebugLabels.Length; i++)
+            {
+                table += DebugLabels[i];
+                for (var j = 0; j < locomotivesInTrain; j++)
+                    table += "\t\t";
+                table += "\n";
+            }
+             return table;
+        }
+
+        public static string GetDpuHeader(bool dpuVerticalFull, int locomotivesInTrain, int dpuMaxNumberOfEngines)
+        {
+            if (MaxNumberOfEngines != dpuMaxNumberOfEngines || dpuVerticalFull? DPULabels == null : DpuLabels == null)
+                SetDPULabels(dpuVerticalFull , dpuMaxNumberOfEngines);
+            string table = "";
+            for (var i = 0; i < (dpuVerticalFull ? DPULabels.Length : DpuLabels.Length); i++)
+            {
+                table += dpuVerticalFull ? DPULabels[i] : DpuLabels[i];
+                table += "\n";
+            }
+            table = table.TrimEnd('\n');
+            return table;
         }
 
         /// <summary>

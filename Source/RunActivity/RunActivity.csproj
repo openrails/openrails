@@ -144,6 +144,7 @@
     <Compile Include="Viewer3D\Popups\SwitchWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrackMonitorWindow.cs" />
     <Compile Include="Viewer3D\Popups\TracksDebugWindow.cs" />
+    <Compile Include="Viewer3D\Popups\TrainDPUWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainDrivingWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainListWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainOperationsWindow.cs" />
