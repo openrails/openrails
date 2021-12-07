@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -43,6 +44,7 @@ namespace ORTS.Common
         static readonly Stack<(string, VfsNode)> Stack = new Stack<(string, VfsNode)>();
         static readonly Dictionary<string, IArchive> OpenArchives = new Dictionary<string, IArchive>();
         static readonly List<string> SupportedArchiveExtensions = new List<string> { ".zip", ".rar", ".7z" };
+        static readonly ConcurrentQueue<string> InitLog = new ConcurrentQueue<string>();
 
         ///////////////////////////////////////////////////////////////////////////////////////
         ///
@@ -82,7 +84,11 @@ namespace ORTS.Common
             else if (Directory.Exists(initPath))
                 Initialize(new[] { $"\"{initPath}/\" {MstsBasePath}" }, executablePath);
             else
-                Trace.TraceError($"VFS: Could not initialize from {initPath}, aborting.");
+            {
+                var message = $"VFS: Could not initialize from {initPath}, aborting.";
+                Trace.TraceError(message);
+                InitLog.Enqueue(message);
+            }
         }
 
         public static StreamReader StreamReader(string vfsPath, bool detectEncodingFromByteOrderMarks)
@@ -146,6 +152,12 @@ namespace ORTS.Common
         public static bool FileExists(string vfsPath) => !VfsRoot.ChangeDirectory(NormalizeVirtualPath(Path.GetDirectoryName(vfsPath)), false)
                                                             ?.GetNode(NormalizeVirtualPath(Path.GetFileName(vfsPath)))?.IsDirectory ?? false;
 
+        public static void Log()
+        {
+            while (InitLog.TryDequeue(out var message))
+                Console.WriteLine(message);
+        }
+
         public static void DebugDump()
         {
             Trace.TraceInformation($"VFS: Start of hierarchy dump");
@@ -184,7 +196,9 @@ namespace ORTS.Common
                     continue;
                 if (!(match = Regex.Match(line, @"^("".+""|\S+) +(/MSTS/|/OR/)([\S]+/)*")).Success)
                 {
-                    Trace.TraceWarning($"VFS mount: Cannot parse configuration line, skipping: {line}");
+                    var message = $"VFS mount: Cannot parse configuration line, skipping: {line}";
+                    Trace.TraceWarning(message);
+                    InitLog.Enqueue(message);
                     continue;
                 }
 
@@ -192,7 +206,9 @@ namespace ORTS.Common
                 var mountpoint = match.Groups[2].Value + match.Groups[3].Value;
                 if (!mountpoint.EndsWith("/"))
                 {
-                    Trace.TraceWarning($"VFS mount: Mount point doesn't end with slash (/), skipping: {line}");
+                    var message = $"VFS mount: Mount point doesn't end with slash (/), skipping: {line}";
+                    Trace.TraceWarning(message);
+                    InitLog.Enqueue(message);
                     continue;
                 }
                 mountpoint = NormalizeVirtualPath(mountpoint);
@@ -211,7 +227,11 @@ namespace ORTS.Common
                     if (IsArchiveSupported(sourcePath))
                         MountArchive(sourcePath, null, mountpoint);
                     else
-                        Trace.TraceWarning($"VFS mount: Source archive format is not supported, skipping: {line}");
+                    {
+                        var message = $"VFS mount: Source archive format is not supported, skipping: {line}";
+                        Trace.TraceWarning(message);
+                        InitLog.Enqueue(message);
+                    }
                 }
                 else if (sourcePieces.Length > 0)
                 {
@@ -225,19 +245,27 @@ namespace ORTS.Common
                             if (IsArchiveSupported(archivePath))
                                 MountArchive(archivePath, string.Join("/", sourcePieces, i + 1, sourcePieces.Length - 1 - i), mountpoint);
                             else
-                                Trace.TraceWarning($"VFS mount: Source archive format is not supported, skipping: {line}");
+                            {
+                                var message = $"VFS mount: Source archive format is not supported, skipping: {line}";
+                                Trace.TraceWarning(message);
+                                InitLog.Enqueue(message);
+                            }
                             break;
                         }
                         if (!Directory.Exists(archivePath))
                         {
-                            Trace.TraceWarning($"VFS mount: Source file not found, skipping: {line}");
+                            var message = $"VFS mount: Source file not found, skipping: {line}";
+                            Trace.TraceWarning(message);
+                            InitLog.Enqueue(message);
                             break;
                         }
                     }
                 }
                 else
                 {
-                    Trace.TraceWarning($"VFS mount: Cannot parse configuration line, skipping: {line}");
+                    var message = $"VFS mount: Cannot parse configuration line, skipping: {line}";
+                    Trace.TraceWarning(message);
+                    InitLog.Enqueue(message);
                 }
             }
 
@@ -251,7 +279,9 @@ namespace ORTS.Common
         {
             Debug.Assert(VfsRoot != null, "VFS is uninitialized");
 
-            Trace.TraceInformation($"VFS mount system directory: {directory} => {mountpoint}");
+            var message = $"VFS mount system directory: {directory} => {mountpoint}";
+            Trace.TraceInformation(message);
+            InitLog.Enqueue(message);
             Stack.Clear();
             Stack.Push((directory, VfsRoot.ChangeDirectory(mountpoint, true)));
             while (Stack.Count > 0)
@@ -281,7 +311,9 @@ namespace ORTS.Common
             {
                 using (var archive = ArchiveFactory.Open(new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 {
-                    Trace.TraceInformation($"VFS mount archive: [{archivePath}]/{subPath ?? ""} => {mountpoint}");
+                    var message = $"VFS mount archive: [{archivePath}]/{subPath ?? ""} => {mountpoint}";
+                    Trace.TraceInformation(message);
+                    InitLog.Enqueue(message);
                     var mountNode = VfsRoot.ChangeDirectory(mountpoint, true);
                     foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
                     {
@@ -303,7 +335,9 @@ namespace ORTS.Common
             }
             catch
             {
-                Trace.TraceWarning($"VFS mount: Could not open archive {archivePath}, skipping {subPath ?? string.Empty} => {mountpoint}");
+                var message = $"VFS mount: Could not open archive {archivePath}, skipping {subPath ?? string.Empty} => {mountpoint}";
+                Trace.TraceWarning(message);
+                InitLog.Enqueue(message);
             }
         }
 

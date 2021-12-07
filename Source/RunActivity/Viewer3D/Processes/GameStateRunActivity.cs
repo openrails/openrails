@@ -782,6 +782,8 @@ namespace Orts.Viewer3D.Processes
                 LogSeparator();
                 settings.Log();
                 LogSeparator();
+                Vfs.Log();
+                LogSeparator();
             }
             else
             {
