@@ -309,7 +309,7 @@ namespace ORTS.Common
 
         static string[] GetDirectoriesBase(string vfsPath) => VfsRoot.ChangeDirectory(NormalizeVirtualPath(vfsPath), false)?.GetDirectories()?.ToArray();
         static string[] GetFilesBase(string vfsPath, string searchPattern) => VfsRoot.ChangeDirectory(NormalizeVirtualPath(vfsPath), false)?.GetFiles()
-                .Where(f => Regex.IsMatch(f.Split('/').Last(), NormalizeVirtualPath(searchPattern).Replace(".", @"\.").Replace("*", ".*")))?.ToArray();
+                .Where(f => Regex.IsMatch(f.Split('/').Last(), NormalizeVirtualPath(searchPattern).Replace(".", @"\.").Replace("*", ".*").Replace("-", @"\-")))?.ToArray();
 
         static object PrepareForRead(string vfsPath)
         {

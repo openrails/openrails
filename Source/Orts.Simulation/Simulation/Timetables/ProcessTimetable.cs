@@ -279,7 +279,7 @@ namespace Orts.Simulation.Timetables
             string fileExtension = Path.GetExtension(filePath);
             string fileDirectory = Path.GetDirectoryName(filePath);
 
-            switch (fileExtension)
+            switch (fileExtension.ToLower())
             {
                 case ".timetable_or":
                 case ".timetable-or":
