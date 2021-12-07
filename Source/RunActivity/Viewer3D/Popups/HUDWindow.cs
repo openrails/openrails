@@ -115,6 +115,7 @@ namespace Orts.Viewer3D.Popups
             textPages.Add(TextPageCommon);
             textPages.Add(TextPageConsistInfo);
             textPages.Add(TextPageLocomotiveInfo);
+            textPages.Add(TextPageDistributedPowerInfo);
             textPages.Add(TextPagePowerSupplyInfo);
             textPages.Add(TextPageBrakeInfo);
             textPages.Add(TextPageForceInfo);
@@ -204,27 +205,8 @@ namespace Orts.Viewer3D.Popups
             if (Visible && TextPages[TextPage] == TextPageForceInfo)
             {
                 var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
-                var locoD = Viewer.PlayerLocomotive as MSTSDieselLocomotive;
-
-                // For geared locomotives the Max Force base value needs to change for each gear.
-                if (locoD != null && locoD.DieselEngines.HasGearBox)
-                {
-                    ForceGraphMotiveForce.AddSample(loco.MotiveForceN / loco.HuDGearMaximumTractiveForce);
-                }
-                else
-                {
-                    ForceGraphMotiveForce.AddSample(loco.MotiveForceN / loco.MaxForceN);
-                }
-
-                if (locoD != null && locoD.DieselEngines.HasGearBox)
-                {
-                    ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.HuDGearMaximumTractiveForce);
-                }
-                else
-                {
-                    ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
-                }
-
+                ForceGraphMotiveForce.AddSample(loco.MotiveForceN / loco.MaxForceN);
+                ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
                 ForceGraphNumOfSubsteps.AddSample((float)loco.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS / (float)loco.LocomotiveAxle.AxleRevolutionsInt.MaxSubsteps);
 
                 ForceGraphs.PrepareFrame(frame);
@@ -436,8 +418,9 @@ namespace Orts.Viewer3D.Popups
             var showRetainers = playerTrain.RetainerSetting != RetainerSetting.Exhaust;
             var engineBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus();
             var brakemanBrakeStatus = Viewer.PlayerLocomotive.GetBrakemanBrakeStatus();
-            var dynamicBrakeStatus = Viewer.PlayerLocomotive.GetDynamicBrakeStatus();
+            var dynamicBrakeStatus = Viewer.PlayerLocomotive.GetDPDynamicBrakeStatus();
             var locomotiveStatus = Viewer.PlayerLocomotive.GetStatus();
+            var multipleUnitsConfiguration = Viewer.PlayerLocomotive.GetMultipleUnitsConfiguration();
             var stretched = playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1;
             var bunched = !stretched && playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1;
 
@@ -456,7 +439,9 @@ namespace Orts.Viewer3D.Popups
             TableAddLabelValue(table, Viewer.Catalog.GetString("Speed"), FormatStrings.FormatSpeedDisplay(Viewer.PlayerLocomotive.SpeedMpS, Viewer.PlayerLocomotive.IsMetric));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Gradient"), "{0:F1}%", -Viewer.PlayerLocomotive.CurrentElevationPercent);
             TableAddLabelValue(table, Viewer.Catalog.GetString("Direction"), showMUReverser ? "{1:F0} {0}" : "{0}", FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Viewer.PlayerLocomotive.Direction)), Math.Abs(playerTrain.MUReverserPercent));
-            TableAddLabelValue(table, Viewer.PlayerLocomotive is MSTSSteamLocomotive ? Viewer.Catalog.GetString("Regulator") : Viewer.Catalog.GetString("Throttle"), "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
+            TableAddLabelValue(table, Viewer.PlayerLocomotive is MSTSSteamLocomotive ? Viewer.Catalog.GetString("Regulator") : Viewer.Catalog.GetString("Throttle"), "{0:F0}% {1}",
+                Viewer.PlayerLocomotive.ThrottlePercent,
+                Viewer.PlayerLocomotive is MSTSDieselLocomotive && Viewer.PlayerLocomotive.Train.DPMode == 1 ? string.Format("({0}%)", Viewer.PlayerLocomotive.Train.DPThrottlePercent) : "");
             if ((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeFitted)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Train brake"), "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
             if (showRetainers)
@@ -479,6 +464,8 @@ namespace Orts.Viewer3D.Popups
                     }
                 }
             }
+            if (multipleUnitsConfiguration != null)
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Multiple Units"), "{0}", multipleUnitsConfiguration);
             TableAddLine(table);
             TableAddLabelValue(table, Viewer.Catalog.GetString("FPS"), "{0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue);
             TableAddLine(table);
@@ -643,6 +630,42 @@ namespace Orts.Viewer3D.Popups
             foreach (var car in train.Cars)
                 if (car is MSTSLocomotive)
                     TableAddLines(table, car.GetDebugStatus());
+        }
+
+        void TextPageDistributedPowerInfo(TableData table)
+        {
+            TextPageHeading(table, Viewer.Catalog.GetString("DISTRIBUTED POWER INFORMATION"));
+
+            var locomotive = Viewer.PlayerLocomotive;
+            if (!(locomotive is MSTSDieselLocomotive)) return;
+            var train = locomotive.Train;
+
+            int numberOfDieselLocomotives = 0;
+            int maxNumberOfEngines = 0;
+            for (var i = 0; i<train.Cars.Count; i++)
+            {
+                if (train.Cars[i] is MSTSDieselLocomotive)
+                {
+                    numberOfDieselLocomotives++;
+                    maxNumberOfEngines = Math.Max(maxNumberOfEngines, (train.Cars[i] as MSTSDieselLocomotive).DieselEngines.Count);
+                }
+            }
+            if (numberOfDieselLocomotives > 0)
+            {
+                var row = table.CurrentRow;
+                TableAddLines(table, MSTSDieselLocomotive.GetDebugTableBase(numberOfDieselLocomotives, maxNumberOfEngines));
+                var k = 0;
+                var dpUnitId = 0;
+                for (var i = 0; i<train.Cars.Count; i++)
+                    if (train.Cars[i] is MSTSDieselLocomotive)
+                    {
+                        k++;
+                        var status = (train.Cars[i] as MSTSDieselLocomotive).GetDPDebugStatus().Split('\t');
+                        var fence = (dpUnitId != (dpUnitId = train.Cars[i].RemoteControlGroup)) ? "| " : "";
+                        for (var j = 0; j<status.Length; j++)
+                            table.Cells[row + j, 2 * k] = fence + status[j];
+                    }
+            }
         }
 
         void TextPagePowerSupplyInfo(TableData table)

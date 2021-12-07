@@ -230,8 +230,6 @@ namespace ORTS
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
             checkDataLogMisc.Checked = Settings.DataLogMisc;
             checkDataLogSteamPerformance.Checked = Settings.DataLogSteamPerformance;
-            checkDataLogDieselPerformance.Checked = Settings.DataLogDieselPerformance;
-            numericPerformanceSpeedRecording.Value = Settings.PerformanceSpeedRecording;
             checkVerboseConfigurationMessages.Checked = Settings.VerboseConfigurationMessages;
 
             // Evaluation tab
@@ -502,8 +500,6 @@ namespace ORTS
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;
             Settings.DataLogMisc = checkDataLogMisc.Checked;
             Settings.DataLogSteamPerformance = checkDataLogSteamPerformance.Checked;
-            Settings.DataLogDieselPerformance = checkDataLogDieselPerformance.Checked;
-            Settings.PerformanceSpeedRecording = (int)numericPerformanceSpeedRecording.Value;
             Settings.VerboseConfigurationMessages = checkVerboseConfigurationMessages.Checked;
 
             // Evaluation tab

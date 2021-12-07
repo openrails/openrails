@@ -145,7 +145,6 @@ namespace ORTS.Scripting.Api
         ServiceRetentionCancellationButtonReleased,
         SwitchOnElectricTrainSupply,
         SwitchOffElectricTrainSupply,
-        StallEngine,
     }
 
     public enum PowerSupplyType

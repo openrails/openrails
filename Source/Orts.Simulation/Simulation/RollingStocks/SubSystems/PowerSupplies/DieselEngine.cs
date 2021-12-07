@@ -125,19 +125,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
                 case "engine(gearboxnumberofgears":
                 case "engine(gearboxdirectdrivegear":
-                case "engine(ortsgearboxtype":
                 case "engine(gearboxoperation":
                 case "engine(gearboxenginebraking":
                 case "engine(gearboxmaxspeedforgears":
                 case "engine(gearboxmaxtractiveforceforgears":
-                case "engine(ortsgearboxtractiveforceatspeed":
                 case "engine(gearboxoverspeedpercentageforfailure":
                 case "engine(gearboxbackloadforce":
                 case "engine(gearboxcoastingforce":
                 case "engine(gearboxupgearproportion":
                 case "engine(gearboxdowngearproportion":
-                case "engine(ortsgearboxfreewheel":
-                case "engine(ortsgearboxscoopcoupling":
                     MSTSGearBoxParams.Parse(lowercasetoken, stf);
                     break;
             }
@@ -264,7 +260,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     temp += de.CurrentDieselOutputPowerW;
                 }
-                temp = MathHelper.Clamp(temp, 0.0f, temp);  // prevent -ve power
                 return temp;
             }
         }
@@ -329,10 +324,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 return temp;
             }
         }
-        
-        /// <summary>
-        /// Returns the tractive effort output of the gear box.
-        /// </summary>
+
         public float TractiveForceN
         {
             get
@@ -341,17 +333,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 foreach (DieselEngine de in DEList)
                 {
                     if(de.GearBox != null)
-                    {
-                        // For friction clutches, and ones without scoop coupling as soon as locomotive is put into gear some torque is transmitted to wheels
-                        if (de.DemandedThrottlePercent == 0 && !Locomotive.DieselEngines[0].GearBox.GearBoxScoopCouplingFitted)
-                        {
-                            temp += (de.GearBox.TractiveForceN);
-                        }
-                        else
-                        {
-                            temp += (de.DemandedThrottlePercent * 0.01f * de.GearBox.TractiveForceN);
-                        }
-                    }                  
+                        temp += (de.DemandedThrottlePercent * 0.01f * de.GearBox.TractiveForceN);
                 }
                 return temp;
             }
@@ -395,9 +377,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             return new DieselEnum(DEList.ToArray());
         }
 
+        public static string SetDebugLabels(int numberOfEngines)
+        {
+            var labels = new StringBuilder();
+            var tabs = "\t";
+            for (var i = 1; i < numberOfEngines; i++) tabs += "\t";
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Status"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Load"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("RPM"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Flow"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Temperature"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Oil Pressure"), tabs);
+            return labels.ToString();
+        }
+
         public string GetStatus()
         {
-
             var result = new StringBuilder();
 
             result.AppendFormat(Simulator.Catalog.GetString("Status"));
@@ -412,19 +408,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0:F1}%", eng.LoadPercent);
 
-            if (Locomotive.DieselTransmissionType == TrainCar.DieselTransmissionTypes.Mechanic)
-            {
-                foreach (var eng in DEList)
-                {
-                    var governorEnabled = eng.GovernorEnabled ? "???" : "";
-                    result.AppendFormat("\t{0:F0} {2}{1}", eng.RealRPM, governorEnabled, FormatStrings.rpm);
-                }
-            }
-            else
-            {
-                foreach (var eng in DEList)
-                    result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
-            }
+            foreach (var eng in DEList)
+                result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
 
             result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Flow"));
             foreach (var eng in DEList)
@@ -438,18 +423,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0}", FormatStrings.FormatPressure(eng.DieselOilPressurePSI, PressureUnit.PSI, Locomotive.MainPressureUnit, true));
 
-            // temporary debug purposes
-            if (HasGearBox)
-            {
-                result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Demand"));
-                foreach (var eng in DEList)
-                    result.AppendFormat("\t{0:F0}", eng.DemandedRPM);
+            return result.ToString();
+        }
 
-                result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Clutch"));
-                foreach (var eng in DEList)
-                    result.AppendFormat("\t{0:F0}", eng.GearBox.IsClutchOn);
-
-            }
+        public string GetDPStatus()
+        {
+            var result = new StringBuilder();
+            var eng = DEList[0];
+            result.AppendFormat("\t{0}", Simulator.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(eng.State)));
+            result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.CurrentDieselOutputPowerW, Locomotive.IsMetric, false, false));
+            result.AppendFormat("\t{0:F1}%", eng.LoadPercent);
+            result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
+            result.AppendFormat("\t{0}/{1}", FormatStrings.FormatFuelVolume(pS.TopH(eng.DieselFlowLps), Locomotive.IsMetric, Locomotive.IsUK), FormatStrings.h);
+            result.AppendFormat("\t{0}", FormatStrings.FormatTemperature(eng.DieselTemperatureDeg, Locomotive.IsMetric, false));
+            result.AppendFormat("\t{0}", FormatStrings.FormatPressure(eng.DieselOilPressurePSI, PressureUnit.PSI, Locomotive.MainPressureUnit, true));
 
             return result.ToString();
         }
@@ -541,7 +528,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
     public class DieselEngine : ISubSystem<DieselEngine>
     {
-
         public enum Cooling
         {
             NoCooling = 0,
@@ -597,14 +583,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Actual RPM of the engine
         /// </summary>
         public float RealRPM;
-        /// <summary>
-        /// RPM of the engine when gear is re-engaging
-        /// </summary>
-        public float ApparentRPM;
-        /// <summary>
-        /// RPM of the engine as defined by throttle setting
-        /// </summary>
-        public float RawRpM;
+
         /// <summary>
         /// RPM treshold when the engine starts to combust fuel
         /// </summary>
@@ -663,7 +642,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// The RPM controller tries to reach this value
         /// </summary>
         public float DemandedRPM;           
-        public float demandedThrottlePercent;
+        float demandedThrottlePercent;
         /// <summary>
         /// Demanded throttle percent, usually token from parent locomotive
         /// </summary>
@@ -676,10 +655,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Maximal RPM
         /// </summary>
         public float MaxRPM;
-         /// <summary>
-        /// Govenor RPM - maximum speed that engine is held to
-        /// </summary>
-        public float GovernorRPM;
         /// <summary>
         /// RPM change rate from ENG file
         /// </summary>
@@ -736,10 +711,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Engine load table - Max output power vs. RPM
         /// </summary>
         public Interpolator DieselPowerTab;
-         /// <summary>
-        /// Rail power table - Max rail output power vs. RPM
-        /// </summary>
-        public Interpolator RailPowerTab;
         /// <summary>
         /// Engine consumption table - Consumption vs. RPM
         /// </summary>
@@ -806,16 +777,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 float k = (DieselMaxOilPressurePSI - DieselMinOilPressurePSI)/(MaxRPM - IdleRPM);
                 float q = DieselMaxOilPressurePSI - k * MaxRPM;
-                float res = k * RawRpM + q - dieseloilfailurePSI;
+                float res = k * RealRPM + q - dieseloilfailurePSI;
                 if (res < 0f)
                     res = 0f;
                 return res;
             }
         }
-        /// <summary>
-        /// Governor has activiated
-        /// </summary>
-        public bool GovernorEnabled = false;
         /// <summary>
         /// Minimal oil pressure at IdleRPM
         /// </summary>
@@ -894,7 +861,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     case "idlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.IdleRPM; break;
                     case "maxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.MaxRPM; break;
-                    case "governorrpm": GovernorRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
                     case "startingrpm": StartingRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingRPM; break;
                     case "startingconfirmrpm": StartingConfirmationRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingConfirmRPM; break;
                     case "changeuprpmps": ChangeUpRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.ChangeUpRPMpS; break;
@@ -942,7 +908,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             IdleRPM = other.IdleRPM;
             MaxRPM = other.MaxRPM;
-            GovernorRPM = other.GovernorRPM;
             StartingRPM = other.StartingRPM;
             StartingConfirmationRPM = other.StartingConfirmationRPM;
             ChangeUpRPMpS = other.ChangeUpRPMpS;
@@ -952,7 +917,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             MaximumDieselPowerW = other.MaximumDieselPowerW;
             MaximumRailOutputPowerW = other.MaximumRailOutputPowerW;
             initLevel = other.initLevel;
-            RailPowerTab = new Interpolator(other.RailPowerTab);
             DieselPowerTab = new Interpolator(other.DieselPowerTab);
             DieselConsumptionTab = new Interpolator(other.DieselConsumptionTab);
             ThrottleRPMTab = new Interpolator(other.ThrottleRPMTab);
@@ -1030,103 +994,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (GearBox != null)
             {
-                if (GearBox.GearBoxOperation == GearBoxOperation.Automatic)
+                if (RealRPM > 0)
+                    GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
+                else
+                    GearBox.ClutchPercent = 100f;
+                
+                if (GearBox.CurrentGear != null)
                 {
-                    if (RealRPM > 0)
-                        GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
-                    else
-                        GearBox.ClutchPercent = 100f;
-
-                    // When clutch is engaged (true) engine rpm should follow wheel shaft speed
                     if (GearBox.IsClutchOn)
-                    {
                         DemandedRPM = GearBox.ShaftRPM;
-                    }
-
-                }
-                else if (GearBox.GearBoxType == TypesGearBox.A)
-                {
-                    if (GearBox.ManualGearChange && !GearBox.ManualGearBoxChangeOn) // Initially set gear change 
-                    {
-                        GearBox.ManualGearBoxChangeOn = true;
-                    }
-
-                    if (RealRPM > 0)
-                        GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
-                    else
-                        GearBox.ClutchPercent = 100f;
-
-                    if (GearBox.CurrentGear != null && !GearBox.ManualGearBoxChangeOn)
-                    {
-                        // When clutch is engaged (true) engine rpm should follow wheel shaft speed
-                        if (GearBox.IsClutchOn)
-                        {
-                            DemandedRPM = GearBox.ShaftRPM;
-                        }
-                    }
-                    else if (GearBox.ManualGearBoxChangeOn)
-                    {
-                        // During a manual gear change brake engine shaft speed to match wheel shaft speed
-                        DemandedRPM = IdleRPM;
-
-                        // once engine speed is less then shaft speed reset gear change, or is at idle rpm, reset gear change
-                        if ((RealRPM <= GearBox.ShaftRPM && GearBox.ShaftRPM < MaxRPM) || RealRPM == IdleRPM)
-                        {
-                            GearBox.ManualGearChange = false;
-                            GearBox.ManualGearBoxChangeOn = false;
-                        }
-                    }
-                }
-                else if (GearBox.GearBoxType == TypesGearBox.B)
-                {
-                    // When a manual gear change is initiated, then reduce motive to zero (done in gear box class) whilst gear change is occurring, allow time delay for gears to change
-                    if (GearBox.ManualGearChange && !GearBox.ManualGearBoxChangeOn) // Initially set gear change 
-                    {
-                        GearBox.ManualGearBoxChangeOn = true;
-                    }
-                    else if (GearBox.ManualGearBoxChangeOn && GearBox.ManualGearTimerS < GearBox.ManualGearTimerResetS)
-                    {
-                        GearBox.ManualGearTimerS += elapsedClockSeconds; // Increment timer
-                    }
-                    else if (GearBox.ManualGearBoxChangeOn && GearBox.ManualGearTimerS > GearBox.ManualGearTimerResetS)
-                    {
-                        GearBox.ManualGearBoxChangeOn = false;
-                        GearBox.ManualGearTimerS = 0; // Reset timer
-                    }
-
-                    if (RealRPM > 0)
-                        GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
-                    else
-                        GearBox.ClutchPercent = 100f;
-
-                    if (GearBox.CurrentGear != null && !GearBox.ManualGearBoxChangeOn)
-                    {
-                        // When clutch is engaged (true) engine rpm should follow wheel shaft speed
-                        if (GearBox.IsClutchOn)
-                        {
-                            DemandedRPM = GearBox.ShaftRPM;
-                        }
-                    }
-                    else if (GearBox.ManualGearBoxChangeOn)
-                    {
-                        // During a manual gear change brake engine shaft speed to match wheel shaft speed
-                        DemandedRPM = IdleRPM;
-
-                        // once engine speed is less then shaft speed reset gear change
-                        if (RealRPM <= GearBox.ShaftRPM || RealRPM == IdleRPM)
-                        {
-                            GearBox.ManualGearChange = false;
-                        }
-                    }
-
-                }
-
-                // Simulate stalled engine if RpM decreases too far or exceed the safe overrun speed, by stopping engine, only applies to Type D clutch
-                if ((RealRPM < 0.9f * IdleRPM || RealRPM > GovernorRPM) && State == DieselEngineState.Running)
-                {
-                    Trace.TraceInformation("Diesel Engine has stalled");
-                    HandleEvent(PowerSupplyEvent.StallEngine);
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Diesel Engine has stalled."));
                 }
             }
 
@@ -1167,47 +1043,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             //                dRPM = (CurrentDieselOutputPowerW - OutputPowerW) / MaximumDieselPowerW * 0.01f * RateOfChangeDownRPMpSS;
             //            }
             // Deleted to see what impact it has - was holding rpm artificialy high - http://www.elvastower.com/forums/index.php?/topic/33739-throttle-bug-in-recent-or-builds/page__gopid__256086#entry256086
-                       
+
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
-
-            RawRpM = RealRPM;
-
-            if (State == DieselEngineState.Stopped)
-            {
-                RealRPM = 0;
-            }
-
-            // links engine rpm and shaft rpm together when clutch is fully engaged
-            if (HasGearBox && GearBox.GearBoxOperation == GearBoxOperation.Manual)
-            {
-                if (!GearBox.IsClutchOn && RealRPM < GearBox.ShaftRPM && Locomotive.SpeedMpS > 0)
-                {
-                    var tempdRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * (MaxRPM - DemandedRPM)), ChangeUpRPMpS);
-                    RealRPM = Math.Max(RealRPM + tempdRPM * elapsedClockSeconds, 0);
-                }
-
-                if (GearBox != null)
-                {
-
-                    if (RealRPM > IdleRPM && GearBox.IsClutchOn)
-                    {
-                        RealRPM = GearBox.ShaftRPM;
-                    }
-                }
-
-                // Govenor limits engine rpm
-                if (GovernorRPM != 0)
-                {
-                    if ((RealRPM > MaxRPM || RealRPM < IdleRPM) && !GovernorEnabled)
-                    {
-                        GovernorEnabled = true;
-                    }
-                    else if (RealRPM > IdleRPM && RealRPM < MaxRPM && GovernorEnabled)
-                    {
-                        GovernorEnabled = false;
-                    }
-                }
-            }
 
             // Calculate the apparent throttle setting based upon the current rpm of the diesel prime mover. This allows the Tractive effort to increase with rpm to the throttle setting selected.
             // This uses the reverse Tab of the Throttle vs rpm Tab.
@@ -1218,25 +1055,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             ApparentThrottleSetting = MathHelper.Clamp(ApparentThrottleSetting, 0.0f, 100.0f);  // Clamp throttle setting within bounds
 
-            // If it is a geared locomotive, and rpm is greater then Max RpM, then output engine power should be reduced.
-            if (GovernorEnabled && HasGearBox)
-            {
-                if (DemandedRPM > MaxRPM)
-                {
-                    var excessRpM = DemandedRPM - MaxRPM;
-                  //  Trace.TraceInformation("excess {0} Demand {1} Max {2}", excessRpM, DemandedRPM, MaxRPM);
-                    RawRpM = MaxRPM - excessRpM;
-                   // Trace.TraceInformation("Raw - {0} Demand {1} Max {2}", RawRPM, DemandedRPM, MaxRPM);
-                }
-            }
-
             if (DieselPowerTab != null)
             {
-                CurrentDieselOutputPowerW = (DieselPowerTab[RawRpM] * (1 - Locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - Locomotive.PowerReduction) ? DieselPowerTab[RawRpM] * (1 - Locomotive.PowerReduction) : MaximumDieselPowerW * (1 - Locomotive.PowerReduction));
+                CurrentDieselOutputPowerW = (DieselPowerTab[RealRPM] * (1 - Locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - Locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - Locomotive.PowerReduction) : MaximumDieselPowerW * (1 - Locomotive.PowerReduction));
             }
             else
             {
-                CurrentDieselOutputPowerW = (RawRpM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
+                CurrentDieselOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
             }
 
             if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
@@ -1244,8 +1069,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 CurrentDieselOutputPowerW -= Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
                 CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
             }
-
-            CurrentDieselOutputPowerW = MathHelper.Clamp(CurrentDieselOutputPowerW, 0.0f, CurrentDieselOutputPowerW);  // prevent power going -ve
 
             if (State == DieselEngineState.Starting)
             {
@@ -1271,7 +1094,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 if (DieselConsumptionTab != null)
                 {
-                         DieselFlowLps = DieselConsumptionTab[RawRpM] / 3600.0f;
+                         DieselFlowLps = DieselConsumptionTab[RealRPM] / 3600.0f;
                 }
                 else
                 {
@@ -1356,7 +1179,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             GearBox.NextGear = null;
                     }
                 }
-
                 if (GearBox.CurrentGear == null)
                     OutputPowerW = 0f;
 
@@ -1380,34 +1202,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
 
                 case PowerSupplyEvent.StartEngine:
-                    if (HasGearBox)
+                    if (State == DieselEngineState.Stopped || State == DieselEngineState.Stopping)
                     {
-                        if ((State == DieselEngineState.Stopped || State == DieselEngineState.Stopping) && GearBox.CurrentGear == null && Locomotive.Direction == Direction.N)
-                        {
-                            DemandedRPM = StartingRPM;
-                            State = DieselEngineState.Starting;
-                        }
-
-                    }
-                    else
-                    {
-                        if (State == DieselEngineState.Stopped || State == DieselEngineState.Stopping)
-                        {
-                            DemandedRPM = StartingRPM;
-                            State = DieselEngineState.Starting;
-                        }
+                        DemandedRPM = StartingRPM;
+                        State = DieselEngineState.Starting;
                     }
                     break;
-
-                case PowerSupplyEvent.StallEngine:
-                    if (State == DieselEngineState.Running)
-                    {
-                        DemandedRPM = 0;
-                        RealRPM = 0;
-                        State = DieselEngineState.Stopped;
-                    }
-                    break;
-
             }
         }
 
@@ -1445,26 +1245,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         /// <summary>
-        /// Fix or define a diesel prime mover engine code block. If the user has not defined a diesel eng, then OR will use this section to create one.
+        /// Fix or define a diesel prime mover engine code block. If the user has not defned a diesel eng, then OR will use this section to create one.
         /// If the user has left a parameter out of the code, then OR uses this section to try and set the missing values to a default value.
         /// Error code has been provided that will provide the user with an indication if a parameter has been left out.
         /// </summary>
         public void InitFromMSTS()
         {
-            if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
-            {
-                MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
-            }
-            else
-            {
-                MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is about 80% of the prime mover output power
-            }
-
-            if (Locomotive.GovernorRPM != 0)
-            {
-                GovernorRPM = Locomotive.GovernorRPM;
-            }
-
             if ((initLevel & SettingsFlags.IdleRPM) == 0)
             {
                 if (DieselEngineConfigured && Locomotive.IdleRPM != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
@@ -1801,7 +1587,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 int count = 11;
                 float[] rpm = new float[count + 1];
                 float[] power = new float[] { 0.02034f, 0.09302f, 0.36628f, 0.60756f, 0.69767f, 0.81395f, 0.93023f, 0.9686f, 0.99418f, 0.99418f, 1f, 0.5f };
-                float[] torque = new float[] { 0.2f, 0.4f, 0.7f, 0.95f, 1f, 1f, 0.98f, 0.95f, 0.9f, 0.86f, 0.81f, 0.3f };
+                float[] torque = new float[] { 0.05f, 0.2f, 0.7f, 0.95f, 1f, 1f, 0.98f, 0.95f, 0.9f, 0.86f, 0.81f, 0.3f };
 
                 for (int i = 0; i < count; i++)
                 {
@@ -1809,14 +1595,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         rpm[i] = IdleRPM;
                     else
                         rpm[i] = rpm[i - 1] + (MaxRPM - IdleRPM) / (count - 1);
-
                     power[i] *= MaximumDieselPowerW;
                     torque[i] *= MaximumDieselPowerW / (MaxRPM * 2f * 3.1415f / 60f) / 0.81f;
                 }
                 rpm[count] = MaxRPM * 1.5f;
-                power[count] *= MaximumDieselPowerW;
-                torque[count] *= MaximumDieselPowerW / (MaxRPM * 3f * 3.1415f / 60f) / 0.81f;
-
                 DieselPowerTab = new Interpolator(rpm, power);
                 DieselTorqueTab = new Interpolator(rpm, torque);
                 if (DieselEngineConfigured)
@@ -1896,6 +1678,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set by DieselPowerTab {0} value", FormatStrings.FormatPower(DieselPowerTab[MaxRPM], Locomotive.IsMetric, false, false));
             }
 
+            // Check whether this code check is really required.
+            if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
+            {
+                MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
+            }
+            else 
+            {
+                MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is about 80% of the prime mover output power
+            }
+
             InitialExhaust = Locomotive.InitialExhaust;
             MaxExhaust = Locomotive.MaxExhaust;
         }
@@ -1955,49 +1747,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     loco.MaxRPM = 600.0f;
                 }
-            }
-
-            if (GovernorRPM == 0)
-            {
-                if (MaxRPM != 0)
-                {
-                    GovernorRPM = MaxRPM * 1.309f;
-                }
-                else
-                {
-                    GovernorRPM = 2000.0f ;
-                }
-            }
-
-            // Check to see if RailPowerTab has been set up, typically won't have been if a diesel engine block has been set in the ENG
-            if (RailPowerTab == null)
-            {
-                if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
-                {
-                    MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
-                }
-                else
-                {
-                    MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is about 80% of the prime mover output power
-                }
-
-                int count = 11;
-                float[] rpm = new float[count + 1];
-                float[] railpower = new float[] { 0.02034f, 0.09302f, 0.36628f, 0.60756f, 0.69767f, 0.81395f, 0.93023f, 0.9686f, 0.99418f, 0.99418f, 1f, 0.5f };
-
-                for (int i = 0; i < count; i++)
-                {
-                    if (i == 0)
-                        rpm[i] = IdleRPM;
-                    else
-                        rpm[i] = rpm[i - 1] + (MaxRPM - IdleRPM) / (count - 1);
-
-                    railpower[i] *= MaximumRailOutputPowerW;
-                }
-                rpm[count] = MaxRPM * 1.5f;
-                railpower[count] *= MaximumDieselPowerW;
-
-                RailPowerTab = new Interpolator(rpm, railpower);
             }
         }
     }

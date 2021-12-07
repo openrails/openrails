@@ -138,9 +138,6 @@
             this.label17 = new System.Windows.Forms.Label();
             this.checkDataLogPhysics = new System.Windows.Forms.CheckBox();
             this.checkDataLogSteamPerformance = new System.Windows.Forms.CheckBox();
-            this.checkDataLogDieselPerformance = new System.Windows.Forms.CheckBox();
-            this.labelPerformanceSpeedRecording = new System.Windows.Forms.Label();
-            this.numericPerformanceSpeedRecording = new System.Windows.Forms.NumericUpDown();
             this.checkVerboseConfigurationMessages = new System.Windows.Forms.CheckBox();
             this.tabPageEvaluate = new System.Windows.Forms.TabPage();
             this.checkListDataLogTSContents = new System.Windows.Forms.CheckedListBox();
@@ -244,7 +241,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericAdhesionMovingAverageFilterSize)).BeginInit();
             this.tabPageKeyboard.SuspendLayout();
             this.tabPageDataLogger.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceSpeedRecording)).BeginInit();
             this.tabPageEvaluate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).BeginInit();
             this.tabPageContent.SuspendLayout();
@@ -1543,9 +1539,6 @@
             this.tabPageDataLogger.Controls.Add(this.label17);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogPhysics);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogSteamPerformance);
-            this.tabPageDataLogger.Controls.Add(this.checkDataLogDieselPerformance);
-            this.tabPageDataLogger.Controls.Add(this.labelPerformanceSpeedRecording);
-            this.tabPageDataLogger.Controls.Add(this.numericPerformanceSpeedRecording);
             this.tabPageDataLogger.Controls.Add(this.checkVerboseConfigurationMessages);
             this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
             this.tabPageDataLogger.Name = "tabPageDataLogger";
@@ -1651,69 +1644,17 @@
             // checkDataLogSteamPerformance
             // 
             this.checkDataLogSteamPerformance.AutoSize = true;
-            this.checkDataLogSteamPerformance.Location = new System.Drawing.Point(6, 203);
+            this.checkDataLogSteamPerformance.Location = new System.Drawing.Point(6, 180);
             this.checkDataLogSteamPerformance.Name = "checkDataLogSteamPerformance";
             this.checkDataLogSteamPerformance.Size = new System.Drawing.Size(163, 17);
             this.checkDataLogSteamPerformance.TabIndex = 6;
             this.checkDataLogSteamPerformance.Text = "Log Steam performance data";
             this.checkDataLogSteamPerformance.UseVisualStyleBackColor = true;
             // 
-            // checkDataLogDieselPerformance
-            // 
-            this.checkDataLogDieselPerformance.AutoSize = true;
-            this.checkDataLogDieselPerformance.Location = new System.Drawing.Point(6, 226);
-            this.checkDataLogDieselPerformance.Name = "checkDataLogDieselPerformance";
-            this.checkDataLogDieselPerformance.Size = new System.Drawing.Size(163, 17);
-            this.checkDataLogDieselPerformance.TabIndex = 6;
-            this.checkDataLogDieselPerformance.Text = "Log Diesel performance data";
-            this.checkDataLogDieselPerformance.UseVisualStyleBackColor = true;
-
-            // 
-            // labelPerformanceSpeedRecording
-            // 
-            this.labelPerformanceSpeedRecording.AutoSize = true;
-            this.labelPerformanceSpeedRecording.Location = new System.Drawing.Point(86, 249);
-            this.labelPerformanceSpeedRecording.Margin = new System.Windows.Forms.Padding(3);
-            this.labelPerformanceSpeedRecording.Name = "labelPerformanceSpeedRecording";
-            this.labelPerformanceSpeedRecording.Size = new System.Drawing.Size(110, 13);
-            this.labelPerformanceSpeedRecording.TabIndex = 12;
-            this.labelPerformanceSpeedRecording.Text = "Performance recording speed intervals (mph)";
-            // 
-            // numericPerformanceSpeedRecording
-            // 
-            this.numericPerformanceSpeedRecording.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericPerformanceSpeedRecording.Location = new System.Drawing.Point(26, 247);
-            this.numericPerformanceSpeedRecording.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericPerformanceSpeedRecording.Maximum = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.numericPerformanceSpeedRecording.Minimum = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-            this.numericPerformanceSpeedRecording.Name = "numericPerformanceSpeedRecording";
-            this.numericPerformanceSpeedRecording.Size = new System.Drawing.Size(54, 20);
-            this.numericPerformanceSpeedRecording.TabIndex = 11;
-            this.toolTip1.SetToolTip(this.numericPerformanceSpeedRecording, "Speed intervals to record performance");
-            this.numericPerformanceSpeedRecording.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-
-
-            // 
             // checkVerboseConfigurationMessages
             // 
             this.checkVerboseConfigurationMessages.AutoSize = true;
-            this.checkVerboseConfigurationMessages.Location = new System.Drawing.Point(6, 180);
+            this.checkVerboseConfigurationMessages.Location = new System.Drawing.Point(6, 236);
             this.checkVerboseConfigurationMessages.Name = "checkVerboseConfigurationMessages";
             this.checkVerboseConfigurationMessages.Size = new System.Drawing.Size(236, 17);
             this.checkVerboseConfigurationMessages.TabIndex = 6;
@@ -2682,7 +2623,6 @@
             this.tabPageKeyboard.ResumeLayout(false);
             this.tabPageDataLogger.ResumeLayout(false);
             this.tabPageDataLogger.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceSpeedRecording)).EndInit();
             this.tabPageEvaluate.ResumeLayout(false);
             this.tabPageEvaluate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).EndInit();
@@ -2771,9 +2711,6 @@
         private System.Windows.Forms.CheckBox checkDataLogPhysics;
         private System.Windows.Forms.CheckBox checkDataLogPerformance;
         private System.Windows.Forms.CheckBox checkDataLogSteamPerformance;
-        private System.Windows.Forms.CheckBox checkDataLogDieselPerformance;
-        private System.Windows.Forms.Label labelPerformanceSpeedRecording;
-        private System.Windows.Forms.NumericUpDown numericPerformanceSpeedRecording;
         private System.Windows.Forms.CheckBox checkVerboseConfigurationMessages;
         private System.Windows.Forms.CheckBox checkDataLogger;
         private System.Windows.Forms.CheckBox checkDataLogMisc;

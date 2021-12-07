@@ -22,7 +22,7 @@
 #define DEBUG_DUMP_STEAM_POWER_CURVE
 // Uses the DataLogger to record power curve data for steam locos when no other option is chosen.
 // To use this, on the Menu, check the Logging box and cancel all Options > DataLogger.
-// The data logger records data in the file "Program\OpenRailsdump.csv".
+// The data logger records data in the file "Program\dump.csv".
 // For steam locomotives only this replaces the default data with a record for each speed increment (mph).
 // Collect the data by starting from rest and accelerating the loco to maximum speed.
 // Only horsepower and mph available currently.
@@ -53,8 +53,7 @@ namespace Orts.Viewer3D
         int FrameNumber;
         double LastUpdateRealTime;   // update text message only 10 times per second
 
-        public float previousLoggedSteamSpeedMpH;
-        public float previousLoggedDieselSpeedMpH;
+        float previousLoggedSteamSpeedMpH = -5.0f;
 
 #if DEBUG_DUMP_STEAM_POWER_CURVE
         float previousLoggedSpeedMpH = -1.0f;
@@ -89,9 +88,6 @@ namespace Orts.Viewer3D
             Viewer = viewer;
             Logger = new DataLogger(Path.Combine(Viewer.Settings.LoggingPath, "OpenRailsDump.csv"));
 
-            previousLoggedSteamSpeedMpH = -(Viewer.Settings.PerformanceSpeedRecording);
-            previousLoggedDieselSpeedMpH = -(Viewer.Settings.PerformanceSpeedRecording);
-
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };
 
@@ -105,8 +101,6 @@ namespace Orts.Viewer3D
             if (Viewer.Settings.DataLogger)
                 DataLoggerStop();
         }
-
-
 
         public void HandleUserInput(ElapsedTime elapsedTime)
         {
@@ -126,25 +120,7 @@ namespace Orts.Viewer3D
             {
                 return Viewer.Settings.DataLogger
                 && Viewer.Settings.DataLogSteamPerformance
-                && Viewer.PlayerLocomotive.GetType() == typeof(MSTSSteamLocomotive)
-                && !Viewer.Settings.DataLogDieselPerformance
-                && !Viewer.Settings.DataLogPerformance
-                && !Viewer.Settings.DataLogPhysics
-                && !Viewer.Settings.DataLogMisc;
-            }
-        }
-
-        public bool IsRecordingDieselPerformance
-        {
-            get
-            {
-                return Viewer.Settings.DataLogger
-                && Viewer.Settings.DataLogDieselPerformance
-                && Viewer.PlayerLocomotive.GetType() == typeof(MSTSDieselLocomotive)
-                && !Viewer.Settings.DataLogSteamPerformance
-                && !Viewer.Settings.DataLogPerformance
-                && !Viewer.Settings.DataLogPhysics
-                && !Viewer.Settings.DataLogMisc;
+                && Viewer.PlayerLocomotive.GetType() == typeof(MSTSSteamLocomotive);
             }
         }
 
@@ -152,8 +128,7 @@ namespace Orts.Viewer3D
         {
            MSTSSteamLocomotive steamloco = (MSTSSteamLocomotive)Viewer.PlayerLocomotive;
                         float SteamspeedMpH = MpS.ToMpH(steamloco.SpeedMpS);
-                        var speedIncrement = (Viewer.Settings.PerformanceSpeedRecording);
-                        if (SteamspeedMpH >= previousLoggedSteamSpeedMpH + speedIncrement) // Add a new record every time speed increases by set increment
+                        if (SteamspeedMpH >= previousLoggedSteamSpeedMpH + 5) // Add a new record every time speed increases by 5 mph
                         {
                             previousLoggedSteamSpeedMpH = (float)(int)SteamspeedMpH; // Keep speed records close to whole numbers
 
@@ -202,39 +177,6 @@ namespace Orts.Viewer3D
 
                             Logger.End();
                         }
-        }
-
-
-        void RecordDieselPerformance()
-        {
-            MSTSDieselLocomotive dieselloco = (MSTSDieselLocomotive)Viewer.PlayerLocomotive;
-            float DieselspeedMpH = MpS.ToMpH(dieselloco.SpeedMpS);
-            var speedIncrement = (Viewer.Settings.PerformanceSpeedRecording);
-            if (DieselspeedMpH >= previousLoggedSteamSpeedMpH + speedIncrement) // Add a new record every time speed increases by speed increment
-            {
-                previousLoggedSteamSpeedMpH = (float)(int)DieselspeedMpH; // Keep speed records close to whole numbers
-
-                Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, false).ToString("F0"));
-                Logger.Data(S.ToM(dieselloco.DieselPerformanceTimeS).ToString("F1"));
-                Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
-                Logger.Data(W.ToHp( (Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].CurrentDieselOutputPowerW).ToString("F0"));
-                Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].DemandedRPM.ToString("F0"));
-                Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].RealRPM.ToString("F0"));            
-
-                Logger.Data(N.ToLbf(Viewer.PlayerLocomotive.MotiveForceN).ToString("F0"));
-
-                if ((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines.HasGearBox)
-                {
-                    Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].GearBox.CurrentGearIndex.ToString());
-                }
-                else
-                {
-                    Logger.Data("null");
-                }
-
-
-                    Logger.End();
-            }
         }
 
 #if DEBUG_DUMP_STEAM_POWER_CURVE
@@ -291,13 +233,8 @@ namespace Orts.Viewer3D
                 }
                 else
 
-                if (IsRecordingDieselPerformance)
-                {
-                    RecordDieselPerformance();
-                }
-                else
 
-                //Here's where the logger stores the data from each frame
+            //Here's where the logger stores the data from each frame
                 if (Viewer.Settings.DataLogger)
                 {
                     Logger.Separator = (DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Viewer.Settings.DataLoggerSeparator);
@@ -406,7 +343,7 @@ namespace Orts.Viewer3D
                         {
                             Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[1].CommandUp.ToString());
                             Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[2].CommandUp.ToString());
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs.List.Count > 2 ?
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs.List.Count > 2 ? 
                                 (Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[3].CommandUp.ToString() : null);
                             Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs.List.Count > 3 ?
                                 (Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[4].CommandUp.ToString() : null);
@@ -451,7 +388,7 @@ namespace Orts.Viewer3D
                         }
 #endif
                     }
-                    Logger.End();
+                Logger.End();
 #if DEBUG_DUMP_STEAM_POWER_CURVE
                 }
 #endif
@@ -468,7 +405,6 @@ namespace Orts.Viewer3D
 
         static void DataLoggerStart(UserSettings settings)
         {
-
             using (StreamWriter file = File.AppendText(Path.Combine(settings.LoggingPath, "OpenRailsDump.csv")))
             {
                 DataLogger.Separators separator = (DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), settings.DataLoggerSeparator);
@@ -591,31 +527,11 @@ namespace Orts.Viewer3D
                         );
                 }
 
-                if (settings.DataLogDieselPerformance)
-                {
-                    headerLine = String.Join(Convert.ToString((char)separator),
-                        new string[]
-                            {
-                                "Speed (mph)",
-                                "Time (M)",
-                                "Throttle (%)",
-                                "Diesel Power (hp)",
-                                "Diesel Demanded RpM",
-                                "Diesel RpM",
-                                "Motive Force (lbf)",
-                                "Gear"
-
-                             }
-                        );
-                }
-
-
 #if DEBUG_DUMP_STEAM_POWER_CURVE
                 if (!settings.DataLogPerformance
                 && !settings.DataLogPhysics
                 && !settings.DataLogMisc
-                && !settings.DataLogSteamPerformance
-                && !settings.DataLogDieselPerformance)
+                && !settings.DataLogSteamPerformance)
                 {
                     
                     headerLine = String.Join(Convert.ToString((char)separator),

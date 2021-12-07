@@ -270,10 +270,6 @@ namespace ORTS.Settings
         [Default(false)]
         public bool DataLogSteamPerformance { get; set; }
         [Default(false)]
-        public bool DataLogDieselPerformance { get; set; }
-        [Default(1)]
-        public int PerformanceSpeedRecording { get; set; }
-        [Default(false)]
         public bool VerboseConfigurationMessages { get; set; }
 
         // Evaluation settings:
@@ -428,6 +424,8 @@ namespace ORTS.Settings
         public int[] WindowPosition_TrainDriving { get; set; }
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_TrainOperations { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_TrainDpu { get; set; }
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_CarOperations { get; set; }
         [Default(new[] { 50, 50 })]

@@ -137,6 +137,7 @@ namespace Orts.Simulation.RollingStocks
         public bool CabLightOn;
         public bool ShowCab = true;
         public bool MilepostUnitsMetric;
+        public int DPUnitID;
         public float DrvWheelWeightKg; // current weight on locomotive drive wheels, includes drag factor (changes as mass changes)
         public float InitialDrvWheelWeightKg; // initialising weight on locomotive drive wheels, includes drag factor
         public bool CabRadioOn;
@@ -294,7 +295,6 @@ namespace Orts.Simulation.RollingStocks
         // Set values for display in HUD
         public float WagonCoefficientFrictionHUD;
         public float LocomotiveCoefficientFrictionHUD;
-        public float HuDGearMaximumTractiveForce;
 
         public PressureUnit MainPressureUnit = PressureUnit.None;
         public Dictionary<BrakeSystemComponent, PressureUnit> BrakeSystemPressureUnits = new Dictionary<BrakeSystemComponent, PressureUnit>
@@ -393,7 +393,7 @@ namespace Orts.Simulation.RollingStocks
         protected const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
         protected const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
 
-        public List<CabView> CabViewList = new List<CabView>();
+public List<CabView> CabViewList = new List<CabView>();
         public CabView3D CabView3D;
 
         public MSTSNotchController SteamHeatController = new MSTSNotchController(0, 1, 0.1f);
@@ -405,6 +405,8 @@ namespace Orts.Simulation.RollingStocks
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
         public MSTSNotchController DynamicBrakeController;
         public MSTSNotchController GearBoxController;
+        public MSTSNotchController DPThrottleController;
+        public MSTSNotchController DPDynamicBrakeController;
 
         private int PreviousGearBoxNotch;
 
@@ -536,6 +538,7 @@ namespace Orts.Simulation.RollingStocks
                 ThrottleController = new MSTSNotchController();
                 ThrottleController.StepSize = 0.1f;
             }
+            DPThrottleController = (MSTSNotchController)ThrottleController.Clone();
 
             // need to test for Dynamic brake problem on 3DTS and SLI
             if (DynamicBrakeController.IsValid())
@@ -544,9 +547,16 @@ namespace Orts.Simulation.RollingStocks
                 {
                     HasSmoothStruc = true;
                 }
+                if (DynamicBrakeController.NotchCount() > 3)
+                    DPDynamicBrakeController = (MSTSNotchController)DynamicBrakeController.Clone();
+                else
+                    DPDynamicBrakeController = BuildDPDynamicBrakeController();
             }
             else
+            {
                 DynamicBrakeController = null;
+                DPDynamicBrakeController = null;
+            }
 
             if (DynamicBrakeForceCurves == null && MaxDynamicBrakeForceN > 0)
             {
@@ -566,6 +576,69 @@ namespace Orts.Simulation.RollingStocks
                 DynamicBrakeForceCurves[1] = interp;
             }
         }
+         
+        protected MSTSNotchController BuildDPDynamicBrakeController()
+        {
+            var dpDynController = new MSTSNotchController();
+            CabView cabView = null;
+            CVCMultiStateDisplay msDisplay = null;
+            if (CabView3D != null)
+                cabView = CabView3D;
+            else if (CabViewList.Count > 0)
+            {
+                if (CabViewList[0].CabViewType == CabViewType.Front)
+                    cabView = CabViewList[0];
+                else
+                    cabView = CabViewList[1];
+            }
+            if (cabView != null)
+            {
+                try
+                {
+                    msDisplay = (CVCMultiStateDisplay) cabView.CVFFile.CabViewControls.Where(
+                        control => control is CVCMultiStateDisplay &&
+                        (((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY ||
+                        ((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.CPH_DISPLAY)).First();
+                }
+                catch
+                {
+
+                }
+                if (msDisplay != null)
+                {
+                    if (msDisplay.ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY)
+                    {
+                        foreach (var switchval in msDisplay.Values)
+                            dpDynController.AddNotch((float) switchval);
+                    }
+                    else
+                    {
+                        foreach (var switchval in msDisplay.Values)
+                        {
+                            if (switchval<CombinedControlSplitPosition)
+                                continue;
+                            dpDynController.AddNotch((float)(switchval - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
+                        }
+                    }
+                }
+            }
+            if (cabView == null || msDisplay == null)
+            // Use default Dash9 arrangement if no display is found
+            {
+                var switchval = 0f;
+                while (switchval <= 1)
+                {
+                    if (switchval == 0.99f)
+                        switchval = 1;
+                    dpDynController.AddNotch(switchval);
+                    switchval += 0.11f;
+                }
+            }
+
+
+            return dpDynController;
+        }
+
 
         protected void GetPressureUnit()
         {
@@ -1060,6 +1133,16 @@ namespace Orts.Simulation.RollingStocks
             EngineBrakeController = locoCopy.EngineBrakeController != null ? locoCopy.EngineBrakeController.Clone(this) : null;
             BrakemanBrakeController = locoCopy.BrakemanBrakeController != null ? locoCopy.BrakemanBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
+            DPThrottleController = (MSTSNotchController)ThrottleController.Clone();
+            if (DynamicBrakeController != null)
+            {
+                if (DynamicBrakeController.NotchCount() > 3)
+                    DPDynamicBrakeController = (MSTSNotchController)DynamicBrakeController.Clone();
+                else
+                    DPDynamicBrakeController = BuildDPDynamicBrakeController();
+            }
+            else
+                DPDynamicBrakeController = null;
 
             LocomotivePowerSupply.Copy(locoCopy.LocomotivePowerSupply);
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
@@ -1129,6 +1212,8 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(IsWaterScoopDown);
             outf.Write(CurrentTrackSandBoxCapacityM3);
             outf.Write(SaveAdhesionFilter);
+            outf.Write(RemoteControlGroup);
+            outf.Write(DPUnitID);
 
             base.Save(outf);
 
@@ -1177,6 +1262,8 @@ namespace Orts.Simulation.RollingStocks
             SaveAdhesionFilter = inf.ReadSingle();
             
             AdhesionFilter.Reset(SaveAdhesionFilter);
+            RemoteControlGroup = inf.ReadInt32();
+            DPUnitID = inf.ReadInt32();
 
             base.Restore(inf);
 
@@ -1723,7 +1810,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 case Train.TRAINTYPE.AI:
                 case Train.TRAINTYPE.AI_PLAYERHOSTING:
-                    if (AcceptMUSignals)
+                    if (RemoteControlGroup != -1)
                     {
                         if (!LocomotivePowerSupply.MainPowerSupplyOn)
                         {
@@ -2024,6 +2111,7 @@ namespace Orts.Simulation.RollingStocks
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive())
+//            if (this.IsLeadLocomotive() || RemoteControlGroup == -1)
             {
                 var throttleCurrentNotch = ThrottleController.CurrentNotch;
                 ThrottleController.Update(elapsedClockSeconds);
@@ -2032,6 +2120,8 @@ namespace Orts.Simulation.RollingStocks
                 ThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
                 ConfirmWheelslip(elapsedClockSeconds);
                 LocalThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
+                DPThrottleController.Update(elapsedClockSeconds);
+                if (DPDynamicBrakeController != null) DPDynamicBrakeController.Update(elapsedClockSeconds);
             }
             else
             {
@@ -2039,26 +2129,26 @@ namespace Orts.Simulation.RollingStocks
             }
 
 #if INDIVIDUAL_CONTROL
-            //this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
-            if (MultiPlayer.MPManager.IsMultiPlayer() && this.Train.TrainType == Train.TRAINTYPE.REMOTE && this == Program.Simulator.PlayerLocomotive)
-            {
-                //cannot control train brake as it is the remote's job to do so
-                if ((EngineBrakeController != null && EngineBrakeController.UpdateValue != 0.0) || (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0) || ThrottleController.UpdateValue != 0.0)
-                {
-                    controlUpdated = true;
-                }
-                ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
-                if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0)) DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
-                return; //done, will go back and send the message to the remote train controller
-            }
+			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
+			if (MultiPlayer.MPManager.IsMultiPlayer() && this.Train.TrainType == Train.TRAINTYPE.REMOTE && this == Program.Simulator.PlayerLocomotive)
+			{
+				//cannot control train brake as it is the remote's job to do so
+				if ((EngineBrakeController != null && EngineBrakeController.UpdateValue != 0.0) || (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0) || ThrottleController.UpdateValue != 0.0)
+				{
+					controlUpdated = true;
+				}
+				ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
+				if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0)) DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
+				return; //done, will go back and send the message to the remote train controller
+			}
 
-            if (MultiPlayer.MPManager.IsMultiPlayer() && this.notificationReceived == true)
-            {
-                ThrottlePercent = ThrottleController.CurrentValue * 100.0f;
-                this.notificationReceived = false;
-            }
+			if (MultiPlayer.MPManager.IsMultiPlayer() && this.notificationReceived == true)
+			{
+				ThrottlePercent = ThrottleController.CurrentValue * 100.0f;
+				this.notificationReceived = false;
+			}
 #endif
-        }
+                    }
 
         /// <summary>
         /// This function updates periodically the locomotive's motive force.
@@ -2980,7 +3070,8 @@ namespace Orts.Simulation.RollingStocks
                 foreach (TrainCar car in Train.Cars)
                 {
                     var loco = car as MSTSLocomotive;
-                    if (loco != null && car != this && loco.AcceptMUSignals)
+                    //                    if (loco != null && car != this && loco.AcceptMUSignals)
+                    if (loco != null && car != this && loco.RemoteControlGroup >= 0)
                         switch (direction)
                         {
                             case Direction.Reverse: loco.SignalEvent(Event.ReverserToForwardBackward); break;
@@ -3052,9 +3143,9 @@ namespace Orts.Simulation.RollingStocks
                 if (!(CombinedControlType == CombinedControl.ThrottleDynamic
                     || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0))
                 {
-                    Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
-                    return;
-                }
+                Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
+                return;
+            }
             }
 
             if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake)
@@ -3350,38 +3441,10 @@ namespace Orts.Simulation.RollingStocks
         {
             if (GearBoxController != null)
             {
-
-                if (this is MSTSDieselLocomotive)
-                {
-                    var dieselloco = this as MSTSDieselLocomotive;
-
-                    if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
-                    {
-                        GearBoxController.StartIncrease();
-                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
-                        AlerterReset(TCSEvent.GearBoxChanged);
-                        SignalGearBoxChangeEvents();
-                        dieselloco.DieselEngines[0].GearBox.clutchOn = false;
-                        dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
-
-                    }
-                    else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.C)
-                    {
-
-                        if (ThrottlePercent == 0)
-                        {
-                            GearBoxController.StartIncrease();
-                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
-                            AlerterReset(TCSEvent.GearBoxChanged);
-                            SignalGearBoxChangeEvents();
-                            dieselloco.DieselEngines[0].GearBox.clutchOn = false;
-                        }
-                        else
-                        {
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Throttle must be reduced to Idle before gear change can happen."));
-                        }
-                    }
-                }
+                GearBoxController.StartIncrease();
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                AlerterReset(TCSEvent.GearBoxChanged);
+                SignalGearBoxChangeEvents();
             }
 
             ChangeGearUp();
@@ -3403,35 +3466,10 @@ namespace Orts.Simulation.RollingStocks
         {
             if (GearBoxController != null)
             {
-                if (this is MSTSDieselLocomotive)
-                {
-                    var dieselloco = this as MSTSDieselLocomotive;
-
-                    if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
-                    {
-                        GearBoxController.StartDecrease();
-                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
-                        AlerterReset(TCSEvent.GearBoxChanged);
-                        SignalGearBoxChangeEvents();
-                        dieselloco.DieselEngines[0].GearBox.clutchOn = false;
-                        dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
-                    }
-                    else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.C)
-                    {
-                        if (ThrottlePercent == 0)
-                        {
-                            GearBoxController.StartDecrease();
-                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
-                            AlerterReset(TCSEvent.GearBoxChanged);
-                            SignalGearBoxChangeEvents();
-                            dieselloco.DieselEngines[0].GearBox.clutchOn = false;
-                        }
-                        else
-                        {
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Throttle must be reduced to Idle before gear change can happen."));
-                        }
-                    }
-                }
+                GearBoxController.StartDecrease();
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                AlerterReset(TCSEvent.GearBoxChanged);
+                SignalGearBoxChangeEvents();
             }
 
             ChangeGearDown();
@@ -3487,31 +3525,19 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        public void SetGearBoxValue(float value) // control for cabview
+        public void SetGearBoxValue(float value)
         {
             var controller = GearBoxController;
             var oldValue = controller.CurrentValue;
             var change = controller.SetValue(value);
-            var dieselloco = this as MSTSDieselLocomotive;
             if (change != 0)
             {
                 //new GarBoxCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
                 SignalEvent(change > 0 ? Event.GearUp : Event.GearDown);
                 AlerterReset(TCSEvent.GearBoxChanged);
             }
-            if (controller.CurrentValue > oldValue)
-            {
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
-                if (dieselloco != null)
-                    dieselloco.DieselEngines[0].GearBox.ManualGearUp = true;
-
-            }
-            else if (controller.CurrentValue < oldValue)
-            {
+            if (oldValue != controller.CurrentValue)
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
-                if (dieselloco != null)
-                    dieselloco.DieselEngines[0].GearBox.ManualGearDown = true;
-            }
         }
         #endregion
 
@@ -4015,6 +4041,18 @@ namespace Orts.Simulation.RollingStocks
                 return string.Format("{0:F0}%", DynamicBrakePercent);
             return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
+
+        public override string GetDPDynamicBrakeStatus()
+        {
+            if (DynamicBrakeController == null)
+                return null;
+            var dpStatus = this is MSTSDieselLocomotive && Train.DPMode == -1 ? string.Format("({0:F0}%)", Train.DPDynamicBrakePercent) : string.Empty;
+            if (DynamicBrakePercent < 0)
+                return dpStatus;
+            if (TrainControlSystem.FullDynamicBrakingOrder)
+                return string.Format("{0:F0}% {1}", DynamicBrakePercent, dpStatus);
+            return string.Format("{0} {1}", DynamicBrakeController.GetStatus(), dpStatus);
+        }
         #endregion
 
         public override void SignalEvent(TCSEvent evt)
@@ -4045,7 +4083,7 @@ namespace Orts.Simulation.RollingStocks
 
         internal void ToggleMUCommand(bool ToState)
         {
-            AcceptMUSignals = ToState;
+            RemoteControlGroup = ToState ? 0 : -1;
         }
 
         public void SetTrainHandbrake(bool apply)
@@ -4973,7 +5011,7 @@ namespace Orts.Simulation.RollingStocks
                         foreach (var car in Train.Cars)
                         {
                             var dieselLoco = car as MSTSDieselLocomotive;
-                            if (dieselLoco != null && dieselLoco.AcceptMUSignals)
+                            if (dieselLoco != null && dieselLoco.RemoteControlGroup != -1)
                             {
                                 if (car == Simulator.PlayerLocomotive && dieselLoco.DieselEngines.Count > 1)
                                 {
