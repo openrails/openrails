@@ -2043,62 +2043,85 @@ along to every unit in the train.
 Distributed Power
 -----------------
 
-Remote engines can be controlled in two modes: *synchronous* or 
-*asynchronous*. Engines in the player consist can be arranged to be part of 
-one of the above control groups. The arrangement can be changed during run, 
+This is applicable only to trains hauled by diesel locomotives equipped with 
+dynamic brakes.
+
+More locomotive groups may be present in American long freight trains; a 
+locomotive group is defined as a set of locomotives that have no wagons in 
+between. 
+Groups different from the group including the lead locomotive are called 
+remote groups.
+
+Remote groups can be controlled in two modes: *synchronous* or 
+*asynchronous*. Locomotives in the player train can be arranged to be part of 
+one of the two above control groups. So each locomotive group (except the lead one,
+which always belongs to the *sync* control group) 
+can be either part the *sync*  or of the *async* control group. However, if a 
+locomotive group is part of the *async* control group, all locomotive groups behind 
+it must also be part of the *async* control group.
+
+The arrangement can be changed during run, 
 which in real life is performed by using the locomotive's onboard computer 
 (e.g. Locotrol).
 
-This functionality is necessary to be used in American long-train freight 
+This functionality is necessary in American long-train freight 
 operations. An example use case is when a train finished climbing a 
 mountain pass. At this point the lead locomotives have to start dynamic 
-braking driving downhill, while the trailing unit still needs to keep pushing 
+braking driving downhill, while the trailing units still need to keep pushing 
 the train's end uphill. The locomotive driver has the possibility to build 
-the *fence up*, i.e. move the last locomotive to the *async* control group. 
+the *fence*, i.e. move the last locomotive group to the *async* control group. 
 
 While locomotives in *sync* control group always copy the traction and dynamic 
 brake settings of the lead (man-controlled) locomotive, for locomotives in 
-*async* group these can be adjusted independently. Other controls, like 
-reverser and air brake is always synchronized throughout the whole train, 
+*async* control group these can be adjusted independently. Other controls, like 
+reverser and air brake are always synchronized throughout the whole train, 
 and changing reverser setting or applying air brakes will force *async* 
 controlled locomotives to fall back to idle. 
 
-The fence between *sync* and *async* groups can be moved back and forth 
+The *fence* between *sync* and *async* control groups can be moved back and forth 
 along the train. This is useful when there are one or more middle-train 
 locomotive groups in the consist. However it is not possible to move the 
 fence to separate two directly interconnected locomotives: such locomotives 
-can be rearranged only together. The lead locomotive group, naturally, will 
-always belong to *sync* group. 
+can be rearranged only together.  
 
-When all locomotive groups had been moved back to *sync* group, then the 
-driver dismantled the *fence down*, all locomotives will work in sync with 
-the leading one. All-sync operation is also the default, when the game 
-starts. 
+If the driver dismantles the *fence*, by moving it after the last locomotive 
+group, all locomotive groups are moved back to *sync* control group, and 
+therefore all locomotives will work in sync with the leading one.
+All-sync operation is also the default, when the game starts. 
 
 Traction and dynamic brake settings for *sync* group can be controlled by the 
 usual keys: ``<A>`` and ``<D>``. The following additional controls are 
 available for controlling the *async* group settings:
 
 - Move To Back -- ``<Ctrl+Shift+O>``: Move one locomotive group to back (*async*) 
-  control group.
+  control group (*fence* is moved towards the front of the train).
 - Move To Front -- ``<Ctrl+O>``: Move one locomotive group to front (*sync*) 
-  control group.
+  control group (*fence* is moved towards the back of the train).
 - Traction -- ``<Ctrl+L>``: Switch *async* group to traction mode.
 - Idle -- ``<Ctrl+Shift+L>``: Switch *async* group to idle state.
 - Brake -- ``<Ctrl+'> (key two positions at the right of L)``: Switch *async* 
   group to dynamic braking mode.
-- More -- ``<Ctrl+U>``: Increase *async* group traction or dynamic brake, 
+- More -- ``<Ctrl+U>``: Increase *async* group traction or dynamic brake by a notch, 
   depending on its mode setting.
-- Less -- ``<Ctrl+Shift+U>``: Decrease *async* group traction or dynamic brake, 
+- Less -- ``<Ctrl+Shift+U>``: Decrease *async* group traction or dynamic brake by a notch, 
   depending on its mode setting.
 
 HUD shows the sync--async configuration in line *Multiple Units* on main page.
 When it reads e.g. "2--2 | 1", then it means that front and middle-train 
 double-unit locomotives are controlled in *sync* with the leading unit, 
 while the trailing pushing unit is controlled *async* independently. 
-The set actual rate of traction or dynamic brake of *async* group is shown in 
+The actual set value of traction or dynamic brake of *async* group is shown in 
 lines *Throttle* and *Dynamic Brake*, respectively, in brackets, e.g.: 
-Throttle: 0% (50%)
+Throttle: 0% (50%).
+
+The complete distributed power configuration is displayed in the 
+Distributed Power Info extended HUD page, where the state of all locomotives 
+in the train are shown, as well as in the *Train DPU Info* window, which is 
+displayed after pressing ``<Shift+F9>``, and which shows only the state of the first 
+locomotive of each locomotive group, as occurs also in displays of real 
+locomotives.
+
+.. image:: images/physics-dpu-window.png
 
 Engines of AI Trains
 --------------------
