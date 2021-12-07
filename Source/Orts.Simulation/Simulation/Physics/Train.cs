@@ -11206,6 +11206,7 @@ namespace Orts.Simulation.Physics
             // check if new train is freight or not
 
             CheckFreight();
+            SetDPUnitIDs();
 
             // clear all track occupation actions
 
@@ -13525,6 +13526,7 @@ namespace Orts.Simulation.Physics
             TrainType = Train.TRAINTYPE.PLAYER;
             IsPathless = true;
             CheckFreight();
+            SetDPUnitIDs();
             ToggleToManualMode();
             InitializeBrakes();
             InitializeSpeeds();
