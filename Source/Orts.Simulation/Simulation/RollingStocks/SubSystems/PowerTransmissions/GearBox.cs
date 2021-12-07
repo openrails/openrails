@@ -338,6 +338,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
                 else  // Manual clutch operation
                 {
+
+                    // Set clutch engaged when shaftrpm and engine rpm are equal
+                    if ((DieselEngine.Locomotive.ThrottlePercent >= 0 || DieselEngine.Locomotive.SpeedMpS > 0) && CurrentGear != null)
+                    {
+                        if (ShaftRPM >= DieselEngine.RealRPM)
+                            clutchOn = true;
+                        return clutchOn;
+                    }
+                    else if (GearBoxScoopCouplingFitted && CurrentGear == null )
+                    {
+                        clutchOn = false;
+                        return clutchOn;
+                    }
+
                     if (DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchOn)
                     {
                         clutchOn = false;
@@ -345,19 +359,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     }
 
                     if (ManualGearBoxChangeOn)
-                    {
-                        clutchOn = false;
-                        return clutchOn;
-                    }
-
-                    // Set clutch engaged when shaftrpm and engine rpm are equal
-                    if (DieselEngine.Locomotive.ThrottlePercent > 0 && CurrentGear != null)
-                    {
-                        if (ShaftRPM >= DieselEngine.RealRPM)
-                            clutchOn = true;
-                        return clutchOn;
-                    }
-                    else if (GearBoxScoopCouplingFitted && CurrentGear == null )
                     {
                         clutchOn = false;
                         return clutchOn;

@@ -597,7 +597,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Actual RPM of the engine
         /// </summary>
         public float RealRPM;
-
+        /// <summary>
+        /// RPM of the engine when gear is re-engaging
+        /// </summary>
+        public float ApparentRPM;
+        /// <summary>
+        /// RPM of the engine as defined by throttle setting
+        /// </summary>
+        public float RawRpM;
         /// <summary>
         /// RPM treshold when the engine starts to combust fuel
         /// </summary>
@@ -799,7 +806,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 float k = (DieselMaxOilPressurePSI - DieselMinOilPressurePSI)/(MaxRPM - IdleRPM);
                 float q = DieselMaxOilPressurePSI - k * MaxRPM;
-                float res = k * RealRPM + q - dieseloilfailurePSI;
+                float res = k * RawRpM + q - dieseloilfailurePSI;
                 if (res < 0f)
                     res = 0f;
                 return res;
@@ -1160,17 +1167,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             //                dRPM = (CurrentDieselOutputPowerW - OutputPowerW) / MaximumDieselPowerW * 0.01f * RateOfChangeDownRPMpSS;
             //            }
             // Deleted to see what impact it has - was holding rpm artificialy high - http://www.elvastower.com/forums/index.php?/topic/33739-throttle-bug-in-recent-or-builds/page__gopid__256086#entry256086
-
+                       
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
+
+            RawRpM = RealRPM;
 
             if (State == DieselEngineState.Stopped)
             {
                 RealRPM = 0;
             }
 
-            // links engine rpm and shaft rpm togtehr when clutch is fully engaged
+            // links engine rpm and shaft rpm together when clutch is fully engaged
             if (HasGearBox && GearBox.GearBoxOperation == GearBoxOperation.Manual)
             {
+                if (!GearBox.IsClutchOn && RealRPM < GearBox.ShaftRPM && Locomotive.SpeedMpS > 0)
+                {
+                    var tempdRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * (MaxRPM - DemandedRPM)), ChangeUpRPMpS);
+                    RealRPM = Math.Max(RealRPM + tempdRPM * elapsedClockSeconds, 0);
+                }
 
                 if (GearBox != null)
                 {
@@ -1204,31 +1218,31 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             ApparentThrottleSetting = MathHelper.Clamp(ApparentThrottleSetting, 0.0f, 100.0f);  // Clamp throttle setting within bounds
 
+            // If it is a geared locomotive, and rpm is greater then Max RpM, then output engine power should be reduced.
+            if (GovernorEnabled && HasGearBox)
+            {
+                if (DemandedRPM > MaxRPM)
+                {
+                    var excessRpM = DemandedRPM - MaxRPM;
+                  //  Trace.TraceInformation("excess {0} Demand {1} Max {2}", excessRpM, DemandedRPM, MaxRPM);
+                    RawRpM = MaxRPM - excessRpM;
+                   // Trace.TraceInformation("Raw - {0} Demand {1} Max {2}", RawRPM, DemandedRPM, MaxRPM);
+                }
+            }
+
             if (DieselPowerTab != null)
             {
-                CurrentDieselOutputPowerW = (DieselPowerTab[RealRPM] * (1 - Locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - Locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - Locomotive.PowerReduction) : MaximumDieselPowerW * (1 - Locomotive.PowerReduction));
+                CurrentDieselOutputPowerW = (DieselPowerTab[RawRpM] * (1 - Locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - Locomotive.PowerReduction) ? DieselPowerTab[RawRpM] * (1 - Locomotive.PowerReduction) : MaximumDieselPowerW * (1 - Locomotive.PowerReduction));
             }
             else
             {
-                CurrentDieselOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
+                CurrentDieselOutputPowerW = (RawRpM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
             }
 
             if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
             {
                 CurrentDieselOutputPowerW -= Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
                 CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
-            }
-
-            // If it is a geared locomotive, and rpm is greater then Max RpM, then output power display should be reduced.
-            if (GovernorEnabled && HasGearBox)
-            {
-                if (DemandedRPM > MaxRPM)
-                {
-                    var excessRpM = DemandedRPM - MaxRPM;
-                    var reductionPowerFraction = 1.0f - (excessRpM / MaxRPM);
-                    CurrentDieselOutputPowerW *= reductionPowerFraction;
-
-                }
             }
 
             CurrentDieselOutputPowerW = MathHelper.Clamp(CurrentDieselOutputPowerW, 0.0f, CurrentDieselOutputPowerW);  // prevent power going -ve
@@ -1257,7 +1271,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 if (DieselConsumptionTab != null)
                 {
-                         DieselFlowLps = DieselConsumptionTab[RealRPM] / 3600.0f;
+                         DieselFlowLps = DieselConsumptionTab[RawRpM] / 3600.0f;
                 }
                 else
                 {
