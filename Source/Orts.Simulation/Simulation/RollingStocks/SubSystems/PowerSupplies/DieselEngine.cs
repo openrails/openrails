@@ -1366,10 +1366,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
 
                 case PowerSupplyEvent.StartEngine:
-                    if (State == DieselEngineState.Stopped || State == DieselEngineState.Stopping)
+                    if (HasGearBox)
                     {
-                        DemandedRPM = StartingRPM;
-                        State = DieselEngineState.Starting;
+                        if ((State == DieselEngineState.Stopped || State == DieselEngineState.Stopping) && GearBox.CurrentGear == null && Locomotive.Direction == Direction.N)
+                        {
+                            DemandedRPM = StartingRPM;
+                            State = DieselEngineState.Starting;
+                        }
+
+                    }
+                    else
+                    {
+                        if (State == DieselEngineState.Stopped || State == DieselEngineState.Stopping)
+                        {
+                            DemandedRPM = StartingRPM;
+                            State = DieselEngineState.Starting;
+                        }
                     }
                     break;
 
