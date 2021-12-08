@@ -1122,7 +1122,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
 
                 // Simulate stalled engine if RpM decreases too far or exceed the safe overrun speed, by stopping engine, only applies to Type D clutch
-                if ((RealRPM < 0.9f * IdleRPM || RealRPM > GovernorRPM) && State == DieselEngineState.Running)
+                if ((RealRPM < 0.9f * IdleRPM || RealRPM > GovernorRPM) && State == DieselEngineState.Running && !GearBox.GearBoxScoopCouplingFitted)
                 {
                     Trace.TraceInformation("Diesel Engine has stalled");
                     HandleEvent(PowerSupplyEvent.StallEngine);
@@ -1192,6 +1192,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (RealRPM > IdleRPM && GearBox.IsClutchOn)
                     {
                         RealRPM = GearBox.ShaftRPM;
+                    }
+
+                    // prevent engine from stalling if engine speed falls below idle speed
+                    if (RealRPM <= IdleRPM && GearBox.GearBoxScoopCouplingFitted)
+                    {
+                        RealRPM = IdleRPM;
+                        DemandedRPM = IdleRPM;
+                        GearBox.clutchOn = false;
                     }
                 }
 

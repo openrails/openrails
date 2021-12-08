@@ -580,6 +580,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             {
                                 tractiveForceN = 0;
                             }
+
+                            // Scoop hydraulic feature prevents TE "creep" at zero throttle
+                            if (throttleFraction == 0 && GearBoxScoopCouplingFitted)
+                            {
+                                tractiveForceN = 0;
+                            }
                             
                             return tractiveForceN;
                         }
