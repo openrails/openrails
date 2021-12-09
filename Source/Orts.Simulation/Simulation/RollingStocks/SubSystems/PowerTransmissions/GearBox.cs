@@ -15,7 +15,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     {
         public int GearBoxNumberOfGears = 1;
         public int GearBoxDirectDriveGear = 1;
-        public bool ScoopCouplingFitted = false;
         public bool FreeWheelFitted = false;
 
         public TypesGearBox  GearBoxType = TypesGearBox.A;
@@ -23,6 +22,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         // GearboxType ( B ) - power is interrupted during gear changes - but the throttle does not need to be adjusted when changing gear
         // GearboxType ( C ) - power is interrupted and if GearboxOperation is Manual throttle must be closed when changing gear
         // GearboxType ( D ) - power is interrupted and if GearboxOperation is Manual throttle must be closed when changing gear, clutch will remain engaged, and can stall engine
+
+        public TypesClutch ClutchType = TypesClutch.Friction;
 
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxEngineBraking GearBoxEngineBraking = GearBoxEngineBraking.None;
@@ -51,13 +52,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 case "engine(gearboxnumberofgears": GearBoxNumberOfGears = stf.ReadIntBlock(1); initLevel++; break;
                 case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(1); break; // initLevel++; break;
-                case "engine(ortsgearboxscoopcoupling":
-                    var scoopCoupling = stf.ReadIntBlock(null);
-                    if (scoopCoupling == 1)
-                    {
-                        ScoopCouplingFitted = true;
-                    }
-                    break;
                 case "engine(ortsgearboxfreewheel":
                     var freeWheel = stf.ReadIntBlock(null);
                     if (freeWheel == 1)
@@ -75,6 +69,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     catch
                     {
                         STFException.TraceWarning(stf, "Assumed unknown gear type " + gearType);
+                    }
+                    break;
+                case "engine(ortsmainclutchtype":
+                    stf.MustMatch("(");
+                    var clutchType = stf.ReadString();
+                    try
+                    {
+                        ClutchType = (TypesClutch)Enum.Parse(typeof(TypesClutch), clutchType);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Assumed unknown gear type " + clutchType);
                     }
                     break;
                 case "engine(gearboxoperation":
@@ -168,6 +174,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             GearBoxNumberOfGears = copy.GearBoxNumberOfGears;
             GearBoxDirectDriveGear = copy.GearBoxDirectDriveGear;
             GearBoxType = copy.GearBoxType;
+            ClutchType = copy.ClutchType;
             GearBoxOperation = copy.GearBoxOperation;
             GearBoxEngineBraking = copy.GearBoxEngineBraking;
             GearBoxMaxSpeedForGearsMpS = new List<float>(copy.GearBoxMaxSpeedForGearsMpS);
@@ -181,7 +188,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             GearBoxUpGearProportion = copy.GearBoxUpGearProportion;
             GearBoxDownGearProportion = copy.GearBoxDownGearProportion;
             FreeWheelFitted = copy.FreeWheelFitted;
-            ScoopCouplingFitted = copy.ScoopCouplingFitted;
             initLevel = copy.initLevel;
         }
     }
@@ -193,7 +199,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         protected MSTSGearBoxParams GearBoxParams => Locomotive.DieselEngines.MSTSGearBoxParams;
         public List<Gear> Gears = new List<Gear>();
 
-        public bool GearBoxScoopCouplingFitted;
         public bool GearBoxFreeWheelFitted;
 
         public float previousThrottleSetting;
@@ -346,7 +351,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             clutchOn = true;
                         return clutchOn;
                     }
-                    else if (GearBoxScoopCouplingFitted && CurrentGear == null )
+                    else if ((ClutchType == TypesClutch.Scoop || ClutchType == TypesClutch.Fluid) && CurrentGear == null )
                     {
                         clutchOn = false;
                         return clutchOn;
@@ -466,9 +471,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public bool AutoClutch = true;
 
+        public TypesClutch ClutchType = TypesClutch.Friction;
         public TypesGearBox GearBoxType = TypesGearBox.A;
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxOperation OriginalGearBoxOperation = GearBoxOperation.Manual;
+
+        public float rpmRatio;
+        public float torqueCurveMultiplier;
+        public float throttleFraction;
 
         public float tractiveForceN;
         public float TractiveForceN
@@ -509,11 +519,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                 dieselRpM = DieselEngine.RealRPM;
                             }
 
-                            float throttleFraction = 0;
+                            throttleFraction = 0;
 
                             if (ShaftRPM != dieselRpM && !IsClutchOn && DieselEngine.ApparentThrottleSetting < DieselEngine.DemandedThrottlePercent)
                             {
-                                // Use apparent throttle when accelerating, but use demenaded throttle at other times????
+                                // Use apparent throttle when accelerating, but use demanded throttle at other times????
                                 throttleFraction = DieselEngine.ApparentThrottleSetting * 0.01f; // Convert from percentage to fraction, use the apparent throttle as this includes some delay for rpm increase
                             }
                             else
@@ -546,21 +556,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                     throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds, so it doesn't go negative
                                 //    Trace.TraceInformation("Governor Up - throttle {0} Demand {1} Grad {2} Real {3} Start {4} GovRpM {5} Under {6}", throttleFraction, DieselEngine.DemandedThrottlePercent, decayGradient, DieselEngine.RealRPM, DieselEngine.StartingRPM, DieselEngine.GovernorRPM, rpmUnderRun);
                                 }
-
-
                             }
 
                             // A torque vs rpm family of curves has been built based on the information on this page
                             // https://www.cm-labs.com/vortexstudiodocumentation/Vortex_User_Documentation/Content/Editor/editor_vs_configure_engine.html
                             //
                             // Calculate torque curve for throttle position and RpM
-                            var rpmRatio = (dieselRpM - DieselEngine.IdleRPM) / (DieselEngine.MaxRPM - DieselEngine.IdleRPM);
-                            var torqueCurveMultiplier = (0.824f * throttleFraction + 0.176f) + (0.785f * throttleFraction - 0.785f) * rpmRatio;
+                            rpmRatio = (dieselRpM - DieselEngine.IdleRPM) / (DieselEngine.MaxRPM - DieselEngine.IdleRPM);
+                            torqueCurveMultiplier = (0.824f * throttleFraction + 0.176f) + (0.785f * throttleFraction - 0.785f) * rpmRatio;
 
                             // During normal operation fuel admission is fixed, and therefore TE follows curve as RpM varies
-                            tractiveForceN = torqueCurveMultiplier * CurrentGear.MaxTractiveForceN;
+                            tractiveForceN = torqueCurveMultiplier * DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] / DieselEngine.DieselTorqueTab.MaxY() * CurrentGear.MaxTractiveForceN;
 
-                         //   Trace.TraceInformation("Tractive Force {0}, Throttle {1} TCM {2} RpM {3} Throttle% {4}", tractiveForceN, throttleFraction, torqueCurveMultiplier, dieselRpM, DieselEngine.DemandedThrottlePercent);
+                            //   Trace.TraceInformation("Tractive Force {0}, Throttle {1} TCM {2} RpM {3} Throttle% {4}", tractiveForceN, throttleFraction, torqueCurveMultiplier, dieselRpM, DieselEngine.DemandedThrottlePercent);
 
                             Locomotive.HuDGearMaximumTractiveForce = CurrentGear.MaxTractiveForceN;
                                                         
@@ -581,8 +589,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                 tractiveForceN = 0;
                             }
 
-                            // Scoop hydraulic feature prevents TE "creep" at zero throttle
-                            if (throttleFraction == 0 && GearBoxScoopCouplingFitted)
+                            // Fluid couplings prevent TE "creep" at zero throttle
+                            if (throttleFraction == 0 && ClutchType == TypesClutch.Scoop)
                             {
                                 tractiveForceN = 0;
                             }
@@ -649,8 +657,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     Trace.TraceWarning("Some of the gearbox parameters are missing! Default physics will be used.");
 
                 GearBoxType = GearBoxParams.GearBoxType;
+                ClutchType = GearBoxParams.ClutchType;
                 GearBoxFreeWheelFitted = GearBoxParams.FreeWheelFitted;
-                GearBoxScoopCouplingFitted = GearBoxParams.ScoopCouplingFitted;
 
                 for (int i = 0; i < GearBoxParams.GearBoxNumberOfGears; i++)
                 {
@@ -834,6 +842,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 gearedUp = false;
             }
         }
+    }
+
+    public enum TypesClutch
+    {
+        Friction,
+        Fluid,
+        Scoop
     }
 
     public enum TypesGearBox

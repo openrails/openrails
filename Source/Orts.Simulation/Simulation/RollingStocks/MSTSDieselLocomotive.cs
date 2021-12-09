@@ -175,6 +175,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdieselengines":
                 case "engine(gearboxnumberofgears":
                 case "engine(gearboxdirectdrivegear":
+                case "engine(ortsmainclutchtype":
                 case "engine(ortsgearboxtype":
                 case "engine(gearboxoperation":
                 case "engine(gearboxenginebraking":
@@ -187,7 +188,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(gearboxupgearproportion":
                 case "engine(gearboxdowngearproportion":
                 case "engine(ortsgearboxfreewheel":
-                case "engine(ortsgearboxscoopcoupling":
                     DieselEngines.Parse(lowercasetoken, stf);
                     break;
 
@@ -459,7 +459,7 @@ namespace Orts.Simulation.RollingStocks
                 if (DieselEngines.HasGearBox)
                 {
                     Trace.TraceInformation("==================================================== {0} has Gearbox =========================================================", LocomotiveName);
-                    Trace.TraceInformation("Gearbox Type: {0}, Transmission Type: {1}, Number of Gears: {2}, Idle RpM: {3}, Max RpM: {4}, Gov RpM: {5}, GearBoxType: {6}, ScoopCoupling: {7}, FreeWheel: {8}", DieselEngines[0].GearBox.GearBoxOperation, DieselTransmissionType, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovernorRPM, DieselEngines[0].GearBox.GearBoxType, DieselEngines[0].GearBox.GearBoxScoopCouplingFitted, DieselEngines[0].GearBox.GearBoxFreeWheelFitted);
+                    Trace.TraceInformation("Gearbox Type: {0}, Transmission Type: {1}, Number of Gears: {2}, Idle RpM: {3}, Max RpM: {4}, Gov RpM: {5}, GearBoxType: {6}, ClutchType: {7}, FreeWheel: {8}", DieselEngines[0].GearBox.GearBoxOperation, DieselTransmissionType, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovernorRPM, DieselEngines[0].GearBox.GearBoxType, DieselEngines[0].GearBox.ClutchType, DieselEngines[0].GearBox.GearBoxFreeWheelFitted);
 
                     Trace.TraceInformation("Gear\t Ratio\t Max Speed\t Max TE\t    Chg Up RpM\t Chg Dwn RpM\t Coast Force\t Back Force\t");
 

@@ -125,6 +125,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
                 case "engine(gearboxnumberofgears":
                 case "engine(gearboxdirectdrivegear":
+                case "engine(ortsmainclutchtype":
                 case "engine(ortsgearboxtype":
                 case "engine(gearboxoperation":
                 case "engine(gearboxenginebraking":
@@ -137,7 +138,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case "engine(gearboxupgearproportion":
                 case "engine(gearboxdowngearproportion":
                 case "engine(ortsgearboxfreewheel":
-                case "engine(ortsgearboxscoopcoupling":
                     MSTSGearBoxParams.Parse(lowercasetoken, stf);
                     break;
             }
@@ -343,7 +343,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if(de.GearBox != null)
                     {
                         // For friction clutches, and ones without scoop coupling as soon as locomotive is put into gear some torque is transmitted to wheels
-                        if (de.DemandedThrottlePercent == 0 && !Locomotive.DieselEngines[0].GearBox.GearBoxScoopCouplingFitted)
+                        if (de.DemandedThrottlePercent == 0 && Locomotive.DieselEngines[0].GearBox.ClutchType != TypesClutch.Scoop)
                         {
                             temp += (de.GearBox.TractiveForceN);
                         }
@@ -447,7 +447,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Clutch"));
                 foreach (var eng in DEList)
-                    result.AppendFormat("\t{0:F0}", eng.GearBox.IsClutchOn);
+                    result.AppendFormat("\t{0}", eng.GearBox.IsClutchOn);
+
+                result.AppendFormat("\n\n\t{0}", Simulator.Catalog.GetString("ThFract"));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0}", eng.GearBox.throttleFraction);
+
+                result.AppendFormat("\t\t{0}", Simulator.Catalog.GetString("rpmRat"));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0}", eng.GearBox.rpmRatio);
+
+                result.AppendFormat("\t\t{0}", Simulator.Catalog.GetString("TCM"));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0}", eng.GearBox.torqueCurveMultiplier);
 
             }
 
@@ -1122,7 +1134,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
 
                 // Simulate stalled engine if RpM decreases too far or exceed the safe overrun speed, by stopping engine, only applies to Type D clutch
-                if ((RealRPM < 0.9f * IdleRPM || RealRPM > GovernorRPM) && State == DieselEngineState.Running && !GearBox.GearBoxScoopCouplingFitted)
+                if ((RealRPM < 0.9f * IdleRPM || RealRPM > GovernorRPM) && State == DieselEngineState.Running && GearBox.ClutchType != TypesClutch.Scoop && GearBox.ClutchType != TypesClutch.Fluid)
                 {
                     Trace.TraceInformation("Diesel Engine has stalled");
                     HandleEvent(PowerSupplyEvent.StallEngine);
@@ -1195,7 +1207,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
 
                     // prevent engine from stalling if engine speed falls below idle speed
-                    if (RealRPM <= IdleRPM && GearBox.GearBoxScoopCouplingFitted)
+                    var scoopActivationRPM = 1.05f * IdleRPM;
+                    if ((RealRPM <= IdleRPM && GearBox.ClutchType == TypesClutch.Fluid) || (RealRPM <= scoopActivationRPM && GearBox.ClutchType == TypesClutch.Scoop) )
                     {
                         RealRPM = IdleRPM;
                         DemandedRPM = IdleRPM;
