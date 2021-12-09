@@ -142,11 +142,10 @@ namespace ORTS.Common
             }
         }
 
-        public static string[] GetDirectories(string vfsPath) => GetDirectoriesBase(vfsPath) ?? Array.Empty<string>();
-        public static bool TryGetDirectories(string vfsPath, out string[] directories) => (directories = GetDirectoriesBase(vfsPath)) != null;
-
-        public static string[] GetFiles(string vfsPath, string searchPattern) => GetFilesBase(vfsPath, searchPattern) ?? Array.Empty<string>();
-        public static bool TryGetFiles(string vfsPath, string searchPattern, out string[] files) => (files = GetFilesBase(vfsPath, searchPattern)) != null;
+        public static string[] GetDirectories(string vfsPath, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+            => GetDirectoriesBase(vfsPath, searchOption) ?? Array.Empty<string>();
+        public static string[] GetFiles(string vfsPath, string searchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+            => GetFilesBase(vfsPath, searchPattern, searchOption) ?? Array.Empty<string>();
 
         public static bool DirectoryExists(string vfsPath) => VfsRoot.ChangeDirectory(NormalizeVirtualPath(vfsPath), false) != null;
         public static bool FileExists(string vfsPath) => !VfsRoot.ChangeDirectory(NormalizeVirtualPath(Path.GetDirectoryName(vfsPath)), false)
@@ -167,9 +166,9 @@ namespace ORTS.Common
             {
                 var (dirpath, vfsNode) = Stack.Pop();
                 Trace.TraceInformation($"VFS: {dirpath}" + (vfsNode.IsDirectoryWritable() ? $" <= {vfsNode.AbsolutePath}" : ""));
-                foreach (var subdir in vfsNode.GetDirectories())
+                foreach (var subdir in vfsNode.GetEntries(SearchOption.TopDirectoryOnly, false))
                     Stack.Push((subdir, vfsNode.ChangeDirectory(NormalizeVirtualPath(Path.GetFileName(subdir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))), false)));
-                foreach (var file in vfsNode.GetFiles())
+                foreach (var file in vfsNode.GetEntries(SearchOption.TopDirectoryOnly, true))
                 {
                     var node = vfsNode.GetNode(Path.GetFileName(file));
                     Trace.TraceInformation($"VFS: {file} <= " + (node.IsArchiveFile() ? $"[{node.AbsolutePath}]/{node.SubPath}" : node.AbsolutePath));
@@ -216,12 +215,13 @@ namespace ORTS.Common
                 //Source path validation:
                 var sourcePath = NormalizeSystemPath(match.Groups[1].Value.Trim('"'));
                 var sourcePieces = sourcePath.Split('/');
-                if (sourcePieces.Length > 0 && sourcePieces.Last() == "" && Directory.Exists(sourcePath))
+                var isDirectory = sourcePieces.Last() == "";
+                if (sourcePieces.Length > 0 && isDirectory && Directory.Exists(sourcePath))
                 {
                     // A bare mountable directory must end with "/"
                     MountDirectory(sourcePath, mountpoint);
                 }
-                else if (sourcePieces.Length > 1 && sourcePieces.Last() != "" && File.Exists(sourcePath))
+                else if (sourcePieces.Length > 1 && !isDirectory && File.Exists(sourcePath))
                 {
                     // An archive file reference should not end with "/"
                     if (IsArchiveSupported(sourcePath))
@@ -235,15 +235,25 @@ namespace ORTS.Common
                 }
                 else if (sourcePieces.Length > 0)
                 {
-                    // Trying to find the base archive in a directory-within-archive or archive-within-archive case.
-                    // Start from 1 ignoring the drive letter checking.
+                    if (!isDirectory)
+                    {
+                        var message = $"VFS mount: Source path is not an archive file and doesn't end with slash (/) or backslash (\\), skipping: {line}";
+                        Trace.TraceWarning(message);
+                        InitLog.Enqueue(message);
+                        continue;
+                    }
+                    // Trying to find the base archive in a directory-within-archive case.
+                    // Start from 1, ignoring the drive letter at position 0.
                     for (var i = 1; i < sourcePieces.Length - 1; i++)
                     {
                         var archivePath = string.Join("/", sourcePieces, 0, i + 1);
                         if (File.Exists(archivePath))
                         {
                             if (IsArchiveSupported(archivePath))
-                                MountArchive(archivePath, string.Join("/", sourcePieces, i + 1, sourcePieces.Length - 1 - i), mountpoint);
+                            {
+                                var subPath = string.Join("/", sourcePieces, i + 1, sourcePieces.Length - 1 - i);
+                                MountArchive(archivePath, subPath, mountpoint);
+                            }
                             else
                             {
                                 var message = $"VFS mount: Source archive format is not supported, skipping: {line}";
@@ -252,8 +262,10 @@ namespace ORTS.Common
                             }
                             break;
                         }
-                        if (!Directory.Exists(archivePath))
+                        if (!Directory.Exists(archivePath) || i == sourcePieces.Length - 2)
                         {
+                            // During the search we diverged already to a non-existent directory, we can safely abort.
+                            // Or we reached the last searchable part, and still not found the base archive.
                             var message = $"VFS mount: Source file not found, skipping: {line}";
                             Trace.TraceWarning(message);
                             InitLog.Enqueue(message);
@@ -312,6 +324,8 @@ namespace ORTS.Common
                 using (var archive = ArchiveFactory.Open(new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 {
                     var message = $"VFS mount archive: [{archivePath}]/{subPath ?? ""} => {mountpoint}";
+                    if (!message.EndsWith("/"))
+                        message += "/"; // This is to keep the consistency of directories ending with '/'.
                     Trace.TraceInformation(message);
                     InitLog.Enqueue(message);
                     var mountNode = VfsRoot.ChangeDirectory(mountpoint, true);
@@ -341,8 +355,8 @@ namespace ORTS.Common
             }
         }
 
-        static string[] GetDirectoriesBase(string vfsPath) => VfsRoot.ChangeDirectory(NormalizeVirtualPath(vfsPath), false)?.GetDirectories()?.ToArray();
-        static string[] GetFilesBase(string vfsPath, string searchPattern) => VfsRoot.ChangeDirectory(NormalizeVirtualPath(vfsPath), false)?.GetFiles()
+        static string[] GetDirectoriesBase(string vfsPath, SearchOption searchOption) => VfsRoot.ChangeDirectory(NormalizeVirtualPath(vfsPath), false)?.GetEntries(searchOption, false)?.ToArray();
+        static string[] GetFilesBase(string vfsPath, string searchPattern, SearchOption searchOption) => VfsRoot.ChangeDirectory(NormalizeVirtualPath(vfsPath), false)?.GetEntries(searchOption, true)
                 .Where(f => Regex.IsMatch(f.Split('/').Last(), NormalizeVirtualPath(searchPattern).Replace(".", @"\.").Replace("*", ".*").Replace("-", @"\-")))?.ToArray();
 
         static object PrepareForRead(string vfsPath)
@@ -508,7 +522,9 @@ namespace ORTS.Common
 
         public string GetVfsPath()
         {
-            var name = Name;// + (IsDirectory() ? "/" : "");
+            // Not adding a trailing '/' to the directory paths, like: var name = Name + (IsDirectory ? "/" : "");
+            // This is to keep compatibility with Path.GetFileName(directoryPath) statements.
+            var name = Name;
             var node = this;
             while ((node = node.Parent) != null)
                 name = $"{node.Name}/{name}";
@@ -528,7 +544,14 @@ namespace ORTS.Common
             return this;
         }
 
-        public IEnumerable<string> GetDirectories() => Children.Where(kvp => kvp.Value.IsDirectory).Select(kvp => kvp.Value.GetVfsPath());
-        public IEnumerable<string> GetFiles() => Children.Where(kvp => !kvp.Value.IsDirectory).Select(kvp => kvp.Value.GetVfsPath());
+        public IEnumerable<string> GetEntries(SearchOption searchOption, bool files)
+        {
+            var result = Enumerable.Empty<string>()
+                .Concat(Children.Where(kvp => files ^ kvp.Value.IsDirectory).Select(kvp => kvp.Value.GetVfsPath()));
+            if (searchOption == SearchOption.AllDirectories)
+                foreach (var subdir in Children.Where(kvp => kvp.Value.IsDirectory).Select(kvp => kvp.Value))
+                    result = result.Concat(subdir.GetEntries(searchOption, files));
+            return result;
+        }
     }
 }

@@ -86,9 +86,10 @@ namespace ORTS.Menu
         public static List<Route> GetRoutes()
         {
             var routes = new List<Route>();
-            if (Vfs.TryGetDirectories(Vfs.MstsBasePath + "ROUTES/", out var directories))
+            var directory = System.IO.Path.Combine(Vfs.MstsBasePath, "ROUTES");
+            if (Vfs.DirectoryExists(directory))
             {
-                foreach (var routeDirectory in directories)
+                foreach (var routeDirectory in Vfs.GetDirectories(directory))
                 {
                     try
                     {

@@ -96,8 +96,9 @@ namespace MSTS
 
         public static string GetTRKFileName(string routeFolderPath)
         {
-            if (!Vfs.TryGetFiles(routeFolderPath, "*.trk", out var trkFileNames))
+            if (!Vfs.DirectoryExists(routeFolderPath))
                 throw new DirectoryNotFoundException(routeFolderPath);
+            var trkFileNames = Vfs.GetFiles(routeFolderPath, "*.trk");
             if (trkFileNames.Length == 0)
                 throw new FileNotFoundException("TRK file not found in '" + routeFolderPath + "'.", Path.Combine(routeFolderPath, Path.GetFileName(routeFolderPath)));
             return trkFileNames[0];
