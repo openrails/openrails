@@ -1422,7 +1422,7 @@ namespace Orts.Viewer3D.Processes
                     loadingScreen = loadingScreenWide == null ? loadingScreen : loadingScreenWide;
                 }
                 loadingScreen = loadingScreen == null ? defaultScreen : loadingScreen;
-                var path = Path.Combine(Simulator.RoutePath, loadingScreen);
+                var path = Path.Combine(Simulator.RoutePath, loadingScreen).ToLowerInvariant();
                 if (Path.GetExtension(path) == ".dds" && Vfs.FileExists(path))
                 {
                     DDSLib.DDSFromFile(path, gd, true, out texture);
