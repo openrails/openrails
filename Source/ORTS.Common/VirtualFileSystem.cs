@@ -451,7 +451,7 @@ namespace ORTS.Common
         readonly VfsNode Parent;
         readonly string Name;
         
-        public string AbsolutePath { get; }
+        public string AbsolutePath { get; private set; }
         public string SubPath { get; }
         public bool IsDirectory { get; }
 
@@ -531,18 +531,7 @@ namespace ORTS.Common
             return name;
         }
 
-        public VfsNode SetDirectoryWritable(string absolutePath)
-        {
-            if (IsDirectory)
-            {
-                var writableNode = new VfsNode(Parent, Name, absolutePath, null, true);
-                foreach (var key in Children.Keys)
-                    writableNode.Children.Add(key, Children[key]);
-                Parent.Children[Name] = writableNode;
-                return writableNode;
-            }
-            return this;
-        }
+        public void SetDirectoryWritable(string absolutePath) { if (IsDirectory) AbsolutePath = absolutePath; }
 
         public IEnumerable<string> GetEntries(SearchOption searchOption, bool files)
         {
