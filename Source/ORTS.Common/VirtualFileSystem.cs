@@ -95,7 +95,7 @@ namespace ORTS.Common
         {
             switch (PrepareForRead(vfsPath))
             {
-                case Stream stream: return new StreamReader(stream, detectEncodingFromByteOrderMarks);
+                case IArchiveEntry entry: return new StreamReader(entry.OpenEntryStream(), detectEncodingFromByteOrderMarks);
                 case string path: return new StreamReader(path, detectEncodingFromByteOrderMarks);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
             }
@@ -106,7 +106,7 @@ namespace ORTS.Common
         {
             switch (PrepareForRead(vfsPath))
             {
-                case Stream stream: return new StreamReader(stream, encoding);
+                case IArchiveEntry entry: return new StreamReader(entry.OpenEntryStream(), encoding);
                 case string path: return new StreamReader(path, encoding);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
             }
@@ -116,7 +116,7 @@ namespace ORTS.Common
         {
             switch (PrepareForRead(vfsPath))
             {
-                case Stream stream: return new StreamReader(stream, Encoding.UTF8);
+                case IArchiveEntry entry: return new StreamReader(entry.OpenEntryStream(), Encoding.UTF8);
                 case string path: return File.OpenText(path);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
             }
@@ -126,8 +126,18 @@ namespace ORTS.Common
         {
             switch (PrepareForRead(vfsPath))
             {
-                case Stream stream: return stream;
+                case IArchiveEntry entry: return entry.OpenEntryStream();
                 case string path: return File.OpenRead(path);
+                default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
+            }
+        }
+
+        public static DateTime LastModifiedTime(string vfsPath)
+        {
+            switch (PrepareForRead(vfsPath))
+            {
+                case IArchiveEntry entry: return entry.LastModifiedTime ?? DateTime.MinValue;
+                case string path: return File.GetLastWriteTime(path);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
             }
         }
@@ -384,7 +394,7 @@ namespace ORTS.Common
                 {
                     if (AccessLoggingEnabled)
                         Trace.TraceInformation($"VFS reading archive node: [{foundNode.AbsolutePath}]/{archiveEntry.Key} => {vfsPath}");
-                    return archiveEntry.OpenEntryStream();
+                    return archiveEntry;
                 }
             }
             else if (foundNode != null && foundNode.IsRegularFile() && File.Exists(foundNode.AbsolutePath))
