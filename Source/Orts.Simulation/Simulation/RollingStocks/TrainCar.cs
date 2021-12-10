@@ -674,16 +674,7 @@ namespace Orts.Simulation.RollingStocks
         }
         public EngineTypes EngineType;
 
-        public enum DieselTransmissionTypes
-        {
-            Electric,
-            Hydraulic,
-            Mechanic,
-            Hydromechanic,
-        }
-        public DieselTransmissionTypes DieselTransmissionType;
-
-    public enum WagonSpecialTypes
+        public enum WagonSpecialTypes
         {
             Unknown,
             HeatingBoiler,

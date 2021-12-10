@@ -104,6 +104,15 @@ namespace Orts.Simulation.RollingStocks
         public float DieselMaxTemperatureDeg;
         public DieselEngine.Cooling DieselEngineCooling = DieselEngine.Cooling.Proportional;
 
+        public enum DieselTransmissionTypes
+        {
+            Electric,
+            Hydraulic,
+            Mechanic,
+            Hydromechanic,
+        }
+        public DieselTransmissionTypes DieselTransmissionType;
+
         float CalculatedMaxContinuousForceN;
 
         // diesel performance reporting
@@ -695,7 +704,14 @@ namespace Orts.Simulation.RollingStocks
                 {
                     // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
 
-                    TractiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
+                    if (DieselEngines.HasGearBox)
+                    {
+                        TractiveForceN = DieselEngines.TractiveForceN;
+                    }
+                    else
+                    {
+                        TractiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
+                    }
 
                     if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         TractiveForceN = 0;

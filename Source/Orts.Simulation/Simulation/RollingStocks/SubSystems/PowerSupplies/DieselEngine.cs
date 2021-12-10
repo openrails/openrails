@@ -404,7 +404,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0:F1}%", eng.LoadPercent);
 
-            if (Locomotive.DieselTransmissionType == TrainCar.DieselTransmissionTypes.Mechanic)
+            if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
                 foreach (var eng in DEList)
                 {

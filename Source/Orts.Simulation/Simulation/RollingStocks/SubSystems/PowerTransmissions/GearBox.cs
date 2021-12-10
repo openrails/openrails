@@ -347,7 +347,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     // Set clutch engaged when shaftrpm and engine rpm are equal
                     if ((DieselEngine.Locomotive.ThrottlePercent >= 0 || DieselEngine.Locomotive.SpeedMpS > 0) && CurrentGear != null)
                     {
-                        if (ShaftRPM >= DieselEngine.RealRPM)
+                        var clutchEngagementBandwidthRPM = 10.0f;
+                        if (ShaftRPM >= DieselEngine.RealRPM - clutchEngagementBandwidthRPM && ShaftRPM < DieselEngine.RealRPM + clutchEngagementBandwidthRPM && ShaftRPM < DieselEngine.MaxRPM && ShaftRPM > DieselEngine.IdleRPM)
                             clutchOn = true;
                         return clutchOn;
                     }
@@ -534,7 +535,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             // Limit tractive force if engine is governed, ie speed cannot exceed the governed speed or the throttled speed
                             // Diesel mechanical transmission are not "governed" at all engine speed settings, rather only at Idle and Max RpM. 
                             // (See above where DM units TE held at constant value, unless overwritten by the following)
-                            if (Locomotive.DieselTransmissionType == TrainCar.DieselTransmissionTypes.Mechanic)
+                            if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
                             {
                                 
                                 // If engine RpM exceeds maximum rpm
