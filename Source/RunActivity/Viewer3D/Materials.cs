@@ -212,7 +212,10 @@ namespace Orts.Viewer3D
         public void Sweep()
         {
             foreach (var path in TextureMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+            {
+                Textures[path].Dispose();
                 Textures.Remove(path);
+            }
         }
 
         [CallOnThread("Updater")]
