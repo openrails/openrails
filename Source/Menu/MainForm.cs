@@ -136,7 +136,7 @@ namespace ORTS
 
         void MainForm_Shown(object sender, EventArgs e)
         {
-            var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
+            var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/") && !a.TrimStart('/').Contains("/"))).Select(a => a.Substring(1));
             Settings = new UserSettings(options);
 
             LoadOptions();

@@ -76,6 +76,7 @@ namespace ORTS.Common
         public const string ExecutablePath = "/EXECUTABLE/";
 
         public static bool AccessLoggingEnabled { get; set; }
+        public static bool IsInitialized => VfsRoot != null;
 
         public static void Initialize(string initPath, string executablePath)
         {
@@ -291,7 +292,7 @@ namespace ORTS.Common
                 }
             }
 
-            if (executablePath != null)
+            if (executablePath != null && Directory.Exists(executablePath))
                 MountDirectory(NormalizeSystemPath(executablePath), ExecutablePath);
 
             //DebugDump();

@@ -28,12 +28,10 @@ namespace Orts.Formats.OR
         public TrackSectionsFile TSectionDat { get; protected set; }
         public SignalConfigurationFile SIGCFG { get; protected set; }
         public string RoutePath { get; set; }
-        public string MstsPath { get; set; }
         public AESignals Signals { get; protected set; }
 
-        public MSTSData (string mstsPath, string Route)
+        public MSTSData (string Route)
         {
-            MstsPath = mstsPath;
             RoutePath = Route;
             TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             string routePath = Path.Combine(Route, TRK.Tr_RouteFile.FileName);
@@ -55,7 +53,7 @@ namespace Orts.Formats.OR
             else if (Vfs.DirectoryExists(RoutePath + @"\GLOBAL") && Vfs.FileExists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
             else
-                TSectionDat = new TrackSectionsFile(MstsPath + @"\GLOBAL\TSECTION.DAT");
+                TSectionDat = new TrackSectionsFile("/MSTS/GLOBAL/TSECTION.DAT");
             if (Vfs.FileExists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
             Signals = new AESignals (this, SIGCFG);
