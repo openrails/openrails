@@ -350,8 +350,10 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var pdl in ParticleDrawers.Values)
                 foreach (var pd in pdl)
                     pd.Mark();
-            if (_CabRenderer != null)
-                _CabRenderer.Mark();
+
+            _CabRenderer?.Mark();
+            ThreeDimentionCabViewer?.Mark();
+
             base.Mark();
         }
 
@@ -2914,9 +2916,13 @@ namespace Orts.Viewer3D.RollingStock
 
         internal override void Mark()
         {
-            // TODO: This is likely wrong; we should mark textures, shapes and other graphical resources here.
+            TrainCarShape?.Mark();
+            foreach (ThreeDimCabDigit threeDimCabDigit in DigitParts3D.Values)
+            {
+                threeDimCabDigit.Mark();
+            }
         }
-    } // Class ThreeDimentionCabViewer
+    }
 
     public class ThreeDimCabDigit
     {
