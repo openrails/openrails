@@ -568,7 +568,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             // During normal operation fuel admission is fixed, and therefore TE follows curve as RpM varies
                             tractiveForceN = torqueCurveMultiplier * DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] / DieselEngine.DieselTorqueTab.MaxY() * CurrentGear.MaxTractiveForceN;
 
-                            //   Trace.TraceInformation("Tractive Force {0}, Throttle {1} TCM {2} RpM {3} Throttle% {4}", tractiveForceN, throttleFraction, torqueCurveMultiplier, dieselRpM, DieselEngine.DemandedThrottlePercent);
+//                            Trace.TraceInformation("Tractive Force {0}, Throttle {1} TCM {2} RpM {3} Throttle% {4} Gear {5} Torque {6} MaxTor {7} MaxTE {8}", tractiveForceN, throttleFraction, torqueCurveMultiplier, dieselRpM, DieselEngine.DemandedThrottlePercent, DieselEngine.GearBox.CurrentGearIndex + 1, DieselEngine.DieselTorqueTab[DieselEngine.RealRPM], DieselEngine.DieselTorqueTab.MaxY(), CurrentGear.MaxTractiveForceN);
 
                             Locomotive.HuDGearMaximumTractiveForce = CurrentGear.MaxTractiveForceN;
                                                         
@@ -589,7 +589,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                 tractiveForceN = 0;
                             }
 
-                            // Fluid couplings prevent TE "creep" at zero throttle
+                            // Scoop couplings prevent TE "creep" at zero throttle
                             if (throttleFraction == 0 && ClutchType == TypesClutch.Scoop)
                             {
                                 tractiveForceN = 0;

@@ -340,17 +340,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 float temp = 0;
                 foreach (DieselEngine de in DEList)
                 {
-                    if(de.GearBox != null)
+                    if (de.GearBox != null)
                     {
-                        // For friction clutches, and ones without scoop coupling as soon as locomotive is put into gear some torque is transmitted to wheels
-                        if (de.DemandedThrottlePercent == 0 && Locomotive.DieselEngines[0].GearBox.ClutchType != TypesClutch.Scoop)
-                        {
-                            temp += (de.GearBox.TractiveForceN);
-                        }
-                        else
-                        {
-                            temp += (de.DemandedThrottlePercent * 0.01f * de.GearBox.TractiveForceN);
-                        }
+                        temp += (de.GearBox.TractiveForceN);
                     }                  
                 }
                 return temp;
@@ -460,6 +452,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 result.AppendFormat("\t\t{0}", Simulator.Catalog.GetString("TCM"));
                 foreach (var eng in DEList)
                     result.AppendFormat("\t{0}", eng.GearBox.torqueCurveMultiplier);
+
+                result.AppendFormat("\t\t{0}", Simulator.Catalog.GetString("Tor"));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0}", eng.DieselTorqueTab[eng.RealRPM] / eng.DieselTorqueTab.MaxY());
+
+                
 
             }
 
@@ -1192,7 +1190,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             // links engine rpm and shaft rpm together when clutch is fully engaged
             if (HasGearBox && GearBox.GearBoxOperation == GearBoxOperation.Manual)
             {
-                if (!GearBox.IsClutchOn && RealRPM < GearBox.ShaftRPM && Locomotive.SpeedMpS > 0)
+                // Speeds engine rpm to simulate clutch starting to engage and pulling speed up as clutch slips
+                if (GearBox.ClutchType != TypesClutch.Scoop && !GearBox.IsClutchOn && RealRPM < GearBox.ShaftRPM && Locomotive.SpeedMpS > 0)
                 {
                     var tempdRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * (MaxRPM - DemandedRPM)), ChangeUpRPMpS);
                     RealRPM = Math.Max(RealRPM + tempdRPM * elapsedClockSeconds, 0);
@@ -1208,10 +1207,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     // prevent engine from stalling if engine speed falls below idle speed
                     var scoopActivationRPM = 1.05f * IdleRPM;
-                    if ((RealRPM <= IdleRPM && GearBox.ClutchType == TypesClutch.Fluid) || (RealRPM <= scoopActivationRPM && GearBox.ClutchType == TypesClutch.Scoop) )
+                    if (RealRPM <= IdleRPM && GearBox.ClutchType == TypesClutch.Fluid)
                     {
                         RealRPM = IdleRPM;
                         DemandedRPM = IdleRPM;
+                        GearBox.clutchOn = false;
+                    }
+                    else if (RealRPM <= scoopActivationRPM && GearBox.ClutchType == TypesClutch.Scoop)
+                    {
                         GearBox.clutchOn = false;
                     }
                 }
@@ -1833,10 +1836,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     power[i] *= MaximumDieselPowerW;
                     torque[i] *= MaximumDieselPowerW / (MaxRPM * 2f * 3.1415f / 60f) / 0.81f;
+
+                    Trace.TraceInformation("Rpm {0}   Torque {1}", rpm[i], torque[i]);
                 }
                 rpm[count] = MaxRPM * 1.5f;
                 power[count] *= MaximumDieselPowerW;
                 torque[count] *= MaximumDieselPowerW / (MaxRPM * 3f * 3.1415f / 60f) / 0.81f;
+
+                Trace.TraceInformation("Rpm {0}   Torque {1}", rpm[count], torque[count]);
 
                 DieselPowerTab = new Interpolator(rpm, power);
                 DieselTorqueTab = new Interpolator(rpm, torque);
