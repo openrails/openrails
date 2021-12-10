@@ -92,6 +92,10 @@ namespace Orts.Common
         GenericEvent6,
         GenericEvent7,
         GenericEvent8,
+        GenericItem1On,
+        GenericItem1Off,
+        GenericItem2On,
+        GenericItem2Off,
         HornOff,
         HornOn,
         LightSwitchToggle,
@@ -499,6 +503,11 @@ namespace Orts.Common
                         case 233: return Event.HeatingOff;
                         case 234: return Event.AirConditioningOn;
                         case 235: return Event.AirConditioningOff;
+
+                        case 240: return Event.GenericItem1On;
+                        case 241: return Event.GenericItem1Off;
+                        case 242: return Event.GenericItem2On;
+                        case 243: return Event.GenericItem2Off;
 
                         case 250: return Event.OverchargeBrakingOn;
                         case 251: return Event.OverchargeBrakingOff;
