@@ -202,6 +202,8 @@ namespace Orts.Formats.Msts
         ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH,
         ORTS_ELECTRIC_TRAIN_SUPPLY_ON,
         ORTS_2DEXTERNALWIPERS,
+        ORTS_GENERIC_ITEM1,
+        ORTS_GENERIC_ITEM2,
 
         // TCS Controls
         ORTS_TCS1,
