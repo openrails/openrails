@@ -42,7 +42,7 @@ namespace ORTS.Common
     {
         static VfsNode VfsRoot;
         static readonly Stack<(string, VfsNode)> Stack = new Stack<(string, VfsNode)>();
-        static readonly Dictionary<string, IArchive> OpenArchives = new Dictionary<string, IArchive>();
+        static readonly ConcurrentDictionary<string, IArchive> OpenArchives = new ConcurrentDictionary<string, IArchive>();
         static readonly List<string> SupportedArchiveExtensions = new List<string> { ".zip", ".rar", ".7z" };
         static readonly ConcurrentQueue<string> InitLog = new ConcurrentQueue<string>();
 
@@ -385,9 +385,9 @@ namespace ORTS.Common
                 if (!OpenArchives.TryGetValue(archiveKey, out var archive))
                 {
                     archive = ArchiveFactory.Open(File.OpenRead(foundNode.AbsolutePath), new ReaderOptions() { LeaveStreamOpen = true });
+                    OpenArchives.TryAdd(archiveKey, archive);
                     if (AccessLoggingEnabled)
                         Trace.TraceInformation($"VFS opening archive file for thread {archiveKey}");
-                    OpenArchives.Add(archiveKey, archive);
                 }
 
                 var archiveEntry = archive.Entries.Where(entry => entry.Key == foundNode.SubPath).FirstOrDefault();
@@ -453,10 +453,33 @@ namespace ORTS.Common
         static bool IsArchiveSupported(string filename) => SupportedArchiveExtensions.Contains(Path.GetExtension(filename).ToLower());
 
         static string NormalizeSystemPath(string path) => Path.GetFullPath(new Uri(path).LocalPath).Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Trim('"');
-        static string NormalizeVirtualPath(string path) => path.Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Trim('"').ToUpperInvariant();
+        static string NormalizeVirtualPath(string path)
+        {
+            path = path.Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Replace("//", "/").Trim('"').ToUpperInvariant();
+            // Need to do something similar to Path.GetFullPath() with flattening the dir/.. pairs.
+            // They cause problems e.g. at Scripts/../etc. sequences, where browsing through imaginary directories.
+            return string.Join("/", Flatten(path.Split('/').ToList()));
+        }
+
+        static List<string> Flatten(List<string> names)
+        {
+            for (var i = 0; i < names.Count; i++)
+            {
+                switch (names[i])
+                {
+                    case ".": names.RemoveAt(i); return Flatten(names);
+                    case "..":
+                        if (i == 0) names.RemoveAt(0);
+                        else names.RemoveRange(i - 1, 2);
+                        return Flatten(names);
+                    default: continue;
+                }
+            }
+            return names;
+        }
     }
 
-    internal class VfsNode
+internal class VfsNode
     {
         readonly Dictionary<string, VfsNode> Children = new Dictionary<string, VfsNode>();
         readonly VfsNode Parent;
