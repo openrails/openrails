@@ -618,7 +618,7 @@ namespace Orts.Viewer3D
         /// <param name="loadMipMap">If true it will load the mip-map chain for this texture.</param>
         public static void DDSFromFile(string fileName, GraphicsDevice device, bool loadMipMap, out Texture2D texture)
         {
-            Stream stream = Vfs.OpenRead(fileName);
+            Stream stream = Vfs.OpenReadWithSeek(fileName);
             Texture tex;
             InternalDDSFromStream(stream, device, 0, loadMipMap, out tex);
             stream.Close();
@@ -643,7 +643,7 @@ namespace Orts.Viewer3D
         /// <param name="loadMipMap">If true it will load the mip-map chain for this texture.</param>
         public static void DDSFromFile(string fileName, GraphicsDevice device, bool loadMipMap, out TextureCube texture)
         {
-            Stream stream = Vfs.OpenRead(fileName);
+            Stream stream = Vfs.OpenReadWithSeek(fileName);
             Texture tex;
             InternalDDSFromStream(stream, device, 0, loadMipMap, out tex);
             stream.Close();
@@ -668,7 +668,7 @@ namespace Orts.Viewer3D
         /// <param name="loadMipMap">If true it will load the mip-map chain for this texture.</param>
         public static void DDSFromFile(string fileName, GraphicsDevice device, bool loadMipMap, out Texture3D texture)
         {
-            Stream stream = Vfs.OpenRead(fileName);
+            Stream stream = Vfs.OpenReadWithSeek(fileName);
             Texture tex;
             InternalDDSFromStream(stream, device, 0, loadMipMap, out tex);
             stream.Close();
@@ -938,6 +938,8 @@ namespace Orts.Viewer3D
             {
                 throw new Exception("Can't read from a null stream");
             }
+
+            System.Diagnostics.Debug.Assert(stream.CanSeek);
 
             BinaryReader reader = new BinaryReader(stream);
 

@@ -133,6 +133,24 @@ namespace ORTS.Common
             }
         }
 
+        /// SharpCompress has the <see cref="Stream.Seek(long, SeekOrigin)"/> unimplemented,
+        /// so for reading a wav or dds within a VFS archive it needs to be loaded into the memory first.
+        public static Stream OpenReadWithSeek(string vfsPath)
+        {
+            switch (PrepareForRead(vfsPath))
+            {
+                case IArchiveEntry entry:
+                    var stream = new MemoryStream();
+                    var entryStream = entry.OpenEntryStream();
+                    entryStream.CopyTo(stream);
+                    entryStream.Close();
+                    stream.Position = 0;
+                    return stream;
+                case string path: return File.OpenRead(path);
+                default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
+            }
+        }
+
         public static DateTime LastModifiedTime(string vfsPath)
         {
             switch (PrepareForRead(vfsPath))

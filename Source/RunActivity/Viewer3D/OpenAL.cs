@@ -671,17 +671,8 @@ namespace Orts.Viewer3D
         /// <returns>True if success</returns>
         private bool ParseWAV(string n)
         {
-            pFile = Vfs.OpenRead(n);
-            if (!pFile.CanSeek)
-            {
-                /// SharpCompress has the <see cref="Stream.Seek(long, SeekOrigin)"/> unimplemented,
-                /// so for reading a wav within a VFS archive it needs to be loaded into memory first.
-                var stream = new MemoryStream();
-                pFile.CopyTo(stream);
-                pFile.Close();
-                pFile = stream;
-                pFile.Position = 0;
-            }
+            pFile = Vfs.OpenReadWithSeek(n);
+            Debug.Assert(pFile.CanSeek);
 
             if (pFile == null)
                 return false;
