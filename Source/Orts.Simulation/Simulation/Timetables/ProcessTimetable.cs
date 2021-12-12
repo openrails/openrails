@@ -1195,7 +1195,7 @@ namespace Orts.Simulation.Timetables
                 formedpathFilefullBinary = Path.Combine(formedpathFilefullBinary, Path.GetFileNameWithoutExtension(formedpathFilefull));
                 formedpathFilefullBinary = Path.ChangeExtension(formedpathFilefullBinary, "or-binpat");
 
-                if (BinaryPaths && File.Exists(formedpathFilefullBinary))
+                if (BinaryPaths && Vfs.FileExists(formedpathFilefullBinary))
                 {
                     var binaryLastWriteTime = Vfs.GetLastWriteTime(formedpathFilefullBinary);
                     if (binaryLastWriteTime < simulator.TDB.LastWriteTime ||

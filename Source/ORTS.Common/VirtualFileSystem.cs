@@ -181,8 +181,12 @@ namespace ORTS.Common
                     node.DeleteNode();
                     if (File.Exists(node.AbsolutePath))
                         File.Delete(node.AbsolutePath);
+                    if (AccessLoggingEnabled)
+                        Trace.TraceInformation($"VFS deleting archive node: {node.GetVerbosePath()} => {vfsPath}");
+                    return;
                 }
             }
+            throw new FileNotFoundException($"VFS deleting failed: {vfsPath}");
         }
 
         public static string[] GetDirectories(string vfsPath, SearchOption searchOption = SearchOption.TopDirectoryOnly)
