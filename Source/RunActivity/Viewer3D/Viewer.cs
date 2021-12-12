@@ -65,6 +65,7 @@ namespace Orts.Viewer3D
         public SharedTextureManager TextureManager { get; private set; }
         public SharedMaterialManager MaterialManager { get; private set; }
         public SharedShapeManager ShapeManager { get; private set; }
+        public SignalTypeDataManager SignalTypeDataManager { get; private set; }
         public Point DisplaySize { get { return RenderProcess.DisplaySize; } }
         // Components
         public Orts.Viewer3D.Processes.Game Game { get; private set; }
@@ -456,6 +457,7 @@ namespace Orts.Viewer3D
 
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
+            SignalTypeDataManager = new SignalTypeDataManager(this);
 
             WindowManager = new WindowManager(this);
             MessagesWindow = new MessagesWindow(WindowManager);
