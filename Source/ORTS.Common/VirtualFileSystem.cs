@@ -44,7 +44,7 @@ namespace ORTS.Common
         static readonly Stack<(string, VfsNode)> Stack = new Stack<(string, VfsNode)>();
         static readonly ConcurrentDictionary<string, IArchive> OpenArchives = new ConcurrentDictionary<string, IArchive>();
         static readonly List<string> SupportedArchiveExtensions = new List<string> { ".zip", ".rar", ".7z" };
-        static readonly ConcurrentQueue<string> InitLog = new ConcurrentQueue<string>();
+        internal static readonly ConcurrentQueue<string> InitLog = new ConcurrentQueue<string>();
 
         ///////////////////////////////////////////////////////////////////////////////////////
         ///
@@ -151,7 +151,7 @@ namespace ORTS.Common
             }
         }
 
-        public static DateTime LastModifiedTime(string vfsPath)
+        public static DateTime GetLastWriteTime(string vfsPath)
         {
             switch (PrepareForRead(vfsPath))
             {
@@ -167,7 +167,21 @@ namespace ORTS.Common
             {
                 case Stream stream: return stream;
                 case string path: return new FileStream(path, FileMode.Create);
-                default: throw new FileNotFoundException($"VFS writing failed: {vfsPath}");
+                default: throw new DirectoryNotFoundException($"VFS writing failed: {vfsPath}");
+            }
+        }
+
+        public static void FileDelete(string vfsPath)
+        {
+            if (FileExists(vfsPath))
+            {
+                var node = VfsRoot.GetNode(NormalizeVirtualPath(vfsPath));
+                if (node != null && node != VfsRoot && node.IsRegularFile())
+                {
+                    node.DeleteNode();
+                    if (File.Exists(node.AbsolutePath))
+                        File.Delete(node.AbsolutePath);
+                }
             }
         }
 
@@ -200,7 +214,7 @@ namespace ORTS.Common
                 foreach (var file in vfsNode.GetEntries(SearchOption.TopDirectoryOnly, true))
                 {
                     var node = vfsNode.GetNode(Path.GetFileName(file));
-                    Trace.TraceInformation($"VFS: {file} <= " + (node.IsArchiveFile() ? $"[{node.AbsolutePath}]/{node.SubPath}" : node.AbsolutePath));
+                    Trace.TraceInformation($"VFS: {file} <= " + node.GetVerbosePath());
                 }
             }
             Trace.TraceInformation($"VFS: End of hierarchy dump");
@@ -212,7 +226,7 @@ namespace ORTS.Common
 
         static void Initialize(string[] settings, string executablePath)
         {
-            VfsRoot =  new VfsNode("", true);
+            VfsRoot = new VfsNode("", true);
 
             OpenArchives.Clear();
             Stack.Clear();
@@ -497,12 +511,12 @@ namespace ORTS.Common
         }
     }
 
-internal class VfsNode
+    internal class VfsNode
     {
         readonly Dictionary<string, VfsNode> Children = new Dictionary<string, VfsNode>();
         readonly VfsNode Parent;
         readonly string Name;
-        
+
         public string AbsolutePath { get; private set; }
         public string SubPath { get; }
         public bool IsDirectory { get; }
@@ -515,8 +529,8 @@ internal class VfsNode
         public VfsNode(VfsNode parent, string name, string absolutePath, string subPath, bool isDirectory) : this(parent, name, absolutePath, subPath) => IsDirectory = isDirectory;
 
         public bool IsDirectoryWritable() => IsDirectory && AbsolutePath != null;
-        public bool IsRegularFile() => AbsolutePath != null && SubPath == null;
-        public bool IsArchiveFile() => AbsolutePath != null && SubPath != null;
+        public bool IsRegularFile() => !IsDirectory && AbsolutePath != null && SubPath == null;
+        public bool IsArchiveFile() => !IsDirectory && AbsolutePath != null && SubPath != null;
 
         public VfsNode CreateDirectory(string name) => CreateFile(name, null, null, true);
         public VfsNode CreateDirectory(string name, string absolutePath) => CreateFile(name, absolutePath, null, true);
@@ -526,9 +540,18 @@ internal class VfsNode
             if (!Children.TryGetValue(name, out var child))
                 Children.Add(name, child = new VfsNode(this, name, absolutePath, subPath, isDirectory));
             else if (!child.IsDirectory)
+            {
                 // A directory overrides a file, but a file cannot override a directory.
-                Children[name] = child = new VfsNode(this, name, absolutePath, subPath, isDirectory);
-            else if (child.IsDirectory && isDirectory && absolutePath != null &&  absolutePath != child.AbsolutePath)
+                child = new VfsNode(this, name, absolutePath, subPath, isDirectory);
+                if (Vfs.AccessLoggingEnabled)
+                {
+                    var message = $"VFS virtual overwrite: {Children[name].GetVerbosePath()} with {child.GetVerbosePath()} => {child.GetVfsPath()}";
+                    Trace.TraceInformation(message);
+                    Vfs.InitLog.Enqueue(message);
+                }
+                Children[name] = child;
+            }
+            else if (child.IsDirectory && isDirectory && absolutePath != null && absolutePath != child.AbsolutePath)
                 // A directory can be made writable, and a write path can override an old write path.
                 child.SetDirectoryWritable(absolutePath);
             return child;
@@ -555,6 +578,7 @@ internal class VfsNode
             return node;
         }
 
+        public bool DeleteNode() => Parent.DeleteChild(Name);
         public bool DeleteChild(string name)
         {
             var success = Children.ContainsKey(name);
@@ -571,6 +595,8 @@ internal class VfsNode
             node?.Children.TryGetValue(names.Last(), out node);
             return node;
         }
+
+        public string GetVerbosePath() => IsArchiveFile() ? $"[{AbsolutePath}]/{SubPath}" : AbsolutePath ?? "null";
 
         public string GetVfsPath()
         {
