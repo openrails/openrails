@@ -17,6 +17,7 @@
 
 using Orts.Formats.Msts;
 using Orts.Simulation;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,22 +52,24 @@ namespace Orts.Viewer3D.Common
         {
             var texturePath = Path.GetDirectoryName(textureFilePath);
             var textureName = Path.GetFileName(textureFilePath);
-            var nightTexturePath = !File.Exists(texturePath + @"\Night\" + textureName) ? Path.GetDirectoryName(texturePath) + @"\Night\" : texturePath + @"\Night\";
+            var nightTexturePath = !Vfs.FileExists(texturePath + @"\Night\" + textureName) ? Path.GetDirectoryName(texturePath) + @"\Night\" : texturePath + @"\Night\";
+            var nightTexture = nightTexturePath + textureName;
 
-            if (!String.IsNullOrEmpty(nightTexturePath + textureName) && Path.GetExtension(nightTexturePath + textureName) == ".dds" && File.Exists(nightTexturePath + textureName))
+            if (!String.IsNullOrEmpty(nightTexture) && Path.GetExtension(nightTexture).ToLowerInvariant() == ".dds" && Vfs.FileExists(nightTexture))
             {
-                return nightTexturePath + textureName;
+                return nightTexture;
             }
-            else if (!String.IsNullOrEmpty(nightTexturePath + textureName) && Path.GetExtension(nightTexturePath + textureName) == ".ace")
+            else if (!String.IsNullOrEmpty(nightTexture) && Path.GetExtension(nightTexture).ToLowerInvariant() == ".ace")
             {
-                var alternativeTexture = Path.ChangeExtension(nightTexturePath + textureName, ".dds");
-                if (simulator.Settings.PreferDDSTexture && !String.IsNullOrEmpty(alternativeTexture.ToLower()) && File.Exists(alternativeTexture))
+                var alternativeTexture = Path.ChangeExtension(nightTexture, ".dds");
+
+                if (simulator.Settings.PreferDDSTexture && !String.IsNullOrEmpty(alternativeTexture) && Vfs.FileExists(alternativeTexture))
                 {
                     return alternativeTexture;
                 }
-                else if (File.Exists(nightTexturePath + textureName))
+                else if (Vfs.FileExists(nightTexture))
                 {
-                    return nightTexturePath + textureName;
+                    return nightTexture;
                 }
                 else
                 {

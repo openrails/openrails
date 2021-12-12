@@ -17,9 +17,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
+using ORTS.Common;
 
 namespace Orts.Formats.OR
 {
@@ -36,14 +36,14 @@ namespace Orts.Formats.OR
         {
             foreach (string routeParent in routes)
             {
-                if (!Directory.Exists(routeParent))
+                if (!Vfs.DirectoryExists(routeParent))
                 {
                     continue;
                 }
-                string[] subdirectoryEntries = Directory.GetDirectories(routeParent);
+                string[] subdirectoryEntries = Vfs.GetDirectories(routeParent);
                 foreach (string route in subdirectoryEntries)
                 {
-                    string[] files = Directory.GetFileSystemEntries(route, "*.trk");
+                    string[] files = Vfs.GetFiles(route, "*.trk");
                     if (files.Count() == 1)
                     {
                         routePaths.Add(route);

@@ -27,6 +27,7 @@ using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
 using MSTS;
+using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
 using ORTS.Updater;
@@ -264,6 +265,7 @@ namespace ORTS
             {
                 tabOptions.SelectedTab = tabPageContent;
                 buttonContentBrowse.Enabled = false; // Initial state because browsing a null path leads to an exception
+                buttonContentFile.Enabled = false;
                 try
                 {
                     bindingSourceContent.Add(new ContentFolder() { Name = "Train Simulator", Path = MSTSPath.Base() });
@@ -336,6 +338,7 @@ namespace ORTS
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
+            checkVfsLog.Checked = Settings.VfsAccessLog;
             precipitationBoxHeight.Value = Settings.PrecipitationBoxHeight;
             precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
             precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
@@ -537,6 +540,7 @@ namespace ORTS
             Settings.AdhesionProportionalToWeather = checkAdhesionPropToWeather.Checked;
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
+            Settings.VfsAccessLog = Vfs.AccessLoggingEnabled = checkVfsLog.Checked;
             Settings.PrecipitationBoxHeight = (int)precipitationBoxHeight.Value;
             Settings.PrecipitationBoxWidth = (int)precipitationBoxWidth.Value;
             Settings.PrecipitationBoxLength = (int)precipitationBoxLength.Value;
@@ -681,7 +685,7 @@ namespace ORTS
         private void dataGridViewContent_SelectionChanged(object sender, EventArgs e)
         {
             var current = bindingSourceContent.Current as ContentFolder;
-            textBoxContentName.Enabled = buttonContentBrowse.Enabled = current != null;
+            textBoxContentName.Enabled = buttonContentBrowse.Enabled = buttonContentFile.Enabled = current != null;
             if (current == null)
             {
                 textBoxContentName.Text = textBoxContentPath.Text = "";
@@ -718,6 +722,26 @@ namespace ORTS
                     var current = bindingSourceContent.Current as ContentFolder;
                     System.Diagnostics.Debug.Assert(current != null, "List should not be empty");
                     textBoxContentPath.Text = current.Path = folderBrowser.SelectedPath;
+                    if (String.IsNullOrEmpty(current.Name))
+                        // Don't need to set current.Name here as next statement triggers event textBoxContentName_TextChanged()
+                        // which does that and also checks for duplicate names 
+                        textBoxContentName.Text = Path.GetFileName(textBoxContentPath.Text);
+                    bindingSourceContent.ResetCurrentItem();
+                }
+            }
+        }
+
+        private void buttonContentFile_Click(object sender, EventArgs e)
+        {
+            using (var folderBrowser = new OpenFileDialog())
+            {
+                folderBrowser.InitialDirectory = textBoxContentPath.Text;
+                folderBrowser.Title = catalog.GetString("Select an installation profile configuration file to add:");
+                if (folderBrowser.ShowDialog(this) == DialogResult.OK)
+                {
+                    var current = bindingSourceContent.Current as ContentFolder;
+                    System.Diagnostics.Debug.Assert(current != null, "List should not be empty");
+                    textBoxContentPath.Text = current.Path = folderBrowser.FileName;
                     if (String.IsNullOrEmpty(current.Name))
                         // Don't need to set current.Name here as next statement triggers event textBoxContentName_TextChanged()
                         // which does that and also checks for duplicate names 
