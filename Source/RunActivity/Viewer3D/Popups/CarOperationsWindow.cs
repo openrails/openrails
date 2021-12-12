@@ -133,8 +133,8 @@ namespace Orts.Viewer3D.Popups
             {
                 MSTSLocomotive locomotive = Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive;
 
-                new ToggleMUCommand(Viewer.Log, locomotive, !locomotive.AcceptMUSignals);
-                if (locomotive.AcceptMUSignals)
+                new ToggleMUCommand(Viewer.Log, locomotive, locomotive.RemoteControlGroup < 0);
+                if (locomotive.RemoteControlGroup >= 0)
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("MU signal connected"));
                 else
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("MU signal disconnected"));

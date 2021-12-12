@@ -1311,6 +1311,134 @@ namespace Orts.Common
         }
     }
 
+    // Distributed Power controls
+    [Serializable()]
+    public sealed class DPMoveToFrontCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public DPMoveToFrontCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.Train.DPMoveToFront();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class DPMoveToBackCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public DPMoveToBackCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.Train.DPMoveToBack();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class DPIdleCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public DPIdleCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.Train.DPIdle();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class DPTractionCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public DPTractionCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.Train.DPTraction();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class DPDynamicBrakeCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public DPDynamicBrakeCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.Train.DPDynamicBrake();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class DPMoreCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public DPMoreCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.Train.DPMore();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class DPLessCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public DPLessCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.Train.DPLess();
+            // Report();
+        }
+    }
+
+
     // Steam controls
     [Serializable()]
     public sealed class ContinuousSteamHeatCommand : ContinuousCommand

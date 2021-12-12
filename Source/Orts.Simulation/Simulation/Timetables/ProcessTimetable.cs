@@ -1160,7 +1160,7 @@ namespace Orts.Simulation.Timetables
             {
                 // read route
                 bool pathValid = true;
-                AIPath newPath = LoadPath(thisRoute, out pathValid);
+                LoadPath(thisRoute, out pathValid);
                 if (!pathValid) allPathsLoaded = false;
                 if (cancellation.IsCancellationRequested)
                     return (false);
@@ -1187,23 +1187,23 @@ namespace Orts.Simulation.Timetables
             if (String.IsNullOrEmpty(pathExtension))
                 formedpathFilefull = Path.ChangeExtension(formedpathFilefull, "pat");
 
-            // try to load binary path if required
-            bool binaryloaded = false;
-            AIPath outPath = null;
-
-            if (Paths.ContainsKey(formedpathFilefull))
+            if (!Paths.TryGetValue(formedpathFilefull, out var outPath))
             {
-                outPath = new AIPath(Paths[formedpathFilefull]);
-            }
-            else
-            {
+                // try to load binary path if required
+                bool binaryloaded = false;
                 string formedpathFilefullBinary = Path.Combine(Path.GetDirectoryName(formedpathFilefull), "OpenRails");
                 formedpathFilefullBinary = Path.Combine(formedpathFilefullBinary, Path.GetFileNameWithoutExtension(formedpathFilefull));
                 formedpathFilefullBinary = Path.ChangeExtension(formedpathFilefullBinary, "or-binpat");
 
-                if (BinaryPaths)
+                if (BinaryPaths && File.Exists(formedpathFilefullBinary))
                 {
-                    if (Vfs.FileExists(formedpathFilefullBinary))
+                    var binaryLastWriteTime = Vfs.GetLastWriteTime(formedpathFilefullBinary);
+                    if (binaryLastWriteTime < simulator.TDB.LastWriteTime ||
+                        Vfs.FileExists(formedpathFilefull) && binaryLastWriteTime < Vfs.GetLastWriteTime(formedpathFilefull))
+                    {
+                        Vfs.FileDelete(formedpathFilefullBinary);
+                    }
+                    else
                     {
                         try
                         {
@@ -1213,7 +1213,7 @@ namespace Orts.Simulation.Timetables
 
                             if (outPath.Nodes != null)
                             {
-                                Paths.Add(formedpathFilefull, new AIPath(outPath));
+                                Paths.Add(formedpathFilefull, outPath);
                                 binaryloaded = true;
                             }
                         }
@@ -1235,7 +1235,7 @@ namespace Orts.Simulation.Timetables
                         {
                             try
                             {
-                                Paths.Add(formedpathFilefull, new AIPath(outPath));
+                                Paths.Add(formedpathFilefull, outPath);
                             }
                             catch (Exception e)
                             {
@@ -2404,6 +2404,7 @@ namespace Orts.Simulation.Timetables
 
                 // set train details
                 TTTrain.CheckFreight();
+                TTTrain.SetDPUnitIDs();
                 TTTrain.SpeedSettings.routeSpeedMpS = (float)simulator.TRK.Tr_RouteFile.SpeedLimit;
 
                 if (!confMaxSpeed.HasValue || confMaxSpeed.Value <= 0f)

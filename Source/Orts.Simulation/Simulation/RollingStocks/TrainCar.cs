@@ -432,7 +432,12 @@ namespace Orts.Simulation.RollingStocks
             return new Interpolator(WorldLatitudeDeg, WorldTemperatureSummer);
         }
 
-        public bool AcceptMUSignals = true; //indicates if the car accepts multiple unit signals
+        public bool AcceptMUSignals = true; //indicates if the car accepts multiple unit signals; no more used
+        /// <summary>
+        /// Indicates which remote control group the car is in.
+        /// -1: unconnected, 0: sync/front group, 1: async/rear group
+        /// </summary>
+        public int RemoteControlGroup;
         public bool IsMetric;
         public bool IsUK;
         public float prevElev = -100f;
@@ -460,7 +465,7 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
-                if (AcceptMUSignals && Train != null)
+                if (RemoteControlGroup == 0 && Train != null)
                 {
                     if (Train.LeadLocomotive != null && !((MSTSLocomotive)Train.LeadLocomotive).TrainControlSystem.TractionAuthorization && Train.MUThrottlePercent > 0)
                     {
@@ -471,12 +476,14 @@ namespace Orts.Simulation.RollingStocks
                         return Train.MUThrottlePercent;
                     }
                 }
+                else if (RemoteControlGroup == 1 && Train != null)
+                    return Train.DPThrottlePercent;
                 else
                     return LocalThrottlePercent;
             }
             set
             {
-                if (AcceptMUSignals && Train != null)
+                if (RemoteControlGroup == 0 && Train != null)
                     Train.MUThrottlePercent = value;
                 else
                     LocalThrottlePercent = value;
@@ -488,14 +495,14 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
-                if (AcceptMUSignals)
+                if (RemoteControlGroup >= 0)
                     return Train.MUGearboxGearIndex;
                 else
                     return LocalGearboxGearIndex;
             }
             set
             {
-                if (AcceptMUSignals)
+                if (RemoteControlGroup >= 0)
                     Train.MUGearboxGearIndex = value;
                 else
                     LocalGearboxGearIndex = value;
@@ -507,12 +514,14 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
-                if (AcceptMUSignals && Train != null)
+                if (RemoteControlGroup >= 0 && Train != null)
                 {
                     if (Train.LeadLocomotive != null && ((MSTSLocomotive) Train.LeadLocomotive).TrainControlSystem.FullDynamicBrakingOrder)
                     {
                         return 100;
                     }
+                    else if (RemoteControlGroup == 1 && Train != null)
+                        return Train.DPDynamicBrakePercent;
                     else
                     {
                         return Train.MUDynamicBrakePercent;
@@ -523,7 +532,7 @@ namespace Orts.Simulation.RollingStocks
             }
             set
             {
-                if (AcceptMUSignals && Train != null)
+                if (RemoteControlGroup != -1 && Train != null)
                     Train.MUDynamicBrakePercent = value;
                 else
                     LocalDynamicBrakePercent = value;
@@ -2167,7 +2176,7 @@ namespace Orts.Simulation.RollingStocks
                 CarID,
                 Flipped ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
-                AcceptMUSignals ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : RemoteControlGroup == 1 ? Simulator.Catalog.GetString("Async") : "----",
                 ThrottlePercent,
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
@@ -2181,6 +2190,8 @@ namespace Orts.Simulation.RollingStocks
         public virtual string GetEngineBrakeStatus() { return null; }
         public virtual string GetBrakemanBrakeStatus() { return null; }
         public virtual string GetDynamicBrakeStatus() { return null; }
+        public virtual string GetDPDynamicBrakeStatus() { return null; }
+        public virtual string GetMultipleUnitsConfiguration() { return null; }
         public virtual bool GetSanderOn() { return false; }
         protected bool WheelHasBeenSet = false; //indicating that the car shape has been loaded, thus no need to reset the wheels
 
