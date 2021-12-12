@@ -48,6 +48,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TimetableReader.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
+      <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>
+      <Name>ORTS.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

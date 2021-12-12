@@ -35,9 +35,8 @@ namespace LibAE
     {
         public MSTSBase TileBase { get; protected set; }
 
-        public MSTSDataConfig(string mstsPath, string Route, TypeEditor interfaceType) : base (mstsPath, Route)
+        public MSTSDataConfig(string Route, TypeEditor interfaceType) : base (Route)
         {
-            string routePath = Path.Combine(Route, TRK.Tr_RouteFile.FileName);
             TileBase = new MSTSBase(TDB);
             TileBase.reduce(TDB);
         }

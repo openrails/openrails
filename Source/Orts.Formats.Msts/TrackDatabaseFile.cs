@@ -40,11 +40,6 @@ namespace Orts.Formats.Msts
         public TrackDB TrackDB { get; set; }
 
         /// <summary>
-        /// The .tdb file last modified time is stored for being able to validate derived files such as binary paths.
-        /// </summary>
-        public DateTime LastWriteTime { get; }
-
-        /// <summary>
         /// Constructor from file
         /// </summary>
         /// <param name="filenamewithpath">Full file name of the .rdb file</param>
@@ -54,8 +49,6 @@ namespace Orts.Formats.Msts
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("trackdb", ()=>{ TrackDB = new TrackDB(stf); }),
                 });
-
-            LastWriteTime = File.GetLastWriteTime(filenamewithpath);
         }
 
         /// <summary>

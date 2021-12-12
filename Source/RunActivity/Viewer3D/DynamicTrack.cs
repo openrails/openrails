@@ -247,12 +247,12 @@ namespace Orts.Viewer3D
         {
             string path = routePath + @"\TrackProfiles";
             //Establish default track profile
-            if (Directory.Exists(path) && File.Exists(path + @"\TrProfile.xml"))
+            if (Vfs.DirectoryExists(path) && Vfs.FileExists(path + @"\TrProfile.xml"))
             {
                 // XML-style
                 trpFile = new TRPFile(viewer, path + @"\TrProfile.xml");
             }
-            else if (Directory.Exists(path) && File.Exists(path + @"\TrProfile.stf"))
+            else if (Vfs.DirectoryExists(path) && Vfs.FileExists(path + @"\TrProfile.stf"))
             {
                 // MSTS-style
                 trpFile = new TRPFile(viewer, path + @"\TrProfile.stf");
@@ -281,8 +281,7 @@ namespace Orts.Viewer3D
                 Trace.Write("(default)");
                 return;
             }
-            FileInfo fileInfo = new FileInfo(filespec);
-            if (!fileInfo.Exists)
+            if (!Vfs.FileExists(filespec))
             {
                 TrackProfile = new TrProfile(viewer); // Default profile if no file
                 Trace.Write("(default)");

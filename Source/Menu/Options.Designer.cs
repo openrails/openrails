@@ -207,6 +207,8 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkVfsLog = new System.Windows.Forms.CheckBox();
+            this.buttonContentFile = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1782,6 +1784,7 @@
             // 
             this.groupBoxContent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxContent.Controls.Add(this.buttonContentFile);
             this.groupBoxContent.Controls.Add(this.buttonContentBrowse);
             this.groupBoxContent.Controls.Add(this.textBoxContentPath);
             this.groupBoxContent.Controls.Add(this.label20);
@@ -1799,9 +1802,9 @@
             this.buttonContentBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonContentBrowse.Location = new System.Drawing.Point(428, 19);
             this.buttonContentBrowse.Name = "buttonContentBrowse";
-            this.buttonContentBrowse.Size = new System.Drawing.Size(75, 23);
+            this.buttonContentBrowse.Size = new System.Drawing.Size(35, 23);
             this.buttonContentBrowse.TabIndex = 2;
-            this.buttonContentBrowse.Text = "Change...";
+            this.buttonContentBrowse.Text = "Dir";
             this.buttonContentBrowse.UseVisualStyleBackColor = true;
             this.buttonContentBrowse.Click += new System.EventHandler(this.buttonContentBrowse_Click);
             // 
@@ -1980,6 +1983,7 @@
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactorChange);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactor);
             this.tabPageExperimental.Controls.Add(this.checkAdhesionPropToWeather);
+            this.tabPageExperimental.Controls.Add(this.checkVfsLog);
             this.tabPageExperimental.Controls.Add(this.checkCircularSpeedGauge);
             this.tabPageExperimental.Controls.Add(this.checkSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
@@ -2567,6 +2571,27 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // checkVfsLog
+            // 
+            this.checkVfsLog.AutoSize = true;
+            this.checkVfsLog.Location = new System.Drawing.Point(6, 235);
+            this.checkVfsLog.Name = "checkVfsLog";
+            this.checkVfsLog.Size = new System.Drawing.Size(120, 17);
+            this.checkVfsLog.TabIndex = 21;
+            this.checkVfsLog.Text = "Log VFS file access";
+            this.checkVfsLog.UseVisualStyleBackColor = true;
+            // 
+            // buttonContentFile
+            // 
+            this.buttonContentFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonContentFile.Location = new System.Drawing.Point(468, 19);
+            this.buttonContentFile.Name = "buttonContentFile";
+            this.buttonContentFile.Size = new System.Drawing.Size(35, 23);
+            this.buttonContentFile.TabIndex = 2;
+            this.buttonContentFile.Text = "File";
+            this.buttonContentFile.UseVisualStyleBackColor = true;
+            this.buttonContentFile.Click += new System.EventHandler(this.buttonContentFile_Click);
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2831,5 +2856,7 @@
         private System.Windows.Forms.TrackBar trackAntiAliasing;
         private System.Windows.Forms.Label labelAntiAliasingValue;
         private System.Windows.Forms.Label labelAntiAliasing;
+        private System.Windows.Forms.CheckBox checkVfsLog;
+        private System.Windows.Forms.Button buttonContentFile;
     }
 }

@@ -16,10 +16,10 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.IO;
 using GNU.Gettext;
 using Orts.Formats.Msts;
 using System;
+using ORTS.Common;
 
 namespace ORTS.Menu
 {
@@ -48,7 +48,7 @@ namespace ORTS.Menu
         /// <param name="filePath">The full name of the .pat file</param>
         internal Path(string filePath)
         {
-            if (File.Exists(filePath))
+            if (Vfs.FileExists(filePath))
             {
                 try
                 {
@@ -90,9 +90,9 @@ namespace ORTS.Menu
         {
             var paths = new List<Path>();
             var directory = System.IO.Path.Combine(route.Path, "PATHS");
-            if (Directory.Exists(directory))
+            if (Vfs.DirectoryExists(directory))
             {
-                foreach (var file in Directory.GetFiles(directory, "*.pat"))
+                foreach (var file in Vfs.GetFiles(directory, "*.pat"))
                 {
                     Path path = null;
                     try
@@ -112,13 +112,13 @@ namespace ORTS.Menu
                         // The first activity in Marias Pass is "Explore Longhale" which leads to a "Broken Path" message.
                         // The message then confuses users new to ORTS who have just installed it along with MSTS,
                         // see https://bugs.launchpad.net/or/+bug/1345172 and https://bugs.launchpad.net/or/+bug/128547
-                        if (!file.EndsWith(@"ROUTES\USA1\PATHS\aftstrm(traffic03).pat", StringComparison.OrdinalIgnoreCase)
-                            && !file.EndsWith(@"ROUTES\USA1\PATHS\aftstrmtraffic01.pat", StringComparison.OrdinalIgnoreCase)
-                            && !file.EndsWith(@"ROUTES\USA1\PATHS\aiphwne2.pat", StringComparison.OrdinalIgnoreCase)
-                            && !file.EndsWith(@"ROUTES\USA1\PATHS\aiwnphex.pat", StringComparison.OrdinalIgnoreCase)
-                            && !file.EndsWith(@"ROUTES\USA1\PATHS\blizzard(traffic).pat", StringComparison.OrdinalIgnoreCase)
-                            && !file.EndsWith(@"ROUTES\USA2\PATHS\longhale.pat", StringComparison.OrdinalIgnoreCase)
-                            && !file.EndsWith(@"ROUTES\USA2\PATHS\long-haul west (blizzard).pat", StringComparison.OrdinalIgnoreCase)
+                        if (!file.EndsWith("ROUTES/USA1/PATHS/aftstrm(traffic03).pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith("ROUTES/USA1/PATHS/aftstrmtraffic01.pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith("ROUTES/USA1/PATHS/aiphwne2.pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith("ROUTES/USA1/PATHS/aiwnphex.pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith("ROUTES/USA1/PATHS/blizzard(traffic).pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith("ROUTES/USA2/PATHS/longhale.pat", StringComparison.OrdinalIgnoreCase)
+                            && !file.EndsWith("ROUTES/USA2/PATHS/long-haul west (blizzard).pat", StringComparison.OrdinalIgnoreCase)
                             )
                         {
                             paths.Add(path);
