@@ -2731,7 +2731,7 @@ namespace Orts.Viewer3D
             }
             var train = Program.Simulator.ActivityRun.triggeredEventWrapper.Train;
             Program.Simulator.ActivityRun.triggeredEventWrapper = null;
-            var extension = Path.GetExtension(ORTSActSoundFile).ToLowerInvariant();
+            var extension = Path.GetExtension(ORTSActSoundFile);
             SoundSource ActivitySounds;
             switch (extension)
             {

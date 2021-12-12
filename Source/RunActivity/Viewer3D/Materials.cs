@@ -67,7 +67,7 @@ namespace Orts.Viewer3D
                     Texture2D texture;
                     if (Path.GetExtension(path) == ".dds")
                     {
-                        if (Vfs.FileExists(path))
+                        if (File.Exists(path))
                         {
                             DDSLib.DDSFromFile(path, GraphicsDevice, true, out texture);
                         }
@@ -76,7 +76,7 @@ namespace Orts.Viewer3D
                         // therefore avoiding that routes providing .ace textures show blank global shapes
                         {
                             var aceTexture = Path.ChangeExtension(path, ".ace");
-                            if (Vfs.FileExists(aceTexture))
+                            if (File.Exists(aceTexture))
                             {
                                 texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, aceTexture);
                                 Trace.TraceWarning("Required texture {1} not existing; using existing texture {2}", path, aceTexture);
@@ -88,11 +88,11 @@ namespace Orts.Viewer3D
                     {
                         var alternativeTexture = Path.ChangeExtension(path, ".dds");
                         
-                        if (Viewer.Settings.PreferDDSTexture && Vfs.FileExists(alternativeTexture))
+                        if (Viewer.Settings.PreferDDSTexture && File.Exists(alternativeTexture))
                         {
                             DDSLib.DDSFromFile(alternativeTexture, GraphicsDevice, true, out texture);
                         }
-                        else if (Vfs.FileExists(path))
+                        else if (File.Exists(path))
                         {
                             texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, path);
                         }
@@ -122,7 +122,7 @@ namespace Orts.Viewer3D
                             {
                                 return missing();
                             }
-                            if (Vfs.FileExists(searchPath) && searchPath.ToLower().Contains("texture")) //in texture and exists
+                            if (File.Exists(searchPath) && searchPath.ToLower().Contains("texture")) //in texture and exists
                             {
                                 try
                                 {
@@ -152,7 +152,7 @@ namespace Orts.Viewer3D
                 }
                 catch (Exception error)
                 {
-                    if (Vfs.FileExists(path))
+                    if (File.Exists(path))
                         Trace.WriteLine(new FileLoadException(path, error));
                     else
                         Trace.TraceWarning("Ignored missing texture file {0}", path);
@@ -176,7 +176,7 @@ namespace Orts.Viewer3D
             if (ext == ".ace")
                 return Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
 
-            using (var stream = Vfs.OpenRead(path))
+            using (var stream = File.OpenRead(path))
             {
                 if (ext == ".gif" || ext == ".jpg" || ext == ".png")
                     return Texture2D.FromStream(graphicsDevice, stream);
@@ -258,7 +258,7 @@ namespace Orts.Viewer3D
             PrecipitationShader = new PrecipitationShader(viewer.RenderProcess.GraphicsDevice);
             SceneryShader = new SceneryShader(viewer.RenderProcess.GraphicsDevice);
             var microtexPath = viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace";
-            if (Vfs.FileExists(microtexPath))
+            if (File.Exists(microtexPath))
             {
                 try
                 {

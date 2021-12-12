@@ -303,11 +303,9 @@ Special Rows
   will read that path. If not, it will read the 'normal' path, and will then 
   store this as binary for future use. Binary paths are stored in a subdirectory 
   named ``OpenRails`` which must be created in the Paths directory of the route.
-  
-  **Important:**
 
-    - If a path is edited, the binary version must be deleted manually, otherwise the program will still use this older version.
-    - If a route is edited, such that the .tdb might have been changed, all binary paths must be deleted.
+  Note: If a path or the route is edited, then the binary data will be out of date.
+  If so, it is deleted and re-created automatically when the user starts the route.
 
 - ``#consist`` row 
   

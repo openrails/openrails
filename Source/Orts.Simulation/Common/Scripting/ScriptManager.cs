@@ -65,7 +65,7 @@ namespace Orts.Common.Scripting
             if (pathArray == null || pathArray.Length == 0 || name == null || name == "")
                 return null;
 
-            if (Path.GetExtension(name).ToLower() != ".cs")
+            if (Path.GetExtension(name) != ".cs")
                 name += ".cs";
 
             var path = ORTSPaths.GetFileFromFolders(pathArray, name);
@@ -86,7 +86,7 @@ namespace Orts.Common.Scripting
         {
             try
             {
-                var compilerResults = Compiler.CompileAssemblyFromSource(GetCompilerParameters(), Vfs.OpenText(path).ReadToEnd());
+                var compilerResults = Compiler.CompileAssemblyFromFile(GetCompilerParameters(), path);
                 if (!compilerResults.Errors.HasErrors)
                 {
                     var script = compilerResults.CompiledAssembly;
@@ -116,7 +116,7 @@ namespace Orts.Common.Scripting
             }
             catch (Exception error)
             {
-                if (Vfs.FileExists(path))
+                if (File.Exists(path))
                     Trace.WriteLine(new FileLoadException(path, error));
                 else
                     Trace.TraceWarning("Ignored missing script file {0}", path);
@@ -132,9 +132,9 @@ namespace Orts.Common.Scripting
             if (path == null || path == "")
                 return null;
 
-            if (!Vfs.DirectoryExists(path)) return null;
+            if (!Directory.Exists(path)) return null;
 
-            var files = Vfs.GetFiles(path, "*.cs");
+            var files = Directory.GetFiles(path, "*.cs");
 
             if (files == null || files.Length == 0) return null;
 

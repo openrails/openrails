@@ -18,7 +18,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -31,7 +30,7 @@ namespace Orts.Formats.Msts
             Flags = new byte[sampleCount, sampleCount];
             try
             {
-                using (var reader = new BinaryReader(Vfs.OpenRead(fileName)))
+                using (var reader = new BinaryReader(File.OpenRead(fileName)))
                     for (var z = 0; z < sampleCount; z++)
                         for (var x = 0; x < sampleCount; x++)
                             Flags[x, z] = reader.ReadByte();

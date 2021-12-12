@@ -18,8 +18,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
-using ORTS.Common;
 
 // <Comment> This file parses only the shape names for temporary speed restrictions; the other shape names are not needed
 // </Comment>
@@ -41,7 +42,7 @@ namespace Orts.Formats.Msts
                              if (dataItem != null)
                              {
                                 dataItem = shapePath + dataItem;
-                                if (Vfs.FileExists(dataItem))
+                                if (File.Exists(dataItem))
                                     TempSpeedShapeNames[0] = dataItem;
                                 else
                                     STFException.TraceWarning(stf, String.Format("Non-existent shape file {0} referenced", dataItem));
@@ -54,7 +55,7 @@ namespace Orts.Formats.Msts
                              if (dataItem != null)
                              {
                                 dataItem = shapePath + dataItem;
-                                if (Vfs.FileExists(dataItem))
+                                if (File.Exists(dataItem))
                                     TempSpeedShapeNames[1] = dataItem;
                                 else
                                     STFException.TraceWarning(stf, String.Format("Non-existent shape file {0} referenced", dataItem));
@@ -67,7 +68,7 @@ namespace Orts.Formats.Msts
                              if (dataItem != null)
                              {
                                 dataItem = shapePath + dataItem;
-                                if (Vfs.FileExists(dataItem))
+                                if (File.Exists(dataItem))
                                     TempSpeedShapeNames[2] = dataItem;
                                 else
                                     STFException.TraceWarning(stf, String.Format("Non-existent shape file {0} referenced", dataItem));
