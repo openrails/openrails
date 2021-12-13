@@ -51,7 +51,7 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
 
         Dictionary<string, SharedShape> Shapes = new Dictionary<string, SharedShape>();
-        Dictionary<string, bool> ShapeMarks;
+        Dictionary<string, bool> ShapeMarks = new Dictionary<string, bool>();
         SharedShape EmptyShape;
 
         [CallOnThread("Render")]
@@ -87,7 +87,7 @@ namespace Orts.Viewer3D
 
         public void Mark()
         {
-            ShapeMarks = new Dictionary<string, bool>(Shapes.Count);
+            ShapeMarks.Clear();
             foreach (var path in Shapes.Keys)
                 ShapeMarks.Add(path, false);
         }
