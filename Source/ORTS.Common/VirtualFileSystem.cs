@@ -25,6 +25,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.IO.Compression;
 using SharpCompress.Archives;
 using SharpCompress.Readers;
 
@@ -42,7 +43,7 @@ namespace ORTS.Common
     {
         static VfsNode VfsRoot;
         static readonly Stack<(string, VfsNode)> Stack = new Stack<(string, VfsNode)>();
-        static readonly ConcurrentDictionary<string, IArchive> OpenArchives = new ConcurrentDictionary<string, IArchive>();
+        static readonly ConcurrentDictionary<string, object> OpenArchives = new ConcurrentDictionary<string, object>();
         static readonly List<string> SupportedArchiveExtensions = new List<string> { ".zip", ".rar", ".7z" };
         internal static readonly ConcurrentQueue<string> InitLog = new ConcurrentQueue<string>();
 
@@ -96,6 +97,7 @@ namespace ORTS.Common
         {
             switch (PrepareForRead(vfsPath))
             {
+                case ZipArchiveEntry entry: return new StreamReader(entry.Open(), detectEncodingFromByteOrderMarks);
                 case IArchiveEntry entry: return new StreamReader(entry.OpenEntryStream(), detectEncodingFromByteOrderMarks);
                 case string path: return new StreamReader(path, detectEncodingFromByteOrderMarks);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
@@ -107,6 +109,7 @@ namespace ORTS.Common
         {
             switch (PrepareForRead(vfsPath))
             {
+                case ZipArchiveEntry entry: return new StreamReader(entry.Open(), encoding);
                 case IArchiveEntry entry: return new StreamReader(entry.OpenEntryStream(), encoding);
                 case string path: return new StreamReader(path, encoding);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
@@ -117,6 +120,7 @@ namespace ORTS.Common
         {
             switch (PrepareForRead(vfsPath))
             {
+                case ZipArchiveEntry entry: return new StreamReader(entry.Open(), Encoding.UTF8);
                 case IArchiveEntry entry: return new StreamReader(entry.OpenEntryStream(), Encoding.UTF8);
                 case string path: return File.OpenText(path);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
@@ -127,6 +131,7 @@ namespace ORTS.Common
         {
             switch (PrepareForRead(vfsPath))
             {
+                case ZipArchiveEntry entry: return entry.Open();
                 case IArchiveEntry entry: return entry.OpenEntryStream();
                 case string path: return File.OpenRead(path);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
@@ -153,6 +158,7 @@ namespace ORTS.Common
         {
             switch (PrepareForRead(vfsPath))
             {
+                case ZipArchiveEntry entry: return entry.LastWriteTime.DateTime;
                 case IArchiveEntry entry: return entry.LastModifiedTime ?? DateTime.MinValue;
                 case string path: return File.GetLastWriteTime(path);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
@@ -338,7 +344,7 @@ namespace ORTS.Common
         {
             Debug.Assert(VfsRoot != null, "VFS is uninitialized");
 
-            var message = $"VFS mount system directory: {directory} => {mountpoint}";
+            var message = $"VFS mounting directory: {directory} => {mountpoint}";
             Trace.TraceInformation(message);
             InitLog.Enqueue(message);
             Stack.Clear();
@@ -365,40 +371,44 @@ namespace ORTS.Common
         {
             Debug.Assert(VfsRoot != null, "VFS is uninitialized");
 
-            var subPathIsDirectory = subPath?.EndsWith("/") ?? false;
+            var message = $"VFS mounting archive: [{archivePath}]/{subPath ?? ""} => {mountpoint}";
+            if (!message.EndsWith("/"))
+                message += "/"; // This is to keep the consistency of directories ending with '/'.
+            Trace.TraceInformation(message);
+            InitLog.Enqueue(message);
+            var mountNode = VfsRoot.ChangeDirectory(mountpoint, true);
             try
             {
-                using (var archive = ArchiveFactory.Open(new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                if (Path.GetExtension(archivePath).ToLower() == ".zip")
                 {
-                    var message = $"VFS mount archive: [{archivePath}]/{subPath ?? ""} => {mountpoint}";
-                    if (!message.EndsWith("/"))
-                        message += "/"; // This is to keep the consistency of directories ending with '/'.
-                    Trace.TraceInformation(message);
-                    InitLog.Enqueue(message);
-                    var mountNode = VfsRoot.ChangeDirectory(mountpoint, true);
-                    foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
-                    {
-                        var key = NormalizeVirtualPath(entry.Key);
-                        if (subPath == null || subPathIsDirectory && key.StartsWith(subPath, StringComparison.OrdinalIgnoreCase))
-                        {
-                            var relativePath = key.Substring(subPath?.Length ?? 0);
-
-                            if (IsArchiveSupported(key))
-                            {
-                                // TODO: archive-in-archive
-                            }
-
-                            mountNode.ChangeDirectory(NormalizeVirtualPath(Path.GetDirectoryName(relativePath)), true)
-                                .CreateFile(Path.GetFileName(relativePath), archivePath, entry.Key, false);
-                        }
-                    }
+                    using (var archive = new ZipArchive(new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                        foreach (var entry in archive.Entries.Where(entry => !string.IsNullOrEmpty(entry.Name) && !entry.FullName.EndsWith("/") && !entry.FullName.EndsWith(@"\"))) // && (entry.ExternalAttributes & (int)FileAttributes.Directory) == 0))
+                            createVirtualArchiveFile(entry.FullName);
+                }
+                else
+                {
+                    using (var archive = ArchiveFactory.Open(new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                        foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
+                            createVirtualArchiveFile(entry.Key);
                 }
             }
             catch
             {
-                var message = $"VFS mount: Could not open archive {archivePath}, skipping {subPath ?? string.Empty} => {mountpoint}";
+                message = $"VFS mount: Could not open archive {archivePath}, skipping {subPath ?? string.Empty} => {mountpoint}";
                 Trace.TraceWarning(message);
                 InitLog.Enqueue(message);
+            }
+
+            void createVirtualArchiveFile(string fullName)
+            {
+                var normalKey = NormalizeVirtualPath(fullName);
+                var subPathIsDirectory = subPath?.EndsWith("/") ?? false;
+                if (subPath == null || subPathIsDirectory && normalKey.StartsWith(subPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    var relativePath = normalKey.Substring(subPath?.Length ?? 0);
+                    mountNode.ChangeDirectory(NormalizeVirtualPath(Path.GetDirectoryName(relativePath)), true)
+                        .CreateFile(Path.GetFileName(relativePath), archivePath, fullName, false);
+                }
             }
         }
 
@@ -420,17 +430,33 @@ namespace ORTS.Common
                 var archiveKey = $"{threadId}@{foundNode.AbsolutePath}";
                 if (!OpenArchives.TryGetValue(archiveKey, out var archive))
                 {
-                    archive = ArchiveFactory.Open(File.OpenRead(foundNode.AbsolutePath), new ReaderOptions() { LeaveStreamOpen = true });
+                    if (Path.GetExtension(foundNode.AbsolutePath.ToLower()) == ".zip")
+                        archive = new ZipArchive(File.OpenRead(foundNode.AbsolutePath), ZipArchiveMode.Read, true);
+                    else
+                        archive = ArchiveFactory.Open(File.OpenRead(foundNode.AbsolutePath), new ReaderOptions() { LeaveStreamOpen = true });
+
                     OpenArchives.TryAdd(archiveKey, archive);
                     if (AccessLoggingEnabled)
                         Trace.TraceInformation($"VFS opening archive file for thread {archiveKey}");
                 }
 
-                var archiveEntry = archive.Entries.Where(entry => entry.Key == foundNode.SubPath).FirstOrDefault();
+                object archiveEntry = null;
+                string fullName = "";
+                switch (archive)
+                {
+                    case ZipArchive zipArchive:
+                        archiveEntry = zipArchive.Entries.Where(entry => entry.FullName == foundNode.SubPath).FirstOrDefault();
+                        fullName = ((ZipArchiveEntry)archiveEntry).FullName;
+                        break;
+                    case IArchive scArchive:
+                        archiveEntry = scArchive.Entries.Where(entry => entry.Key == foundNode.SubPath).FirstOrDefault();
+                        fullName = ((IArchiveEntry)archiveEntry).Key;
+                        break;
+                }
                 if (archiveEntry != null)
                 {
                     if (AccessLoggingEnabled)
-                        Trace.TraceInformation($"VFS reading archive node: [{foundNode.AbsolutePath}]/{archiveEntry.Key} => {vfsPath}");
+                        Trace.TraceInformation($"VFS reading archive node: [{foundNode.AbsolutePath}]/{fullName} => {vfsPath}");
                     return archiveEntry;
                 }
             }
