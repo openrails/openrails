@@ -37,7 +37,7 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
         readonly GraphicsDevice GraphicsDevice;
         Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
-        Dictionary<string, bool> TextureMarks;
+        Dictionary<string, bool> TextureMarks = new Dictionary<string, bool>();
 
         [CallOnThread("Render")]
         internal SharedTextureManager(Viewer viewer, GraphicsDevice graphicsDevice)
@@ -198,7 +198,7 @@ namespace Orts.Viewer3D
         
         public void Mark()
         {
-            TextureMarks = new Dictionary<string, bool>(Textures.Count);
+            TextureMarks.Clear();
             foreach (var path in Textures.Keys)
                 TextureMarks.Add(path, false);
         }

@@ -418,7 +418,7 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
 
         Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
-        Dictionary<string, bool> SignalTypesMarks;
+        Dictionary<string, bool> SignalTypesMarks = new Dictionary<string, bool>();
 
         public SignalTypeDataManager(Viewer viewer)
         {
@@ -437,7 +437,7 @@ namespace Orts.Viewer3D
 
         public void Mark()
         {
-            SignalTypesMarks = new Dictionary<string, bool>(SignalTypes.Count);
+            SignalTypesMarks.Clear();
             foreach (string signalTypeName in SignalTypes.Keys)
             {
                 SignalTypesMarks.Add(signalTypeName, false);
