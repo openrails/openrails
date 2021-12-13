@@ -137,18 +137,16 @@ namespace ORTS.Common
         /// so for reading a wav or dds within a VFS archive it needs to be loaded into the memory first.
         public static Stream OpenReadWithSeek(string vfsPath)
         {
-            switch (PrepareForRead(vfsPath))
+            var stream = OpenRead(vfsPath);
+            if (!stream.CanSeek)
             {
-                case IArchiveEntry entry:
-                    var stream = new MemoryStream();
-                    var entryStream = entry.OpenEntryStream();
-                    entryStream.CopyTo(stream);
-                    entryStream.Close();
-                    stream.Position = 0;
-                    return stream;
-                case string path: return File.OpenRead(path);
-                default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
+                var newStream = new MemoryStream();
+                stream.CopyTo(newStream);
+                stream.Close();
+                stream = newStream;
+                stream.Position = 0;
             }
+            return stream;
         }
 
         public static DateTime GetLastWriteTime(string vfsPath)
@@ -239,6 +237,8 @@ namespace ORTS.Common
             foreach (var line in settings)
             {
                 if (string.IsNullOrWhiteSpace(line))
+                    continue;
+                if (line.Trim().StartsWith("#")) // commented out line
                     continue;
                 if (!(match = Regex.Match(line, @"^("".+""|\S+) +(/MSTS/|/OR/)([\S]+/)*")).Success)
                 {
