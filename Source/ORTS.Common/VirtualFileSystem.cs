@@ -382,7 +382,7 @@ namespace ORTS.Common
                 if (Path.GetExtension(archivePath).ToLower() == ".zip")
                 {
                     using (var archive = new ZipArchive(new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-                        foreach (var entry in archive.Entries.Where(entry => !string.IsNullOrEmpty(entry.Name) && !entry.FullName.EndsWith("/") && !entry.FullName.EndsWith(@"\") && (entry.ExternalAttributes & (int)FileAttributes.Directory) == 0))
+                        foreach (var entry in archive.Entries.Where(entry => !string.IsNullOrEmpty(entry.Name) && !entry.FullName.EndsWith("/") && !entry.FullName.EndsWith(@"\"))) // && (entry.ExternalAttributes & (int)FileAttributes.Directory) == 0))
                             createVirtualArchiveFile(entry.FullName);
                 }
                 else
