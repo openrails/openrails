@@ -466,6 +466,60 @@ if e.g. the wiper moves from left to right and back, only the frames related
 to the motion from left to right have to be included. For the reverse 
 motion the same frames are used from last to first. SwitchVal can vary from 0 to 1.
 
+Multiple screen pages on displays
+---------------------------------
+
+Modern locomotives have one or more displays in their cabs, and often in such 
+displays it is possible to switch among more screen pages. Fields and controls 
+described in this paragraph enable the implementation of .cvf files with such 
+functionality, for both 2D and 3D cabs.
+
+In the .cvf control blocks following further fields may be optionally present::
+
+  ORTSDisplay ( numeric ), indicating the display ID number (from 0 to 7) 
+  to which the control is linked; if such field is missing, display ID number 
+  zero is assumed;
+
+  ORTSScreenPage ( alphanumeric-string ) indicating the screen ID string to 
+  which the control is linked; that means that the control is displayed/may be 
+  operated only if its screen is active in that moment; a missing entry 
+  indicates that the control is displayed independently from the selected screen page; 
+  at game start such controls are enabled, plus the ones with line 
+  ORTSScreenPage ( "default" ); more ORTSScreenPage() entries in a single control 
+  are possible.
+
+A new on/off control, called ORTS_SCREEN_SELECT is available, which, in addition to the usual fields and to 
+the optional fields ORTSDisplay and ORTSScreenPage contains one or more of following fields::
+
+  ORTSNewScreenPage ( alphanumeric-string numeric ): when the control is clicked, 
+  the controls with field ORTSScreenPage equal to the string of this field and 
+  with field ORTSDisplay equal to the numeric will be displayed on such display 
+  in place of the ones displayed up to that moment. if the numeric is missing within 
+  ORTSNewScreenPage, the involved display is the one referenced in field ORTSDisplay 
+  of ORTS_SCREEN_SELECT.
+
+A further control is available, named ORTS_STATIC_DISPLAY, which is specially devoted to the loading of the 
+background of screen pages (their static part). 
+Here is an example of usage of it::
+
+	MultiStateDisplay (
+		Type ( ORTS_STATIC_DISPLAY MULTI_STATE_DISPLAY )
+		Position ( 246 151 105 16 )
+		Graphic ( semproniostatic.ace )
+		States ( 1 1 1
+			State (
+				Style ( 0 )
+				SwitchVal ( 0 )
+			)
+		)
+			ORTSScreenPage ( "sempronio" )
+		)
+
+With this block, the static part of the "sempronio" screen page is loaded on display 0 when such screen 
+becomes the active one.
+
+.cvf files not using fields and controls listed in this paragraph work as usual, with no changes needed. 
+
 Further OR cab controls
 -----------------------
 
@@ -479,6 +533,36 @@ and the mirrors.
 
 The control blocks are like the one shown for the cab light. The Type strings 
 are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
+
+.. _cabs-generic-items:
+
+Cab controls for generic items
+------------------------------
+
+OR supports the cabview controls for two generic two-state items. 
+The cabview controls aree called ``<ORTS_GENERIC_ITEM1>`` and 
+``<ORTS_GENERIC_ITEM2>``. Their state can be toggled also by respectively 
+clicking keys ``<Shift+.>`` and ``<Shift+,>``.
+
+Sound events are associated, that is::
+
+   240: GenericItem1On
+   241: GenericItem1Off
+   242: GenericItem2On
+   243: GenericItem2Off
+
+Animations within the .s file of the locomotive, either stopped/moving or 
+two-state can be associated to the item state. Linked stopped/moving (wiper type) 
+animations are named ``<ORTSITEM1CONTINUOUS>`` and ``<ORTSITEM2CONTINUOUS>``. 
+Linked two-state animations (doors type) are named ``<ORTSITEM1TWOSTATE>`` and
+``<ORTSITEM2TWOSTATE>``. 
+The default animation speed for stopped/moving type animations is 8 FPS. 
+It may be modified with following parameter in the .sd file::
+
+   ESD_CustomAnimationSpeed ( 8 )
+
+Examples of use are fan control, open/close of aerodynamic coverages of couplers 
+in high speed trains, menu pages switching.
 
 
 High-resolution Cab Backgrounds and Controls

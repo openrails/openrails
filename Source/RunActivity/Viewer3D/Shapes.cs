@@ -284,6 +284,11 @@ namespace Orts.Viewer3D
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
+        {
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
+        }
+
         /// <summary>
         /// Adjust the pose of the specified node to the frame position specifed by key.
         /// </summary>
@@ -1543,7 +1548,7 @@ namespace Orts.Viewer3D
         public int RootSubObjectIndex = 0;
         //public bool negativeBogie = false;
         public string SoundFileName = "";
-        public float BellAnimationFPS = 8;
+        public float CustomAnimationFPS = 8;
 
 
         readonly Viewer Viewer;
@@ -1607,7 +1612,7 @@ namespace Orts.Viewer3D
                 if ((textureFlags & Helpers.TextureFlags.Night) != 0 && FilePath.Contains("\\trainset\\"))
                     textureFlags |= Helpers.TextureFlags.Underground;
                 SoundFileName = sdFile.shape.ESD_SoundFileName;
-                BellAnimationFPS = sdFile.shape.ESD_BellAnimationFPS;
+                CustomAnimationFPS = sdFile.shape.ESD_CustomAnimationFPS;
             }
 
             var matrixCount = sFile.shape.matrices.Count;
@@ -2064,12 +2069,12 @@ namespace Orts.Viewer3D
             PrepareFrame(frame, location, Matrices, null, flags);
         }
 
-        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags)
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags, bool[] matrixVisible = null)
         {
-            PrepareFrame(frame, location, animatedXNAMatrices, null, flags);
+            PrepareFrame(frame, location, animatedXNAMatrices, null, flags, matrixVisible);
         }
 
-        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool[] subObjVisible, ShapeFlags flags)
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool[] subObjVisible, ShapeFlags flags, bool[] matrixVisible = null)
         {
             var lodBias = ((float)Viewer.Settings.LODBias / 100 + 1);
 
@@ -2136,6 +2141,7 @@ namespace Orts.Viewer3D
                     {
                         var xnaMatrix = Matrix.Identity;
                         var hi = shapePrimitive.HierarchyIndex;
+                        if (matrixVisible != null && !matrixVisible[hi]) continue;
                         while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
                         {
                             Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
