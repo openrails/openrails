@@ -1110,8 +1110,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     else if (GearBox.ManualGearBoxChangeOn && GearBox.ManualGearTimerS > GearBox.ManualGearTimerResetS)
                     {
+                        // Reset gear change in preparation for the next gear change
                         GearBox.ManualGearBoxChangeOn = false;
+                        GearBox.ManualGearChange = false;
                         GearBox.ManualGearTimerS = 0; // Reset timer
+                        Trace.TraceInformation("Reset");
                     }
 
                     if (RealRPM > 0)
@@ -1122,9 +1125,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (GearBox.CurrentGear != null && !GearBox.ManualGearBoxChangeOn)
                     {
                         // When clutch is engaged (true) engine rpm should follow wheel shaft speed
-                        if (GearBox.IsClutchOn)
+                        if (GearBox.IsClutchOn && GearBox.ClutchType == TypesClutch.Friction)
                         {
                             DemandedRPM = GearBox.ShaftRPM;
+                            Trace.TraceInformation("Loop#1");
                         }
                     }
                     else if (GearBox.ManualGearBoxChangeOn)
@@ -1133,13 +1137,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         if (RealRPM > GearBox.ShaftRPM)
                         {
                             DemandedRPM = IdleRPM;
-                        }
-
-                        // once engine speed is less then shaft speed reset gear change, or is at idle rpm, reset gear change
-                        if ((RealRPM <= GearBox.ShaftRPM && GearBox.ShaftRPM < MaxRPM) || RealRPM == IdleRPM)
-                        {
-                            GearBox.ManualGearChange = false;
-                            GearBox.ManualGearBoxChangeOn = false;
+                            Trace.TraceInformation("Loop#2 - Real {0} Shaft {1} Time {2}", RealRPM, GearBox.ShaftRPM, GearBox.ManualGearTimerS);
                         }
                     }
                 }

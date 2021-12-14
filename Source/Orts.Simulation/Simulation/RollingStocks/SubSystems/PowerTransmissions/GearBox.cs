@@ -345,7 +345,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 else  // Manual clutch operation
                 {
 
-                    if (DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchOn && ClutchType == TypesClutch.Friction)
+                    if (DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchOn && Locomotive.SpeedMpS < 0.05f && ClutchType == TypesClutch.Friction)
                     {
                         clutchOn = false;
                         return clutchOn;
@@ -538,10 +538,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             {
                                 // Use apparent throttle when accelerating so that time delays in rpm rise and fall are used, but use demanded throttle at other times
                                 throttleFraction = DieselEngine.ApparentThrottleSetting * 0.01f; // Convert from percentage to fraction, use the apparent throttle as this includes some delay for rpm increase
+//                                Trace.TraceInformation("Throttle Fraction#1 {0}, DemandedThrottle {1} RpM {2} Gear {3} DemandedRpM {4}", throttleFraction, DieselEngine.DemandedThrottlePercent, DieselEngine.RealRPM, DieselEngine.GearBox.CurrentGearIndex + 1, DieselEngine.DemandedRPM);
                             }
                             else // As apparent throttle is related to current rpm, limit throttle to the actual demanded throttle. 
                             {
                                 throttleFraction = DieselEngine.DemandedThrottlePercent * 0.01f;
+ //                               Trace.TraceInformation("Throttle Fraction#2 {0}, DemandedThrottle {1} RpM {2} Gear {3} DemandedRpM {4}", throttleFraction, DieselEngine.DemandedThrottlePercent, DieselEngine.RealRPM, DieselEngine.GearBox.CurrentGearIndex + 1, DieselEngine.DemandedRPM);
 
                             }
 
