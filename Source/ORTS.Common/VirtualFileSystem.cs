@@ -203,9 +203,18 @@ namespace ORTS.Common
         public static string[] GetFiles(string vfsPath, string searchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly)
             => GetFilesBase(vfsPath, searchPattern, searchOption) ?? Array.Empty<string>();
 
-        public static bool DirectoryExists(string vfsPath) => VfsRoot.ChangeDirectory(NormalizeVirtualPath(vfsPath), false) != null;
-        public static bool FileExists(string vfsPath) => !VfsRoot.ChangeDirectory(NormalizeVirtualPath(Path.GetDirectoryName(vfsPath)), false)
-                                                            ?.GetNode(NormalizeVirtualPath(Path.GetFileName(vfsPath)))?.IsDirectory ?? false;
+        public static bool DirectoryExists(string vfsPath)
+        {
+            vfsPath = NormalizeVirtualPath(vfsPath);
+            return vfsPath.StartsWith("/") && VfsRoot.ChangeDirectory(vfsPath, false) != null;
+        }
+
+        public static bool FileExists(string vfsPath)
+        {
+            var directoryName = NormalizeVirtualPath(Path.GetDirectoryName(vfsPath));
+            var fileName = NormalizeVirtualPath(Path.GetFileName(vfsPath));
+            return directoryName.StartsWith("/") && (!VfsRoot.ChangeDirectory(directoryName, false)?.GetNode(fileName)?.IsDirectory ?? false);
+        }
 
         public static void Log()
         {
