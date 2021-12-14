@@ -72,8 +72,8 @@
           </div>
           <div style="background-color: #ffffcc; margin: 0 -5px; padding: 0 5px;">
             <p>
-              <strong>Dec 2020</strong>
-              A <a href="http://www.siskurail.org/news.php" title="by Dale Rickert">detailed guide to making activities</a> backed by videos and data files <a href="http://www.siskurail.org/" title="Oregon to California, created by Dale Rickert">for the Siskiyou Route</a> has now been released. 
+              <strong>Oct 2021</strong>
+              <a href="http://openrails.org/discover/version-1-4/">Version 1.4</a> is now available for immediate download <a href="http://openrails.org/download/program/">here</a>.
             </p>
           </div>
           <div style="background-color: #ffffee; margin: 0 -5px; padding: 0 5px;">
