@@ -209,6 +209,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool ManualGearBoxChangeOn = false;
         public bool ManualGearUp = false;
         public bool ManualGearDown = false;
+        public bool clutchLockOut = false;
         
         public int currentGearIndex = -1;
         public int nextGearIndex = -1;
@@ -344,6 +345,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 else  // Manual clutch operation
                 {
 
+                    if (DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchOn && ClutchType == TypesClutch.Friction)
+                    {
+                        clutchOn = false;
+                        return clutchOn;
+                    }
+                    else if (DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchLockOut && ManualGearBoxChangeOn && ClutchType != TypesClutch.Friction) // Fluid and Scoop clutches disengage if throttle is closed
+                    {
+                        clutchLockOut = true;
+                        clutchOn = false;
+                        return clutchOn;
+                    }
+                    else if (ClutchType != TypesClutch.Friction && DieselEngine.Locomotive.ThrottlePercent > 0)
+                    {
+                        clutchLockOut = false;
+                    }
+
+                    // Set clutch status to false when gear change is initiated.
+                    if (ManualGearBoxChangeOn)
+                    {
+                        clutchOn = false;
+                        return clutchOn;
+                    }
+
                     // Set clutch engaged when shaftrpm and engine rpm are equal
                     if ((DieselEngine.Locomotive.ThrottlePercent >= 0 || DieselEngine.Locomotive.SpeedMpS > 0) && CurrentGear != null)
                     {
@@ -353,18 +377,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         return clutchOn;
                     }
                     else if ((ClutchType == TypesClutch.Scoop || ClutchType == TypesClutch.Fluid) && CurrentGear == null )
-                    {
-                        clutchOn = false;
-                        return clutchOn;
-                    }
-
-                    if (DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchOn)
-                    {
-                        clutchOn = false;
-                        return clutchOn;
-                    }
-
-                    if (ManualGearBoxChangeOn)
                     {
                         clutchOn = false;
                         return clutchOn;
@@ -522,14 +534,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                             throttleFraction = 0;
 
-                            if (ShaftRPM != dieselRpM && !IsClutchOn && DieselEngine.ApparentThrottleSetting < DieselEngine.DemandedThrottlePercent)
+                            if (DieselEngine.ApparentThrottleSetting < DieselEngine.DemandedThrottlePercent)
                             {
-                                // Use apparent throttle when accelerating, but use demanded throttle at other times????
+                                // Use apparent throttle when accelerating so that time delays in rpm rise and fall are used, but use demanded throttle at other times
                                 throttleFraction = DieselEngine.ApparentThrottleSetting * 0.01f; // Convert from percentage to fraction, use the apparent throttle as this includes some delay for rpm increase
                             }
-                            else
+                            else // As apparent throttle is related to current rpm, limit throttle to the actual demanded throttle. 
                             {
                                 throttleFraction = DieselEngine.DemandedThrottlePercent * 0.01f;
+
                             }
 
                             // Limit tractive force if engine is governed, ie speed cannot exceed the governed speed or the throttled speed
@@ -591,7 +604,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             }
 
                             // Scoop couplings prevent TE "creep" at zero throttle
-                            if (throttleFraction == 0 && ClutchType == TypesClutch.Scoop)
+                            if (throttleFraction == 0 && DieselEngine.RealRPM < 1.05f * DieselEngine.IdleRPM && ClutchType == TypesClutch.Scoop)
                             {
                                 tractiveForceN = 0;
                             }

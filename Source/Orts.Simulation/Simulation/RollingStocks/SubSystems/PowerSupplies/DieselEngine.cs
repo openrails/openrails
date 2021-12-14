@@ -1069,15 +1069,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (GearBox.CurrentGear != null && !GearBox.ManualGearBoxChangeOn)
                     {
                         // When clutch is engaged (true) engine rpm should follow wheel shaft speed
-                        if (GearBox.IsClutchOn)
+                        if (GearBox.IsClutchOn && GearBox.ClutchType == TypesClutch.Friction)
                         {
                             DemandedRPM = GearBox.ShaftRPM;
+                        }
+                        else
+                        {
+                            if (GearBox.IsClutchOn && demandedThrottlePercent > 0)
+                            {
+                                DemandedRPM = GearBox.ShaftRPM;
+                            }
                         }
                     }
                     else if (GearBox.ManualGearBoxChangeOn)
                     {
                         // During a manual gear change brake engine shaft speed to match wheel shaft speed
-                        DemandedRPM = IdleRPM;
+                        if (RealRPM > GearBox.ShaftRPM)
+                        {
+                            DemandedRPM = IdleRPM;
+                        }
 
                         // once engine speed is less then shaft speed reset gear change, or is at idle rpm, reset gear change
                         if ((RealRPM <= GearBox.ShaftRPM && GearBox.ShaftRPM < MaxRPM) || RealRPM == IdleRPM)
@@ -1120,15 +1130,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     else if (GearBox.ManualGearBoxChangeOn)
                     {
                         // During a manual gear change brake engine shaft speed to match wheel shaft speed
-                        DemandedRPM = IdleRPM;
+                        if (RealRPM > GearBox.ShaftRPM)
+                        {
+                            DemandedRPM = IdleRPM;
+                        }
 
-                        // once engine speed is less then shaft speed reset gear change
-                        if (RealRPM <= GearBox.ShaftRPM || RealRPM == IdleRPM)
+                        // once engine speed is less then shaft speed reset gear change, or is at idle rpm, reset gear change
+                        if ((RealRPM <= GearBox.ShaftRPM && GearBox.ShaftRPM < MaxRPM) || RealRPM == IdleRPM)
                         {
                             GearBox.ManualGearChange = false;
+                            GearBox.ManualGearBoxChangeOn = false;
                         }
                     }
-
                 }
 
                 // Simulate stalled engine if RpM decreases too far or exceed the safe overrun speed, by stopping engine, only applies to Type D clutch
@@ -1191,7 +1204,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if (HasGearBox && GearBox.GearBoxOperation == GearBoxOperation.Manual)
             {
                 // Speeds engine rpm to simulate clutch starting to engage and pulling speed up as clutch slips
-                if (GearBox.ClutchType != TypesClutch.Scoop && !GearBox.IsClutchOn && RealRPM < GearBox.ShaftRPM && Locomotive.SpeedMpS > 0)
+                if (GearBox.ClutchType == TypesClutch.Friction && !GearBox.IsClutchOn && RealRPM < GearBox.ShaftRPM && Locomotive.SpeedMpS > 0)
                 {
                     var tempdRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * (MaxRPM - DemandedRPM)), ChangeUpRPMpS);
                     RealRPM = Math.Max(RealRPM + tempdRPM * elapsedClockSeconds, 0);
@@ -1200,6 +1213,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 if (GearBox != null)
                 {
 
+                    // When clutch is engaged then ERPM = SRPM, engine runs at train speed
                     if (RealRPM > IdleRPM && GearBox.IsClutchOn)
                     {
                         RealRPM = GearBox.ShaftRPM;
@@ -1837,13 +1851,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     power[i] *= MaximumDieselPowerW;
                     torque[i] *= MaximumDieselPowerW / (MaxRPM * 2f * 3.1415f / 60f) / 0.81f;
 
-                    Trace.TraceInformation("Rpm {0}   Torque {1}", rpm[i], torque[i]);
+                    Trace.TraceInformation("Rpm {0},   Torque {1},     Power {2}", rpm[i], torque[i], power[i]);
                 }
                 rpm[count] = MaxRPM * 1.5f;
                 power[count] *= MaximumDieselPowerW;
                 torque[count] *= MaximumDieselPowerW / (MaxRPM * 3f * 3.1415f / 60f) / 0.81f;
 
-                Trace.TraceInformation("Rpm {0}   Torque {1}", rpm[count], torque[count]);
+                Trace.TraceInformation("Rpm {0},   Torque {1},    Power {2}", rpm[count], torque[count], power[count]);
 
                 DieselPowerTab = new Interpolator(rpm, power);
                 DieselTorqueTab = new Interpolator(rpm, torque);
@@ -2002,11 +2016,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
                 {
-                    MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
+                    MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowerW parameter
                 }
                 else
                 {
-                    MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is about 80% of the prime mover output power
+                    MaximumRailOutputPowerW = 0.85f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is 85% of the prime mover output power
                 }
 
                 int count = 11;
