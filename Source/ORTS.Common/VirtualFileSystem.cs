@@ -75,7 +75,12 @@ namespace ORTS.Common
         public const string MstsBasePath = "/MSTS/";
         public const string ExecutablePath = "/EXECUTABLE/";
 
-        public static bool AccessLoggingEnabled { get; set; }
+        /// <summary>
+        /// Log level 1 is to log the mounting information and all the warnings,
+        /// 2 is to log mount-time file operations such as virtual overwrites too,
+        /// 3 is to log all runtime file accesses as well.
+        /// </summary>
+        public static int LogLevel { get; set; } = 1;
         public static bool IsInitialized => VfsRoot != null;
 
         public static void Initialize(string initPath, string executablePath)
@@ -181,7 +186,7 @@ namespace ORTS.Common
                     node.DeleteNode();
                     if (File.Exists(node.AbsolutePath))
                         File.Delete(node.AbsolutePath);
-                    if (AccessLoggingEnabled)
+                    if (LogLevel > 2)
                         Trace.TraceInformation($"VFS deleting archive node: {node.GetVerbosePath()} => {vfsPath}");
                     return;
                 }
@@ -422,25 +427,25 @@ namespace ORTS.Common
                 {
                     archive = ArchiveFactory.Open(File.OpenRead(foundNode.AbsolutePath), new ReaderOptions() { LeaveStreamOpen = true });
                     OpenArchives.TryAdd(archiveKey, archive);
-                    if (AccessLoggingEnabled)
+                    if (LogLevel > 2)
                         Trace.TraceInformation($"VFS opening archive file for thread {archiveKey}");
                 }
 
                 var archiveEntry = archive.Entries.Where(entry => entry.Key == foundNode.SubPath).FirstOrDefault();
                 if (archiveEntry != null)
                 {
-                    if (AccessLoggingEnabled)
+                    if (LogLevel > 2)
                         Trace.TraceInformation($"VFS reading archive node: [{foundNode.AbsolutePath}]/{archiveEntry.Key} => {vfsPath}");
                     return archiveEntry;
                 }
             }
             else if (foundNode != null && foundNode.IsRegularFile() && File.Exists(foundNode.AbsolutePath))
             {
-                if (AccessLoggingEnabled)
+                if (LogLevel > 2)
                     Trace.TraceInformation($"VFS reading system file: {foundNode.AbsolutePath} => {vfsPath}");
                 return foundNode.AbsolutePath;
             }
-            if (AccessLoggingEnabled)
+            if (LogLevel > 2)
                 Trace.TraceInformation($"VFS reading failed: null => {vfsPath}");
             return null;
         }
@@ -453,7 +458,7 @@ namespace ORTS.Common
             var foundNode = VfsRoot.GetNode(vfsPath);
             if (foundNode != null && foundNode.IsRegularFile() && File.Exists(foundNode.AbsolutePath))
             {
-                if (AccessLoggingEnabled)
+                if (LogLevel > 2)
                     Trace.TraceInformation($"VFS writing system file: {foundNode.AbsolutePath} => {vfsPath}");
                 return foundNode.AbsolutePath;
             }
@@ -471,7 +476,7 @@ namespace ORTS.Common
                         // Would be good to move the new FileStream() out of here, but I am not dare enough. - PG
                         stream = new FileStream(fullName, FileMode.Create);
                         parent.CreateFile(filename, fullName);
-                        if (AccessLoggingEnabled)
+                        if (LogLevel > 2)
                             Trace.TraceInformation($"VFS writing system file: {fullName} => {vfsPath}");
                         return stream;
                     }
@@ -481,7 +486,7 @@ namespace ORTS.Common
                     }
                 }
             }
-            if (AccessLoggingEnabled)
+            if (LogLevel > 2)
                 Trace.TraceInformation($"VFS writing failed: null => {vfsPath}");
             return null;
         }
@@ -547,7 +552,7 @@ namespace ORTS.Common
             {
                 // A directory overrides a file, but a file cannot override a directory.
                 child = new VfsNode(this, name, absolutePath, subPath, isDirectory);
-                if (Vfs.AccessLoggingEnabled)
+                if (Vfs.LogLevel == 2)
                 {
                     var message = $"VFS virtual overwrite: {Children[name].GetVerbosePath()} with {child.GetVerbosePath()} => {child.GetVfsPath()}";
                     Trace.TraceInformation(message);

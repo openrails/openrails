@@ -105,7 +105,7 @@ namespace Orts.Viewer3D.Processes
         internal override void Load()
         {
             // The virtual file system must be initialized before loading anything.
-            Vfs.AccessLoggingEnabled = Game.Settings.VfsAccessLog;
+            Vfs.LogLevel = Game.Settings.VfsLogLevel;
             Vfs.Initialize(Game.Settings.Menu_Selection[0], Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath));
 
             // Load loading image first!
