@@ -338,7 +338,7 @@ namespace ORTS
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
-            checkVfsLog.Checked = Settings.VfsAccessLog;
+            numericVfsLogLevel.Value = Settings.VfsLogLevel;
             precipitationBoxHeight.Value = Settings.PrecipitationBoxHeight;
             precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
             precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
@@ -540,7 +540,7 @@ namespace ORTS
             Settings.AdhesionProportionalToWeather = checkAdhesionPropToWeather.Checked;
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
-            Settings.VfsAccessLog = Vfs.AccessLoggingEnabled = checkVfsLog.Checked;
+            Settings.VfsLogLevel = Vfs.LogLevel = (int)numericVfsLogLevel.Value;
             Settings.PrecipitationBoxHeight = (int)precipitationBoxHeight.Value;
             Settings.PrecipitationBoxWidth = (int)precipitationBoxWidth.Value;
             Settings.PrecipitationBoxLength = (int)precipitationBoxLength.Value;

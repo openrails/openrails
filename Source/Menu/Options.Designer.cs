@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -149,6 +149,7 @@
             this.labelContent = new System.Windows.Forms.Label();
             this.buttonContentDelete = new System.Windows.Forms.Button();
             this.groupBoxContent = new System.Windows.Forms.GroupBox();
+            this.buttonContentFile = new System.Windows.Forms.Button();
             this.buttonContentBrowse = new System.Windows.Forms.Button();
             this.textBoxContentPath = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
@@ -207,8 +208,8 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkVfsLog = new System.Windows.Forms.CheckBox();
-            this.buttonContentFile = new System.Windows.Forms.Button();
+            this.numericVfsLogLevel = new System.Windows.Forms.NumericUpDown();
+            this.labelVfsLogLevel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -264,6 +265,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericVfsLogLevel)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -1797,6 +1799,17 @@
             this.groupBoxContent.TabStop = false;
             this.groupBoxContent.Text = "Installation profile";
             // 
+            // buttonContentFile
+            // 
+            this.buttonContentFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonContentFile.Location = new System.Drawing.Point(468, 19);
+            this.buttonContentFile.Name = "buttonContentFile";
+            this.buttonContentFile.Size = new System.Drawing.Size(35, 23);
+            this.buttonContentFile.TabIndex = 2;
+            this.buttonContentFile.Text = "File";
+            this.buttonContentFile.UseVisualStyleBackColor = true;
+            this.buttonContentFile.Click += new System.EventHandler(this.buttonContentFile_Click);
+            // 
             // buttonContentBrowse
             // 
             this.buttonContentBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -1880,27 +1893,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle6;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1983,11 +1996,12 @@
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactorChange);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactor);
             this.tabPageExperimental.Controls.Add(this.checkAdhesionPropToWeather);
-            this.tabPageExperimental.Controls.Add(this.checkVfsLog);
             this.tabPageExperimental.Controls.Add(this.checkCircularSpeedGauge);
             this.tabPageExperimental.Controls.Add(this.checkSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
+            this.tabPageExperimental.Controls.Add(this.labelVfsLogLevel);
             this.tabPageExperimental.Controls.Add(this.labelPerformanceTunerTarget);
+            this.tabPageExperimental.Controls.Add(this.numericVfsLogLevel);
             this.tabPageExperimental.Controls.Add(this.numericPerformanceTunerTarget);
             this.tabPageExperimental.Controls.Add(this.checkPerformanceTuner);
             this.tabPageExperimental.Controls.Add(this.checkLODViewingExtention);
@@ -2571,26 +2585,38 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // checkVfsLog
+            // numericVfsLogLevel
             // 
-            this.checkVfsLog.AutoSize = true;
-            this.checkVfsLog.Location = new System.Drawing.Point(6, 235);
-            this.checkVfsLog.Name = "checkVfsLog";
-            this.checkVfsLog.Size = new System.Drawing.Size(120, 17);
-            this.checkVfsLog.TabIndex = 21;
-            this.checkVfsLog.Text = "Log VFS file access";
-            this.checkVfsLog.UseVisualStyleBackColor = true;
+            this.numericVfsLogLevel.Location = new System.Drawing.Point(10, 232);
+            this.numericVfsLogLevel.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.numericVfsLogLevel.Maximum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.numericVfsLogLevel.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericVfsLogLevel.Name = "numericVfsLogLevel";
+            this.numericVfsLogLevel.Size = new System.Drawing.Size(54, 20);
+            this.numericVfsLogLevel.TabIndex = 9;
+            this.numericVfsLogLevel.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
-            // buttonContentFile
+            // labelVfsLogLevel
             // 
-            this.buttonContentFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentFile.Location = new System.Drawing.Point(468, 19);
-            this.buttonContentFile.Name = "buttonContentFile";
-            this.buttonContentFile.Size = new System.Drawing.Size(35, 23);
-            this.buttonContentFile.TabIndex = 2;
-            this.buttonContentFile.Text = "File";
-            this.buttonContentFile.UseVisualStyleBackColor = true;
-            this.buttonContentFile.Click += new System.EventHandler(this.buttonContentFile_Click);
+            this.labelVfsLogLevel.AutoSize = true;
+            this.labelVfsLogLevel.Location = new System.Drawing.Point(70, 236);
+            this.labelVfsLogLevel.Margin = new System.Windows.Forms.Padding(3);
+            this.labelVfsLogLevel.Name = "labelVfsLogLevel";
+            this.labelVfsLogLevel.Size = new System.Drawing.Size(129, 13);
+            this.labelVfsLogLevel.TabIndex = 10;
+            this.labelVfsLogLevel.Text = "Virtual file system log level";
             // 
             // OptionsForm
             // 
@@ -2674,6 +2700,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericVfsLogLevel)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2856,7 +2883,8 @@
         private System.Windows.Forms.TrackBar trackAntiAliasing;
         private System.Windows.Forms.Label labelAntiAliasingValue;
         private System.Windows.Forms.Label labelAntiAliasing;
-        private System.Windows.Forms.CheckBox checkVfsLog;
         private System.Windows.Forms.Button buttonContentFile;
+        private System.Windows.Forms.Label labelVfsLogLevel;
+        private System.Windows.Forms.NumericUpDown numericVfsLogLevel;
     }
 }
