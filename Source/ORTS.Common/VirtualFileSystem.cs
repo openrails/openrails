@@ -211,7 +211,7 @@ namespace ORTS.Common
 
         public static bool FileExists(string vfsPath)
         {
-            var directoryName = NormalizeVirtualPath(Path.GetDirectoryName(vfsPath));
+            var directoryName = vfsPath == "" ? "" : NormalizeVirtualPath(Path.GetDirectoryName(vfsPath));
             var fileName = NormalizeVirtualPath(Path.GetFileName(vfsPath));
             return directoryName.StartsWith("/") && (!VfsRoot.ChangeDirectory(directoryName, false)?.GetNode(fileName)?.IsDirectory ?? false);
         }
@@ -361,8 +361,12 @@ namespace ORTS.Common
             var message = $"VFS mounting directory: {directory} => {mountpoint}";
             Trace.TraceInformation(message);
             InitLog.Enqueue(message);
+
+            var mountNode = VfsRoot.ChangeDirectory(mountpoint, true);
+            mountNode.SetDirectoryWritable(directory);
+
             Stack.Clear();
-            Stack.Push((directory, VfsRoot.ChangeDirectory(mountpoint, true)));
+            Stack.Push((directory, mountNode));
             while (Stack.Count > 0)
             {
                 var (dirpath, vfsNode) = Stack.Pop();
@@ -531,7 +535,7 @@ namespace ORTS.Common
         static string NormalizeSystemPath(string path) => Path.GetFullPath(new Uri(path).LocalPath).Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Trim('"');
         static string NormalizeVirtualPath(string path)
         {
-            path = path.Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Replace("//", "/").Trim('"').ToUpperInvariant();
+            path = path?.Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Replace("//", "/").Trim('"').ToUpperInvariant() ?? "";
             // Need to do something similar to Path.GetFullPath() with flattening the dir/.. pairs.
             // They cause problems e.g. at Scripts/../etc. sequences, where browsing through imaginary directories.
             return string.Join("/", Flatten(path.Split('/').ToList()));
