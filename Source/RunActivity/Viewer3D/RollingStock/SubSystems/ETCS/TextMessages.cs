@@ -47,18 +47,16 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
 
         readonly int MaxTextLines;
 
-        readonly int RowHeight = 20;
+        const int RowHeight = 20;
 
         readonly TextPrimitive[] DisplayedTexts;
         readonly TextPrimitive[] DisplayedTimes;
 
         List<TextMessage> MessageList;
         TextMessage? AcknowledgingMessage;
-        public MessageArea(DriverMachineInterface dmi) : base(Viewer.Catalog.GetString("Acknowledge"), true, dmi, false)
+        public MessageArea(DriverMachineInterface dmi) : base(Viewer.Catalog.GetString("Acknowledge"), true, null, 234, (dmi.IsSoftLayout ? 4 : 5)*RowHeight, dmi, false)
         {
             MaxTextLines = dmi.IsSoftLayout ? 4 : 5;
-            Height = MaxTextLines * RowHeight;
-            Width = 234;
 
             DisplayedTexts = new TextPrimitive[MaxTextLines];
             DisplayedTimes = new TextPrimitive[MaxTextLines];
