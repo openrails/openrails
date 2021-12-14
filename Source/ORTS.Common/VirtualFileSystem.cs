@@ -154,10 +154,10 @@ namespace ORTS.Common
                 stream.CopyTo(newStream);
                 stream.Close();
                 stream = newStream;
-                    stream.Position = 0;
+                stream.Position = 0;
             }
-                    return stream;
-            }
+            return stream;
+        }
 
         public static DateTime GetLastWriteTime(string vfsPath)
         {
@@ -377,26 +377,26 @@ namespace ORTS.Common
             Debug.Assert(VfsRoot != null, "VFS is uninitialized");
 
             var message = $"VFS mounting archive: [{archivePath}]/{subPath ?? ""} => {mountpoint}";
-                    if (!message.EndsWith("/"))
-                        message += "/"; // This is to keep the consistency of directories ending with '/'.
-                    Trace.TraceInformation(message);
-                    InitLog.Enqueue(message);
-                    var mountNode = VfsRoot.ChangeDirectory(mountpoint, true);
+            if (!message.EndsWith("/"))
+                message += "/"; // This is to keep the consistency of directories ending with '/'.
+            Trace.TraceInformation(message);
+            InitLog.Enqueue(message);
+            var mountNode = VfsRoot.ChangeDirectory(mountpoint, true);
             try
-                    {
+            {
                 if (Path.GetExtension(archivePath).ToLower() == ".zip")
-                        {
+                {
                     using (var archive = new ZipArchive(new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                         foreach (var entry in archive.Entries.Where(entry => !string.IsNullOrEmpty(entry.Name) && !entry.FullName.EndsWith("/") && !entry.FullName.EndsWith(@"\"))) // && (entry.ExternalAttributes & (int)FileAttributes.Directory) == 0))
                             createVirtualArchiveFile(entry.FullName);
                 }
                 else
-                            {
+                {
                     using (var archive = ArchiveFactory.Open(new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                         foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
                             createVirtualArchiveFile(entry.Key);
-                            }
-                        }
+                }
+            }
             catch
             {
                 message = $"VFS mount: Could not open archive {archivePath}, skipping {subPath ?? string.Empty} => {mountpoint}";
@@ -413,7 +413,7 @@ namespace ORTS.Common
                     var relativePath = normalKey.Substring(subPath?.Length ?? 0);
                     mountNode.ChangeDirectory(NormalizeVirtualPath(Path.GetDirectoryName(relativePath)), true)
                         .CreateFile(Path.GetFileName(relativePath), archivePath, fullName, false);
-        }
+                }
             }
         }
 
@@ -438,7 +438,7 @@ namespace ORTS.Common
                     if (Path.GetExtension(foundNode.AbsolutePath.ToLower()) == ".zip")
                         archive = new ZipArchive(File.OpenRead(foundNode.AbsolutePath), ZipArchiveMode.Read, true);
                     else
-                    archive = ArchiveFactory.Open(File.OpenRead(foundNode.AbsolutePath), new ReaderOptions() { LeaveStreamOpen = true });
+                        archive = ArchiveFactory.Open(File.OpenRead(foundNode.AbsolutePath), new ReaderOptions() { LeaveStreamOpen = true });
 
                     OpenArchives.TryAdd(archiveKey, archive);
                     if (LogLevel > 2)
