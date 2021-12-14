@@ -480,6 +480,36 @@ and the mirrors.
 The control blocks are like the one shown for the cab light. The Type strings 
 are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
 
+.. _cabs-generic-items:
+
+Cab controls for generic items
+------------------------------
+
+OR supports the cabview controls for two generic two-state items. 
+The cabview controls aree called ``<ORTS_GENERIC_ITEM1>`` and 
+``<ORTS_GENERIC_ITEM2>``. Their state can be toggled also by respectively 
+clicking keys ``<Shift+.>`` and ``<Shift+,>``.
+
+Sound events are associated, that is::
+
+   240: GenericItem1On
+   241: GenericItem1Off
+   242: GenericItem2On
+   243: GenericItem2Off
+
+Animations within the .s file of the locomotive, either stopped/moving or 
+two-state can be associated to the item state. Linked stopped/moving (wiper type) 
+animations are named ``<ORTSITEM1CONTINUOUS>`` and ``<ORTSITEM2CONTINUOUS>``. 
+Linked two-state animations (doors type) are named ``<ORTSITEM1TWOSTATE>`` and
+``<ORTSITEM2TWOSTATE>``. 
+The default animation speed for stopped/moving type animations is 8 FPS. 
+It may be modified with following parameter in the .sd file::
+
+   ESD_CustomAnimationSpeed ( 8 )
+
+Examples of use are fan control, open/close of aerodynamic coverages of couplers 
+in high speed trains, menu pages switching.
+
 
 High-resolution Cab Backgrounds and Controls
 --------------------------------------------

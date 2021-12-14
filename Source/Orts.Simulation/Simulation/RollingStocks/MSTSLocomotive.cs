@@ -1218,6 +1218,8 @@ public List<CabView> CabViewList = new List<CabView>();
             outf.Write(IsWaterScoopDown);
             outf.Write(CurrentTrackSandBoxCapacityM3);
             outf.Write(SaveAdhesionFilter);
+            outf.Write(GenericItem1);
+            outf.Write(GenericItem2);
             outf.Write(RemoteControlGroup);
             outf.Write(DPUnitID);
 
@@ -1268,6 +1270,9 @@ public List<CabView> CabViewList = new List<CabView>();
             SaveAdhesionFilter = inf.ReadSingle();
             
             AdhesionFilter.Reset(SaveAdhesionFilter);
+
+            GenericItem1 = inf.ReadBoolean();
+            GenericItem2 = inf.ReadBoolean();
             RemoteControlGroup = inf.ReadInt32();
             DPUnitID = inf.ReadInt32();
 
@@ -4236,6 +4241,18 @@ public List<CabView> CabViewList = new List<CabView>();
             Simulator.Confirmer.Confirm(CabControl.Odometer, OdometerCountingUp ? CabSetting.Increase : CabSetting.Decrease);
         }
 
+        public void GenericItem1Toggle()
+        {
+            GenericItem1 = !GenericItem1;
+            SignalEvent(GenericItem1? Event.GenericItem1On : Event.GenericItem1Off); // hook for sound trigger
+        }
+
+        public void GenericItem2Toggle()
+        {
+            GenericItem2 = !GenericItem2;
+            SignalEvent(GenericItem2 ? Event.GenericItem2On : Event.GenericItem2Off); // hook for sound trigger
+        }
+
         public override bool GetCabFlipped()
         {
             return UsingRearCab;
@@ -5119,6 +5136,16 @@ public List<CabView> CabViewList = new List<CabView>();
                         seconds += 60;
                     data = seconds;
                     break;
+                case CABViewControlTypes.ORTS_GENERIC_ITEM1:
+                    {
+                        data = GenericItem1 ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_GENERIC_ITEM2:
+                    {
+                        data = GenericItem2 ? 1 : 0;
+                        break;
+                    }
 
                 // Train Control System controls
                 case CABViewControlTypes.ORTS_TCS1:
