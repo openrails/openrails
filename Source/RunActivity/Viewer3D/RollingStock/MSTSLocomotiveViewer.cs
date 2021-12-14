@@ -180,14 +180,16 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlOdoMeterDirection, new Action[] { Noop, () => new ToggleOdometerDirectionCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlCabRadio, new Action[] { Noop, () => new CabRadioCommand(Viewer.Log, !Locomotive.CabRadioOn) });
             UserInputCommands.Add(UserCommand.ControlDieselHelper, new Action[] { Noop, () => new ToggleHelpersEngineCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommand.ControlGeneric1, new Action[] {
+            UserInputCommands.Add(UserCommand.ControlGenericItem1, new Action[] { Noop, () => new ToggleGenericItem1Command(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlGenericItem2, new Action[] { Noop, () => new ToggleGenericItem1Command(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlTCSGeneric1, new Action[] {
                 () => new TCSButtonCommand(Viewer.Log, false, 0),
                 () => {
                     new TCSButtonCommand(Viewer.Log, true, 0);
                     new TCSSwitchCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandSwitchOn[0], 0);
                 }
             });
-            UserInputCommands.Add(UserCommand.ControlGeneric2, new Action[] {
+            UserInputCommands.Add(UserCommand.ControlTCSGeneric2, new Action[] {
                 () => new TCSButtonCommand(Viewer.Log, false, 1),
                 () => {
                     new TCSButtonCommand(Viewer.Log, true, 1);
@@ -302,7 +304,9 @@ namespace Orts.Viewer3D.RollingStock
 
             // Wipers and bell animation
             Wipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
-            Bell.UpdateLoop(Locomotive.Bell, elapsedTime, TrainCarShape.SharedShape.BellAnimationFPS);
+            Bell.UpdateLoop(Locomotive.Bell, elapsedTime, TrainCarShape.SharedShape.CustomAnimationFPS);
+            Item1Continuous.UpdateLoop(Locomotive.GenericItem1, elapsedTime, TrainCarShape.SharedShape.CustomAnimationFPS);
+            Item2Continuous.UpdateLoop(Locomotive.GenericItem2, elapsedTime, TrainCarShape.SharedShape.CustomAnimationFPS);
 
             // Draw 2D CAB View - by GeorgeS
             if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
@@ -1982,7 +1986,10 @@ namespace Orts.Viewer3D.RollingStock
                     if (Locomotive.DynamicBrakeController != null)
                     {
                         if (dynBrakePercent == -1)
+                        {
+                            index = 0;
                             break;
+                        }
                         if (!Locomotive.HasSmoothStruc)
                         {
                             index = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.CurrentNotch : 0;
@@ -2088,6 +2095,8 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_ELECTRIC_TRAIN_SUPPLY_ON:
                 case CABViewControlTypes.ORTS_ODOMETER_DIRECTION:
                 case CABViewControlTypes.ORTS_ODOMETER_RESET:
+                case CABViewControlTypes.ORTS_GENERIC_ITEM1:
+                case CABViewControlTypes.ORTS_GENERIC_ITEM2:
                     index = (int)data;
                     break;
                 case CABViewControlTypes.ORTS_SCREEN_SELECT:
@@ -2340,6 +2349,10 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_ODOMETER_DIRECTION: if (ChangedValue(1) == 0) new ToggleOdometerDirectionCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_ODOMETER_RESET:
                     new ResetOdometerCommand(Viewer.Log, ChangedValue(Locomotive.OdometerResetButtonPressed ? 1 : 0) > 0); break;
+                case CABViewControlTypes.ORTS_GENERIC_ITEM1:
+                    if ((Locomotive.GenericItem1 ? 1 : 0) != ChangedValue(Locomotive.GenericItem1 ? 1 : 0)) new ToggleGenericItem1Command(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_GENERIC_ITEM2:
+                    if ((Locomotive.GenericItem2 ? 1 : 0) != ChangedValue(Locomotive.GenericItem2 ? 1 : 0)) new ToggleGenericItem2Command(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_SCREEN_SELECT:
                     bool buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
                     if (((CVCDiscrete)Control).NewScreens != null)
