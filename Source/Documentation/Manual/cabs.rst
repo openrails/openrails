@@ -486,8 +486,8 @@ Cab controls for generic items
 ------------------------------
 
 OR supports the cabview controls for two generic two-state items. 
-The cabview controls aree called ``<ORTS_GENERIC_ITEM_1>`` and 
-``<ORTS_GENERIC_ITEM_2>``. Their state can be toggled also by respectively 
+The cabview controls aree called ``<ORTS_GENERIC_ITEM1>`` and 
+``<ORTS_GENERIC_ITEM2>``. Their state can be toggled also by respectively 
 clicking keys ``<Shift+.>`` and ``<Shift+,>``.
 
 Sound events are associated, that is::
@@ -499,7 +499,7 @@ Sound events are associated, that is::
 
 Animations within the .s file of the locomotive, either stopped/moving or 
 two-state can be associated to the item state. Linked stopped/moving (wiper type) 
-animations are named ``<ORTSITEM1CONTONUOUS>`` and ``<ORTSITEM2CONTINUOUS>``. 
+animations are named ``<ORTSITEM1CONTINUOUS>`` and ``<ORTSITEM2CONTINUOUS>``. 
 Linked two-state animations (doors type) are named ``<ORTSITEM1TWOSTATE>`` and
 ``<ORTSITEM2TWOSTATE>``. 
 The default animation speed for stopped/moving type animations is 8 FPS. 
