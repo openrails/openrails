@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
   <Import Project="..\packages\xunit.runner.visualstudio.2.4.2\build\net452\xunit.runner.visualstudio.props" Condition="Exists('..\packages\xunit.runner.visualstudio.2.4.2\build\net452\xunit.runner.visualstudio.props')" />
@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="AssertWarnings.cs" />
     <Compile Include="DynamicPrecisionEqualityComparer.cs" />
+    <Compile Include="Orts.Common\VirtualFileSystem.cs" />
     <Compile Include="Orts.Parsers.Msts\StfReader.cs" />
     <Compile Include="Orts.Common\Conversions.cs" />
     <Compile Include="Orts.Parsers.OR\TimetableReaderTests.cs" />
