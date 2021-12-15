@@ -266,7 +266,11 @@ namespace Orts.Formats.Msts
         EXTERNALWIPERS,
         LEFTDOOR,
         RIGHTDOOR,
-        MIRRORS
+        MIRRORS,
+        ORTS_ITEM1CONTINUOUS,
+        ORTS_ITEM2CONTINUOUS,
+        ORTS_ITEM1TWOSTATE,
+        ORTS_ITEM2TWOSTATE,
     }
 
     public enum CABViewControlStyles
