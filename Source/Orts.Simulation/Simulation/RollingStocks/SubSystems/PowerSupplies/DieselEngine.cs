@@ -674,6 +674,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public Cooling EngineCooling = Cooling.Proportional;
 
         /// <summary>
+        /// Holds in engine braking mode
+        /// </summary>
+        public bool engineBrakingLockout = false;
+        /// <summary>
         /// The RPM controller tries to reach this value
         /// </summary>
         public float DemandedRPM;           
@@ -1087,11 +1091,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     else if (GearBox.ManualGearBoxChangeOn)
                     {
-                        // During a manual gear change brake engine shaft speed to match wheel shaft speed
-                        if (RealRPM > GearBox.ShaftRPM)
-                        {
-                            DemandedRPM = IdleRPM;
-                        }
+                        engineBrakingLockout = true;
 
                         // once engine speed is less then shaft speed reset gear change, or is at idle rpm, reset gear change
                         if ((RealRPM <= GearBox.ShaftRPM && GearBox.ShaftRPM < MaxRPM) || RealRPM == IdleRPM)
@@ -1135,16 +1135,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     else if (GearBox.ManualGearBoxChangeOn)
                     {
-                        // During a manual gear change brake engine shaft speed to match wheel shaft speed
-                        if (RealRPM > GearBox.ShaftRPM)
-                        {
-                            DemandedRPM = IdleRPM;
-                        }
+                            engineBrakingLockout = true;
                     }
                 }
 
+                // brakes engine when doing gear change
+                // During a manual gear change brake engine shaft speed to match wheel shaft speed
+                if (engineBrakingLockout && RealRPM > GearBox.ShaftRPM && RealRPM > IdleRPM)
+                {
+                    DemandedRPM = IdleRPM;
+                }
+                else if ((engineBrakingLockout && RealRPM < GearBox.ShaftRPM) || RealRPM <= IdleRPM || Locomotive.SpeedMpS < 0.1f)
+                {
+                    engineBrakingLockout = false;
+                }
+
                 // Speeds engine rpm to simulate clutch starting to engage and pulling speed up as clutch slips for friction clutch
-                var clutchEngagementBandwidthRPM = 10.0f;
+                    var clutchEngagementBandwidthRPM = 10.0f;
                 if (GearBox.CurrentGear != null && GearBox.ClutchType == TypesClutch.Friction && !GearBox.IsClutchOn && (GearBox.ShaftRPM < RealRPM - clutchEngagementBandwidthRPM || GearBox.ShaftRPM > RealRPM + clutchEngagementBandwidthRPM) && Locomotive.SpeedMpS > 0.1 && !GearBox.ManualGearBoxChangeOn && DemandedThrottlePercent == 0)
                 {
                     DemandedRPM = GearBox.ShaftRPM;
