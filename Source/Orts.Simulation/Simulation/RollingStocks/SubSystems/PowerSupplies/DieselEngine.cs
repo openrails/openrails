@@ -616,6 +616,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public float RawRpM;
         /// <summary>
+        /// RPM of the engine it speeds up
+        /// </summary>
+        public float SpeedUpRpM;
+        /// <summary>
         /// RPM treshold when the engine starts to combust fuel
         /// </summary>
         public float StartingRPM;
@@ -1114,7 +1118,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         GearBox.ManualGearBoxChangeOn = false;
                         GearBox.ManualGearChange = false;
                         GearBox.ManualGearTimerS = 0; // Reset timer
-                        Trace.TraceInformation("Reset");
                     }
 
                     if (RealRPM > 0)
@@ -1128,7 +1131,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         if (GearBox.IsClutchOn && GearBox.ClutchType == TypesClutch.Friction)
                         {
                             DemandedRPM = GearBox.ShaftRPM;
-                            Trace.TraceInformation("Loop#1");
                         }
                     }
                     else if (GearBox.ManualGearBoxChangeOn)
@@ -1137,9 +1139,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         if (RealRPM > GearBox.ShaftRPM)
                         {
                             DemandedRPM = IdleRPM;
-                            Trace.TraceInformation("Loop#2 - Real {0} Shaft {1} Time {2}", RealRPM, GearBox.ShaftRPM, GearBox.ManualGearTimerS);
                         }
                     }
+                }
+
+                // Speeds engine rpm to simulate clutch starting to engage and pulling speed up as clutch slips for friction clutch
+                var clutchEngagementBandwidthRPM = 10.0f;
+                if (GearBox.CurrentGear != null && GearBox.ClutchType == TypesClutch.Friction && !GearBox.IsClutchOn && (GearBox.ShaftRPM < RealRPM - clutchEngagementBandwidthRPM || GearBox.ShaftRPM > RealRPM + clutchEngagementBandwidthRPM) && Locomotive.SpeedMpS > 0.1 && !GearBox.ManualGearBoxChangeOn && DemandedThrottlePercent == 0)
+                {
+                    DemandedRPM = GearBox.ShaftRPM;
                 }
 
                 // Simulate stalled engine if RpM decreases too far or exceed the safe overrun speed, by stopping engine, only applies to Type D clutch
@@ -1201,12 +1209,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             // links engine rpm and shaft rpm together when clutch is fully engaged
             if (HasGearBox && GearBox.GearBoxOperation == GearBoxOperation.Manual)
             {
-                // Speeds engine rpm to simulate clutch starting to engage and pulling speed up as clutch slips
-                if (GearBox.ClutchType == TypesClutch.Friction && !GearBox.IsClutchOn && RealRPM < GearBox.ShaftRPM && Locomotive.SpeedMpS > 0)
-                {
-                    var tempdRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * (MaxRPM - DemandedRPM)), ChangeUpRPMpS);
-                    RealRPM = Math.Max(RealRPM + tempdRPM * elapsedClockSeconds, 0);
-                }
 
                 if (GearBox != null)
                 {
@@ -1260,9 +1262,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 if (DemandedRPM > MaxRPM)
                 {
                     var excessRpM = DemandedRPM - MaxRPM;
-                  //  Trace.TraceInformation("excess {0} Demand {1} Max {2}", excessRpM, DemandedRPM, MaxRPM);
                     RawRpM = MaxRPM - excessRpM;
-                   // Trace.TraceInformation("Raw - {0} Demand {1} Max {2}", RawRPM, DemandedRPM, MaxRPM);
+
                 }
             }
 
