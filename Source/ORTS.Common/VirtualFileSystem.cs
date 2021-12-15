@@ -58,7 +58,7 @@ namespace ORTS.Common
         ///            - referring to an archive must not end with "/" or "\", e.g. C:\TEMP\MSTS1.2.zip /MSTS/
         ///            - may refer to an archive subdirectory, e.g.: C:\routes.zip\USA3\ /MSTS/ROUTES/USA3/
         ///            - may _not_ refer to a single non-archive file, neither a non-archive file within an archive.
-        ///            - is case-insenditive.
+        ///            - is case-insensitive.
         /// MountPoint - must end with "/" to avoid confusion and to assure that mounting will be done _below_ the given path.
         ///            - may not contain spaces, may not be quoted.
         ///            - is case-insensitive, will be converted to all-uppercase internally.
@@ -66,7 +66,10 @@ namespace ORTS.Common
         /// Found subsequent archives are auto-mounted to their respective VFS locations, but nested archives are unsupported.
         ///
         /// System.IO.Path.*() functions can be used on virtual paths, but make sure that
-        /// NormalizeVirtualPath() is used on them _afterwards_ in the processing pipeline somewhere.
+        /// NormalizeVirtualPath() is used on them _afterwards_ in the processing pipeline somewhere,
+        /// so the rest of the code doesn't need to normalize before calling the public functions in this class.
+        /// The exception is the Path.GetFullPath(), because that adds an unwanted drive letter,
+        /// so must never be used on virtual paths.
         ///
         ///////////////////////////////////////////////////////////////////////////////////////
         ///
@@ -260,19 +263,20 @@ namespace ORTS.Common
                     continue;
                 if (line.Trim().StartsWith("#")) // commented out line
                     continue;
-                if (!(match = Regex.Match(line, @"^("".+""|\S+) +(/MSTS/|/OR/)([\S]+/)*")).Success)
+                if (!(match = Regex.Match(line, @"^("".+""|\S+) +(/MSTS|/OR)([\S/]+)+(\s+#.*)?", RegexOptions.IgnoreCase)).Success)
                 {
                     var message = $"VFS mount: Cannot parse configuration line, skipping: {line}";
                     Trace.TraceWarning(message);
                     InitLog.Enqueue(message);
                     continue;
                 }
+                var source = match.Groups[1].Value.Trim('"');
+                var mountpoint = match.Groups[2].Value + match.Groups[3].Value;
 
                 // Mountpoint validation:
-                var mountpoint = match.Groups[2].Value + match.Groups[3].Value;
                 if (!mountpoint.EndsWith("/"))
                 {
-                    var message = $"VFS mount: Mount point doesn't end with slash (/), skipping: {line}";
+                    var message = $"VFS mount: Mount point doesn't end with slash (/), skipping: {source} => {mountpoint}";
                     Trace.TraceWarning(message);
                     InitLog.Enqueue(message);
                     continue;
@@ -280,7 +284,7 @@ namespace ORTS.Common
                 mountpoint = NormalizeVirtualPath(mountpoint);
 
                 //Source path validation:
-                var sourcePath = NormalizeSystemPath(match.Groups[1].Value.Trim('"'));
+                var sourcePath = NormalizeSystemPath(source);
                 var sourcePieces = sourcePath.Split('/');
                 var isDirectory = sourcePieces.Last() == "";
                 if (sourcePieces.Length > 0 && isDirectory && Directory.Exists(sourcePath))
@@ -295,7 +299,7 @@ namespace ORTS.Common
                         MountArchive(sourcePath, null, mountpoint);
                     else
                     {
-                        var message = $"VFS mount: Source archive format is not supported, skipping: {line}";
+                        var message = $"VFS mount: Source archive format is not supported, skipping: {source} => {mountpoint}";
                         Trace.TraceWarning(message);
                         InitLog.Enqueue(message);
                     }
@@ -304,7 +308,7 @@ namespace ORTS.Common
                 {
                     if (!isDirectory)
                     {
-                        var message = $"VFS mount: Source path is not an archive file and doesn't end with slash (/) or backslash (\\), skipping: {line}";
+                        var message = $"VFS mount: Source path is not an archive file and doesn't end with slash (/) or backslash (\\), skipping: {source} => {mountpoint}";
                         Trace.TraceWarning(message);
                         InitLog.Enqueue(message);
                         continue;
@@ -323,7 +327,7 @@ namespace ORTS.Common
                             }
                             else
                             {
-                                var message = $"VFS mount: Source archive format is not supported, skipping: {line}";
+                                var message = $"VFS mount: Source archive format is not supported, skipping: {source} => {mountpoint}";
                                 Trace.TraceWarning(message);
                                 InitLog.Enqueue(message);
                             }
@@ -333,7 +337,7 @@ namespace ORTS.Common
                         {
                             // During the search we diverged already to a non-existent directory, we can safely abort.
                             // Or we reached the last searchable part, and still not found the base archive.
-                            var message = $"VFS mount: Source file not found, skipping: {line}";
+                            var message = $"VFS mount: Source file not found, skipping: {source} => {mountpoint}";
                             Trace.TraceWarning(message);
                             InitLog.Enqueue(message);
                             break;
@@ -342,7 +346,7 @@ namespace ORTS.Common
                 }
                 else
                 {
-                    var message = $"VFS mount: Cannot parse configuration line, skipping: {line}";
+                    var message = $"VFS mount: Cannot parse configuration line, skipping: {source} => {mountpoint}";
                     Trace.TraceWarning(message);
                     InitLog.Enqueue(message);
                 }
