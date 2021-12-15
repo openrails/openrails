@@ -62,6 +62,7 @@ namespace Tests.Orts.Parsers.OR
         {
             using (var file = new TestFile(";b;c;d\n1;2;3\nA;B;C;D;E"))
             {
+                AssertWarnings.Expected();
                 Vfs.Initialize(Path.GetDirectoryName(file.FileName), AppDomain.CurrentDomain.BaseDirectory);
                 var tr = new TimetableReader($"/MSTS/{Path.GetFileName(file.FileName)}");
                 Assert.Equal(3, tr.Strings.Count);

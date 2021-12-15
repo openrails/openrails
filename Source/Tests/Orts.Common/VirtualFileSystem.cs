@@ -78,7 +78,7 @@ namespace Tests.Orts.Common
                 Assert.False(Vfs.FileExists(testFile));
 
                 Assert.Contains($"/MSTS/{testDir}".ToUpper(), Vfs.GetDirectories("/MSTS/"));
-
+                Directory.Delete(Path.Combine(directory, testDir));
             }
         }
     }
