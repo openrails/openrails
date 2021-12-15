@@ -47,6 +47,8 @@ namespace Tests.Orts.Common
                 Assert.True(Vfs.DirectoryExists(@"\"));
                 Assert.True(Vfs.DirectoryExists("/MSTS"));
                 Assert.True(Vfs.DirectoryExists(@"\MSTS\"));
+                Assert.True(Vfs.DirectoryExists(Vfs.MstsBasePath));
+                Assert.True(Vfs.DirectoryExists(Vfs.ExecutablePath));
 
                 Assert.False(Vfs.FileExists(null));
                 Assert.False(Vfs.FileExists(""));
@@ -79,6 +81,41 @@ namespace Tests.Orts.Common
 
                 Assert.Contains($"/MSTS/{testDir}".ToUpper(), Vfs.GetDirectories("/MSTS/"));
                 Directory.Delete(Path.Combine(directory, testDir));
+            }
+        }
+
+        [Theory]
+        [InlineData(@"""C:\My Routes\USA85\""", "/MSTS/ROUTES/USA85/", "#comment")]
+        [InlineData(@"C:\TEMP\MSTS1.2.zip", "/MSTS/", "")]
+        [InlineData(@"C:\routes.zip\USA3\", "/msts/routes/usa3/", "# this is a comment")]
+        public static void ConfigFileParse(string path, string mountpoint, string comment)
+        {
+            using (var file = new TestFile($"{path} {mountpoint} {comment}"))
+            {
+                path = path.Replace(@"\", @"\\").Replace(@"""", "");
+                mountpoint = mountpoint.ToUpper();
+                AssertWarnings.Matching($"{path} => {mountpoint}", () => Vfs.Initialize(file.FileName, null));
+            }
+        }
+
+        [Theory]
+        [InlineData(@"C:\My Routes\USA85\", "/MSTS/ROUTES/USA85/", "# source path with spaces must be quoted")]
+        public static void ConfigFileParseFail1(string path, string mountpoint, string comment)
+        {
+            using (var file = new TestFile($"{path} {mountpoint} {comment}"))
+            {
+                AssertWarnings.Matching($"Cannot parse", () => Vfs.Initialize(file.FileName, null));
+            }
+        }
+
+        [Theory]
+        [InlineData(@"C:\TEMP\MSTS1.2.zip", "/MSTS/ROUTES", "# mount point must end with slash")]
+        [InlineData(@"A", "/MSTS/ROUTES", "# mount point must end with slash")]
+        public static void ConfigFileParseFail2(string path, string mountpoint, string comment)
+        {
+            using (var file = new TestFile($"{path} {mountpoint} {comment}"))
+            {
+                AssertWarnings.Matching($"slash", () => Vfs.Initialize(file.FileName, null));
             }
         }
     }
