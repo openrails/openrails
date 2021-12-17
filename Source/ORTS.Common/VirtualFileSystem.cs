@@ -44,7 +44,7 @@ namespace ORTS.Common
         static VfsNode VfsRoot;
         static readonly Stack<(string, VfsNode)> Stack = new Stack<(string, VfsNode)>();
         static readonly ConcurrentDictionary<string, object> OpenArchives = new ConcurrentDictionary<string, object>();
-        static readonly List<string> SupportedArchiveExtensions = new List<string> { ".zip", ".rar", ".7z" };
+        static readonly List<string> SupportedArchiveExtensions = new List<string> { ".zip", ".rar" };
         internal static readonly ConcurrentQueue<string> InitLog = new ConcurrentQueue<string>();
 
         ///////////////////////////////////////////////////////////////////////////////////////
@@ -85,6 +85,7 @@ namespace ORTS.Common
         /// 3 is to log all runtime file accesses as well.
         /// </summary>
         public static int LogLevel { get; set; } = 1;
+        public static bool NoAutoMount { get; set; }
         public static bool IsInitialized => VfsRoot != null;
 
         /// <summary>
@@ -411,7 +412,16 @@ namespace ORTS.Common
                 foreach (var file in Directory.GetFiles(dirpath))
                 {
                     if (IsArchiveSupported(file))
-                        MountArchive(file, null, vfsNode.GetVfsPath());
+                    {
+                        if (NoAutoMount)
+                        {
+                            message = $"VFS skipped auto-mounting archive by user settings: {file}";
+                            Trace.TraceInformation(message);
+                            InitLog.Enqueue(message);
+                        }
+                        else
+                            MountArchive(file, null, vfsNode.GetVfsPath());
+                    }
                     else
                         vfsNode.CreateFile(NormalizeVirtualPath(Path.GetFileName(file)), file);
                 }
