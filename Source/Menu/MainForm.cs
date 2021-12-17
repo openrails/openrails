@@ -365,6 +365,8 @@ namespace ORTS
         #region Folders
         void comboBoxFolder_SelectedIndexChanged(object sender, EventArgs e)
         {
+            Vfs.LogLevel = Settings.VfsLogLevel;
+            Vfs.NoAutoMount = Settings.VfsNoAutoMount;
             Vfs.Initialize(SelectedFolder.Path, System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath));
             LoadRouteList();
             LoadLocomotiveList();
