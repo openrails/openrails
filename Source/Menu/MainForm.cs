@@ -830,7 +830,7 @@ namespace ORTS
                 var extension = System.IO.Path.GetExtension(path).ToLower();
                 if (extension == ".act")
                     radioButtonModeActivity.Checked = true;
-                else if (extension == ".timetable_or")
+                else if (extension == ".timetable_or" || extension == ".timetable-or")
                     radioButtonModeTimetable.Checked = true;
             }
             UpdateEnabled();
