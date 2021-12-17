@@ -1086,7 +1086,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 State = DieselEngineState.Stopped;
 
             // fuel consumption will occur when engine is running above the starting rpm
-            if ((State == DieselEngineState.Stopped) || ((State == DieselEngineState.Stopping) && (RealRPM < StartingRPM)) || ((State == DieselEngineState.Starting) && (RealRPM < StartingRPM)))
+            if (State == DieselEngineState.Stopped || (State == DieselEngineState.Stopping && RealRPM < StartingRPM) || (State == DieselEngineState.Starting && RealRPM < StartingRPM))
             {
                 ExhaustParticles = 0;
                 DieselFlowLps = 0;
