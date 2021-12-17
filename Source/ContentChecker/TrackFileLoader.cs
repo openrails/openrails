@@ -131,7 +131,7 @@ namespace ContentChecker
                 List<string> timetableFiles = new List<string>();
                 timetableFiles.AddRange(Directory.GetFiles(activityPathOr, "*.timetable_or"));
                 timetableFiles.AddRange(Directory.GetFiles(activityPathOr, "*.timetable-or"));
-                timetableFiles.AddRange(Directory.GetFiles(activityPathOr, "*.timetablelist-or"));
+                timetableFiles.AddRange(Directory.GetFiles(activityPathOr, "*.timetablelist_or"));
                 timetableFiles.AddRange(Directory.GetFiles(activityPathOr, "*.timetablelist-or"));
                 foreach (string timetableFile in timetableFiles)
                 {
