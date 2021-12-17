@@ -465,6 +465,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 foreach (var eng in DEList)
                     result.AppendFormat("\t{0}", eng.DemandedThrottlePercent);
 
+                result.AppendFormat("\t\t{0}", Simulator.Catalog.GetString("Free"));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0}", eng.GearBox.GearBoxFreeWheelEnabled);
+
 
             }
 
@@ -1144,6 +1148,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                             engineBrakingLockout = true;
                     }
+                }
+
+                // Dtermine when freewheeling should occur
+                if (GearBox.GearBoxFreeWheelFitted && GearBox.ShaftRPM > ThrottleRPMTab[demandedThrottlePercent])
+                {
+                    GearBox.clutchOn = false;
+                    DemandedRPM = ThrottleRPMTab[demandedThrottlePercent];
+                    GearBox.GearBoxFreeWheelEnabled = true;
+                }
+                else
+                {
+                    GearBox.GearBoxFreeWheelEnabled = false;
                 }
 
                 // brakes engine when doing gear change

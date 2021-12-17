@@ -200,6 +200,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public List<Gear> Gears = new List<Gear>();
 
         public bool GearBoxFreeWheelFitted;
+        public bool GearBoxFreeWheelEnabled = false;
 
         public float previousThrottleSetting;
         public float previousRpM;
@@ -610,6 +611,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                             // Scoop couplings prevent TE "creep" at zero throttle
                             if (throttleFraction == 0 && DieselEngine.RealRPM < 1.05f * DieselEngine.IdleRPM && ClutchType == TypesClutch.Scoop)
+                            {
+                                tractiveForceN = 0;
+                            }
+
+                            // if freewheeling set TE to zero
+                            if (GearBoxFreeWheelEnabled)
                             {
                                 tractiveForceN = 0;
                             }
