@@ -1343,9 +1343,9 @@ namespace Orts.Viewer3D.RollingStock
             if (filename == null)
                 return;
             string smsFilePath = wagonFolderSlash + @"sound\" + filename;
-            if (!Vfs.FileExists(smsFilePath))
+            if (!File.Exists(smsFilePath))
                 smsFilePath = Viewer.Simulator.BasePath + @"\sound\" + filename;
-            if (!Vfs.FileExists(smsFilePath))
+            if (!File.Exists(smsFilePath))
             {
                 Trace.TraceWarning("Cannot find {1} car sound file {0}", filename, wagonFolderSlash);
                 return;
@@ -1385,9 +1385,9 @@ namespace Orts.Viewer3D.RollingStock
             if (filename == null)
                 return;
             string path = Viewer.Simulator.RoutePath + @"\SOUND\" + filename;
-            if (!Vfs.FileExists(path))
+            if (!File.Exists(path))
                 path = Viewer.Simulator.BasePath + @"\SOUND\" + filename;
-            if (!Vfs.FileExists(path))
+            if (!File.Exists(path))
             {
                 Trace.TraceWarning("Cannot find track sound file {0}", filename);
                 return;

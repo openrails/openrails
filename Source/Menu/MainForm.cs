@@ -31,6 +31,7 @@ using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using Path = ORTS.Menu.Path;
 
@@ -136,7 +137,7 @@ namespace ORTS
 
         void MainForm_Shown(object sender, EventArgs e)
         {
-            var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/") && !a.TrimStart('/').Contains("/"))).Select(a => a.Substring(1));
+            var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
             Settings = new UserSettings(options);
 
             LoadOptions();
@@ -365,9 +366,6 @@ namespace ORTS
         #region Folders
         void comboBoxFolder_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Vfs.LogLevel = Settings.VfsLogLevel;
-            Vfs.NoAutoMount = Settings.VfsNoAutoMount;
-            Vfs.Initialize(SelectedFolder.Path, System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath));
             LoadRouteList();
             LoadLocomotiveList();
             ShowDetails();
@@ -481,7 +479,7 @@ namespace ORTS
         void comboBoxTimetableTrain_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedTrain = comboBoxTimetableTrain.SelectedItem as TimetableFileLite.TrainInformation;
-            SelectedTimetableConsist = Consist.GetConsist(selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
+            SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
             SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path, false);
             ShowDetails();
         }
@@ -811,7 +809,8 @@ namespace ORTS
             ShowStartAtList();
             ShowHeadToList();
 
-            RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes().OrderBy(r => r.ToString()).ToList(), (routes) =>
+            var selectedFolder = SelectedFolder;
+            RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
             {
                 Routes = routes;
                 ShowRouteList();
@@ -846,8 +845,9 @@ namespace ORTS
             Activities.Clear();
             ShowActivityList();
 
+            var selectedFolder = SelectedFolder;
             var selectedRoute = SelectedRoute;
-            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
+            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
             {
                 Activities = activities;
                 ShowActivityList();
@@ -887,7 +887,8 @@ namespace ORTS
             ShowLocomotiveList();
             ShowConsistList();
 
-            ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists().OrderBy(a => a.ToString()).ToList(), (consists) =>
+            var selectedFolder = SelectedFolder;
+            ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(selectedFolder).OrderBy(a => a.ToString()).ToList(), (consists) =>
             {
                 Consists = consists;
                 if (SelectedActivity == null || SelectedActivity is ExploreActivity)
@@ -1038,14 +1039,15 @@ namespace ORTS
 
             TimetableSets.Clear();
             ShowTimetableSetList();
+            var selectedFolder = SelectedFolder;
             var selectedRoute = SelectedRoute;
-            TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
+            TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
             {
                 TimetableSets = timetableSets;
                 ShowTimetableSetList();
             });
 
-            TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
+            TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
             {
                 TimetableWeatherFileSet = timetableWeatherFileSet;
                 ShowTimetableWeatherSet();

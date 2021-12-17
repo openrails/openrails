@@ -22,7 +22,6 @@ using System.Linq;
 using System.Text;
 using Orts.Parsers.Msts;
 using System.IO;
-using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -33,7 +32,7 @@ namespace Orts.Formats.Msts
             string dir = Path.GetDirectoryName(filename);
             string file = Path.GetFileName(filename);
             string orFile = dir + @"\openrails\" + file;
-            if (Vfs.FileExists(orFile))
+            if (File.Exists(orFile))
                 filename = orFile;
             try
             {

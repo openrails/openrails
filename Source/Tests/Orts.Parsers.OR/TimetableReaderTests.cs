@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Parsers.OR;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,28 +30,28 @@ namespace Tests.Orts.Parsers.OR
         [Fact]
         public static void DetectSeparator()
         {
-            using (var file1 = new TestFile(";"))
-            using (var file2 = new TestFile(","))
-            using (var file3 = new TestFile("\t"))
-            using (var file4 = new TestFile(":"))
+            using (var file = new TestFile(";"))
             {
-                AssertWarnings.Expected();
-                Vfs.Initialize(Path.GetDirectoryName(file1.FileName), AppDomain.CurrentDomain.BaseDirectory);
-
-                var tr = new TimetableReader($"/MSTS/{Path.GetFileName(file1.FileName)}");
+                var tr = new TimetableReader(file.FileName);
                 Assert.Single(tr.Strings);
                 Assert.Equal(2, tr.Strings[0].Length);
-
-                tr = new TimetableReader($"/MSTS/{Path.GetFileName(file2.FileName)}");
+            }
+            using (var file = new TestFile(","))
+            {
+                var tr = new TimetableReader(file.FileName);
                 Assert.Single(tr.Strings);
                 Assert.Equal(2, tr.Strings[0].Length);
-
-                tr = new TimetableReader($"/MSTS/{Path.GetFileName(file3.FileName)}");
+            }
+            using (var file = new TestFile("\t"))
+            {
+                var tr = new TimetableReader(file.FileName);
                 Assert.Single(tr.Strings);
                 Assert.Equal(2, tr.Strings[0].Length);
-
+            }
+            using (var file = new TestFile(":"))
+            {
                 Assert.Throws<InvalidDataException>(() => {
-                    tr = new TimetableReader($"/MSTS/{Path.GetFileName(file4.FileName)}");
+                    var tr = new TimetableReader(file.FileName);
                 });
             }
         }
@@ -62,9 +61,7 @@ namespace Tests.Orts.Parsers.OR
         {
             using (var file = new TestFile(";b;c;d\n1;2;3\nA;B;C;D;E"))
             {
-                AssertWarnings.Expected();
-                Vfs.Initialize(Path.GetDirectoryName(file.FileName), AppDomain.CurrentDomain.BaseDirectory);
-                var tr = new TimetableReader($"/MSTS/{Path.GetFileName(file.FileName)}");
+                var tr = new TimetableReader(file.FileName);
                 Assert.Equal(3, tr.Strings.Count);
                 Assert.Equal(4, tr.Strings[0].Length);
                 Assert.Equal(3, tr.Strings[1].Length);

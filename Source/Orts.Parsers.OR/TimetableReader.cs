@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using ORTS.Common;
 
 namespace Orts.Parsers.OR
 {
@@ -35,7 +34,7 @@ namespace Orts.Parsers.OR
         public TimetableReader(string filePath)
         {
             FilePath = filePath;
-            using (var filestream = Vfs.StreamReader(filePath, true))
+            using (var filestream = new StreamReader(filePath, true))
             {
                 var readLine = filestream.ReadLine();
 

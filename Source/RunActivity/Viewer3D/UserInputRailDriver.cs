@@ -246,7 +246,7 @@ namespace Orts.Viewer3D
         void ReadCalibrationData(string basePath)
         {
             string file = basePath + "\\ModernCalibration.rdm";
-            if (!Vfs.FileExists(file))
+            if (!File.Exists(file))
             {
                 RegistryKey RK = Registry.LocalMachine.OpenSubKey("SOFTWARE\\PI Engineering\\PIBUS");
                 if (RK != null)
@@ -256,7 +256,7 @@ namespace Orts.Viewer3D
                         file = dir + "\\..\\controller\\ModernCalibration.rdm";
                 }
 
-                if (!Vfs.FileExists(file))
+                if (!File.Exists(file))
                 {
                     SetLEDs(0, 0, 0);
                     Trace.TraceWarning("Cannot find RailDriver calibration file {0}", file);

@@ -20,7 +20,6 @@ using System.IO;
 using GNU.Gettext;
 using MSTS;
 using Orts.Formats.Msts;
-using ORTS.Common;
 
 namespace ORTS.Menu
 {
@@ -35,7 +34,7 @@ namespace ORTS.Menu
 
         Route(string path)
         {
-            if (!string.IsNullOrWhiteSpace(path))
+            if (Directory.Exists(path))
             {
 				var trkFilePath = MSTSPath.GetTRKFileName(path);
                 try
@@ -64,7 +63,6 @@ namespace ORTS.Menu
             return Name;
         }
 
-        // FIXME: Not needed, just left here for the TestingForm
         public static List<Route> GetRoutes(Folder folder)
         {
             var routes = new List<Route>();
@@ -72,24 +70,6 @@ namespace ORTS.Menu
             if (Directory.Exists(directory))
             {
                 foreach (var routeDirectory in Directory.GetDirectories(directory))
-                {
-                    try
-                    {
-                        routes.Add(new Route(routeDirectory));
-                    }
-                    catch { }
-                }
-            }
-            return routes;
-        }
-        
-        public static List<Route> GetRoutes()
-        {
-            var routes = new List<Route>();
-            var directory = System.IO.Path.Combine(Vfs.MstsBasePath, "ROUTES");
-            if (Vfs.DirectoryExists(directory))
-            {
-                foreach (var routeDirectory in Vfs.GetDirectories(directory))
                 {
                     try
                     {

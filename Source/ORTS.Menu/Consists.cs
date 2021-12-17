@@ -20,7 +20,7 @@ using System.IO;
 using System.Linq;
 using GNU.Gettext;
 using Orts.Formats.Msts;
-using ORTS.Common;
+using ORTS.Settings;
 
 namespace ORTS.Menu
 {
@@ -32,15 +32,15 @@ namespace ORTS.Menu
 
         GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
-        internal Consist(string filePath)
+        internal Consist(string filePath, Folder folder)
         {
-            if (Vfs.FileExists(filePath))
+            if (File.Exists(filePath))
             {
                 try
                 {
                     var conFile = new ConsistFile(filePath);
                     Name = conFile.Name.Trim();
-                    Locomotive = GetLocomotive(conFile);
+                    Locomotive = GetLocomotive(conFile, folder);
                 }
                 catch
                 {
@@ -56,15 +56,15 @@ namespace ORTS.Menu
             FilePath = filePath;
         }
 
-        internal Consist(string filePath, bool reverseConsist)
+        internal Consist(string filePath, Folder folder, bool reverseConsist)
         {
-            if (Vfs.FileExists(filePath))
+            if (File.Exists(filePath))
             {
                 try
                 {
                     var conFile = new ConsistFile(filePath);
                     Name = conFile.Name.Trim();
-                    Locomotive = reverseConsist ? GetLocomotiveReverse(conFile) : GetLocomotive(conFile);
+                    Locomotive = reverseConsist ? GetLocomotiveReverse(conFile, folder) : GetLocomotive(conFile, folder);
                 }
                 catch
                 {
@@ -85,17 +85,17 @@ namespace ORTS.Menu
             return Name;
         }
 
-        public static List<Consist> GetConsists()
+        public static List<Consist> GetConsists(Folder folder)
         {
             var consists = new List<Consist>();
-            var directory = Vfs.MstsBasePath + "TRAINS/CONSISTS";
-            if (Vfs.DirectoryExists(directory))
+            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
+            if (Directory.Exists(directory))
             {
-                foreach (var consist in Vfs.GetFiles(directory, "*.con"))
+                foreach (var consist in Directory.GetFiles(directory, "*.con"))
                 {
                     try
                     {
-                        consists.Add(new Consist(consist));
+                        consists.Add(new Consist(consist, folder));
                     }
                     catch { }
                 }
@@ -103,41 +103,41 @@ namespace ORTS.Menu
             return consists;
         }
 
-        public static Consist GetConsist(string name)
+        public static Consist GetConsist(Folder folder, string name)
         {
             Consist consist = null;
-            var directory = Vfs.MstsBasePath + "TRAINS/CONSISTS";
+            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
             var file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "con"));
 
             try
             {
-                consist = new Consist(file);
+                consist = new Consist(file, folder);
             }
             catch { }
 
             return consist;
         }
 
-        public static Consist GetConsist(string name, bool reverseConsist)
+        public static Consist GetConsist(Folder folder, string name, bool reverseConsist)
         {
             Consist consist = null;
-            var directory = Vfs.MstsBasePath + "TRAINS/CONSISTS";
+            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
             var file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "con"));
 
             try
             {
-                consist = new Consist(file, reverseConsist);
+                consist = new Consist(file, folder, reverseConsist);
             }
             catch { }
 
             return consist;
         }
 
-        static Locomotive GetLocomotive(ConsistFile conFile)
+        static Locomotive GetLocomotive(ConsistFile conFile, Folder folder)
         {
             foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
             {
-                var filePath = $"{Vfs.MstsBasePath}TRAINS/TRAINSET/{wagon.Folder}/{wagon.Name}.eng";
+                var filePath = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "TRAINSET"), wagon.Folder), wagon.Name + ".eng");
                 try
                 {
                     return new Locomotive(filePath);
@@ -147,13 +147,13 @@ namespace ORTS.Menu
             return null;
         }
 
-        static Locomotive GetLocomotiveReverse(ConsistFile conFile)
+        static Locomotive GetLocomotiveReverse(ConsistFile conFile, Folder folder)
         {
             Locomotive newLocomotive = null;
 
             foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
             {
-                var filePath = $"{Vfs.MstsBasePath}TRAINS/TRAINSET/{wagon.Folder}/{wagon.Name}.eng";
+                var filePath = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "TRAINSET"), wagon.Folder), wagon.Name + ".eng");
                 try
                 {
                     newLocomotive = new Locomotive(filePath);
@@ -184,7 +184,7 @@ namespace ORTS.Menu
             {
                 Name = catalog.GetString("- Any Locomotive -");
             }
-            else if (Vfs.FileExists(filePath))
+            else if (File.Exists(filePath))
             {
                 EngineFile engFile;
                 try

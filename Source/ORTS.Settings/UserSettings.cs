@@ -309,10 +309,6 @@ namespace ORTS.Settings
         public bool PerformanceTuner { get; set; }
         [Default(true)]
         public bool SuppressShapeWarnings { get; set; }
-        [Default(1)]
-        public int VfsLogLevel { get; set; }
-        [Default(false)]
-        public bool VfsNoAutoMount { get; set; }
         [Default(60)]
         public int PerformanceTunerTarget { get; set; }
         [Default(false)]
