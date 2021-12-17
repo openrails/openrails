@@ -149,6 +149,7 @@
             this.labelContent = new System.Windows.Forms.Label();
             this.buttonContentDelete = new System.Windows.Forms.Button();
             this.groupBoxContent = new System.Windows.Forms.GroupBox();
+            this.buttonContentFile = new System.Windows.Forms.Button();
             this.buttonContentBrowse = new System.Windows.Forms.Button();
             this.textBoxContentPath = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
@@ -193,7 +194,9 @@
             this.checkCircularSpeedGauge = new System.Windows.Forms.CheckBox();
             this.checkSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
+            this.labelVfsLogLevel = new System.Windows.Forms.Label();
             this.labelPerformanceTunerTarget = new System.Windows.Forms.Label();
+            this.numericVfsLogLevel = new System.Windows.Forms.NumericUpDown();
             this.numericPerformanceTunerTarget = new System.Windows.Forms.NumericUpDown();
             this.checkPerformanceTuner = new System.Windows.Forms.CheckBox();
             this.checkLODViewingExtention = new System.Windows.Forms.CheckBox();
@@ -207,6 +210,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkVfsNoAutoMount = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -258,6 +262,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackLODBias)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericVfsLogLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
@@ -1782,6 +1787,7 @@
             // 
             this.groupBoxContent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxContent.Controls.Add(this.buttonContentFile);
             this.groupBoxContent.Controls.Add(this.buttonContentBrowse);
             this.groupBoxContent.Controls.Add(this.textBoxContentPath);
             this.groupBoxContent.Controls.Add(this.label20);
@@ -1794,14 +1800,25 @@
             this.groupBoxContent.TabStop = false;
             this.groupBoxContent.Text = "Installation profile";
             // 
+            // buttonContentFile
+            // 
+            this.buttonContentFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonContentFile.Location = new System.Drawing.Point(468, 19);
+            this.buttonContentFile.Name = "buttonContentFile";
+            this.buttonContentFile.Size = new System.Drawing.Size(35, 23);
+            this.buttonContentFile.TabIndex = 2;
+            this.buttonContentFile.Text = "File";
+            this.buttonContentFile.UseVisualStyleBackColor = true;
+            this.buttonContentFile.Click += new System.EventHandler(this.buttonContentFile_Click);
+            // 
             // buttonContentBrowse
             // 
             this.buttonContentBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonContentBrowse.Location = new System.Drawing.Point(428, 19);
             this.buttonContentBrowse.Name = "buttonContentBrowse";
-            this.buttonContentBrowse.Size = new System.Drawing.Size(75, 23);
+            this.buttonContentBrowse.Size = new System.Drawing.Size(35, 23);
             this.buttonContentBrowse.TabIndex = 2;
-            this.buttonContentBrowse.Text = "Change...";
+            this.buttonContentBrowse.Text = "Dir";
             this.buttonContentBrowse.UseVisualStyleBackColor = true;
             this.buttonContentBrowse.Click += new System.EventHandler(this.buttonContentBrowse_Click);
             // 
@@ -1980,10 +1997,13 @@
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactorChange);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactor);
             this.tabPageExperimental.Controls.Add(this.checkAdhesionPropToWeather);
+            this.tabPageExperimental.Controls.Add(this.checkVfsNoAutoMount);
             this.tabPageExperimental.Controls.Add(this.checkCircularSpeedGauge);
             this.tabPageExperimental.Controls.Add(this.checkSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
+            this.tabPageExperimental.Controls.Add(this.labelVfsLogLevel);
             this.tabPageExperimental.Controls.Add(this.labelPerformanceTunerTarget);
+            this.tabPageExperimental.Controls.Add(this.numericVfsLogLevel);
             this.tabPageExperimental.Controls.Add(this.numericPerformanceTunerTarget);
             this.tabPageExperimental.Controls.Add(this.checkPerformanceTuner);
             this.tabPageExperimental.Controls.Add(this.checkLODViewingExtention);
@@ -2253,7 +2273,7 @@
             // checkShapeWarnings
             // 
             this.checkShapeWarnings.AutoSize = true;
-            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 189);
+            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 166);
             this.checkShapeWarnings.Name = "checkShapeWarnings";
             this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
             this.checkShapeWarnings.TabIndex = 36;
@@ -2347,7 +2367,7 @@
             // checkCircularSpeedGauge
             // 
             this.checkCircularSpeedGauge.AutoSize = true;
-            this.checkCircularSpeedGauge.Location = new System.Drawing.Point(6, 212);
+            this.checkCircularSpeedGauge.Location = new System.Drawing.Point(6, 189);
             this.checkCircularSpeedGauge.Name = "checkCircularSpeedGauge";
             this.checkCircularSpeedGauge.Size = new System.Drawing.Size(156, 17);
             this.checkCircularSpeedGauge.TabIndex = 21;
@@ -2374,6 +2394,16 @@
             this.checkUseMSTSEnv.Text = "MSTS environments";
             this.checkUseMSTSEnv.UseVisualStyleBackColor = true;
             // 
+            // labelVfsLogLevel
+            // 
+            this.labelVfsLogLevel.AutoSize = true;
+            this.labelVfsLogLevel.Location = new System.Drawing.Point(70, 236);
+            this.labelVfsLogLevel.Margin = new System.Windows.Forms.Padding(3);
+            this.labelVfsLogLevel.Name = "labelVfsLogLevel";
+            this.labelVfsLogLevel.Size = new System.Drawing.Size(129, 13);
+            this.labelVfsLogLevel.TabIndex = 10;
+            this.labelVfsLogLevel.Text = "Virtual file system log level";
+            // 
             // labelPerformanceTunerTarget
             // 
             this.labelPerformanceTunerTarget.AutoSize = true;
@@ -2383,6 +2413,29 @@
             this.labelPerformanceTunerTarget.Size = new System.Drawing.Size(88, 13);
             this.labelPerformanceTunerTarget.TabIndex = 10;
             this.labelPerformanceTunerTarget.Text = "Target frame rate";
+            // 
+            // numericVfsLogLevel
+            // 
+            this.numericVfsLogLevel.Location = new System.Drawing.Point(10, 232);
+            this.numericVfsLogLevel.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.numericVfsLogLevel.Maximum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.numericVfsLogLevel.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericVfsLogLevel.Name = "numericVfsLogLevel";
+            this.numericVfsLogLevel.Size = new System.Drawing.Size(54, 20);
+            this.numericVfsLogLevel.TabIndex = 9;
+            this.numericVfsLogLevel.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // numericPerformanceTunerTarget
             // 
@@ -2567,6 +2620,16 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // checkVfsNoAutoMount
+            // 
+            this.checkVfsNoAutoMount.AutoSize = true;
+            this.checkVfsNoAutoMount.Location = new System.Drawing.Point(6, 212);
+            this.checkVfsNoAutoMount.Name = "checkVfsNoAutoMount";
+            this.checkVfsNoAutoMount.Size = new System.Drawing.Size(256, 17);
+            this.checkVfsNoAutoMount.TabIndex = 21;
+            this.checkVfsNoAutoMount.Text = "Disable virtual file system auto-mounting archives";
+            this.checkVfsNoAutoMount.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2645,6 +2708,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackLODBias)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericVfsLogLevel)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
@@ -2831,5 +2895,9 @@
         private System.Windows.Forms.TrackBar trackAntiAliasing;
         private System.Windows.Forms.Label labelAntiAliasingValue;
         private System.Windows.Forms.Label labelAntiAliasing;
+        private System.Windows.Forms.Button buttonContentFile;
+        private System.Windows.Forms.Label labelVfsLogLevel;
+        private System.Windows.Forms.NumericUpDown numericVfsLogLevel;
+        private System.Windows.Forms.CheckBox checkVfsNoAutoMount;
     }
 }

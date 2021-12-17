@@ -79,28 +79,30 @@ namespace LibAE.Formats
 
         public void config (List<string> routes)
         {
+            System.Diagnostics.Debug.Assert(Vfs.IsInitialized, "VFS is not yet initialized");
+            if (!Vfs.IsInitialized)
+                return;
             foreach (string routeParent in routes)
             {
-                if (!Directory.Exists(routeParent))
+                if (!Vfs.DirectoryExists(routeParent))
                 {
                     continue;
                 }
-                string[] subdirectoryEntries = Directory.GetDirectories(routeParent);
+                string[] subdirectoryEntries = Vfs.GetDirectories(routeParent);
                 foreach (string route in subdirectoryEntries)
                 {
-                    string[] files = Directory.GetFileSystemEntries(route, "*.trk");
+                    string[] files = Vfs.GetFiles(route, "*.trk");
                     if (files.Count() == 1)
                     {
                         routePaths.Add(route);
                     }
                 }
                 string consistPath = Path.Combine(routeParent, "../TRAINS/CONSISTS");
-                subdirectoryEntries = Directory.GetFileSystemEntries(consistPath, "*.con");
+                subdirectoryEntries = Vfs.GetFiles(consistPath, "*.con");
                 foreach (string consist in subdirectoryEntries)
                 {
-                    string fullPathConsist = Path.GetFullPath(consist);
-                    ConsistFile consistName = new ConsistFile(fullPathConsist);
-                    ConsistInfo conInfo = new ConsistInfo(consistName.ToString(), fullPathConsist);
+                    ConsistFile consistName = new ConsistFile(consist);
+                    ConsistInfo conInfo = new ConsistInfo(consistName.ToString(), consist);
                     trainConsists.Add(conInfo); 
                 }
             }
@@ -153,7 +155,7 @@ namespace LibAE.Formats
 
         public bool saveActivity(string activityName)
         {
-            FileName = Path.GetFileName(activityName);
+            FileName = activityName;
             //RoutePath = Path.GetDirectoryName(activityName);
 
             return saveActivity();
@@ -163,14 +165,12 @@ namespace LibAE.Formats
         {
             if (FileName == null || FileName.Length <= 0)
                 return false;
-            string activityPath = Path.Combine(RoutePath, "activities");
-            string completeFileName = Path.Combine(activityPath, FileName);
 
             JsonSerializer serializer = new JsonSerializer();
             serializer.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
             serializer.TypeNameHandling = TypeNameHandling.All;
             serializer.Formatting = Formatting.Indented;
-            using (StreamWriter wr = new StreamWriter(completeFileName))
+            using (StreamWriter wr = new StreamWriter(FileName))
             {
                 using (JsonWriter writer = new JsonTextWriter(wr))
                 {
@@ -187,7 +187,7 @@ namespace LibAE.Formats
             try
             {
                 JsonSerializer serializer = new JsonSerializer();
-                using (StreamReader sr = new StreamReader(fileName))
+                using (var sr = Vfs.StreamReader(fileName, true))
                 {
                     ActivityInfo info = JsonConvert.DeserializeObject<ActivityInfo>((string)sr.ReadToEnd(), new JsonSerializerSettings
                     {
@@ -204,10 +204,8 @@ namespace LibAE.Formats
                 p = new ActivityInfo();
                 p.FileName = Path.GetFileName(fileName);
                 p.RoutePath = Path.GetDirectoryName(fileName);
-                DirectoryInfo parent = Directory.GetParent(p.RoutePath);
-                p.RoutePath = parent.FullName;
-                parent = Directory.GetParent(p.RoutePath);
-                p.RoutePath = parent.FullName;
+                p.RoutePath = Path.GetDirectoryName(p.RoutePath.TrimEnd('/', '\\'));
+                p.RoutePath = Path.GetDirectoryName(p.RoutePath.TrimEnd('/', '\\'));
                 p.ActivityName = "";
                 p.ActivityDescr = "";
             }

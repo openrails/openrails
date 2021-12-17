@@ -274,7 +274,7 @@ namespace Orts.Formats.OR
 
             // loop through files, use only extention .w, skip w+1000000+1000000.w file
 
-            foreach (var fileName in Directory.GetFiles(WFilePath, "*.w"))
+            foreach (var fileName in Vfs.GetFiles(WFilePath, "*.w"))
             {
                 // validate file name a little bit
 

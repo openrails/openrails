@@ -125,11 +125,11 @@ namespace Orts.Simulation.Timetables
             // check type of timetable file - list or single
             string fileDirectory = Path.GetDirectoryName(filePath);
 
-            foreach (var ORPoolFile in Directory.GetFiles(fileDirectory, "*.pool_or"))
+            foreach (var ORPoolFile in Vfs.GetFiles(fileDirectory, "*.pool_or"))
             {
                 filenames.Add(ORPoolFile);
             }
-            foreach (var ORPoolFile in Directory.GetFiles(fileDirectory, "*.pool-or"))
+            foreach (var ORPoolFile in Vfs.GetFiles(fileDirectory, "*.pool-or"))
             {
                 filenames.Add(ORPoolFile);
             }

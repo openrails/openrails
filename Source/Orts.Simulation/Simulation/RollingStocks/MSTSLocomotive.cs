@@ -736,7 +736,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
             var cvfBasePath = Path.Combine(Path.GetDirectoryName(wagFilePath), "CABVIEW");
             var cvfFilePath = Path.Combine(cvfBasePath, cvfFileName);
-            if (!File.Exists(cvfFilePath))
+            if (!Vfs.FileExists(cvfFilePath))
                 return null;
 
             var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath);
@@ -767,7 +767,7 @@ public List<CabView> CabViewList = new List<CabView>();
             if (wag.FreightShapeFileName != null)
             {
                 shapeFilePath = wagFolderSlash + wag.FreightShapeFileName;
-                if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
+                if (shapeFilePath != null && Vfs.FileExists(shapeFilePath + "d"))
                 {
                     shapeFile = new ShapeDescriptorFile(shapeFilePath + "d");
                     if (shapeFile.shape.ESD_Bounding_Box != null) boundingLimitsFound = true;
@@ -776,7 +776,7 @@ public List<CabView> CabViewList = new List<CabView>();
             if (!boundingLimitsFound)
             {
                 shapeFilePath = wagFolderSlash + wag.MainShapeFileName;
-                if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
+                if (shapeFilePath != null && Vfs.FileExists(shapeFilePath + "d"))
                 {
                     shapeFile = new ShapeDescriptorFile(shapeFilePath + "d");
                     if (shapeFile.shape.ESD_Bounding_Box != null) boundingLimitsFound = true;
@@ -806,19 +806,19 @@ public List<CabView> CabViewList = new List<CabView>();
 
             var cab3dBasePath = Path.Combine(Path.GetDirectoryName(WagFilePath), "CABVIEW3D");
             var shapeFilePath = Path.Combine(cab3dBasePath, Cab3DShapeFileName);
-            if (!File.Exists(shapeFilePath))
+            if (!Vfs.FileExists(shapeFilePath))
                 return null;
 
             var cvfBasePath = cab3dBasePath;
             var cvfFilePath = Path.Combine(cvfBasePath, Path.ChangeExtension(Cab3DShapeFileName, "cvf"));
-            if (!File.Exists(cvfFilePath))
+            if (!Vfs.FileExists(cvfFilePath))
             {
                 cvfFilePath = Path.Combine(cvfBasePath, CVFFileName);
-                if (!File.Exists(cvfFilePath))
+                if (!Vfs.FileExists(cvfFilePath))
                 {
                     cvfBasePath = Path.Combine(Path.GetDirectoryName(WagFilePath), "CABVIEW");
                     cvfFilePath = Path.Combine(cvfBasePath, CVFFileName);
-                    if (!File.Exists(cvfFilePath))
+                    if (!Vfs.FileExists(cvfFilePath))
                         return null;
                 }
             }

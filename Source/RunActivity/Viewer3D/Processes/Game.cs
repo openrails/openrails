@@ -92,7 +92,7 @@ namespace Orts.Viewer3D.Processes
         public Game(UserSettings settings)
         {
             Settings = settings;
-            ContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
+            ContentPath = Vfs.ExecutablePath + "CONTENT";
             Exiting += new System.EventHandler<System.EventArgs>(Game_Exiting);
             WatchdogProcess = new WatchdogProcess(this);
             RenderProcess = new RenderProcess(this);
