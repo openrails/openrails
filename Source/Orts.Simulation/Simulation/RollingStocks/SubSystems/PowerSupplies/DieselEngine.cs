@@ -457,7 +457,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 foreach (var eng in DEList)
                     result.AppendFormat("\t{0}", eng.DieselTorqueTab[eng.RealRPM] / eng.DieselTorqueTab.MaxY());
 
-                
+                result.AppendFormat("\t\t{0}", Simulator.Catalog.GetString("AppThr"));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0}", eng.ApparentThrottleSetting);
+
+                result.AppendFormat("\t\t{0}", Simulator.Catalog.GetString("DemThr"));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0}", eng.DemandedThrottlePercent);
+
 
             }
 
@@ -1962,10 +1969,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 throttle[0] = 0; // Set throttle value to 0
                 rpm[0] = ThrottleRPMTab[throttle[0]]; // Find rpm of this throttle value in ThrottleRPMTab 
 
+//                Trace.TraceInformation("RpM {0}    Throttle {1}", rpm[0], throttle[0]);
+
                 for (int i = 1; i < size; i++)
                 {
                     throttle[i] = ThrottleRPMTab.X[i]; // read x co-ord
                     rpm[i] = ThrottleRPMTab.Y[i]; // read y co-ord value of this throttle value in ThrottleRPMTab 
+
+//                    Trace.TraceInformation("RpM {0}    Throttle {1}", rpm[i], throttle[i]);
                 }
                 ReverseThrottleRPMTab = new Interpolator(rpm, throttle); // create reverse table
             }

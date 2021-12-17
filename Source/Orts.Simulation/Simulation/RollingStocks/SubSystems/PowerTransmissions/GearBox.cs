@@ -537,13 +537,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             if (DieselEngine.ApparentThrottleSetting < DieselEngine.DemandedThrottlePercent)
                             {
                                 // Use apparent throttle when accelerating so that time delays in rpm rise and fall are used, but use demanded throttle at other times
-                                throttleFraction = DieselEngine.ApparentThrottleSetting * 0.01f; // Convert from percentage to fraction, use the apparent throttle as this includes some delay for rpm increase
-//                                Trace.TraceInformation("Throttle Fraction#1 {0}, DemandedThrottle {1} RpM {2} Gear {3} DemandedRpM {4}", throttleFraction, DieselEngine.DemandedThrottlePercent, DieselEngine.RealRPM, DieselEngine.GearBox.CurrentGearIndex + 1, DieselEngine.DemandedRPM);
+                              //  throttleFraction = DieselEngine.ApparentThrottleSetting * 0.01f; // Convert from percentage to fraction, use the apparent throttle as this includes some delay for rpm increase
+
+                                throttleFraction = DieselEngine.DemandedThrottlePercent * 0.01f;
+
+                                //  Trace.TraceInformation("Throttle Fraction#1 {0}, DemandedThrottle {1} RpM {2} Gear {3} DemandedRpM {4}", throttleFraction, DieselEngine.DemandedThrottlePercent, DieselEngine.RealRPM, DieselEngine.GearBox.CurrentGearIndex + 1, DieselEngine.DemandedRPM);
                             }
                             else // As apparent throttle is related to current rpm, limit throttle to the actual demanded throttle. 
                             {
                                 throttleFraction = DieselEngine.DemandedThrottlePercent * 0.01f;
- //                               Trace.TraceInformation("Throttle Fraction#2 {0}, DemandedThrottle {1} RpM {2} Gear {3} DemandedRpM {4}", throttleFraction, DieselEngine.DemandedThrottlePercent, DieselEngine.RealRPM, DieselEngine.GearBox.CurrentGearIndex + 1, DieselEngine.DemandedRPM);
+//                                Trace.TraceInformation("Throttle Fraction#2 {0}, DemandedThrottle {1} RpM {2} Gear {3} DemandedRpM {4}", throttleFraction, DieselEngine.DemandedThrottlePercent, DieselEngine.RealRPM, DieselEngine.GearBox.CurrentGearIndex + 1, DieselEngine.DemandedRPM);
 
                             }
 
@@ -584,7 +587,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             // During normal operation fuel admission is fixed, and therefore TE follows curve as RpM varies
                             tractiveForceN = torqueCurveMultiplier * DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] / DieselEngine.DieselTorqueTab.MaxY() * CurrentGear.MaxTractiveForceN;
 
-//                            Trace.TraceInformation("Tractive Force {0}, Throttle {1} TCM {2} RpM {3} Throttle% {4} Gear {5} Torque {6} MaxTor {7} MaxTE {8}", tractiveForceN, throttleFraction, torqueCurveMultiplier, dieselRpM, DieselEngine.DemandedThrottlePercent, DieselEngine.GearBox.CurrentGearIndex + 1, DieselEngine.DieselTorqueTab[DieselEngine.RealRPM], DieselEngine.DieselTorqueTab.MaxY(), CurrentGear.MaxTractiveForceN);
+ //                           Trace.TraceInformation("Tractive Force {0}, Throttle {1} TCM {2} RpM {3} Throttle% {4} Gear {5} Torque {6} MaxTor {7} MaxTE {8}", tractiveForceN, throttleFraction, torqueCurveMultiplier, dieselRpM, DieselEngine.DemandedThrottlePercent, DieselEngine.GearBox.CurrentGearIndex + 1, DieselEngine.DieselTorqueTab[DieselEngine.RealRPM], DieselEngine.DieselTorqueTab.MaxY(), CurrentGear.MaxTractiveForceN);
 
                             Locomotive.HuDGearMaximumTractiveForce = CurrentGear.MaxTractiveForceN;
                                                         
