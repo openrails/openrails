@@ -564,6 +564,14 @@ It may be modified with following parameter in the .sd file::
 Examples of use are fan control, open/close of aerodynamic coverages of couplers 
 in high speed trains, menu pages switching.
 
+Animations within the 3D cab .s file are also available, as follows::
+
+        ORTS_ITEM1CONTINUOUS
+        ORTS_ITEM2CONTINUOUS
+        ORTS_ITEM1TWOSTATE
+        ORTS_ITEM2TWOSTATE
+
+in analogy to the four animations for the locomotive .s file.
 
 High-resolution Cab Backgrounds and Controls
 --------------------------------------------
