@@ -1378,7 +1378,7 @@ namespace Orts.Viewer3D.Processes
 
             public void Dispose()
             {
-                Texture.Dispose();
+                Texture?.Dispose();
             }
 
             virtual protected Texture2D GetTexture(Game game)
