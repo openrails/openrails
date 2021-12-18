@@ -720,7 +720,14 @@ instead::
 			Type ( ORTS_ETCS SCREEN_DISPLAY )
 			Position ( 280 272 320 240 )
 			Units ( KM_PER_HOUR )
+			Parameters (
+				Mode FullSize
+			)
 		)
+		
+The following DMI size variants are available: FullSize (displays the whole DMI), SpeedArea
+(displays only the left part with information about distance and speed) and PlanningArea
+(displays only the planning area and navigation buttons).
 
 The information displayed in the DMI is controlled via the TCS script. For more details,
 see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
