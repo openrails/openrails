@@ -652,19 +652,19 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Calculate fuel consumption will occur unless diesel engine is stopped
-                DieselFlowLps = DieselEngines.DieselFlowLps;
-                partialFuelConsumption += DieselEngines.DieselFlowLps * elapsedClockSeconds;
-                if (partialFuelConsumption >= 0.1)
-                {
-                    DieselLevelL -= partialFuelConsumption;
-                    partialFuelConsumption = 0;
-                }
-                // stall engine if fuel runs out
-                if (DieselLevelL <= 0.0f)
-                {
-                    SignalEvent(Event.EnginePowerOff);
-                    DieselEngines.HandleEvent(PowerSupplyEvent.StopEngine);
-                }
+            DieselFlowLps = DieselEngines.DieselFlowLps;
+            partialFuelConsumption += DieselEngines.DieselFlowLps * elapsedClockSeconds;
+            if (partialFuelConsumption >= 0.1)
+            {
+                DieselLevelL -= partialFuelConsumption;
+                partialFuelConsumption = 0;
+            }
+            // stall engine if fuel runs out
+            if (DieselLevelL <= 0.0f)
+            {
+                SignalEvent(Event.EnginePowerOff);
+                DieselEngines.HandleEvent(PowerSupplyEvent.StopEngine);
+            }
         }
 
         /// <summary>
