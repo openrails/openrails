@@ -23,6 +23,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D;
 using Orts.Viewer3D.Popups;
+using ORTS.Common;
 
 namespace ORTS.TrackViewer.Drawing
 {
@@ -308,7 +309,7 @@ namespace ORTS.TrackViewer.Drawing
                 string textureName = filename;
                 string path = directory + filename;
                 oldAceFiles = new List<string>();
-                if (System.IO.File.Exists(path))
+                if (Vfs.FileExists(path))
                 {
                     Texture2D texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
                     textures[textureName] = texture;
@@ -664,7 +665,7 @@ namespace ORTS.TrackViewer.Drawing
                 return images[pngFileName];
             }
 
-            string contentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
+            string contentPath = System.IO.Path.Combine(Vfs.ExecutablePath, "Content");
             string fullFileName = System.IO.Path.Combine(contentPath, pngFileName + ".png");
             BitmapImage newImage = new BitmapImage(new Uri(fullFileName, UriKind.Relative));
             images[pngFileName] = newImage;
