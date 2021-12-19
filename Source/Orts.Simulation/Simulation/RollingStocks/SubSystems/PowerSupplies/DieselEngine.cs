@@ -1150,7 +1150,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                 }
 
-                // Dtermine when freewheeling should occur
+                // Determine when freewheeling should occur
                 if (GearBox.GearBoxFreeWheelFitted && GearBox.ShaftRPM > ThrottleRPMTab[demandedThrottlePercent])
                 {
                     GearBox.clutchOn = false;
@@ -1286,7 +1286,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             ApparentThrottleSetting = MathHelper.Clamp(ApparentThrottleSetting, 0.0f, 100.0f);  // Clamp throttle setting within bounds
 
-            // If it is a geared locomotive, and rpm is greater then Max RpM, then output engine power should be reduced.
+            // If it is a geared locomotive, and rpm is greater then Max RpM, then output engine power should be reduced in HuD.
             if (GovernorEnabled && HasGearBox)
             {
                 if (DemandedRPM > MaxRPM)
@@ -1470,7 +1470,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (State == DieselEngineState.Running)
                     {
                         DemandedRPM = 0;
-                        RealRPM = 0;
+                        // If clutch is on when engine stalls, then maintain train speed on the engine
+                        if (HasGearBox && GearBox.IsClutchOn)
+                        {
+                            RealRPM = GearBox.ShaftRPM;
+                        }
+                        else
+                        {
+                            RealRPM = 0;
+                        }
+
                         State = DieselEngineState.Stopped;
                     }
                     break;
