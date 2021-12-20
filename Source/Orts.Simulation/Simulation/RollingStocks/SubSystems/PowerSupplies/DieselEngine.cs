@@ -846,6 +846,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public bool GovernorEnabled = false;
         /// <summary>
+        /// Geared Overspeed shutdown has activiated
+        /// </summary>
+        public bool GearOverspeedShutdownEnabled = false;
+        /// <summary>
+        /// Geared Underspeed shutdown has activiated
+        /// </summary>
+        public bool GearUnderspeedShutdownEnabled = false;
+        /// <summary>
         /// Minimal oil pressure at IdleRPM
         /// </summary>
         public float DieselMinOilPressurePSI;
@@ -1052,6 +1060,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 OutputPowerW = 0.0f;
             }
 
+            // Initially sets the demanded rpm, but this can be changed depending upon some of the following conditions.
             if ((ThrottleRPMTab != null) && (State == DieselEngineState.Running))
             {
                 DemandedRPM = ThrottleRPMTab[demandedThrottlePercent];
@@ -1180,13 +1189,51 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     DemandedRPM = GearBox.ShaftRPM;
                 }
 
-                // Simulate stalled engine if RpM decreases too far or exceed the safe overrun speed, by stopping engine, only applies to Type D clutch
-                if ((RealRPM < 0.9f * IdleRPM || RealRPM > GovernorRPM) && State == DieselEngineState.Running && GearBox.ClutchType != TypesClutch.Scoop && GearBox.ClutchType != TypesClutch.Fluid)
+                // Simulate stalled engine if RpM decreases too far below IdleRpM
+                if (RealRPM < 0.9f * IdleRPM && State == DieselEngineState.Running && GearBox.IsClutchOn)
                 {
-                    Trace.TraceInformation("Diesel Engine has stalled");
+
+                    GearUnderspeedShutdownEnabled = true;
+                    Trace.TraceInformation("Diesel Engine has stalled due to underspeed.");
                     HandleEvent(PowerSupplyEvent.StallEngine);
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Diesel Engine has stalled."));
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Diesel Engine has stalled due to underspeed."));
+
+                    if (GearBox.ClutchType == TypesClutch.Fluid || GearBox.ClutchType == TypesClutch.Scoop)
+                    {
+                        GearBox.clutchOn = false;
+                    }
                 }
+                else if (Locomotive.AbsSpeedMpS < 0.05)
+                {
+                    GearUnderspeedShutdownEnabled = false;
+                }
+
+                // Simulate stalled engine if RpM increases too far and exceed the safe overrun speed, by stopping engine
+                if (RealRPM > GovernorRPM && State == DieselEngineState.Running && GearBox.IsClutchOn)
+                {
+
+                    GearOverspeedShutdownEnabled = true;
+                    Trace.TraceInformation("Diesel Engine has stalled due to overspeed.");
+                    HandleEvent(PowerSupplyEvent.StallEngine);
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Diesel Engine has stalled due to overspeed."));
+
+                    if (GearBox.ClutchType == TypesClutch.Fluid || GearBox.ClutchType == TypesClutch.Scoop)
+                    {
+                        GearBox.clutchOn = false;
+                    }
+
+                }
+                else if (Locomotive.AbsSpeedMpS < 0.05 && State == DieselEngineState.Stopped)
+                {
+                    GearOverspeedShutdownEnabled = false;
+                }
+
+                // In event of over or underspeed shutdown of fluid or scoop coupling drive ErP to 0.
+                if ((GearOverspeedShutdownEnabled || GearUnderspeedShutdownEnabled) && (GearBox.ClutchType == TypesClutch.Fluid || GearBox.ClutchType == TypesClutch.Scoop))
+                {
+                    DemandedRPM = 0;
+                }
+                                                             
             }
 
             if (RealRPM == IdleRPM)
@@ -1231,9 +1278,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             RawRpM = RealRPM;
 
-            if (State == DieselEngineState.Stopped)
+            if (State == DieselEngineState.Stopped && !HasGearBox)
             {
                 RealRPM = 0;
+            }
+            else if (HasGearBox && GearBox.IsClutchOn) // Geared engines can sometimes have the engine rotating whilst it is "stopped"
+            {
+                RealRPM = GearBox.ShaftRPM;
             }
 
             // links engine rpm and shaft rpm together when clutch is fully engaged
@@ -1469,15 +1520,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case PowerSupplyEvent.StallEngine:
                     if (State == DieselEngineState.Running)
                     {
-                        DemandedRPM = 0;
+                        
                         // If clutch is on when engine stalls, then maintain train speed on the engine
                         if (HasGearBox && GearBox.IsClutchOn)
                         {
-                            RealRPM = GearBox.ShaftRPM;
+                            DemandedRPM = GearBox.ShaftRPM;
                         }
                         else
                         {
-                            RealRPM = 0;
+                            DemandedRPM = 0;
                         }
 
                         State = DieselEngineState.Stopped;

@@ -626,7 +626,8 @@ namespace Orts.Simulation.RollingStocks
             // Advanced configuration (TF table) - use a user defined tractive force table
             // With Simple adhesion apart from correction for rail adhesion, there is no further variation to the motive force. 
             // With Advanced adhesion the raw motive force is fed into the advanced (axle) adhesion model, and is corrected for wheel slip and rail adhesion
-            if (LocomotivePowerSupply.MainPowerSupplyOn && Direction != Direction.N)
+            // Note for geared locomotives it is possible to get some tractive force due to the dragof a stalled engine, if in gear, and clutch engaged
+            if ((LocomotivePowerSupply.MainPowerSupplyOn || (DieselEngines[0].GearBox.IsClutchOn && DieselEngines.HasGearBox)) && Direction != Direction.N)
             {
                 // Appartent throttle setting is a reverse lookup of the throttletab vs rpm, hence motive force increase will be related to increase in rpm. The minimum of the two values
                 // is checked to enable fast reduction in tractive force when decreasing the throttle. Typically it will take longer for the prime mover to decrease rpm then drop motive force.
