@@ -15,17 +15,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.CodeDom.Providers.DotNetCompilerPlatform;
 using Orts.Simulation;
 using ORTS.Common;
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Orts.Common.Scripting
 {
@@ -34,22 +35,17 @@ namespace Orts.Common.Scripting
     {
         readonly Simulator Simulator;
         readonly IDictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
-        static readonly ProviderOptions ProviderOptions = new ProviderOptions(Path.Combine(new Uri(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase)).LocalPath, "roslyn", "csc.exe"), 10);
-        static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(ProviderOptions);
-
-        static CompilerParameters GetCompilerParameters()
+        static readonly string[] ReferenceAssemblies = new[]
         {
-            var cp = new CompilerParameters()
-            {
-                GenerateInMemory = true,
-                IncludeDebugInformation = Debugger.IsAttached,
-            };
-            cp.ReferencedAssemblies.Add("System.dll");
-            cp.ReferencedAssemblies.Add("System.Core.dll");
-            cp.ReferencedAssemblies.Add("ORTS.Common.dll");
-            cp.ReferencedAssemblies.Add("Orts.Simulation.dll");
-            return cp;
-        }
+            typeof(System.Object).GetTypeInfo().Assembly.Location,
+            typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly.Location,
+            typeof(ORTS.Common.ElapsedTime).GetTypeInfo().Assembly.Location,
+            typeof(ORTS.Scripting.Api.Timer).GetTypeInfo().Assembly.Location,
+        };
+        static MetadataReference[] References = ReferenceAssemblies.Select(r => MetadataReference.CreateFromFile(r)).ToArray();
+        static CSharpCompilationOptions CompilationOptions = new CSharpCompilationOptions(
+            OutputKind.DynamicallyLinkedLibrary,
+            optimizationLevel: Debugger.IsAttached ? OptimizationLevel.Debug : OptimizationLevel.Release);
 
         [CallOnThread("Loader")]
         internal ScriptManager(Simulator simulator)
@@ -86,22 +82,40 @@ namespace Orts.Common.Scripting
         {
             try
             {
-                var compilerResults = Compiler.CompileAssemblyFromFile(GetCompilerParameters(), path);
-                if (!compilerResults.Errors.HasErrors)
+                var scriptName = Path.GetFileName(path);
+                var scriptCode = File.ReadAllText(path);
+                var syntaxTree = CSharpSyntaxTree.ParseText(scriptCode);
+                var compilation = CSharpCompilation.Create(
+                    scriptName,
+                    new[] { syntaxTree },
+                    References,
+                    CompilationOptions);
+                var ms = new MemoryStream();
+                var result = compilation.Emit(ms);
+                if (result.Success)
                 {
-                    var script = compilerResults.CompiledAssembly;
+                    ms.Seek(0, SeekOrigin.Begin);
+                    var script = Assembly.Load(ms.ToArray());
+                    // in netcore:
+                    //var script = AssemblyLoadContext.Default.LoadFromStream(ms);
                     if (script == null)
                         Trace.TraceWarning($"Script file {path} could not be loaded into the process.");
                     return script;
                 }
                 else
                 {
+                    var errors = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
+
                     var errorString = new StringBuilder();
                     errorString.AppendFormat("Skipped script {0} with error:", path);
                     errorString.Append(Environment.NewLine);
-                    foreach (CompilerError error in compilerResults.Errors)
+                    foreach (var error in errors)
                     {
-                        errorString.AppendFormat("   {0}, line: {1}, column: {2}", error.ErrorText, error.Line /*- prefixLines*/, error.Column);
+                        var textSpan = error.Location.SourceSpan;
+                        var lineSpan = error.Location.SourceTree.GetLineSpan(textSpan);
+                        var line = lineSpan.StartLinePosition.Line + 1;
+                        var column = lineSpan.StartLinePosition.Character;
+                        errorString.AppendFormat("\t{0}: {1}, line: {2}, column: {3}", error.Id, error.GetMessage(), line, column);
                         errorString.Append(Environment.NewLine);
                     }
 
@@ -126,6 +140,8 @@ namespace Orts.Common.Scripting
 
         public Assembly LoadFolder(string path)
         {
+            return null;
+            /*
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("ScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
@@ -152,7 +168,7 @@ namespace Orts.Common.Scripting
                     errorString.Append(Environment.NewLine);
                     foreach (CompilerError error in compilerResults.Errors)
                     {
-                        errorString.AppendFormat("   {0}, file: {1}, line: {2}, column: {3}", error.ErrorText, error.FileName, error.Line /*- prefixLines*/, error.Column);
+                        errorString.AppendFormat("   {0}, file: {1}, line: {2}, column: {3}", error.ErrorText, error.FileName, error.Line, error.Column);
                         errorString.Append(Environment.NewLine);
                     }
 
@@ -170,6 +186,7 @@ namespace Orts.Common.Scripting
                 Trace.WriteLine(new FileLoadException(path, error));
                 return null;
             }
+            */
         }
 
         /*
