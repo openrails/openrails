@@ -41,6 +41,7 @@ namespace Orts.Common.Scripting
             typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly.Location,
             typeof(ORTS.Common.ElapsedTime).GetTypeInfo().Assembly.Location,
             typeof(ORTS.Scripting.Api.Timer).GetTypeInfo().Assembly.Location,
+            typeof(System.Linq.Enumerable).GetTypeInfo().Assembly.Location,
         };
         static MetadataReference[] References = ReferenceAssemblies.Select(r => MetadataReference.CreateFromFile(r)).ToArray();
         static CSharpCompilationOptions CompilationOptions = new CSharpCompilationOptions(
@@ -61,7 +62,7 @@ namespace Orts.Common.Scripting
             if (pathArray == null || pathArray.Length == 0 || name == null || name == "")
                 return null;
 
-            if (Path.GetExtension(name) != ".cs")
+            if (Path.GetExtension(name).ToLower() != ".cs")
                 name += ".cs";
 
             var path = ORTSPaths.GetFileFromFolders(pathArray, name);
@@ -74,20 +75,19 @@ namespace Orts.Common.Scripting
             var type = String.Format("{0}.{1}", nameSpace, Path.GetFileNameWithoutExtension(path).Replace('-', '_'));
 
             if (!Scripts.ContainsKey(path))
-                Scripts[path] = CompileScript(path);
+                Scripts[path] = CompileScript(new string[] { path });
             return Scripts[path]?.CreateInstance(type, true);
         }
 
-        private static Assembly CompileScript(string path)
+        private static Assembly CompileScript(string[] path)
         {
             try
             {
-                var scriptName = Path.GetFileName(path);
-                var scriptCode = File.ReadAllText(path);
-                var syntaxTree = CSharpSyntaxTree.ParseText(scriptCode);
+                var scriptName = Path.GetFileName(path[0]);
+                var syntaxTrees = path.Select(file => CSharpSyntaxTree.ParseText(File.ReadAllText(file)));
                 var compilation = CSharpCompilation.Create(
                     scriptName,
-                    new[] { syntaxTree },
+                    syntaxTrees,
                     References,
                     CompilationOptions);
                 var ms = new MemoryStream();
@@ -125,23 +125,25 @@ namespace Orts.Common.Scripting
             }
             catch (InvalidDataException error)
             {
-                Trace.TraceWarning("Skipped script {0} with error: {1}", path, error.Message);
+                if (path.Length > 1)
+                    Trace.TraceWarning("Skipped script folder {0} with error: {1}", Path.GetDirectoryName(path[0]), error.Message);
+                else
+                    Trace.TraceWarning("Skipped script {0} with error: {1}", path[0], error.Message);
                 return null;
             }
             catch (Exception error)
             {
-                if (File.Exists(path))
-                    Trace.WriteLine(new FileLoadException(path, error));
+                if (File.Exists(path[0]))
+                    Trace.WriteLine(new FileLoadException(path[0], error));
                 else
-                    Trace.TraceWarning("Ignored missing script file {0}", path);
+                    Trace.TraceWarning("Ignored missing script file {0}", path[0]);
                 return null;
             }
         }
 
         public Assembly LoadFolder(string path)
         {
-            return null;
-            /*
+            
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("ScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
@@ -154,51 +156,16 @@ namespace Orts.Common.Scripting
 
             if (files == null || files.Length == 0) return null;
 
-            try
+            if (!Scripts.ContainsKey(path))
             {
-                var compilerResults = Compiler.CompileAssemblyFromFile(GetCompilerParameters(), files);
-                if (!compilerResults.Errors.HasErrors)
-                {
-                    return compilerResults.CompiledAssembly;
-                }
-                else
-                {
-                    var errorString = new StringBuilder();
-                    errorString.AppendFormat("Skipped script folder {0} with error:", path);
-                    errorString.Append(Environment.NewLine);
-                    foreach (CompilerError error in compilerResults.Errors)
-                    {
-                        errorString.AppendFormat("   {0}, file: {1}, line: {2}, column: {3}", error.ErrorText, error.FileName, error.Line, error.Column);
-                        errorString.Append(Environment.NewLine);
-                    }
-
-                    Trace.TraceWarning(errorString.ToString());
+                var assembly = CompileScript(files);
+                if (assembly == null)
                     return null;
-                }
-            }
-            catch (InvalidDataException error)
-            {
-                Trace.TraceWarning("Skipped script folder {0} with error: {1}", path, error.Message);
-                return null;
-            }
-            catch (Exception error)
-            {
-                Trace.WriteLine(new FileLoadException(path, error));
-                return null;
-            }
-            */
-        }
 
-        /*
-        static ClassType CreateInstance<ClassType>(Assembly assembly) where ClassType : class
-        {
-            foreach (var type in assembly.GetTypes())
-                if (typeof(ClassType).IsAssignableFrom(type))
-                    return Activator.CreateInstance(type) as ClassType;
-
-            return default(ClassType);
+                Scripts[path] = assembly;
+            }
+            return Scripts[path];
         }
-        */
 
         [CallOnThread("Updater")]
         public string GetStatus()
