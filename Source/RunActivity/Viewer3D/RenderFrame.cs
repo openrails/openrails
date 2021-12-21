@@ -132,6 +132,7 @@ namespace Orts.Viewer3D
             {
                 var vertexBuffer = new VertexBuffer(graphicsDevice, new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements), 1, BufferUsage.WriteOnly);
                 vertexBuffer.SetData(new Matrix[] { Matrix.Identity });
+                vertexBuffer.Name = "INSTANCE_DUMMY";
                 DummyVertexBuffer = vertexBuffer;
             }
             return DummyVertexBuffer;
@@ -574,6 +575,10 @@ namespace Orts.Viewer3D
             }
         }
 
+        [CallOnThread("Updater")]
+        public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
+            => AddAutoPrimitive(mstsLocation, objectRadius, objectViewingDistance, material, primitive, group, ref xnaMatrix, flags, null);
+
         /// <summary>
         /// Automatically adds or culls a <see cref="RenderPrimitive"/> based on a location, radius and max viewing distance.
         /// </summary>
@@ -586,12 +591,12 @@ namespace Orts.Viewer3D
         /// <param name="xnaMatrix"></param>
         /// <param name="flags"></param>
         [CallOnThread("Updater")]
-        public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
+        public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags, object itemData)
         {
             if (float.IsPositiveInfinity(objectViewingDistance) || (Camera != null && Camera.InRange(mstsLocation, objectRadius, objectViewingDistance)))
             {
                 if (Camera != null && Camera.InFov(mstsLocation, objectRadius))
-                    AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
+                    AddPrimitive(material, primitive, group, ref xnaMatrix, flags, itemData);
             }
 
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
