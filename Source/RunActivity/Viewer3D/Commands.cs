@@ -93,7 +93,7 @@ namespace Orts.Viewer3D
     [Serializable()]
     public sealed class SelectScreenCommand : BooleanCommand
     {
-        public static CabRenderer Receiver { get; set; }
+        public static Viewer Receiver { get; set; }
 
         public SelectScreenCommand(CommandLog log, bool toState, string screen, int display)
             : base(log, toState)
@@ -105,7 +105,10 @@ namespace Orts.Viewer3D
         {
             if (ToState)
             {
-                Receiver.ActiveScreen[display] = screen;
+                var finalReceiver = Receiver.Camera  is ThreeDimCabCamera ?
+                    (Receiver.PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabRenderer :
+                    (Receiver.PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer;
+                finalReceiver.ActiveScreen[display] = screen;
             }
         }
 
