@@ -592,8 +592,7 @@ namespace Orts.Viewer3D
 
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             RefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
-            SelectScreenCommand.Receiver = (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab) ? 
-                ((MSTSLocomotiveViewer)PlayerLocomotiveViewer)._CabRenderer : ((MSTSLocomotiveViewer)PlayerLocomotiveViewer).ThreeDimentionCabRenderer;
+            SelectScreenCommand.Receiver = this;
             ToggleOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ResetOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleOdometerDirectionCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
