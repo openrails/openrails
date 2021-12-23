@@ -21,10 +21,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using ORTS.Common;
 
 namespace Orts.Parsers.OR
 {
@@ -37,7 +37,7 @@ namespace Orts.Parsers.OR
         /// <param name="tryParse"></param>
         public static void ReadFile(string fileName, Func<JsonReader, bool> tryParse)
         {
-            using (var reader = new JsonTextReader(File.OpenText(fileName))
+            using (var reader = new JsonTextReader(Vfs.OpenText(fileName))
             {
                 CloseInput = true,
             })
