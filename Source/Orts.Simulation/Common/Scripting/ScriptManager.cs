@@ -81,10 +81,11 @@ namespace Orts.Common.Scripting
 
         private static Assembly CompileScript(string[] path)
         {
+            var scriptPath = path.Length > 1 ? Path.GetDirectoryName(path[0]) : path[0];
+            var scriptName = Path.GetFileName(scriptPath);
             try
             {
-                var scriptName = Path.GetFileName(path[0]);
-                var syntaxTrees = path.Select(file => CSharpSyntaxTree.ParseText(File.ReadAllText(file)));
+                var syntaxTrees = path.Select(file => CSharpSyntaxTree.ParseText(File.ReadAllText(file), null, file));
                 var compilation = CSharpCompilation.Create(
                     scriptName,
                     syntaxTrees,
@@ -99,7 +100,7 @@ namespace Orts.Common.Scripting
                     // in netcore:
                     //var script = AssemblyLoadContext.Default.LoadFromStream(ms);
                     if (script == null)
-                        Trace.TraceWarning($"Script file {path} could not be loaded into the process.");
+                        Trace.TraceWarning($"Script {scriptPath} could not be loaded into the process.");
                     return script;
                 }
                 else
@@ -107,15 +108,18 @@ namespace Orts.Common.Scripting
                     var errors = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
 
                     var errorString = new StringBuilder();
-                    errorString.AppendFormat("Skipped script {0} with error:", path);
+                    errorString.AppendFormat("Skipped script {0} with error:", scriptPath);
                     errorString.Append(Environment.NewLine);
                     foreach (var error in errors)
                     {
                         var textSpan = error.Location.SourceSpan;
+                        var fileName = Path.GetFileName(error.Location.SourceTree.FilePath);
                         var lineSpan = error.Location.SourceTree.GetLineSpan(textSpan);
                         var line = lineSpan.StartLinePosition.Line + 1;
                         var column = lineSpan.StartLinePosition.Character;
-                        errorString.AppendFormat("\t{0}: {1}, line: {2}, column: {3}", error.Id, error.GetMessage(), line, column);
+                        errorString.AppendFormat("\t{0}: {1}, ", error.Id, error.GetMessage());
+                        if (path.Length > 1) errorString.AppendFormat("file: {0}, ", fileName);
+                        errorString.AppendFormat("line: {0}, column: {1}", line, column);
                         errorString.Append(Environment.NewLine);
                     }
 
@@ -125,18 +129,15 @@ namespace Orts.Common.Scripting
             }
             catch (InvalidDataException error)
             {
-                if (path.Length > 1)
-                    Trace.TraceWarning("Skipped script folder {0} with error: {1}", Path.GetDirectoryName(path[0]), error.Message);
-                else
-                    Trace.TraceWarning("Skipped script {0} with error: {1}", path[0], error.Message);
+                Trace.TraceWarning("Skipped script {0} with error: {1}", scriptPath, error.Message);
                 return null;
             }
             catch (Exception error)
             {
-                if (File.Exists(path[0]))
-                    Trace.WriteLine(new FileLoadException(path[0], error));
+                if (File.Exists(scriptPath) || Directory.Exists(scriptPath))
+                    Trace.WriteLine(new FileLoadException(scriptPath, error));
                 else
-                    Trace.TraceWarning("Ignored missing script file {0}", path[0]);
+                    Trace.TraceWarning("Ignored missing script {0}", scriptPath);
                 return null;
             }
         }
