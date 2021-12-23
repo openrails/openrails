@@ -563,9 +563,14 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public virtual void Restore(BinaryReader inf) { }
         /// <summary>
-        /// Called at every simulator update cycle in order to activate/deactivate the traction
-        /// when brakes are applied.
+        /// Traction cut-off request due to brake application
+        /// True if cut-off is requested
         /// </summary>
+        protected bool TractionCutOffRequested = false;
+        /// <summary>
+        /// Updates the traction cut-off request (due to brake application).
+        /// </summary>
+        /// <returns>true if traction cut-off is requested</returns>
         public virtual void UpdateTractionCutOff()
         {
             // If BrakeCutsPowerForSpeedAbove is not set (== 0), the brake pressure check is always active.
@@ -574,52 +579,52 @@ namespace ORTS.Scripting.Api
                 switch (BrakeTractionCutOffMode())
                 {
                     case BrakeTractionCutOffModeType.None:
-                        SetTractionAuthorization(true);
+                        TractionCutOffRequested = false;
                         break;
 
                     case BrakeTractionCutOffModeType.AirBrakeCylinderSinglePressure:
                         if (LocomotiveBrakeCylinderPressureBar() >= BrakeCutsPowerAtBrakeCylinderPressureBar())
                         {
-                            SetTractionAuthorization(false);
+                            TractionCutOffRequested = true;
                         }
                         else if (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f)
                         {
-                            SetTractionAuthorization(true);
+                            TractionCutOffRequested = false;
                         }
                         break;
 
                     case BrakeTractionCutOffModeType.AirBrakePipeSinglePressure:
                         if (BrakePipePressureBar() <= BrakeCutsPowerAtBrakePipePressureBar())
                         {
-                            SetTractionAuthorization(false);
+                            TractionCutOffRequested = true;
                         }
                         else if (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f)
                         {
-                            SetTractionAuthorization(true);
+                            TractionCutOffRequested = false;
                         }
                         break;
 
                     case BrakeTractionCutOffModeType.AirBrakePipeHysteresis:
                         if (BrakePipePressureBar() <= BrakeCutsPowerAtBrakePipePressureBar())
                         {
-                            SetTractionAuthorization(false);
+                            TractionCutOffRequested = true;
                         }
                         else if (BrakePipePressureBar() >= BrakeRestoresPowerAtBrakePipePressureBar()
                             && (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f))
                         {
-                            SetTractionAuthorization(true);
+                            TractionCutOffRequested = false;
                         }
                         break;
 
                     case BrakeTractionCutOffModeType.VacuumBrakePipeHysteresis:
                         if (BrakePipePressureBar() >= BrakeCutsPowerAtBrakePipePressureBar())
                         {
-                            SetTractionAuthorization(false);
+                            TractionCutOffRequested = true;
                         }
                         else if (BrakePipePressureBar() <= BrakeRestoresPowerAtBrakePipePressureBar()
                             && (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f))
                         {
-                            SetTractionAuthorization(true);
+                            TractionCutOffRequested = false;
                         }
                         break;
                 }
@@ -628,7 +633,7 @@ namespace ORTS.Scripting.Api
             {
                 if (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f)
                 {
-                    SetTractionAuthorization(true);
+                    TractionCutOffRequested = false;
                 }
             }
         }
