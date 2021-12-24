@@ -48,8 +48,29 @@ namespace Orts.Viewer3D.Popups
 
         readonly int ProcessorCount = System.Environment.ProcessorCount;
 
-        readonly PerformanceCounter AllocatedBytesPerSecCounter; // \.NET CLR Memory(*)\Allocated Bytes/sec
-        float AllocatedBytesPerSecLastValue;
+        const int PerformanceCounterUpdateTimeS = 10;
+        float PerformanceCounterElapsedTimeS;
+
+        readonly PerformanceCounter CLRMemoryAllocatedBytesPerSecCounter; // \.NET CLR Memory(*)\Allocated Bytes/sec
+        float CLRMemoryAllocatedBytesPerSec;
+
+        readonly PerformanceCounter CPUMemoryPrivateCounter; // \Process(*)\Private Bytes
+        readonly PerformanceCounter CPUMemoryWorkingSetCounter; // \Process(*)\Working Set
+        readonly PerformanceCounter CPUMemoryWorkingSetPrivateCounter; // \Process(*)\Working Set - Private
+        readonly PerformanceCounter CPUMemoryVirtualCounter; // \Process(*)\Virtual Bytes
+
+        float CPUMemoryPrivate;
+        float CPUMemoryWorkingSet;
+        float CPUMemoryWorkingSetPrivate;
+        float CPUMemoryVirtual;
+
+        readonly List<PerformanceCounter> GPUMemoryCommittedCounters = new List<PerformanceCounter>(); // \GPU Process Memory(*)\Total Committed
+        readonly List<PerformanceCounter> GPUMemoryDedicatedCounters = new List<PerformanceCounter>(); // \GPU Process Memory(*)\Dedicated Usage
+        readonly List<PerformanceCounter> GPUMemorySharedCounters = new List<PerformanceCounter>(); // \GPU Process Memory(*)\Shared Usage
+
+        float GPUMemoryCommitted;
+        float GPUMemoryDedicated;
+        float GPUMemoryShared;
 
         readonly Viewer Viewer;
         readonly Action<TableData>[] TextPages;
@@ -98,7 +119,8 @@ namespace Orts.Viewer3D.Popups
                     var processId = new PerformanceCounter(".NET CLR Memory", "Process ID", process);
                     if (processId.NextValue() == Process.GetCurrentProcess().Id)
                     {
-                        AllocatedBytesPerSecCounter = new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", process);
+                        CLRMemoryAllocatedBytesPerSecCounter = new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", process);
+                        Trace.TraceInformation($"Found Microsoft .NET Framework performance counter {process}");
                         break;
                     }
                 }
@@ -107,6 +129,50 @@ namespace Orts.Viewer3D.Popups
             {
                 Trace.WriteLine(error);
                 Trace.TraceWarning("Unable to access Microsoft .NET Framework performance counters. This may be resolved by following the instructions at http://support.microsoft.com/kb/300956");
+            }
+
+            try
+            {
+                var counterProcess = new PerformanceCounterCategory("Process");
+                foreach (var process in counterProcess.GetInstanceNames())
+                {
+                    var processId = new PerformanceCounter("Process", "ID Process", process);
+                    if (processId.NextValue() == Process.GetCurrentProcess().Id)
+                    {
+                        CPUMemoryPrivateCounter = new PerformanceCounter("Process", "Private Bytes", process);
+                        CPUMemoryWorkingSetCounter = new PerformanceCounter("Process", "Working Set", process);
+                        CPUMemoryWorkingSetPrivateCounter = new PerformanceCounter("Process", "Working Set - Private", process);
+                        CPUMemoryVirtualCounter = new PerformanceCounter("Process", "Virtual Bytes", process);
+                        Trace.TraceInformation($"Found Windows Process performance counter {process}");
+                        break;
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(error);
+                Trace.TraceWarning("Unable to access Windows Process performance counters. This may be resolved by following the instructions at http://support.microsoft.com/kb/300956");
+            }
+
+            try
+            {
+                var instancePrefix = $"pid_{Process.GetCurrentProcess().Id}_";
+                var counterProcess = new PerformanceCounterCategory("GPU Process Memory");
+                foreach (var process in counterProcess.GetInstanceNames())
+                {
+                    if (process.StartsWith(instancePrefix))
+                    {
+                        GPUMemoryCommittedCounters.Add(new PerformanceCounter("GPU Process Memory", "Total Committed", process));
+                        GPUMemoryDedicatedCounters.Add(new PerformanceCounter("GPU Process Memory", "Dedicated Usage", process));
+                        GPUMemorySharedCounters.Add(new PerformanceCounter("GPU Process Memory", "Shared Usage", process));
+                        Trace.TraceInformation($"Found Windows GPU Process Memory performance counter {process}");
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(error);
+                Trace.TraceWarning("Unable to access Windows GPU Process Memory performance counters. This may be resolved by following the instructions at http://support.microsoft.com/kb/300956");
             }
 
             Debug.Assert(GC.MaxGeneration == 2, "Runtime is expected to have a MaxGeneration of 2.");
@@ -256,6 +322,13 @@ namespace Orts.Viewer3D.Popups
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
             base.PrepareFrame(elapsedTime, updateFull);
+
+            PerformanceCounterElapsedTimeS += elapsedTime.RealSeconds;
+            if (PerformanceCounterElapsedTimeS >= PerformanceCounterUpdateTimeS)
+            {
+                UpdatePerformanceCounters();
+                PerformanceCounterElapsedTimeS = 0;
+            }
 
             if (updateFull)
             {
@@ -1304,15 +1377,13 @@ namespace Orts.Viewer3D.Popups
             TableSetLabelValueColumns(table, 0, 2);
             TextPageHeading(table, Viewer.Catalog.GetString("DEBUG INFORMATION"));
 
-            var allocatedBytesPerSecond = AllocatedBytesPerSecCounter == null ? 0 : AllocatedBytesPerSecCounter.NextValue();
-            if (allocatedBytesPerSecond >= 1 && AllocatedBytesPerSecLastValue != allocatedBytesPerSecond)
-                AllocatedBytesPerSecLastValue = allocatedBytesPerSecond;
-
             TableAddLabelValue(table, Viewer.Catalog.GetString("Logging enabled"), Viewer.Settings.DataLogger ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Build"), VersionInfo.Build);
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Memory"), Viewer.Catalog.GetStringFmt("{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, {2:F0}/{3:F0}/{4:F0} GCs)", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus(), AllocatedBytesPerSecLastValue / Viewer.RenderProcess.FrameRate.SmoothedValue / 1024));
             TableAddLabelValue(table, Viewer.Catalog.GetString("CPU"), Viewer.Catalog.GetStringFmt("{0:F0}% ({1})", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, Viewer.Catalog.GetPluralStringFmt("{0} logical processor", "{0} logical processors", ProcessorCount)));
             TableAddLabelValue(table, Viewer.Catalog.GetString("GPU"), Viewer.Catalog.GetStringFmt("{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, DirectX feature level >= {4})", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedP50 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP95 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP99 * 1000, Viewer.Settings.DirectXFeatureLevel));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Memory"), Viewer.Catalog.GetStringFmt("{3}, {4}, {5}, {6} ({7:F0} kB/frame allocated, {0:F0}/{1:F0}/{2:F0} GCs)", GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus(), CLRMemoryAllocatedBytesPerSec / Viewer.RenderProcess.FrameRate.SmoothedValue / 1024));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("CPU Memory"), Viewer.Catalog.GetStringFmt("{0:F0} MB private, {1:F0} MB working set, {2:F0} MB private working set, {3:F0} MB managed, {4:F0} MB virtual", CPUMemoryPrivate / 1024 / 1024, CPUMemoryWorkingSet / 1024 / 1024, CPUMemoryWorkingSetPrivate / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, CPUMemoryVirtual / 1024 / 1024));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("GPU Memory"), Viewer.Catalog.GetStringFmt("{0:F0} MB committed, {1:F0} MB dedicated, {2:F0} MB shared", GPUMemoryCommitted / 1024 / 1024, GPUMemoryDedicated / 1024 / 1024, GPUMemoryShared / 1024 / 1024));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Adapter"), Viewer.Catalog.GetStringFmt("{0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024));
             if (Viewer.Settings.DynamicShadows)
             {
@@ -1395,6 +1466,20 @@ namespace Orts.Viewer3D.Popups
             var buffer = new MEMORYSTATUSEX { Size = 64 };
             GlobalMemoryStatusEx(buffer);
             return Math.Min(buffer.TotalVirtual, buffer.TotalPhysical);
+        }
+
+        void UpdatePerformanceCounters()
+        {
+            // Only update CLRMemoryAllocatedBytesPerSec with non-zero values
+            var clrMemoryAllocatedBytesPerSec = CLRMemoryAllocatedBytesPerSecCounter?.NextValue() ?? 0;
+            if (clrMemoryAllocatedBytesPerSec >= 1) CLRMemoryAllocatedBytesPerSec = clrMemoryAllocatedBytesPerSec;
+            CPUMemoryPrivate = CPUMemoryPrivateCounter?.NextValue() ?? 0;
+            CPUMemoryWorkingSet = CPUMemoryWorkingSetCounter?.NextValue() ?? 0;
+            CPUMemoryWorkingSetPrivate = CPUMemoryWorkingSetPrivateCounter?.NextValue() ?? 0;
+            CPUMemoryVirtual = CPUMemoryVirtualCounter?.NextValue() ?? 0;
+            GPUMemoryCommitted = GPUMemoryCommittedCounters.Sum(counter => counter.NextValue());
+            GPUMemoryDedicated = GPUMemoryDedicatedCounters.Sum(counter => counter.NextValue());
+            GPUMemoryShared = GPUMemorySharedCounters.Sum(counter => counter.NextValue());
         }
     }
 
