@@ -66,6 +66,7 @@ namespace Tests.Orts.Common
         [InlineData(@"\MSTS\")]
         [InlineData(@"\\MSTS\\")]
         [InlineData("/MSTS/qwerty uiop/../")]
+        [InlineData(@"\\\\\\\\\MSTS\\\\\\\\qwerty uiop\\\\\\\\..\\\\\\\\")]
         [InlineData(@"\MSTS\asdfgéáűő 5tre/,#.\..\.\..\")]
         public static void FileExists(string file)
         {
