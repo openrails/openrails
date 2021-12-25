@@ -578,7 +578,9 @@ namespace ORTS.Common
         static string NormalizeSystemPath(string path) => Path.GetFullPath(new Uri(path).LocalPath).Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Trim('"');
         static string NormalizeVirtualPath(string path)
         {
-            path = path?.Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Replace("//", "/").Trim('"').ToUpperInvariant() ?? "";
+            path = path?.Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Trim('"').ToUpperInvariant() ?? "";
+            while (path.Contains("//"))
+                path = path.Replace("//", "/");
             // Need to do something similar to Path.GetFullPath() with flattening the dir/.. pairs.
             // They cause problems e.g. at Scripts/../etc. sequences, where browsing through imaginary directories.
             return string.Join("/", Flatten(path.Split('/').ToList()));
