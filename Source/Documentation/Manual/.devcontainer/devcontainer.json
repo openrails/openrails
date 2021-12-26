@@ -1,5 +1,7 @@
 {
-    "dockerFile": "Dockerfile",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
     "workspaceMount": "source=${localWorkspaceFolder},target=/docs,type=bind",
     "workspaceFolder": "/docs",
     "remoteUser": "vscode",
