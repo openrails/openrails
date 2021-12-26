@@ -2857,6 +2857,10 @@ namespace Orts.Viewer3D.RollingStock
                             case CABViewControlTypes.MIRRORS:
                             case CABViewControlTypes.LEFTDOOR:
                             case CABViewControlTypes.RIGHTDOOR:
+                            case CABViewControlTypes.ORTS_ITEM1CONTINUOUS:
+                            case CABViewControlTypes.ORTS_ITEM2CONTINUOUS:
+                            case CABViewControlTypes.ORTS_ITEM1TWOSTATE:
+                            case CABViewControlTypes.ORTS_ITEM2TWOSTATE:
                                 break;
                             default:
                                 //cvf file has no external wipers, left door, right door and mirrors key word
@@ -2961,6 +2965,18 @@ namespace Orts.Viewer3D.RollingStock
                             break;
                         case CABViewControlTypes.MIRRORS:
                             p.Value.UpdateState(Locomotive.MirrorOpen, elapsedTime);
+                            break;
+                        case CABViewControlTypes.ORTS_ITEM1CONTINUOUS:
+                            p.Value.UpdateLoop(Locomotive.GenericItem1, elapsedTime);
+                            break;
+                        case CABViewControlTypes.ORTS_ITEM2CONTINUOUS:
+                            p.Value.UpdateLoop(Locomotive.GenericItem2, elapsedTime);
+                            break;
+                        case CABViewControlTypes.ORTS_ITEM1TWOSTATE:
+                            p.Value.UpdateState(Locomotive.GenericItem1, elapsedTime);
+                            break;
+                        case CABViewControlTypes.ORTS_ITEM2TWOSTATE:
+                            p.Value.UpdateState(Locomotive.GenericItem2, elapsedTime);
                             break;
                         default:
                             break;
