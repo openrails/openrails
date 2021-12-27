@@ -32,6 +32,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
+using Orts.Viewer3D.RollingStock.SubSystems;
 using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
 using ORTS.Common;
 using ORTS.Common.Input;
@@ -1213,6 +1214,15 @@ namespace Orts.Viewer3D.RollingStock
                                 count[(int)cvc.ControlType]++;
                                 continue;
                             }
+                            else if (screen.ControlType == CABViewControlTypes.ORTS_DISTRIBUTED_POWER)
+                            {
+                                var cvr = new DistributedPowerInterfaceRenderer(viewer, car, screen, _Shader);
+                                cvr.SortIndex = controlSortIndex;
+                                CabViewControlRenderersList[i].Add(cvr);
+                                if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
+                                count[(int)cvc.ControlType]++;
+                                continue;
+                            }
                         }
                     }
                 }
@@ -1319,6 +1329,15 @@ namespace Orts.Viewer3D.RollingStock
                     if (screen.ControlType == CABViewControlTypes.ORTS_ETCS)
                     {
                         var cvr = new DriverMachineInterfaceRenderer(viewer, car, screen, _Shader);
+                        cvr.SortIndex = controlSortIndex;
+                        CabViewControlRenderersList[i].Add(cvr);
+                        if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
+                        count[(int)cvc.ControlType]++;
+                        continue;
+                    }
+                    else if (screen.ControlType == CABViewControlTypes.ORTS_DISTRIBUTED_POWER)
+                    {
+                        var cvr = new DistributedPowerInterfaceRenderer(viewer, car, screen, _Shader);
                         cvr.SortIndex = controlSortIndex;
                         CabViewControlRenderersList[i].Add(cvr);
                         if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
@@ -2102,6 +2121,13 @@ namespace Orts.Viewer3D.RollingStock
                     index = (int)data;
                     break;
                 case CABViewControlTypes.ORTS_SCREEN_SELECT:
+                case CABViewControlTypes.ORTS_DP_MOVE_TO_BACK:
+                case CABViewControlTypes.ORTS_DP_MOVE_TO_FRONT:
+                case CABViewControlTypes.ORTS_DP_TRACTION:
+                case CABViewControlTypes.ORTS_DP_IDLE:
+                case CABViewControlTypes.ORTS_DP_BRAKE:
+                case CABViewControlTypes.ORTS_DP_MORE:
+                case CABViewControlTypes.ORTS_DP_LESS:
                     index = ButtonState ? 1 : 0;
                     break;
                 case CABViewControlTypes.ORTS_STATIC_DISPLAY:
@@ -2421,6 +2447,49 @@ namespace Orts.Viewer3D.RollingStock
                     if (ChangedValue(1) > 0 ^ Locomotive.TrainControlSystem.TCSCommandButtonDown[commandIndex])
                         new TCSButtonCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandButtonDown[commandIndex], commandIndex);
                     new TCSSwitchCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.TCSCommandSwitchOn[commandIndex] ? 1 : 0) > 0, commandIndex);
+                    break;
+
+                case CABViewControlTypes.ORTS_DP_MOVE_TO_FRONT:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPMoveToFrontCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_MOVE_TO_BACK:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPMoveToBackCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_IDLE:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPIdleCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_TRACTION:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPTractionCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_BRAKE:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPDynamicBrakeCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_MORE:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPMoreCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_LESS:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPLessCommand(Viewer.Log);
+                    ButtonState = buttonState;
                     break;
             }
 
