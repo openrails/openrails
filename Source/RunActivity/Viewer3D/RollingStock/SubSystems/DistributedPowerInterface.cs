@@ -26,9 +26,9 @@ using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Orts.Viewer3D.RollingStock.SubSystems.DistributedPowerInterface;
+using static Orts.Viewer3D.RollingStock.Subsystems.DistributedPowerInterface;
 
-namespace Orts.Viewer3D.RollingStock.SubSystems
+namespace Orts.Viewer3D.RollingStock.Subsystems
 {
     public class DistributedPowerInterface
     {
