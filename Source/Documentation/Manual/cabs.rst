@@ -431,8 +431,8 @@ Here below an example of the output of the above control.
 When parameter FullTable is set to False, only the first 6 lines 
 are displayed.
 
-For every keyboard command related to Distributed Power, also a cabview control 
-is available. Here a list of the self-explaining controls::
+For every keyboard command related to Distributed Power, a cabview control 
+is also available. Here's a list of the cabview controls::
 
    - ORTS_DP_MOVE_TO_FRONT
    - ORTS_DP_MOVE_TO_BACK
