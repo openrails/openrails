@@ -431,8 +431,8 @@ Here below an example of the output of the above control.
 When parameter FullTable is set to False, only the first 6 lines 
 are displayed.
 
-For every keyboard command related to Distributed Power, also a cabview control 
-is available. Here a list of the self-explaining controls::
+For every keyboard command related to Distributed Power, a cabview control 
+is also available. Here's a list of the cabview controls::
 
    - ORTS_DP_MOVE_TO_FRONT
    - ORTS_DP_MOVE_TO_BACK
@@ -519,6 +519,15 @@ if e.g. the wiper moves from left to right and back, only the frames related
 to the motion from left to right have to be included. For the reverse 
 motion the same frames are used from last to first. SwitchVal can vary from 0 to 1.
 
+Control Labels
+--------------
+
+The string appearing on the screen when the mouse browses over a command control 
+can be customized with following line, to be added within the control block in the 
+.cvf file::
+
+   Label ( "string" )
+   
 Multiple screen pages on displays
 ---------------------------------
 
