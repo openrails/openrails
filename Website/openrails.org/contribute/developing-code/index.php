@@ -65,10 +65,10 @@ The main folders in the repository are:
 To compile and debug the Open Rails source code, ensure you have the following Microsoft products installed:
       </p>
       <ul>
-        <li>Visual Studio 2017 or 2019, any edition. The 
+        <li>Visual Studio 2022, any edition. The 
           <a href="https://www.visualstudio.com/downloads/">Community Edition</a> 
          is free
-		 <br />(Note: To save on disk space, all you need is the option Windows > .NET Development)
+		 <br />(Note: To save on disk space, all you need is the option Windows > .NET desktop development)
         </li>
       </ul>
       <br>
