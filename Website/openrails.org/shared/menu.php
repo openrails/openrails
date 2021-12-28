@@ -44,6 +44,7 @@ function in_directory($cwd, $name) {
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Download <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li><a href="/download/program/">Program</a></li>
+                <li><a href="/download/versions/">Versions</a></li>
                 <li><a href="/download/source/">Source</a></li>
                 <li><a href="/download/changes/">Changes</a></li>
                 <li><a href="/download/content/">Content</a></li>
