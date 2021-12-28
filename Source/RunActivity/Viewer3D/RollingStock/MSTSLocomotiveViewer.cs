@@ -1560,6 +1560,7 @@ namespace Orts.Viewer3D.RollingStock
         bool IsMouseWithin();
         void HandleUserInput();
         string GetControlName();
+        string GetControlLabel();
 
     }
 
@@ -2187,6 +2188,11 @@ namespace Orts.Viewer3D.RollingStock
         public string GetControlName()
         {
             return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(GetControlType().ToString());
+        }
+
+        public string GetControlLabel()
+        {
+            return Control.Label;
         }
 
         /// <summary>
