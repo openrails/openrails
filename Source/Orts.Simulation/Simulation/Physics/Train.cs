@@ -227,7 +227,6 @@ namespace Orts.Simulation.Physics
         public int IndexNextSignal = -1;                 // Index in SignalObjectItems for next signal
         public int IndexNextSpeedlimit = -1;             // Index in SignalObjectItems for next speedpost
         public SignalObject[] NextSignalObject = new SignalObject[2];  // direct reference to next signal
-        public SignalObject AllowedCallOnSignal;         // Signal for which train has call on allowed by dispatcher
 
         // Local max speed independently from signal and speedpost speed;
         // depends from various parameters like route max speed, overall or section efficiency of service,
@@ -2891,12 +2890,8 @@ namespace Orts.Simulation.Physics
 
                 //the following is added by CSantucci, applying also to manual mode what Jtang implemented for activity mode: after passing a manually forced signal,
                 // system will take back control of the signal
-                if (signalObject.holdState == HoldState.ManualPass || signalObject.holdState == HoldState.ManualApproach)
-                {
-                    signalObject.holdState = HoldState.None;
-                }
-
-                AllowedCallOnSignal = null;
+                if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
+                    signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
             }
             UpdateSectionStateManual();                                                           // update track occupation          //
             UpdateManualMode(SignalObjIndex);                                                     // update route clearance           //
@@ -2922,12 +2917,8 @@ namespace Orts.Simulation.Physics
 
                 //the following is added by CSantucci, applying also to explorer mode what Jtang implemented for activity mode: after passing a manually forced signal,
                 // system will take back control of the signal
-                if (signalObject.holdState == HoldState.ManualPass || signalObject.holdState == HoldState.ManualApproach)
-                {
-                    signalObject.holdState = HoldState.None;
-                }
-
-                AllowedCallOnSignal = null;
+                if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
+                    signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
             }
             UpdateSectionStateExplorer();                                                         // update track occupation          //
             UpdateExplorerMode(SignalObjIndex);                                                   // update route clearance           //
@@ -7455,12 +7446,11 @@ namespace Orts.Simulation.Physics
                 var signalObject = signalRef.SignalObjects[signalObjectIndex];
 
                 //the following is added by JTang, passing a hold signal, will take back control by the system
-                if (signalObject.holdState == HoldState.ManualPass || signalObject.holdState == HoldState.ManualApproach)
+                if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
+                    signalObject.holdState == SignalObject.HoldState.ManualApproach)
                 {
-                    signalObject.holdState = HoldState.None;
+                    signalObject.holdState = SignalObject.HoldState.None;
                 }
-
-                AllowedCallOnSignal = null;
 
                 signalObject.resetSignalEnabled();
             }
@@ -7613,9 +7603,6 @@ namespace Orts.Simulation.Physics
 
         public virtual bool TestCallOn(SignalObject thisSignal, bool allowOnNonePlatform, TCSubpathRoute thisRoute, string dumpfile)
         {
-            if (AllowedCallOnSignal == thisSignal)
-                return true;
-
             bool intoPlatform = false;
 
             foreach (Train.TCRouteElement routeElement in thisSignal.signalRoute)
@@ -7669,7 +7656,7 @@ namespace Orts.Simulation.Physics
 
             if (signalRouteIndex < 0)
             {
-                return false;
+                return (false);
             }
 
             // check if any other trains in section ahead of this train
@@ -7686,7 +7673,7 @@ namespace Orts.Simulation.Physics
                 // check if train is closer as signal
                 if (!DistanceToSignal.HasValue || foundTrain.Value < DistanceToSignal)
                 {
-                    return false;
+                    return (false);
                 }
             }
 
@@ -7701,7 +7688,7 @@ namespace Orts.Simulation.Physics
 
                     if (nextSection.CircuitState.HasTrainsOccupying())  // train is ahead - it's not our signal //
                     {
-                        return false;
+                        return (false);
                     }
                     else if (!nextSection.IsAvailable(this)) // is section really available to us? //
 
@@ -7717,24 +7704,30 @@ namespace Orts.Simulation.Physics
                         }
                         SwitchToNodeControl(thisSection.Index);
 
-                        return false;
+                        return (false);
                     }
                 }
             }
 
             // we are waiting, but is signal clearance requested ?
+
             if (thisSignal.enabledTrain == null)
             {
                 thisSignal.requestClearSignal(ValidRoute[0], thisRouted, 0, false, null);
             }
+
             // we are waiting, but is it really our signal ?
+
             else if (thisSignal.enabledTrain != thisRouted)
             {
+
                 // something is wrong - we are waiting, but it is not our signal - give warning, reset signal and clear route
+
                 Trace.TraceWarning("Train {0} ({1}) waiting for signal which is enabled to train {2}",
                         Name, Number, thisSignal.enabledTrain.Train.Number);
 
                 // stop other train - switch other train to node control
+
                 Train otherTrain = thisSignal.enabledTrain.Train;
                 otherTrain.LastReservedSection[0] = -1;
                 if (Math.Abs(otherTrain.SpeedMpS) > 0)
@@ -7744,27 +7737,29 @@ namespace Orts.Simulation.Physics
                 otherTrain.SwitchToNodeControl(-1);
 
                 // reset signal and clear route
+
                 thisSignal.ResetSignal(false);
                 thisSignal.requestClearSignal(ValidRoute[0], thisRouted, 0, false, null);
-                return false;   // do not yet set to waiting, signal might clear //
+                return (false);   // do not yet set to waiting, signal might clear //
             }
 
             // signal is in holding list - so not really waiting - but remove from list if held for station stop
-            if (thisSignal.holdState == HoldState.ManualLock)
+
+            if (thisSignal.holdState == SignalObject.HoldState.ManualLock)
             {
-                return false;
+                return (false);
             }
-            else if (thisSignal.holdState == HoldState.StationStop && HoldingSignals.Contains(thisSignal.thisRef))
+            else if (thisSignal.holdState == SignalObject.HoldState.StationStop && HoldingSignals.Contains(thisSignal.thisRef))
             {
                 if (StationStops != null && StationStops.Count > 0 && StationStops[0].ExitSignal != thisSignal.thisRef) // not present station stop
                 {
                     HoldingSignals.Remove(thisSignal.thisRef);
-                    thisSignal.holdState = HoldState.None;
-                    return false;
+                    thisSignal.holdState = SignalObject.HoldState.None;
+                    return (false);
                 }
             }
 
-            return true;  // it is our signal and we are waiting //
+            return (true);  // it is our signal and we are waiting //
         }
 
         //================================================================================================//
@@ -7949,10 +7944,8 @@ namespace Orts.Simulation.Physics
                 var thisSignal = signalRef.SignalObjects[signalObjectIndex];
                 thisSignal.hasPermission = SignalObject.Permission.Denied;
                 //the following is added by JTang, passing a hold signal, will take back control by the system
-                if (thisSignal.holdState == HoldState.ManualPass ||
-                    thisSignal.holdState == HoldState.ManualApproach) thisSignal.holdState = HoldState.None;
-
-                AllowedCallOnSignal = null;
+                if (thisSignal.holdState == SignalObject.HoldState.ManualPass ||
+                    thisSignal.holdState == SignalObject.HoldState.ManualApproach) thisSignal.holdState = SignalObject.HoldState.None;
 
                 thisSignal.resetSignalEnabled();
             }
@@ -8468,7 +8461,7 @@ namespace Orts.Simulation.Physics
 
             requestedSignal.enabledTrain = routeIndex == 0 ? routedForward : routedBackward;
             requestedSignal.signalRoute.Clear();
-            requestedSignal.holdState = HoldState.None;
+            requestedSignal.holdState = SignalObject.HoldState.None;
             requestedSignal.hasPermission = SignalObject.Permission.Requested;
 
             // get route from next signal - extend to next signal or maximum length

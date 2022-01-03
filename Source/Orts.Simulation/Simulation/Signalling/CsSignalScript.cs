@@ -2,17 +2,9 @@
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Orts.Simulation.Signalling
 {
-    public enum SignalEvent
-    {
-        RequestMostRestrictiveAspect,
-        RequestApproachAspect,
-        RequestLeastRestrictiveAspect,
-    }
-
     // The exchange of information is done through the TextSignalAspect property.
     // The MSTS signal aspect is only used for TCS scripts that do not support TextSignalAspect.
     public abstract class CsSignalScript : AbstractScriptClass
@@ -89,10 +81,6 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public bool RouteSet => SignalHead.route_set() > 0;
         /// <summary>
-        /// Hold state of the signal
-        /// </summary>
-        public HoldState HoldState => SignalObject.holdState;
-        /// <summary>
         /// Set this variable to true to allow clear to partial route
         /// </summary>
         public bool AllowClearPartialRoute { set { SignalObject.AllowClearPartialRoute(value ? 1 : 0); } }
@@ -120,10 +108,6 @@ namespace Orts.Simulation.Signalling
         /// Name of this signal type, as defined in sigcfg
         /// </summary>
         public string SignalTypeName => SignalHead.SignalTypeName;
-        /// <summary>
-        /// Name of the signal shape, as defined in sigcfg
-        /// </summary>
-        public string SignalShapeName => Path.GetFileNameWithoutExtension(SignalObject.WorldObject.SFileName);
         /// <summary>
         /// Local storage of this signal, which can be accessed from other signals
         /// </summary>
@@ -370,10 +354,5 @@ namespace Orts.Simulation.Signalling
         /// <param name="message">Message sent to signal</param>
         /// <returns></returns>
         public virtual void HandleSignalMessage(int signalId, string message) {}
-        /// <summary>
-        /// Called when the simulator
-        /// </summary>
-        /// <param name="evt"></param>
-        public virtual void HandleEvent(SignalEvent evt, string message = "") { }
     }
 }

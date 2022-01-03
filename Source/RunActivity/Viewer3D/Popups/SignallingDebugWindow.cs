@@ -293,10 +293,13 @@ namespace Orts.Viewer3D.Popups
                 thisPosition.SetTCPosition(tn.TCCrossReference, offset, direction);
                 Train.TCSubpathRoute tempRoute = Owner.Viewer.Simulator.Signals.BuildTempRoute(null, thisPosition.TCSectionIndex, thisPosition.TCOffset, thisPosition.TCDirection, 5000.0f, true, false, false);
 
-                ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextSignal_InRoute(null, tempRoute, 0, thisPosition.TCOffset, -1, thisPosition, null);
+                ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextObject_InRoute(null, tempRoute, 0,
+                    thisPosition.TCOffset, -1, ObjectItemInfo.ObjectItemType.Signal, thisPosition);
 
                 var signal = thisInfo.ObjectDetails;
                 if (signal == null)
+                    break;
+                if (signal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.UNKNOWN)
                     break;
                 var signalDistance = thisInfo.distance_found;
 

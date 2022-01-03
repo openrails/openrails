@@ -114,11 +114,11 @@ namespace Orts.Simulation.Signalling
         {
             if (thisHead.mainSignal.block_state() == MstsBlockState.CLEAR)
             {
-                thisHead.RequestLeastRestrictiveAspect();
+                thisHead.SetLeastRestrictiveAspect();
             }
             else
             {
-                thisHead.RequestMostRestrictiveAspect();
+                thisHead.SetMostRestrictiveAspect();
             }
         }
 
