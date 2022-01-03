@@ -15,14 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Formats.OR;
 using System.Collections.Generic;
+using Orts.Formats.Msts;
+using Orts.Formats.OR;
 
 namespace Orts.Simulation.Signalling
 {
     public class TrackCircuitItems
     {
-        public List<TrackCircuitSignalList>[] TrackCircuitSignals = new List<TrackCircuitSignalList>[2];   // List of signals (per direction and per type) //
+        public Dictionary<SignalFunction, TrackCircuitSignalList>[] TrackCircuitSignals = new Dictionary<SignalFunction, TrackCircuitSignalList>[2];   // List of signals (per direction and per type) //
         public TrackCircuitSignalList[] TrackCircuitSpeedPosts = new TrackCircuitSignalList[2];            // List of speedposts (per direction) //
         public List<TrackCircuitMilepost> TrackCircuitMileposts = new List<TrackCircuitMilepost>();        // List of mileposts //
 
@@ -31,22 +32,17 @@ namespace Orts.Simulation.Signalling
         public List<TrackCircuitElement> TrackCircuitElements = new List<TrackCircuitElement>();
 #endif
 
-        public TrackCircuitItems(int ORTSSignalTypes)
+        public TrackCircuitItems(IDictionary<string, SignalFunction> signalFunctions)
         {
-            TrackCircuitSignalList thisList;
-
             for (int iDirection = 0; iDirection <= 1; iDirection++)
             {
-                List<TrackCircuitSignalList> TrackSignalLists = new List<TrackCircuitSignalList>();
-                for (int fntype = 0; fntype < ORTSSignalTypes; fntype++)
+                TrackCircuitSignals[iDirection] = new Dictionary<SignalFunction, TrackCircuitSignalList>();
+                foreach (SignalFunction function in signalFunctions.Values)
                 {
-                    thisList = new TrackCircuitSignalList();
-                    TrackSignalLists.Add(thisList);
+                    TrackCircuitSignals[iDirection].Add(function, new TrackCircuitSignalList());
                 }
-                TrackCircuitSignals[iDirection] = TrackSignalLists;
 
-                thisList = new TrackCircuitSignalList();
-                TrackCircuitSpeedPosts[iDirection] = thisList;
+                TrackCircuitSpeedPosts[iDirection] = new TrackCircuitSignalList();
             }
         }
     }

@@ -15,16 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 
 namespace Orts.Simulation.Signalling
 {
@@ -226,7 +226,7 @@ namespace Orts.Simulation.Signalling
             }
 
             // Create circuit items
-            CircuitItems = new TrackCircuitItems(signalRef.ORTSSignalTypeCount);
+            CircuitItems = new TrackCircuitItems(signalRef.SignalFunctions);
             CircuitState = new TrackCircuitState();
 
             DeadlockTraps = new Dictionary<int, List<int>>();
@@ -264,7 +264,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            CircuitItems = new TrackCircuitItems(signalRef.ORTSSignalTypeCount);
+            CircuitItems = new TrackCircuitItems(signalRef.SignalFunctions);
             CircuitState = new TrackCircuitState();
 
             DeadlockTraps = new Dictionary<int, List<int>>();
@@ -725,9 +725,9 @@ namespace Orts.Simulation.Signalling
                 thisElement = thisRoute[thisIndex];
                 int direction = thisElement.Direction;
 
-                for (int fntype = 0; fntype < signalRef.ORTSSignalTypeCount; fntype++)
+                foreach (SignalFunction function in signalRef.SignalFunctions.Values)
                 {
-                    TrackCircuitSignalList thisSignalList = CircuitItems.TrackCircuitSignals[direction][fntype];
+                    TrackCircuitSignalList thisSignalList = CircuitItems.TrackCircuitSignals[direction][function];
                     foreach (TrackCircuitSignalItem thisItem in thisSignalList.TrackCircuitItem)
                     {
                         SignalObject thisSignal = thisItem.SignalRef;
@@ -1062,9 +1062,9 @@ namespace Orts.Simulation.Signalling
 
                 // disable all signals along section if enabled for this train
 
-                for (int fntype = 0; fntype < signalRef.ORTSSignalTypeCount; fntype++)
+                foreach (SignalFunction function in signalRef.SignalFunctions.Values)
                 {
-                    TrackCircuitSignalList thisSignalList = CircuitItems.TrackCircuitSignals[iDirection][fntype];
+                    TrackCircuitSignalList thisSignalList = CircuitItems.TrackCircuitSignals[iDirection][function];
                     foreach (TrackCircuitSignalItem thisItem in thisSignalList.TrackCircuitItem)
                     {
                         SignalObject thisSignal = thisItem.SignalRef;

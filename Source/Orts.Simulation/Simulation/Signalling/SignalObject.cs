@@ -15,21 +15,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Formats.Msts;
-using Orts.MultiPlayer;
-using Orts.Simulation.AIs;
-using Orts.Simulation.Physics;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Orts.Formats.Msts;
+using Orts.MultiPlayer;
+using Orts.Simulation.AIs;
+using Orts.Simulation.Physics;
+using ORTS.Common;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.Signalling
 {
+    public enum SignalObjectType
+    {
+        Signal,
+        SpeedSignal,
+        SpeedPost,
+    }
+
     public enum HoldState                // signal is locked in hold
     {
         None,                            // signal is clear
@@ -45,7 +52,7 @@ namespace Orts.Simulation.Signalling
         public enum InternalBlockstate
         {
             Reserved,                   // all sections reserved for requiring train       //
-            Reservable,                 // all secetions clear and reservable for train    //
+            Reservable,                 // all sections clear and reservable for train    //
             OccupiedSameDirection,      // occupied by train moving in same direction      //
             ReservedOther,              // reserved for other train                        //
             ForcedWait,                 // train is forced to wait for other train         //
@@ -61,7 +68,7 @@ namespace Orts.Simulation.Signalling
             Denied,
         }
 
-        public Signals signalRef;               // reference to overlaying Signal class
+        public readonly Signals signalRef;               // reference to overlaying Signal class
         public static SignalObject[] signalObjects;
         public static TrackNode[] trackNodes;
         public static TrItem[] trItems;
@@ -83,8 +90,20 @@ namespace Orts.Simulation.Signalling
         public int thisRef;                     // This signal's reference.
         public int direction;                   // Direction facing on track
 
-        public bool isSignal = true;            // if signal, false if speedpost //
-        public bool isSpeedSignal = true;       // if signal of type SPEED, false if fixed speedpost or actual signal
+        public SignalObjectType Type
+        {
+            get
+            {
+                if (SignalHeads.Exists(x => x.Function.MstsFunction != MstsSignalFunction.SPEED))
+                {
+                    return SignalObjectType.Signal;
+                }
+                else
+                {
+                    return SpeedPostWorldObject != null ? SignalObjectType.SpeedPost : SignalObjectType.SpeedSignal;
+                }
+            }
+        }
         public List<SignalHead> SignalHeads = new List<SignalHead>();
 
         public int SignalNumClearAhead_MSTS = -2;    // Overall maximum SignalNumClearAhead over all heads (MSTS calculation)
@@ -104,9 +123,9 @@ namespace Orts.Simulation.Signalling
         public HoldState holdState = HoldState.None;
         public bool CallOnManuallyAllowed;
 
-        public List<int> sigfound = new List<int>();  // active next signal - used for signals with NORMAL heads only
+        public Dictionary<SignalFunction, int> sigfound = new Dictionary<SignalFunction, int>();  // active next signal - used for signals with NORMAL heads only
         public int reqNormalSignal = -1;              // ref of normal signal requesting route clearing (only used for signals without NORMAL heads)
-        private List<int> defaultNextSignal = new List<int>();  // default next signal
+        private Dictionary<SignalFunction, int> defaultNextSignal = new Dictionary<SignalFunction, int>();  // default next signal
         public Traveller tdbtraveller;          // TDB traveller to determine distance between objects
 
         public Train.TCSubpathRoute signalRoute = new Train.TCSubpathRoute();  // train route from signal
@@ -184,19 +203,18 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         ///  Constructor for empty item
         /// </summary>
-        public SignalObject(int ORTSSignalTypes)
+        public SignalObject(Signals signalReference)
         {
-            LockedTrains = new List<KeyValuePair<int, int>>();
-            sigfound = new List<int>();
-            defaultNextSignal = new List<int>();
+            signalRef = signalReference;
 
-            for (int ifntype = 0; ifntype < ORTSSignalTypes; ifntype++)
+            LockedTrains = new List<KeyValuePair<int, int>>();
+
+            foreach (SignalFunction function in signalRef.SignalFunctions.Values)
             {
-                sigfound.Add(-1);
-                defaultNextSignal.Add(-1);
+                sigfound.Add(function, -1);
+                defaultNextSignal.Add(function, -1);
             }
         }
-
 
         /// <summary>
         ///  Constructor for Copy 
@@ -221,7 +239,6 @@ namespace Orts.Simulation.Signalling
             TCNextDirection = copy.TCNextDirection;
 
             direction = copy.direction;
-            isSignal = copy.isSignal;
             SignalNumClearAhead_MSTS = copy.SignalNumClearAhead_MSTS;
             SignalNumClearAhead_ORTS = copy.SignalNumClearAhead_ORTS;
             SignalNumClearAheadActive = copy.SignalNumClearAheadActive;
@@ -233,8 +250,8 @@ namespace Orts.Simulation.Signalling
 
             tdbtraveller = new Traveller(copy.tdbtraveller);
 
-            sigfound = new List<int>(copy.sigfound);
-            defaultNextSignal = new List<int>(copy.defaultNextSignal);
+            sigfound = new Dictionary<SignalFunction, int>(copy.sigfound);
+            defaultNextSignal = new Dictionary<SignalFunction, int>(copy.defaultNextSignal);
         }
 
         /// <summary>
@@ -247,9 +264,9 @@ namespace Orts.Simulation.Signalling
             int trainNumber = inf.ReadInt32();
 
             int sigfoundLength = inf.ReadInt32();
-            for (int iSig = 0; iSig < sigfoundLength; iSig++)
+            foreach (SignalFunction function in signalRef.SignalFunctions.Values)
             {
-                sigfound[iSig] = inf.ReadInt32();
+                sigfound[function] = inf.ReadInt32();
             }
 
             bool validRoute = inf.ReadBoolean();
@@ -384,7 +401,7 @@ namespace Orts.Simulation.Signalling
             }
 
             outf.Write(sigfound.Count);
-            foreach (int thisSig in sigfound)
+            foreach (int thisSig in sigfound.Values)
             {
                 outf.Write(thisSig);
             }
@@ -480,9 +497,9 @@ namespace Orts.Simulation.Signalling
 
             // set default
 
-            for (int fntype = 0; fntype < defaultNextSignal.Count; fntype++)
+            foreach (SignalFunction function in signalRef.SignalFunctions.Values)
             {
-                defaultNextSignal[fntype] = -1;
+                defaultNextSignal[function] = -1;
             }
 
             // loop through valid sections
@@ -497,29 +514,28 @@ namespace Orts.Simulation.Signalling
 
                 // normal signal
 
-                if (defaultNextSignal[(int)MstsSignalFunction.NORMAL] < 0)
+                if (defaultNextSignal[SignalFunction.NORMAL] < 0)
                 {
                     if (thisSection.EndSignals[direction] != null)
                     {
-                        defaultNextSignal[(int)MstsSignalFunction.NORMAL] = thisSection.EndSignals[direction].thisRef;
+                        defaultNextSignal[SignalFunction.NORMAL] = thisSection.EndSignals[direction].thisRef;
                         completedFixedRoute = true;
                     }
                 }
 
                 // other signals
-
-                for (int fntype = 0; fntype < signalRef.ORTSSignalTypeCount; fntype++)
+                foreach (SignalFunction function in signalRef.SignalFunctions.Values)
                 {
-                    if (fntype != (int)MstsSignalFunction.NORMAL)
+                    if (function != SignalFunction.NORMAL)
                     {
-                        TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][fntype];
-                        bool signalFound = defaultNextSignal[fntype] >= 0;
+                        TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][function];
+                        bool signalFound = defaultNextSignal[function] >= 0;
                         for (int iItem = 0; iItem < thisList.TrackCircuitItem.Count && !signalFound; iItem++)
                         {
                             TrackCircuitSignalItem thisItem = thisList.TrackCircuitItem[iItem];
                             if (thisItem.SignalRef.thisRef != thisRef && (thisSection.Index != thisTC || thisItem.SignalLocation > position))
                             {
-                                defaultNextSignal[fntype] = thisItem.SignalRef.thisRef;
+                                defaultNextSignal[function] = thisItem.SignalRef.thisRef;
                                 signalFound = true;
                             }
                         }
@@ -533,9 +549,9 @@ namespace Orts.Simulation.Signalling
 
             // copy default as valid items
 
-            for (int fntype = 0; fntype < signalRef.ORTSSignalTypeCount; fntype++)
+            foreach (SignalFunction function in signalRef.SignalFunctions.Values)
             {
-                sigfound[fntype] = defaultNextSignal[fntype];
+                sigfound[function] = defaultNextSignal[function];
             }
 
             // Allow use of fixed route if ended on END_OF_TRACK
@@ -564,42 +580,32 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public bool isSignalNormal()
         {
-            foreach (SignalHead sigHead in SignalHeads)
-            {
-                if (sigHead.sigFunction == MstsSignalFunction.NORMAL)
-                    return true;
-            }
-            return false;
+            return SignalHeads.Any(sigHead => sigHead.Function == SignalFunction.NORMAL);
         }
 
         /// <summary>
         /// isORTSSignalType : Returns true if at least one signal head is of required type
         /// </summary>
-        public bool isORTSSignalType(int reqSIGFN)
+        public bool isORTSSignalType(SignalFunction function)
         {
-            foreach (SignalHead sigHead in SignalHeads)
-            {
-                if (reqSIGFN == sigHead.ORTSsigFunctionIndex)
-                    return true;
-            }
-            return false;
+            return SignalHeads.Any(sigHead => function == sigHead.Function);
         }
 
         /// <summary>
         /// next_sig_mr : returns most restrictive state of next signal of required type
         /// </summary>
-        public MstsSignalAspect next_sig_mr(int fn_type)
+        public MstsSignalAspect next_sig_mr(SignalFunction function)
         {
-            int nextSignal = sigfound[fn_type];
+            int nextSignal = sigfound[function];
             if (nextSignal < 0)
             {
-                nextSignal = SONextSignal(fn_type);
-                sigfound[fn_type] = nextSignal;
+                nextSignal = SONextSignal(function);
+                sigfound[function] = nextSignal;
             }
 
             if (nextSignal >= 0)
             {
-                return signalObjects[nextSignal].this_sig_mr(fn_type);
+                return signalObjects[nextSignal].this_sig_mr(function);
             }
             else
             {
@@ -610,17 +616,17 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// next_sig_lr : returns least restrictive state of next signal of required type
         /// </summary>
-        public MstsSignalAspect next_sig_lr(int fn_type)
+        public MstsSignalAspect next_sig_lr(SignalFunction function)
         {
-            int nextSignal = sigfound[fn_type];
+            int nextSignal = sigfound[function];
             if (nextSignal < 0)
             {
-                nextSignal = SONextSignal(fn_type);
-                sigfound[fn_type] = nextSignal;
+                nextSignal = SONextSignal(function);
+                sigfound[function] = nextSignal;
             }
             if (nextSignal >= 0)
             {
-                return signalObjects[nextSignal].this_sig_lr(fn_type);
+                return signalObjects[nextSignal].this_sig_lr(function);
             }
             else
             {
@@ -631,7 +637,7 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// next_nsig_lr : returns least restrictive state of next signal of required type of the nth signal ahead
         /// </summary>
-        public MstsSignalAspect next_nsig_lr(int fn_type, int nsignal, string dumpfile)
+        public MstsSignalAspect next_nsig_lr(SignalFunction function, int nsignal, string dumpfile)
         {
             int foundsignal = 0;
             MstsSignalAspect foundAspect = MstsSignalAspect.CLEAR_2;
@@ -640,13 +646,13 @@ namespace Orts.Simulation.Signalling
             while (foundsignal < nsignal && foundAspect != MstsSignalAspect.STOP)
             {
                 // use sigfound
-                int nextSignal = nextSignalObject.sigfound[fn_type];
+                int nextSignal = nextSignalObject.sigfound[function];
 
                 // sigfound not set, try direct search
                 if (nextSignal < 0)
                 {
-                    nextSignal = SONextSignal(fn_type);
-                    nextSignalObject.sigfound[fn_type] = nextSignal;
+                    nextSignal = SONextSignal(function);
+                    nextSignalObject.sigfound[function] = nextSignal;
                 }
 
                 // signal found : get state
@@ -655,7 +661,7 @@ namespace Orts.Simulation.Signalling
                     foundsignal++;
 
                     nextSignalObject = signalObjects[nextSignal];
-                    foundAspect = nextSignalObject.this_sig_lr(fn_type);
+                    foundAspect = nextSignalObject.this_sig_lr(function);
 
                     if (!String.IsNullOrEmpty(dumpfile))
                     {
@@ -697,19 +703,19 @@ namespace Orts.Simulation.Signalling
         /// </summary>
 
         /// normal version
-        public MstsSignalAspect opp_sig_mr(int fn_type)
+        public MstsSignalAspect opp_sig_mr(SignalFunction function)
         {
-            int signalFound = SONextSignalOpp(fn_type);
-            return signalFound >= 0 ? signalObjects[signalFound].this_sig_mr(fn_type) : MstsSignalAspect.STOP;
-        }//opp_sig_mr
+            int signalFound = SONextSignalOpp(function);
+            return signalFound >= 0 ? signalObjects[signalFound].this_sig_mr(function) : MstsSignalAspect.STOP;
+        }
 
         /// debug version
-        public MstsSignalAspect opp_sig_mr(int fn_type, ref SignalObject foundSignal)
+        public MstsSignalAspect opp_sig_mr(SignalFunction function, ref SignalObject foundSignal)
         {
-            int signalFound = SONextSignalOpp(fn_type);
+            int signalFound = SONextSignalOpp(function);
             foundSignal = signalFound >= 0 ? signalObjects[signalFound] : null;
-            return signalFound >= 0 ? signalObjects[signalFound].this_sig_mr(fn_type) : MstsSignalAspect.STOP;
-        }//opp_sig_mr
+            return signalFound >= 0 ? signalObjects[signalFound].this_sig_mr(function) : MstsSignalAspect.STOP;
+        }
 
 
         /// <summary>
@@ -717,19 +723,19 @@ namespace Orts.Simulation.Signalling
         /// </summary>
 
         /// normal version
-        public MstsSignalAspect opp_sig_lr(int fn_type)
+        public MstsSignalAspect opp_sig_lr(SignalFunction function)
         {
-            int signalFound = SONextSignalOpp(fn_type);
-            return signalFound >= 0 ? signalObjects[signalFound].this_sig_lr(fn_type) : MstsSignalAspect.STOP;
-        }//opp_sig_lr
+            int signalFound = SONextSignalOpp(function);
+            return signalFound >= 0 ? signalObjects[signalFound].this_sig_lr(function) : MstsSignalAspect.STOP;
+        }
 
         /// debug version
-        public MstsSignalAspect opp_sig_lr(int fn_type, ref SignalObject foundSignal)
+        public MstsSignalAspect opp_sig_lr(SignalFunction function, ref SignalObject foundSignal)
         {
-            int signalFound = SONextSignalOpp(fn_type);
+            int signalFound = SONextSignalOpp(function);
             foundSignal = signalFound >= 0 ? signalObjects[signalFound] : null;
-            return signalFound >= 0 ? signalObjects[signalFound].this_sig_lr(fn_type) : MstsSignalAspect.STOP;
-        }//opp_sig_lr
+            return signalFound >= 0 ? signalObjects[signalFound].this_sig_lr(function) : MstsSignalAspect.STOP;
+        }
 
 
         /// <summary>
@@ -739,10 +745,10 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// standard version without state return
         /// </summary>
-        public MstsSignalAspect this_sig_mr(int fn_type)
+        public MstsSignalAspect this_sig_mr(SignalFunction function)
         {
             bool sigfound = false;
-            return this_sig_mr(fn_type, ref sigfound);
+            return this_sig_mr(function, ref sigfound);
         }
 
         /// <summary>
@@ -751,18 +757,18 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect this_sig_mr(MstsSignalFunction msfn_type)
         {
             bool sigfound = false;
-            return this_sig_mr((int)msfn_type, ref sigfound);
+            return this_sig_mr(signalRef.SignalFunctions[msfn_type.ToString()], ref sigfound);
         }
 
         /// <summary>
         /// additional version with state return
         /// </summary>
-        public MstsSignalAspect this_sig_mr(int fn_type, ref bool sigfound)
+        public MstsSignalAspect this_sig_mr(SignalFunction function, ref bool sigfound)
         {
             MstsSignalAspect sigAsp = MstsSignalAspect.UNKNOWN;
             foreach (SignalHead sigHead in SignalHeads)
             {
-                if (sigHead.ORTSsigFunctionIndex == fn_type && sigHead.state < sigAsp)
+                if (sigHead.Function == function && sigHead.state < sigAsp)
                 {
                     sigAsp = sigHead.state;
                 }
@@ -782,7 +788,7 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// additional version using valid route heads only
         /// </summary>
-        public MstsSignalAspect this_sig_mr_routed(int fn_type, string dumpfile)
+        public MstsSignalAspect this_sig_mr_routed(SignalFunction function, string dumpfile)
         {
             MstsSignalAspect sigAsp = MstsSignalAspect.UNKNOWN;
             var sob = new StringBuilder();
@@ -790,7 +796,7 @@ namespace Orts.Simulation.Signalling
 
             foreach (SignalHead sigHead in SignalHeads)
             {
-                if (sigHead.ORTSsigFunctionIndex == fn_type)
+                if (sigHead.Function == function)
                 {
                     if (sigHead.route_set() == 1)
                     {
@@ -838,10 +844,10 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// standard version without state return
         /// </summary>
-        public MstsSignalAspect this_sig_lr(int fn_type)
+        public MstsSignalAspect this_sig_lr(SignalFunction function)
         {
             bool sigfound = false;
-            return this_sig_lr(fn_type, ref sigfound);
+            return this_sig_lr(function, ref sigfound);
         }
 
         /// <summary>
@@ -850,19 +856,19 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect this_sig_lr(MstsSignalFunction msfn_type)
         {
             bool sigfound = false;
-            return this_sig_lr((int)msfn_type, ref sigfound);
+            return this_sig_lr(signalRef.SignalFunctions[msfn_type.ToString()], ref sigfound);
         }
 
         /// <summary>
         /// additional version with state return
         /// </summary>
-        public MstsSignalAspect this_sig_lr(int fn_type, ref bool sigfound)
+        public MstsSignalAspect this_sig_lr(SignalFunction function, ref bool sigfound)
         {
             MstsSignalAspect sigAsp = MstsSignalAspect.STOP;
             bool sigAspSet = false;
             foreach (SignalHead sigHead in SignalHeads)
             {
-                if (sigHead.ORTSsigFunctionIndex == fn_type && sigHead.state >= sigAsp)
+                if (sigHead.Function == function && sigHead.state >= sigAsp)
                 {
                     sigAsp = sigHead.state;
                     sigAspSet = true;
@@ -875,7 +881,7 @@ namespace Orts.Simulation.Signalling
             {
                 return sigAsp;
             }
-            else if (fn_type == (int)MstsSignalFunction.NORMAL)
+            else if (function == SignalFunction.NORMAL)
             {
                 return MstsSignalAspect.CLEAR_2;
             }
@@ -883,44 +889,43 @@ namespace Orts.Simulation.Signalling
             {
                 return MstsSignalAspect.STOP;
             }
-        }//this_sig_lr
-
+        }
 
         /// <summary>
         /// this_sig_speed : Returns the speed related to the least restrictive aspect (for normal signal)
         /// </summary>
-        public ObjectSpeedInfo this_sig_speed(MstsSignalFunction fn_type)
+        public ObjectSpeedInfo this_sig_speed(SignalFunction function)
         {
             var sigAsp = MstsSignalAspect.STOP;
             var set_speed = new ObjectSpeedInfo(-1, -1, false, false, 0, false);
 
-            foreach (SignalHead sigHead in SignalHeads)
+            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function == function))
             {
-                if (sigHead.sigFunction == fn_type && sigHead.state >= sigAsp)
+                if (sigHead.state >= sigAsp && sigHead.CurrentSpeedInfo != null)
                 {
                     sigAsp = sigHead.state;
-                    set_speed = sigHead.speed_info[(int)sigAsp];
+                    set_speed = sigHead.CurrentSpeedInfo;
                 }
             }
-            return set_speed;
-        }//this_sig_speed
 
+            return set_speed;
+        }
 
         /// <summary>
         /// next_sig_id : returns ident of next signal of required type
         /// </summary>
-        public int next_sig_id(int fn_type)
+        public int next_sig_id(SignalFunction function)
         {
-            int nextSignal = sigfound[fn_type];
+            int nextSignal = sigfound[function];
             if (nextSignal < 0)
             {
-                nextSignal = SONextSignal(fn_type);
-                sigfound[fn_type] = nextSignal;
+                nextSignal = SONextSignal(function);
+                sigfound[function] = nextSignal;
             }
 
             if (nextSignal >= 0)
             {
-                if (fn_type != (int)MstsSignalFunction.NORMAL)
+                if (function != SignalFunction.NORMAL)
                 {
                     SignalObject foundSignalObject = signalRef.SignalObjects[nextSignal];
                     if (isSignalNormal())
@@ -941,11 +946,10 @@ namespace Orts.Simulation.Signalling
             }
         }
 
-
         /// <summary>
         /// next_nsig_id : returns ident of next signal of required type
         /// </summary>
-        public int next_nsig_id(int fn_type, int nsignal)
+        public int next_nsig_id(SignalFunction function, int nsignal)
         {
             int nextSignal = thisRef;
             int foundsignal = 0;
@@ -954,13 +958,13 @@ namespace Orts.Simulation.Signalling
             while (foundsignal < nsignal && nextSignal >= 0)
             {
                 // use sigfound
-                nextSignal = nextSignalObject.sigfound[fn_type];
+                nextSignal = nextSignalObject.sigfound[function];
 
                 // sigfound not set, try direct search
                 if (nextSignal < 0)
                 {
-                    nextSignal = nextSignalObject.SONextSignal(fn_type);
-                    nextSignalObject.sigfound[fn_type] = nextSignal;
+                    nextSignal = nextSignalObject.SONextSignal(function);
+                    nextSignalObject.sigfound[function] = nextSignal;
                 }
 
                 // signal found
@@ -981,33 +985,31 @@ namespace Orts.Simulation.Signalling
             }
         }
 
-
         /// <summary>
         /// opp_sig_id : returns ident of next opposite signal of required type
         /// </summary>
-        public int opp_sig_id(int fn_type)
+        public int opp_sig_id(SignalFunction function)
         {
-            return SONextSignalOpp(fn_type);
+            return SONextSignalOpp(function);
         }
-
 
         /// <summary>
         /// this_sig_noSpeedReduction : Returns the setting if speed must be reduced on RESTRICTED or STOP_AND_PROCEED
         /// returns TRUE if speed reduction must be suppressed
         /// </summary>
-        public bool this_sig_noSpeedReduction(MstsSignalFunction fn_type)
+        public bool this_sig_noSpeedReduction(SignalFunction function)
         {
             var sigAsp = MstsSignalAspect.STOP;
             bool setNoReduction = false;
 
-            foreach (SignalHead sigHead in SignalHeads)
+            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function == function))
             {
-                if (sigHead.sigFunction == fn_type && sigHead.state >= sigAsp)
+                if (sigHead.state >= sigAsp)
                 {
                     sigAsp = sigHead.state;
-                    if (sigAsp <= MstsSignalAspect.RESTRICTING && sigHead.speed_info != null && sigHead.speed_info[(int)sigAsp] != null)
+                    if (sigAsp <= MstsSignalAspect.RESTRICTING && sigHead.CurrentSpeedInfo != null)
                     {
-                        setNoReduction = sigHead.speed_info[(int)sigAsp].speed_noSpeedReductionOrIsTempSpeedReduction == 1;
+                        setNoReduction = sigHead.CurrentSpeedInfo.speed_noSpeedReductionOrIsTempSpeedReduction == 1;
                     }
                     else
                     {
@@ -1015,61 +1017,53 @@ namespace Orts.Simulation.Signalling
                     }
                 }
             }
-            return setNoReduction;
-        }//this_sig_noSpeedReduction
 
+            return setNoReduction;
+        }
 
         /// <summary>
-        /// isRestrictedSpeedPost : Returns TRUE if it is a restricted (temp) speedpost
+        /// SpeedPostType : Returns 1 if it is a restricted (temporary) speedpost
         /// </summary>
         public int SpeedPostType()
         {
-            var sigAsp = MstsSignalAspect.CLEAR_2;
-            int speedPostType = 0; // default = standard speedpost
-
             SignalHead sigHead = SignalHeads.First();
 
-            if (sigHead.speed_info != null && sigHead.speed_info[(int)sigAsp] != null)
+            if (Type == SignalObjectType.SpeedPost && sigHead.CurrentSpeedInfo != null)
             {
-                speedPostType = sigHead.speed_info[(int)sigAsp].speed_noSpeedReductionOrIsTempSpeedReduction;
-
+                return sigHead.CurrentSpeedInfo.speed_noSpeedReductionOrIsTempSpeedReduction;
             }
-            return speedPostType;
 
-        }//isRestrictedSpeedPost
-
+            return 0;
+        }
 
         /// <summary>
         /// this_lim_speed : Returns the lowest allowed speed (for speedpost and speed signal)
         /// </summary>
-        public ObjectSpeedInfo this_lim_speed(MstsSignalFunction fn_type)
+        public ObjectSpeedInfo this_lim_speed(SignalFunction function)
         {
-            var set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false, false, 0, false);
+            ObjectSpeedInfo set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false, false, 0, false);
 
-            foreach (SignalHead sigHead in SignalHeads)
+            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function == function))
             {
-                if (sigHead.sigFunction == fn_type)
-                {
-                    ObjectSpeedInfo this_speed = sigHead.speed_info[(int)sigHead.state];
-                    if (this_speed != null && !this_speed.speed_isWarning)
-                    {
-                        if (this_speed.speed_pass > 0 && this_speed.speed_pass < set_speed.speed_pass)
-                        {
-                            set_speed.speed_pass = this_speed.speed_pass;
-                            set_speed.speed_flag = 0;
-                            set_speed.speed_reset = 0;
-                            if (!isSignal) set_speed.speed_noSpeedReductionOrIsTempSpeedReduction = this_speed.speed_noSpeedReductionOrIsTempSpeedReduction;
-                        }
+                ObjectSpeedInfo this_speed = sigHead.CurrentSpeedInfo;
 
-                        if (this_speed.speed_freight > 0 && this_speed.speed_freight < set_speed.speed_freight)
-                        {
-                            set_speed.speed_freight = this_speed.speed_freight;
-                            set_speed.speed_flag = 0;
-                            set_speed.speed_reset = 0;
-                            if (!isSignal) set_speed.speed_noSpeedReductionOrIsTempSpeedReduction = this_speed.speed_noSpeedReductionOrIsTempSpeedReduction;
-                        }
+                if (this_speed != null && !this_speed.speed_isWarning)
+                {
+                    if (this_speed.speed_pass > 0 && this_speed.speed_pass < set_speed.speed_pass)
+                    {
+                        set_speed.speed_pass = this_speed.speed_pass;
+                        set_speed.speed_flag = 0;
+                        set_speed.speed_reset = 0;
+                        if (Type != SignalObjectType.Signal) set_speed.speed_noSpeedReductionOrIsTempSpeedReduction = this_speed.speed_noSpeedReductionOrIsTempSpeedReduction;
                     }
 
+                    if (this_speed.speed_freight > 0 && this_speed.speed_freight < set_speed.speed_freight)
+                    {
+                        set_speed.speed_freight = this_speed.speed_freight;
+                        set_speed.speed_flag = 0;
+                        set_speed.speed_reset = 0;
+                        if (Type != SignalObjectType.Signal) set_speed.speed_noSpeedReductionOrIsTempSpeedReduction = this_speed.speed_noSpeedReductionOrIsTempSpeedReduction;
+                    }
                 }
             }
 
@@ -1079,8 +1073,7 @@ namespace Orts.Simulation.Signalling
                 set_speed.speed_freight = -1;
 
             return set_speed;
-        }//this_lim_speed
-
+        }
 
         /// <summary>
         /// store_lvar : store local variable
@@ -1111,13 +1104,13 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// next_sig_lvar : retrieve variable from next signal
         /// </summary>
-        public int next_sig_lvar(int fn_type, int index)
+        public int next_sig_lvar(SignalFunction function, int index)
         {
-            int nextSignal = sigfound[fn_type];
+            int nextSignal = sigfound[function];
             if (nextSignal < 0)
             {
-                nextSignal = SONextSignal(fn_type);
-                sigfound[fn_type] = nextSignal;
+                nextSignal = SONextSignal(function);
+                sigfound[function] = nextSignal;
             }
             if (nextSignal >= 0)
             {
@@ -1137,11 +1130,11 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public int next_sig_hasnormalsubtype(int reqSubtype)
         {
-            int nextSignal = sigfound[(int)MstsSignalFunction.NORMAL];
+            int nextSignal = sigfound[SignalFunction.NORMAL];
             if (nextSignal < 0)
             {
-                nextSignal = SONextSignal((int)MstsSignalFunction.NORMAL);
-                sigfound[(int)MstsSignalFunction.NORMAL] = nextSignal;
+                nextSignal = SONextSignal(SignalFunction.NORMAL);
+                sigfound[SignalFunction.NORMAL] = nextSignal;
             }
             if (nextSignal >= 0)
             {
@@ -1158,14 +1151,8 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public int this_sig_hasnormalsubtype(int reqSubtype)
         {
-            foreach (SignalHead thisHead in SignalHeads)
-            {
-                if (thisHead.sigFunction == MstsSignalFunction.NORMAL && thisHead.ORTSNormalSubtypeIndex == reqSubtype)
-                {
-                    return 1;
-                }
-            }
-            return 0;
+            return SignalHeads.Exists(x =>
+                x.Function == SignalFunction.NORMAL && x.ORTSNormalSubtypeIndex == reqSubtype) ? 1 : 0;
         }
 
 
@@ -1361,7 +1348,7 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// Find next signal of specified type along set sections - not for NORMAL signals
         /// </summary>
-        public int SONextSignal(int fntype)
+        public int SONextSignal(SignalFunction function)
         {
             int thisTC = TCReference;
             int direction = TCDirection;
@@ -1369,11 +1356,8 @@ namespace Orts.Simulation.Signalling
             TrackCircuitSection thisSection = null;
             bool sectionSet = false;
 
-            // maximise fntype to length of available type list
-            int reqtype = Math.Min(fntype, signalRef.ORTSSignalTypeCount);
-
             // if searching for SPEED signal : check if enabled and use train to find next speedpost
-            if (reqtype == (int)MstsSignalFunction.SPEED)
+            if (function == SignalFunction.SPEED)
             {
                 if (enabledTrain != null)
                 {
@@ -1385,7 +1369,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
             // for normal signals
-            else if (reqtype == (int)MstsSignalFunction.NORMAL)
+            else if (function == SignalFunction.NORMAL)
             {
                 if (isSignalNormal())        // if this signal is normal : cannot be done using this route (set through sigfound variable)
                     return -1;
@@ -1398,7 +1382,7 @@ namespace Orts.Simulation.Signalling
 
                 if (!isSignalNormal())
                 {
-                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][reqtype];
+                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][function];
                     foreach (TrackCircuitSignalItem item in thisList.TrackCircuitItem.Where(item => item.SignalRef.TCOffset > TCOffset))
                     {
                         signalFound = item.SignalRef.thisRef;
@@ -1431,7 +1415,7 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // check if required type of signal is along this section
-                TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][reqtype];
+                TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][function];
                 if (thisList.TrackCircuitItem.Count > 0)
                 {
                     signalFound = thisList.TrackCircuitItem[0].SignalRef.thisRef;
@@ -1462,7 +1446,7 @@ namespace Orts.Simulation.Signalling
                 {
                     thisSection = signalRef.TrackCircuitList[signalRoute[iSection].TCSectionIndex];
                     direction = signalRoute[iSection].Direction;
-                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][fntype];
+                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][function];
                     if (thisList.TrackCircuitItem.Count > 0)
                     {
                         signalFound = thisList.TrackCircuitItem[0].SignalRef.thisRef;
@@ -1484,7 +1468,7 @@ namespace Orts.Simulation.Signalling
                         {
                             thisSection = signalRef.TrackCircuitList[refSignal.signalRoute[iSection].TCSectionIndex];
                             direction = refSignal.signalRoute[iSection].Direction;
-                            TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][fntype];
+                            TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][function];
                             if (thisList.TrackCircuitItem.Count > 0)
                             {
                                 signalFound = thisList.TrackCircuitItem[0].SignalRef.thisRef;
@@ -1511,7 +1495,7 @@ namespace Orts.Simulation.Signalling
             }
 
             // find next speed object
-            TrackCircuitSignalItem foundItem = signalRef.Find_Next_Object_InRoute(enabledTrain.Train.ValidRoute[0], routeListIndex, TCOffset, -1, MstsSignalFunction.SPEED, enabledTrain);
+            TrackCircuitSignalItem foundItem = signalRef.Find_Next_Object_InRoute(enabledTrain.Train.ValidRoute[0], routeListIndex, TCOffset, -1, SignalFunction.SPEED, enabledTrain);
             if (foundItem.SignalState == ObjectItemInfo.ObjectItemFindState.Object)
             {
                 return foundItem.SignalRef.thisRef;
@@ -1597,7 +1581,7 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// Find next signal in opp direction
         /// </summary>
-        public int SONextSignalOpp(int fntype)
+        public int SONextSignalOpp(SignalFunction function)
         {
             int thisTC = TCReference;
             int direction = TCDirection == 0 ? 1 : 0;    // reverse direction
@@ -1607,7 +1591,6 @@ namespace Orts.Simulation.Signalling
             bool sectionSet = enabledTrain == null ? false : thisSection.IsSet(enabledTrain, false);
 
             // loop through valid sections
-
             while (sectionSet && thisTC > 0 && signalFound < 0)
             {
                 thisSection = signalRef.TrackCircuitList[thisTC];
@@ -1622,14 +1605,13 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // check if required type of signal is along this section
-
-                if (fntype == (int)MstsSignalFunction.NORMAL)
+                if (function == SignalFunction.NORMAL)
                 {
                     signalFound = thisSection.EndSignals[direction] != null ? thisSection.EndSignals[direction].thisRef : -1;
                 }
                 else
                 {
-                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][fntype];
+                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][function];
                     if (thisList.TrackCircuitItem.Count > 0)
                     {
                         signalFound = thisList.TrackCircuitItem[0].SignalRef.thisRef;
@@ -1637,7 +1619,6 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // get next section if active link is set
-
                 if (signalFound < 0)
                 {
                     int pinIndex = direction;
@@ -1764,9 +1745,9 @@ namespace Orts.Simulation.Signalling
 
             // reset next signal information to default
 
-            for (int fntype = 0; fntype < signalRef.ORTSSignalTypeCount; fntype++)
+            foreach (SignalFunction function in signalRef.SignalFunctions.Values)
             {
-                sigfound[fntype] = defaultNextSignal[fntype];
+                sigfound[function] = defaultNextSignal[function];
             }
 
             foreach (int thisSectionIndex in JunctionsPassed)
@@ -1800,18 +1781,15 @@ namespace Orts.Simulation.Signalling
                 if (holdState == HoldState.ManualApproach || holdState == HoldState.ManualLock || holdState == HoldState.ManualPass) return;
             }
 
-            foreach (SignalHead sigHead in SignalHeads)
+            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function == SignalFunction.NORMAL))
             {
-                if (sigHead.sigFunction == MstsSignalFunction.NORMAL)
-                    sigHead.Update();
+                sigHead.Update();
             }
 
             // next, update all other heads
-
-            foreach (SignalHead sigHead in SignalHeads)
+            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function != SignalFunction.NORMAL))
             {
-                if (sigHead.sigFunction != MstsSignalFunction.NORMAL)
-                    sigHead.Update();
+                sigHead.Update();
             }
 
         }
@@ -1985,7 +1963,7 @@ namespace Orts.Simulation.Signalling
             if (lastSection.EndSignals[lastDirection] != null)
             {
                 fullRoute = true;
-                sigfound[(int)MstsSignalFunction.NORMAL] = lastSection.EndSignals[lastDirection].thisRef;
+                sigfound[SignalFunction.NORMAL] = lastSection.EndSignals[lastDirection].thisRef;
             }
 
             // try and clear signal
@@ -2015,7 +1993,7 @@ namespace Orts.Simulation.Signalling
                 int ReqNumClearAhead = GetReqNumClearAheadExplorer(isPropagated, signalNumClearAhead);
                 if (ReqNumClearAhead > 0)
                 {
-                    int nextSignalIndex = sigfound[(int)MstsSignalFunction.NORMAL];
+                    int nextSignalIndex = sigfound[SignalFunction.NORMAL];
                     if (nextSignalIndex >= 0)
                     {
                         SignalObject nextSignal = signalObjects[nextSignalIndex];
@@ -2098,9 +2076,9 @@ namespace Orts.Simulation.Signalling
             }
             if (enabledTrain != thisTrain) // new allocation - reset next signals
             {
-                for (int fntype = 0; fntype < signalRef.ORTSSignalTypeCount; fntype++)
+                foreach (SignalFunction function in signalRef.SignalFunctions.Values)
                 {
-                    sigfound[fntype] = defaultNextSignal[fntype];
+                    sigfound[function] = defaultNextSignal[function];
                 }
             }
             enabledTrain = thisTrain;
@@ -2224,11 +2202,11 @@ namespace Orts.Simulation.Signalling
 
             if (nextSignal != null)
             {
-                sigfound[(int)MstsSignalFunction.NORMAL] = nextSignal.thisRef;
+                sigfound[SignalFunction.NORMAL] = nextSignal.thisRef;
             }
             else
             {
-                sigfound[(int)MstsSignalFunction.NORMAL] = -1;
+                sigfound[SignalFunction.NORMAL] = -1;
             }
 
             // set number of signals to clear ahead
@@ -2358,7 +2336,7 @@ namespace Orts.Simulation.Signalling
                 {
                     SignalObject firstSignal = enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex];
                     if (firstSignal != null &&
-                        firstSignal.sigfound[(int)MstsSignalFunction.NORMAL] == thisRef &&
+                        firstSignal.sigfound[SignalFunction.NORMAL] == thisRef &&
                         firstSignal.internalBlockState <= InternalBlockstate.Reservable &&
                         firstSignal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP)
                     {
@@ -2558,9 +2536,9 @@ namespace Orts.Simulation.Signalling
             }
 
             SignalObject nextSignal = null;
-            if (sigfound[(int)MstsSignalFunction.NORMAL] >= 0)
+            if (sigfound[SignalFunction.NORMAL] >= 0)
             {
-                nextSignal = signalObjects[sigfound[(int)MstsSignalFunction.NORMAL]];
+                nextSignal = signalObjects[sigfound[SignalFunction.NORMAL]];
             }
 
             Train.TCSubpathRoute RoutePart;
@@ -2633,7 +2611,7 @@ namespace Orts.Simulation.Signalling
                 {
                     nextSignal.requestClearSignal(nextSignal.fixedRoute, enabledTrain, 0, true, null);
 
-                    int furtherSignalIndex = nextSignal.sigfound[(int)MstsSignalFunction.NORMAL];
+                    int furtherSignalIndex = nextSignal.sigfound[SignalFunction.NORMAL];
                     int furtherSignalsToClear = ReqNumClearAhead - 1;
 
                     while (furtherSignalIndex >= 0)
@@ -2653,7 +2631,7 @@ namespace Orts.Simulation.Signalling
                                 furtherSignal.isPropagated = true;
                                 furtherSignalsToClear = furtherSignalsToClear > 0 ? furtherSignalsToClear - 1 : 0;
                                 furtherSignal.ReqNumClearAhead = furtherSignalsToClear;
-                                furtherSignalIndex = furtherSignal.sigfound[(int)MstsSignalFunction.NORMAL];
+                                furtherSignalIndex = furtherSignal.sigfound[SignalFunction.NORMAL];
                             }
                             else
                             {
@@ -3199,9 +3177,9 @@ namespace Orts.Simulation.Signalling
         public void SetDefaultRoute()
         {
             signalRoute = new Train.TCSubpathRoute(fixedRoute);
-            for (int iSigtype = 0; iSigtype <= defaultNextSignal.Count - 1; iSigtype++)
+            foreach (SignalFunction function in signalRef.SignalFunctions.Values)
             {
-                sigfound[iSigtype] = defaultNextSignal[iSigtype];
+                sigfound[function] = defaultNextSignal[function];
             }
         }
 
@@ -3224,7 +3202,7 @@ namespace Orts.Simulation.Signalling
                 {
                     thisSignal = signalObjects[thisSignalIndex];
                     passedSignals.Add(thisSignal);
-                    thisSignalIndex = thisSignal.sigfound[(int)MstsSignalFunction.NORMAL];
+                    thisSignalIndex = thisSignal.sigfound[SignalFunction.NORMAL];
                 }
             }
             else
@@ -3278,16 +3256,16 @@ namespace Orts.Simulation.Signalling
 
             JunctionsPassed.Clear();
 
-            for (int fntype = 0; fntype < signalRef.ORTSSignalTypeCount; fntype++)
+            foreach (SignalFunction function in signalRef.SignalFunctions.Values)
             {
-                sigfound[fntype] = defaultNextSignal[fntype];
+                sigfound[function] = defaultNextSignal[function];
             }
 
             // if signal is enabled, ensure next normal signal is reset
 
-            if (enabledTrain != null && sigfound[(int)MstsSignalFunction.NORMAL] < 0)
+            if (enabledTrain != null && sigfound[SignalFunction.NORMAL] < 0)
             {
-                sigfound[(int)MstsSignalFunction.NORMAL] = SONextSignalNormal(TCNextTC);
+                sigfound[SignalFunction.NORMAL] = SONextSignalNormal(TCNextTC);
             }
 
 #if DEBUG_REPORTS
@@ -3309,7 +3287,7 @@ namespace Orts.Simulation.Signalling
                     thisRef));
                 File.AppendAllText(@"C:\temp\checktrain.txt",
                     String.Format("Train {0} affected; new NORMAL signal : {1}\n",
-                    enabledTrain.Train.Number, sigfound[(int)MstsSignalFunction.NORMAL]));
+                    enabledTrain.Train.Number, sigfound[SignalFunction.NORMAL]));
             }
         }
 
@@ -3390,7 +3368,7 @@ namespace Orts.Simulation.Signalling
                     }
                     else if (!isNormal)
                     {
-                        TrackCircuitSignalList thisSignalList = thisSection.CircuitItems.TrackCircuitSignals[thisElement.Direction][SignalHeads[0].ORTSsigFunctionIndex];
+                        TrackCircuitSignalList thisSignalList = thisSection.CircuitItems.TrackCircuitSignals[thisElement.Direction][SignalHeads[0].Function];
                         foreach (TrackCircuitSignalItem thisSignal in thisSignalList.TrackCircuitItem)
                         {
                             if (thisSignal.SignalRef == this)

@@ -29,6 +29,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Orts.Formats.Msts
@@ -187,13 +188,15 @@ namespace Orts.Formats.Msts
         public IDictionary<SignalType, SCRScripts> Scripts;
         private static string keepLine = String.Empty;
 
+        public readonly IDictionary<string, SignalFunction> SignalFunctions;
+
         //================================================================================================//
         //
         // Constructor
         //
         //================================================================================================//
 
-        public SignalScripts(string RoutePath, IList<string> ScriptFiles, IDictionary<string, Orts.Formats.Msts.SignalType> SignalTypes, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes)
+        public SignalScripts(string RoutePath, IList<string> ScriptFiles, IDictionary<string, SignalType> SignalTypes, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes)
         {
 
             // Create required translators
@@ -223,6 +226,7 @@ namespace Orts.Formats.Msts
             TranslateOperator.Add("/", SCRTermOperator.DIVIDE);
             TranslateOperator.Add("%", SCRTermOperator.MODULO);
 
+            SignalFunctions = signalFunctions;
 
 #if DEBUG_PRINT_PROCESS
             TDB_debug_ref = new int[5] { 7305, 7307, 7308, 7309, 7310 };   /* signal tdb ref.no selected for print-out */
@@ -258,7 +262,7 @@ namespace Orts.Formats.Msts
 #if DEBUG_PRINT_IN
                         File.AppendAllText(din_fileLoc + @"sigscr.txt", "Reading file : " + fullName + "\n\n");
 #endif
-                        sigscrRead(fullName, scrStream, SignalTypes, ref readLineNumber, ORSignalTypes, ORNormalSubtypes);
+                        sigscrRead(fullName, scrStream, SignalTypes, ref readLineNumber, signalFunctions, ORNormalSubtypes);
                     }
                 }
                 catch (Exception ex)
@@ -268,7 +272,7 @@ namespace Orts.Formats.Msts
 #else
                 // for test purposes : without exception catch
                 StreamReader scrStream = new StreamReader(fullName, true);
-                sigscrRead(fullName, scrStream, SignalTypes, ref readLineNumber, ORSignalTypes, ORNormalSubtypes);
+                sigscrRead(fullName, scrStream, SignalTypes, ref readLineNumber, signalFunctions, ORNormalSubtypes);
                 scrStream.Close();
 #endif
             }
@@ -284,7 +288,7 @@ namespace Orts.Formats.Msts
         //
         //================================================================================================//
 
-        public void sigscrRead(string scrFileName, StreamReader scrStream, IDictionary<string, SignalType> SignalTypes, ref int readLineNumber, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes)
+        public void sigscrRead(string scrFileName, StreamReader scrStream, IDictionary<string, SignalType> SignalTypes, ref int readLineNumber, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes)
         {
             scrReadInfo readInfo;
             string readLine;
@@ -342,7 +346,7 @@ namespace Orts.Formats.Msts
                         File.AppendAllText(dout_fileLoc + @"scriptproc.txt", "\n===============================\n");
                         File.AppendAllText(dout_fileLoc + @"scriptproc.txt", "\nNew Script : " + scriptname + "\n");
 #endif
-                        SCRScripts newScript = new SCRScripts(ScriptLines, scriptname, ORSignalTypes, ORNormalSubtypes);
+                        SCRScripts newScript = new SCRScripts(ScriptLines, scriptname, signalFunctions, ORNormalSubtypes);
                         bool validScript = AllocateScriptToSignalType(newScript, SignalTypes, scriptname, readnumber, scrFileName, ref Scripts);
 
 #if DEBUG_PRINT_OUT
@@ -367,7 +371,7 @@ namespace Orts.Formats.Msts
 
                     else if (readLine.StartsWith("REM SCRIPT "))
                     {
-                        SCRScripts newScript = new SCRScripts(ScriptLines, scriptname, ORSignalTypes, ORNormalSubtypes);
+                        SCRScripts newScript = new SCRScripts(ScriptLines, scriptname, signalFunctions, ORNormalSubtypes);
                         bool validScript = AllocateScriptToSignalType(newScript, SignalTypes, scriptname, readnumber, scrFileName, ref Scripts);
 
                         while (!readLine.StartsWith("SCRIPT ") && readLine != null)
@@ -404,7 +408,7 @@ namespace Orts.Formats.Msts
                 File.AppendAllText(din_fileLoc + @"sigscr.txt", "\n===============================\n");
                 File.AppendAllText(din_fileLoc + @"sigscr.txt", "\nNew Script : " + scriptname + "\n");
 #endif
-                SCRScripts newScript = new SCRScripts(ScriptLines, scriptname, ORSignalTypes, ORNormalSubtypes);
+                SCRScripts newScript = new SCRScripts(ScriptLines, scriptname, signalFunctions, ORNormalSubtypes);
                 bool validScript = AllocateScriptToSignalType(newScript, SignalTypes, scriptname, readnumber, scrFileName, ref Scripts);
             }
 
@@ -850,7 +854,7 @@ namespace Orts.Formats.Msts
             // Input is list with all lines for one signal script
             //
 
-            public SCRScripts(List<scrReadInfo> ScriptLines, string scriptnameIn, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes)
+            public SCRScripts(List<scrReadInfo> ScriptLines, string scriptnameIn, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes)
             {
                 LocalFloats = new Dictionary<string, uint>();
                 totalLocalFloats = 0;
@@ -918,7 +922,7 @@ namespace Orts.Formats.Msts
 
                 // Check rest of file - statements
 
-                Statements = processScriptLines(ScriptLines, lcount, LocalFloats, ORSignalTypes, ORNormalSubtypes);
+                Statements = processScriptLines(ScriptLines, lcount, LocalFloats, signalFunctions, ORNormalSubtypes);
                 ScriptLines.Clear();
 
             }// constructor
@@ -935,7 +939,7 @@ namespace Orts.Formats.Msts
             //
             //================================================================================================//
 
-            public static ArrayList processScriptLines(List<scrReadInfo> PSLScriptLines, int index, IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes)
+            public static ArrayList processScriptLines(List<scrReadInfo> PSLScriptLines, int index, IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes)
             {
 
                 int lcount = index;
@@ -970,7 +974,7 @@ namespace Orts.Formats.Msts
                     if (PSLScriptLines[lcount].Readline.StartsWith("IF "))
                     {
                         ifblockcount = findEndIfBlock(PSLScriptLines, lcount);
-                        SCRConditionBlock thisCondition = new SCRConditionBlock(PSLScriptLines, lcount, ifblockcount, LocalFloats, ORSignalTypes, ORNormalSubtypes);
+                        SCRConditionBlock thisCondition = new SCRConditionBlock(PSLScriptLines, lcount, ifblockcount, LocalFloats, signalFunctions, ORNormalSubtypes);
                         nextcount = ifblockcount[ifblockcount.Count - 1];
                         localStatements.Add(thisCondition);
                     }
@@ -980,7 +984,7 @@ namespace Orts.Formats.Msts
                     else if (PSLScriptLines[lcount] != null && !String.IsNullOrEmpty(PSLScriptLines[lcount].Readline))
                     {
                         nextcount = FindEndStatement(PSLScriptLines, lcount);
-                        SCRStatement thisStatement = new SCRStatement(PSLScriptLines[lcount], LocalFloats, ORSignalTypes, ORNormalSubtypes);
+                        SCRStatement thisStatement = new SCRStatement(PSLScriptLines[lcount], LocalFloats, signalFunctions, ORNormalSubtypes);
                         if (thisStatement.valid) localStatements.Add(thisStatement);
                     }
 
@@ -1581,7 +1585,7 @@ namespace Orts.Formats.Msts
             //
             //================================================================================================//
 
-            static public ArrayList process_FunctionCall(string FunctionStatement, IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes, int linenumber)
+            static public ArrayList process_FunctionCall(string FunctionStatement, IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes, int linenumber)
             {
                 ArrayList FunctionParts = new ArrayList();
                 bool valid_func = true;
@@ -1624,7 +1628,7 @@ namespace Orts.Formats.Msts
                 while (sepindex > 0 && valid_func)
                 {
                     string parmPart = ParameterPart.Substring(0, sepindex).Trim();
-                    SCRParameterType TempParm = process_TermPart(parmPart, LocalFloats, ORSignalTypes, ORNormalSubtypes, linenumber);
+                    SCRParameterType TempParm = process_TermPart(parmPart, LocalFloats, signalFunctions, ORNormalSubtypes, linenumber);
                     FunctionParts.Add(TempParm);
 
                     ParameterPart = ParameterPart.Substring(sepindex + 1).Trim();
@@ -1635,7 +1639,7 @@ namespace Orts.Formats.Msts
 
                 if (!String.IsNullOrEmpty(ParameterPart) && valid_func)
                 {
-                    SCRParameterType TempParm = process_TermPart(ParameterPart, LocalFloats, ORSignalTypes, ORNormalSubtypes, linenumber);
+                    SCRParameterType TempParm = process_TermPart(ParameterPart, LocalFloats, signalFunctions, ORNormalSubtypes, linenumber);
                     FunctionParts.Add(TempParm);
                 }
 
@@ -1655,7 +1659,7 @@ namespace Orts.Formats.Msts
             //
             //================================================================================================//
 
-            static public SCRParameterType process_TermPart(string TermString, IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes, int linenumber)
+            public static SCRParameterType process_TermPart(string TermString, IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes, int linenumber)
             {
                 TermString = TermString.ToUpper();
 
@@ -1696,7 +1700,7 @@ namespace Orts.Formats.Msts
                     // try SIGASP definition
                     ("SIGASP_", SCRTermType.Sigasp, ParseEnum<MstsSignalAspect>),
                     // try SIGFN definition
-                    ("SIGFN_", SCRTermType.Sigfn, part => ParseList(ORSignalTypes, part)),
+                    ("SIGFN_", SCRTermType.Sigfn, part => null),
                     // try ORSubtype definition
                     ("ORSUBTYPE_", SCRTermType.ORNormalSubtype, part => ParseList(ORNormalSubtypes, part)),
                     // try SIGFEAT definition
@@ -1712,6 +1716,17 @@ namespace Orts.Formats.Msts
                         if (parsed.HasValue)
                         {
                             return new SCRParameterType(termType, parsed.Value);
+                        }
+                        else if (termType == SCRTermType.Sigfn)
+                        {
+                            if (signalFunctions.ContainsKey(part.ToUpper()))
+                            {
+                                return new SCRParameterType(termType, signalFunctions[part.ToUpper()]);
+                            }
+                            else
+                            {
+                                TraceError(linenumber, tokenType, TermString);
+                            }
                         }
                         else
                         {
@@ -1743,7 +1758,7 @@ namespace Orts.Formats.Msts
             //
             //================================================================================================//
 
-            public static ArrayList getIfConditions(scrReadInfo GICInfo, IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes)
+            public static ArrayList getIfConditions(scrReadInfo GICInfo, IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes)
             {
                 SCRConditions ThisCondition;
                 ArrayList SCRConditionList = new ArrayList();
@@ -1905,7 +1920,7 @@ namespace Orts.Formats.Msts
                         int entnum = procstring.IndexOf("]");
                         int subindex = Convert.ToInt32(procstring.Substring(1, entnum - 1));
                         scrReadInfo subinfo = new scrReadInfo(sublist[subindex - 1], GICInfo.Linenumber, GICInfo.Scriptname);
-                        ArrayList SubCondition = getIfConditions(subinfo, LocalFloats, ORSignalTypes, ORNormalSubtypes);
+                        ArrayList SubCondition = getIfConditions(subinfo, LocalFloats, signalFunctions, ORNormalSubtypes);
                         SCRConditionList.Add(SubCondition);
                     }
 
@@ -1919,7 +1934,7 @@ namespace Orts.Formats.Msts
                             procstring = procstring.Substring(1, procstring.Length - 2);
                         }
 
-                        ThisCondition = new SCRConditions(procstring, LocalFloats, ORSignalTypes, ORNormalSubtypes, GICInfo.Linenumber);
+                        ThisCondition = new SCRConditions(procstring, LocalFloats, signalFunctions, ORNormalSubtypes, GICInfo.Linenumber);
                         SCRConditionList.Add(ThisCondition);
                     }
 
@@ -1964,7 +1979,7 @@ namespace Orts.Formats.Msts
                     int entnum = procstring.IndexOf("]");
                     int subindex = Convert.ToInt32(procstring.Substring(1, entnum - 1));
                     scrReadInfo subinfo = new scrReadInfo(sublist[subindex - 1], GICInfo.Linenumber, GICInfo.Scriptname);
-                    ArrayList SubCondition = getIfConditions(subinfo, LocalFloats, ORSignalTypes, ORNormalSubtypes);
+                    ArrayList SubCondition = getIfConditions(subinfo, LocalFloats, signalFunctions, ORNormalSubtypes);
                     SCRConditionList.Add(SubCondition);
                 }
 
@@ -1979,7 +1994,7 @@ namespace Orts.Formats.Msts
                     {
                         procstring = procstring.Substring(1, procstring.Length - 2).Trim();
                     }
-                    ThisCondition = new SCRConditions(procstring, LocalFloats, ORSignalTypes, ORNormalSubtypes, GICInfo.Linenumber);
+                    ThisCondition = new SCRConditions(procstring, LocalFloats, signalFunctions, ORNormalSubtypes, GICInfo.Linenumber);
                     SCRConditionList.Add(ThisCondition);
                 }
 
@@ -2051,7 +2066,7 @@ namespace Orts.Formats.Msts
                 //  Constructor
                 //
 
-                public SCRStatement(scrReadInfo Statement, IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes)
+                public SCRStatement(scrReadInfo Statement, IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes)
                 {
 
                     valid = true;
@@ -2136,7 +2151,7 @@ namespace Orts.Formats.Msts
                     // process term string
 
                     int sublevel = 0;
-                    SCRProcess_TermPartLine(TermPart, ref sublevel, 0, LocalFloats, ORSignalTypes, ORNormalSubtypes, StatementInfo.Linenumber);
+                    SCRProcess_TermPartLine(TermPart, ref sublevel, 0, LocalFloats, signalFunctions, ORNormalSubtypes, StatementInfo.Linenumber);
 
                     if (StatementTerms.Count <= 0) valid = false;
                 }
@@ -2148,7 +2163,7 @@ namespace Orts.Formats.Msts
                 //
 
                 public void SCRProcess_TermPartLine(string TermLinePart, ref int sublevel, int issublevel,
-                            IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes, int linenumber)
+                            IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes, int linenumber)
                 {
 
                     string keepString = String.Copy(TermLinePart);
@@ -2282,7 +2297,7 @@ namespace Orts.Formats.Msts
                             else
                             {
                                 SCRStatTerm thisTerm =
-                                        new SCRStatTerm(procString, operString, sublevel, issublevel, LocalFloats, ORSignalTypes, ORNormalSubtypes, StatementInfo.Linenumber);
+                                        new SCRStatTerm(procString, operString, sublevel, issublevel, LocalFloats, signalFunctions, ORNormalSubtypes, StatementInfo.Linenumber);
                                 StatementTerms.Add(thisTerm);
                             }
                         }
@@ -2338,13 +2353,13 @@ namespace Orts.Formats.Msts
 
                             sublevel++;
                             SCRStatTerm thisTerm =
-                                    new SCRStatTerm("*S*", operString, sublevel, issublevel, LocalFloats, ORSignalTypes, ORNormalSubtypes, StatementInfo.Linenumber);
+                                    new SCRStatTerm("*S*", operString, sublevel, issublevel, LocalFloats, signalFunctions, ORNormalSubtypes, StatementInfo.Linenumber);
                             StatementTerms.Add(thisTerm);
 
                             // process string as sublevel
 
                             int nextsublevel = sublevel;
-                            SCRProcess_TermPartLine(procString, ref sublevel, nextsublevel, LocalFloats, ORSignalTypes, ORNormalSubtypes, linenumber);
+                            SCRProcess_TermPartLine(procString, ref sublevel, nextsublevel, LocalFloats, signalFunctions, ORNormalSubtypes, linenumber);
                         }
                     }
                 }//SCRProcess_TermPartLine
@@ -2376,7 +2391,7 @@ namespace Orts.Formats.Msts
                 //
 
                 public SCRStatTerm(string StatementString, string StatementOperator, int sublevelIn, int issublevelIn,
-                            IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes, int thisLine)
+                            IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes, int thisLine)
                 {
 
                     linenumber = thisLine;
@@ -2429,7 +2444,7 @@ namespace Orts.Formats.Msts
                             Function = SCRExternalFunctions.NONE;
 
                             PartParameter = new SCRParameterType[1];
-                            PartParameter[0] = process_TermPart(StatementString.Trim(), LocalFloats, ORSignalTypes, ORNormalSubtypes, linenumber);
+                            PartParameter[0] = process_TermPart(StatementString.Trim(), LocalFloats, signalFunctions, ORNormalSubtypes, linenumber);
 
                             TranslateOperator.TryGetValue(StatementOperator, out TermOperator);
                         }
@@ -2440,7 +2455,7 @@ namespace Orts.Formats.Msts
 
                     else
                     {
-                        ArrayList FunctionParts = process_FunctionCall(StatementString, LocalFloats, ORSignalTypes, ORNormalSubtypes, linenumber);
+                        ArrayList FunctionParts = process_FunctionCall(StatementString, LocalFloats, signalFunctions, ORNormalSubtypes, linenumber);
 
                         if (FunctionParts == null)
                         {
@@ -2489,18 +2504,27 @@ namespace Orts.Formats.Msts
             {
                 public SCRTermType PartType;
                 public int PartParameter;
+                public SignalFunction SignalFunction;
 
-                //================================================================================================//
-                //
-                // Constructor
-                //
-
+                // <summary>
+                // Constructor for generic parameter
+                // </summary>
                 public SCRParameterType(SCRTermType TypeIn, int IntIn)
                 {
                     PartType = TypeIn;
                     PartParameter = IntIn;
-                } // constructor
-            } // class SCRParameterType
+                }
+
+                // <summary>
+                // Constructor for signal function parameter
+                // </summary>
+                public SCRParameterType(SCRTermType TypeIn, SignalFunction signalFunction)
+                {
+                    PartType = TypeIn;
+                    PartParameter = -1;
+                    SignalFunction = signalFunction;
+                }
+            }
 
             //================================================================================================//
             //
@@ -2521,14 +2545,14 @@ namespace Orts.Formats.Msts
                 // Input is the array of indices pointing to the lines following the IF - ELSEIF - IF blocks
                 //
 
-                public SCRConditionBlock(List<scrReadInfo> CBLScriptLines, int index, List<int> endindex, IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes)
+                public SCRConditionBlock(List<scrReadInfo> CBLScriptLines, int index, List<int> endindex, IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes)
                 {
 
                     scrReadInfo thisinfo, tempinfo;
 
                     // process conditions
 
-                    Conditions = getIfConditions(CBLScriptLines[index], LocalFloats, ORSignalTypes, ORNormalSubtypes);
+                    Conditions = getIfConditions(CBLScriptLines[index], LocalFloats, signalFunctions, ORNormalSubtypes);
 
                     // process IF block
 
@@ -2540,7 +2564,7 @@ namespace Orts.Formats.Msts
                         IfSubBlock.Add(CBLScriptLines[iline + index + 1]);
                     }
 
-                    IfBlock = new SCRBlock(IfSubBlock, LocalFloats, ORSignalTypes, ORNormalSubtypes);
+                    IfBlock = new SCRBlock(IfSubBlock, LocalFloats, signalFunctions, ORNormalSubtypes);
                     ElseIfBlock = null;
                     ElseBlock = null;
 
@@ -2569,7 +2593,7 @@ namespace Orts.Formats.Msts
                             {
                                 ElseSubBlock.Add(CBLScriptLines[iline + elseindex]);
                             }
-                            SCRBlock TempBlock = new SCRBlock(ElseSubBlock, LocalFloats, ORSignalTypes, ORNormalSubtypes);
+                            SCRBlock TempBlock = new SCRBlock(ElseSubBlock, LocalFloats, signalFunctions, ORNormalSubtypes);
                             if (ElseIfBlock == null)
                             {
                                 ElseIfBlock = new List<SCRBlock>();
@@ -2587,7 +2611,7 @@ namespace Orts.Formats.Msts
                             {
                                 ElseSubBlock.Add(CBLScriptLines[iline + elseindex]);
                             }
-                            ElseBlock = new SCRBlock(ElseSubBlock, LocalFloats, ORSignalTypes, ORNormalSubtypes);
+                            ElseBlock = new SCRBlock(ElseSubBlock, LocalFloats, signalFunctions, ORNormalSubtypes);
                             blockindex++;
                         }
 
@@ -2617,7 +2641,7 @@ namespace Orts.Formats.Msts
                 //  Constructor
                 //
 
-                public SCRConditions(string TermString, IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes, int thisLine)
+                public SCRConditions(string TermString, IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes, int thisLine)
                 {
 
                     string firststring, secondstring;
@@ -2678,7 +2702,7 @@ namespace Orts.Formats.Msts
                         firststring = firststring.Substring(1).Trim();
                     }
 
-                    Term1 = new SCRStatTerm(firststring, String.Empty, 0, 0, LocalFloats, ORSignalTypes, ORNormalSubtypes, linenumber);
+                    Term1 = new SCRStatTerm(firststring, String.Empty, 0, 0, LocalFloats, signalFunctions, ORNormalSubtypes, linenumber);
 
                     // second string (if it exists)
                     // check of first char, if =, add this to separator
@@ -2709,7 +2733,7 @@ namespace Orts.Formats.Msts
                             secondstring = secondstring.Substring(1).Trim();
                         }
 
-                        Term2 = new SCRStatTerm(secondstring, String.Empty, 0, 0, LocalFloats, ORSignalTypes, ORNormalSubtypes, linenumber);
+                        Term2 = new SCRStatTerm(secondstring, String.Empty, 0, 0, LocalFloats, signalFunctions, ORNormalSubtypes, linenumber);
                     }
 
                     if (!String.IsNullOrEmpty(separator))
@@ -2746,10 +2770,10 @@ namespace Orts.Formats.Msts
                 //  Constructor
                 //
 
-                public SCRBlock(List<scrReadInfo> BlockStrings, IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes)
+                public SCRBlock(List<scrReadInfo> BlockStrings, IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes)
                 {
                     Statements = new ArrayList();
-                    Statements = processScriptLines(BlockStrings, 0, LocalFloats, ORSignalTypes, ORNormalSubtypes);
+                    Statements = processScriptLines(BlockStrings, 0, LocalFloats, signalFunctions, ORNormalSubtypes);
                 } // constructor
             } // class SCRBlock
         } // class Scripts

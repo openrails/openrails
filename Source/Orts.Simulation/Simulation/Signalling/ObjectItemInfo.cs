@@ -71,7 +71,7 @@ namespace Orts.Simulation.Signalling
 
             ObjectDetails = thisObject;
 
-            if (thisObject.isSignal)
+            if (thisObject.Type == SignalObjectType.Signal)
             {
                 ObjectType = ObjectItemType.Signal;
                 signal_state = MstsSignalAspect.UNKNOWN;  // set active by TRAIN
@@ -85,7 +85,7 @@ namespace Orts.Simulation.Signalling
             {
                 ObjectType = ObjectItemType.Speedlimit;
                 signal_state = MstsSignalAspect.UNKNOWN;
-                speed_info = thisObject.this_lim_speed(MstsSignalFunction.SPEED);
+                speed_info = thisObject.this_lim_speed(SignalFunction.SPEED);
                 speed_passenger = speed_info.speed_pass;
                 speed_freight = speed_info.speed_freight;
                 speed_flag = speed_info.speed_flag;

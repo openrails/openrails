@@ -490,28 +490,45 @@ immediately following the lighttextures and lightstab definitions.
 
 ORTSSignalFunctions
 -------------------
+
+.. index::
+  single: ORTSSignalFunctions
+  single: ORTSSignalFunctionType
+
 Additional signal types can be defined in OR, over and above the standard MSTS signal types.
 The additional types must be predefined in the sigcfg.dat file using the ORTSSignalFunctions definition.
 
 The defined ORTS signal types can be set in the signal type definition and used in signal script functions
 in the same way as the default MSTS types.
 
+By default, a custom signal function will have the same behaviour as an INFO signal function: it will have no impact on the
+block sections and will not be able to set a speed limit. You can tell the simulator to consider a custom function to have the
+same behaviour as one of the MSTS signal functions. You can add a MSTS function as a second parameter to the ORTSSignalFunctionType
+parameter. The use of the NORMAL signal function is currently forbidden. To define several types of NORMAL signals, please use
+the ORTSNormalSubtypes parameter.
+
 Note that SPEED is a fixed signal type which is available in OR without explicit definition (see below for
-details on SPEED type signals). Also note that any type definition starting with "OR\_" is not valid, these
+details on SPEED type signals). Also note that any type definition starting with "OR\_" or "ORTS" is not valid, these
 names are reserved for future default types in OR.
 
-Syntax:
+Syntax::
 
-| ORTSSignalFunctions ( n
-|   ORTSSignalFunctionType ( “signaltype” )
-|   . . . 
-| )
-| 
-| The value **n** indicates the total number of definitions.
-| The value **signaltype** is the name of the additional type.
+  ORTSSignalFunctions ( n
+    ORTSSignalFunctionType ( "CUSTOM_SIGNAL_FUNCTION" )
+    ORTSSignalFunctionType ( "CUSTOM_SPEED_SIGNAL_FUNCTION" "SPEED" )
+    . . . 
+  )
+  
+The value **n** indicates the total number of definitions.
+The value **CUSTOM_SIGNAL_FUNCTION** is the name of the additional type.
 
 ORTSNormalSubtypes
 ------------------
+
+.. index::
+  single: ORTSNormalSubtypes
+  single: ORTSNormalSubtype
+
 As detailed above, subtypes can be defined for NORMAL type signals which allows to distinguish
 different use of NORMAL type signals.
 
@@ -522,15 +539,15 @@ statement, see below.
 
 The subtype can be used in specific signal script functions as detailed above.
 
-Syntax:
+Syntax::
 
-| ORTSNormalSubtypes ( n
-|   ORTSNormalSubtype ( " subtype " )
-|    . . . 
-| )
-| 
-| The value **n** indicates the total number of definitions.
-| The value **subtype** is the name of the subtype.
+  ORTSNormalSubtypes ( n
+    ORTSNormalSubtype ( "subtype" )
+     . . . 
+  )
+
+The value **n** indicates the total number of definitions.
+The value **subtype** is the name of the subtype.
 
 Signal Type definitions
 -----------------------
@@ -538,6 +555,12 @@ The following section details OR specific additions to the signal type definitio
 
 Glow settings
 '''''''''''''
+
+.. index::
+  single: ORTSDayGlow
+  single: ORTSNightGlow
+  single: ORTSDayLight
+
 Signal Glow is a feature in OR to improve the visibility of signals at larger distances.
 The required glow setting can de set per signal type in the signal definition.
 The value is a real number, and sets the intensity of the glow. Value 0.0 defines that there is no glow
@@ -553,10 +576,10 @@ Notes :
 - For signal types which have “Semaphore” flag set, the Day value = 0.0.
 - For signals of type INFO and SHUNTING, both Day and Night value are set to 0.0 (no glow).
 
-Syntax:
+Syntax::
 
-| ORTSDayGlow ( d )
-| ORTSNightGlow ( n )
+  ORTSDayGlow ( d )
+  ORTSNightGlow ( n )
 
 The values d and n are the day and night glow values, as real numbers.
 
@@ -565,14 +588,18 @@ Light switch
 There were many signalling systems where semaphore signals did not show lights during daytime. This
 effect can be simulated using the ORTSDayLight setting.
 
-Syntax:
+Syntax::
 
-| ORTSDayLight( l )
+  ORTSDayLight( l )
 
 The value l is a logical value, if set to false, the signal will not show lights during daytime.
 
 Script Function
 ---------------
+
+.. index::
+  single: ORTSScript
+
 Normally, each signal type must have a linked signal script, with the same name as defined for the signal
 type. However, often there are a series of signal types which may differ in definition, e.g. due to
 differences in the position of the lights, but which have the same logic scripts.
@@ -582,36 +609,43 @@ use. Different signal types which have the same logic can therefore all use the 
 This script may be defined using the name of one of these signal types, or it may have a generic name
 not linked to any existing signal type.
 
-Syntax:
+Syntax::
 
-
-| ORTSScript( name )
+  ORTSScript( name )
 
 The value **name** is the name of the signal script as defined in the sigscr.dat file.
 
 Normal Subtype
 --------------
+
+.. index::
+  single: ORTSNormalSubtype
+
 As detailed above, a signal type of type NORMAL may have an additional subtype definition.
 
-Syntax:
+Syntax::
 
-| ORTSNormalSubtype( subtype )
+  ORTSNormalSubtype( subtype )
 
 The value **subtype** is the subtype name and must match one of the names defined in
 ORTSNormalSubtypes.
 
 Approach Control Settings
 -------------------------
+
+.. index::
+  single: ApproachControlSettings
+
 The required values for approach control functions for a particular signal type can be defined in the
 signal type definition. These values can be referenced in the signal script as defined for the approach
 control functions.
 
-Syntax:
+Syntax::
 
-| ApproachControlSettings (
-|   PositionDefinition ( position )
-|   SpeedDefinition ( speed )
-| )
+  ApproachControlSettings (
+    PositionDefinition ( position )
+    SpeedDefinition ( speed )
+  )
 
 Possible position definitions
 '''''''''''''''''''''''''''''

@@ -21,6 +21,11 @@
 // #define DEBUG_REPORTS
 // print details of train behaviour
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
@@ -29,12 +34,6 @@ using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Orts.Simulation.Signalling
 {
@@ -58,8 +57,7 @@ namespace Orts.Simulation.Signalling
         private Dictionary<int, int> SpeedPostRefList = new Dictionary<int, int>();
         public static SIGSCRfile scrfile;
         public static CsSignalScripts CsSignalScripts;
-        public int ORTSSignalTypeCount { get; private set; }
-        public IList<string> ORTSSignalTypes;
+        public readonly IDictionary<string, SignalFunction> SignalFunctions;
         public IList<string> ORTSNormalsubtypes;
 
         public int noSignals;
@@ -94,8 +92,7 @@ namespace Orts.Simulation.Signalling
             SignalHeadList = new Dictionary<uint, SignalObject>();
             Dictionary<int, int> platformList = new Dictionary<int, int>();
 
-            ORTSSignalTypeCount = sigcfg.ORTSFunctionTypes.Count;
-            ORTSSignalTypes = sigcfg.ORTSFunctionTypes;
+            SignalFunctions = sigcfg.SignalFunctions;
             ORTSNormalsubtypes = sigcfg.ORTSNormalSubtypes;
 
             trackDB = simulator.TDB.TrackDB;
@@ -104,7 +101,7 @@ namespace Orts.Simulation.Signalling
 
             // read SIGSCR files
             Trace.Write(" SIGSCR ");
-            scrfile = new SIGSCRfile(new SignalScripts(sigcfg.ScriptPath, sigcfg.ScriptFiles, sigcfg.SignalTypes, sigcfg.ORTSFunctionTypes, sigcfg.ORTSNormalSubtypes));
+            scrfile = new SIGSCRfile(new SignalScripts(sigcfg.ScriptPath, sigcfg.ScriptFiles, sigcfg.SignalTypes, sigcfg.SignalFunctions, sigcfg.ORTSNormalSubtypes));
             CsSignalScripts = new CsSignalScripts(Simulator);
 
             // build list of signal world file information
@@ -147,7 +144,7 @@ namespace Orts.Simulation.Signalling
             ProcessTunnels();
 
             // Process trough information
-            ProcessTroughs();         
+            ProcessTroughs();
 
             // Print all info (DEBUG only)
 #if DEBUG_PRINT
@@ -179,13 +176,17 @@ namespace Orts.Simulation.Signalling
                     foreach (var thisHead in singleSignal.SignalHeads)
                     {
                         sob.AppendFormat("Type name           : {0}\n", thisHead.signalType.Name);
-                        sob.AppendFormat("Type                : {0}\n", thisHead.signalType.FnType);
-                        sob.AppendFormat("OR Type             : {0}\n", thisHead.signalType.ORTSFnType);
-                        sob.AppendFormat("OR Type Index       : {0}\n", thisHead.signalType.ORTSFnTypeIndex);
+                        sob.AppendFormat("Type                : {0}\n", thisHead.signalType.Function.MstsFunction.ToString());
+                        sob.AppendFormat("OR Type             : {0}\n", thisHead.signalType.Function.Name);
                         sob.AppendFormat("item Index          : {0}\n", thisHead.trItemIndex);
                         sob.AppendFormat("TDB  Index          : {0}\n", thisHead.TDBIndex);
                         sob.AppendFormat("Junction Main Node  : {0}\n", thisHead.JunctionMainNode);
                         sob.AppendFormat("Junction Path       : {0}\n", thisHead.JunctionPath);
+
+                        if (thisHead.usedCsSignalScript == null && singleSignal.Type == SignalObjectType.Signal)
+                        {
+                            nonCSharpSignals.Add(thisHead.signalType.Name);
+                        }
                     }
 
                     sob.AppendFormat("TC Reference   : {0}\n", singleSignal.TCReference);
@@ -711,7 +712,7 @@ namespace Orts.Simulation.Signalling
             for (int isignal = 0; isignal < SignalObjects.Length - 1; isignal++)
             {
                 SignalObject singleSignal = SignalObjects[isignal];
-                if (singleSignal != null && singleSignal.isSignal &&
+                if (singleSignal != null && singleSignal.Type == SignalObjectType.Signal &&
                                 singleSignal.WorldObject != null && singleSignal.WorldObject.Backfacing.Count > 0)
                 {
                     // create new signal - copy of existing signal
@@ -720,7 +721,6 @@ namespace Orts.Simulation.Signalling
                     SignalObject newSignal = new SignalObject(singleSignal);
 
                     newSignal.thisRef = newindex;
-                    newSignal.signalRef = this;
                     newSignal.trRefIndex = 0;
 
                     newSignal.WorldObject.FlagsSet = new bool[singleSignal.WorldObject.FlagsSetBackfacing.Length];
@@ -919,7 +919,7 @@ namespace Orts.Simulation.Signalling
                             {
                                 speedItem.SigObj = foundSignals;
 
-                                lastSignal = AddSpeed(index, i, speedItem, TDBRef, tsectiondat, tdbfile, ORTSSignalTypeCount);
+                                lastSignal = AddSpeed(index, i, speedItem, TDBRef, tsectiondat, tdbfile);
                                 speedItem.SigObj = lastSignal;
                             }
                             else
@@ -1010,15 +1010,12 @@ namespace Orts.Simulation.Signalling
         {
             validSignal = true;
 
-            SignalObjects[foundSignals] = new SignalObject(ORTSSignalTypeCount);
-            SignalObjects[foundSignals].isSignal = true;
-            SignalObjects[foundSignals].isSpeedSignal = false;
+            SignalObjects[foundSignals] = new SignalObject(this);
             SignalObjects[foundSignals].direction = (int)sigItem.Direction;
             SignalObjects[foundSignals].trackNode = trackNode;
             SignalObjects[foundSignals].trRefIndex = nodeIndx;
             SignalObjects[foundSignals].AddHead(nodeIndx, TDBRef, sigItem);
             SignalObjects[foundSignals].thisRef = foundSignals;
-            SignalObjects[foundSignals].signalRef = this;
 
             if (tdbfile.TrackDB.TrackNodes[trackNode] == null || tdbfile.TrackDB.TrackNodes[trackNode].TrVectorNode == null)
             {
@@ -1057,17 +1054,14 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// This method adds a new Speedpost to the list
         /// </summary>
-        private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile, int ORTSSignalTypeCount)
+        private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile)
         {
-            SignalObjects[foundSignals] = new SignalObject(ORTSSignalTypeCount);
-            SignalObjects[foundSignals].isSignal = false;
-            SignalObjects[foundSignals].isSpeedSignal = false;
+            SignalObjects[foundSignals] = new SignalObject(this);
             SignalObjects[foundSignals].direction = 0;                  // preset - direction not yet known //
             SignalObjects[foundSignals].trackNode = trackNode;
             SignalObjects[foundSignals].trRefIndex = nodeIndx;
             SignalObjects[foundSignals].AddHead(nodeIndx, TDBRef, speedItem);
             SignalObjects[foundSignals].thisRef = foundSignals;
-            SignalObjects[foundSignals].signalRef = this;
 
             SignalObjects[foundSignals].tdbtraveller =
             new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
@@ -1127,13 +1121,7 @@ namespace Orts.Simulation.Signalling
         {
             foreach (SignalObject signal in SignalObjects)
             {
-                if (signal != null)
-                {
-                    if (signal.isSignal)
-                    {
-                        signal.SetSignalType(sigCFG);
-                    }
-                }
+                signal?.SetSignalType(sigCFG);
             }
         }
 
@@ -1147,7 +1135,7 @@ namespace Orts.Simulation.Signalling
             {
                 if (signal != null)
                 {
-                    if (signal.isSignal || signal.isSpeedSignal)
+                    if (signal.Type == SignalObjectType.Signal || signal.Type == SignalObjectType.SpeedSignal)
                     {
                         foreach (SignalHead head in signal.SignalHeads)
                         {
@@ -1188,7 +1176,7 @@ namespace Orts.Simulation.Signalling
             {
                 if (signal != null)
                 {
-                    if (signal.isSignal || signal.isSpeedSignal)
+                    if (signal.Type == SignalObjectType.Signal || signal.Type == SignalObjectType.SpeedSignal)
                     {
                         signal.Initialize();
                     }
@@ -1220,7 +1208,7 @@ namespace Orts.Simulation.Signalling
                 {
                     foreach (SignalHead thisHead in thisSignal.SignalHeads)
                     {
-                        if (thisHead.sigFunction == MstsSignalFunction.NORMAL)
+                        if (thisHead.Function == SignalFunction.NORMAL)
                         {
                             thisSignal.SignalNumNormalHeads++;
                         }
@@ -1247,7 +1235,7 @@ namespace Orts.Simulation.Signalling
         ///   -6  : end of (sub)route
         /// </summary>
         public TrackCircuitSignalItem Find_Next_Object_InRoute(Train.TCSubpathRoute routePath,
-                int routeIndex, float routePosition, float maxDistance, MstsSignalFunction? fn_type, Train.TrainRouted thisTrain)
+                int routeIndex, float routePosition, float maxDistance, SignalFunction function, Train.TrainRouted thisTrain)
         {
             ObjectItemInfo.ObjectItemFindState locstate = ObjectItemInfo.ObjectItemFindState.None;
             // local processing state     //
@@ -1271,7 +1259,7 @@ namespace Orts.Simulation.Signalling
             while (locstate == ObjectItemInfo.ObjectItemFindState.None)
             {
                 // normal signal
-                if (fn_type == MstsSignalFunction.NORMAL)
+                if (function == SignalFunction.NORMAL)
                 {
                     if (thisSection.EndSignals[actDirection] != null)
                     {
@@ -1281,7 +1269,7 @@ namespace Orts.Simulation.Signalling
                     }
                 }
                 // speedpost
-                else if (fn_type == MstsSignalFunction.SPEED)
+                else if (function == SignalFunction.SPEED)
                 {
                     TrackCircuitSignalList thisSpeedpostList =
                                thisSection.CircuitItems.TrackCircuitSpeedPosts[actDirection];
@@ -1295,7 +1283,7 @@ namespace Orts.Simulation.Signalling
                         TrackCircuitSignalItem thisSpeedpost = thisSpeedpostList.TrackCircuitItem[iPost];
                         if (thisSpeedpost.SignalLocation > lengthOffset)
                         {
-                            ObjectSpeedInfo thisSpeed = thisSpeedpost.SignalRef.this_sig_speed(MstsSignalFunction.SPEED);
+                            ObjectSpeedInfo thisSpeed = thisSpeedpost.SignalRef.this_sig_speed(SignalFunction.SPEED);
 
                             // set signal in list if there is no train or if signal has active speed
                             if (thisTrain == null ||
@@ -1307,9 +1295,8 @@ namespace Orts.Simulation.Signalling
                                 foundObject = thisSpeedpost.SignalRef;
                                 totalLength += thisSpeedpost.SignalLocation - lengthOffset;
                             }
-
                             // also set signal in list if it is a speed signal as state of speed signal may change
-                            else if (thisSpeedpost.SignalRef.isSpeedSignal)
+                            else if (thisSpeedpost.SignalRef.Type == SignalObjectType.SpeedSignal)
                             {
                                 locstate = ObjectItemInfo.ObjectItemFindState.Object;
                                 foundObject = thisSpeedpost.SignalRef;
@@ -1319,11 +1306,11 @@ namespace Orts.Simulation.Signalling
                     }
                 }
                 // all function types
-                else if (fn_type == null)
+                else if (function == null)
                 {
                     List<TrackCircuitSignalItem> signalList = new List<TrackCircuitSignalItem>();
 
-                    signalList = thisSection.CircuitItems.TrackCircuitSignals[actDirection].Select(x => x.TrackCircuitItem).Aggregate((acc, list) => acc.Concat(list).ToList());
+                    signalList = thisSection.CircuitItems.TrackCircuitSignals[actDirection].Select(x => x.Value.TrackCircuitItem).Aggregate((acc, list) => acc.Concat(list).ToList());
 
                     signalList.Sort((a, b) => a.SignalLocation < b.SignalLocation ? -1 : a.SignalLocation > b.SignalLocation ? 1 : 0);
 
@@ -1344,7 +1331,7 @@ namespace Orts.Simulation.Signalling
                 else
                 {
                     TrackCircuitSignalList thisSignalList =
-                        thisSection.CircuitItems.TrackCircuitSignals[actDirection][(int)fn_type];
+                        thisSection.CircuitItems.TrackCircuitSignals[actDirection][function];
                     locstate = ObjectItemInfo.ObjectItemFindState.None;
 
                     foreach (TrackCircuitSignalItem thisSignal in thisSignalList.TrackCircuitItem)
@@ -1486,7 +1473,7 @@ namespace Orts.Simulation.Signalling
 
             TrackCircuitSignalItem nextSignal =
                 Find_Next_Object_InRoute(usedRoute, routeIndex, routePosition,
-                        maxDistance, MstsSignalFunction.NORMAL, thisTrain);
+                        maxDistance, SignalFunction.NORMAL, thisTrain);
 
             signalState = nextSignal.SignalState;
             if (nextSignal.SignalState == ObjectItemInfo.ObjectItemFindState.Object)
@@ -1509,7 +1496,7 @@ namespace Orts.Simulation.Signalling
             {
                 TrackCircuitSignalItem nextSpeedpost =
                     Find_Next_Object_InRoute(usedRoute, routeIndex, routePosition,
-                        maxDistance, MstsSignalFunction.SPEED, thisTrain);
+                        maxDistance, SignalFunction.SPEED, thisTrain);
 
                 if (nextSpeedpost.SignalState == ObjectItemInfo.ObjectItemFindState.Object)
                 {
@@ -1572,7 +1559,7 @@ namespace Orts.Simulation.Signalling
         }
 
         public ObjectItemInfo GetNextSignal_InRoute(Train.TrainRouted thisTrain, Train.TCSubpathRoute routePath,
-            int routeIndex, float routePosition, float maxDistance, Train.TCPosition thisPosition, MstsSignalFunction? requiredSignalFunction = null)
+            int routeIndex, float routePosition, float maxDistance, Train.TCPosition thisPosition, SignalFunction requiredSignalFunction = null)
         {
             Train.TCSubpathRoute usedRoute = routePath;
 
@@ -1847,11 +1834,10 @@ namespace Orts.Simulation.Signalling
                             tcbb.AppendFormat("    End Signal {0} : {1}\n", iDirection, thisSection.EndSignals[iDirection].thisRef);
                         }
 
-                        for (var fntype = 0; fntype < ORTSSignalTypeCount; fntype++)
+                        foreach (SignalFunction function in SignalFunctions.Values)
                         {
-                            var thisFN = (MstsSignalFunction)fntype;
-                            tcbb.AppendFormat("    Direction {0} - Function : {1} : \n", iDirection, thisFN);
-                            var thisSignalList = thisSection.CircuitItems.TrackCircuitSignals[iDirection][fntype];
+                            tcbb.AppendFormat("    Direction {0} - Function : {1} : \n", iDirection, function);
+                            var thisSignalList = thisSection.CircuitItems.TrackCircuitSignals[iDirection][function];
                             foreach (var thisItem in thisSignalList.TrackCircuitItem)
                             {
                                 var thisSignal = thisItem.SignalRef;
@@ -2082,19 +2068,19 @@ namespace Orts.Simulation.Signalling
                         signalDistance = thisCircuit.Length - signalDistance;
                     }
 
-                    for (int fntype = 0; fntype < ORTSSignalTypeCount; fntype++)
+                    foreach (SignalFunction function in SignalFunctions.Values)
                     {
-                        if (thisSignal.isORTSSignalType(fntype))
+                        if (thisSignal.isORTSSignalType(function))
                         {
                             TrackCircuitSignalItem thisTCItem =
                                     new TrackCircuitSignalItem(thisSignal, signalDistance);
 
                             int directionList = thisSignal.direction == 0 ? 1 : 0;
                             TrackCircuitSignalList thisSignalList =
-                                    thisCircuit.CircuitItems.TrackCircuitSignals[directionList][fntype];
+                                    thisCircuit.CircuitItems.TrackCircuitSignals[directionList][function];
 
                             // if signal is SPEED type, insert in speedpost list
-                            if (fntype == (int)MstsSignalFunction.SPEED)
+                            if (function == SignalFunction.SPEED)
                             {
                                 thisSignalList = thisCircuit.CircuitItems.TrackCircuitSpeedPosts[directionList];
                             }
@@ -2241,7 +2227,7 @@ namespace Orts.Simulation.Signalling
                 addIndex.Add(thisNode);
 
                 List<TrackCircuitSignalItem> sectionSignals =
-                         thisSection.CircuitItems.TrackCircuitSignals[0] [(int)MstsSignalFunction.NORMAL].TrackCircuitItem;
+                         thisSection.CircuitItems.TrackCircuitSignals[0][SignalFunction.NORMAL].TrackCircuitItem;
 
                 while (sectionSignals.Count > 0)
                 {
@@ -2258,7 +2244,7 @@ namespace Orts.Simulation.Signalling
                     addIndex.Add(newIndex);
 
                     // restore list (link is lost as item is replaced)
-                    sectionSignals = thisSection.CircuitItems.TrackCircuitSignals[0] [(int)MstsSignalFunction.NORMAL].TrackCircuitItem;
+                    sectionSignals = thisSection.CircuitItems.TrackCircuitSignals[0][SignalFunction.NORMAL].TrackCircuitItem;
                 }
             }
 
@@ -2276,7 +2262,7 @@ namespace Orts.Simulation.Signalling
                     {
 
                         List<TrackCircuitSignalItem> sectionSignals =
-                           thisSection.CircuitItems.TrackCircuitSignals[1] [(int)MstsSignalFunction.NORMAL].TrackCircuitItem;
+                           thisSection.CircuitItems.TrackCircuitSignals[1][SignalFunction.NORMAL].TrackCircuitItem;
 
                         if (sectionSignals.Count > 0)
                         {
@@ -2293,10 +2279,10 @@ namespace Orts.Simulation.Signalling
                             thisSection.EndSignals[1] = thisSignal.SignalRef;
 
                             // restore list (link is lost as item is replaced)
-                            sectionSignals = thisSection.CircuitItems.TrackCircuitSignals[1] [(int)MstsSignalFunction.NORMAL].TrackCircuitItem;
+                            sectionSignals = thisSection.CircuitItems.TrackCircuitSignals[1][SignalFunction.NORMAL].TrackCircuitItem;
                         }
                     }
-                    thisIndex = thisSection.CircuitItems.TrackCircuitSignals[1] [(int)MstsSignalFunction.NORMAL].TrackCircuitItem.Count > 0 ? thisIndex : newIndex;
+                    thisIndex = thisSection.CircuitItems.TrackCircuitSignals[1][SignalFunction.NORMAL].TrackCircuitItem.Count > 0 ? thisIndex : newIndex;
                 }
             }
 
@@ -2527,11 +2513,11 @@ namespace Orts.Simulation.Signalling
 
             // copy signal information
 
-            for (int itype = 0; itype < orgSection.CircuitItems.TrackCircuitSignals[0].Count; itype++)
+            foreach (SignalFunction function in SignalFunctions.Values)
             {
-                TrackCircuitSignalList orgSigList = orgSection.CircuitItems.TrackCircuitSignals[0][itype];
-                TrackCircuitSignalList replSigList = replSection.CircuitItems.TrackCircuitSignals[0][itype];
-                TrackCircuitSignalList newSigList = newSection.CircuitItems.TrackCircuitSignals[0][itype];
+                TrackCircuitSignalList orgSigList = orgSection.CircuitItems.TrackCircuitSignals[0][function];
+                TrackCircuitSignalList replSigList = replSection.CircuitItems.TrackCircuitSignals[0][function];
+                TrackCircuitSignalList newSigList = newSection.CircuitItems.TrackCircuitSignals[0][function];
 
                 foreach (TrackCircuitSignalItem thisSignal in orgSigList.TrackCircuitItem)
                 {
@@ -2548,11 +2534,11 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            for (int itype = 0; itype < orgSection.CircuitItems.TrackCircuitSignals[1].Count; itype++)
+            foreach (SignalFunction function in SignalFunctions.Values)
             {
-                TrackCircuitSignalList orgSigList = orgSection.CircuitItems.TrackCircuitSignals[1][itype];
-                TrackCircuitSignalList replSigList = replSection.CircuitItems.TrackCircuitSignals[1][itype];
-                TrackCircuitSignalList newSigList = newSection.CircuitItems.TrackCircuitSignals[1][itype];
+                TrackCircuitSignalList orgSigList = orgSection.CircuitItems.TrackCircuitSignals[1][function];
+                TrackCircuitSignalList replSigList = replSection.CircuitItems.TrackCircuitSignals[1][function];
+                TrackCircuitSignalList newSigList = newSection.CircuitItems.TrackCircuitSignals[1][function];
 
                 foreach (TrackCircuitSignalItem thisSignal in orgSigList.TrackCircuitItem)
                 {
@@ -2972,9 +2958,9 @@ namespace Orts.Simulation.Signalling
             // process other signals - only set info if not already set
             for (int iDirection = 0; iDirection <= 1; iDirection++)
             {
-                for (int fntype = 0; fntype < ORTSSignalTypeCount; fntype++)
+                foreach (SignalFunction function in SignalFunctions.Values)
                 {
-                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[iDirection][fntype];
+                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[iDirection][function];
                     foreach (TrackCircuitSignalItem thisItem in thisList.TrackCircuitItem)
                     {
                         SignalObject thisSignal = thisItem.SignalRef;
@@ -3856,7 +3842,7 @@ namespace Orts.Simulation.Signalling
                             TrackCircuitSignalItem thisItem = thisItemList[iObject];
 
                             SignalObject thisSpeedpost = thisItem.SignalRef;
-                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(MstsSignalFunction.SPEED);
+                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalFunction.SPEED);
 
                             if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0))
                             {
@@ -3875,7 +3861,7 @@ namespace Orts.Simulation.Signalling
                             TrackCircuitSignalItem thisItem = thisItemList[iObject];
 
                             SignalObject thisSpeedpost = thisItem.SignalRef;
-                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(MstsSignalFunction.SPEED);
+                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalFunction.SPEED);
 
                             if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0))
                             {
@@ -3908,10 +3894,10 @@ namespace Orts.Simulation.Signalling
                             TrackCircuitSignalItem thisItem = thisItemList[iObject];
 
                             SignalObject thisSpeedpost = thisItem.SignalRef;
-                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(MstsSignalFunction.SPEED);
+                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalFunction.SPEED);
                             if (considerSpeedReset)
                             {
-                                var speed_infoR = thisSpeedpost.this_sig_speed(MstsSignalFunction.SPEED);
+                                var speed_infoR = thisSpeedpost.this_sig_speed(SignalFunction.SPEED);
                                 speed_info.speed_reset = speed_infoR.speed_reset;
                             }
                             if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0) || speed_info.speed_reset == 1)
@@ -3931,7 +3917,7 @@ namespace Orts.Simulation.Signalling
                             TrackCircuitSignalItem thisItem = thisItemList[iObject];
 
                             SignalObject thisSpeedpost = thisItem.SignalRef;
-                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(MstsSignalFunction.SPEED);
+                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalFunction.SPEED);
 
                             if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0))
                             {

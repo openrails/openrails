@@ -2164,7 +2164,7 @@ namespace Orts.Viewer3D.Debugging
             {
                 int returnValue = 2;
 
-                foreach (var head in Signal.SignalHeads.Where(x => x.sigFunction == MstsSignalFunction.NORMAL))
+                foreach (var head in Signal.SignalHeads.Where(x => x.Function == SignalFunction.NORMAL))
                 {
                     if (head.state == MstsSignalAspect.CLEAR_1
                         || head.state == MstsSignalAspect.CLEAR_2)
