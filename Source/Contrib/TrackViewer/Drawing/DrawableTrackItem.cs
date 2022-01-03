@@ -147,14 +147,14 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="sigcfgFile">The signal configuration file</param>
         public void DetermineIfNormal(SignalConfigurationFile sigcfgFile)
         {
-            this.isNormal = true; //default
+            isNormal = true; //default
             if (sigcfgFile == null)
             {   // if no sigcfgFile is available, just keep default
                 return;
             }
-            if (sigcfgFile.SignalTypes.ContainsKey(this.signalType))
+            if (sigcfgFile.SignalTypes.ContainsKey(signalType))
             {
-                this.isNormal = (sigcfgFile.SignalTypes[this.signalType].FnType == MstsSignalFunction.NORMAL);
+                isNormal = sigcfgFile.SignalTypes[signalType].Function == SignalFunction.NORMAL;
             }
         }
 
