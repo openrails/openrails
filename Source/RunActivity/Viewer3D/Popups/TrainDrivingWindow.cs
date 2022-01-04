@@ -812,8 +812,12 @@ namespace Orts.Viewer3D.Popups
 
                 if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
                 {
-                    int indexOffset = Viewer.Catalog.GetString("EOT").Length + 1;
-                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
+                    int indexOffset = Viewer.Catalog.GetString("EOT").Length + 1; 
+                    if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
+                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index);
+                    else
+                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
+
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
