@@ -80,6 +80,7 @@ namespace Orts.Simulation.Physics
         public List<TrainCar> Cars = new List<TrainCar>();           // listed front to back
         public int Number;
         public string Name;
+        public string TcsParametersFileName;
         public static int TotalNumber = 1; // start at 1 (0 is reserved for player train)
         public TrainCar FirstCar
         {
