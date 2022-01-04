@@ -571,7 +571,7 @@ namespace Orts.Simulation.RollingStocks
         float DisplayCriticalSpeedTractiveEffortLbf;  // Display power value @ speed of piston
         float absStartTractiveEffortN = 0.0f;      // Record starting tractive effort
         float TractiveEffortLbsF;           // Current sim calculated tractive effort
-        const float TractiveEffortFactor = 0.85f;  // factor for calculating Theoretical Tractive Effort for non-geared locomotives
+        float TractiveEffortFactor = 0.85f;  // factor for calculating Theoretical Tractive Effort for non-geared locomotives
         float GearedTractiveEffortFactor = 0.7f;  // factor for calculating Theoretical Tractive Effort for geared locomotives
         float NeutralGearedDavisAN; // Davis A value adjusted for neutral gearing
         const float DavisMechanicalResistanceFactor = 20.0f;
@@ -1253,6 +1253,13 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // ******************  Test Locomotive and Gearing type *********************** 
+
+            // if the maximum cutoff for the locomotive is less then the default value, then decrease it so that tractive effort is not excessive. 
+            // At some future stage it may be worthwhile to add an extra parameter to the ENG file to allow user setting.
+            if (CutoffController.MaximumValue < TractiveEffortFactor)
+            {
+                TractiveEffortFactor = CutoffController.MaximumValue;
+            }
 
             if (SteamEngineType == SteamEngineTypes.Compound)
             {
