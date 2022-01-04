@@ -151,6 +151,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("Apply Quick")] = Viewer.Catalog.GetString("ApplQ"),
             [Viewer.Catalog.GetString("Apply Slow")] = Viewer.Catalog.GetString("ApplS"),
             [Viewer.Catalog.GetString("coal")] = Viewer.Catalog.GetString("c"),
+            [Viewer.Catalog.GetString("Cont. Service")] = Viewer.Catalog.GetString("Serv"),
             [Viewer.Catalog.GetString("Emergency Braking Push Button")] = Viewer.Catalog.GetString("EmerBPB"),
             [Viewer.Catalog.GetString("Lap Self")] = Viewer.Catalog.GetString("LapS"),
             [Viewer.Catalog.GetString("Minimum Reduction")] = Viewer.Catalog.GetString("MRedc"),
@@ -158,6 +159,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("skid")] = Viewer.Catalog.GetString("Skid"),
             [Viewer.Catalog.GetString("slip warning")] = Viewer.Catalog.GetString("Warning"),
             [Viewer.Catalog.GetString("slip")] = Viewer.Catalog.GetString("Slip"),
+            [Viewer.Catalog.GetString("Vac. Cont. Service")] = Viewer.Catalog.GetString("Vac.Serv"),
             [Viewer.Catalog.GetString("water")] = Viewer.Catalog.GetString("w")
         };
 
@@ -798,12 +800,16 @@ namespace Orts.Viewer3D.Popups
                 });
 
                 index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EQ"));
-                brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC")) - index).TrimEnd();
+                if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
+                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) - index).TrimEnd();
+                else
+                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC")) - index).TrimEnd();
 
                 AddLabel(new ListLabel
                 {
                     LastCol = brakeInfoValue,
                 });
+
                 if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
                 {
                     int indexOffset = Viewer.Catalog.GetString("EOT").Length + 1;
@@ -822,8 +828,13 @@ namespace Orts.Viewer3D.Popups
                 }
                 else
                 {
-                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
+                    if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
+                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index);
+                    else
+                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
+
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimEnd();
+                    brakeInfoValue = brakeInfoValue.StartsWith(Viewer.Catalog.GetString("V")) ? brakeInfoValue.Replace(Viewer.Catalog.GetString("V"), Viewer.Catalog.GetString("V") + "  ") : brakeInfoValue;
                     AddLabel(new ListLabel
                     {
                         LastCol = brakeInfoValue,
