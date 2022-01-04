@@ -342,7 +342,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             lead.BrakeFlagIncrease = false;
                             lead.BrakeFlagDecrease = true;
                                                         
-                            lead.BrakeSystem.BrakeLine1PressurePSI += elapsedClockSeconds / AdjBrakeServiceTimeFactorS;
+                            lead.BrakeSystem.BrakeLine1PressurePSI += elapsedClockSeconds * AdjBrakeServiceTimeFactorS;
                             if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                             {
                                 lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
