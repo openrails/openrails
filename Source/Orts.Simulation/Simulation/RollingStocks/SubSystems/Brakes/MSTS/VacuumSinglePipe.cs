@@ -703,8 +703,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float AdjVacuumPumpChargingRateInHgpS = 0.0f;
             float AdjHighSExhausterChargingRateInHgpS = 0.0f;
             float AdjLowSExhausterChargingRateInHgpS = 0.0f;
-            float AdjBrakeServiceTimeFactorS = 0.0f;
-            float AdjBrakeEmergencyTimeFactorS = 0.0f;
+            float AdjBrakeServiceTimeFactorPSIpS = 0.0f;
+            float AdjBrakeEmergencyTimeFactorPSIpS = 0.0f;
             float AdjTrainPipeLeakLossPSI = 0.0f;
             float TempbrakePipeTimeMultFactor = 0.0f;
             float RunningNetBPLossGainPSI = 0.0f;     // The net value of the losses and gains in the brake pipe for quick release position: eg Net = Lg Ejector + Sm Ejector + Vac Pump - BP Loss
@@ -766,9 +766,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AdjHighSExhausterChargingRateInHgpS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.ExhausterHighSBPChargingRatePSIorInHgpS;
                 AdjLowSExhausterChargingRateInHgpS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.ExhausterLowSBPChargingRatePSIorInHgpS;
                 AdjTrainPipeLeakLossPSI = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.TrainBrakePipeLeakPSIorInHgpS;
-                AdjBrakeServiceTimeFactorS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeServiceTimeFactorS;
-                AdjBrakeEmergencyTimeFactorS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeEmergencyTimeFactorS;
-                AdjBrakeEmergencyTimeFactorS = MathHelper.Clamp(AdjBrakeEmergencyTimeFactorS, 1.0f, AdjBrakeEmergencyTimeFactorS);  // Make sure service time does not go below 1, as this causes too faster operation for light engines
+                AdjBrakeServiceTimeFactorPSIpS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeServiceTimeFactorPSIpS;
+                AdjBrakeEmergencyTimeFactorPSIpS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeEmergencyTimeFactorPSIpS;
+                AdjBrakeEmergencyTimeFactorPSIpS = MathHelper.Clamp(AdjBrakeEmergencyTimeFactorPSIpS, 1.0f, AdjBrakeEmergencyTimeFactorPSIpS);  // Make sure service time does not go below 1, as this causes too faster operation for light engines
                 TempbrakePipeTimeMultFactor = train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f);
                 AdjbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
                 AdjBrakePipeDischargeTimeFactor = TempbrakePipeTimeMultFactor * lead.BrakePipeDischargeTimeFactor;
@@ -878,7 +878,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             // Thus as the valve is opened further then the rate at which the vacuum is destroyed increases
                             float VacuumPressureDifference = (OneAtmospherePSI - MaxVacuumPipeLevelPSI);
                             float BrakeValveOpeningFraction = (DesiredPipeVacuum - VacuumPressureDifference) / MaxVacuumPipeLevelPSI;
-                            float ApplyIncreaseGradient = TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorS;
+                            float ApplyIncreaseGradient = TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorPSIpS;
                             float VacApplyServiceTimeFactorS = (1 + ApplyIncreaseGradient * BrakeValveOpeningFraction);
                             VacApplyServiceTimeFactorS = MathHelper.Clamp(VacApplyServiceTimeFactorS, 1.0f, VacApplyServiceTimeFactorS);  // Make sure service time does not go below 1
 
@@ -896,7 +896,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Emergency && lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
                         {
                             // In emergency position brake pipe vacuum is reduced based upon the emergency time factor
-                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorS);
+                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorPSIpS);
 
                             if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                                 lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
@@ -905,7 +905,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         else if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
                         {
                             // Vacuum Pipe is < Desired value - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
-                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorS);
+                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorPSIpS);
                             if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
                                 lead.BrakeSystem.BrakeLine1PressurePSI = DesiredPipeVacuum;
                         }
@@ -978,7 +978,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         // Brake Controller is in Emergency position - fast increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
                         else if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Emergency)
                         {
-                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorS);
+                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorPSIpS);
 
                             if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                                 lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
@@ -988,7 +988,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         // Brake Controller is in Apply position - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
                         else if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Apply)
                         {
-                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorS);
+                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorPSIpS);
                             if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                                 lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
                         }
@@ -1031,7 +1031,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
                             {
                                 // Vacuum Pipe is < Desired value - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
-                                lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorS);
+                                lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorPSIpS);
                                 if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                                     lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
                             }
@@ -1056,7 +1056,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             // Thus as the valve is opened further then the rate at which the vacuum is destroyed increases
                             float VacuumPressureDifference = (OneAtmospherePSI - MaxVacuumPipeLevelPSI);
                             float BrakeValveOpeningFraction = (DesiredPipeVacuum - VacuumPressureDifference) / MaxVacuumPipeLevelPSI;
-                            float ApplyIncreaseGradient = TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorS;
+                            float ApplyIncreaseGradient = TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorPSIpS;
                             float VacApplyServiceTimeFactorS = (1 + ApplyIncreaseGradient * BrakeValveOpeningFraction);
                             VacApplyServiceTimeFactorS = MathHelper.Clamp(VacApplyServiceTimeFactorS, 1.0f, VacApplyServiceTimeFactorS);  // Make sure service time does not go below 1
 
