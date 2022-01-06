@@ -79,8 +79,6 @@ IF "%Mode%" == "Stable" (
 
 REM Get product version and code revision.
 FOR /F "usebackq tokens=1* delims==" %%A IN (`CALL GetVersion.cmd %Mode%`) DO SET %%A=%%B
-SET Version=%OpenRails_Version%
-SET Revision=%OpenRails_Revision%
 
 REM Restore NuGet packages.
 nuget restore Source\ORTS.sln || GOTO :error
@@ -114,9 +112,9 @@ IF %ERRORLEVEL% GEQ 8 GOTO :error
 
 REM Copy version number from OpenRails.exe into all other 1st party files
 FOR %%F IN ("Program\*.exe", "Program\Orts.*.dll", "Program\Contrib.*.dll", "Program\Tests.dll") DO (
-	rcedit-x86.exe "%%~F" --set-product-version %Revision% --set-version-string ProductVersion %Version% || GOTO :error
+	rcedit-x86.exe "%%~F" --set-product-version %OpenRails_Revision% --set-version-string ProductVersion %OpenRails_Version% || GOTO :error
 )
-ECHO Set product version information to "%Version%".
+ECHO Set product version information to "%OpenRails_Version%".
 
 REM *** Special build step: signs binaries ***
 IF NOT "%JENKINS_TOOLS%" == "" (
@@ -133,8 +131,8 @@ IF NOT "%Mode%" == "Unstable" (
 
 	REM Compile the documentation.
 	FOR %%E IN (doc docx docm xls xlsx xlsm odt) DO FOR %%F IN ("Source\Documentation\*.%%E") DO ECHO %%~F && OfficeToPDF.exe /bookmarks /print "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
-	>"Source\Documentation\Manual\version.py" ECHO version = '%Version%' || GOTO :error
-	>>"Source\Documentation\Manual\version.py" ECHO release = '%Revision%' || GOTO :error
+	>"Source\Documentation\Manual\version.py" ECHO version = '%OpenRails_Version%' || GOTO :error
+	>>"Source\Documentation\Manual\version.py" ECHO release = '%OpenRails_Revision%' || GOTO :error
 	PUSHD "Source\Documentation\Manual" && CALL make.bat clean & POPD || GOTO :error
 	PUSHD "Source\Documentation\Manual" && CALL make.bat latexpdf && POPD || GOTO :error
 
@@ -155,7 +153,7 @@ IF "%Mode%" == "Stable" (
 	IF %ERRORLEVEL% GEQ 8 GOTO :error
 	ROBOCOPY /MIR /NJH /NJS "Program\Documentation" "Open Rails\Documentation"
 	IF %ERRORLEVEL% GEQ 8 GOTO :error
-	>"Source\Installer\Version.iss" ECHO #define MyAppVersion "%Version%" || GOTO :error
+	>"Source\Installer\Version.iss" ECHO #define MyAppVersion "%OpenRails_Version%" || GOTO :error
 	iscc "Source\Installer\Installer.iss" || GOTO :error
 	CALL :move "Source\Installer\Output\OpenRailsSetup.exe" "OpenRails-%Mode%-Setup.exe" || GOTO :error
 	REM *** Special build step: signs binaries ***

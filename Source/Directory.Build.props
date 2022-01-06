@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <Version Condition="'$(DesignTimeBuild)' != 'true' OR '$(BuildingProject)' == 'true'">0.0.$([System.DateTime]::UtcNow.Date.Subtract($([System.DateTime]::Parse("2000-01-01"))).TotalDays).$([System.Math]::Floor($([MSBuild]::Divide($([System.DateTime]::UtcNow.TimeOfDay.TotalSeconds), 2))))</Version>
+    <AssemblyVersion Condition="'$(DesignTimeBuild)' != 'true' OR '$(BuildingProject)' == 'true'">0.0.$([System.DateTime]::UtcNow.Date.Subtract($([System.DateTime]::Parse("2000-01-01"))).TotalDays).$([System.Math]::Floor($([MSBuild]::Divide($([System.DateTime]::UtcNow.TimeOfDay.TotalSeconds), 2))))</AssemblyVersion>
+    <OutputPath>$(MSBuildThisFileDirectory)\..\Program\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+</Project>
