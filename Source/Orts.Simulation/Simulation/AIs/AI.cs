@@ -961,6 +961,7 @@ namespace Orts.Simulation.AIs
 #endif
             train.CreateRoute(false);  // create route without use of FrontTDBtraveller
             train.CheckFreight(); // check if train is freight or passenger
+            train.SetDPUnitIDs(); // distributed power
             if (!isInitialPlayerTrain || train.InitialSpeed != 0) train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
 

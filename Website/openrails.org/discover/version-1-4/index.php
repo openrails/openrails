@@ -70,7 +70,7 @@
           <p>
             A <a href="https://launchpad.net/or/+milestone/1.4">full list of changes</a> is available.
           </p>
-          <h3><a href="../version-1-3-1/">Changes in previous version</a></h3>
+          <h3><a href="../version-1-3/">Changes in previous version</a></h3>
           <p>&nbsp;</p>
         </div>
       </div>

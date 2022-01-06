@@ -139,6 +139,7 @@ namespace Orts.Simulation.RollingStocks
         public bool CabLightOn;
         public bool ShowCab = true;
         public bool MilepostUnitsMetric;
+        public int DPUnitID;
         public float DrvWheelWeightKg; // current weight on locomotive drive wheels, includes drag factor (changes as mass changes)
         public float InitialDrvWheelWeightKg; // initialising weight on locomotive drive wheels, includes drag factor
         public bool CabRadioOn;
@@ -340,8 +341,8 @@ namespace Orts.Simulation.RollingStocks
         public float EngineBrakeApplyRatePSIpS = 12.5f;
         public float BrakePipeTimeFactorS = 0.0015f;
         public float BrakePipeDischargeTimeFactor;
-        public float BrakeServiceTimeFactorS;
-        public float BrakeEmergencyTimeFactorS;
+        public float BrakeServiceTimeFactorPSIpS;
+        public float BrakeEmergencyTimeFactorPSIpS;
         public float BrakePipeChargingRatePSIorInHgpS;
         public float BrakePipeQuickChargingRatePSIpS;
         public InterpolatorDiesel2D TractiveForceCurves;
@@ -401,7 +402,7 @@ namespace Orts.Simulation.RollingStocks
         protected const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
         protected const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
 
-        public List<CabView> CabViewList = new List<CabView>();
+public List<CabView> CabViewList = new List<CabView>();
         public CabView3D CabView3D;
 
         public MSTSNotchController SteamHeatController = new MSTSNotchController(0, 1, 0.1f);
@@ -413,6 +414,8 @@ namespace Orts.Simulation.RollingStocks
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
         public MSTSNotchController DynamicBrakeController;
         public MSTSNotchController GearBoxController;
+        public MSTSNotchController DPThrottleController;
+        public MSTSNotchController DPDynamicBrakeController;
 
         private int PreviousGearBoxNotch;
 
@@ -545,6 +548,7 @@ namespace Orts.Simulation.RollingStocks
                 ThrottleController = new MSTSNotchController();
                 ThrottleController.StepSize = 0.1f;
             }
+            DPThrottleController = (MSTSNotchController)ThrottleController.Clone();
 
             // need to test for Dynamic brake problem on 3DTS and SLI
             if (DynamicBrakeController.IsValid())
@@ -553,9 +557,16 @@ namespace Orts.Simulation.RollingStocks
                 {
                     HasSmoothStruc = true;
                 }
+                if (DynamicBrakeController.NotchCount() > 3)
+                    DPDynamicBrakeController = (MSTSNotchController)DynamicBrakeController.Clone();
+                else
+                    DPDynamicBrakeController = BuildDPDynamicBrakeController();
             }
             else
+            {
                 DynamicBrakeController = null;
+                DPDynamicBrakeController = null;
+            }
 
             if (DynamicBrakeForceCurves == null && MaxDynamicBrakeForceN > 0)
             {
@@ -575,6 +586,69 @@ namespace Orts.Simulation.RollingStocks
                 DynamicBrakeForceCurves[1] = interp;
             }
         }
+         
+        protected MSTSNotchController BuildDPDynamicBrakeController()
+        {
+            var dpDynController = new MSTSNotchController();
+            CabView cabView = null;
+            CVCMultiStateDisplay msDisplay = null;
+            if (CabView3D != null)
+                cabView = CabView3D;
+            else if (CabViewList.Count > 0)
+            {
+                if (CabViewList[0].CabViewType == CabViewType.Front)
+                    cabView = CabViewList[0];
+                else
+                    cabView = CabViewList[1];
+            }
+            if (cabView != null)
+            {
+                try
+                {
+                    msDisplay = (CVCMultiStateDisplay) cabView.CVFFile.CabViewControls.Where(
+                        control => control is CVCMultiStateDisplay &&
+                        (((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY ||
+                        ((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.CPH_DISPLAY)).First();
+                }
+                catch
+                {
+
+                }
+                if (msDisplay != null)
+                {
+                    if (msDisplay.ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY)
+                    {
+                        foreach (var switchval in msDisplay.Values)
+                            dpDynController.AddNotch((float) switchval);
+                    }
+                    else
+                    {
+                        foreach (var switchval in msDisplay.Values)
+                        {
+                            if (switchval<CombinedControlSplitPosition)
+                                continue;
+                            dpDynController.AddNotch((float)(switchval - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
+                        }
+                    }
+                }
+            }
+            if (cabView == null || msDisplay == null)
+            // Use default Dash9 arrangement if no display is found
+            {
+                var switchval = 0f;
+                while (switchval <= 1)
+                {
+                    if (switchval == 0.99f)
+                        switchval = 1;
+                    dpDynController.AddNotch(switchval);
+                    switchval += 0.11f;
+                }
+            }
+
+
+            return dpDynController;
+        }
+
 
         protected void GetPressureUnit()
         {
@@ -870,8 +944,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsenginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsbrakepipetimefactor": BrakePipeTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-                case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-                case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+                case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorPSIpS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+                case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorPSIpS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsbrakepipequickchargingrate": BrakePipeQuickChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsbrakepipedischargetimemult": BrakePipeDischargeTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -1065,6 +1139,16 @@ namespace Orts.Simulation.RollingStocks
             EngineBrakeController = locoCopy.EngineBrakeController != null ? locoCopy.EngineBrakeController.Clone(this) : null;
             BrakemanBrakeController = locoCopy.BrakemanBrakeController != null ? locoCopy.BrakemanBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
+            DPThrottleController = (MSTSNotchController)ThrottleController.Clone();
+            if (DynamicBrakeController != null)
+            {
+                if (DynamicBrakeController.NotchCount() > 3)
+                    DPDynamicBrakeController = (MSTSNotchController)DynamicBrakeController.Clone();
+                else
+                    DPDynamicBrakeController = BuildDPDynamicBrakeController();
+            }
+            else
+                DPDynamicBrakeController = null;
 
             LocomotivePowerSupply.Copy(locoCopy.LocomotivePowerSupply);
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
@@ -1134,6 +1218,10 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(IsWaterScoopDown);
             outf.Write(CurrentTrackSandBoxCapacityM3);
             outf.Write(SaveAdhesionFilter);
+            outf.Write(GenericItem1);
+            outf.Write(GenericItem2);
+            outf.Write(RemoteControlGroup);
+            outf.Write(DPUnitID);
 
             base.Save(outf);
 
@@ -1182,6 +1270,11 @@ namespace Orts.Simulation.RollingStocks
             SaveAdhesionFilter = inf.ReadSingle();
             
             AdhesionFilter.Reset(SaveAdhesionFilter);
+
+            GenericItem1 = inf.ReadBoolean();
+            GenericItem2 = inf.ReadBoolean();
+            RemoteControlGroup = inf.ReadInt32();
+            DPUnitID = inf.ReadInt32();
 
             base.Restore(inf);
 
@@ -1393,30 +1486,30 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Initialise Brake Emergency Time Factor
-            if (BrakeEmergencyTimeFactorS == 0) // Check to see if BrakeEmergencyTimeFactorS has been set in the ENG file.
+            if (BrakeEmergencyTimeFactorPSIpS == 0) // Check to see if BrakeEmergencyTimeFactorS has been set in the ENG file.
             {
                 // Set Default Brake Emergency Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakeEmergencyTimeFactorS = 1.0f; // Vacuum brakes
+                    BrakeEmergencyTimeFactorPSIpS = 1.0f; // Vacuum brakes
                 }
                 else
                 {
-                    BrakeEmergencyTimeFactorS = 0.1f; // Air brakes
+                    BrakeEmergencyTimeFactorPSIpS = 0.1f; // Air brakes
                 }
             }
 
             // Initialise Brake Service Time Factor
-            if (BrakeServiceTimeFactorS == 0) // Check to see if BrakeServiceTimeFactorS has been set in the ENG file.
+            if (BrakeServiceTimeFactorPSIpS == 0) // Check to see if BrakeServiceTimeFactorS has been set in the ENG file.
             {
                 // Set Default Brake Service Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakeServiceTimeFactorS = 10.0f; // Vacuum brakes
+                    BrakeServiceTimeFactorPSIpS = 10.0f; // Vacuum brakes
                 }
                 else
                 {
-                    BrakeServiceTimeFactorS = 1.009f; // Air brakes
+                    BrakeServiceTimeFactorPSIpS = 1.009f; // Air brakes
                 }
             }
 
@@ -1749,7 +1842,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 case Train.TRAINTYPE.AI:
                 case Train.TRAINTYPE.AI_PLAYERHOSTING:
-                    if (AcceptMUSignals)
+                    if (RemoteControlGroup != -1)
                     {
                         if (!LocomotivePowerSupply.MainPowerSupplyOn)
                         {
@@ -2050,6 +2143,7 @@ namespace Orts.Simulation.RollingStocks
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive())
+//            if (this.IsLeadLocomotive() || RemoteControlGroup == -1)
             {
                 var throttleCurrentNotch = ThrottleController.CurrentNotch;
                 ThrottleController.Update(elapsedClockSeconds);
@@ -2058,6 +2152,8 @@ namespace Orts.Simulation.RollingStocks
                 ThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
                 ConfirmWheelslip(elapsedClockSeconds);
                 LocalThrottlePercent = (ThrottleIntervention < 0 ? ThrottleController.CurrentValue : ThrottleIntervention) * 100.0f;
+                DPThrottleController.Update(elapsedClockSeconds);
+                if (DPDynamicBrakeController != null) DPDynamicBrakeController.Update(elapsedClockSeconds);
             }
             else
             {
@@ -2065,26 +2161,26 @@ namespace Orts.Simulation.RollingStocks
             }
 
 #if INDIVIDUAL_CONTROL
-            //this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
-            if (MultiPlayer.MPManager.IsMultiPlayer() && this.Train.TrainType == Train.TRAINTYPE.REMOTE && this == Program.Simulator.PlayerLocomotive)
-            {
-                //cannot control train brake as it is the remote's job to do so
-                if ((EngineBrakeController != null && EngineBrakeController.UpdateValue != 0.0) || (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0) || ThrottleController.UpdateValue != 0.0)
-                {
-                    controlUpdated = true;
-                }
-                ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
-                if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0)) DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
-                return; //done, will go back and send the message to the remote train controller
-            }
+			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
+			if (MultiPlayer.MPManager.IsMultiPlayer() && this.Train.TrainType == Train.TRAINTYPE.REMOTE && this == Program.Simulator.PlayerLocomotive)
+			{
+				//cannot control train brake as it is the remote's job to do so
+				if ((EngineBrakeController != null && EngineBrakeController.UpdateValue != 0.0) || (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0) || ThrottleController.UpdateValue != 0.0)
+				{
+					controlUpdated = true;
+				}
+				ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
+				if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0)) DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
+				return; //done, will go back and send the message to the remote train controller
+			}
 
-            if (MultiPlayer.MPManager.IsMultiPlayer() && this.notificationReceived == true)
-            {
-                ThrottlePercent = ThrottleController.CurrentValue * 100.0f;
-                this.notificationReceived = false;
-            }
+			if (MultiPlayer.MPManager.IsMultiPlayer() && this.notificationReceived == true)
+			{
+				ThrottlePercent = ThrottleController.CurrentValue * 100.0f;
+				this.notificationReceived = false;
+			}
 #endif
-        }
+                    }
 
         /// <summary>
         /// This function updates periodically the locomotive's motive force.
@@ -2788,6 +2884,7 @@ namespace Orts.Simulation.RollingStocks
         /// Dry track = 0.33 
         /// 
         /// The following values are indicatitive values only (sourced from Principles and Applications of Tribology).
+        /// https://books.google.com.au/books?id=LtYgBQAAQBAJ&pg=PA312&lpg=PA312&dq=Principles+and+Applications+of+Tribology+table+14.1&source=bl&ots=2hfz1WpEsM&sig=ACfU3U3U9y9Lwov9GORLaKCO10SCFHvjhA&hl=en&sa=X&ved=2ahUKEwi82NCF_Yr0AhWNTX0KHcGfB3QQ6AF6BAgMEAM#v=onepage&q=Principles%20and%20Applications%20of%20Tribology%20table%2014.1&f=false
         /// Wet track (clean) = 0.18 <=> 0.2
         /// Wet track (sand) = 0.22 <=> 0.25
         /// Dew or fog = 0.09 <=> 0.15
@@ -3005,7 +3102,8 @@ namespace Orts.Simulation.RollingStocks
                 foreach (TrainCar car in Train.Cars)
                 {
                     var loco = car as MSTSLocomotive;
-                    if (loco != null && car != this && loco.AcceptMUSignals)
+                    //                    if (loco != null && car != this && loco.AcceptMUSignals)
+                    if (loco != null && car != this && loco.RemoteControlGroup >= 0)
                         switch (direction)
                         {
                             case Direction.Reverse: loco.SignalEvent(Event.ReverserToForwardBackward); break;
@@ -3077,9 +3175,9 @@ namespace Orts.Simulation.RollingStocks
                 if (!(CombinedControlType == CombinedControl.ThrottleDynamic
                     || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0))
                 {
-                    Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
-                    return;
-                }
+                Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
+                return;
+            }
             }
 
             if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake)
@@ -3975,6 +4073,18 @@ namespace Orts.Simulation.RollingStocks
                 return string.Format("{0:F0}%", DynamicBrakePercent);
             return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
+
+        public override string GetDPDynamicBrakeStatus()
+        {
+            if (DynamicBrakeController == null)
+                return null;
+            var dpStatus = this is MSTSDieselLocomotive && Train.DPMode == -1 ? string.Format("({0:F0}%)", Train.DPDynamicBrakePercent) : string.Empty;
+            if (DynamicBrakePercent < 0)
+                return dpStatus;
+            if (TrainControlSystem.FullDynamicBrakingOrder)
+                return string.Format("{0:F0}% {1}", DynamicBrakePercent, dpStatus);
+            return string.Format("{0} {1}", DynamicBrakeController.GetStatus(), dpStatus);
+        }
         #endregion
 
         public override void SignalEvent(TCSEvent evt)
@@ -4005,7 +4115,7 @@ namespace Orts.Simulation.RollingStocks
 
         internal void ToggleMUCommand(bool ToState)
         {
-            AcceptMUSignals = ToState;
+            RemoteControlGroup = ToState ? 0 : -1;
         }
 
         public void SetTrainHandbrake(bool apply)
@@ -4129,6 +4239,18 @@ namespace Orts.Simulation.RollingStocks
             OdometerCountingUp = !OdometerCountingUp;
 
             Simulator.Confirmer.Confirm(CabControl.Odometer, OdometerCountingUp ? CabSetting.Increase : CabSetting.Decrease);
+        }
+
+        public void GenericItem1Toggle()
+        {
+            GenericItem1 = !GenericItem1;
+            SignalEvent(GenericItem1? Event.GenericItem1On : Event.GenericItem1Off); // hook for sound trigger
+        }
+
+        public void GenericItem2Toggle()
+        {
+            GenericItem2 = !GenericItem2;
+            SignalEvent(GenericItem2 ? Event.GenericItem2On : Event.GenericItem2Off); // hook for sound trigger
         }
 
         public override bool GetCabFlipped()
@@ -4933,7 +5055,7 @@ namespace Orts.Simulation.RollingStocks
                         foreach (var car in Train.Cars)
                         {
                             var dieselLoco = car as MSTSDieselLocomotive;
-                            if (dieselLoco != null && dieselLoco.AcceptMUSignals)
+                            if (dieselLoco != null && dieselLoco.RemoteControlGroup != -1)
                             {
                                 if (car == Simulator.PlayerLocomotive && dieselLoco.DieselEngines.Count > 1)
                                 {
@@ -5014,6 +5136,16 @@ namespace Orts.Simulation.RollingStocks
                         seconds += 60;
                     data = seconds;
                     break;
+                case CABViewControlTypes.ORTS_GENERIC_ITEM1:
+                    {
+                        data = GenericItem1 ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_GENERIC_ITEM2:
+                    {
+                        data = GenericItem2 ? 1 : 0;
+                        break;
+                    }
 
                 // Train Control System controls
                 case CABViewControlTypes.ORTS_TCS1:

@@ -391,6 +391,18 @@ Trigger       Function
 235           AirConditioningOff
 =========     =====================================
 
+Triggers from 240 to 243 associated to the two generic items 
+(see :ref:`here <cabs-generic-items>`) :
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+240           GenericItem1On
+241           GenericItem1Off
+242           GenericItem2On
+243           GenericItem2Off
+=========     =====================================
+
 Variable Triggers
 -----------------
 

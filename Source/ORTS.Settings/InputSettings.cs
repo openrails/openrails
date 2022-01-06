@@ -388,8 +388,10 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlForwards] = new UserCommandKeyInput(0x11);
             Commands[(int)UserCommand.ControlGearDown] = new UserCommandKeyInput(0x12, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlGearUp] = new UserCommandKeyInput(0x12);
-            Commands[(int)UserCommand.ControlGeneric1] = new UserCommandKeyInput(0x33, KeyModifiers.Control);
-            Commands[(int)UserCommand.ControlGeneric2] = new UserCommandKeyInput(0x34, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlGenericItem1] = new UserCommandKeyInput(0x33, KeyModifiers.Shift);
+            Commands[(int)UserCommand.ControlGenericItem2] = new UserCommandKeyInput(0x34, KeyModifiers.Shift);
+            Commands[(int)UserCommand.ControlTCSGeneric1] = new UserCommandKeyInput(0x33, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlTCSGeneric2] = new UserCommandKeyInput(0x34, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlHandbrakeFull] = new UserCommandKeyInput(0x28, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlHandbrakeNone] = new UserCommandKeyInput(0x27, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlHeadlightDecrease] = new UserCommandKeyInput(0x23, KeyModifiers.Shift);
@@ -436,6 +438,14 @@ namespace ORTS.Settings
 
             Commands[(int)UserCommand.ControlWaterScoop] = new UserCommandKeyInput(0x15);
             Commands[(int)UserCommand.ControlWiper] = new UserCommandKeyInput(0x2F);
+            // Distributed power
+            Commands[(int)UserCommand.ControlDPMoveToFront] = new UserCommandKeyInput(0x18, KeyModifiers.Control); //O
+            Commands[(int)UserCommand.ControlDPMoveToBack] = new UserCommandKeyInput(0x18, KeyModifiers.Control | KeyModifiers.Shift); //O
+            Commands[(int)UserCommand.ControlDPTraction] = new UserCommandKeyInput(0x26, KeyModifiers.Control); //L
+            Commands[(int)UserCommand.ControlDPIdle] = new UserCommandKeyInput(0x26, KeyModifiers.Control | KeyModifiers.Shift); //L
+            Commands[(int)UserCommand.ControlDPBrake] = new UserCommandKeyInput(0x28, KeyModifiers.Control); //
+            Commands[(int)UserCommand.ControlDPMore] = new UserCommandKeyInput(0x16, KeyModifiers.Control); //U
+            Commands[(int)UserCommand.ControlDPLess] = new UserCommandKeyInput(0x16, KeyModifiers.Control | KeyModifiers.Shift); //U
 
             Commands[(int)UserCommand.DebugClockBackwards] = new UserCommandKeyInput(0x0C);
             Commands[(int)UserCommand.DebugClockForwards] = new UserCommandKeyInput(0x0D);
@@ -475,6 +485,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DisplaySwitchWindow] = new UserCommandKeyInput(0x42);
             Commands[(int)UserCommand.DisplayTrackMonitorWindow] = new UserCommandModifiableKeyInput(0x3E, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43);
+            Commands[(int)UserCommand.DisplayTrainDpuWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Shift);
 
             Commands[(int)UserCommand.GameAutopilotMode] = new UserCommandKeyInput(0x1E, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameChangeCab] = new UserCommandKeyInput(0x12, KeyModifiers.Control);

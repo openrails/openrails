@@ -4114,6 +4114,8 @@ namespace Orts.Simulation.AIs
 
             int directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
             int positionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
+            int directionNowBack = PresentPosition[1].TCDirection;
+            int positionNowBack = PresentPosition[1].TCSectionIndex;
 
             bool[] nextPart = UpdateRouteActions(0, checkLoop);
 
@@ -4132,7 +4134,7 @@ namespace Orts.Simulation.AIs
                          Number.ToString() + " continued, part : " + TCRoute.activeSubpath.ToString() + "\n");
                 }
 
-                if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
+                if (positionNowBack == PresentPosition[0].TCSectionIndex && directionNowBack != PresentPosition[0].TCDirection)
                 {
                     ReverseFormation(false);
                     // active subpath must be incremented in parallel in incorporated train if present
@@ -4432,6 +4434,7 @@ namespace Orts.Simulation.AIs
                 attachTrain.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
                 // set various items
                 attachTrain.CheckFreight();
+                attachTrain.SetDPUnitIDs();
                 attachTrain.activityClearingDistanceM = attachTrain.Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
                 attachCar.SignalEvent(Event.Couple);
 
@@ -4547,6 +4550,7 @@ namespace Orts.Simulation.AIs
             PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
             // set various items
             CheckFreight();
+            SetDPUnitIDs();
             activityClearingDistanceM = Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
             attachCar.SignalEvent(Event.Couple);
 
@@ -4787,8 +4791,10 @@ namespace Orts.Simulation.AIs
             attachTrain.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
             // set various items
             CheckFreight();
+            SetDPUnitIDs();
             activityClearingDistanceM = Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
             attachTrain.CheckFreight();
+            attachTrain.SetDPUnitIDs();
             attachTrain.activityClearingDistanceM = attachTrain.Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
             // anticipate reversal point and remove active action
             TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset = Math.Max(PresentPosition[0].TCOffset - 10f, 0.3f);

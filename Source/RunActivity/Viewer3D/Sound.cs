@@ -300,7 +300,10 @@ namespace Orts.Viewer3D
                     {
                         _activeInSource.Uninitialize();
                         //_activeInSource.Car = null;
-                        _activeInSource = _inSources[_curTType];
+                        if (0 <= _curTType && _curTType < _inSources.Count)
+                            _activeInSource = _inSources[_curTType];
+                        else
+                            Trace.TraceWarning("Could not change inside sound region to {0}", _curTType);
                         //_activeInSource.Car = Car;
                     }
 
@@ -308,7 +311,10 @@ namespace Orts.Viewer3D
                     {
                         _activeOutSource.Uninitialize();
                         //_activeOutSource.Car = null;
-                        _activeOutSource = _outSources[_curTType];
+                        if (0 <= _curTType && _curTType < _outSources.Count)
+                            _activeOutSource = _outSources[_curTType];
+                        else
+                            Trace.TraceWarning("Could not change outside sound region to {0}", _curTType);
                         //_activeOutSource.Car = Car;
                     }
 #if DEBUGSCR
@@ -457,7 +463,10 @@ namespace Orts.Viewer3D
                     {
                         _activeInSource.Uninitialize();
                         //_activeInSource.Car = null;
-                        _activeInSource = _inSources[_curTType];
+                        if (0 <= _curTType && _curTType < _inSources.Count)
+                            _activeInSource = _inSources[_curTType];
+                        else
+                            Trace.TraceWarning("Could not change inside sound region to {0}", _curTType);
                         //_activeInSource.Car = Car;
                     }
 
@@ -465,7 +474,10 @@ namespace Orts.Viewer3D
                     {
                         _activeOutSource.Uninitialize();
                         //_activeOutSource.Car = null;
-                        _activeOutSource = _outSources[_curTType];
+                        if (0 <= _curTType && _curTType < _outSources.Count)
+                            _activeOutSource = _outSources[_curTType];
+                        else
+                            Trace.TraceWarning("Could not change outside sound region to {0}", _curTType);
                         //_activeOutSource.Car = Car;
                     }
 #if DEBUGSCR

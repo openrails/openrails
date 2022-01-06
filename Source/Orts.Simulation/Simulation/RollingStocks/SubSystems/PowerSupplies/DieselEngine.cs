@@ -377,6 +377,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             return new DieselEnum(DEList.ToArray());
         }
 
+        public static string SetDebugLabels(int numberOfEngines)
+        {
+            var labels = new StringBuilder();
+            var tabs = "\t";
+            for (var i = 1; i < numberOfEngines; i++) tabs += "\t";
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Status"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Load"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("RPM"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Flow"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Temperature"), tabs);
+            labels.AppendFormat("{0}{1}", Simulator.Catalog.GetString("Oil Pressure"), tabs);
+            return labels.ToString();
+        }
+
         public string GetStatus()
         {
             var result = new StringBuilder();
@@ -407,6 +422,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Oil"));
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0}", FormatStrings.FormatPressure(eng.DieselOilPressurePSI, PressureUnit.PSI, Locomotive.MainPressureUnit, true));
+
+            return result.ToString();
+        }
+
+        public string GetDPStatus()
+        {
+            var result = new StringBuilder();
+            var eng = DEList[0];
+            result.AppendFormat("\t{0}", Simulator.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(eng.State)));
+            result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.CurrentDieselOutputPowerW, Locomotive.IsMetric, false, false));
+            result.AppendFormat("\t{0:F1}%", eng.LoadPercent);
+            result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
+            result.AppendFormat("\t{0}/{1}", FormatStrings.FormatFuelVolume(pS.TopH(eng.DieselFlowLps), Locomotive.IsMetric, Locomotive.IsUK), FormatStrings.h);
+            result.AppendFormat("\t{0}", FormatStrings.FormatTemperature(eng.DieselTemperatureDeg, Locomotive.IsMetric, false));
+            result.AppendFormat("\t{0}", FormatStrings.FormatPressure(eng.DieselOilPressurePSI, PressureUnit.PSI, Locomotive.MainPressureUnit, true));
 
             return result.ToString();
         }
@@ -1055,7 +1085,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if ((State != DieselEngineState.Starting) && (RealRPM == 0f))
                 State = DieselEngineState.Stopped;
 
-            if ((State == DieselEngineState.Stopped) || (State == DieselEngineState.Stopping) || ((State == DieselEngineState.Starting) && (RealRPM < StartingRPM)))
+            // fuel consumption will occur when engine is running above the starting rpm
+            if (State == DieselEngineState.Stopped || (State == DieselEngineState.Stopping && RealRPM < StartingRPM) || (State == DieselEngineState.Starting && RealRPM < StartingRPM))
             {
                 ExhaustParticles = 0;
                 DieselFlowLps = 0;

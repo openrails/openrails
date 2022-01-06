@@ -43,6 +43,7 @@
         [GetString("Display Station Labels")] DisplayStationLabels,
         [GetString("Display Switch Window")] DisplaySwitchWindow,
         [GetString("Display Train Operations Window")] DisplayTrainOperationsWindow,
+        [GetString("Display Train Dpu Window")] DisplayTrainDpuWindow,
         [GetString("Display Next Station Window")] DisplayNextStationWindow,
         [GetString("Display Compass Window")] DisplayCompassWindow,
         [GetString("Display Train List Window")] DisplayTrainListWindow,
@@ -204,11 +205,22 @@
         [GetString("Control ImmediateRefill")] ControlImmediateRefill,
         [GetString("Control Turntable Clockwise")] ControlTurntableClockwise,
         [GetString("Control Turntable Counterclockwise")] ControlTurntableCounterclockwise,
-        [GetString("Control Generic 1")] ControlGeneric1,
-        [GetString("Control Generic 2")] ControlGeneric2,
+        [GetString("Control Generic Item 1")] ControlGenericItem1,
+        [GetString("Control Generic Item 2")] ControlGenericItem2,
+        [GetString("Control TCS Generic 1")] ControlTCSGeneric1,
+        [GetString("Control TCS Generic 2")] ControlTCSGeneric2,
         [GetString("Control Cab Radio")] ControlCabRadio,
         [GetString("Control AI Fire On")] ControlAIFireOn,
         [GetString("Control AI Fire Off")] ControlAIFireOff,
         [GetString("Control AI Fire Reset")] ControlAIFireReset,
+
+        //Distributed power
+        [GetString("Control DP Move To Front")] ControlDPMoveToFront,
+        [GetString("Control DP Move To Back")] ControlDPMoveToBack,
+        [GetString("Control DP Traction")] ControlDPTraction,
+        [GetString("Control DP Idle")] ControlDPIdle,
+        [GetString("Control DP Brake")] ControlDPBrake,
+        [GetString("Control DP More")] ControlDPMore,
+        [GetString("Control DP Less")] ControlDPLess,
     }
 }

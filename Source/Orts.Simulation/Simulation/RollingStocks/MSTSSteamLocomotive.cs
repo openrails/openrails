@@ -4615,10 +4615,10 @@ namespace Orts.Simulation.RollingStocks
             // Set "current" motive force based upon the throttle, cylinders, steam pressure, etc	
             MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
 
-            // On starting allow maximum motive force to be used, unless gear is in neutral (normally only geared locomotive will be zero).
+            // On starting allow maximum motive force to be used, unless gear is in neutral (normally only geared locomotive will be zero). Decrease force if steam pressure is not at maximum
             if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f && MotiveForceGearRatio != 0)
             {
-                MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * MaxForceN;
+                MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * MaxForceN * (BoilerPressurePSI / MaxBoilerPressurePSI);
             }
 
             if (absSpeedMpS == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
@@ -4652,8 +4652,8 @@ namespace Orts.Simulation.RollingStocks
             // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
             // By default this model uses information based upon a "NYC 4-4-2 locomotive", for smaller locomotives this data is changed in the OR initialisation phase.
 
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && this == Simulator.PlayerLocomotive && this.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is the player locomotive, AI locomotive will not work to this model. 
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && this.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
+                // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is in the the player train, AI locomotive will not work to this model. 
                 // Don't use slip model when train is in auto pilot
             {
                 float SlipCutoffPressureAtmPSI;

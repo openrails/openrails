@@ -92,6 +92,7 @@ namespace Orts.Viewer3D
         public SwitchWindow SwitchWindow { get; private set; } // F8 window
         public TrainOperationsWindow TrainOperationsWindow { get; private set; } // F9 window
         public CarOperationsWindow CarOperationsWindow { get; private set; } // F9 sub-window for car operations
+        public TrainDpuWindow TrainDpuWindow { get; private set; } // Shift + F9 train distributed power window
         public NextStationWindow NextStationWindow { get; private set; } // F10 window
         public CompassWindow CompassWindow { get; private set; } // 0 window
         public TracksDebugWindow TracksDebugWindow { get; private set; } // Control-Alt-F6
@@ -370,6 +371,18 @@ namespace Orts.Viewer3D
             outf.Write(NightTexturesNotLoaded);
             outf.Write(DayTexturesNotLoaded);
             World.WeatherControl.SaveWeatherParameters(outf);
+            if ((PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer != null)
+            {
+                outf.Write(0);
+                (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.Save(outf);
+            }
+            else outf.Write(-1);
+            if ((PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabRenderer != null)
+            {
+                outf.Write(0);
+                (PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabRenderer.Save(outf);
+            }
+            else outf.Write(-1);
         }
 
         [CallOnThread("Render")]
@@ -406,6 +419,12 @@ namespace Orts.Viewer3D
             tryLoadingDayTextures = true;
 
             World.WeatherControl.RestoreWeatherParameters(inf);
+            var cabRendererPresent = inf.ReadInt32();
+            if (cabRendererPresent != -1)
+                (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.Restore(inf);
+            cabRendererPresent = inf.ReadInt32();
+            if (cabRendererPresent != -1)
+                (PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabRenderer.Restore(inf);
         }
 
         /// <summary>
@@ -454,6 +473,7 @@ namespace Orts.Viewer3D
             TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
             MultiPlayerWindow = new MultiPlayerWindow(WindowManager);
             CarOperationsWindow = new CarOperationsWindow(WindowManager);
+            TrainDpuWindow = new TrainDpuWindow(WindowManager);
             NextStationWindow = new NextStationWindow(WindowManager);
             CompassWindow = new CompassWindow(WindowManager);
             TracksDebugWindow = new TracksDebugWindow(WindowManager);
@@ -570,6 +590,8 @@ namespace Orts.Viewer3D
 
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             RefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
+            SelectScreenCommand.Receiver = (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab) ? 
+                ((MSTSLocomotiveViewer)PlayerLocomotiveViewer)._CabRenderer : ((MSTSLocomotiveViewer)PlayerLocomotiveViewer).ThreeDimentionCabRenderer;
             ToggleOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ResetOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleOdometerDirectionCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
@@ -603,6 +625,17 @@ namespace Orts.Viewer3D
             ElectricTrainSupplyCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
             TCSButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).TrainControlSystem;
             TCSSwitchCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).TrainControlSystem;
+            ToggleGenericItem1Command.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleGenericItem2Command.Receiver = (MSTSLocomotive)PlayerLocomotive;
+
+            //Distributed power
+            DPMoveToFrontCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPMoveToBackCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPTractionCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPIdleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPDynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPMoreCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPLessCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
         }
 
         public void ChangeToPreviousFreeRoamCamera()
@@ -1024,6 +1057,7 @@ namespace Orts.Viewer3D
             }
             if (UserInput.IsPressed(UserCommand.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else { TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible; if (!TrainOperationsWindow.Visible) CarOperationsWindow.Visible = false; }
+            if (UserInput.IsPressed(UserCommand.DisplayTrainDpuWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainDpuWindow.Visible = !TrainDpuWindow.Visible ; else TrainDpuWindow.TabAction();
             if (UserInput.IsPressed(UserCommand.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayCompassWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugTracks)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
@@ -1373,12 +1407,28 @@ namespace Orts.Viewer3D
             {
                 if (UserInput.IsMouseLeftButtonPressed)
                 {
-                    foreach (var controlRenderer in (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.ControlMap.Values)
+                    var cabRenderer = (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer;
+                    foreach (var controlRenderer in cabRenderer.ControlMap.Values)
                     {
-                        if (controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
+                        if ((Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
                         {
-                            MouseChangingControl = mouseRenderer;
-                            break;
+                            if ((controlRenderer.Control.Screens == null || controlRenderer.Control.Screens[0] == "all"))
+                            {
+                                MouseChangingControl = mouseRenderer;
+                                break;
+                            }
+                            else
+                            {
+                                foreach (var screen in controlRenderer.Control.Screens)
+                                {
+                                    if (cabRenderer.ActiveScreen[controlRenderer.Control.Display] == screen)
+                                    {
+                                        MouseChangingControl = mouseRenderer;
+                                        break;
+                                    }
+                                }
+                                if (MouseChangingControl == mouseRenderer) break;
+                            }
                         }
                     }
                 }
@@ -1399,14 +1449,30 @@ namespace Orts.Viewer3D
             if (Camera is CabCamera && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer && MouseChangingControl == null && 
                 RenderProcess.IsMouseVisible)
             {
+                var cabRenderer = (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer;
                 if (!UserInput.IsMouseLeftButtonPressed)
                 {
-                    foreach (var controlRenderer in (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.ControlMap.Values)
+                    foreach (var controlRenderer in cabRenderer.ControlMap.Values)
                     {
-                        if (controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
+                        if ((Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
                         {
-                            MousePickedControl = mouseRenderer;
-                            break;
+                            if ((controlRenderer.Control.Screens == null || controlRenderer.Control.Screens[0] == "all"))
+                            {
+                                MousePickedControl = mouseRenderer;
+                                break;
+                            }
+                            else
+                            {
+                                foreach (var screen in controlRenderer.Control.Screens)
+                                {
+                                    if (cabRenderer.ActiveScreen[controlRenderer.Control.Display] == screen)
+                                    {
+                                        MousePickedControl = mouseRenderer;
+                                        break;
+                                    }
+                                }
+                                if (MousePickedControl == mouseRenderer) break;
+                            }
                         }
                     }
                     if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
@@ -1427,9 +1493,10 @@ namespace Orts.Viewer3D
             {
                 if (UserInput.IsMouseLeftButtonPressed)
                 {
-                    var trainCarShape = (PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabViewer.TrainCarShape;
-                    var animatedParts = (PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabViewer.AnimateParts;
-                    var controlMap = (PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabRenderer.ControlMap;
+                    var locoViewer = (PlayerLocomotiveViewer as MSTSLocomotiveViewer);
+                    var trainCarShape = locoViewer.ThreeDimentionCabViewer.TrainCarShape;
+                    var animatedParts = locoViewer.ThreeDimentionCabViewer.AnimateParts;
+                    var controlMap = locoViewer.ThreeDimentionCabRenderer.ControlMap;
                     float bestD = 0.015f;  // 15 cm squared click range
                     CabViewControlRenderer cabRenderer;
                     foreach (var animatedPart in animatedParts)
@@ -1443,28 +1510,45 @@ namespace Orts.Viewer3D
                         {
                             continue;
                         }
+                        var control = cabRenderer.Control;
                         if (cabRenderer is CabViewDiscreteRenderer)
                         {
-                            foreach (var iMatrix in animatedPart.Value.MatrixIndexes)
-                            { 
-                                var matrix = Matrix.Identity;
-                                var hi = iMatrix;
-                                while (hi >= 0 && hi < trainCarShape.Hierarchy.Length && trainCarShape.Hierarchy[hi] != -1)
+                            var eligibleToCheck = true;
+                            if (control.Screens != null && control.Screens[0] != "all")
+                            {
+                                eligibleToCheck = false;
+                                foreach (var screen in control.Screens)
                                 {
-                                    Matrix.Multiply(ref matrix, ref trainCarShape.XNAMatrices[hi], out matrix);
-                                    hi = trainCarShape.Hierarchy[hi];
+                                    if (locoViewer.ThreeDimentionCabRenderer.ActiveScreen[control.Display] == screen)
+                                    {
+                                        eligibleToCheck = true;
+                                        break;
+                                    }
                                 }
-                                matrix = Matrix.Multiply(matrix, trainCarShape.Location.XNAMatrix);
-                                var matrixWorldLocation = trainCarShape.Location.WorldLocation;
-                                matrixWorldLocation.Location.X = matrix.Translation.X;
-                                matrixWorldLocation.Location.Y = matrix.Translation.Y;
-                                matrixWorldLocation.Location.Z = -matrix.Translation.Z;
-                                Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
-                                float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
-                                if (bestD > d)
+                            }
+                            if (eligibleToCheck)
+                            {
+                                foreach (var iMatrix in animatedPart.Value.MatrixIndexes)
                                 {
-                                    MouseChangingControl = cabRenderer as CabViewDiscreteRenderer;
-                                    bestD = d;
+                                    var matrix = Matrix.Identity;
+                                    var hi = iMatrix;
+                                    while (hi >= 0 && hi < trainCarShape.Hierarchy.Length && trainCarShape.Hierarchy[hi] != -1)
+                                    {
+                                        Matrix.Multiply(ref matrix, ref trainCarShape.XNAMatrices[hi], out matrix);
+                                        hi = trainCarShape.Hierarchy[hi];
+                                    }
+                                    matrix = Matrix.Multiply(matrix, trainCarShape.Location.XNAMatrix);
+                                    var matrixWorldLocation = trainCarShape.Location.WorldLocation;
+                                    matrixWorldLocation.Location.X = matrix.Translation.X;
+                                    matrixWorldLocation.Location.Y = matrix.Translation.Y;
+                                    matrixWorldLocation.Location.Z = -matrix.Translation.Z;
+                                    Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
+                                    float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
+                                    if (bestD > d)
+                                    {
+                                        MouseChangingControl = cabRenderer as CabViewDiscreteRenderer;
+                                        bestD = d;
+                                    }
                                 }
                             }
                         }
@@ -1487,11 +1571,12 @@ namespace Orts.Viewer3D
             if (Camera is ThreeDimCabCamera && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._has3DCabRenderer && MouseChangingControl == null &&
                 RenderProcess.IsMouseVisible)
             {
+                var locoViewer = (PlayerLocomotiveViewer as MSTSLocomotiveViewer);
                 if (!UserInput.IsMouseLeftButtonPressed)
                 {
-                    var trainCarShape = (PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabViewer.TrainCarShape;
-                    var animatedParts = (PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabViewer.AnimateParts;
-                    var controlMap = (PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabRenderer.ControlMap;
+                    var trainCarShape = locoViewer.ThreeDimentionCabViewer.TrainCarShape;
+                    var animatedParts = locoViewer.ThreeDimentionCabViewer.AnimateParts;
+                    var controlMap = locoViewer.ThreeDimentionCabRenderer.ControlMap;
                     float bestD = 0.01f;  // 10 cm squared click range
                     CabViewControlRenderer cabRenderer;
                     foreach (var animatedPart in animatedParts)
@@ -1505,29 +1590,46 @@ namespace Orts.Viewer3D
                         {
                             continue;
                         }
+                        var control = cabRenderer.Control;
                         if (cabRenderer is CabViewDiscreteRenderer)
                         {
-                            foreach (var iMatrix in animatedPart.Value.MatrixIndexes)
+                            var eligibleToCheck = true;
+                            if (control.Screens != null && control.Screens[0] != "all")
                             {
-                                var matrix = Matrix.Identity;
-                                var hi = iMatrix;
-                                while (hi >= 0 && hi < trainCarShape.Hierarchy.Length && trainCarShape.Hierarchy[hi] != -1)
+                                eligibleToCheck = false;
+                                foreach (var screen in control.Screens)
                                 {
-                                    Matrix.Multiply(ref matrix, ref trainCarShape.XNAMatrices[hi], out matrix);
-                                    hi = trainCarShape.Hierarchy[hi];
+                                    if (locoViewer.ThreeDimentionCabRenderer.ActiveScreen[control.Display] == screen)
+                                    {
+                                        eligibleToCheck = true;
+                                        break;
+                                    }
                                 }
-                                matrix = Matrix.Multiply(matrix, trainCarShape.Location.XNAMatrix);
-                                var matrixWorldLocation = trainCarShape.Location.WorldLocation;
-                                matrixWorldLocation.Location.X = matrix.Translation.X;
-                                matrixWorldLocation.Location.Y = matrix.Translation.Y;
-                                matrixWorldLocation.Location.Z = -matrix.Translation.Z;
-                                Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
-                                float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
-
-                                if (bestD > d)
+                            }
+                            if (eligibleToCheck)
+                            {
+                                foreach (var iMatrix in animatedPart.Value.MatrixIndexes)
                                 {
-                                    MousePickedControl = cabRenderer as CabViewDiscreteRenderer;
-                                    bestD = d;
+                                    var matrix = Matrix.Identity;
+                                    var hi = iMatrix;
+                                    while (hi >= 0 && hi < trainCarShape.Hierarchy.Length && trainCarShape.Hierarchy[hi] != -1)
+                                    {
+                                        Matrix.Multiply(ref matrix, ref trainCarShape.XNAMatrices[hi], out matrix);
+                                        hi = trainCarShape.Hierarchy[hi];
+                                    }
+                                    matrix = Matrix.Multiply(matrix, trainCarShape.Location.XNAMatrix);
+                                    var matrixWorldLocation = trainCarShape.Location.WorldLocation;
+                                    matrixWorldLocation.Location.X = matrix.Translation.X;
+                                    matrixWorldLocation.Location.Y = matrix.Translation.Y;
+                                    matrixWorldLocation.Location.Z = -matrix.Translation.Z;
+                                    Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
+                                    float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
+
+                                    if (bestD > d)
+                                    {
+                                        MousePickedControl = cabRenderer as CabViewDiscreteRenderer;
+                                        bestD = d;
+                                    }
                                 }
                             }
                         }
@@ -1608,13 +1710,15 @@ namespace Orts.Viewer3D
             PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
             if (PlayerLocomotiveViewer is MSTSLocomotiveViewer && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer)
                 AdjustCabHeight(DisplaySize.X, DisplaySize.Y);
+
+            ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
+            HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
+            HeadOutBackCamera.ChangeCab(Simulator.PlayerLocomotive);
+
             if (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab)
                 CabCamera.Activate(); // If you need anything else here the cameras should check for it.
             else ThreeDimCabCamera.Activate();
             SetCommandReceivers();
-            ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
-            HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
-            HeadOutBackCamera.ChangeCab(Simulator.PlayerLocomotive);
             if (MPManager.IsMultiPlayer())
                 MPManager.LocoChange(Simulator.PlayerLocomotive.Train, Simulator.PlayerLocomotive);
             Simulator.Confirmer.Confirm(CabControl.ChangeCab, CabSetting.On);

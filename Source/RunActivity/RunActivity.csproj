@@ -144,6 +144,7 @@
     <Compile Include="Viewer3D\Popups\SwitchWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrackMonitorWindow.cs" />
     <Compile Include="Viewer3D\Popups\TracksDebugWindow.cs" />
+    <Compile Include="Viewer3D\Popups\TrainDPUWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainDrivingWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainListWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainOperationsWindow.cs" />
@@ -858,6 +859,8 @@
     <PostBuildEvent>CD ..\
 IF EXIST "Program\Content\Web" RMDIR "Program\Content\Web" /S /Q
 IF NOT EXIST "Program\Content\Web" MKDIR "Program\Content\Web"
-XCOPY "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web" /S /Y</PostBuildEvent>
+XCOPY "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web" /S /Y
+DEL "Program\RunActivityLAA.*"
+</PostBuildEvent>
   </PropertyGroup>
 </Project>
