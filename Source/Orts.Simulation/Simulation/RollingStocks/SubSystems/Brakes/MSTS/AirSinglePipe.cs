@@ -691,7 +691,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {   // approximate pressure gradient in train pipe line1
-                float serviceTimeFactor = lead != null ? lead.TrainBrakeController != null && lead.TrainBrakeController.EmergencyBraking ? lead.BrakeEmergencyTimeFactorS : lead.BrakeServiceTimeFactorS : 0;
+                float serviceTimeFactor = lead != null ? lead.TrainBrakeController != null && lead.TrainBrakeController.EmergencyBraking ? lead.BrakeEmergencyTimeFactorPSIpS : lead.BrakeServiceTimeFactorPSIpS : 0;
                 for (int i = 0; i < nSteps; i++)
                 {
 
