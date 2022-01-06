@@ -223,7 +223,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     return Gears[currentGearIndex];
                 else
                 {
-                    Trace.TraceInformation("Return Null");
                     return null;
                 }
             }
@@ -354,7 +353,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         clutchOn = false;
                         return clutchOn;
                     }
-                    else if (DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchLockOut && ManualGearBoxChangeOn && ClutchType != TypesClutch.Friction) // Fluid and Scoop clutches disengage if throttle is closed
+                    else if (!GearBoxFreeWheelEnabled && DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchLockOut && ManualGearBoxChangeOn && ClutchType != TypesClutch.Friction) // Fluid and Scoop clutches disengage if throttle is closed
                     {
                         clutchLockOut = true;
                         clutchOn = false;
@@ -373,7 +372,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     }
 
                     // Set clutch engaged when shaftrpm and engine rpm are equal
-                    if ((DieselEngine.Locomotive.ThrottlePercent >= 0 || DieselEngine.Locomotive.SpeedMpS > 0) && CurrentGear != null)
+                    if ((DieselEngine.Locomotive.ThrottlePercent >= 0 || DieselEngine.Locomotive.SpeedMpS > 0) && CurrentGear != null && !GearBoxFreeWheelEnabled)
                     {
                         var clutchEngagementBandwidthRPM = 10.0f;
                         if (ShaftRPM >= DieselEngine.RealRPM - clutchEngagementBandwidthRPM && ShaftRPM < DieselEngine.RealRPM + clutchEngagementBandwidthRPM && ShaftRPM < DieselEngine.MaxRPM && ShaftRPM > DieselEngine.IdleRPM)
@@ -557,7 +556,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         // (See above where DM units TE held at constant value, unless overwritten by the following)
                         if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
                         {
-
                             // If engine RpM exceeds maximum rpm
                             if (DieselEngine.GovernorEnabled && DieselEngine.DemandedThrottlePercent > 0 && DieselEngine.RealRPM > DieselEngine.MaxRPM)
                             {
@@ -565,7 +563,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                                 var rpmOverRun = (DieselEngine.RealRPM - DieselEngine.MaxRPM);
                                 throttleFraction = (1.0f - (decayGradient * rpmOverRun)) * throttleFraction;
                                 throttleFraction = MathHelper.Clamp(throttleFraction, 0.0f, 1.0f);  // Clamp throttle setting within bounds, so it doesn't go negative
-                                                                                                    //    Trace.TraceInformation("Governor - throttle {0} Demand {1} Grad {2} Real {3} Max {4} GovRpM {5} Over {6}", throttleFraction, DieselEngine.DemandedThrottlePercent, decayGradient, DieselEngine.RealRPM, DieselEngine.MaxRPM, DieselEngine.GovernorRPM, rpmOverRun);
+                             // Trace.TraceInformation("Governor - throttle {0} Demand {1} Grad {2} Real {3} Max {4} GovRpM {5} Over {6}", throttleFraction, DieselEngine.DemandedThrottlePercent, decayGradient, DieselEngine.RealRPM, DieselEngine.MaxRPM, DieselEngine.GovernorRPM, rpmOverRun);
                             }
 
                             // If engine RpM drops below idle rpm
@@ -646,11 +644,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             }
 
                         }
-
-
-
                         return tractiveForceN;
-
                     }
                     else
                         return 0;

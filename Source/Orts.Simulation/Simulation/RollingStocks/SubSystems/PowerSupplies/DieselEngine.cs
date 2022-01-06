@@ -1082,11 +1082,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
 
                 }
-                else if (GearBox.GearBoxType == TypesGearBox.A)
+                else 
                 {
                     if (GearBox.ManualGearChange && !GearBox.ManualGearBoxChangeOn) // Initially set gear change 
                     {
                         GearBox.ManualGearBoxChangeOn = true;
+                    }
+                    else if (GearBox.GearBoxType == TypesGearBox.B && GearBox.ManualGearBoxChangeOn && GearBox.ManualGearTimerS < GearBox.ManualGearTimerResetS)
+                    {
+                        GearBox.ManualGearTimerS += elapsedClockSeconds; // Increment timer
+                    }
+                    else if (GearBox.GearBoxType == TypesGearBox.B && GearBox.ManualGearBoxChangeOn && GearBox.ManualGearTimerS > GearBox.ManualGearTimerResetS)
+                    {
+                        // Reset gear change in preparation for the next gear change
+                        GearBox.ManualGearBoxChangeOn = false;
+                        GearBox.ManualGearChange = false;
+                        GearBox.ManualGearTimerS = 0; // Reset timer
                     }
 
                     if (RealRPM > 0)
@@ -1119,43 +1130,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             GearBox.ManualGearChange = false;
                             GearBox.ManualGearBoxChangeOn = false;
                         }
-                    }
-                }
-                else if (GearBox.GearBoxType == TypesGearBox.B)
-                {
-                    // When a manual gear change is initiated, then reduce motive to zero (done in gear box class) whilst gear change is occurring, allow time delay for gears to change
-                    if (GearBox.ManualGearChange && !GearBox.ManualGearBoxChangeOn) // Initially set gear change 
-                    {
-                        GearBox.ManualGearBoxChangeOn = true;
-                    }
-                    else if (GearBox.ManualGearBoxChangeOn && GearBox.ManualGearTimerS < GearBox.ManualGearTimerResetS)
-                    {
-                        GearBox.ManualGearTimerS += elapsedClockSeconds; // Increment timer
-                    }
-                    else if (GearBox.ManualGearBoxChangeOn && GearBox.ManualGearTimerS > GearBox.ManualGearTimerResetS)
-                    {
-                        // Reset gear change in preparation for the next gear change
-                        GearBox.ManualGearBoxChangeOn = false;
-                        GearBox.ManualGearChange = false;
-                        GearBox.ManualGearTimerS = 0; // Reset timer
-                    }
-
-                    if (RealRPM > 0)
-                        GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
-                    else
-                        GearBox.ClutchPercent = 100f;
-
-                    if (GearBox.CurrentGear != null && !GearBox.ManualGearBoxChangeOn)
-                    {
-                        // When clutch is engaged (true) engine rpm should follow wheel shaft speed
-                        if (GearBox.IsClutchOn && GearBox.ClutchType == TypesClutch.Friction)
-                        {
-                            DemandedRPM = GearBox.ShaftRPM;
-                        }
-                    }
-                    else if (GearBox.ManualGearBoxChangeOn)
-                    {
-                            engineBrakingLockout = true;
                     }
                 }
 
@@ -1314,9 +1288,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                 }
 
+                
                 // Govenor limits engine rpm
                 if (GovernorRPM != 0)
                 {
+                    
                     if ((RealRPM > MaxRPM || RealRPM < IdleRPM) && !GovernorEnabled)
                     {
                         GovernorEnabled = true;
