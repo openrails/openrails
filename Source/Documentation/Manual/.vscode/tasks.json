@@ -1,0 +1,32 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"command": "make",
+			"args": ["html"],
+			"label": "Build: html",
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"command": "make",
+			"args": ["latexpdf"],
+			"label": "Build: latex",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"type": "shell",
+			"command": "make",
+			"args": ["clean"],
+			"label": "Build: Make Clean",
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}
