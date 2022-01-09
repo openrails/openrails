@@ -929,7 +929,7 @@ namespace Orts.Simulation.RollingStocks
             return status.ToString();
         }
 
-        public string GetDpuStatus(bool dataDpu, CABViewControlUnits loadUnits = CABViewControlUnits.KILO_LBS)// used by the TrainDpuInfo window
+        public string GetDpuStatus(bool dataDpu, CABViewControlUnits loadUnits = CABViewControlUnits.NONE)// used by the TrainDpuInfo window
         {
             string throttle = "";
             if (ThrottlePercent > 0)
@@ -968,15 +968,46 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0}\t", throttle);
 
             // Load
-            var data = 0.0f;
-            if (ThrottlePercent > 0)
+            var data = 0f;
+            if (FilteredMotiveForceN != 0)
+                data = Math.Abs(this.FilteredMotiveForceN);
+            else
+                data = Math.Abs(this.LocomotiveAxle.DriveForceN);
+            if (DynamicBrakePercent > 0)
             {
-                if (FilteredMotiveForceN != 0)
-                    data = FilteredMotiveForceN / MaxForceN * MaxCurrentA;
-                else
-                    data = LocomotiveAxle.DriveForceN / MaxForceN * MaxCurrentA;
+                data = -Math.Abs(DynamicBrakeForceN);
             }
-            status.AppendFormat("{0:F0} amps\t", Math.Abs(data));
+            if (loadUnits == CABViewControlUnits.NONE)
+                loadUnits = IsMetric ? CABViewControlUnits.AMPS : CABViewControlUnits.KILO_LBS;
+            switch (loadUnits)
+            {
+                case CABViewControlUnits.AMPS:
+                    if (ThrottlePercent > 0)
+                    {
+                        data = (data / MaxForceN) * MaxCurrentA;
+                    }
+                    if (DynamicBrakePercent > 0)
+                    {
+                        data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                    }
+                    status.AppendFormat("{0:F0} amps\t", data);
+                    break;
+
+                case CABViewControlUnits.NEWTONS:
+                    status.AppendFormat("{0:F0} N\t", data);
+                    break;
+
+                case CABViewControlUnits.KILO_NEWTONS:
+                    data = data / 1000.0f;
+                    status.AppendFormat("{0:F0} kN\t", data);
+                    break;
+
+                case CABViewControlUnits.KILO_LBS:
+                default:
+                    data = N.ToLbf(data) * 0.001f;
+                    status.AppendFormat("{0:F0} klbf\t", data);
+                    break;
+            }
 
             // BP
             var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("EOT"));

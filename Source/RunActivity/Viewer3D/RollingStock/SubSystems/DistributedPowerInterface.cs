@@ -157,7 +157,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
     public class DPDefaultWindow : DPIWindow
     {
         public bool FullTable;
-        public CABViewControlUnits LoadUnits = CABViewControlUnits.KILO_LBS;
+        public CABViewControlUnits LoadUnits = CABViewControlUnits.NONE;
         public DPDefaultWindow(DistributedPowerInterface dpi, CabViewControl control) : base(dpi, 640, 240)
         {
             var param = (control as CVCScreen).CustomParameters;
