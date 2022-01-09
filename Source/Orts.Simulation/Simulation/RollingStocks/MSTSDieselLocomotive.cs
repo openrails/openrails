@@ -918,7 +918,6 @@ namespace Orts.Simulation.RollingStocks
                 throttle += "???";
 
             var status = new StringBuilder();
-
             status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
             status.AppendFormat("{0} {1}\t", GetStringAttribute.GetPrettyName(Direction), Flipped ? Simulator.Catalog.GetString("(flipped)") : "");
             status.AppendFormat("{0}\t", IsLeadLocomotive() || RemoteControlGroup < 0 ? "———" : RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : Simulator.Catalog.GetString("Async"));
@@ -967,16 +966,25 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
             // Throttle
             status.AppendFormat("{0}\t", throttle);
+
             // Load
-            foreach (var eng in DieselEngines.DEList)
-                status.AppendFormat("{0:F1}%\t", eng.LoadPercent);
+            var data = 0.0f;
+            if (ThrottlePercent > 0)
+            {
+                if (FilteredMotiveForceN != 0)
+                    data = FilteredMotiveForceN / MaxForceN * MaxCurrentA;
+                else
+                    data = LocomotiveAxle.DriveForceN / MaxForceN * MaxCurrentA;
+            }
+            status.AppendFormat("{0:F0} amps\t", Math.Abs(data));
+
             // BP
             var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("EOT"));
             status.AppendFormat("{0:F0}\t", brakeInfoValue);
 
-            // Flow
-            foreach (var eng in DieselEngines.DEList)
-                status.AppendFormat("{0}/{1}\t", FormatStrings.FormatFuelVolume(pS.TopH(eng.DieselFlowLps), Simulator.PlayerLocomotive.IsMetric, Simulator.PlayerLocomotive.IsUK), FormatStrings.h);
+            // Flow.
+            // TODO:The BP air flow that feeds the brake tube is not yet modeled in Open Rails.
+
             // Remote
             if (dataDpu)
             {
@@ -1073,13 +1081,11 @@ namespace Orts.Simulation.RollingStocks
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Throttle"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Load"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("BP"));
-            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Flow"));
             if (!dpuFull)
             {
                 labels.AppendFormat("{0}", Simulator.Catalog.GetString("Remote"));
                 DpuLabels = labels.ToString().Split('\t');
             }
-
             if (dpuFull)
             {
                 labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Remote"));
