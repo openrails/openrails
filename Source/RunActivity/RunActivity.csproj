@@ -171,7 +171,6 @@
     <Compile Include="Viewer3D\RollingStock\MSTSLocomotiveViewer.cs" />
     <Compile Include="Viewer3D\RollingStock\MSTSSteamLocomotiveViewer.cs" />
     <Compile Include="Viewer3D\RollingStock\MSTSWagonViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\SubSystems\DistributedPowerInterface.cs" />
     <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\DataEntry.cs" />
     <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\Menus.cs" />
     <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\TextMessages.cs" />
