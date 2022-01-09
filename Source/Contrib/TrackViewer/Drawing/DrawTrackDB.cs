@@ -225,7 +225,8 @@ namespace ORTS.TrackViewer.Drawing
         #endregion
 
         #region private members
-        /// <summary>Track Section Data</summary>
+
+         /// <summary>Track Section Data</summary>
         private TrackSectionsFile tsectionDat;
         /// <summary>Track database</summary>
         private TrackDB trackDB;
@@ -632,18 +633,18 @@ namespace ORTS.TrackViewer.Drawing
                 WorldLocation midLocation = FindLocationInSection(tvs, trackSection, trackSectionLength/2);
 
                 // (deltaX, deltaZ) is a vector from begin to end.
-                float deltaX = (endLocation.Location.X - endLocation.Location.X);
-                float deltaZ = (endLocation.Location.Z - endLocation.Location.Z);
-                deltaX += 2048 * (endLocation.TileX - endLocation.TileX); 
-                deltaZ += 2048 * (endLocation.TileZ - endLocation.TileZ);
+                double deltaX = (endLocation.Location.X - endLocation.Location.X);
+                double deltaZ = (endLocation.Location.Z - endLocation.Location.Z);
+                deltaX += WorldLocation.TileSize * (endLocation.TileX - endLocation.TileX); 
+                deltaZ += WorldLocation.TileSize * (endLocation.TileZ - endLocation.TileZ);
 
                 WorldLocation begin2Location = new WorldLocation(midLocation);
-                begin2Location.Location.X -= deltaX / 2;
-                begin2Location.Location.Z -= deltaZ / 2;
+                begin2Location.Location.X = (float)(begin2Location.Location.X - deltaX / 2);
+                begin2Location.Location.Z = (float)(begin2Location.Location.Z - deltaZ / 2);
 
                 WorldLocation end2Location = new WorldLocation(midLocation);
-                end2Location.Location.X += deltaX / 2;
-                end2Location.Location.Z += deltaZ / 2;
+                end2Location.Location.X = (float)(end2Location.Location.X + deltaX / 2);
+                end2Location.Location.Z = (float)(end2Location.Location.Z + deltaZ / 2);
 
                 boxList.Add(begin2Location);
                 boxList.Add(end2Location);
