@@ -990,24 +990,31 @@ namespace Orts.Simulation.RollingStocks
                     {
                         data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                     }
-                    status.AppendFormat("{0:F0} amps\t", data);
+                    status.AppendFormat("{0:F0} amps", data);
                     break;
 
                 case CABViewControlUnits.NEWTONS:
-                    status.AppendFormat("{0:F0} N\t", data);
+                    status.AppendFormat("{0:F0} N", data);
                     break;
 
                 case CABViewControlUnits.KILO_NEWTONS:
                     data = data / 1000.0f;
-                    status.AppendFormat("{0:F0} kN\t", data);
+                    status.AppendFormat("{0:F0} kN", data);
+                    break;
+
+                case CABViewControlUnits.LBS:
+                    data = N.ToLbf(data);
+                    status.AppendFormat("{0:F0} lbf", data);
                     break;
 
                 case CABViewControlUnits.KILO_LBS:
                 default:
                     data = N.ToLbf(data) * 0.001f;
-                    status.AppendFormat("{0:F0} klbf\t", data);
+                    status.AppendFormat("{0:F0} klbf", data);
                     break;
             }
+
+            status.AppendFormat((data < 0 ? "???" : " ") + "\t");
 
             // BP
             var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("EOT"));

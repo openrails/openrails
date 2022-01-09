@@ -473,8 +473,12 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                                 tempStatus[k, 0] = fence + status[0].Split('(').First();
                                 for (var j = 1; j < status.Length; j++)
                                 {
-                                    // fence
                                     tempStatus[k, j] = fence + status[j].Split(' ').First();
+                                    // move color code from after the Units to after the value
+                                    if (ColorCodeCtrl.Keys.Any(status[j].EndsWith) && !ColorCodeCtrl.Keys.Any(tempStatus[k, j].EndsWith))
+                                    {
+                                        tempStatus[k, j] += status[j].Substring(status[j].Length - 3);
+                                    }
                                 }
                                 dpUId = (train.Cars[i] as MSTSLocomotive).DPUnitID;
                                 k++;
