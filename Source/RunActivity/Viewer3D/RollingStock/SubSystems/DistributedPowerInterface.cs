@@ -55,7 +55,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         public static readonly Color ColorYellow = new Color(223, 223, 0);
         public static readonly Color ColorOrange = new Color(234, 145, 0);
         public static readonly Color ColorRed = new Color(191, 0, 2);
-        public static readonly Color ColorBackground = new Color(8, 8, 8); // almost black
+        public static readonly Color ColorBackground = new Color(0, 0, 0, 0); // transparent
         public static readonly Color ColorPASPlight = new Color(41, 74, 107);
         public static readonly Color ColorPASPdark = new Color(33, 49, 74);
         public static readonly Color ColorShadow = new Color(8, 24, 57);
@@ -355,8 +355,8 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         TextPrimitive[,] TableSymbol = new TextPrimitive[NumberOfRowsFull, NumberOfColumns];
         WindowTextFont TableTextFont;
         WindowTextFont TableSymbolFont;
-        readonly int FontHeightTableText = 32;
-        readonly int FontHeightTableSymbol = 38;
+        readonly int FontHeightTableText = 16;
+        readonly int FontHeightTableSymbol = 19;
         readonly int RowHeight = 34;
         readonly int ColLength = 88;
         public bool FullTable = true;
@@ -391,15 +391,15 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                 for (int iCol = 0; iCol < NumberOfColumns; iCol++)
                 {
 //                    text = iCol.ToString() + "--" + iRow.ToString();
-                    TableText[iRow, iCol] = new TextPrimitive(new Point(20 + ColLength * iCol, (iRow) * (FontHeightTableText - 8)), Color.White, text, TableTextFont);
-                    TableSymbol[iRow, iCol] = new TextPrimitive(new Point(10 + ColLength * iCol, (iRow) * (FontHeightTableText - 8)), Color.Green, text, TableSymbolFont);
+                    TableText[iRow, iCol] = new TextPrimitive(new Point(20 + ColLength * iCol, (iRow) * (FontHeightTableText + 8)), Color.White, text, TableTextFont);
+                    TableSymbol[iRow, iCol] = new TextPrimitive(new Point(10 + ColLength * iCol, (iRow) * (FontHeightTableText + 8)), Color.Green, text, TableSymbolFont);
                 }
             }
         }
 
         public override void ScaleChanged()
         {
-            base.ScaleChanged();
+//            base.ScaleChanged();
             SetFont();
         }
         void SetFont()
@@ -483,11 +483,13 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                         {
                             var text = tempStatus[j, i].Replace('|', ' ');
                             var colorFirstColEndsWith = ColorCodeCtrl.Keys.Any(text.EndsWith) ? ColorCodeCtrl[text.Substring(text.Length - 3)] : Color.White;
+                            TableText[i, j + 1].Font = TableTextFont;
                             TableText[i, j + 1].Text = (colorFirstColEndsWith == Color.White) ? text : text.Substring(0, text.Length - 3); ;
                             TableText[i, j + 1].Color = colorFirstColEndsWith;
+                            TableSymbol[i, j + 1].Font = TableSymbolFont; 
                             TableSymbol[i, j + 1].Text = (tempStatus[j, i] != null && tempStatus[j, i].Contains("|")) ? Fence : "";
                         }
-
+                        TableText[i, 0].Font = TableTextFont;
                         TableText[i, 0].Text = dieselLocoHeader[i];
                     }
                 }
