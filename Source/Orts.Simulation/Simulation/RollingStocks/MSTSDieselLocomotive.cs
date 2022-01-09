@@ -930,7 +930,7 @@ namespace Orts.Simulation.RollingStocks
             return status.ToString();
         }
 
-        public string GetDpuStatus(bool dataDpu)// used by the TrainDpuInfo window
+        public string GetDpuStatus(bool dataDpu, CABViewControlUnits loadUnits = CABViewControlUnits.KILO_LBS)// used by the TrainDpuInfo window
         {
             string throttle = "";
             if (ThrottlePercent > 0)
