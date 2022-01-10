@@ -918,7 +918,6 @@ namespace Orts.Simulation.RollingStocks
                 throttle += "???";
 
             var status = new StringBuilder();
-
             status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
             status.AppendFormat("{0} {1}\t", GetStringAttribute.GetPrettyName(Direction), Flipped ? Simulator.Catalog.GetString("(flipped)") : "");
             status.AppendFormat("{0}\t", IsLeadLocomotive() || RemoteControlGroup < 0 ? "———" : RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : Simulator.Catalog.GetString("Async"));
@@ -930,7 +929,7 @@ namespace Orts.Simulation.RollingStocks
             return status.ToString();
         }
 
-        public string GetDpuStatus(bool dataDpu)// used by the TrainDpuInfo window
+        public string GetDpuStatus(bool dataDpu, CABViewControlUnits loadUnits = CABViewControlUnits.NONE)// used by the TrainDpuInfo window
         {
             string throttle = "";
             if (ThrottlePercent > 0)
@@ -967,28 +966,63 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
             // Throttle
             status.AppendFormat("{0}\t", throttle);
+
             // Load
-            var avgLoadPercent = 0f;
-            var totalLoadW = DieselEngines.NumOfActiveEngines > 0 ? LocomotivePowerSupply.ElectricTrainSupplyPowerW : 0f;
-            var totalAvailablePowerW = 0f;
-            foreach (var eng in DieselEngines.DEList)
+            var data = 0f;
+            if (FilteredMotiveForceN != 0)
+                data = Math.Abs(this.FilteredMotiveForceN);
+            else
+                data = Math.Abs(this.LocomotiveAxle.DriveForceN);
+            if (DynamicBrakePercent > 0)
             {
-                totalLoadW += eng.CurrentDieselOutputPowerW <= 0f ? 0f : eng.OutputPowerW;
-                totalAvailablePowerW += eng.CurrentDieselOutputPowerW;
+                data = -Math.Abs(DynamicBrakeForceN);
             }
-            avgLoadPercent = totalAvailablePowerW <= 0 ? 0 : totalLoadW * 100 / totalAvailablePowerW;
-            status.AppendFormat("{0:F1}%\t", avgLoadPercent);
+            if (loadUnits == CABViewControlUnits.NONE)
+                loadUnits = IsMetric ? CABViewControlUnits.AMPS : CABViewControlUnits.KILO_LBS;
+            switch (loadUnits)
+            {
+                case CABViewControlUnits.AMPS:
+                    if (ThrottlePercent > 0)
+                    {
+                        data = (data / MaxForceN) * MaxCurrentA;
+                    }
+                    if (DynamicBrakePercent > 0)
+                    {
+                        data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                    }
+                    status.AppendFormat("{0:F0} A", data);
+                    break;
+
+                case CABViewControlUnits.NEWTONS:
+                    status.AppendFormat("{0:F0} N", data);
+                    break;
+
+                case CABViewControlUnits.KILO_NEWTONS:
+                    data = data / 1000.0f;
+                    status.AppendFormat("{0:F0} kN", data);
+                    break;
+
+                case CABViewControlUnits.LBS:
+                    data = N.ToLbf(data);
+                    status.AppendFormat("{0:F0} l", data);
+                    break;
+
+                case CABViewControlUnits.KILO_LBS:
+                default:
+                    data = N.ToLbf(data) * 0.001f;
+                    status.AppendFormat("{0:F0} K", data);
+                    break;
+            }
+
+            status.AppendFormat((data < 0 ? "???" : " ") + "\t");
+
             // BP
             var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("EOT"));
             status.AppendFormat("{0:F0}\t", brakeInfoValue);
 
-            // Flow
-            var totalDieselFlowLpS = 0f;
-            foreach (var eng in DieselEngines.DEList)
-            {
-                totalDieselFlowLpS += eng.DieselFlowLps;
-            }
-            status.AppendFormat("{0}/{1}\t", FormatStrings.FormatFuelVolume(pS.TopH(totalDieselFlowLpS), Simulator.PlayerLocomotive.IsMetric, Simulator.PlayerLocomotive.IsUK), FormatStrings.h);
+            // Flow.
+            // TODO:The BP air flow that feeds the brake tube is not yet modeled in Open Rails.
+
             // Remote
             if (dataDpu)
             {
@@ -1085,13 +1119,11 @@ namespace Orts.Simulation.RollingStocks
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Throttle"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Load"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("BP"));
-            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Flow"));
             if (!dpuFull)
             {
                 labels.AppendFormat("{0}", Simulator.Catalog.GetString("Remote"));
                 DpuLabels = labels.ToString().Split('\t');
             }
-
             if (dpuFull)
             {
                 labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Remote"));
