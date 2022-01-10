@@ -418,6 +418,7 @@ an example of use::
       Position (  164.4 286.5 136 52 )
 		Parameters (
          FullTable True
+         LoadUnits AMPS
 		)
       Units ( KM_PER_HOUR )
 		ORTSDisplay ( 1 )
@@ -430,6 +431,13 @@ Here below an example of the output of the above control.
 
 When parameter FullTable is set to False, only the first 6 lines 
 are displayed.
+Optional parameter LoadUnits defines which is the UoM used for the 
+Load field. Default is AMPS in a metric environment and KILO_LBS in 
+the other cases. Selectable LoadUnits are AMPS, NEWTONS, KILO_NEWTONS, 
+LBS and KILO_KBS.
+
+The screen display can be rotated adding parameter 
+ORTSAngle ( number ) in the ScreenDisplay block. The angle is in degrees.
 
 For every keyboard command related to Distributed Power, a cabview control 
 is also available. Here's a list of the cabview controls::
