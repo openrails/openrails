@@ -33,15 +33,14 @@ namespace Orts.Common.Scripting
     [CallOnThread("Loader")]
     public class ScriptManager
     {
-        readonly Simulator Simulator;
         readonly IDictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
         static readonly string[] ReferenceAssemblies = new[]
         {
-            typeof(System.Object).GetTypeInfo().Assembly.Location,
-            typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly.Location,
-            typeof(ORTS.Common.ElapsedTime).GetTypeInfo().Assembly.Location,
-            typeof(ORTS.Scripting.Api.Timer).GetTypeInfo().Assembly.Location,
-            typeof(System.Linq.Enumerable).GetTypeInfo().Assembly.Location,
+            typeof(System.Object).Assembly.Location,
+            typeof(System.Diagnostics.Debug).Assembly.Location,
+            typeof(ORTS.Common.ElapsedTime).Assembly.Location,
+            typeof(ORTS.Scripting.Api.Timer).Assembly.Location,
+            typeof(System.Linq.Enumerable).Assembly.Location,
         };
         static MetadataReference[] References = ReferenceAssemblies.Select(r => MetadataReference.CreateFromFile(r)).ToArray();
         static CSharpCompilationOptions CompilationOptions = new CSharpCompilationOptions(
@@ -49,9 +48,8 @@ namespace Orts.Common.Scripting
             optimizationLevel: Debugger.IsAttached ? OptimizationLevel.Debug : OptimizationLevel.Release);
 
         [CallOnThread("Loader")]
-        internal ScriptManager(Simulator simulator)
+        internal ScriptManager()
         {
-            Simulator = simulator;
         }
 
         public object Load(string[] pathArray, string name, string nameSpace = "ORTS.Scripting.Script")
