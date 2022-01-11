@@ -114,7 +114,7 @@ namespace Orts.Common.Scripting
                         var fileName = Path.GetFileName(error.Location.SourceTree.FilePath);
                         var lineSpan = error.Location.SourceTree.GetLineSpan(textSpan);
                         var line = lineSpan.StartLinePosition.Line + 1;
-                        var column = lineSpan.StartLinePosition.Character;
+                        var column = lineSpan.StartLinePosition.Character + 1;
                         errorString.AppendFormat("\t{0}: {1}, ", error.Id, error.GetMessage());
                         if (path.Length > 1) errorString.AppendFormat("file: {0}, ", fileName);
                         errorString.AppendFormat("line: {0}, column: {1}", line, column);
