@@ -2226,35 +2226,52 @@ This applies to both Timetable Mode and Activity Mode.
 Extended HUD for Debug Information
 ----------------------------------
 
-The last extended HUD display shows Debug information.
+The last extended HUD display shows Debug information containing:
 
-The first line (``Logging enabled``) refers to logging as described in 
-paragraphs 6.6 and 6.7.
+- Logging enabled: :ref:`logging status <driving-logfile>`
+- Build: date and time Open Rails was compiled
+- CPU: processor utilization by Open Rails
+- GPU: frame rate, frame time percentiles and graphics feature level
+- Memory: number of core memory objects loaded (textures, materials, shapes, and tiles) plus garbage collection statistics
+- CPU Memory:
 
-A wide variety of parameters is shown, from frame wait and render speeds 
-in milliseconds, to number of primitives, Process Thread resource 
-utilization and number of Logical CPUs from the system's bios. They are 
-very useful in case of OR stuttering, to find out where the bottleneck is.
+  - Private: virtual memory allocated just for Open Rails (not shared with other applications)
+  - Working set: physical memory in use by Open Rails (including any shared with other applications)
+  - Private working set: physical memory in use just for Open Rails
+  - Managed: virtual memory allocated by the .NET runtime (CLR)
+  - Virtual: virtual memory allocated for any purpose (private + shared + others)
 
-.. index::
-   single: tile
+- GPU Memory: 
 
-The values in the ``Camera`` line refer to the two tile coordinates and to 
-the three coordinates within the tile.
+  - Committed: all graphics memory allocated for Open Rails
+  - Dedicated: physical graphics card memory in use by Open Rails
+  - Shared: system memory shared with the graphics card in use by Open Rails
+
+- Adapter: name and dedicated physical memory of graphics card
+- Shadow maps: distance and size of each shadow map level (and texture size)
+- Shadow primitives: total primitives (rendered items) and breakdown by shadow map level
+- Render primitives: total primitives (rendered items) and breakdown by rendering sequence (``RenderPrimitiveSequence`` in the code)
+- Render/Updater/Loader/Sound process: percentage of time each process is active and waiting
+- Camera: tile X, tile Z, X, Y, Z, altitude, LOD bias, effective viewing distance, effective distant mountain viewing distance
 
 .. image:: images/driving-hud-debug.png
-    :align: center
-    :scale: 80%
+
+The primary measurements for comparing and analysing performance are the first column of values (some lines are skipped), so for the image above we have:
+
+- CPU: 10% - *very low (warning at 75%)*
+- GPU: 58 FPS - *good (warning at <55 FPS with 60 Hz vertical sync)*
+- CPU Memory: 211 MB private - *very low (~3% of 8 GB)*
+- GPU Memory: 493 MB committed - *low (~24% of 2 GB)*
+- Highest process (Render): 47% - *moderate (warning at 75%)*
+
+Also shown are the following graphs of:
+
+- Memory: working set
+- GCs: garbage collections
+- Frame time: how long each frame takes to render
+- Render/Updater/Loader/Sound process: same as textual display above
 
 .. image:: images/driving-hud-debug-graphs.png
-    :align: center
-    :scale: 80%
-
-At the bottom of the picture, some moving graphs are displayed that show 
-the actual load of the computer.
-
-Referring to memory use, about at least 400 MB must remain free to 
-avoid out-of-memory exceptions
 
 Viewing Interactive Track Items
 -------------------------------
