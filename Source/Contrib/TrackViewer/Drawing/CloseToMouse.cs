@@ -62,6 +62,22 @@ namespace ORTS.TrackViewer.Drawing
             return this.ClosestMouseDistanceSquared < otherItem.ClosestMouseDistanceSquared;
         }
 
+        /// <summary>
+        /// get distance between two world locations not taking the height in account
+        /// </summary>
+        /// <param name="location1">first location</param>
+        /// <param name="location2">second location</param>
+        /// <returns>Distance squared</returns>
+        /// <remarks>Very similar to WordlLocation.GetDistanceSquared</remarks>
+        public static float GetGroundDistanceSquared(WorldLocation location1, WorldLocation location2)
+        {
+            float dx = location1.Location.X - location2.Location.X;
+            float dz = location1.Location.Z - location2.Location.Z;
+            dx += 2048 * (location1.TileX - location2.TileX);
+            dz += 2048 * (location1.TileZ - location2.TileZ);
+            return dx * dx + dz * dz;
+        }
+ 
     }
 
     /// <summary>
@@ -128,7 +144,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="description">The type of item (needed for later printing in statusbar)</param>
         public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, TrackNode junctionOrEndNode, string description)
         {
-            float distanceSquared = WorldLocation.GetDistanceSquared2D(location, mouseLocation);
+            float distanceSquared = CloseToMouse.GetGroundDistanceSquared(location, mouseLocation);
             if (distanceSquared < ClosestDistanceSquared)
             {
                 ClosestDistanceSquared = distanceSquared;
@@ -194,7 +210,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="trItem">The track Item that will be stored when it is indeed the closest</param>
         public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, DrawableTrackItem trItem)
         {
-            float distanceSquared = WorldLocation.GetDistanceSquared2D(location, mouseLocation);
+            float distanceSquared = CloseToMouse.GetGroundDistanceSquared(location, mouseLocation);
 
             if (distanceSquared < ClosestDistanceSquared)
             {
@@ -301,7 +317,7 @@ namespace ORTS.TrackViewer.Drawing
             TrackNode trackNode, TrVectorSection vectorSection, int tvsi, double pixelsPerMeter)
         {
             storedMouseLocation = mouseLocation;
-            float distanceSquared = WorldLocation.GetDistanceSquared2D(location, mouseLocation);
+            float distanceSquared = CloseToMouse.GetGroundDistanceSquared(location, mouseLocation);
             // to make unique distances becasue they also act as Key
             double distanceSquaredIndexed = ((double)distanceSquared) * (1 + 1e-16 * trackNode.Index);
             if (distanceSquaredIndexed < sortedTrackCandidates.First().Key)
@@ -370,8 +386,8 @@ namespace ORTS.TrackViewer.Drawing
                 X = storedMouseLocation.Location.X - trackVectorSection.X,
                 Z = storedMouseLocation.Location.Z - trackVectorSection.Z
             };
-            vectorToMouse.X = (float)(vectorToMouse.X + (storedMouseLocation.TileX - trackVectorSection.TileX) * WorldLocation.TileSize);
-            vectorToMouse.Z = (float)(vectorToMouse.Z + (storedMouseLocation.TileZ - trackVectorSection.TileZ) * WorldLocation.TileSize);
+            vectorToMouse.X += (storedMouseLocation.TileX - trackVectorSection.TileX) * 2048;
+            vectorToMouse.Z += (storedMouseLocation.TileZ - trackVectorSection.TileZ) * 2048;
 
             //Now rotate the vector such that a direction along the track is in a direction (x=0, z=1)
             vectorToMouse = Vector3.Transform(vectorToMouse, Matrix.CreateRotationY(-trackVectorSection.AY));

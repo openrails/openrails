@@ -1425,11 +1425,11 @@ namespace Orts.Viewer3D.Popups
         readonly ulong ProcessVirtualAddressLimit;
         #endregion
 
-        public ulong GetWorkingSetSize()
+        public uint GetWorkingSetSize()
         {
             // Get memory usage (working set).
             GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.Size);
-            return (ulong)ProcessMemoryCounters.WorkingSetSize;
+            return (uint)ProcessMemoryCounters.WorkingSetSize;
         }
 
         public ulong GetVirtualAddressLimit()

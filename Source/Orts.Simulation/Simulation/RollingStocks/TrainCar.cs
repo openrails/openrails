@@ -2880,7 +2880,7 @@ namespace Orts.Simulation.RollingStocks
                     continue;
                 if (p.SumWgt < 1.5)
                 {   // single axle pony trunk
-                    double d = p.OffsetM - p.SumOffset / p.SumWgt;
+                    float d = p.OffsetM - p.SumOffset / p.SumWgt;
                     if (-.2 < d && d < .2)
                         continue;
                     p.AddWheelSetLocation(1, p.OffsetM, p0.A[0] + p.OffsetM * p0.B[0], p0.A[1] + p.OffsetM * p0.B[1], p0.A[2] + p.OffsetM * p0.B[2], 0, null);
@@ -3397,11 +3397,11 @@ namespace Orts.Simulation.RollingStocks
         public float Cos = 1;       // truck angle cosine
         public float Sin = 0;       // truck angle sin
         // line fitting variables
-        public double SumWgt;
-        public double SumOffset;
-        public double SumOffsetSq;
-        public double[] SumX = new double[4];
-        public double[] SumXOffset = new double[4];
+        public float SumWgt;
+        public float SumOffset;
+        public float SumOffsetSq;
+        public float[] SumX = new float[4];
+        public float[] SumXOffset = new float[4];
         public float[] A = new float[4];
         public float[] B = new float[4];
         public bool bogie;
@@ -3444,20 +3444,20 @@ namespace Orts.Simulation.RollingStocks
         }
         public void FindCenterLine()
         {
-            double d = SumWgt * SumOffsetSq - SumOffset * SumOffset;
+            float d = SumWgt * SumOffsetSq - SumOffset * SumOffset;
             if (d > 1e-20)
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    A[i] = (float)((SumOffsetSq * SumX[i] - SumOffset * SumXOffset[i]) / d);
-                    B[i] = (float)((SumWgt * SumXOffset[i] - SumOffset * SumX[i]) / d);
+                    A[i] = (SumOffsetSq * SumX[i] - SumOffset * SumXOffset[i]) / d;
+                    B[i] = (SumWgt * SumXOffset[i] - SumOffset * SumX[i]) / d;
                 }
             }
             else
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    A[i] = (float)(SumX[i] / SumWgt);
+                    A[i] = SumX[i] / SumWgt;
                     B[i] = 0;
                 }
             }

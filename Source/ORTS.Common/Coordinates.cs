@@ -50,7 +50,6 @@ namespace ORTS.Common
     /// </summary>
     public class WorldPosition
     {
-        public const double TileSize = 2048.0;
         /// <summary>The x-value of the tile</summary>
         public int TileX { get; set; }
         /// <summary>The z-value of the tile</summary>
@@ -125,17 +124,11 @@ namespace ORTS.Common
         public void Normalize()
         {
             var TileLocation = XNAMatrix.Translation;
-            int xTileDistance = (int)Math.Round((int)(TileLocation.X / 1024) / 2.0, MidpointRounding.AwayFromZero);
-            int zTileDistance = (int)Math.Round((int)(TileLocation.Z / 1024) / 2.0, MidpointRounding.AwayFromZero);
-            if (xTileDistance == 0 && zTileDistance == 0) return;
-            else
-            {
-                TileX += xTileDistance;
-                TileZ += zTileDistance;
-                TileLocation.X = (float)(TileLocation.X - (xTileDistance * TileSize));
-                TileLocation.Z = (float)(TileLocation.Z - (zTileDistance * TileSize));
-                XNAMatrix.Translation = TileLocation;
-            }
+            while (TileLocation.X > 1024) { TileLocation.X -= 2048; TileX++; }
+            while (TileLocation.X < -1024) { TileLocation.X += 2048; TileX--; }
+            while (TileLocation.Z > 1024) { TileLocation.Z -= 2048; TileZ++; }
+            while (TileLocation.Z < -1024) { TileLocation.Z += 2048; TileZ--; }
+            XNAMatrix.Translation = TileLocation;
         }
 
         /// <summary>
@@ -146,18 +139,11 @@ namespace ORTS.Common
         public void NormalizeTo(int tileX, int tileZ)
         {
             Vector3 TileLocation = XNAMatrix.Translation;
-            int xDiff = TileX - tileX;
-            int zDiff = TileZ - tileZ;
-            if (xDiff == 0 && zDiff == 0) return;
-            else
-            {
-                TileX = tileX;
-                TileZ = tileZ;
-                TileLocation.X = (float)(TileLocation.X + (xDiff * TileSize));
-                TileLocation.Z = (float)(TileLocation.Z + (zDiff * TileSize));
-                XNAMatrix.Translation = TileLocation;
-            }
-
+            while (TileX < tileX) { TileLocation.X -= 2048; TileX++; }
+            while (TileX > tileX) { TileLocation.X += 2048; TileX--; }
+            while (TileZ < tileZ) { TileLocation.Z += 2048; TileZ++; }
+            while (TileZ > tileZ) { TileLocation.Z -= 2048; TileZ--; }
+            XNAMatrix.Translation = TileLocation;
         }
 
         /// <summary>
@@ -174,7 +160,6 @@ namespace ORTS.Common
     /// </summary>
     public struct WorldLocation
     {
-        public const double TileSize = 2048.0;
         /// <summary>
         /// Returns a WorldLocation representing no location at all.
         /// </summary>
@@ -227,16 +212,6 @@ namespace ORTS.Common
             while (Location.X < -1024) { Location.X += 2048; TileX--; }
             while (Location.Z >= 1024) { Location.Z -= 2048; TileZ++; }
             while (Location.Z < -1024) { Location.Z += 2048; TileZ--; }
-            int xTileDistance = (int)Math.Round((int)(Location.X / 1024) / 2.0, MidpointRounding.AwayFromZero);
-            int zTileDistance = (int)Math.Round((int)(Location.Z / 1024) / 2.0, MidpointRounding.AwayFromZero);
-            if (xTileDistance == 0 && zTileDistance == 0) return;
-            else
-            {
-                TileX += xTileDistance;
-                TileZ += zTileDistance;
-                Location.X = (float)(Location.X - (xTileDistance * TileSize));
-                Location.Z = (float)(Location.Z - (zTileDistance * TileSize));
-            }
         }
 
         /// <summary>
@@ -250,16 +225,6 @@ namespace ORTS.Common
             while (TileX > tileX) { Location.X += 2048; TileX--; }
             while (TileZ < tileZ) { Location.Z -= 2048; TileZ++; }
             while (TileZ > tileZ) { Location.Z += 2048; TileZ--; }
-            int xDiff = TileX - tileX;
-            int zDiff = TileZ - tileZ;
-            if (xDiff == 0 && zDiff == 0) return;
-            else
-            {
-                TileX = tileX;
-                TileZ = tileZ;
-                Location.X = (float)(Location.X + (xDiff * TileSize));
-                Location.Z = (float)(Location.Z + (zDiff * TileSize));
-            }
         }
 
         /// <summary>
@@ -278,24 +243,12 @@ namespace ORTS.Common
         /// </summary>
         public static float GetDistanceSquared(WorldLocation location1, WorldLocation location2)
         {
-            double dx = location1.Location.X - location2.Location.X;
-            double dy = location1.Location.Y - location2.Location.Y;
-            double dz = location1.Location.Z - location2.Location.Z;
+            var dx = location1.Location.X - location2.Location.X;
+            var dy = location1.Location.Y - location2.Location.Y;
+            var dz = location1.Location.Z - location2.Location.Z;
             dx += 2048 * (location1.TileX - location2.TileX);
             dz += 2048 * (location1.TileZ - location2.TileZ);
-            return (float)(dx * dx + dy * dy + dz * dz);
-        }
-
-        /// <summary>
-        /// Get squared distance between two world locations (in meters), neglecting elevation (y) information
-        /// </summary>
-        public static float GetDistanceSquared2D(in WorldLocation location1, in WorldLocation location2)
-        {
-            double dx = location1.Location.X - location2.Location.X;
-            double dz = location1.Location.Z - location2.Location.Z;
-            dx += TileSize * (location1.TileX - location2.TileX);
-            dz += TileSize * (location1.TileZ - location2.TileZ);
-            return (float)(dx * dx + dz * dz);
+            return dx * dx + dy * dy + dz * dz;
         }
 
         /// <summary>
@@ -303,8 +256,7 @@ namespace ORTS.Common
         /// </summary>
         public static Vector3 GetDistance(WorldLocation locationFrom, WorldLocation locationTo)
         {
-            return new Vector3((float)(locationTo.Location.X - locationFrom.Location.X + (locationTo.TileX - locationFrom.TileX) * TileSize), (float)(locationTo.Location.Y - locationFrom.Location.Y),
-                (float)(locationTo.Location.Z - locationFrom.Location.Z + (locationTo.TileZ - locationFrom.TileZ) * TileSize));
+            return new Vector3(locationTo.Location.X - locationFrom.Location.X + (locationTo.TileX - locationFrom.TileX) * 2048, locationTo.Location.Y - locationFrom.Location.Y, locationTo.Location.Z - locationFrom.Location.Z + (locationTo.TileZ - locationFrom.TileZ) * 2048);
         }
 
         /// <summary>
@@ -312,8 +264,7 @@ namespace ORTS.Common
         /// </summary>
         public static Vector2 GetDistance2D(WorldLocation locationFrom, WorldLocation locationTo)
         {
-            return new Vector2((float)(locationTo.Location.X - locationFrom.Location.X + (locationTo.TileX - locationFrom.TileX) * TileSize),
-                (float)(locationTo.Location.Z - locationFrom.Location.Z + (locationTo.TileZ - locationFrom.TileZ) * TileSize));
+            return new Vector2(locationTo.Location.X - locationFrom.Location.X + (locationTo.TileX - locationFrom.TileX) * 2048, locationTo.Location.Z - locationFrom.Location.Z + (locationTo.TileZ - locationFrom.TileZ) * 2048);
         }
 
         /// <summary>

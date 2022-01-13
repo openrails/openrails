@@ -188,10 +188,10 @@ namespace ORTS.TrackViewer.Drawing
         public void ZoomReset(DrawTrackDB drawTrackDB)
         {
             if (drawTrackDB == null) return;
-            double minX = drawTrackDB.MinTileX * WorldLocation.TileSize - 1024f;
-            double minZ = drawTrackDB.MinTileZ * WorldLocation.TileSize - 1024f;
-            double maxX = drawTrackDB.MaxTileX * WorldLocation.TileSize + 1024f;
-            double maxZ = drawTrackDB.MaxTileZ * WorldLocation.TileSize + 1024f;
+            float minX = drawTrackDB.MinTileX * 2048 - 1024f;
+            float minZ = drawTrackDB.MinTileZ * 2048 - 1024f;
+            float maxX = drawTrackDB.MaxTileX * 2048 + 1024f;
+            float maxZ = drawTrackDB.MaxTileZ * 2048 + 1024f;
             SetDrawArea(minX, maxX, minZ, maxZ);
         }
 
@@ -202,10 +202,10 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="maxX">maximal real world X location</param>
         /// <param name="minZ">minimal real world Z location</param>
         /// <param name="maxZ">maximal real world Z location</param>
-        void SetDrawArea(double minX, double maxX, double minZ, double maxZ)
+        void SetDrawArea(float minX, float maxX, float minZ, float maxZ)
         {
-            double scaleX = AreaW / (maxX - minX);
-            double scaleY = AreaH / (maxZ - minZ);
+            float scaleX = AreaW / (maxX - minX);
+            float scaleY = AreaH / (maxZ - minZ);
             //make square tiles
             Scale = Math.Min(scaleX, scaleY);
             metersPerPixel.ApproximateTo(1.0f / Scale);
@@ -297,7 +297,7 @@ namespace ORTS.TrackViewer.Drawing
             //  fixedX = scale_old * (worldX - offsetX_old) = scale_new * (worldX - offsetX_new)
             //  fixedX/scale_old + offsetX_old = fixedX/scale_new + offsetX_new = worldX
             //  offsetX_new = offsetX_old + fixedX * (scale_new/scale_old - 1) / scale_new
-            double scaleFactor = 1.0 / metersPerPixel.AddStep(scaleSteps); // 1.0/xxx because scale is inverse of metersPerPixel
+            float scaleFactor = 1.0f / (float)metersPerPixel.AddStep(scaleSteps); // 1.0/xxx because scale is inverse of metersPerPixel
             Scale = metersPerPixel.InverseScaleValue;
             OffsetX += fixedAreaLocation.X * (scaleFactor - 1) / Scale;
             OffsetZ += (AreaH - fixedAreaLocation.Y) * (scaleFactor - 1) / Scale;
@@ -311,8 +311,8 @@ namespace ORTS.TrackViewer.Drawing
         {
             //normal equation: areaX = scale * (worldX - offsetX)
             //zoom to tile: screenW = scale_new * 2048
-            double scaleX = AreaW / WorldLocation.TileSize;
-            double scaleY = AreaH / WorldLocation.TileSize;
+            double scaleX = AreaW / 2048.0;
+            double scaleY = AreaH / 2048.0;
             double newScale = Math.Min(scaleX, scaleY);
             int stepsNeeded = metersPerPixel.StepsNeededForRatio(Scale / newScale);
             ZoomAroundMouse(stepsNeeded);
@@ -323,8 +323,8 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         public void ZoomToTileCentered()
         {
-            double scaleX = AreaW / WorldLocation.TileSize;
-            double scaleY = AreaH / WorldLocation.TileSize;
+            double scaleX = AreaW / 2048.0;
+            double scaleY = AreaH / 2048.0;
             double newScale = Math.Min(scaleX, scaleY);
             ZoomCentered(metersPerPixel.StepsNeededForRatio(Scale / newScale));
         }
@@ -420,8 +420,8 @@ namespace ORTS.TrackViewer.Drawing
             // Basic equation areaX = scale * (worldX - offsetX)
             // We want middle of screen to shift to new worldX, so areaW/2 = scale * (worldX - offsetX)
             // Similarly
-            double worldX = location.TileX * WorldLocation.TileSize + location.Location.X;
-            double worldZ = location.TileZ * WorldLocation.TileSize + location.Location.Z;
+            double worldX = location.TileX * 2048 + location.Location.X;
+            double worldZ = location.TileZ * 2048 + location.Location.Z;
             OffsetX = worldX - AreaW / (2 * Scale);
             OffsetZ = worldZ - AreaH / (2 * Scale);
         }
@@ -446,8 +446,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <returns>location on the drawing area in a 2d vector (in pixels)</returns>
         private Vector2 GetAreaVector(WorldLocation location)
         {
-            double x = location.TileX * WorldLocation.TileSize + location.Location.X;
-            double y = location.TileZ * WorldLocation.TileSize + location.Location.Z;
+            double x = location.TileX * 2048 + location.Location.X;
+            double y = location.TileZ * 2048 + location.Location.Z;
             return new Vector2((float)(Scale * (x - OffsetX)),
                                (float)(AreaH - Scale * (y - OffsetZ)));
         }
@@ -486,7 +486,13 @@ namespace ORTS.TrackViewer.Drawing
         {
             double x = (OffsetX + (areaX) / Scale);
             double z = (OffsetZ + (AreaH - areaY) / Scale);
-            WorldLocation location = new WorldLocation(0, 0, (float)x, 0, (float)z);
+            //WorldLocation location = new WorldLocation(0, 0, cornerIndexX, 0, cornerIndexZ);
+            //we now do pre-normalization. This normalization is more efficient than Coordinates.normalization
+            int tileX = (int)x / 2048;
+            x -= (tileX * 2048);
+            int tileZ = (int)z / 2048;
+            z -= tileZ * 2048;
+            WorldLocation location = new WorldLocation(tileX, tileZ, (float)x, 0, (float)z);
             location.Normalize();
             return location;
         }
