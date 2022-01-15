@@ -15,10 +15,6 @@
     <DocumentationFile>..\..\Program\ORTS.Updater.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ionic.Zip, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\Ionic.Zip.dll</HintPath>
-    </Reference>
     <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
@@ -26,6 +22,7 @@
     <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DotNetZip" Version="1.16.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
