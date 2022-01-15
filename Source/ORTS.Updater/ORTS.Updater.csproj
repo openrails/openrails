@@ -19,10 +19,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\Ionic.Zip.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
@@ -33,5 +29,6 @@
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 </Project>
