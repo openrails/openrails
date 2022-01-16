@@ -215,7 +215,7 @@ namespace Orts.Viewer3D
             {
                 Textures[path].Dispose();
                 Textures.Remove(path);
-            }
+        }
         }
 
         [CallOnThread("Updater")]

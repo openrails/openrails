@@ -825,35 +825,36 @@ namespace Orts.MultiPlayer
 			Notify((new MSGLocoChange(GetUserName(), lead.CarID, frontOrRearCab, t)).ToString());
 		}
 
-        public TrainCar SubCar(string wagonFilePath, int length)
+        public TrainCar SubCar(Train train, string wagonFilePath, int length)
 		{
-			System.Console.WriteLine("Will substitute with your existing stocks\n.");
-            TrainCar car;
+            Console.WriteLine("Will substitute with your existing stocks\n.");
+
 			try
 			{
 				char type = 'w';
 				if (wagonFilePath.ToLower().Contains(".eng")) type = 'e';
 				string newWagonFilePath = SubMissingCar(length, type);
-                car = RollingStock.Load(Simulator, newWagonFilePath);
+
+                TrainCar car = RollingStock.Load(Simulator, train, newWagonFilePath);
 				car.CarLengthM = length;
 				car.RealWagFilePath = wagonFilePath;
-				if (Simulator.Confirmer != null)
-                    Simulator.Confirmer.Information(MPManager.Catalog.GetString("Missing car, have substituted with other one."));
 
+                Simulator.Confirmer?.Information(MPManager.Catalog.GetString("Missing car, have substituted with other one."));
+
+                return car;
 			}
 			catch (Exception error)
 			{
-				System.Console.WriteLine(error.Message + "Substitution failed, will ignore it\n.");
-				car = null;
+                Console.WriteLine(error.Message + "Substitution failed, will ignore it\n.");
+                return null;
 			}
-			return car;
 		}
+
         SortedList<double, string> coachList;
         SortedList<double, string> engList;
 
         public string SubMissingCar(int length, char type)
 		{
-
 			type = char.ToLower(type);
 			SortedList<double, string> copyList;
 			if (type == 'w')
@@ -876,7 +877,6 @@ namespace Orts.MultiPlayer
 				if (dist < bestDist) { bestDist = dist; bestName = item.Value; }
 			}
 			return Simulator.BasePath + "\\trains\\trainset\\" + bestName;
-
 		}
 
 		static SortedList<double, string> GetList(Simulator simulator, char type)

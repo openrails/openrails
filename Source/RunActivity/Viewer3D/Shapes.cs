@@ -104,7 +104,7 @@ namespace Orts.Viewer3D
             {
                 Shapes[path].Dispose();
                 Shapes.Remove(path);
-            }
+        }
         }
 
         [CallOnThread("Updater")]
@@ -1699,8 +1699,8 @@ namespace Orts.Viewer3D
                 foreach (var dl in DistanceLevels)
                 {
                     dl.Mark();
-                }
             }
+        }
 
             public void Dispose()
             {
@@ -1748,8 +1748,8 @@ namespace Orts.Viewer3D
                 foreach (var so in SubObjects)
                 {
                     so.Mark();
-                }
             }
+        }
 
             public void Dispose()
             {
@@ -1983,8 +1983,8 @@ namespace Orts.Viewer3D
                 foreach (var prim in ShapePrimitives)
                 {
                     prim.Mark();
-                }
             }
+        }
 
             public void Dispose()
             {
@@ -2222,8 +2222,8 @@ namespace Orts.Viewer3D
             foreach (var lod in LodControls)
             {
                 lod.Mark();
-            }
         }
+    }
 
         public void Dispose()
         {

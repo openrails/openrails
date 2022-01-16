@@ -18,7 +18,6 @@
 // #define DEBUG_MULTIPLAYER
 // DEBUG flag for debug prints
 
-using Event = Orts.Common.Event;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
@@ -34,7 +33,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
+using Event = Orts.Common.Event;
 
 namespace Orts.MultiPlayer
 {
@@ -583,20 +582,17 @@ namespace Orts.MultiPlayer
 
                                     try // Load could fail if file has bad data.
                                     {
-                                        TrainCar car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
+                                        TrainCar car = RollingStock.Load(MPManager.Simulator, t, wagonFilePath);
                                         car.Flipped = flipped[i] == 0 ? false : true;
                                         car.CarID = ids[i];
                                         var carID = car.CarID;
                                         carID = carID.Remove(0, carID.LastIndexOf('-') + 2);
                                         var uid = 0;
                                         if (Int32.TryParse(carID, out uid)) car.UiD = uid;
-                                        car.Train = t;
-                                        t.Cars.Add(car);
                                         if (car.CarID == leadingID)
                                         {
                                             t.LeadLocomotiveIndex = i;
                                             MPManager.Simulator.PlayerLocomotive = t.LeadLocomotive as MSTSLocomotive;
-
                                         }
                                     }
                                     catch (Exception error)
@@ -1315,43 +1311,44 @@ namespace Orts.MultiPlayer
         public override void HandleMsg() //only client will get message, thus will set states
         {
             if (MPManager.IsServer()) return; //server will ignore it
-            //System.Console.WriteLine(this.ToString());
-            // construct train data
-            Train train = null;
-            train = new Train(MPManager.Simulator);
-            train.Number = this.TrainNum;
 
-            train.TrainType = Train.TRAINTYPE.REMOTE;
-            train.travelled = Travelled;
-            train.MUDirection = (Direction)this.mDirection;
-            train.RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
-            //if (consistDirection != 1)
-            //	train.RearTDBTraveller.ReverseDirection();
-            for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
+            // construct train data
+            Train train = new Train(MPManager.Simulator)
+            {
+                Number = this.TrainNum,
+                TrainType = Train.TRAINTYPE.REMOTE,
+                travelled = Travelled,
+                MUDirection = (Direction)this.mDirection,
+                RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat,
+                    MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z,
+                    direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward)
+            };
+
+            for (var i = 0; i < cars.Length; i++)
             {
                 string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
                 TrainCar car = null;
                 try
                 {
-                    car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
+                    car = RollingStock.Load(MPManager.Simulator, train, wagonFilePath);
                     car.CarLengthM = lengths[i];
                 }
                 catch (Exception error)
                 {
-                    System.Console.WriteLine(wagonFilePath + " " + error);
-                    car = MPManager.Instance().SubCar(wagonFilePath, lengths[i]);
+                    Console.WriteLine(wagonFilePath + " " + error);
+                    car = MPManager.Instance().SubCar(train, wagonFilePath, lengths[i]);
                 }
-                if (car == null) continue;
-                bool flip = true;
-                if (flipped[i] == 0) flip = false;
-                car.Flipped = flip;
+
+                if (car == null)
+                    continue;
+
+                car.Flipped = flipped[i] != 0;
                 car.CarID = ids[i];
-                train.Cars.Add(car);
-                car.Train = train;
+            }
 
-            }// for each rail car
+            if (train.Cars.Count == 0)
+                return;
 
-            if (train.Cars.Count == 0) return;
             train.Name = name;
 
             train.InitializeBrakes();
@@ -1368,22 +1365,21 @@ namespace Orts.MultiPlayer
             train.CalculatePositionOfCars();
             train.AITrainBrakePercent = 100;
 
-            if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
+            if (train.Cars[0] is MSTSLocomotive)
+                train.LeadLocomotive = train.Cars[0];
+
             if (train.Cars[0].CarID.StartsWith("AI"))
             {
                 // It's an AI train for the server, raise pantos and light lights
-                if (train.LeadLocomotive != null) train.LeadLocomotive.SignalEvent(Event._HeadlightOn);
-                foreach (TrainCar car in train.Cars)
+                train.LeadLocomotive?.SignalEvent(Event._HeadlightOn);
+
+                if (train.Cars.Exists(x => x is MSTSElectricLocomotive))
                 {
-                    if (car is MSTSElectricLocomotive)
-                    {
-                        car.Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
-                        break;
+                    train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                     }
                 }
-            }
-            if (MPManager.Instance().AddOrRemoveTrain(train, true) == false) return; //add train, but failed
-            // if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, train, true);
+
+            MPManager.Instance().AddOrRemoveTrain(train, true);
         }
 
         public override string ToString()
@@ -1502,121 +1498,129 @@ namespace Orts.MultiPlayer
 
         static TrainCar findCar(Train t, string name)
         {
-            foreach (TrainCar car in t.Cars)
-            {
-                if (car.CarID == name) return car;
-            }
-            return null;
+            return t.Cars.FirstOrDefault(car => car.CarID == name);
         }
+
         private object lockObj = new object();
 
         public override void HandleMsg() //only client will get message, thus will set states
         {
-            if (MPManager.IsServer()) return; //server will ignore it
-            if (user != MPManager.GetUserName()) return; //not the one requested GetTrain
-            bool found = false; Train train1 = null; Train train = null;
+            if (MPManager.IsServer())
+                return; //server will ignore it
+            if (user != MPManager.GetUserName())
+                return; //not the one requested GetTrain
+
+            Train train;
+
             lock (lockObj)
             {
-                // construct train data
-                foreach (Train t in MPManager.Simulator.Trains)
-                {
-                    if (t.Number == this.TrainNum) //the train exists, update information
-                    {
-                        train = t;
-                        found = true; break;
+                train = MPManager.Simulator.Trains.FirstOrDefault(t => t.Number == TrainNum);
                     }
-                }
-                if (!found)
-                {
-                    //not found, create new train
-                    train1 = new Train(MPManager.Simulator); train1.Number = this.TrainNum;
-                }
-            }
-            if (found)
+
+            // Existing train
+            if (train != null)
             {
                 Traveller traveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
                 List<TrainCar> tmpCars = new List<TrainCar>();
-                for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
+
+                for (var i = 0; i < cars.Length; i++)
                 {
                     string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
                     TrainCar car = findCar(train, ids[i]);
+
                     try
                     {
-                        if (car == null) car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
+                        if (car == null)
+                            car = RollingStock.Load(MPManager.Simulator, train, wagonFilePath);
                         car.CarLengthM = lengths[i];
                     }
                     catch (Exception error)
                     {
-                        System.Console.WriteLine(wagonFilePath + " " + error);
-                        car = MPManager.Instance().SubCar(wagonFilePath, lengths[i]);
+                        Console.WriteLine(wagonFilePath + " " + error);
+                        car = MPManager.Instance().SubCar(train, wagonFilePath, lengths[i]);
                     }
-                    if (car == null) continue;
-                    bool flip = true;
-                    if (flipped[i] == 0) flip = false;
-                    car.Flipped = flip;
+
+                    if (car == null)
+                        continue;
+
+                    car.Flipped = flipped[i] != 0;
                     car.CarID = ids[i];
                     tmpCars.Add(car);
-                    car.Train = train;
+                }
 
-                }// for each rail car
+                if (tmpCars.Count == 0)
+                    return;
 
-                if (tmpCars.Count == 0) return;
-
+                // Replace the train car list (after loading, the order needs to be the same as in the message)
                 train.Cars = tmpCars;
+
                 train.MUDirection = (Direction)mDirection;
                 train.RearTDBTraveller = traveller;
                 train.CalculatePositionOfCars();
                 train.travelled = Travelled;
                 train.CheckFreight();
                 train.SetDPUnitIDs();
-                return;
             }
-            train1.TrainType = Train.TRAINTYPE.REMOTE;
-            train1.travelled = Travelled;
-            train1.RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat, MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
-            for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
+            // New train
+            else
+            {
+                train = new Train(MPManager.Simulator)
+                {
+                    Number = TrainNum,
+                    TrainType = Train.TRAINTYPE.REMOTE,
+                    travelled = Travelled,
+                    RearTDBTraveller = new Traveller(MPManager.Simulator.TSectionDat,
+                        MPManager.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z,
+                        direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward)
+                };
+
+                for (var i = 0; i < cars.Length; i++)
             {
                 string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
                 TrainCar car = null;
                 try
                 {
-                    car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
+                        car = RollingStock.Load(MPManager.Simulator, train, wagonFilePath);
                     car.CarLengthM = lengths[i];
                 }
                 catch (Exception error)
                 {
-                    System.Console.WriteLine(wagonFilePath + " " + error);
-                    car = MPManager.Instance().SubCar(wagonFilePath, lengths[i]);
+                        Console.WriteLine(wagonFilePath + " " + error);
+                        car = MPManager.Instance().SubCar(train, wagonFilePath, lengths[i]);
                 }
-                if (car == null) continue;
-                bool flip = true;
-                if (flipped[i] == 0) flip = false;
-                car.Flipped = flip;
+
+                    if (car == null)
+                        continue;
+
+                    car.Flipped = flipped[i] != 0;
                 car.CarID = ids[i];
-                train1.Cars.Add(car);
-                car.Train = train1;
-            }// for each rail car
+                }
 
-            if (train1.Cars.Count == 0) return;
-            train1.MUDirection = (Direction)mDirection;
-            //train1.CalculatePositionOfCars(0);
-            train1.InitializeBrakes();
-            //train1.InitializeSignals(false);
-            train1.CheckFreight();
-            train1.SetDPUnitIDs();
+                if (train.Cars.Count == 0)
+                    return;
+
+                train.MUDirection = (Direction)mDirection;
+                train.InitializeBrakes();
+                train.CheckFreight();
+                train.SetDPUnitIDs();
             bool canPlace = true;
-            Train.TCSubpathRoute tempRoute = train1.CalculateInitialTrainPosition(ref canPlace);
+                Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
 
-            train1.SetInitialTrainRoute(tempRoute);
-            train1.CalculatePositionOfCars();
-            train1.ResetInitialTrainRoute(tempRoute);
+                train.SetInitialTrainRoute(tempRoute);
+                train.CalculatePositionOfCars();
+                train.ResetInitialTrainRoute(tempRoute);
 
-            train1.CalculatePositionOfCars();
-            train1.AITrainBrakePercent = 100;
+                train.CalculatePositionOfCars();
+                train.AITrainBrakePercent = 100;
 
-            if (train1.Cars[0] is MSTSLocomotive) train1.LeadLocomotive = train1.Cars[0];
-            MPManager.Instance().AddOrRemoveTrain(train1, true);
-            if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, train1, true);
+                if (train.Cars[0] is MSTSLocomotive)
+                    train.LeadLocomotive = train.Cars[0];
+
+                MPManager.Instance().AddOrRemoveTrain(train, true);
+
+                if (MPManager.IsServer())
+                    MPManager.Instance().AddOrRemoveLocomotives(user, train, true);
+            }
         }
 
         public override string ToString()

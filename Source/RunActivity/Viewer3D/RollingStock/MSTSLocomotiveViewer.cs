@@ -3141,7 +3141,7 @@ namespace Orts.Viewer3D.RollingStock
                 threeDimCabDigit.Mark();
             }
         }
-    }
+        }
 
     public class ThreeDimCabDigit
     {

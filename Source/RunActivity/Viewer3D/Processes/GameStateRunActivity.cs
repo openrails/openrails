@@ -1285,7 +1285,7 @@ namespace Orts.Viewer3D.Processes
                     new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -3), new Vector2(1, 1)),
                 };
             }
-
+            
             public void Dispose()
             {
                 Material.Dispose();
