@@ -2040,6 +2040,8 @@ unit) signals for braking and throttle position, etc. The
 player-controlled locomotive generates the MU signals which are passed 
 along to every unit in the train. 
 
+.. _distributed-power:
+
 Distributed Power
 -----------------
 
@@ -2113,6 +2115,9 @@ while the trailing pushing unit is controlled *async* independently.
 The actual set value of traction or dynamic brake of *async* group is shown in 
 lines *Throttle* and *Dynamic Brake*, respectively, in brackets, e.g.: 
 Throttle: 0% (50%).
+
+Distributed power info and commands can also be displayed and operated through 
+cabview controls, as explained :ref:`here <cabs-distributed-power>`
 
 The complete distributed power configuration is displayed in the 
 Distributed Power Info extended HUD page, where the state of all locomotives 
