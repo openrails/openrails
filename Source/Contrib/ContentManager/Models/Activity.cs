@@ -50,7 +50,8 @@ namespace ORTS.ContentManager.Models
                 else
                     Services = new string[0];
             }
-            else if (System.IO.Path.GetExtension(content.PathName).Equals(".timetable_or", StringComparison.OrdinalIgnoreCase))
+            else if (System.IO.Path.GetExtension(content.PathName).Equals(".timetable_or", StringComparison.OrdinalIgnoreCase)
+                || System.IO.Path.GetExtension(content.PathName).Equals(".timetable-or", StringComparison.OrdinalIgnoreCase))
             {
                 // TODO: Make common timetable parser.
                 var file = new TimetableReader(content.PathName);

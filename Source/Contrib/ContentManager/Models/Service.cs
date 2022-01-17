@@ -69,7 +69,8 @@ namespace ORTS.ContentManager.Models
                     Stops = trafficService.TrafficDetails.Zip(activityService.ServiceList, (tt, stop) => new Stop(stop.PlatformStartID, stop.DistanceDownPath, MSTSTimeToDateTime(tt.ArrivalTime), MSTSTimeToDateTime(tt.DepartTime)));
                 }
             }
-            else if (System.IO.Path.GetExtension(content.PathName).Equals(".timetable_or", StringComparison.OrdinalIgnoreCase))
+            else if (System.IO.Path.GetExtension(content.PathName).Equals(".timetable_or", StringComparison.OrdinalIgnoreCase)
+                || System.IO.Path.GetExtension(content.PathName).Equals(".timetable-or", StringComparison.OrdinalIgnoreCase))
             {
                 // TODO: Make common timetable parser.
                 var file = new TimetableReader(content.PathName);

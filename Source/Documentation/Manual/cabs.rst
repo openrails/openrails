@@ -403,6 +403,67 @@ Here is an example of use of the odometer control blocks within a .cvf file::
     Units ( FEET )
   )
 
+.. _cabs-distributed-power:
+
+Distributed Power
+-----------------
+
+The principles of Distributed Power are described :ref:`here <distributed-power>` .
+
+Distributed Power data can be displayed using control ORTS_DISTRIBUTED_POWER. Here 
+an example of use::
+
+	ScreenDisplay (
+      Type ( ORTS_DISTRIBUTED_POWER SCREEN_DISPLAY )
+      Position (  164.4 286.5 136 52 )
+		Parameters (
+         FullTable True
+         LoadUnits AMPS
+		)
+      Units ( KM_PER_HOUR )
+		ORTSDisplay ( 1 )
+		ORTSScreenPage ( "2300-0" )
+   )  
+
+Here below an example of the output of the above control.
+
+.. image:: images/cabs-distributed-power.png
+
+When parameter FullTable is set to False, only the first 6 lines 
+are displayed.
+Optional parameter LoadUnits defines which is the UoM used for the 
+Load field. Default is AMPS in a metric environment and KILO_LBS in 
+the other cases. Selectable LoadUnits are AMPS, NEWTONS, KILO_NEWTONS, 
+LBS and KILO_KBS.
+
+The screen display can be rotated adding parameter 
+ORTSAngle ( number ) in the ScreenDisplay block. The angle is in degrees.
+
+For every keyboard command related to Distributed Power, a cabview control 
+is also available. Here's a list of the cabview controls::
+
+   - ORTS_DP_MOVE_TO_FRONT
+   - ORTS_DP_MOVE_TO_BACK
+   - ORTS_DP_IDLE
+   - ORTS_DP_TRACTION
+   - ORTS_DP_BRAKE
+   - ORTS_DP_MORE
+   - ORTS_DP_LESS
+
+Here an example of use of one of the controls::
+
+   TwoState (
+		Type ( ORTS_DP_MOVE_TO_FRONT TWO_STATE )
+		Position ( 163.2 378.4 13.75 10 )
+		Graphic ( "..\\..\\Common.Cab\\ES44v3\\softkey1trans.ace" )
+		NumFrames ( 2 2 1 )
+		Style ( WHILE_PRESSED )
+		MouseControl ( 1 )
+		ORTSDisplay ( 1 )
+		ORTSScreenPage ( "2300-0" )
+	)
+
+
 Animated 2D Wipers
 ------------------
 
