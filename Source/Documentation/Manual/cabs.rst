@@ -473,7 +473,7 @@ The string appearing on the screen when the mouse browses over a command control
 can be customized with following line, to be added within the control block in the 
 .cvf file::
 
-   Label ( "string" )
+   ORTSLabel ( "string" )
    
 Multiple screen pages on displays
 ---------------------------------
