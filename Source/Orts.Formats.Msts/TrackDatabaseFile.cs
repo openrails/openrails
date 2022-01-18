@@ -55,7 +55,7 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("trackdb", ()=>{ TrackDB = new TrackDB(stf); }),
                 });
 
-            LastWriteTime = Vfs.GetLastWriteTime(filenamewithpath);
+            LastWriteTime = File.GetLastWriteTime(filenamewithpath);
         }
 
         /// <summary>

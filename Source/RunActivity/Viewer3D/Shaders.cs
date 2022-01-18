@@ -110,15 +110,31 @@ namespace Orts.Viewer3D
         readonly EffectParameter signalLightIntensity;
         readonly EffectParameter eyeVector;
         readonly EffectParameter sideVector;
+
         readonly EffectParameter imageTexture;
+        readonly EffectParameter baseColorFactor;
         readonly EffectParameter overlayTexture;
+        readonly EffectParameter emissiveTexture;
+        readonly EffectParameter emissiveFactor;
+        readonly EffectParameter normalTexture;
+        readonly EffectParameter normalScale;
+        readonly EffectParameter occlusionTexture;
+        readonly EffectParameter metallicRoughnessTexture;
+        readonly EffectParameter occlusionFactor;
+
+        readonly EffectParameter lightColor;
+
         readonly EffectParameter referenceAlpha;
         readonly EffectParameter overlayScale;
+
+        readonly EffectParameter bones;
 
         Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
         Vector3 _sunDirection;
         bool _imageTextureIsNight;
+
+        public const int MAX_BONES = 50;
 
         public void SetViewMatrix(ref Matrix v)
         {
@@ -229,9 +245,29 @@ namespace Orts.Viewer3D
 
         public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
 
+        public Texture2D EmissiveTexture { set { emissiveTexture.SetValue(value); } }
+
+        public Texture2D NormalTexture { set { normalTexture.SetValue(value); } }
+
+        public Texture2D MetallicRoughnessTexture { set { metallicRoughnessTexture.SetValue(value); } }
+
+        public Texture2D OcclusionTexture { set { occlusionTexture.SetValue(value); } }
+
         public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
 
         public float OverlayScale { set { overlayScale.SetValue(value); } }
+
+        public Vector4 BaseColorFactor { set { baseColorFactor.SetValue(value); } }
+        
+        public Vector3 EmissiveFactor { set { emissiveFactor.SetValue(value); } }
+        
+        public float NormalScale { set { normalScale.SetValue(value); } }
+        
+        public Vector3 OcclusionFactor { set { occlusionFactor.SetValue(value); } }
+
+        public Vector3 LightColor { set { lightColor.SetValue(value); } }
+
+        public Matrix[] Bones { set { bones.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
@@ -264,8 +300,18 @@ namespace Orts.Viewer3D
             sideVector = Parameters["SideVector"];
             imageTexture = Parameters["ImageTexture"];
             overlayTexture = Parameters["OverlayTexture"];
+            emissiveTexture = Parameters["EmissiveTexture"];
+            normalTexture = Parameters["NormalTexture"];
+            metallicRoughnessTexture = Parameters["MetallicRoughnessTexture"];
+            occlusionTexture = Parameters["OcclusionTexture"];
             referenceAlpha = Parameters["ReferenceAlpha"];
             overlayScale = Parameters["OverlayScale"];
+            baseColorFactor = Parameters["BaseColorFactor"];
+            emissiveFactor = Parameters["EmissiveFactor"];
+            normalScale = Parameters["NormalScale"];
+            occlusionFactor = Parameters["OcclusionFactor"];
+            lightColor = Parameters["LightColor"];
+            bones = Parameters["Bones"];
         }
     }
 

@@ -288,7 +288,7 @@ namespace Orts.Simulation
             Trace.Write(" TDB");
             TDB = new TrackDatabaseFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
 
-            if (Vfs.FileExists(ORfilepath + @"\sigcfg.dat"))
+            if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
                 Trace.Write(" SIGCFG_OR");
                 SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
@@ -300,13 +300,13 @@ namespace Orts.Simulation
             }
 
             Trace.Write(" DAT");
-            if (Vfs.DirectoryExists(RoutePath + @"\Openrails") && Vfs.FileExists(RoutePath + @"\Openrails\TSECTION.DAT"))
+            if (Directory.Exists(RoutePath + @"\Openrails") && File.Exists(RoutePath + @"\Openrails\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(RoutePath + @"\Openrails\TSECTION.DAT");
-            else if (Vfs.DirectoryExists(RoutePath + @"\GLOBAL") && Vfs.FileExists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
+            else if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
             else
                 TSectionDat = new TrackSectionsFile(BasePath + @"\GLOBAL\TSECTION.DAT");
-            if (Vfs.FileExists(RoutePath + @"\TSECTION.DAT"))
+            if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
 
             SuperElevation = new SuperElevation(this);
@@ -320,14 +320,14 @@ namespace Orts.Simulation
             Trace.Write(" ACT");
 
             var rdbFile = RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".rdb";
-            if (Vfs.FileExists(rdbFile))
+            if (File.Exists(rdbFile))
             {
                 Trace.Write(" RDB");
                 RDB = new RoadDatabaseFile(rdbFile);
             }
 
             var carSpawnFile = RoutePath + @"\carspawn.dat";
-            if (Vfs.FileExists(carSpawnFile))
+            if (File.Exists(carSpawnFile))
             {
                 CarSpawnerLists = new List<CarSpawnerList>();
                 Trace.Write(" CARSPAWN");
@@ -336,7 +336,7 @@ namespace Orts.Simulation
 
             // Extended car spawner file
             var extCarSpawnFile = RoutePath + @"\openrails\carspawn.dat";
-            if (Vfs.FileExists(extCarSpawnFile))
+            if (File.Exists(extCarSpawnFile))
             {
                 if (CarSpawnerLists == null) CarSpawnerLists = new List<CarSpawnerList>();
                 Trace.Write(" EXTCARSPAWN");
@@ -345,7 +345,7 @@ namespace Orts.Simulation
 
             // Load animated clocks if file "animated.clocks-or" exists --------------------------------------------------------
             var clockFile = RoutePath + @"\animated.clocks-or";
-            if (Vfs.FileExists(clockFile))
+            if (File.Exists(clockFile))
             {
                 Trace.Write(" CLOCKS");
                 new ClocksFile(clockFile, ClockShapeList, RoutePath + @"\shapes\");
@@ -354,7 +354,7 @@ namespace Orts.Simulation
             Confirmer = new Confirmer(this, 1.5);
             HazzardManager = new HazzardManager(this);
             FuelManager = new FuelManager(this);
-            ScriptManager = new ScriptManager(this);
+            ScriptManager = new ScriptManager();
             Log = new CommandLog(this);
         }
 
@@ -366,7 +366,7 @@ namespace Orts.Simulation
             // check for existence of activity file in OpenRails subfolder
 
             activityPath = RoutePath + @"\Activities\Openrails\" + ActivityFileName + ".act";
-            if (Vfs.FileExists(activityPath))
+            if (File.Exists(activityPath))
             {
                 // We have an OR-specific addition to world file
                 Activity.InsertORSpecificData(activityPath);
@@ -1133,7 +1133,7 @@ namespace Orts.Simulation
                 if (wagon.IsEngine)
                     wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
 
-                if (!Vfs.FileExists(wagonFilePath))
+                if (!File.Exists(wagonFilePath))
                 {
                     // First wagon is the player's loco and required, so issue a fatal error message
                     if (wagon == conFile.Train.TrainCfg.WagonList[0])
@@ -1327,7 +1327,7 @@ namespace Orts.Simulation
                         if (wagon.IsEngine)
                             wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
 
-                        if (!Vfs.FileExists(wagonFilePath))
+                        if (!File.Exists(wagonFilePath))
                         {
                             Trace.TraceWarning($"Ignored missing {(wagon.IsEngine? "engine" : "wagon")} {wagonFilePath} in activity definition {activityObject.Train_Config.TrainCfg.Name}");
                             continue;

@@ -279,7 +279,7 @@ namespace Orts.Simulation.Timetables
             string fileExtension = Path.GetExtension(filePath);
             string fileDirectory = Path.GetDirectoryName(filePath);
 
-            switch (fileExtension.ToLower())
+            switch (fileExtension)
             {
                 case ".timetable_or":
                 case ".timetable-or":
@@ -1195,19 +1195,19 @@ namespace Orts.Simulation.Timetables
                 formedpathFilefullBinary = Path.Combine(formedpathFilefullBinary, Path.GetFileNameWithoutExtension(formedpathFilefull));
                 formedpathFilefullBinary = Path.ChangeExtension(formedpathFilefullBinary, "or-binpat");
 
-                if (BinaryPaths && Vfs.FileExists(formedpathFilefullBinary))
+                if (BinaryPaths && File.Exists(formedpathFilefullBinary))
                 {
-                    var binaryLastWriteTime = Vfs.GetLastWriteTime(formedpathFilefullBinary);
+                    var binaryLastWriteTime = File.GetLastWriteTime(formedpathFilefullBinary);
                     if (binaryLastWriteTime < simulator.TDB.LastWriteTime ||
-                        Vfs.FileExists(formedpathFilefull) && binaryLastWriteTime < Vfs.GetLastWriteTime(formedpathFilefull))
+                        File.Exists(formedpathFilefull) && binaryLastWriteTime < File.GetLastWriteTime(formedpathFilefull))
                     {
-                        Vfs.FileDelete(formedpathFilefullBinary);
+                        File.Delete(formedpathFilefullBinary);
                     }
                     else
                     {
                         try
                         {
-                            var infpath = new BinaryReader(Vfs.OpenRead(formedpathFilefullBinary));
+                            var infpath = new BinaryReader(new FileStream(formedpathFilefullBinary, FileMode.Open, FileAccess.Read));
                             outPath = new AIPath(simulator.TDB, simulator.TSectionDat, infpath);
                             infpath.Close();
 
@@ -1264,7 +1264,7 @@ namespace Orts.Simulation.Timetables
                         {
                             try
                             {
-                                var outfpath = new BinaryWriter(Vfs.OpenCreate(formedpathFilefullBinary));
+                                var outfpath = new BinaryWriter(new FileStream(formedpathFilefullBinary, FileMode.Create));
                                 outPath.Save(outfpath);
                                 outfpath.Close();
                             }
@@ -2446,7 +2446,7 @@ namespace Orts.Simulation.Timetables
                     if (wagon.IsEngine)
                         wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
 
-                    if (!Vfs.FileExists(wagonFilePath))
+                    if (!File.Exists(wagonFilePath))
                     {
                         Trace.TraceWarning($"Ignored missing {(wagon.IsEngine ? "engine" : "wagon")} {wagonFilePath} in consist {consistFile}");
                         continue;
@@ -2464,10 +2464,10 @@ namespace Orts.Simulation.Timetables
                     TTTrain.Length += car.CarLengthM;
                 }
 
-                    if (consistReverse)
-                    {
+                if (consistReverse)
+                {
                     TTTrain.Cars.Reverse();
-                    }
+                }
             }
 
             //================================================================================================//

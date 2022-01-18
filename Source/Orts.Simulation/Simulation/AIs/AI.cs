@@ -899,7 +899,7 @@ namespace Orts.Simulation.AIs
                 if (wagon.IsEngine)
                     wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
 
-                if (!Vfs.FileExists(wagonFilePath))
+                if (!File.Exists(wagonFilePath))
                 {
                     Trace.TraceWarning($"Ignored missing {(wagon.IsEngine ? "engine" : "wagon")} {wagonFilePath} in consist {consistFileName}");
                     continue;

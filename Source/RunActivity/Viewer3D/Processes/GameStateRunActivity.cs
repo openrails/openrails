@@ -111,11 +111,6 @@ namespace Orts.Viewer3D.Processes
 
         internal override void Load()
         {
-            // The virtual file system must be initialized before loading anything.
-            Vfs.LogLevel = Game.Settings.VfsLogLevel;
-            Vfs.NoAutoMount = Game.Settings.VfsNoAutoMount;
-            Vfs.Initialize(Game.Settings.Menu_Selection[0], Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath));
-
             // Load loading image first!
             if (Loading == null)
                 Loading = new LoadingPrimitive(Game);
@@ -144,14 +139,11 @@ namespace Orts.Viewer3D.Processes
 
             Acttype = acttype;
 
-            // A virtual filesystem path starts with "/", and is assumed to contain multiple ones.
-            // While an option parameter starts with "/" has no more of them in the string.
-
             // Collect all non-action options.
-            var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/") && !a.TrimStart('/').Contains('/')) && !actions.Contains(a.Substring(1)) && !acttype.Contains(a.Substring(1))).Select(a => a.Substring(1)).ToArray();
+            var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a.Substring(1)) && !acttype.Contains(a.Substring(1))).Select(a => a.Substring(1)).ToArray();
 
             // Collect all non-options as data.
-            var data = args.Where(a => !a.StartsWith("-") && (!a.StartsWith("/") || a.TrimStart('/').Contains('/'))).ToArray();
+            var data = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/")).ToArray();
 
             // No action, check for data; for now assume any data is good data.
             if (action.Length == 0 && data.Length > 0)
@@ -790,8 +782,6 @@ namespace Orts.Viewer3D.Processes
                 LogSeparator();
                 settings.Log();
                 LogSeparator();
-                Vfs.Log();
-                LogSeparator();
             }
             else
             {
@@ -1285,7 +1275,7 @@ namespace Orts.Viewer3D.Processes
                     new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -3), new Vector2(1, 1)),
                 };
             }
-            
+
             public void Dispose()
             {
                 Material.Dispose();
@@ -1438,8 +1428,8 @@ namespace Orts.Viewer3D.Processes
                     loadingScreen = loadingScreenWide == null ? loadingScreen : loadingScreenWide;
                 }
                 loadingScreen = loadingScreen == null ? defaultScreen : loadingScreen;
-                var path = Path.Combine(Simulator.RoutePath, loadingScreen).ToLowerInvariant();
-                if (Path.GetExtension(path) == ".dds" && Vfs.FileExists(path))
+                var path = Path.Combine(Simulator.RoutePath, loadingScreen);
+                if (Path.GetExtension(path) == ".dds" && File.Exists(path))
                 {
                     DDSLib.DDSFromFile(path, gd, true, out texture);
                 }
@@ -1447,18 +1437,18 @@ namespace Orts.Viewer3D.Processes
                 {
                     var alternativeTexture = Path.ChangeExtension(path, ".dds");
 
-                    if (Vfs.FileExists(alternativeTexture) && game.Settings.PreferDDSTexture)
+                    if (File.Exists(alternativeTexture) && game.Settings.PreferDDSTexture)
                     {
                         DDSLib.DDSFromFile(alternativeTexture, gd, true, out texture);
                     }
-                    else if (Vfs.FileExists(path))
+                    else if (File.Exists(path))
                     {
                         texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(gd, path);
                     }
                     else
                     {
                         path = Path.Combine(Simulator.RoutePath, defaultScreen);
-                        if (Vfs.FileExists(path))
+                        if (File.Exists(path))
                         {
                             texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(gd, path);
                         }

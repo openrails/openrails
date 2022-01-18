@@ -569,12 +569,12 @@ namespace Orts.MultiPlayer
                             }
                             if (!identical)
                             { 
-                            var carsCount = t.Cars.Count;
-                            t.Cars.RemoveRange(0, carsCount);
+                                var carsCount = t.Cars.Count;
+                                t.Cars.RemoveRange(0, carsCount);
                                 for (int i = 0; i < cars.Length; i++)
                                 {
                                     string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
-                                    if (!Vfs.FileExists(wagonFilePath))
+                                    if (!File.Exists(wagonFilePath))
                                     {
                                         Trace.TraceWarning($"Ignored missing rolling stock {wagonFilePath}");
                                         continue;
@@ -1376,8 +1376,8 @@ namespace Orts.MultiPlayer
                 if (train.Cars.Exists(x => x is MSTSElectricLocomotive))
                 {
                     train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
-                    }
                 }
+            }
 
             MPManager.Instance().AddOrRemoveTrain(train, true);
         }
@@ -1515,7 +1515,7 @@ namespace Orts.MultiPlayer
             lock (lockObj)
             {
                 train = MPManager.Simulator.Trains.FirstOrDefault(t => t.Number == TrainNum);
-                    }
+            }
 
             // Existing train
             if (train != null)
@@ -1575,25 +1575,25 @@ namespace Orts.MultiPlayer
                 };
 
                 for (var i = 0; i < cars.Length; i++)
-            {
-                string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
-                TrainCar car = null;
-                try
                 {
+                    string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
+                    TrainCar car = null;
+                    try
+                    {
                         car = RollingStock.Load(MPManager.Simulator, train, wagonFilePath);
-                    car.CarLengthM = lengths[i];
-                }
-                catch (Exception error)
-                {
+                        car.CarLengthM = lengths[i];
+                    }
+                    catch (Exception error)
+                    {
                         Console.WriteLine(wagonFilePath + " " + error);
                         car = MPManager.Instance().SubCar(train, wagonFilePath, lengths[i]);
-                }
+                    }
 
                     if (car == null)
                         continue;
 
                     car.Flipped = flipped[i] != 0;
-                car.CarID = ids[i];
+                    car.CarID = ids[i];
                 }
 
                 if (train.Cars.Count == 0)
@@ -1603,7 +1603,7 @@ namespace Orts.MultiPlayer
                 train.InitializeBrakes();
                 train.CheckFreight();
                 train.SetDPUnitIDs();
-            bool canPlace = true;
+                bool canPlace = true;
                 Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
 
                 train.SetInitialTrainRoute(tempRoute);

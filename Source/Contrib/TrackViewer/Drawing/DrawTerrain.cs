@@ -617,7 +617,7 @@ namespace ORTS.TrackViewer.Drawing
             }
 
             string path = terrtexPath + filename;
-            if (Vfs.FileExists(path))
+            if (System.IO.File.Exists(path))
             {
                 //The message delegate has quite some overhead, so print it only so often to keep the user informed
                 if (loadedAceFilesCounter % 100 == 0)
