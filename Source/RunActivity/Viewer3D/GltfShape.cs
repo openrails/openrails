@@ -109,7 +109,6 @@ namespace Orts.Viewer3D
                     case AnimationSampler.InterpolationEnum.LINEAR: amount = time1 < time2 ? MathHelper.Clamp((time - time1) / (time2 - time1), 0, 1) : 0; break;
                     case AnimationSampler.InterpolationEnum.STEP: amount = 0; break;
                     case AnimationSampler.InterpolationEnum.CUBICSPLINE: // TODO
-                    case AnimationSampler.InterpolationEnum.CATMULLROMSPLINE: // TODO
                     default: amount = 0; break;
                 }
                 switch (channel.Path)
@@ -299,6 +298,8 @@ namespace Orts.Viewer3D
             // See the glTF specification at https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html
             Gltf Gltf;
             string GltfDir;
+            string GltfFileName;
+            Dictionary<int, byte[]> GlbBinaryBuffers = new Dictionary<int, byte[]>();
             float MinimumScreenCoverage;
             internal Dictionary<int, Matrix[]> AllInverseBindMatrices = new Dictionary<int, Matrix[]>();
             public Matrix[] Matrices = new Matrix[0];
@@ -316,6 +317,7 @@ namespace Orts.Viewer3D
 
                 Gltf = gltfFile;
                 GltfDir = Path.GetDirectoryName(gltfFileName);
+                GltfFileName = gltfFileName;
 
                 var meshes = new Dictionary<int, Node>();
                 TempStack.Clear();
@@ -439,6 +441,8 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 }
                 if (morphWarning)
                     Trace.TraceInformation($"glTF morphing animation is unsupported in file {gltfFileName}");
+
+                GlbBinaryBuffers.Clear();
             }
 
             internal Stream GetBufferView(Accessor accessor)
@@ -447,10 +451,24 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 if (n == null)
                     return Stream.Null;
                 var bufferView = Gltf.BufferViews[(int)n];
-                var file = $"{GltfDir}/{Gltf.Buffers[bufferView.Buffer].Uri}";
-                if (!File.Exists(file))
-                    return Stream.Null;
-                var stream = File.OpenRead(file); // Need to be able to seek in the buffer
+                var buffer = Gltf.Buffers[bufferView.Buffer];
+                Stream stream;
+                if (buffer.Uri != null)
+                {
+                    var file = $"{GltfDir}/{Gltf.Buffers[bufferView.Buffer].Uri}";
+                    if (!File.Exists(file))
+                        return Stream.Null;
+                    stream = File.OpenRead(file); // Need to be able to seek in the buffer
+                }
+                else
+                {
+                    if (!GlbBinaryBuffers.TryGetValue(bufferView.Buffer, out var bytes))
+                    {
+                        bytes = glTFLoader.Interface.LoadBinaryBuffer(Gltf, bufferView.Buffer, GltfFileName);
+                        GlbBinaryBuffers.Add(bufferView.Buffer, bytes);
+                    }
+                    stream = new MemoryStream(bytes);
+                }
                 stream.Seek(bufferView.ByteOffset + accessor.ByteOffset, SeekOrigin.Begin);
                 return stream;
             }
@@ -469,10 +487,22 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                         source = ext?.Source ?? source;
                         extensionFilter = DdsTextureExtensionFilter;
                     }
-                    var imagePath = source != null ? Path.Combine(Path.Combine(GltfDir, gltf.Images[(int)source].Uri)) : "";
-                    if (File.Exists(imagePath))
-                        using (var stream = File.OpenRead(imagePath))
-                            return Viewer.TextureManager.Get(imagePath, defaultTexture, false, extensionFilter);
+                    if (source != null)
+                    {
+                        var image = gltf.Images[(int)source];
+                        if (image.Uri != null)
+                        {
+                            var imagePath = source != null ? Path.Combine(Path.Combine(GltfDir, image.Uri)) : "";
+                            if (File.Exists(imagePath))
+                                using (var stream = File.OpenRead(imagePath))
+                                    return Viewer.TextureManager.Get(imagePath, defaultTexture, false, extensionFilter);
+                        }
+                        else if (image.BufferView != null)
+                        {
+                            using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
+                                return Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                        }
+                    }
                 }
                 return defaultTexture;
             }
