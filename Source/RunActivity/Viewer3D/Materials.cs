@@ -51,7 +51,7 @@ namespace Orts.Viewer3D
             return (Get(path, SharedMaterialManager.MissingTexture, required));
         }
 
-        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false)
+        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false, string[] extensionFilter = null)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
@@ -60,9 +60,14 @@ namespace Orts.Viewer3D
                 return defaultTexture;
 
             path = path.ToLowerInvariant();
+            var ext = Path.GetExtension(path);
+
+            // With loading gltf textures the standard accordance must be preserved, so we must not allow to load a dds texture where a jpg and png is only allowed.
+            if (extensionFilter != null && !extensionFilter.Contains(ext))
+                return defaultTexture;
+
             if (!Textures.ContainsKey(path))
             {
-                var ext = Path.GetExtension(path).ToLower();
                 try
                 {
                     Texture2D texture;

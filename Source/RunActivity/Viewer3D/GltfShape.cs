@@ -167,6 +167,8 @@ namespace Orts.Viewer3D
         /// so we need to apply a 180 degree rotation to turn around every model matrix to conform the spec.
         /// </summary>
         static Matrix PlusZToForward = Matrix.CreateFromAxisAngle(Vector3.UnitY, MathHelper.Pi);
+        static readonly string[] StandardTextureExtensionFilter = new[] { ".png", ".jpg", ".jpeg" };
+        static readonly string[] DdsTextureExtensionFilter = new[] { ".dds" };
 
         public Dictionary<int, GltfAnimation> GltfAnimations = new Dictionary<int, GltfAnimation>();
         public Dictionary<string, VertexBufferBinding> VertexBuffers = new Dictionary<string, VertexBufferBinding>();
@@ -459,16 +461,18 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 {
                     var texture = gltf.Textures[(int)textureIndex];
                     var source = texture?.Source;
+                    var extensionFilter = StandardTextureExtensionFilter;
                     object extension = null;
                     if (texture?.Extensions?.TryGetValue("MSFT_texture_dds", out extension) ?? false)
                     {
                         var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_texture_dds>(extension.ToString());
                         source = ext?.Source ?? source;
+                        extensionFilter = DdsTextureExtensionFilter;
                     }
                     var imagePath = source != null ? Path.Combine(Path.Combine(GltfDir, gltf.Images[(int)source].Uri)) : "";
                     if (File.Exists(imagePath))
                         using (var stream = File.OpenRead(imagePath))
-                            return Viewer.TextureManager.Get(imagePath, defaultTexture);
+                            return Viewer.TextureManager.Get(imagePath, defaultTexture, false, extensionFilter);
                 }
                 return defaultTexture;
             }
