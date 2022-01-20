@@ -950,6 +950,12 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 var w2 = vertexTexture[i2].TextureCoordinate;
                 var w3 = vertexTexture[i3].TextureCoordinate;
 
+                // Need to invert the normal map Y coordinates to pass the test
+                // https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/NormalTangentTest
+                w1.Y = -w1.Y;
+                w2.Y = -w2.Y;
+                w3.Y = -w3.Y;
+
                 float x1 = v2.X - v1.X;
                 float x2 = v3.X - v1.X;
                 float y1 = v2.Y - v1.Y;
