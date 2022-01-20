@@ -112,8 +112,11 @@ namespace Orts.Viewer3D
         readonly EffectParameter sideVector;
 
         readonly EffectParameter imageTexture;
-        readonly EffectParameter baseColorFactor;
         readonly EffectParameter overlayTexture;
+        readonly EffectParameter overlayScale;
+
+        // glTF-PBR:
+        readonly EffectParameter baseColorFactor;
         readonly EffectParameter emissiveTexture;
         readonly EffectParameter emissiveFactor;
         readonly EffectParameter normalTexture;
@@ -121,13 +124,11 @@ namespace Orts.Viewer3D
         readonly EffectParameter occlusionTexture;
         readonly EffectParameter metallicRoughnessTexture;
         readonly EffectParameter occlusionFactor;
-
-        readonly EffectParameter lightColor;
-
+        readonly EffectParameter lightColor; // per-frame
         readonly EffectParameter referenceAlpha;
-        readonly EffectParameter overlayScale;
-
         readonly EffectParameter bones;
+        readonly EffectParameter textureCoordinates;
+        readonly EffectParameter texturePacking;
 
         Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
@@ -268,6 +269,10 @@ namespace Orts.Viewer3D
         public Vector3 LightColor { set { lightColor.SetValue(value); } }
 
         public Matrix[] Bones { set { bones.SetValue(value); } }
+        
+        public Vector4 TextureCoordinates { set { textureCoordinates.SetValue(value); } }
+        
+        public float TexturePacking { set { texturePacking.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
@@ -312,6 +317,8 @@ namespace Orts.Viewer3D
             occlusionFactor = Parameters["OcclusionFactor"];
             lightColor = Parameters["LightColor"];
             bones = Parameters["Bones"];
+            textureCoordinates = Parameters["TextureCoordinates"];
+            texturePacking = Parameters["TexturePacking"];
         }
     }
 

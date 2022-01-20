@@ -1219,6 +1219,8 @@ namespace Orts.Viewer3D
                 {
                     shader.SetMatrix(item.XNAMatrix, ref viewProj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
+                    shader.TextureCoordinates = (item.RenderPrimitive as GltfShape.GltfPrimitive).TexCoords;
+                    shader.TexturePacking = (item.RenderPrimitive as GltfShape.GltfPrimitive).TexturePacking;
                     if (item.ItemData is Matrix[] bones)
                         shader.Bones = bones;
                     ShaderPasses.Current.Apply();

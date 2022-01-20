@@ -66,6 +66,8 @@ texture  OcclusionTexture; // r = occlusion, can be combined with the MetallicRo
 texture  MetallicRoughnessTexture; // g = roughness, b = metalness
 float3   OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
 float3   LightColor;
+float4   TextureCoordinates; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
+float    TexturePacking; // 0: occlusionRoughnessMetallic (default), 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A)
 
 //static const float3 LightColor = float3(1.0, 1.0, 1.0);
 static const float M_PI = 3.141592653589793;
@@ -369,7 +371,7 @@ VERTEX_OUTPUT_PBR VSPbrBaseColorMap(in VERTEX_INPUT In)
 	Out.TexCoords.xy = In.TexCoords;
 
 	Out.Color = float4(1, 1, 1, 1);
-	Out.Tangent = float3(1, 0, 0);
+	Out.Tangent = float3(-2, 0, 0);
 	Out.Bitangent = float3(0, 1, 0);
 
 	return Out;
@@ -652,8 +654,27 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasNormals, bool hasNormalMap,
 	float3 n;
 	if (hasNormalMap)
 	{
-		n = tex2D(Normal, In.TexCoords.xy).rgb;
-		n = normalize(mul(((2.0 * n - 1.0) * float3(NormalScale, NormalScale, 1.0)), tbn));
+		if (TexturePacking == 2)
+		{
+			// Probably this is specific to the BC5 normal maps, which is not supported in MonoGame anyway...
+			float2 normalXY;
+			if (TextureCoordinates.z == 0)
+				normalXY = tex2D(Normal, In.TexCoords.xy).rg;
+			else
+				normalXY = tex2D(Normal, In.TexCoords.zw).rg;
+			normalXY = float2(2.0, 2.0) * normalXY - float2(1.0, 1.0);
+			float normalZ = sqrt(saturate(1.0 - dot(normalXY, normalXY)));
+			n = float3(normalXY.xy, normalZ);
+		}
+		else
+		{
+			if (TextureCoordinates.z == 0)
+				n = tex2D(Normal, In.TexCoords.xy).rgb;
+			else
+				n = tex2D(Normal, In.TexCoords.zw).rgb;
+			n = (2.0 * n - 1.0);
+		}
+		n = normalize(mul((n * float3(NormalScale, NormalScale, 1.0)), tbn));
 	}
 	else
 	    n = tbn[2].xyz;
@@ -725,9 +746,12 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	InGeneral.Color = In.Color;
 	InGeneral.Normal_Light = In.Normal_Light;
 
+	float4 Color;
+	if (TextureCoordinates.x == 0)
+		Color = tex2D(Image, In.TexCoords.xy);
+	else
+		Color = tex2D(Image, In.TexCoords.zw);
 
-
-	float4 Color = tex2D(Image, In.TexCoords.xy);
 	// Decode from sRGB to linear.
 	Color.rgb = pow(Color.rgb, 2.2);
 	// Apply the linear multipliers.
@@ -746,10 +770,50 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	///////////////////////
 	
 	// Metallic-roughness
-	float occlusion = tex2D(Occlusion, In.TexCoords.zw).r;
-	float3 metallicRoughness = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
-	float perceptualRoughness = clamp(metallicRoughness.g * OcclusionFactor.y, MinRoughness, 1.0);
-	float metallic = clamp(metallicRoughness.b * OcclusionFactor.z, 0.0, 1.0);
+	float occlusion;
+	float metallic;
+	float roughness;
+	if (TexturePacking == 0 || TexturePacking == 1)
+	{
+		float3 orm;
+		if (TextureCoordinates.y == 0)
+			orm = tex2D(MetallicRoughness, In.TexCoords.xy);
+		else
+			orm = tex2D(MetallicRoughness, In.TexCoords.zw);
+		if (TexturePacking == 0)
+		{
+			occlusion = orm.r;
+			roughness = orm.g;
+			metallic = orm.b;
+		}
+		else
+		{
+			roughness = orm.r;
+			metallic = orm.g;
+			occlusion = orm.b;
+		}
+	}
+	else if (TexturePacking == 2)
+	{
+		float4 nrm;
+		if (TextureCoordinates.y == 0)
+			nrm = tex2D(MetallicRoughness, In.TexCoords.xy);
+		else
+			nrm = tex2D(MetallicRoughness, In.TexCoords.zw);
+		roughness = nrm.b;
+		metallic = nrm.a;
+
+		if (TextureCoordinates.z == 0)
+			occlusion = tex2D(Occlusion, In.TexCoords.xy).r;
+		else
+			occlusion = tex2D(Occlusion, In.TexCoords.zw).r;
+	}
+
+	//float occlusion = tex2D(Occlusion, In.TexCoords.zw).r;
+	//float3 metallicRoughness = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
+
+	float perceptualRoughness = clamp(roughness * OcclusionFactor.y, MinRoughness, 1.0);
+	metallic = clamp(metallic * OcclusionFactor.z, 0.0, 1.0);
 	
 	float3 f0 = float3(0.04, 0.04, 0.04);
 	float3 diffuseColor = Color.rgb * (float3(1.0, 1.0, 1.0) - f0);
@@ -791,7 +855,12 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	litColor = lerp(litColor, litColor * occlusion, OcclusionFactor.x);
 	
 	// Emissive color:
-	litColor += pow(tex2D(Emissive, In.TexCoords.xy).rgb, 2.2) * EmissiveFactor;
+	float3 emissive;
+	if (TextureCoordinates.w == 0)
+		emissive = tex2D(Emissive, In.TexCoords.xy).rgb;
+	else
+		emissive = tex2D(Emissive, In.TexCoords.zw).rgb;
+	litColor += pow(emissive, 2.2) * EmissiveFactor;
 
 	///////////////////////
 	// Contributions from the OpenRails environment:
