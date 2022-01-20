@@ -51,7 +51,7 @@ namespace Orts.Viewer3D
             return (Get(path, SharedMaterialManager.MissingTexture, required));
         }
 
-        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false, string[] extensionFilter = null)
+        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
@@ -60,18 +60,12 @@ namespace Orts.Viewer3D
                 return defaultTexture;
 
             path = path.ToLowerInvariant();
-            var ext = Path.GetExtension(path);
-
-            // With loading gltf textures the standard accordance must be preserved, so we must not allow to load a dds texture where a jpg and png is only allowed.
-            if (extensionFilter != null && !extensionFilter.Contains(ext))
-                return defaultTexture;
-
             if (!Textures.ContainsKey(path))
             {
                 try
                 {
                     Texture2D texture;
-                    if (ext == ".dds")
+                    if (Path.GetExtension(path) == ".dds")
                     {
                         if (File.Exists(path))
                         {
@@ -90,7 +84,7 @@ namespace Orts.Viewer3D
                             else texture = defaultTexture;
                         }
                     }
-                    else if (ext == ".ace")
+                    else if (Path.GetExtension(path) == ".ace")
                     {
                         var alternativeTexture = Path.ChangeExtension(path, ".dds");
                         
@@ -145,15 +139,10 @@ namespace Orts.Viewer3D
                             }
                         }
                     }
-                    else if (ext == ".gif" || ext == ".jpg" || ext == ".jpeg" || ext == ".png")
-                    {
-                        return Get(GraphicsDevice, path);
-                    }
                     else
                         return defaultTexture;
 
                     Textures.Add(path, texture);
-                    texture.Name = path;
                     return texture;
                 }
                 catch (InvalidDataException error)
@@ -163,12 +152,6 @@ namespace Orts.Viewer3D
                 }
                 catch (Exception error)
                 {
-                    if (ext == ".dds")
-                    {
-                        var pngPath = Path.ChangeExtension(path, ".png");
-                        if (File.Exists(pngPath))
-                            return Get(GraphicsDevice, pngPath);
-                    } 
                     if (File.Exists(path))
                         Trace.WriteLine(new FileLoadException(path, error));
                     else
@@ -182,37 +165,8 @@ namespace Orts.Viewer3D
             }
         }
 
-        public Texture2D Get(string name, System.Drawing.Bitmap bitmap)
-        {
-            if (Thread.CurrentThread.Name != "Loader Process")
-                Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
-
-            name = name.ToLowerInvariant();
-            if (!Textures.ContainsKey(name))
-                using (var stream = new MemoryStream())
-                {
-                    try
-                    {
-                        bitmap.Save(stream, bitmap.RawFormat);
-                        stream.Seek(0, SeekOrigin.Begin);
-                        var texture = Texture2D.FromStream(Viewer.RenderProcess.GraphicsDevice, stream);
-
-                        Textures.Add(name, texture);
-                        return texture;
-                    }
-                    catch (InvalidDataException error)
-                    {
-                        Trace.TraceWarning("Skipped texture with error: {1} in {0}", name, error.Message);
-                        return SharedMaterialManager.MissingTexture;
-                    }
-                }
-            else
-                return Textures[name];
-        }
-
         public static Texture2D Get(GraphicsDevice graphicsDevice, string path)
         {
-            Texture2D texture;
             if (path == null || path == "")
                 return SharedMaterialManager.MissingTexture;
 
@@ -220,20 +174,12 @@ namespace Orts.Viewer3D
             var ext = Path.GetExtension(path);
 
             if (ext == ".ace")
-            {
-                texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
-                texture.Name = path;
-                return texture;
-            }
+                return Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
 
             using (var stream = File.OpenRead(path))
             {
-                if (ext == ".gif" || ext == ".jpg" || ext == ".jpeg" || ext == ".png")
-                {
-                    texture = Texture2D.FromStream(graphicsDevice, stream);
-                    texture.Name = path;
-                    return texture;
-                }
+                if (ext == ".gif" || ext == ".jpg" || ext == ".png")
+                    return Texture2D.FromStream(graphicsDevice, stream);
                 else if (ext == ".bmp")
                     using (var image = System.Drawing.Image.FromStream(stream))
                     {
@@ -241,9 +187,7 @@ namespace Orts.Viewer3D
                         {
                             image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
                             memoryStream.Seek(0, SeekOrigin.Begin);
-                            texture = Texture2D.FromStream(graphicsDevice, memoryStream);
-                            texture.Name = path;
-                            return texture;
+                            return Texture2D.FromStream(graphicsDevice, memoryStream);
                         }
                     }
                 else
@@ -301,8 +245,6 @@ namespace Orts.Viewer3D
         public static Texture2D MissingTexture;
         public static Texture2D DefaultSnowTexture;
         public static Texture2D DefaultDMSnowTexture;
-        public static Texture2D WhiteTexture;
-        public static Texture2D RedTexture;
 
         [CallOnThread("Render")]
         public SharedMaterialManager(Viewer viewer)
@@ -344,13 +286,6 @@ namespace Orts.Viewer3D
             var defaultDMSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultDMSnow.ace";
             DefaultDMSnowTexture = Viewer.TextureManager.Get(defaultDMSnowTexturePath);
 
-            WhiteTexture = new Texture2D(viewer.RenderProcess.GraphicsDevice, 1, 1);
-            WhiteTexture.SetData(new[] { Color.White });
-            WhiteTexture.Name = nameof(WhiteTexture);
-
-            RedTexture = new Texture2D(viewer.RenderProcess.GraphicsDevice, 1, 1);
-            RedTexture.SetData(new[] { Color.Red });
-            RedTexture.Name = nameof(RedTexture);
         }
 
         public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null)
@@ -425,41 +360,6 @@ namespace Orts.Viewer3D
                         break;
                     case "Water":
                         Materials[materialKey] = new WaterMaterial(Viewer, textureName);
-                        break;
-                    default:
-                        Trace.TraceInformation("Skipped unknown material type {0}", materialName);
-                        Materials[materialKey] = new YellowMaterial(Viewer);
-                        break;
-                }
-            }
-            return Materials[materialKey];
-        }
-
-        /// <summary>
-        /// This method is used to initialize a metallic-roughness material from a glTF 2.0 source. 
-        /// </summary>
-        public Material Load(string materialName, string materialUniqueId, int options, float mipMapBias,
-            Texture2D baseColorTexture, Vector4 baseColorFactor,
-            Texture2D metallicRoughnessTexture, float metallicFactor, float roughnessFactor,
-            Texture2D normalTexture, float normalScale,
-            Texture2D occlusionTexture, float occlusionStrength,
-            Texture2D emissiveTexture, Vector3 emissiveFactor,
-            float referenceAlpha, bool doubleSided)
-        {
-            var materialKey = (materialName, materialUniqueId?.ToLower(), options, mipMapBias, (Effect)null);
-
-            if (!Materials.ContainsKey(materialKey))
-            {
-                switch (materialName)
-                {
-                    case "PBR":
-                        Materials[materialKey] = new PbrMaterial(Viewer, materialUniqueId?.ToLower(), (SceneryMaterialOptions)options, mipMapBias,
-                            baseColorTexture, baseColorFactor,
-                            metallicRoughnessTexture, metallicFactor, roughnessFactor,
-                            normalTexture, normalScale,
-                            occlusionTexture, occlusionStrength,
-                            emissiveTexture, emissiveFactor,
-                            referenceAlpha, doubleSided);
                         break;
                     default:
                         Trace.TraceInformation("Skipped unknown material type {0}", materialName);
@@ -790,47 +690,29 @@ namespace Orts.Viewer3D
         TextureAddressModeMask = 0x600,
         // Night texture
         NightTexture = 0x800,
-
-        PbrHasBaseColorMap = 0x01000,
-        PbrHasNormalMap = 0x02000,
-        PbrHasOcclusionMap = 0x04000,
-        PbrHasEmissiveMap = 0x08000,
-        PbrHasMetalRoughnessMap = 0x10000,
-        PbrHasNormals = 0x20000,
-        PbrHasTangents = 0x40000,
-        PbrHasSkin = 0x80000,
-        PbrCullClockWise = 0x100000,
-
         // Texture to be shown in tunnels and underground (used for 3D cab night textures)
         UndergroundTexture = 0x40000000,
     }
 
     public class SceneryMaterial : Material
     {
-        protected readonly SceneryMaterialOptions Options;
+        readonly SceneryMaterialOptions Options;
         readonly float MipMapBias;
         protected Texture2D Texture;
         private readonly string TexturePath;
         protected Texture2D NightTexture;
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
-
         IEnumerator<EffectPass> ShaderPassesDarkShade;
         IEnumerator<EffectPass> ShaderPassesFullBright;
         IEnumerator<EffectPass> ShaderPassesHalfBright;
         IEnumerator<EffectPass> ShaderPassesImage;
         IEnumerator<EffectPass> ShaderPassesVegetation;
-
-        protected IEnumerator<EffectPass> ShaderPassesPbrSkinned;
-        protected IEnumerator<EffectPass> ShaderPassesPbrNormalMap;
-        protected IEnumerator<EffectPass> ShaderPassesPbrBase;
-
-        protected IEnumerator<EffectPass> ShaderPasses;
+        IEnumerator<EffectPass> ShaderPasses;
         public static readonly DepthStencilState DepthReadCompareLess = new DepthStencilState {
             DepthBufferWriteEnable = false,
             DepthBufferFunction = CompareFunction.Less,
         };
         private static readonly Dictionary<TextureAddressMode, Dictionary<float, SamplerState>> SamplerStates = new Dictionary<TextureAddressMode, Dictionary<float, SamplerState>>();
-        protected int DefaultAlphaCutOff = 200; // This value is used for .s, but is overridden for glTF/PBR with its own value.
 
         public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
             : base(viewer, String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
@@ -904,8 +786,6 @@ namespace Orts.Viewer3D
            return oneMore;
        }
 
-        protected bool IsNightTimeOrUnderground() => (Options & SceneryMaterialOptions.UndergroundTexture) != 0 && (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground) || Viewer.MaterialManager.sunDirection.Y < -(float)KeyLengthRemainder() / 5000f;
-
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
@@ -957,7 +837,7 @@ namespace Orts.Viewer3D
                 if ((Options & SceneryMaterialOptions.AlphaTest) != 0)
                 {
                     // Transparency testing is enabled
-                    shader.ReferenceAlpha = DefaultAlphaCutOff;  // setting this to 128, chain link fences become solid at distance, at 200, they become
+                    shader.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
                 }
                 else
                 {
@@ -965,6 +845,7 @@ namespace Orts.Viewer3D
                     shader.ReferenceAlpha = -1;
                 }
             }
+
 
             switch (Options & SceneryMaterialOptions.ShaderMask)
             {
@@ -990,7 +871,7 @@ namespace Orts.Viewer3D
                     ShaderPasses = ShaderPassesVegetation;
                     break;
                 default:
-                    break;
+                    throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.ShaderMask value.");
             }
 
             switch (Options & SceneryMaterialOptions.SpecularMask)
@@ -1010,7 +891,8 @@ namespace Orts.Viewer3D
 
             graphicsDevice.SamplerStates[0] = GetShadowTextureAddressMode();
 
-            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && IsNightTimeOrUnderground())
+            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
+                (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f))
             {
                 shader.ImageTexture = NightTexture;
                 shader.ImageTextureIsNight = true;
@@ -1120,113 +1002,6 @@ namespace Orts.Viewer3D
             Viewer.TextureManager.Mark(Texture);
             Viewer.TextureManager.Mark(NightTexture);
             base.Mark();
-        }
-    }
-
-    public class PbrMaterial : SceneryMaterial
-    {
-        protected readonly Vector4 BaseColorFactor;
-        protected readonly Texture2D MetallicRoughnessTexture;
-        protected readonly float MetallicFactor;
-        protected readonly float RoughnessFactor;
-        protected readonly Texture2D NormalTexture;
-        protected readonly float NormalScale;
-        protected readonly Texture2D OcclusionTexture;
-        protected readonly float OcclusionStrength;
-        protected readonly Texture2D EmissiveTexture;
-        protected readonly Vector3 EmissiveFactor;
-
-        bool EmissiveFollowsDayNightCycle;
-        bool DoubleSided;
-        RasterizerState RasterizerState = RasterizerState.CullClockwise;
-
-        public PbrMaterial(Viewer viewer, string materialUniqueId, SceneryMaterialOptions options, float mipMapBias,
-            Texture2D baseColorTexture, Vector4 baseColorFactor,
-            Texture2D metallicRoughnessTexture, float metallicFactor, float roughnessFactor,
-            Texture2D normalTexture, float normalScale,
-            Texture2D occlusionTexture, float occlusionStrength,
-            Texture2D emissiveTexture, Vector3 emissiveFactor,
-            float referenceAlpha, bool doubleSided)
-            : base(viewer, materialUniqueId, options, mipMapBias)
-        {
-            Texture = baseColorTexture;
-            BaseColorFactor = baseColorFactor;
-            MetallicRoughnessTexture = metallicRoughnessTexture;
-            MetallicFactor = metallicFactor;
-            RoughnessFactor = roughnessFactor;
-            NormalTexture = normalTexture;
-            NormalScale = normalScale;
-            OcclusionTexture = occlusionTexture;
-            OcclusionStrength = occlusionStrength;
-            EmissiveTexture = emissiveTexture;
-            EmissiveFactor = emissiveFactor;
-            DefaultAlphaCutOff = (int)(referenceAlpha * 255f);
-            DoubleSided = doubleSided;
-        }
-
-        public override bool GetBlending() => (Options & SceneryMaterialOptions.AlphaBlendingBlend) != 0;
-        
-        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-        {
-            base.SetState(graphicsDevice, previousMaterial);
-
-            var rasterizerState = ((Options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
-
-            graphicsDevice.RasterizerState = DoubleSided ? RasterizerState.CullNone : rasterizerState;
-
-            var shader = Viewer.MaterialManager.SceneryShader;
-
-            if (ShaderPassesPbrSkinned == null) ShaderPassesPbrSkinned = shader.Techniques["PbrSkinned"].Passes.GetEnumerator();
-            if (ShaderPassesPbrNormalMap == null) ShaderPassesPbrNormalMap = shader.Techniques["PbrNormalMap"].Passes.GetEnumerator();
-            if (ShaderPassesPbrBase == null) ShaderPassesPbrBase = shader.Techniques["PbrBaseColorMap"].Passes.GetEnumerator();
-
-            shader.BaseColorFactor = BaseColorFactor;
-            shader.NormalTexture = NormalTexture;
-            shader.NormalScale = NormalScale;
-            shader.EmissiveTexture = EmissiveTexture;
-            shader.EmissiveFactor = !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground() ? EmissiveFactor : Vector3.Zero;
-            shader.OcclusionTexture = OcclusionTexture;
-            shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
-            shader.OcclusionFactor = new Vector3(OcclusionStrength, RoughnessFactor, MetallicFactor);
-            shader.LightColor = Vector3.One;
-
-            if ((Options & SceneryMaterialOptions.PbrHasSkin) != 0)
-            {
-                shader.CurrentTechnique = shader.Techniques["PbrSkinned"];
-                ShaderPasses = ShaderPassesPbrSkinned;
-            }
-            else if ((Options & SceneryMaterialOptions.PbrHasTangents) != 0)
-            {
-                shader.CurrentTechnique = shader.Techniques["PbrNormalMap"];
-                ShaderPasses = ShaderPassesPbrNormalMap;
-            }
-            else
-            {
-                shader.CurrentTechnique = shader.Techniques["PbrBaseColorMap"];
-                ShaderPasses = ShaderPassesPbrBase;
-            }
-        }
-        
-        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-        {
-            var shader = Viewer.MaterialManager.SceneryShader;
-            var viewProj = XNAViewMatrix * XNAProjectionMatrix;
-
-            ShaderPasses.Reset();
-            while (ShaderPasses.MoveNext())
-            {
-                foreach (var item in renderItems)
-                {
-                    shader.SetMatrix(item.XNAMatrix, ref viewProj);
-                    shader.ZBias = item.RenderPrimitive.ZBias;
-                    shader.TextureCoordinates = (item.RenderPrimitive as GltfShape.GltfPrimitive).TexCoords;
-                    shader.TexturePacking = (item.RenderPrimitive as GltfShape.GltfPrimitive).TexturePacking;
-                    if (item.ItemData is Matrix[] bones)
-                        shader.Bones = bones;
-                    ShaderPasses.Current.Apply();
-                    item.RenderPrimitive.Draw(graphicsDevice);
-                }
-            }
         }
     }
 

@@ -74,8 +74,7 @@ namespace Orts.Viewer3D
             {
                 try
                 {
-                    var extension = Path.GetExtension(path.Split('\0')[0]).ToLower();
-                    Shapes.Add(path, extension == ".gltf" || extension == ".glb" ? new GltfShape(Viewer, path) : new SharedShape(Viewer, path));
+                    Shapes.Add(path, new SharedShape(Viewer, path));
                 }
                 catch (Exception error)
                 {
@@ -257,7 +256,7 @@ namespace Orts.Viewer3D
     /// Has a heirarchy of objects that can be moved by adjusting the XNAMatrices
     /// at each node.
     /// </summary>
-    public partial class PoseableShape : StaticShape
+    public class PoseableShape : StaticShape
     {
         protected static Dictionary<string, bool> SeenShapeAnimationError = new Dictionary<string, bool>();
 
@@ -309,12 +308,6 @@ namespace Orts.Viewer3D
 
         protected virtual void AnimateOneMatrix(int iMatrix, float key)
         {
-            if (SharedShape is GltfShape)
-            {
-                AnimateOneGltfMatrix(iMatrix, key);
-                return;
-            }
-
             if (SharedShape.Animations == null || SharedShape.Animations.Count == 0)
             {
                 if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
@@ -901,6 +894,7 @@ namespace Orts.Viewer3D
         readonly HazardObj HazardObj;
         readonly Hazzard Hazzard;
 
+        readonly int AnimationFrames;
         float Moved = 0f;
         float AnimationKey;
         float DelayHazAnimation;
@@ -918,6 +912,7 @@ namespace Orts.Viewer3D
         {
             HazardObj = hObj;
             Hazzard = h;
+            AnimationFrames = SharedShape.Animations[0].FrameCount;
         }
 
         public override void Unload()
@@ -1566,7 +1561,7 @@ namespace Orts.Viewer3D
         public float CustomAnimationFPS = 8;
 
 
-        readonly protected Viewer Viewer;
+        readonly Viewer Viewer;
         public readonly string FilePath;
         public readonly string ReferencePath;
 
@@ -1602,7 +1597,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Only one copy of the model is loaded regardless of how many copies are placed in the scene.
         /// </summary>
-        protected virtual void LoadContent()
+        void LoadContent()
         {
             Trace.Write("S");
             var filePath = FilePath;
@@ -1687,8 +1682,6 @@ namespace Orts.Viewer3D
         {
             public DistanceLevel[] DistanceLevels;
 
-            public LodControl() { }
-
             public LodControl(lod_control MSTSlod_control, Helpers.TextureFlags textureFlags, ShapeFile sFile, SharedShape sharedShape)
             {
 #if DEBUG_SHAPE_HIERARCHY
@@ -1723,8 +1716,6 @@ namespace Orts.Viewer3D
             public float ViewingDistance;
             public float ViewSphereRadius;
             public SubObject[] SubObjects;
-
-            public DistanceLevel() { }
 
             public DistanceLevel(distance_level MSTSdistance_level, Helpers.TextureFlags textureFlags, ShapeFile sFile, SharedShape sharedShape)
             {
@@ -1799,8 +1790,6 @@ namespace Orts.Viewer3D
             };
 
             public ShapePrimitive[] ShapePrimitives;
-
-            public SubObject() { }
 
 #if DEBUG_SHAPE_HIERARCHY
             public SubObject(sub_object sub_object, ref int totalPrimitiveIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, int subObjectIndex, SFile sFile, SharedShape sharedShape)
@@ -2016,7 +2005,6 @@ namespace Orts.Viewer3D
             public int DebugNormalsVertexCount;
             public const int DebugNormalsVertexPerVertex = 3 * 4;
 #endif
-            public VertexBufferSet() { }
 
             public VertexBufferSet(VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice)
             {
@@ -2191,32 +2179,23 @@ namespace Orts.Viewer3D
 
                     foreach (var shapePrimitive in subObject.ShapePrimitives)
                     {
+                        var xnaMatrix = Matrix.Identity;
                         var hi = shapePrimitive.HierarchyIndex;
                         if (matrixVisible != null && !matrixVisible[hi]) continue;
-
-                        var xnaMatrix = SetRenderMatrices(shapePrimitive, animatedXNAMatrices, ref xnaDTileTranslation, out var bones);
-
-                        // TODO make shadows depend on shape overrides
-
-                        var interior = (flags & ShapeFlags.Interior) != 0;
-                        frame.AddAutoPrimitive(mstsLocation, distanceDetail.ViewSphereRadius, distanceDetail.ViewingDistance * lodBias, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags, bones);
-                    }
-                }
-            }
-        }
-
-        public virtual Matrix SetRenderMatrices(ShapePrimitive shapePrimitive, Matrix[] animatedXNAMatrices, ref Matrix xnaDTileTranslation, out Matrix[] bones)
-        {
-            bones = null; // standard scenery material has no skin and bones
-            var xnaMatrix = Matrix.Identity;
-            var hi = shapePrimitive.HierarchyIndex;
                         while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
                         {
                             Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
                             hi = shapePrimitive.Hierarchy[hi];
                         }
                         Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
-            return xnaMatrix;
+
+                        // TODO make shadows depend on shape overrides
+
+                        var interior = (flags & ShapeFlags.Interior) != 0;
+                        frame.AddAutoPrimitive(mstsLocation, distanceDetail.ViewSphereRadius, distanceDetail.ViewingDistance * lodBias, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags);
+                    }
+                }
+            }
         }
 
         public Matrix GetMatrixProduct(int iNode)
