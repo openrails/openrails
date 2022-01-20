@@ -570,22 +570,24 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                     }
                 }
 
+                Vector4 texCoords = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
+
                 // 8 bit sRGB + A. Needs decoding to linear in the shader.
-                var baseColorTexCoord = material.PbrMetallicRoughness?.BaseColorTexture?.TexCoord ?? 0;
+                texCoords.X = material.PbrMetallicRoughness?.BaseColorTexture?.TexCoord ?? 0;
                 var baseColorTexture = distanceLevel.GetTexture(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var baseColorFactor = material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f };
                 var baseColorFactorVector = new Vector4(baseColorFactor[0], baseColorFactor[1], baseColorFactor[2], baseColorFactor[3]);
                 if (baseColorTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasBaseColorMap;
 
                 // G = roughness, B = metalness, linear, may be > 8 bit
-                var metallicRoughnessTexCoord = material.PbrMetallicRoughness?.MetallicRoughnessTexture?.TexCoord ?? 1;
+                texCoords.Y = material.PbrMetallicRoughness?.MetallicRoughnessTexture?.TexCoord ?? 1;
                 var metallicRoughnessTexture = distanceLevel.GetTexture(gltfFile, material.PbrMetallicRoughness?.MetallicRoughnessTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
                 if (metallicRoughnessTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasMetalRoughnessMap;
 
                 // RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
-                var normalTexCoord = material.NormalTexture?.TexCoord ?? 0;
+                texCoords.Z = material.NormalTexture?.TexCoord ?? 0;
                 var normalTexture = distanceLevel.GetTexture(gltfFile, material.NormalTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var normalScale = material.NormalTexture?.Scale ?? 1f;
                 if (normalTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasNormalMap;
@@ -597,11 +599,13 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 if (occlusionTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasOcclusionMap;
 
                 // 8 bit sRGB. Needs decoding to linear in the shader.
-                var emissiveTexCoord = material.EmissiveTexture?.TexCoord ?? 0;
+                texCoords.W = material.EmissiveTexture?.TexCoord ?? 0;
                 var emissiveTexture = distanceLevel.GetTexture(gltfFile, material.EmissiveTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var emissiveFactor = material.EmissiveFactor ?? new[] { 0f, 0f, 0f };
                 var emissiveFactorVector = new Vector3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
                 if (emissiveTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasEmissiveMap;
+
+                int texturePacking = 0; // TODO
 
                 var indexBufferSet = new GltfIndexBufferSet();
                 ushort[] indexData = null;
@@ -860,7 +864,7 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                     emissiveTexture, emissiveFactorVector,
                     referenceAlpha, doubleSided);
 
-                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, shape.Viewer.GraphicsDevice, hierarchyIndex, hierarchy) };
+                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords, texturePacking) };
                 ShapePrimitives[0].SortIndex = 0;
             }
         }
@@ -869,10 +873,21 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
         {
             public readonly int[] Joints; // Replaces ShapePrimitive.HierarchyIndex for non-skinned primitives
             public readonly Matrix[] InverseBindMatrices;
-            private readonly VertexBufferBinding[] VertexBufferBinding;
-            private readonly GltfIndexBufferSet IndexBufferSet;
+            readonly VertexBufferBinding[] VertexBufferBinding;
+            readonly GltfIndexBufferSet IndexBufferSet;
 
-            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, GraphicsDevice graphicsDevice, int hierarchyIndex, int[] hierarchy)
+            /// <summary>
+            /// x: baseColor, y: roughness-metallic, z: normal, w: emissive
+            /// </summary>
+            public readonly Vector4 TexCoords;
+
+            /// <summary>
+            /// 0: occlusionRoughnessMetallic (default), 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A)
+            /// </summary>
+            public readonly float TexturePacking;
+
+
+            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords, int texturePacking)
             {
                 Material = material;
                 Hierarchy = hierarchy;
@@ -880,6 +895,8 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 PrimitiveCount = IndexBufferSet.PrimitiveCount;
                 VertexBufferBinding = vertexAttributes.ToArray();
                 HierarchyIndex = hierarchyIndex;
+                TexCoords = texCoords;
+                TexturePacking = texturePacking;
 
                 if (skin == null)
                 {
