@@ -738,8 +738,9 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	///////////////////////
 	// Contributions from the OpenRails environment:
 	float shadowFactor = _PSGetShadowEffect(true, true, InGeneral);
+	float diffuseShadowFactor = lerp(ShadowBrightness, FullBrightness, saturate(shadowFactor));
 	float3 headlightContrib = 0;
-	_PSApplyHeadlights(headlightContrib, Color.rgb, InGeneral);
+	_PSApplyHeadlights(headlightContrib, Color.rgb, InGeneral); // inout: headlightContrib
 	_PSSceneryFade(Color, InGeneral);
 	float fade = Color.a;
 	///////////////////////
@@ -782,7 +783,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
     float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
     float D = roughnessSq / (M_PI * f * f);
 	
-	float3 diffuseContrib = (1.0 - F) * diffuseColor / M_PI * lerp(ShadowBrightness, FullBrightness, saturate(shadowFactor));
+	float3 diffuseContrib = (1.0 - F) * diffuseColor / M_PI * diffuseShadowFactor;
     float3 specContrib = F * G * D / (4.0 * NdotL * NdotV) * shadowFactor;
     float3 litColor = NdotL * LightColor * (diffuseContrib + specContrib + headlightContrib);
 
@@ -792,11 +793,14 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	// Emissive color:
 	litColor += pow(tex2D(Emissive, In.TexCoords.xy).rgb, 2.2) * EmissiveFactor;
 
+	///////////////////////
+	// Contributions from the OpenRails environment:
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, InGeneral), Overcast.x);
 	// And fogging is last.
 	_PSApplyFog(litColor, InGeneral);
-	//if (ShaderModel3) _PSApplyShadowColor(litColor, InGeneral);
+	//_PSApplyShadowColor(litColor, InGeneral); // a debug function only
+	///////////////////////
 
 	// Transform back to sRGB:
 	litColor = pow(litColor, 1.0 / 2.2);
