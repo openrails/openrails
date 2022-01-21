@@ -525,12 +525,20 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
 
         public class GltfSubObject : SubObject
         {
+            static glTFLoader.Schema.Material DefaultGltfMaterial = new glTFLoader.Schema.Material
+            {
+                AlphaCutoff = 0.5f,
+                DoubleSided = false,
+                AlphaMode = glTFLoader.Schema.Material.AlphaModeEnum.OPAQUE,
+                EmissiveFactor = new[] {0f, 0f, 0f},
+            };
+
             public GltfSubObject(MeshPrimitive meshPrimitive, string name, int hierarchyIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel, Skin skin)
             {
-                if (meshPrimitive.Indices == null)
+                if (meshPrimitive.Indices == null) // FIXME: draw non-indexed in this case
                     return;
-                if (meshPrimitive.Material == null)
-                    return;
+
+                var material = meshPrimitive.Material == null ? DefaultGltfMaterial : gltfFile.Materials[(int)meshPrimitive.Material];
 
                 var options = SceneryMaterialOptions.None;
 
@@ -544,7 +552,6 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 if (distanceLevel.Matrices[hierarchyIndex].Determinant() > 0)
                     options |= SceneryMaterialOptions.PbrCullClockWise;
 
-                var material = gltfFile.Materials[(int)meshPrimitive.Material];
                 switch (material.AlphaMode)
                 {
                     case glTFLoader.Schema.Material.AlphaModeEnum.BLEND: options |= SceneryMaterialOptions.AlphaBlendingBlend; break;
@@ -626,11 +633,11 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
 
                     switch (meshPrimitive.Mode)
                     {
-                        case MeshPrimitive.ModeEnum.TRIANGLE_STRIP: indexBufferSet.Mode = PrimitiveType.TriangleStrip; indexBufferSet.PrimitiveCount = indexData.Length - 2; break;
-                        case MeshPrimitive.ModeEnum.TRIANGLES: indexBufferSet.Mode = PrimitiveType.TriangleList; indexBufferSet.PrimitiveCount = indexData.Length / 3; break;
-                        case MeshPrimitive.ModeEnum.LINE_STRIP: indexBufferSet.Mode = PrimitiveType.LineStrip; indexBufferSet.PrimitiveCount = indexData.Length - 1; break;
-                        case MeshPrimitive.ModeEnum.LINES: indexBufferSet.Mode = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = indexData.Length / 2; break;
-                        default: indexBufferSet.Mode = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = indexData.Length / 2; break; // This is not exactly correct.
+                        case MeshPrimitive.ModeEnum.TRIANGLE_STRIP: indexBufferSet.PrimitiveType = PrimitiveType.TriangleStrip; indexBufferSet.PrimitiveCount = indexData.Length - 2; break;
+                        case MeshPrimitive.ModeEnum.TRIANGLES: indexBufferSet.PrimitiveType = PrimitiveType.TriangleList; indexBufferSet.PrimitiveCount = indexData.Length / 3; break;
+                        case MeshPrimitive.ModeEnum.LINE_STRIP: indexBufferSet.PrimitiveType = PrimitiveType.LineStrip; indexBufferSet.PrimitiveCount = indexData.Length - 1; break;
+                        case MeshPrimitive.ModeEnum.LINES: indexBufferSet.PrimitiveType = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = indexData.Length / 2; break;
+                        default: indexBufferSet.PrimitiveType = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = indexData.Length / 2; break; // This is not exactly correct.
                     }
                 }
 
@@ -709,7 +716,6 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                     vertexBufferTextureUvs = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureDiffuse), vertexTextureUvs.Length, BufferUsage.None);
                     vertexBufferTextureUvs.SetData(vertexTextureUvs);
                     vertexBufferTextureUvs.Name = "TEXCOORD_DUMMY";
-                    var vertexBufferBinding = new VertexBufferBinding(vertexBufferTextureUvs);
                     vertexAttributes.Add(new VertexBufferBinding(vertexBufferTextureUvs));
                 }
 
@@ -873,8 +879,6 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
         {
             public readonly int[] Joints; // Replaces ShapePrimitive.HierarchyIndex for non-skinned primitives
             public readonly Matrix[] InverseBindMatrices;
-            readonly VertexBufferBinding[] VertexBufferBinding;
-            readonly GltfIndexBufferSet IndexBufferSet;
 
             /// <summary>
             /// x: baseColor, y: roughness-metallic, z: normal, w: emissive
@@ -888,12 +892,13 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
 
 
             public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords, int texturePacking)
+                : base(vertexAttributes.ToArray())
             {
                 Material = material;
+                IndexBuffer = indexBufferSet.IndexBuffer;
+                PrimitiveCount = indexBufferSet.PrimitiveCount;
+                PrimitiveType = indexBufferSet.PrimitiveType;
                 Hierarchy = hierarchy;
-                IndexBufferSet = indexBufferSet;
-                PrimitiveCount = IndexBufferSet.PrimitiveCount;
-                VertexBufferBinding = vertexAttributes.ToArray();
                 HierarchyIndex = hierarchyIndex;
                 TexCoords = texCoords;
                 TexturePacking = texturePacking;
@@ -932,16 +937,6 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                         }
                         distanceLevel.AllInverseBindMatrices.Add((int)skin.InverseBindMatrices, InverseBindMatrices);
                     }
-                }
-            }
-            
-            public override void Draw(GraphicsDevice graphicsDevice)
-            {
-                if (PrimitiveCount > 0)
-                {
-                    graphicsDevice.SetVertexBuffers(VertexBufferBinding);
-                    graphicsDevice.Indices = IndexBufferSet.IndexBuffer;
-                    graphicsDevice.DrawIndexedPrimitives(IndexBufferSet.Mode, 0, 0, IndexBufferSet.PrimitiveCount);
                 }
             }
         }
@@ -1020,7 +1015,7 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
         {
             public IndexBuffer IndexBuffer;
             public int PrimitiveCount;
-            public PrimitiveType Mode;
+            public PrimitiveType PrimitiveType;
         }
         
         public struct VertexPosition : IVertexType

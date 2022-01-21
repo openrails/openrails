@@ -1357,14 +1357,16 @@ namespace Orts.Viewer3D
         protected internal VertexBuffer VertexBuffer;
         protected internal IndexBuffer IndexBuffer;
         protected internal int PrimitiveCount;
+        protected internal PrimitiveType PrimitiveType;
 
-        readonly VertexBufferBinding[] VertexBufferBindings;
+        protected readonly VertexBufferBinding[] VertexBufferBindings;
 
-        public ShapePrimitive()
-        {
-        }
+        public ShapePrimitive() { }
+        
+        public ShapePrimitive(VertexBufferBinding[] vertexBufferBindings) => VertexBufferBindings = vertexBufferBindings;
 
         public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IndexBuffer indexBuffer, int primitiveCount, int[] hierarchy, int hierarchyIndex)
+            : this(new[] { new VertexBufferBinding(vertexBufferSet.Buffer), new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice)) })
         {
             Material = material;
             VertexBuffer = vertexBufferSet.Buffer;
@@ -1372,8 +1374,7 @@ namespace Orts.Viewer3D
             PrimitiveCount = primitiveCount;
             Hierarchy = hierarchy;
             HierarchyIndex = hierarchyIndex;
-
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice)) };
+            PrimitiveType = PrimitiveType.TriangleList;
         }
 
         public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IList<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
@@ -1389,8 +1390,15 @@ namespace Orts.Viewer3D
             {
                 // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
                 graphicsDevice.SetVertexBuffers(VertexBufferBindings);
-                graphicsDevice.Indices = IndexBuffer;
-                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, primitiveCount: PrimitiveCount);
+                if (IndexBuffer != null)
+                {
+                    graphicsDevice.Indices = IndexBuffer;
+                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: 0, startIndex: 0, primitiveCount: PrimitiveCount);
+                }
+                else
+                {
+                    graphicsDevice.DrawPrimitives(PrimitiveType, 0, PrimitiveCount);
+                }
             }
         }
 
