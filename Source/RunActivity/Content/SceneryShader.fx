@@ -809,9 +809,6 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 			occlusion = tex2D(Occlusion, In.TexCoords.zw).r;
 	}
 
-	//float occlusion = tex2D(Occlusion, In.TexCoords.zw).r;
-	//float3 metallicRoughness = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
-
 	float perceptualRoughness = clamp(roughness * OcclusionFactor.y, MinRoughness, 1.0);
 	metallic = clamp(metallic * OcclusionFactor.z, 0.0, 1.0);
 	

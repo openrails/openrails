@@ -521,16 +521,75 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
 
                 return matrix * scale * rotation * transtaion;
             }
+
+            internal Sampler GetSampler(Gltf gltf, int? textureIndex)
+            {
+                var samplerIndex = textureIndex == null ? null : gltf.Textures[(int)textureIndex].Sampler;
+                return samplerIndex == null ? GltfSubObject.DefaultGltfSampler : gltf.Samplers[(int)samplerIndex];
+            }
+
+
+            internal TextureFilter GetTextureFilter(Sampler sampler)
+            {
+                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR)
+                    return TextureFilter.Linear;
+                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_LINEAR)
+                    return TextureFilter.Linear;
+                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_NEAREST)
+                    return TextureFilter.LinearMipPoint;
+                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_LINEAR)
+                    return TextureFilter.MinPointMagLinearMipLinear;
+                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_NEAREST)
+                    return TextureFilter.MinPointMagLinearMipPoint;
+                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_LINEAR)
+                    return TextureFilter.MinLinearMagPointMipLinear;
+                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_NEAREST)
+                    return TextureFilter.MinLinearMagPointMipPoint;
+                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_LINEAR)
+                    return TextureFilter.PointMipLinear;
+                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_NEAREST)
+                    return TextureFilter.Point;
+                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST)
+                    return TextureFilter.Point;
+
+                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST)
+                    return TextureFilter.MinPointMagLinearMipLinear;
+                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR)
+                    return TextureFilter.MinLinearMagPointMipLinear;
+
+                return TextureFilter.Linear;
+            }
+
+            internal TextureAddressMode GetTextureAddressMode(Sampler.WrapTEnum wrapEnum) => GetTextureAddressMode((Sampler.WrapSEnum)wrapEnum);
+            internal TextureAddressMode GetTextureAddressMode(Sampler.WrapSEnum wrapEnum)
+            {
+                switch (wrapEnum)
+                {
+                    case Sampler.WrapSEnum.REPEAT: return TextureAddressMode.Wrap;
+                    case Sampler.WrapSEnum.CLAMP_TO_EDGE: return TextureAddressMode.Clamp;
+                    case Sampler.WrapSEnum.MIRRORED_REPEAT: return TextureAddressMode.Mirror;
+                    default: return TextureAddressMode.Wrap;
+                }
+            }
         }
 
         public class GltfSubObject : SubObject
         {
-            static glTFLoader.Schema.Material DefaultGltfMaterial = new glTFLoader.Schema.Material
+            public static glTFLoader.Schema.Material DefaultGltfMaterial = new glTFLoader.Schema.Material
             {
                 AlphaCutoff = 0.5f,
                 DoubleSided = false,
                 AlphaMode = glTFLoader.Schema.Material.AlphaModeEnum.OPAQUE,
                 EmissiveFactor = new[] {0f, 0f, 0f},
+                Name = nameof(DefaultGltfMaterial)
+            };
+            public static glTFLoader.Schema.Sampler DefaultGltfSampler = new glTFLoader.Schema.Sampler
+            {
+                MagFilter = Sampler.MagFilterEnum.LINEAR,
+                MinFilter = Sampler.MinFilterEnum.LINEAR_MIPMAP_LINEAR,
+                WrapS = Sampler.WrapSEnum.REPEAT,
+                WrapT = Sampler.WrapTEnum.REPEAT,
+                Name = nameof(DefaultGltfSampler)
             };
 
             public GltfSubObject(MeshPrimitive meshPrimitive, string name, int hierarchyIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel, Skin skin)
@@ -541,6 +600,7 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 var material = meshPrimitive.Material == null ? DefaultGltfMaterial : gltfFile.Materials[(int)meshPrimitive.Material];
 
                 var options = SceneryMaterialOptions.None;
+                options |= SceneryMaterialOptions.Diffuse;
 
                 if (skin != null)
                 {
@@ -559,23 +619,9 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                     case glTFLoader.Schema.Material.AlphaModeEnum.OPAQUE:
                     default: break;
                 }
-                options |= SceneryMaterialOptions.Diffuse;
 
                 var referenceAlpha = material.AlphaCutoff; // default is 0.5
                 var doubleSided = material.DoubleSided;
-
-                var baseIndex = material.PbrMetallicRoughness?.BaseColorTexture?.Index;
-                if (baseIndex != null)
-                {
-                    var samplerIndex = gltfFile.Textures[(int)baseIndex].Sampler;
-                    var sampler = samplerIndex == null ? null : gltfFile.Samplers[(int)samplerIndex];
-                    switch (sampler?.WrapS)
-                    {
-                        case Sampler.WrapSEnum.REPEAT: options |= SceneryMaterialOptions.TextureAddressModeWrap; break;
-                        case Sampler.WrapSEnum.CLAMP_TO_EDGE: options |= SceneryMaterialOptions.TextureAddressModeClamp; break;
-                        case Sampler.WrapSEnum.MIRRORED_REPEAT: options |= SceneryMaterialOptions.TextureAddressModeMirror; break;
-                    }
-                }
 
                 Vector4 texCoords = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
 
@@ -585,6 +631,14 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 var baseColorFactor = material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f };
                 var baseColorFactorVector = new Vector4(baseColorFactor[0], baseColorFactor[1], baseColorFactor[2], baseColorFactor[3]);
                 if (baseColorTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasBaseColorMap;
+                var baseColorSampler = distanceLevel.GetSampler(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture?.Index);
+                var baseColorSamplerState = (distanceLevel.GetTextureFilter(baseColorSampler), distanceLevel.GetTextureAddressMode(baseColorSampler.WrapS), distanceLevel.GetTextureAddressMode(baseColorSampler.WrapT));
+                switch (baseColorSampler.WrapS)
+                {
+                    case Sampler.WrapSEnum.REPEAT: options |= SceneryMaterialOptions.TextureAddressModeWrap; break;
+                    case Sampler.WrapSEnum.CLAMP_TO_EDGE: options |= SceneryMaterialOptions.TextureAddressModeClamp; break;
+                    case Sampler.WrapSEnum.MIRRORED_REPEAT: options |= SceneryMaterialOptions.TextureAddressModeMirror; break;
+                }
 
                 // G = roughness, B = metalness, linear, may be > 8 bit
                 texCoords.Y = material.PbrMetallicRoughness?.MetallicRoughnessTexture?.TexCoord ?? 1;
@@ -592,18 +646,24 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
                 if (metallicRoughnessTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasMetalRoughnessMap;
+                var metallicRoughnessSampler = distanceLevel.GetSampler(gltfFile, material.PbrMetallicRoughness?.MetallicRoughnessTexture?.Index);
+                var metallicRoughnessSamplerState = (distanceLevel.GetTextureFilter(metallicRoughnessSampler), distanceLevel.GetTextureAddressMode(metallicRoughnessSampler.WrapS), distanceLevel.GetTextureAddressMode(metallicRoughnessSampler.WrapT));
 
                 // RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
                 texCoords.Z = material.NormalTexture?.TexCoord ?? 0;
                 var normalTexture = distanceLevel.GetTexture(gltfFile, material.NormalTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var normalScale = material.NormalTexture?.Scale ?? 1f;
                 if (normalTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasNormalMap;
+                var normalSampler = distanceLevel.GetSampler(gltfFile, material.NormalTexture?.Index);
+                var normalSamplerState = (distanceLevel.GetTextureFilter(normalSampler), distanceLevel.GetTextureAddressMode(normalSampler.WrapS), distanceLevel.GetTextureAddressMode(normalSampler.WrapT));
 
                 // R channel only, = 1.0 + strength * (sampledValue - 1.0)
                 var occlusionTexCoord = material.OcclusionTexture?.TexCoord ?? 1;
                 var occlusionTexture = distanceLevel.GetTexture(gltfFile, material.OcclusionTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var occlusionStrength = material.OcclusionTexture?.Strength ?? 1f;
                 if (occlusionTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasOcclusionMap;
+                var occlusionSampler = distanceLevel.GetSampler(gltfFile, material.OcclusionTexture?.Index);
+                var occlusionSamplerState = (distanceLevel.GetTextureFilter(occlusionSampler), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapS), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapT));
 
                 // 8 bit sRGB. Needs decoding to linear in the shader.
                 texCoords.W = material.EmissiveTexture?.TexCoord ?? 0;
@@ -611,6 +671,8 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 var emissiveFactor = material.EmissiveFactor ?? new[] { 0f, 0f, 0f };
                 var emissiveFactorVector = new Vector3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
                 if (emissiveTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasEmissiveMap;
+                var emissiveSampler = distanceLevel.GetSampler(gltfFile, material.EmissiveTexture?.Index);
+                var emissiveSamplerState = (distanceLevel.GetTextureFilter(emissiveSampler), distanceLevel.GetTextureAddressMode(emissiveSampler.WrapS), distanceLevel.GetTextureAddressMode(emissiveSampler.WrapT));
 
                 int texturePacking = 0; // TODO
 
@@ -868,7 +930,12 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                     normalTexture, normalScale,
                     occlusionTexture, occlusionStrength,
                     emissiveTexture, emissiveFactorVector,
-                    referenceAlpha, doubleSided);
+                    referenceAlpha, doubleSided,
+                    baseColorSamplerState,
+                    metallicRoughnessSamplerState,
+                    normalSamplerState,
+                    occlusionSamplerState,
+                    emissiveSamplerState);
 
                 ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords, texturePacking) };
                 ShapePrimitives[0].SortIndex = 0;

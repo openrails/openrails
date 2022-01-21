@@ -441,7 +441,12 @@ namespace Orts.Viewer3D
             Texture2D normalTexture, float normalScale,
             Texture2D occlusionTexture, float occlusionStrength,
             Texture2D emissiveTexture, Vector3 emissiveFactor,
-            float referenceAlpha, bool doubleSided)
+            float referenceAlpha, bool doubleSided,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateNormal,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateOcclusion,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive)
         {
             var materialKey = (materialName, materialUniqueId?.ToLower(), options, mipMapBias, (Effect)null);
 
@@ -456,7 +461,12 @@ namespace Orts.Viewer3D
                             normalTexture, normalScale,
                             occlusionTexture, occlusionStrength,
                             emissiveTexture, emissiveFactor,
-                            referenceAlpha, doubleSided);
+                            referenceAlpha, doubleSided,
+                            samplerStateBaseColor,
+                            samplerStateMetallicRoughness,
+                            samplerStateNormal,
+                            samplerStateOcclusion,
+                            samplerStateEmissive);
                         break;
                     default:
                         Trace.TraceInformation("Skipped unknown material type {0}", materialName);
@@ -1135,7 +1145,14 @@ namespace Orts.Viewer3D
 
         bool EmissiveFollowsDayNightCycle;
         bool DoubleSided;
-        RasterizerState RasterizerState = RasterizerState.CullClockwise;
+
+        public SamplerState SamplerStateBaseColor;
+        public SamplerState SamplerStateMetallicRoughness;
+        public SamplerState SamplerStateNormal;
+        public SamplerState SamplerStateOcclusion;
+        public SamplerState SamplerStateEmissive;
+
+        static readonly Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState> GltfSamplerStates = new Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState>();
 
         public PbrMaterial(Viewer viewer, string materialUniqueId, SceneryMaterialOptions options, float mipMapBias,
             Texture2D baseColorTexture, Vector4 baseColorFactor,
@@ -1143,7 +1160,12 @@ namespace Orts.Viewer3D
             Texture2D normalTexture, float normalScale,
             Texture2D occlusionTexture, float occlusionStrength,
             Texture2D emissiveTexture, Vector3 emissiveFactor,
-            float referenceAlpha, bool doubleSided)
+            float referenceAlpha, bool doubleSided,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateNormal,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateOcclusion,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive)
             : base(viewer, materialUniqueId, options, mipMapBias)
         {
             Texture = baseColorTexture;
@@ -1159,6 +1181,12 @@ namespace Orts.Viewer3D
             EmissiveFactor = emissiveFactor;
             DefaultAlphaCutOff = (int)(referenceAlpha * 255f);
             DoubleSided = doubleSided;
+
+            if (!GltfSamplerStates.TryGetValue(samplerStateBaseColor, out SamplerStateBaseColor)) { SamplerStateBaseColor = GetNewSamplerState(samplerStateBaseColor); GltfSamplerStates.Add(samplerStateBaseColor, SamplerStateBaseColor); }
+            if (!GltfSamplerStates.TryGetValue(samplerStateMetallicRoughness, out SamplerStateMetallicRoughness)) { SamplerStateMetallicRoughness = GetNewSamplerState(samplerStateMetallicRoughness); GltfSamplerStates.Add(samplerStateMetallicRoughness, SamplerStateMetallicRoughness); }
+            if (!GltfSamplerStates.TryGetValue(samplerStateNormal, out SamplerStateNormal)) { SamplerStateNormal = GetNewSamplerState(samplerStateNormal); GltfSamplerStates.Add(samplerStateNormal, SamplerStateNormal); }
+            if (!GltfSamplerStates.TryGetValue(samplerStateOcclusion, out SamplerStateOcclusion)) { SamplerStateOcclusion = GetNewSamplerState(samplerStateOcclusion); GltfSamplerStates.Add(samplerStateOcclusion, SamplerStateOcclusion); }
+            if (!GltfSamplerStates.TryGetValue(samplerStateEmissive, out SamplerStateEmissive)) { SamplerStateEmissive = GetNewSamplerState(samplerStateEmissive); GltfSamplerStates.Add(samplerStateEmissive, SamplerStateEmissive); }
         }
 
         public override bool GetBlending() => (Options & SceneryMaterialOptions.AlphaBlendingBlend) != 0;
@@ -1203,6 +1231,16 @@ namespace Orts.Viewer3D
                 ShaderPasses = ShaderPassesPbrBase;
             }
         }
+
+        static SamplerState GetNewSamplerState((TextureFilter, TextureAddressMode, TextureAddressMode) samplerAttributes)
+        {
+           return new SamplerState
+            {
+                Filter = samplerAttributes.Item1,
+                AddressU = samplerAttributes.Item2,
+                AddressV = samplerAttributes.Item3
+            };
+        }
         
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
@@ -1216,8 +1254,20 @@ namespace Orts.Viewer3D
                 {
                     shader.SetMatrix(item.XNAMatrix, ref viewProj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
-                    shader.TextureCoordinates = (item.RenderPrimitive as GltfShape.GltfPrimitive).TexCoords;
-                    shader.TexturePacking = (item.RenderPrimitive as GltfShape.GltfPrimitive).TexturePacking;
+
+                    if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)
+                    {
+                        shader.TextureCoordinates = gltfPrimitive.TexCoords;
+                        shader.TexturePacking = gltfPrimitive.TexturePacking;
+                        var material = gltfPrimitive.Material as PbrMaterial;
+                        // There is a massive redundancy here, but rely on the driver to sort it out:
+                        graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[0]] = material.SamplerStateBaseColor;
+                        graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[1]] = material.SamplerStateMetallicRoughness;
+                        graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[2]] = material.SamplerStateOcclusion;
+                        graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[3]] = material.SamplerStateNormal;
+                        graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[4]] = material.SamplerStateEmissive;
+                    }
+
                     if (item.ItemData is Matrix[] bones)
                         shader.Bones = bones;
                     ShaderPasses.Current.Apply();

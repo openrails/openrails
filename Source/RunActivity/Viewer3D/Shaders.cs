@@ -137,6 +137,12 @@ namespace Orts.Viewer3D
 
         public const int MAX_BONES = 50;
 
+        /// <summary>
+        /// The position of the sampler states inside the hlsl shader:
+        /// baseColor, metallicRoughness, occlusion, normal, emissive
+        /// </summary>
+        public readonly static int[] SamplerOrder = new[] { 0, 5, 4, 2, 3 };
+
         public void SetViewMatrix(ref Matrix v)
         {
             _eyeVector = Vector3.Normalize(new Vector3(v.M13, v.M23, v.M33));
