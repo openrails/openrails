@@ -2189,7 +2189,7 @@ namespace Orts.Viewer3D.RollingStock
             return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(GetControlType().ToString());
         }
 
-        public string ControlLabel { get { return Control.Label; } }
+        public string ControlLabel => Control.Label;
 
         /// <summary>
         /// Handles cabview mouse events, and changes the corresponding locomotive control values.
