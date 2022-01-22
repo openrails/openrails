@@ -109,11 +109,6 @@ REM Run unit tests (9009 means XUnit itself wasn't found, which is an error).
 xunit.console.x86 Program\Tests.dll -nunit xunit.xml
 IF "%ERRORLEVEL%" == "9009" GOTO :error
 
-CALL :copy "Program\RunActivity.exe" "Program\RunActivityLAA.exe" || GOTO :error
-editbin /NOLOGO /LARGEADDRESSAWARE "Program\RunActivityLAA.exe" || GOTO :error
-CALL :copy "Program\RunActivity.exe.config" "Program\RunActivityLAA.exe.config" || GOTO :error
-ECHO Created large address aware version of RunActivity.exe.
-
 REM Copy the web content
 ROBOCOPY /MIR /NJH /NJS "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web"
 IF %ERRORLEVEL% GEQ 8 GOTO :error
