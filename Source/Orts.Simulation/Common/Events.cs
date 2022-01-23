@@ -268,7 +268,7 @@ namespace Orts.Common
         // MSTS/MSTSBin behaviour whenever possible. NEVER return values for
         // non-MSTS events when passed an MSTS Source.
 
-        public static Event From(bool mstsBinEnabled, Source source, int eventID)
+        public static Event From(Source source, int eventID)
         {
             switch (source)
             {

@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -88,7 +88,6 @@
             this.checkVerticalSync = new System.Windows.Forms.CheckBox();
             this.labelDistantMountainsViewingDistance = new System.Windows.Forms.Label();
             this.numericDistantMountainsViewingDistance = new System.Windows.Forms.NumericUpDown();
-            this.checkFastFullScreenAltTab = new System.Windows.Forms.CheckBox();
             this.checkDistantMountains = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.numericViewingDistance = new System.Windows.Forms.NumericUpDown();
@@ -867,7 +866,6 @@
             this.tabPageVideo.Controls.Add(this.checkVerticalSync);
             this.tabPageVideo.Controls.Add(this.labelDistantMountainsViewingDistance);
             this.tabPageVideo.Controls.Add(this.numericDistantMountainsViewingDistance);
-            this.tabPageVideo.Controls.Add(this.checkFastFullScreenAltTab);
             this.tabPageVideo.Controls.Add(this.checkDistantMountains);
             this.tabPageVideo.Controls.Add(this.label14);
             this.tabPageVideo.Controls.Add(this.numericViewingDistance);
@@ -894,7 +892,7 @@
             // labelAntiAliasingValue
             // 
             this.labelAntiAliasingValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelAntiAliasingValue.Location = new System.Drawing.Point(376, 352);
+            this.labelAntiAliasingValue.Location = new System.Drawing.Point(376, 328);
             this.labelAntiAliasingValue.Margin = new System.Windows.Forms.Padding(3);
             this.labelAntiAliasingValue.Name = "labelAntiAliasingValue";
             this.labelAntiAliasingValue.Size = new System.Drawing.Size(220, 13);
@@ -905,7 +903,7 @@
             // labelAntiAliasing
             // 
             this.labelAntiAliasing.AutoSize = true;
-            this.labelAntiAliasing.Location = new System.Drawing.Point(304, 352);
+            this.labelAntiAliasing.Location = new System.Drawing.Point(304, 328);
             this.labelAntiAliasing.Margin = new System.Windows.Forms.Padding(3);
             this.labelAntiAliasing.Name = "labelAntiAliasing";
             this.labelAntiAliasing.Size = new System.Drawing.Size(66, 13);
@@ -918,7 +916,7 @@
             this.trackAntiAliasing.AutoSize = false;
             this.trackAntiAliasing.BackColor = System.Drawing.SystemColors.Window;
             this.trackAntiAliasing.LargeChange = 2;
-            this.trackAntiAliasing.Location = new System.Drawing.Point(304, 371);
+            this.trackAntiAliasing.Location = new System.Drawing.Point(304, 347);
             this.trackAntiAliasing.Margin = new System.Windows.Forms.Padding(6, 3, 6, 3);
             this.trackAntiAliasing.Maximum = 6;
             this.trackAntiAliasing.Minimum = 1;
@@ -952,7 +950,7 @@
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(6, 352);
+            this.label15.Location = new System.Drawing.Point(6, 328);
             this.label15.Margin = new System.Windows.Forms.Padding(3);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(138, 13);
@@ -961,7 +959,7 @@
             // 
             // labelDayAmbientLight
             // 
-            this.labelDayAmbientLight.Location = new System.Drawing.Point(6, 352);
+            this.labelDayAmbientLight.Location = new System.Drawing.Point(6, 328);
             this.labelDayAmbientLight.Margin = new System.Windows.Forms.Padding(3);
             this.labelDayAmbientLight.Name = "labelDayAmbientLight";
             this.labelDayAmbientLight.Size = new System.Drawing.Size(292, 13);
@@ -971,7 +969,7 @@
             // checkModelInstancing
             // 
             this.checkModelInstancing.AutoSize = true;
-            this.checkModelInstancing.Location = new System.Drawing.Point(6, 98);
+            this.checkModelInstancing.Location = new System.Drawing.Point(6, 74);
             this.checkModelInstancing.Name = "checkModelInstancing";
             this.checkModelInstancing.Size = new System.Drawing.Size(106, 17);
             this.checkModelInstancing.TabIndex = 3;
@@ -983,7 +981,7 @@
             this.trackDayAmbientLight.AutoSize = false;
             this.trackDayAmbientLight.BackColor = System.Drawing.SystemColors.Window;
             this.trackDayAmbientLight.LargeChange = 4;
-            this.trackDayAmbientLight.Location = new System.Drawing.Point(6, 371);
+            this.trackDayAmbientLight.Location = new System.Drawing.Point(6, 347);
             this.trackDayAmbientLight.Margin = new System.Windows.Forms.Padding(6, 3, 6, 3);
             this.trackDayAmbientLight.Maximum = 30;
             this.trackDayAmbientLight.Minimum = 15;
@@ -998,7 +996,7 @@
             // checkVerticalSync
             // 
             this.checkVerticalSync.AutoSize = true;
-            this.checkVerticalSync.Location = new System.Drawing.Point(6, 121);
+            this.checkVerticalSync.Location = new System.Drawing.Point(6, 97);
             this.checkVerticalSync.Name = "checkVerticalSync";
             this.checkVerticalSync.Size = new System.Drawing.Size(86, 17);
             this.checkVerticalSync.TabIndex = 5;
@@ -1008,7 +1006,7 @@
             // labelDistantMountainsViewingDistance
             // 
             this.labelDistantMountainsViewingDistance.AutoSize = true;
-            this.labelDistantMountainsViewingDistance.Location = new System.Drawing.Point(86, 249);
+            this.labelDistantMountainsViewingDistance.Location = new System.Drawing.Point(86, 225);
             this.labelDistantMountainsViewingDistance.Margin = new System.Windows.Forms.Padding(3);
             this.labelDistantMountainsViewingDistance.Name = "labelDistantMountainsViewingDistance";
             this.labelDistantMountainsViewingDistance.Size = new System.Drawing.Size(110, 13);
@@ -1022,7 +1020,7 @@
             0,
             0,
             0});
-            this.numericDistantMountainsViewingDistance.Location = new System.Drawing.Point(26, 247);
+            this.numericDistantMountainsViewingDistance.Location = new System.Drawing.Point(26, 223);
             this.numericDistantMountainsViewingDistance.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericDistantMountainsViewingDistance.Maximum = new decimal(new int[] {
             1000,
@@ -1044,20 +1042,10 @@
             0,
             0});
             // 
-            // checkFastFullScreenAltTab
-            // 
-            this.checkFastFullScreenAltTab.AutoSize = true;
-            this.checkFastFullScreenAltTab.Location = new System.Drawing.Point(6, 52);
-            this.checkFastFullScreenAltTab.Name = "checkFastFullScreenAltTab";
-            this.checkFastFullScreenAltTab.Size = new System.Drawing.Size(129, 17);
-            this.checkFastFullScreenAltTab.TabIndex = 1;
-            this.checkFastFullScreenAltTab.Text = "Fast full-screen alt-tab";
-            this.checkFastFullScreenAltTab.UseVisualStyleBackColor = true;
-            // 
             // checkDistantMountains
             // 
             this.checkDistantMountains.AutoSize = true;
-            this.checkDistantMountains.Location = new System.Drawing.Point(6, 224);
+            this.checkDistantMountains.Location = new System.Drawing.Point(6, 200);
             this.checkDistantMountains.Name = "checkDistantMountains";
             this.checkDistantMountains.Size = new System.Drawing.Size(110, 17);
             this.checkDistantMountains.TabIndex = 10;
@@ -1068,7 +1056,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(66, 200);
+            this.label14.Location = new System.Drawing.Point(66, 176);
             this.label14.Margin = new System.Windows.Forms.Padding(3);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(104, 13);
@@ -1082,7 +1070,7 @@
             0,
             0,
             0});
-            this.numericViewingDistance.Location = new System.Drawing.Point(6, 198);
+            this.numericViewingDistance.Location = new System.Drawing.Point(6, 174);
             this.numericViewingDistance.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -1105,7 +1093,7 @@
             // labelFOVHelp
             // 
             this.labelFOVHelp.AutoSize = true;
-            this.labelFOVHelp.Location = new System.Drawing.Point(304, 275);
+            this.labelFOVHelp.Location = new System.Drawing.Point(304, 251);
             this.labelFOVHelp.Margin = new System.Windows.Forms.Padding(3);
             this.labelFOVHelp.Name = "labelFOVHelp";
             this.labelFOVHelp.Size = new System.Drawing.Size(28, 13);
@@ -1114,7 +1102,7 @@
             // 
             // numericViewingFOV
             // 
-            this.numericViewingFOV.Location = new System.Drawing.Point(6, 273);
+            this.numericViewingFOV.Location = new System.Drawing.Point(6, 249);
             this.numericViewingFOV.Maximum = new decimal(new int[] {
             120,
             0,
@@ -1138,7 +1126,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(66, 275);
+            this.label10.Location = new System.Drawing.Point(66, 251);
             this.label10.Margin = new System.Windows.Forms.Padding(3);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(105, 13);
@@ -1152,7 +1140,7 @@
             0,
             0,
             0});
-            this.numericCab2DStretch.Location = new System.Drawing.Point(6, 172);
+            this.numericCab2DStretch.Location = new System.Drawing.Point(6, 148);
             this.numericCab2DStretch.Name = "numericCab2DStretch";
             this.numericCab2DStretch.Size = new System.Drawing.Size(54, 20);
             this.numericCab2DStretch.TabIndex = 6;
@@ -1162,7 +1150,7 @@
             // labelCab2DStretch
             // 
             this.labelCab2DStretch.AutoSize = true;
-            this.labelCab2DStretch.Location = new System.Drawing.Point(66, 174);
+            this.labelCab2DStretch.Location = new System.Drawing.Point(66, 150);
             this.labelCab2DStretch.Margin = new System.Windows.Forms.Padding(3);
             this.labelCab2DStretch.Name = "labelCab2DStretch";
             this.labelCab2DStretch.Size = new System.Drawing.Size(88, 13);
@@ -1172,7 +1160,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(66, 301);
+            this.label1.Location = new System.Drawing.Point(66, 277);
             this.label1.Margin = new System.Windows.Forms.Padding(3);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(103, 13);
@@ -1181,7 +1169,7 @@
             // 
             // numericWorldObjectDensity
             // 
-            this.numericWorldObjectDensity.Location = new System.Drawing.Point(6, 299);
+            this.numericWorldObjectDensity.Location = new System.Drawing.Point(6, 275);
             this.numericWorldObjectDensity.Maximum = new decimal(new int[] {
             99,
             0,
@@ -1209,7 +1197,7 @@
             "1920x1080",
             "1920x1200",
             "2560x1440"});
-            this.comboWindowSize.Location = new System.Drawing.Point(6, 325);
+            this.comboWindowSize.Location = new System.Drawing.Point(6, 301);
             this.comboWindowSize.Name = "comboWindowSize";
             this.comboWindowSize.Size = new System.Drawing.Size(121, 21);
             this.comboWindowSize.TabIndex = 18;
@@ -1217,7 +1205,7 @@
             // checkWindowGlass
             // 
             this.checkWindowGlass.AutoSize = true;
-            this.checkWindowGlass.Location = new System.Drawing.Point(6, 75);
+            this.checkWindowGlass.Location = new System.Drawing.Point(6, 51);
             this.checkWindowGlass.Name = "checkWindowGlass";
             this.checkWindowGlass.Size = new System.Drawing.Size(151, 17);
             this.checkWindowGlass.TabIndex = 2;
@@ -1227,7 +1215,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(133, 328);
+            this.label3.Location = new System.Drawing.Point(133, 304);
             this.label3.Margin = new System.Windows.Forms.Padding(3);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(255, 13);
@@ -1865,27 +1853,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -2730,7 +2718,6 @@
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
         private System.Windows.Forms.CheckBox checkHotStart;
         private System.Windows.Forms.CheckBox checkSimpleControlsPhysics;
-        private System.Windows.Forms.CheckBox checkFastFullScreenAltTab;
         private System.Windows.Forms.CheckBox checkVerticalSync;
         private System.Windows.Forms.ComboBox comboPressureUnit;
         private System.Windows.Forms.Label labelPressureUnit;

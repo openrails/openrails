@@ -186,8 +186,6 @@ namespace ORTS.Settings
         public bool DisableTCSScripts { get; set; }
 
         // Audio settings:
-        [Default(true)]
-        public bool MSTSBINSound { get; set; }
         [Default(100)]
         public int SoundVolumePercent { get; set; }
         [Default(5)]
@@ -200,8 +198,6 @@ namespace ORTS.Settings
         public bool DynamicShadows { get; set; }
         [Default(false)]
         public bool ShadowAllShapes { get; set; }
-        [Default(false)]
-        public bool FastFullScreenAltTab { get; set; }
         [Default(false)]
         public bool WindowGlass { get; set; }
         [Default(false)]
