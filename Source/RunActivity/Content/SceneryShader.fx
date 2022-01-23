@@ -125,6 +125,36 @@ sampler MetallicRoughness = sampler_state
 	MipFilter = Linear;
 };
 
+samplerCUBE EnvironmentMapSpecular = sampler_state
+{
+	Texture = (EnvironmentMapSpecularTexture);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
+	AddressU = Clamp;
+	AddressV = Clamp;
+	AddressW = Clamp;
+};
+
+samplerCUBE EnvironmentMapDiffuse = sampler_state
+{
+	Texture = (EnvironmentMapDiffuseTexture);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
+	AddressU = Clamp;
+	AddressV = Clamp;
+	AddressW = Clamp;
+};
+
+sampler BrdfLut = sampler_state
+{
+	Texture = (BrdfLutTexture);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
+};
+
 sampler ShadowMap0 = sampler_state
 {
 	Texture = (ShadowMapTexture0);
@@ -682,6 +712,23 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasNormals, bool hasNormalMap,
     return n;
 }
 
+float3 _PSGetIBLContribution(float3 diffuseColor, float3 specularColor, float NdotV, float perceptualRoughness, float3 n, float3 reflection)
+{
+	float2 val = float2(NdotV, 1.0 - perceptualRoughness);
+	float3 brdf = tex2D(BrdfLut, val).rgb;
+	brdf.rgb = pow(brdf.rgb, 2.2);
+
+	float3 specularLight = texCUBE(EnvironmentMapSpecular, reflection).rgb;
+	specularLight.rgb = pow(specularLight.rgb, 2.2);
+	float3 specular = specularLight * (specularColor * brdf.x + brdf.y);
+
+	float3 diffuseLight = texCUBE(EnvironmentMapDiffuse, n).rgb; // irradiance (washed out)
+	diffuseLight.rgb = pow(diffuseLight.rgb, 2.2);
+	float3 diffuse = diffuseLight * diffuseColor;
+
+	return diffuse + specular;
+}
+
 float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
@@ -770,16 +817,16 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	///////////////////////
 	
 	// Metallic-roughness
-	float occlusion;
-	float metallic;
-	float roughness;
+	float occlusion = 1;
+	float metallic = 1;
+	float roughness = 1;
 	if (TexturePacking == 0 || TexturePacking == 1)
 	{
 		float3 orm;
 		if (TextureCoordinates.y == 0)
-			orm = tex2D(MetallicRoughness, In.TexCoords.xy);
+			orm = tex2D(MetallicRoughness, In.TexCoords.xy).rgb;
 		else
-			orm = tex2D(MetallicRoughness, In.TexCoords.zw);
+			orm = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
 		if (TexturePacking == 0)
 		{
 			occlusion = orm.r;
@@ -826,7 +873,8 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	float3 v = normalize(-In.RelPosition.xyz);
 	float3 l = normalize(LightVector_ZFar.xyz);
 	float3 h = normalize(l + v);
-	
+	float3 reflection = -normalize(reflect(v, n));
+
 	float NdotL = clamp(dot(n, l), 0.001, 1.0);
     float NdotV = abs(dot(n, v)) + 0.001;
     float NdotH = clamp(dot(n, h), 0.0, 1.0);
@@ -842,13 +890,15 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
     float G = attenuationL * attenuationV;
 	
     float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
-    float D = roughnessSq / (M_PI * f * f);
+	float D = roughnessSq / (M_PI * f * f);
 	
 	float3 diffuseContrib = (1.0 - F) * diffuseColor / M_PI * diffuseShadowFactor;
-    float3 specContrib = F * G * D / (4.0 * NdotL * NdotV) * shadowFactor;
+	float3 specContrib = F * G * D / (4.0 * NdotL * NdotV) * shadowFactor;
     float3 litColor = NdotL * LightColor * (diffuseContrib + specContrib + headlightContrib);
 
-	// Occlusion: (shouldn't the occlusion be 1.0 + strength * (<sampled occlusion texture value> - 1.0) ?
+	litColor += _PSGetIBLContribution(diffuseColor, specularColor, NdotV, perceptualRoughness, n, reflection);
+
+	// Occlusion:
 	litColor = lerp(litColor, litColor * occlusion, OcclusionFactor.x);
 	
 	// Emissive color:
@@ -1026,8 +1076,6 @@ technique ImageLevel9_3 {
 
 technique PbrBaseColorMap {
 	pass Pass_0 {
-		//VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		//PixelShader = compile ps_4_0_level_9_3 PSImage9_3();
 		VertexShader = compile vs_4_0 VSPbrBaseColorMap();
 		PixelShader = compile ps_4_0 PSPbr();
 	}

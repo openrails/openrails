@@ -168,6 +168,18 @@ namespace Orts.Viewer3D
         static Matrix PlusZToForward = Matrix.CreateFromAxisAngle(Vector3.UnitY, MathHelper.Pi);
         static readonly string[] StandardTextureExtensionFilter = new[] { ".png", ".jpg", ".jpeg" };
         static readonly string[] DdsTextureExtensionFilter = new[] { ".dds" };
+        public static TextureCube EnvironmentMapSpecularDay;
+        public static TextureCube EnvironmentMapDiffuseDay;
+        public static Texture2D BrdfLutTexture;
+        public static readonly Dictionary<string, CubeMapFace> EnvironmentMapFaces = new Dictionary<string, CubeMapFace>
+        {
+            ["px"] = CubeMapFace.PositiveX,
+            ["nx"] = CubeMapFace.NegativeX,
+            ["py"] = CubeMapFace.PositiveY,
+            ["ny"] = CubeMapFace.NegativeY,
+            ["pz"] = CubeMapFace.PositiveZ,
+            ["nz"] = CubeMapFace.NegativeZ
+        };
 
         public Dictionary<int, GltfAnimation> GltfAnimations = new Dictionary<int, GltfAnimation>();
         public Dictionary<string, VertexBufferBinding> VertexBuffers = new Dictionary<string, VertexBufferBinding>();
@@ -211,6 +223,40 @@ namespace Orts.Viewer3D
             if (!externalLods.Any())
                 externalLods.Add(0, FilePath);
             LodControls = new[] { new GltfLodControl(this, externalLods) };
+
+            if (EnvironmentMapSpecularDay == null)
+            {
+                EnvironmentMapSpecularDay = new TextureCube(Viewer.GraphicsDevice, 512, false, SurfaceFormat.Color);
+                EnvironmentMapDiffuseDay = new TextureCube(Viewer.GraphicsDevice, 128, false, SurfaceFormat.Color);
+                EnvironmentMapSpecularDay.Name = nameof(EnvironmentMapSpecularDay);
+                foreach (var face in EnvironmentMapFaces.Keys)
+                {
+                    // How to do this more efficiently?
+                    using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/specular_{face}_0.png")))
+                    {
+                        var tex = Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                        var data = new Color[tex.Width * tex.Height];
+                        tex.GetData(data);
+                        EnvironmentMapSpecularDay.SetData(EnvironmentMapFaces[face], data);
+                        tex.Dispose();
+                    }
+                    using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/diffuse_{face}_0.jpg")))
+                    {
+                        var tex = Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                        var data = new Color[tex.Width * tex.Height];
+                        tex.GetData(data);
+                        EnvironmentMapDiffuseDay.SetData(EnvironmentMapFaces[face], data);
+                        tex.Dispose();
+                    }
+                }
+            }
+            if (BrdfLutTexture == null)
+            {
+                using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/brdfLUT.png")))
+                {
+                    BrdfLutTexture = Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                }
+            }
         }
 
         public override Matrix SetRenderMatrices(ShapePrimitive baseShapePrimitive, Matrix[] animatedMatrices, ref Matrix tileTranslation, out Matrix[] bones)

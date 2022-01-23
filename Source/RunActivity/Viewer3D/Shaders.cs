@@ -124,11 +124,15 @@ namespace Orts.Viewer3D
         readonly EffectParameter occlusionTexture;
         readonly EffectParameter metallicRoughnessTexture;
         readonly EffectParameter occlusionFactor;
-        readonly EffectParameter lightColor; // per-frame
         readonly EffectParameter referenceAlpha;
         readonly EffectParameter bones;
         readonly EffectParameter textureCoordinates;
         readonly EffectParameter texturePacking;
+        // Per-frame PBR uniforms:
+        readonly EffectParameter lightColor;
+        readonly EffectParameter environmentMapSpecularTexture;
+        readonly EffectParameter environmentMapDiffuseTexture;
+        readonly EffectParameter brdfLutTexture;
 
         Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
@@ -274,6 +278,12 @@ namespace Orts.Viewer3D
 
         public Vector3 LightColor { set { lightColor.SetValue(value); } }
 
+        public TextureCube EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
+
+        public TextureCube EnvironmentMapDiffuseTexture { set { environmentMapDiffuseTexture.SetValue(value); } }
+
+        public Texture2D BrdfLutTexture { set { brdfLutTexture.SetValue(value); } }
+
         public Matrix[] Bones { set { bones.SetValue(value); } }
         
         public Vector4 TextureCoordinates { set { textureCoordinates.SetValue(value); } }
@@ -321,10 +331,13 @@ namespace Orts.Viewer3D
             emissiveFactor = Parameters["EmissiveFactor"];
             normalScale = Parameters["NormalScale"];
             occlusionFactor = Parameters["OcclusionFactor"];
-            lightColor = Parameters["LightColor"];
             bones = Parameters["Bones"];
             textureCoordinates = Parameters["TextureCoordinates"];
             texturePacking = Parameters["TexturePacking"];
+            lightColor = Parameters["LightColor"];
+            environmentMapSpecularTexture = Parameters["EnvironmentMapSpecularTexture"];
+            environmentMapDiffuseTexture = Parameters["EnvironmentMapDiffuseTexture"];
+            brdfLutTexture = Parameters["BrdfLutTexture"];
         }
     }
 

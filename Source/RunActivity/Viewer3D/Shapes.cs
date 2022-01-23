@@ -72,16 +72,16 @@ namespace Orts.Viewer3D
             path = path.ToLowerInvariant();
             if (!Shapes.ContainsKey(path))
             {
-                try
+                //try
                 {
                     var extension = Path.GetExtension(path.Split('\0')[0]).ToLower();
                     Shapes.Add(path, extension == ".gltf" || extension == ".glb" ? new GltfShape(Viewer, path) : new SharedShape(Viewer, path));
                 }
-                catch (Exception error)
-                {
-                    Trace.WriteLine(new FileLoadException(path, error));
-                    Shapes.Add(path, EmptyShape);
-                }
+                //catch (Exception error)
+                //{
+                //    Trace.WriteLine(new FileLoadException(path, error));
+                //    Shapes.Add(path, EmptyShape);
+                //}
             }
             return Shapes[path];
         }

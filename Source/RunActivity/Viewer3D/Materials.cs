@@ -584,7 +584,11 @@ namespace Orts.Viewer3D
                 sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
 
             SceneryShader.SetLightVector_ZFar(sunDirection, Viewer.Settings.ViewingDistance);
-            
+            SceneryShader.LightColor = Vector3.One; // The color of the sun
+            SceneryShader.EnvironmentMapSpecularTexture = GltfShape.EnvironmentMapSpecularDay;
+            SceneryShader.EnvironmentMapDiffuseTexture = GltfShape.EnvironmentMapDiffuseDay;
+            SceneryShader.BrdfLutTexture = GltfShape.BrdfLutTexture;
+
             // Headlight illumination
             if (Viewer.PlayerLocomotiveViewer != null
                 && Viewer.PlayerLocomotiveViewer.lightDrawer != null
@@ -1205,16 +1209,6 @@ namespace Orts.Viewer3D
             if (ShaderPassesPbrNormalMap == null) ShaderPassesPbrNormalMap = shader.Techniques["PbrNormalMap"].Passes.GetEnumerator();
             if (ShaderPassesPbrBase == null) ShaderPassesPbrBase = shader.Techniques["PbrBaseColorMap"].Passes.GetEnumerator();
 
-            shader.BaseColorFactor = BaseColorFactor;
-            shader.NormalTexture = NormalTexture;
-            shader.NormalScale = NormalScale;
-            shader.EmissiveTexture = EmissiveTexture;
-            shader.EmissiveFactor = !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground() ? EmissiveFactor : Vector3.Zero;
-            shader.OcclusionTexture = OcclusionTexture;
-            shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
-            shader.OcclusionFactor = new Vector3(OcclusionStrength, RoughnessFactor, MetallicFactor);
-            shader.LightColor = Vector3.One;
-
             if ((Options & SceneryMaterialOptions.PbrHasSkin) != 0)
             {
                 shader.CurrentTechnique = shader.Techniques["PbrSkinned"];
@@ -1230,6 +1224,15 @@ namespace Orts.Viewer3D
                 shader.CurrentTechnique = shader.Techniques["PbrBaseColorMap"];
                 ShaderPasses = ShaderPassesPbrBase;
             }
+
+            shader.BaseColorFactor = BaseColorFactor;
+            shader.NormalTexture = NormalTexture;
+            shader.NormalScale = NormalScale;
+            shader.EmissiveTexture = EmissiveTexture;
+            shader.EmissiveFactor = !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground() ? EmissiveFactor : Vector3.Zero;
+            shader.OcclusionTexture = OcclusionTexture;
+            shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
+            shader.OcclusionFactor = new Vector3(OcclusionStrength, RoughnessFactor, MetallicFactor);
         }
 
         static SamplerState GetNewSamplerState((TextureFilter, TextureAddressMode, TextureAddressMode) samplerAttributes)
