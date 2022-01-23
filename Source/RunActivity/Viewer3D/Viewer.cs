@@ -202,13 +202,9 @@ namespace Orts.Viewer3D
 
         // MSTS cab views are images with aspect ratio 4:3.
         // OR can use cab views with other aspect ratios where these are available.
-        // On screen with other aspect ratios (e.g. 16:9), three approaches are possible:
-        //   1) stretch the width to fit the screen. This gives flattened controls, most noticeable with round dials.
-        //   2) clip the image losing a slice off top and bottom.
-        //   3) letterbox the image by drawing black bars in the unfilled spaces.
-        // Setting.Cab2DStretch controls the amount of stretch and clip. 0 is entirely clipped and 100 is entirely stretched.
-        // No difference is seen on screens with 4:3 aspect ratio.
-        // This adjustment assumes that the cab view is 4:3. Where the cab view matches the aspect ratio of the screen, use an adjustment of 100.
+        // On screen with other aspect ratios (e.g. 16:9), two approaches are possible:
+        //   1) clip the image losing a slice off top and bottom. Use arrow keys to bring these slices into view.
+        //   2) letterbox the image by drawing black bars in the unfilled spaces.
         public int CabHeightPixels { get; private set; }
         public int CabWidthPixels { get; private set; }
         public int CabYOffsetPixels { get; set; } // Note: Always -ve. Without it, the cab view is fixed to the top of the screen. -ve values pull it up the screen.
@@ -701,11 +697,9 @@ namespace Orts.Viewer3D
             // MSTS cab views are designed for 4:3 aspect ratio. This is the default. However a check is done with the actual
             // cabview texture. If this has a different aspect ratio, that one is considered
             // For wider screens (e.g. 16:9), the height of the cab view before adjustment exceeds the height of the display.
-            // The user can decide how much of this excess to keep. Setting of 0 keeps all the excess and 100 keeps none.
 
-            // <CSComment> If the aspect ratio of the viewing window is greater than the aspect ratio of the cabview texture file
-            // it is either possible to stretch the cabview texture file or to leave the proportions unaltered and to vertically pan
-            // the screen
+            // <CSComment> If the aspect ratio of the viewing window is greater than the aspect ratio of the cabview texture file,
+            // it is possible to vertically pan the screen.
             if (CabCamera.IsAvailable)
             {
                 var i = ((PlayerLocomotive as MSTSLocomotive).UsingRearCab) ? 1 : 0;
@@ -735,7 +729,7 @@ namespace Orts.Viewer3D
                 else if (windowInverseRatio < CabTextureInverseRatio)
                 {
                     // screen is wide-screen, so can choose between vertical scroll or horizontal stretch
-                    CabExceedsDisplay = (int)((unstretchedCabHeightPixels - windowHeight) * ((100 - Settings.Cab2DStretch) / 100f));
+                    CabExceedsDisplay = (int)(unstretchedCabHeightPixels - windowHeight);
                     CabExceedsDisplayHorizontally = 0;
                 }
                 else
