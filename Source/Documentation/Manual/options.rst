@@ -283,41 +283,6 @@ may see stuttering or image "tearing". To prevent this, either turn off
 the VSync option or reduce the values for video options such as view 
 distance, anti-aliasing, or world object density.
 
-.. _options-cab-stretch:
-
-% Cab 2D stretch
-----------------
-
-OR manages not only cab interiors using 2D images in a MSTS-compatible
-way, but also supports 3D models. Most 2D cab images follow MSTS practice,
-being 1024 x 768 pixels to suit monitors with a 4:3 aspect ratio.
-
-So, the problem arises -- how to display these 4:3 cabs on a 16:9 or 16:10
-monitor?
-
-One possibility is to stretch these images horizontally to match other
-aspect ratios, as shown in the image below.
-
-.. image:: images/options-2dstretch_1.png
-
-To respect the proportions however, by default OR does no stretching and
-shows the full width of the cab interior, thus losing a portion from the
-top and bottom of the image. You can use the Up and Down Arrow keys to pan
-and reveal these missing portions.
-
-Therefore the setting for % Cab 2D Stretch has a default value of 0
-providing no stretching and a maximum value of 100 which stretches the
-picture so as to cover the complete display. Intermediate values provide a
-blend of panning and stretching.
-
-.. image:: images/options-2dstretch_2.png
-
-OR can also pillarbox or letterbox the cab by filling the missing space with 
-black bars. You can activate this mode in-game by pressing Ctrl+1. It overrides 
-any stretching.
-
-.. image:: images/options-2dstretch_3.png
-
 Viewing distance
 ----------------
 
