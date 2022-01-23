@@ -156,8 +156,6 @@ namespace ORTS
             numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
-
-            checkMSTSBINSound.Checked = Settings.MSTSBINSound;
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
             numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
             numericExternalSoundPassThruPercent.Value = Settings.ExternalSoundPassThruPercent;
@@ -449,7 +447,6 @@ namespace ORTS
             Settings.WebServer = checkEnableWebServer.Checked;
 
             // Audio tab
-            Settings.MSTSBINSound = checkMSTSBINSound.Checked;
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
             Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;
             Settings.ExternalSoundPassThruPercent = (int)numericExternalSoundPassThruPercent.Value;
