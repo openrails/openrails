@@ -1233,6 +1233,7 @@ namespace Orts.Viewer3D
             shader.OcclusionTexture = OcclusionTexture;
             shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
             shader.OcclusionFactor = new Vector3(OcclusionStrength, RoughnessFactor, MetallicFactor);
+            shader.HasNormalMap = (float)(Options & SceneryMaterialOptions.PbrHasNormalMap);
         }
 
         static SamplerState GetNewSamplerState((TextureFilter, TextureAddressMode, TextureAddressMode) samplerAttributes)

@@ -65,6 +65,7 @@ float3   EmissiveFactor; // glTF linear emissive multiplier
 texture  OcclusionTexture; // r = occlusion, can be combined with the MetallicRoughnessTexture
 texture  MetallicRoughnessTexture; // g = roughness, b = metalness
 float3   OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
+float    HasNormalMap; // 0: doesn't have, 1: has normal map
 float3   LightColor;
 float4   TextureCoordinates; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
 float    TexturePacking; // 0: occlusionRoughnessMetallic (default), 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A)
@@ -869,7 +870,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
     float3 specularEnvironmentR0 = specularColor.rgb;
     float3 specularEnvironmentR90 = float3(1.0, 1.0, 1.0) * reflectance90;
 	
-	float3 n = _PSGetNormal(In, true, true, false);
+	float3 n = _PSGetNormal(In, true, HasNormalMap > 0, false);
 	float3 v = normalize(-In.RelPosition.xyz);
 	float3 l = normalize(LightVector_ZFar.xyz);
 	float3 h = normalize(l + v);
