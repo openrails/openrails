@@ -207,8 +207,7 @@ Audio Options
 
 .. image:: images/options-audio.png
 
-Except for very slow computers, it is suggested that you leave the *MSTS
-Bin compatible sound* option checked and set the Sound detail level to 5.
+Except for very slow computers, it is suggested that you set the Sound detail level to 5.
 
 The *% sound volume* scroll button allows adjustment of the volume of OR
 sound. Default is 40.
