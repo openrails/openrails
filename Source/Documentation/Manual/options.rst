@@ -381,14 +381,6 @@ divided into two parts. OR will display a message to report this.
 
 .. _options-curve-resistance:
 
-Curve dependent resistance
---------------------------
-
-When this option is selected, resistance to train motion is influenced by
-the radius of the curve on which the train is running. This option is
-described in detail :ref:`here <physics-curve-resistance>` (theory) and
-also :ref:`here <physics-curve-resistance-application>` (OR application).
-
 Curve dependent speed limit
 ---------------------------
 
