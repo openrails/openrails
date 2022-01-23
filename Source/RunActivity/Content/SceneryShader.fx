@@ -661,7 +661,7 @@ void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 	Color.a *= saturate((LightVector_ZFar.w - length(In.RelPosition.xyz)) / 50);
 }
 
-float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasNormals, bool hasNormalMap, bool hasTangents)
+float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasNormals, bool hasTangents)
 {
 	float3x3 tbn = float3x3(In.Tangent, In.Bitangent, In.Normal_Light.xyz);
     if (!hasTangents)
@@ -683,7 +683,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasNormals, bool hasNormalMap,
         row_major float3x3 tbn = float3x3(t, b, ng);
     }
 	float3 n;
-	if (hasNormalMap)
+	if (NormalScale > 0)
 	{
 		if (TexturePacking == 2)
 		{
@@ -870,7 +870,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
     float3 specularEnvironmentR0 = specularColor.rgb;
     float3 specularEnvironmentR90 = float3(1.0, 1.0, 1.0) * reflectance90;
 	
-	float3 n = _PSGetNormal(In, true, HasNormalMap > 0, false);
+	float3 n = _PSGetNormal(In, true, true);
 	float3 v = normalize(-In.RelPosition.xyz);
 	float3 l = normalize(LightVector_ZFar.xyz);
 	float3 h = normalize(l + v);

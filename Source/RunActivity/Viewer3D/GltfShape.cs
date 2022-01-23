@@ -698,7 +698,7 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 // RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
                 texCoords.Z = material.NormalTexture?.TexCoord ?? 0;
                 var normalTexture = distanceLevel.GetTexture(gltfFile, material.NormalTexture?.Index, SharedMaterialManager.WhiteTexture);
-                var normalScale = material.NormalTexture?.Scale ?? 1f;
+                var normalScale = material.NormalTexture?.Scale ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
                 if (normalTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasNormalMap;
                 var normalSampler = distanceLevel.GetSampler(gltfFile, material.NormalTexture?.Index);
                 var normalSamplerState = (distanceLevel.GetTextureFilter(normalSampler), distanceLevel.GetTextureAddressMode(normalSampler.WrapS), distanceLevel.GetTextureAddressMode(normalSampler.WrapT));
@@ -706,7 +706,7 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
                 // R channel only, = 1.0 + strength * (sampledValue - 1.0)
                 var occlusionTexCoord = material.OcclusionTexture?.TexCoord ?? 1;
                 var occlusionTexture = distanceLevel.GetTexture(gltfFile, material.OcclusionTexture?.Index, SharedMaterialManager.WhiteTexture);
-                var occlusionStrength = material.OcclusionTexture?.Strength ?? 1f;
+                var occlusionStrength = material.OcclusionTexture?.Strength ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
                 if (occlusionTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasOcclusionMap;
                 var occlusionSampler = distanceLevel.GetSampler(gltfFile, material.OcclusionTexture?.Index);
                 var occlusionSamplerState = (distanceLevel.GetTextureFilter(occlusionSampler), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapS), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapT));
