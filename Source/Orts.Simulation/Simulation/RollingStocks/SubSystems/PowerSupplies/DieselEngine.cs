@@ -1133,8 +1133,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                 }
 
+                if (DemandedThrottlePercent < GearBox.previousGearThrottleSetting)
+                {
+                    GearBox.GearedThrottleDecrease = true;
+                }
+
                 // Determine when freewheeling should occur
-                if (GearBox.GearBoxFreeWheelFitted && GearBox.ShaftRPM > ThrottleRPMTab[demandedThrottlePercent])
+                if (GearBox.GearBoxFreeWheelFitted && (GearBox.GearedThrottleDecrease && GearBox.ShaftRPM > ThrottleRPMTab[demandedThrottlePercent] || GearBox.ShaftRPM > GovernorRPM))
                 {
                     GearBox.clutchOn = false;
                     DemandedRPM = ThrottleRPMTab[demandedThrottlePercent];
@@ -1143,7 +1148,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 else
                 {
                     GearBox.GearBoxFreeWheelEnabled = false;
+                    GearBox.GearedThrottleDecrease = false;
                 }
+
+                GearBox.previousGearThrottleSetting = DemandedThrottlePercent;
 
                 // brakes engine when doing gear change
                 // During a manual gear change brake engine shaft speed to match wheel shaft speed

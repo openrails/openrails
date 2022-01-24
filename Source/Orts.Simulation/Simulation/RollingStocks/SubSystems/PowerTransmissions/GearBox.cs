@@ -202,7 +202,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool GearBoxFreeWheelFitted;
         public bool GearBoxFreeWheelEnabled = false;
 
-        public float previousThrottleSetting;
+        public bool GearedThrottleDecrease = false;
+        public float previousGearThrottleSetting;
         public float previousRpM;
 
         public float ManualGearTimerResetS = 2;  // Allow gear change to take 2 seconds
