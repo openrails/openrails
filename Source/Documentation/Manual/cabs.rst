@@ -527,6 +527,15 @@ if e.g. the wiper moves from left to right and back, only the frames related
 to the motion from left to right have to be included. For the reverse 
 motion the same frames are used from last to first. SwitchVal can vary from 0 to 1.
 
+Control Labels
+--------------
+
+The string appearing on the screen when the mouse browses over a command control 
+can be customized with following line, to be added within the control block in the 
+.cvf file::
+
+   ORTSLabel ( "string" )
+   
 Multiple screen pages on displays
 ---------------------------------
 
