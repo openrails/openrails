@@ -392,15 +392,6 @@ displayed as a message. This option is described in detail
 :ref:`here <physics-curve-speed-limit-application>` (OR application).
 OR does not display the damage.
 
-.. _options-wind-resistance:
-
-Wind dependent resistance
--------------------------
-
-When this option is selected, resistance to train motion is influenced by
-the wind speed, and the direction that it is blowing. This option is
-described in detail :ref:`here <physics-wind-resistance>`
-
 Run electric locos on non-electrified routes
 --------------------------------------------
 
