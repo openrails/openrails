@@ -137,12 +137,10 @@ namespace Orts.Viewer3D
             // Current solar and lunar position are calculated by interpolation in the lookup arrays.
             // The arrays have intervals of 1200 secs or 20 mins.
             // Using the Lerp() function, so need to calculate the in-between differential
-            float diff = GetCelestialDiff();
             // The rest of this increments/decrements the array indices and checks for overshoot/undershoot.
-            while (Viewer.Simulator.ClockTime >= (oldClockTime + 1200)) // Plus key, or normal forward in time; <CSComment> better so in case of fast forward
+            while (Viewer.Simulator.ClockTime >= (oldClockTime - DaylightOffsetS + 1200)) // Plus key, or normal forward in time; <CSComment> better so in case of fast forward
             {
                 oldClockTime = oldClockTime + 1200;
-                diff = GetCelestialDiff();
                 step1++;
                 step2++;
                 if (step2 >= maxSteps) // Midnight.
@@ -154,10 +152,9 @@ namespace Orts.Viewer3D
                     step1 = 0;
                 }
             }
-            if (Viewer.Simulator.ClockTime <= (oldClockTime - 1200)) // Minus key
+            if (Viewer.Simulator.ClockTime <= (oldClockTime - DaylightOffsetS)) // Minus key
             {
-                oldClockTime = Viewer.Simulator.ClockTime;
-                diff = 0;
+                oldClockTime = oldClockTime - 1200;
                 step1--;
                 step2--;
                 if (step1 < 0) // Midnight.
@@ -169,27 +166,37 @@ namespace Orts.Viewer3D
                     step2 = maxSteps - 1;
                 }
             }
-            solarDirection.X = MathHelper.Lerp(solarPosArray[step1].X, solarPosArray[step2].X, diff);
-            solarDirection.Y = MathHelper.Lerp(solarPosArray[step1].Y, solarPosArray[step2].Y, diff);
-            solarDirection.Z = MathHelper.Lerp(solarPosArray[step1].Z, solarPosArray[step2].Z, diff);
-            lunarDirection.X = MathHelper.Lerp(lunarPosArray[step1].X, lunarPosArray[step2].X, diff);
-            lunarDirection.Y = MathHelper.Lerp(lunarPosArray[step1].Y, lunarPosArray[step2].Y, diff);
-            lunarDirection.Z = MathHelper.Lerp(lunarPosArray[step1].Z, lunarPosArray[step2].Z, diff);
+            solarDirection.X = MathHelper.Lerp(solarPosArray[step1].X, solarPosArray[step2].X, CelestialDiff);
+            solarDirection.Y = MathHelper.Lerp(solarPosArray[step1].Y, solarPosArray[step2].Y, CelestialDiff);
+            solarDirection.Z = MathHelper.Lerp(solarPosArray[step1].Z, solarPosArray[step2].Z, CelestialDiff);
+            lunarDirection.X = MathHelper.Lerp(lunarPosArray[step1].X, lunarPosArray[step2].X, CelestialDiff);
+            lunarDirection.Y = MathHelper.Lerp(lunarPosArray[step1].Y, lunarPosArray[step2].Y, CelestialDiff);
+            lunarDirection.Z = MathHelper.Lerp(lunarPosArray[step1].Z, lunarPosArray[step2].Z, CelestialDiff);
 
             frame.AddPrimitive(Material, Primitive, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
         }
 
         /// <summary>
-        /// Returns the advance of time in seconds in units of 20 mins (1200 seconds).
+        /// Returns the advance of time in units of 20 mins (1200 seconds).
         /// Allows for an offset in hours from a control in the DispatchViewer.
         /// This is a user convenience to reveal in daylight what might be hard to see at night.
         /// </summary>
         /// <returns></returns>
-        private float GetCelestialDiff()
+        private float CelestialDiff
         {
-            var diffS = (Viewer.Simulator.ClockTime - oldClockTime);
-            diffS += (double)(Program.DebugViewer?.DaylightOffsetHrs ?? 0) * 60 * 60;
-            return (float)diffS / 1200;
+            get 
+            {
+                var diffS = Viewer.Simulator.ClockTime - (oldClockTime - DaylightOffsetS);
+                return (float)diffS / 1200;
+            }
+        }
+
+        private float DaylightOffsetS
+        {
+            get
+            {
+                return (Program.DebugViewer == null) ? 0f : (float)Program.DebugViewer.DaylightOffsetHrs * 60 * 60;
+            }
         }
 
         public void LoadPrep()
