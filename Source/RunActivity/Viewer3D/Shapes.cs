@@ -295,6 +295,14 @@ namespace Orts.Viewer3D
         /// </summary>
         public void AnimateMatrix(int iMatrix, float key)
         {
+            if (SharedShape is GltfShape)
+            {
+                // iMatrix is the number of the animation, not the number of the node,
+                // key is the time, not the number of the frame.
+                AnimateGltfMatrices(iMatrix, key);
+                return;
+            }
+
             // Animate the given matrix.
             AnimateOneMatrix(iMatrix, key);
 
@@ -306,12 +314,6 @@ namespace Orts.Viewer3D
 
         protected virtual void AnimateOneMatrix(int iMatrix, float key)
         {
-            if (SharedShape is GltfShape)
-            {
-                AnimateOneGltfMatrix(iMatrix, key);
-                return;
-            }
-
             if (SharedShape.Animations == null || SharedShape.Animations.Count == 0)
             {
                 if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))

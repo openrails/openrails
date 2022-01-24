@@ -31,132 +31,12 @@ using glTFLoader.Schema;
 
 namespace Orts.Viewer3D
 {
-    public class GltfAnimation
-    {
-        public List<GltfAnimationChannel> Channels = new List<GltfAnimationChannel>();
-
-        public GltfAnimation() { }
-    }
-    
-    public class GltfAnimationChannel
-    {
-        public int TargetNode; // ref to index in hierarchy, e.g. Matrices(index)
-        public AnimationChannelTarget.PathEnum Path; // e.g. rotation or tcb_rot, translation or linear_pos, scale, tcb_pos
-        public AnimationSampler.InterpolationEnum Interpolation;
-        public float[] TimeArray;
-        public float TimeMin;
-        public float TimeMax;
-        public Vector3[] OutputVector3;
-        public Quaternion[] OutputQuaternion;
-        public float[] OutputWeights;
-        public int FrameCount;
-    }
-
-    public partial class PoseableShape
-    {
-        protected void AnimateOneGltfMatrix(int iMatrix, float key)
-        {
-            if (!(SharedShape is GltfShape shape))
-                return;
-
-            if (shape.GltfAnimations == null || shape.GltfAnimations.Count == 0)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(shape.FilePath))
-                    Trace.TraceInformation("Ignored missing animations data in shape {0}", shape.FilePath);
-                SeenShapeAnimationError[shape.FilePath] = true;
-                return;  // animation is missing
-            }
-
-            if (iMatrix < 0 || iMatrix >= shape.GltfAnimations[0].Channels.Count() || iMatrix >= XNAMatrices.Length)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(shape.FilePath))
-                    Trace.TraceInformation("Ignored out of bounds matrix {1} in shape {0}", shape.FilePath, iMatrix);
-                SeenShapeAnimationError[shape.FilePath] = true;
-                return;  // mismatched matricies
-            }
-
-            var channels = shape.GltfAnimations[0].Channels.Where(ch => ch.TargetNode == iMatrix);
-            if (!channels.Any())
-                return;
-
-            // Time is in seconds.
-            var time = key;
-
-            Matrix scaleM = new Matrix();
-            Matrix rotationM = new Matrix();
-            Matrix translationM = new Matrix();
-            bool s = false, r = false, t = false;
-
-            foreach (var channel in channels)
-            {
-                // Interpolating between two frames
-                var index = 0;
-                for (var i = 0; i < channel.TimeArray.Length; i++)
-                    if (channel.TimeArray[i] <= time)
-                        index = i;
-                    else if (channel.TimeArray[i] > time)
-                        break;
-                
-                var frame1 = index;
-                var frame2 = Math.Min(channel.TimeArray.Length - 1, frame1 + 1);
-                var time1 = channel.TimeArray[frame1];
-                var time2 = channel.TimeArray[frame2];
-
-                var amount = 0.0f;
-                var m = Matrix.Identity;
-                switch (channel.Interpolation)
-                {
-                    case AnimationSampler.InterpolationEnum.LINEAR: amount = time1 < time2 ? MathHelper.Clamp((time - time1) / (time2 - time1), 0, 1) : 0; break;
-                    case AnimationSampler.InterpolationEnum.STEP: amount = 0; break;
-                    case AnimationSampler.InterpolationEnum.CUBICSPLINE: // TODO
-                    default: amount = 0; break;
-                }
-                switch (channel.Path)
-                {
-                    case AnimationChannelTarget.PathEnum.translation:
-                        var outputT = Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
-                        translationM = Matrix.CreateTranslation(outputT);
-                        t = true;
-                        break;
-                    case AnimationChannelTarget.PathEnum.rotation:
-                        var outputR = Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount);
-                        rotationM = Matrix.CreateFromQuaternion(outputR);
-                        r = true;
-                        break;
-                    case AnimationChannelTarget.PathEnum.scale:
-                        var outputS = Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
-                        scaleM = Matrix.CreateScale(outputS);
-                        s = true;
-                        break;
-                    case AnimationChannelTarget.PathEnum.weights:
-                    default: break;
-                }
-            }
-            shape.Matrices[iMatrix].Decompose(out var scale, out var rotation, out var translation);
-            if (!s) scaleM = Matrix.CreateScale(scale);
-            if (!r) rotationM = Matrix.CreateFromQuaternion(rotation);
-            if (!t) translationM = Matrix.CreateTranslation(translation);
-
-            XNAMatrices[iMatrix] = scaleM * rotationM * translationM;
-        }
-    }
-    
     public class GltfShape : SharedShape
     {
         public static List<string> ExtensionsSupported = new List<string>
         {
             "MSFT_texture_dds",
         };
-
-        class MSFT_texture_dds
-        {
-            public int Source { get; set; }
-        }
-
-        class MSFT_lod
-        {
-            public int[] Ids { get; set; }
-        }
 
         string FileDir { get; set; }
         int SkeletonRootNode;
@@ -171,7 +51,7 @@ namespace Orts.Viewer3D
         public static TextureCube EnvironmentMapSpecularDay;
         public static TextureCube EnvironmentMapDiffuseDay;
         public static Texture2D BrdfLutTexture;
-        public static readonly Dictionary<string, CubeMapFace> EnvironmentMapFaces = new Dictionary<string, CubeMapFace>
+        static readonly Dictionary<string, CubeMapFace> EnvironmentMapFaces = new Dictionary<string, CubeMapFace>
         {
             ["px"] = CubeMapFace.PositiveX,
             ["nx"] = CubeMapFace.NegativeX,
@@ -322,6 +202,9 @@ namespace Orts.Viewer3D
                     var gltfFile = glTFLoader.Interface.LoadModel(externalLods[id]);
                     Gltfs.Add(externalLods[id], gltfFile);
 
+                    if (shape.MatrixNames.Count < gltfFile.Nodes.Length)
+                        shape.MatrixNames.AddRange(Enumerable.Repeat("", gltfFile.Nodes.Length - shape.MatrixNames.Count));
+
                     if (gltfFile.ExtensionsRequired != null)
                     {
                         var unsupportedExtensions = new List<string>();
@@ -370,7 +253,6 @@ namespace Orts.Viewer3D
                 Array.ForEach(gltfFile.Scenes.ElementAtOrDefault(gltfFile.Scene ?? 0).Nodes, node => TempStack.Push(node));
                 var hierarchy = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray();
                 var matrices = Enumerable.Repeat(Matrix.Identity, gltfFile.Nodes.Length).ToArray();
-                var matrixnames = Enumerable.Repeat("", gltfFile.Nodes.Length).ToArray();
                 var parents = new Dictionary<int, int>();
                 var lods = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray(); // -1: common; 0, 1, 3, etc.: the lod the node belongs to
                 while (TempStack.Any())
@@ -382,7 +264,6 @@ namespace Orts.Viewer3D
                         lods[nodeNumber] = lods[parent];
                     
                     matrices[nodeNumber] = GetMatrix(node);
-                    matrixnames[nodeNumber] = $"node-{node.Name ?? string.Empty}";
                     if (node.Mesh != null) // FIXME: lod
                         meshes.Add(nodeNumber, node);
                     if (node.Children != null)
@@ -415,7 +296,6 @@ namespace Orts.Viewer3D
                 }
                 Matrices = matrices;
                 shape.Matrices = matrices;
-                shape.MatrixNames = matrixnames.ToList();
                 var subObjects = new List<SubObject>();
                 foreach (var hierIndex in meshes.Keys)
                 {
@@ -432,6 +312,11 @@ namespace Orts.Viewer3D
                 {
                     var gltfAnimation = gltfFile.Animations[j];
 
+                    // Use MatrixNames for storing animation and articulation names.
+                    // Here the MatrixNames are not bound to nodes (and matrices), but rather to the animation number.
+                    shape.MatrixNames[j] = gltfAnimation.Name;
+if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
+
                     GltfAnimation animation = new GltfAnimation();
                     for (var k = 0; k < gltfAnimation.Channels.Length; k++)
                     {
@@ -444,9 +329,6 @@ namespace Orts.Viewer3D
 
                         channel.Path = gltfChannel.Target.Path;
                         channel.TargetNode = (int)gltfChannel.Target.Node;
-
-                        shape.MatrixNames[channel.TargetNode] = gltfAnimation.Name;
-if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
 
                         var sampler = gltfAnimation.Samplers[gltfChannel.Sampler];
                         var inputAccessor = gltfFile.Accessors[sampler.Input];
@@ -1261,5 +1143,134 @@ if (j == 0) shape.MatrixNames[(int)channel.TargetNode] = "ORTSITEM1CONTINUOUS";
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 2;
         }
+
+        class MSFT_texture_dds
+        {
+            public int Source { get; set; }
+        }
+
+        class MSFT_lod
+        {
+            public int[] Ids { get; set; }
+        }
+    }
+
+    public partial class PoseableShape
+    {
+        /// <summary>
+        /// Calculate the animation matrices of a glTF animation.
+        /// </summary>
+        /// <param name="animationNumber">The number of the animation to advance.</param>
+        /// <param name="time">Actual time in the animation clip in seconds.</param>
+        protected void AnimateGltfMatrices(int animationNumber, float time)
+        {
+            if (!(SharedShape is GltfShape shape))
+                return;
+
+            if (shape.GltfAnimations == null || shape.GltfAnimations.Count == 0)
+            {
+                if (!SeenShapeAnimationError.ContainsKey(shape.FilePath))
+                    Trace.TraceInformation("No animations available in shape {0}", shape.FilePath);
+                SeenShapeAnimationError[shape.FilePath] = true;
+                return;  // animation is missing
+            }
+
+            if (animationNumber < 0 || animationNumber >= shape.GltfAnimations.Count)
+            {
+                if (!SeenShapeAnimationError.ContainsKey(shape.FilePath))
+                    Trace.TraceInformation("No animation number {1} in shape {0}", shape.FilePath, animationNumber);
+                SeenShapeAnimationError[shape.FilePath] = true;
+                return;  // mismatched matricies
+            }
+
+            var channels = shape.GltfAnimations[animationNumber].Channels;
+            if (channels == null)
+            {
+                if (!SeenShapeAnimationError.ContainsKey(shape.FilePath))
+                    Trace.TraceInformation("No animations found in animation {1} of shape {0}", shape.FilePath, animationNumber);
+                SeenShapeAnimationError[shape.FilePath] = true;
+                return;
+            }
+
+            // Start with the intial pose in the shape file.
+            shape.Matrices.CopyTo(XNAMatrices, 0);
+
+            foreach (var channel in channels)
+            {
+                var scaleM = new Matrix();
+                var rotationM = new Matrix();
+                var translationM = new Matrix();
+                bool s = false, r = false, t = false;
+
+                // Interpolating between two frames
+                var index = 0;
+                for (var i = 0; i < channel.TimeArray.Length; i++)
+                    if (channel.TimeArray[i] <= time)
+                        index = i;
+                    else if (channel.TimeArray[i] > time)
+                        break;
+
+                var frame1 = index;
+                var frame2 = Math.Min(channel.TimeArray.Length - 1, frame1 + 1);
+                var time1 = channel.TimeArray[frame1];
+                var time2 = channel.TimeArray[frame2];
+
+                var amount = 0.0f;
+                switch (channel.Interpolation)
+                {
+                    case AnimationSampler.InterpolationEnum.LINEAR: amount = time1 < time2 ? MathHelper.Clamp((time - time1) / (time2 - time1), 0, 1) : 0; break;
+                    case AnimationSampler.InterpolationEnum.STEP: amount = 0; break;
+                    case AnimationSampler.InterpolationEnum.CUBICSPLINE: // TODO
+                    default: amount = 0; break;
+                }
+                switch (channel.Path)
+                {
+                    case AnimationChannelTarget.PathEnum.translation:
+                        var outputT = Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
+                        translationM = Matrix.CreateTranslation(outputT);
+                        t = true;
+                        break;
+                    case AnimationChannelTarget.PathEnum.rotation:
+                        var outputR = Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount);
+                        rotationM = Matrix.CreateFromQuaternion(outputR);
+                        r = true;
+                        break;
+                    case AnimationChannelTarget.PathEnum.scale:
+                        var outputS = Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
+                        scaleM = Matrix.CreateScale(outputS);
+                        s = true;
+                        break;
+                    case AnimationChannelTarget.PathEnum.weights:
+                    default: break;
+                }
+                XNAMatrices[channel.TargetNode].Decompose(out var scale, out var rotation, out var translation);
+                if (!s) scaleM = Matrix.CreateScale(scale);
+                if (!r) rotationM = Matrix.CreateFromQuaternion(rotation);
+                if (!t) translationM = Matrix.CreateTranslation(translation);
+
+                XNAMatrices[channel.TargetNode] = scaleM * rotationM * translationM;
+            }
+        }
+    }
+
+    public class GltfAnimation
+    {
+        public List<GltfAnimationChannel> Channels = new List<GltfAnimationChannel>();
+
+        public GltfAnimation() { }
+    }
+
+    public class GltfAnimationChannel
+    {
+        public int TargetNode; // ref to index in hierarchy, e.g. Matrices(index)
+        public AnimationChannelTarget.PathEnum Path; // e.g. rotation or tcb_rot, translation or linear_pos, scale, tcb_pos
+        public AnimationSampler.InterpolationEnum Interpolation;
+        public float[] TimeArray;
+        public float TimeMin;
+        public float TimeMax;
+        public Vector3[] OutputVector3;
+        public Quaternion[] OutputQuaternion;
+        public float[] OutputWeights;
+        public int FrameCount;
     }
 }
