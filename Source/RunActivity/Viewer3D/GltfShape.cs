@@ -383,7 +383,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 Stream stream;
                 if (buffer.Uri != null)
                 {
-                    var file = $"{GltfDir}/{Gltf.Buffers[bufferView.Buffer].Uri}";
+                    var file = $"{GltfDir}/{Uri.UnescapeDataString(buffer.Uri)}";
                     if (!File.Exists(file))
                         return Stream.Null;
                     stream = File.OpenRead(file); // Need to be able to seek in the buffer
@@ -420,7 +420,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                         var image = gltf.Images[(int)source];
                         if (image.Uri != null)
                         {
-                            var imagePath = source != null ? Path.Combine(Path.Combine(GltfDir, image.Uri)) : "";
+                            var imagePath = source != null ? Path.Combine(GltfDir, Uri.UnescapeDataString(image.Uri)) : "";
                             if (File.Exists(imagePath))
                                 using (var stream = File.OpenRead(imagePath))
                                     return Viewer.TextureManager.Get(imagePath, defaultTexture, false, extensionFilter);
@@ -677,6 +677,10 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                     }
                     vertexAttributes.Add(vertexBufferBinding);
                     options |= SceneryMaterialOptions.PbrHasNormals;
+                }
+                else
+                {
+                    throw new NotImplementedException("The glTF has no normals.");
                 }
 
                 if (meshPrimitive.Attributes.TryGetValue("TEXCOORD_0", out accessorNumber))

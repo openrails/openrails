@@ -348,6 +348,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter sideVector;
         readonly EffectParameter imageBlurStep;
         readonly EffectParameter imageTexture;
+        readonly EffectParameter bones;
 
         public void SetData(ref Matrix v)
         {
@@ -372,6 +373,8 @@ namespace Orts.Viewer3D
             imageBlurStep.SetValue(texture != null ? 1f / texture.Width : 0);
         }
 
+        public Matrix[] Bones { set { bones.SetValue(value); } }
+        
         public ShadowMapShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "ShadowMap")
         {
@@ -379,6 +382,7 @@ namespace Orts.Viewer3D
             sideVector = Parameters["SideVector"];
             imageBlurStep = Parameters["ImageBlurStep"];
             imageTexture = Parameters["ImageTexture"];
+            bones = Parameters["Bones"];
         }
     }
 

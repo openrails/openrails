@@ -39,7 +39,8 @@ namespace Orts.Viewer3D
         // glTF file: The actual time in seconds within the animation clip.
         float AnimationKey;
 
-        // List of the matrices we're animating for this part.
+        // .S file: List of the matrices we're animating for this part.
+        // glTF file: The animation clip's numbers we are playing for this part.
         public List<int> MatrixIndexes = new List<int>();
 
         /// <summary>

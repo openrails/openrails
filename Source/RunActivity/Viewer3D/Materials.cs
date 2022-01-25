@@ -818,7 +818,7 @@ namespace Orts.Viewer3D
 
     public class SceneryMaterial : Material
     {
-        protected readonly SceneryMaterialOptions Options;
+        public readonly SceneryMaterialOptions Options;
         readonly float MipMapBias;
         protected Texture2D Texture;
         private readonly string TexturePath;
@@ -1283,6 +1283,8 @@ namespace Orts.Viewer3D
     public class ShadowMapMaterial : Material
     {
         IEnumerator<EffectPass> ShaderPassesShadowMap;
+        IEnumerator<EffectPass> ShaderPassesShadowMapNormalMap;
+        IEnumerator<EffectPass> ShaderPassesShadowMapSkinned;
         IEnumerator<EffectPass> ShaderPassesShadowMapForest;
         IEnumerator<EffectPass> ShaderPassesShadowMapBlocker;
         IEnumerator<EffectPass> ShaderPasses;
@@ -1292,6 +1294,8 @@ namespace Orts.Viewer3D
         public enum Mode
         {
             Normal,
+            Pbr,
+            PbrSkinned,
             Forest,
             Blocker,
         }
@@ -1312,11 +1316,24 @@ namespace Orts.Viewer3D
         public void SetState(GraphicsDevice graphicsDevice, Mode mode)
         {
             var shader = Viewer.MaterialManager.ShadowMapShader;
-            shader.CurrentTechnique = shader.Techniques[mode == Mode.Forest ? "ShadowMapForest" : mode == Mode.Blocker ? "ShadowMapBlocker" : "ShadowMap"];
+            shader.CurrentTechnique = shader.Techniques[
+                mode == Mode.Forest ? "ShadowMapForest" : 
+                mode == Mode.Blocker ? "ShadowMapBlocker" : 
+                mode == Mode.Pbr ? "ShadowMapNormalMap" :
+                mode == Mode.PbrSkinned ? "ShadowMapSkinned" :
+                "ShadowMap"];
+
             if (ShaderPassesShadowMap == null) ShaderPassesShadowMap = shader.Techniques["ShadowMap"].Passes.GetEnumerator();
+            if (ShaderPassesShadowMapNormalMap == null) ShaderPassesShadowMapNormalMap = shader.Techniques["ShadowMapNormalMap"].Passes.GetEnumerator();
+            if (ShaderPassesShadowMapSkinned == null) ShaderPassesShadowMapSkinned = shader.Techniques["ShadowMapSkinned"].Passes.GetEnumerator();
             if (ShaderPassesShadowMapForest == null) ShaderPassesShadowMapForest = shader.Techniques["ShadowMapForest"].Passes.GetEnumerator();
             if (ShaderPassesShadowMapBlocker == null) ShaderPassesShadowMapBlocker = shader.Techniques["ShadowMapBlocker"].Passes.GetEnumerator();
-            ShaderPasses = mode == Mode.Forest ? ShaderPassesShadowMapForest : mode == Mode.Blocker ? ShaderPassesShadowMapBlocker : ShaderPassesShadowMap;
+
+            ShaderPasses = mode == Mode.Forest ? ShaderPassesShadowMapForest : 
+                mode == Mode.Blocker ? ShaderPassesShadowMapBlocker : 
+                mode == Mode.Pbr ? ShaderPassesShadowMapNormalMap :
+                mode == Mode.PbrSkinned ? ShaderPassesShadowMapSkinned :
+                ShaderPassesShadowMap;
 
             graphicsDevice.RasterizerState = mode == Mode.Blocker ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
         }
@@ -1335,6 +1352,8 @@ namespace Orts.Viewer3D
                     var wvp = item.XNAMatrix * viewproj;
                     shader.SetData(ref wvp, item.Material.GetShadowTexture());
                     graphicsDevice.SamplerStates[0] = item.Material.GetShadowTextureAddressMode();
+                    if (item.ItemData is Matrix[] bones)
+                        shader.Bones = bones;
                     ShaderPasses.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
