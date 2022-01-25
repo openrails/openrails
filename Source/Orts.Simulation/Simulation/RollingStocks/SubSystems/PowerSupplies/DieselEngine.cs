@@ -1145,7 +1145,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     DemandedRPM = ThrottleRPMTab[demandedThrottlePercent];
                     GearBox.GearBoxFreeWheelEnabled = true;
                 }
-                else
+                else if (GearBox.GearBoxFreeWheelFitted && GearBox.ShaftRPM < ThrottleRPMTab[demandedThrottlePercent] && GearBox.ShaftRPM < GovernorRPM)
                 {
                     GearBox.GearBoxFreeWheelEnabled = false;
                     GearBox.GearedThrottleDecrease = false;
@@ -1166,7 +1166,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 // Speeds engine rpm to simulate clutch starting to engage and pulling speed up as clutch slips for friction clutch
                     var clutchEngagementBandwidthRPM = 10.0f;
-                if (GearBox.CurrentGear != null && GearBox.ClutchType == TypesClutch.Friction && !GearBox.IsClutchOn && (GearBox.ShaftRPM < RealRPM - clutchEngagementBandwidthRPM || GearBox.ShaftRPM > RealRPM + clutchEngagementBandwidthRPM) && Locomotive.SpeedMpS > 0.1 && !GearBox.ManualGearBoxChangeOn && DemandedThrottlePercent == 0)
+                if (!GearBox.GearBoxFreeWheelEnabled && GearBox.CurrentGear != null && GearBox.ClutchType == TypesClutch.Friction && !GearBox.IsClutchOn && (GearBox.ShaftRPM < RealRPM - clutchEngagementBandwidthRPM || GearBox.ShaftRPM > RealRPM + clutchEngagementBandwidthRPM) && Locomotive.SpeedMpS > 0.1 && !GearBox.ManualGearBoxChangeOn && DemandedThrottlePercent == 0)
                 {
                     DemandedRPM = GearBox.ShaftRPM;
                 }
