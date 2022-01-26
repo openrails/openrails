@@ -5208,7 +5208,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     break;
 
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_COMMAND_BUTTON_OPEN:
-                    data = LocomotivePowerSupply.BatterySwitch.CommandButtonOn ? 1 : 0;
+                    data = LocomotivePowerSupply.BatterySwitch.CommandButtonOff ? 1 : 0;
                     break;
 
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_ON:
