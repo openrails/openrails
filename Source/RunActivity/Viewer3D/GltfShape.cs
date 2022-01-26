@@ -62,9 +62,11 @@ namespace Orts.Viewer3D
         };
 
         public Dictionary<int, GltfAnimation> GltfAnimations = new Dictionary<int, GltfAnimation>();
-        public Dictionary<string, VertexBufferBinding> VertexBuffers = new Dictionary<string, VertexBufferBinding>();
 
-        public List<int> SceneNodes = new List<int>(); // [hierarchyIndex] = nodeNumber. Theoretically this is not needed, just for debug.
+        /// <summary>
+        /// All vertex buffers in a gltf file. The key is the accessor number.
+        /// </summary>
+        internal Dictionary<int, VertexBufferBinding> VertexBuffers = new Dictionary<int, VertexBufferBinding>();
 
         /// <summary>
         /// glTF shape from file
@@ -230,7 +232,12 @@ namespace Orts.Viewer3D
             string GltfFileName;
             Dictionary<int, byte[]> GlbBinaryBuffers = new Dictionary<int, byte[]>();
             float MinimumScreenCoverage;
+
+            /// <summary>
+            /// All inverse bind matrices in a gltf file. The key is the accessor number.
+            /// </summary>
             internal Dictionary<int, Matrix[]> AllInverseBindMatrices = new Dictionary<int, Matrix[]>();
+
             public Matrix[] Matrices = new Matrix[0];
             Viewer Viewer;
 
@@ -345,7 +352,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                         }
 
                         var readInput = GetNormalizedReader(inputAccessor.ComponentType);
-                        using (var br = new BinaryReader(GetBufferView(inputAccessor)))
+                        using (var br = new BinaryReader(GetBufferView(inputAccessor, out _)))
                         {
                             for (var i = 0; i < inputAccessor.Count; i++)
                                 channel.TimeArray[i] = readInput(br);
@@ -353,7 +360,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
                         var outputAccessor = gltfFile.Accessors[sampler.Output];
                         var readOutput = GetNormalizedReader(outputAccessor.ComponentType);
-                        using (var br = new BinaryReader(GetBufferView(outputAccessor)))
+                        using (var br = new BinaryReader(GetBufferView(outputAccessor, out _)))
                         {
                             for (var i = 0; i < channel.FrameCount; i++)
                                 switch (channel.Path)
@@ -373,12 +380,14 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 GlbBinaryBuffers.Clear();
             }
 
-            internal Stream GetBufferView(Accessor accessor)
+            internal Stream GetBufferView(Accessor accessor, out int? byteStride)
             {
+                byteStride = null;
                 var n = accessor.BufferView;
                 if (n == null)
                     return Stream.Null;
                 var bufferView = Gltf.BufferViews[(int)n];
+                byteStride = bufferView.ByteStride;
                 var buffer = Gltf.Buffers[bufferView.Buffer];
                 Stream stream;
                 if (buffer.Uri != null)
@@ -612,7 +621,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                     var accessor = gltfFile.Accessors[(int)meshPrimitive.Indices];
                     indexData = new ushort[accessor.Count];
                     var read = GetIntegerReader(accessor.ComponentType);
-                    using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
+                    using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out _)))
                     {
                         for (var i = 0; i < indexData.Length; i++)
                             indexData[i] = read(br);
@@ -640,40 +649,48 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
                 if (meshPrimitive.Attributes.TryGetValue("POSITION", out var accessorNumber))
                 {
-                    if (!shape.VertexBuffers.TryGetValue($"{name}/{accessorNumber}", out var vertexBufferBinding))
+                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
                         vertexPositions = new VertexPosition[accessor.Count];
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
+                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
+                            var seek = byteStride != null ? (int)byteStride - VertexPosition.SizeInBytes : 0;
                             for (var i = 0; i < vertexPositions.Length; i++)
+                            {
+                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
                                 vertexPositions[i] = new VertexPosition(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                            }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexPosition), vertexPositions.Length, BufferUsage.None);
                         vertexBuffer.SetData(vertexPositions);
                         vertexBuffer.Name = "POSITION";
                         vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add($"{name}/{accessorNumber}", vertexBufferBinding);
+                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
                     }
                     vertexAttributes.Add(vertexBufferBinding);
                 }
 
                 if (meshPrimitive.Attributes.TryGetValue("NORMAL", out accessorNumber))
                 {
-                    if (!shape.VertexBuffers.TryGetValue($"{name}/{accessorNumber}", out var vertexBufferBinding))
+                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
                         vertexNormals = new VertexNormal[accessor.Count];
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
+                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
+                            var seek = byteStride != null ? (int)byteStride - VertexNormal.SizeInBytes : 0;
                             for (var i = 0; i < vertexNormals.Length; i++)
+                            {
+                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
                                 vertexNormals[i] = new VertexNormal(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                            }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexNormal), vertexNormals.Length, BufferUsage.None);
                         vertexBuffer.SetData(vertexNormals);
                         vertexBuffer.Name = "NORMAL";
                         vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add($"{name}/{accessorNumber}", vertexBufferBinding);
+                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
                     }
                     vertexAttributes.Add(vertexBufferBinding);
                     options |= SceneryMaterialOptions.PbrHasNormals;
@@ -685,21 +702,25 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
                 if (meshPrimitive.Attributes.TryGetValue("TEXCOORD_0", out accessorNumber))
                 {
-                    if (!shape.VertexBuffers.TryGetValue($"{name}/{accessorNumber}", out var vertexBufferBinding))
+                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
                         vertexTextureUvs = new VertexTextureDiffuse[accessor.Count];
                         var read = GetNormalizedReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
+                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
+                            var seek = byteStride != null ? (int)byteStride - VertexTextureDiffuse.SizeInBytes : 0;
                             for (var i = 0; i < vertexTextureUvs.Length; i++)
+                            {
+                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
                                 vertexTextureUvs[i] = new VertexTextureDiffuse(new Vector2(read(br), read(br)));
+                            }
                         }
                         vertexBufferTextureUvs = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureDiffuse), vertexTextureUvs.Length, BufferUsage.None);
                         vertexBufferTextureUvs.SetData(vertexTextureUvs);
                         vertexBufferTextureUvs.Name = "TEXCOORD_0";
                         vertexBufferBinding = new VertexBufferBinding(vertexBufferTextureUvs);
-                        shape.VertexBuffers.Add($"{name}/{accessorNumber}", vertexBufferBinding);
+                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
                     }
                     vertexAttributes.Add(vertexBufferBinding);
                 }
@@ -715,20 +736,24 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
                 if (meshPrimitive.Attributes.TryGetValue("TANGENT", out accessorNumber))
                 {
-                    if (!shape.VertexBuffers.TryGetValue($"{name}/{accessorNumber}", out var vertexBufferBinding))
+                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var vertexData = new VertexTangent[accessor.Count];
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
+                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
+                            var seek = byteStride != null ? (int)byteStride - VertexTangent.SizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
+                            {
+                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
                                 vertexData[i] = new VertexTangent(new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                            }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTangent), vertexData.Length, BufferUsage.None);
                         vertexBuffer.SetData(vertexData);
                         vertexBuffer.Name = "TANGENT";
                         vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add($"{name}/{accessorNumber}", vertexBufferBinding);
+                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
                     }
                     vertexAttributes.Add(vertexBufferBinding);
                     options |= SceneryMaterialOptions.PbrHasTangents;
@@ -746,21 +771,25 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
                 if (meshPrimitive.Attributes.TryGetValue("TEXCOORD_1", out accessorNumber))
                 {
-                    if (!shape.VertexBuffers.TryGetValue($"{name}/{accessorNumber}", out var vertexBufferBinding))
+                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var vertexData = new VertexTextureMetallic[accessor.Count];
                         var read = GetNormalizedReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
+                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
+                            var seek = byteStride != null ? (int)byteStride - VertexTextureMetallic.SizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
+                            {
+                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
                                 vertexData[i] = new VertexTextureMetallic(new Vector2(read(br), read(br)));
+                            }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureMetallic), vertexData.Length, BufferUsage.None);
                         vertexBuffer.SetData(vertexData);
                         vertexBuffer.Name = "TEXCOORD_1";
                         vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add($"{name}/{accessorNumber}", vertexBufferBinding);
+                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
                     }
                     vertexAttributes.Add(vertexBufferBinding);
                 }
@@ -772,74 +801,75 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
                 if (meshPrimitive.Attributes.TryGetValue("JOINTS_0", out accessorNumber))
                 {
-                    if (!shape.VertexBuffers.TryGetValue($"{name}/{accessorNumber}", out var vertexBufferBinding))
+                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var vertexData = new VertexJoint[accessor.Count];
                         var jointsRead = GetIntegerReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
+                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
+                            var seek = byteStride != null ? (int)byteStride - VertexJoint.SizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
+                            {
+                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
                                 vertexData[i] = new VertexJoint(new Vector4(jointsRead(br), jointsRead(br), jointsRead(br), jointsRead(br)));
+                            }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexJoint), vertexData.Length, BufferUsage.None);
                         vertexBuffer.SetData(vertexData);
                         vertexBuffer.Name = "JOINTS_0";
                         vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add($"{name}/{accessorNumber}", vertexBufferBinding);
+                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
                     }
                     vertexAttributes.Add(vertexBufferBinding);
                 }
 
                 if (meshPrimitive.Attributes.TryGetValue("WEIGHTS_0", out accessorNumber))
                 {
-                    if (!shape.VertexBuffers.TryGetValue($"{name}/{accessorNumber}", out var vertexBufferBinding))
+                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var vertexData = new VertexWeight[accessor.Count];
                         var weightsRead = GetNormalizedReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
+                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
+                            var seek = byteStride != null ? (int)byteStride - VertexWeight.SizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
+                            {
+                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
                                 vertexData[i] = new VertexWeight(new Vector4(weightsRead(br), weightsRead(br), weightsRead(br), weightsRead(br)));
+                            }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexWeight), vertexData.Length, BufferUsage.None);
                         vertexBuffer.SetData(vertexData);
                         vertexBuffer.Name = "WEIGHTS_0";
                         vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add($"{name}/{accessorNumber}", vertexBufferBinding);
+                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
                     }
                     vertexAttributes.Add(vertexBufferBinding);
                 }
 
                 if (meshPrimitive.Attributes.TryGetValue("COLOR_0", out accessorNumber))
                 {
-                    if (!shape.VertexBuffers.TryGetValue($"{name}/{accessorNumber}", out var vertexBufferBinding))
+                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var vertexData = new VertexColor4[accessor.Count];
                         var read = GetNormalizedReader(accessor.ComponentType);
-                        if (accessor.Type == Accessor.TypeEnum.VEC3)
+                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
+                            var seek = byteStride != null ? (int)byteStride - VertexColor4.SizeInBytes : 0;
+                            for (var i = 0; i < vertexData.Length; i++)
                             {
-                                for (var i = 0; i < vertexData.Length; i++)
-                                    vertexData[i] = new VertexColor4(new Vector4(read(br), read(br), read(br), 0));
-                            }
-                        }
-                        else
-                        {
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
-                            {
-                                for (var i = 0; i < vertexData.Length; i++)
-                                    vertexData[i] = new VertexColor4(new Vector4(read(br), read(br), read(br), read(br)));
+                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
+                                vertexData[i] = new VertexColor4(new Vector4(read(br), read(br), read(br), accessor.Type == Accessor.TypeEnum.VEC3 ? 0 : read(br)));
                             }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexColor4), vertexData.Length, BufferUsage.None);
                         vertexBuffer.SetData(vertexData);
                         vertexBuffer.Name = "COLOR_0";
                         vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add($"{name}/{accessorNumber}", vertexBufferBinding);
+                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
                     }
                     vertexAttributes.Add(vertexBufferBinding);
                 }
@@ -924,7 +954,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                             var accessor = gltfFile.Accessors[(int)skin.InverseBindMatrices];
                             InverseBindMatrices = new Matrix[accessor.Count];
                             var read = GetNormalizedReader(accessor.ComponentType);
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor)))
+                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out _)))
                             {
                                 for (var i = 0; i < InverseBindMatrices.Length; i++)
                                     InverseBindMatrices[i] = new Matrix(
