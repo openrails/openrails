@@ -10,7 +10,7 @@ msgstr ""
 "X-Generator: Poedit 2.3\n"
 "Last-Translator: Rui Fonseca <ryfonseca77@gmail.com>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: pt_PT\n"
+"Language: pt-PT\n"
 
 #: ../../Menu/ImportExportSaveForm.cs:52
 msgid "Save Packs"
