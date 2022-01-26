@@ -512,6 +512,9 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
         public class GltfSubObject : SubObject
         {
+            public readonly Vector3 MinPosition;
+            public readonly Vector3 MaxPosition;
+
             public static glTFLoader.Schema.Material DefaultGltfMaterial = new glTFLoader.Schema.Material
             {
                 AlphaCutoff = 0.5f,
@@ -531,9 +534,6 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
             public GltfSubObject(MeshPrimitive meshPrimitive, string name, int hierarchyIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel, Skin skin)
             {
-                if (meshPrimitive.Indices == null) // FIXME: draw non-indexed in this case
-                    return;
-
                 var material = meshPrimitive.Material == null ? DefaultGltfMaterial : gltfFile.Materials[(int)meshPrimitive.Material];
 
                 var options = SceneryMaterialOptions.None;
@@ -567,7 +567,6 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 var baseColorTexture = distanceLevel.GetTexture(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var baseColorFactor = material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f };
                 var baseColorFactorVector = new Vector4(baseColorFactor[0], baseColorFactor[1], baseColorFactor[2], baseColorFactor[3]);
-                if (baseColorTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasBaseColorMap;
                 var baseColorSampler = distanceLevel.GetSampler(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture?.Index);
                 var baseColorSamplerState = (distanceLevel.GetTextureFilter(baseColorSampler), distanceLevel.GetTextureAddressMode(baseColorSampler.WrapS), distanceLevel.GetTextureAddressMode(baseColorSampler.WrapT));
                 switch (baseColorSampler.WrapS)
@@ -582,7 +581,6 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 var metallicRoughnessTexture = distanceLevel.GetTexture(gltfFile, material.PbrMetallicRoughness?.MetallicRoughnessTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
-                if (metallicRoughnessTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasMetalRoughnessMap;
                 var metallicRoughnessSampler = distanceLevel.GetSampler(gltfFile, material.PbrMetallicRoughness?.MetallicRoughnessTexture?.Index);
                 var metallicRoughnessSamplerState = (distanceLevel.GetTextureFilter(metallicRoughnessSampler), distanceLevel.GetTextureAddressMode(metallicRoughnessSampler.WrapS), distanceLevel.GetTextureAddressMode(metallicRoughnessSampler.WrapT));
 
@@ -590,7 +588,6 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 texCoords.Z = material.NormalTexture?.TexCoord ?? 0;
                 var normalTexture = distanceLevel.GetTexture(gltfFile, material.NormalTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var normalScale = material.NormalTexture?.Scale ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
-                if (normalTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasNormalMap;
                 var normalSampler = distanceLevel.GetSampler(gltfFile, material.NormalTexture?.Index);
                 var normalSamplerState = (distanceLevel.GetTextureFilter(normalSampler), distanceLevel.GetTextureAddressMode(normalSampler.WrapS), distanceLevel.GetTextureAddressMode(normalSampler.WrapT));
 
@@ -598,7 +595,6 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 var occlusionTexCoord = material.OcclusionTexture?.TexCoord ?? 1;
                 var occlusionTexture = distanceLevel.GetTexture(gltfFile, material.OcclusionTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var occlusionStrength = material.OcclusionTexture?.Strength ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
-                if (occlusionTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasOcclusionMap;
                 var occlusionSampler = distanceLevel.GetSampler(gltfFile, material.OcclusionTexture?.Index);
                 var occlusionSamplerState = (distanceLevel.GetTextureFilter(occlusionSampler), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapS), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapT));
 
@@ -607,7 +603,6 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 var emissiveTexture = distanceLevel.GetTexture(gltfFile, material.EmissiveTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var emissiveFactor = material.EmissiveFactor ?? new[] { 0f, 0f, 0f };
                 var emissiveFactorVector = new Vector3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
-                if (emissiveTexture != SharedMaterialManager.WhiteTexture) options |= SceneryMaterialOptions.PbrHasEmissiveMap;
                 var emissiveSampler = distanceLevel.GetSampler(gltfFile, material.EmissiveTexture?.Index);
                 var emissiveSamplerState = (distanceLevel.GetTextureFilter(emissiveSampler), distanceLevel.GetTextureAddressMode(emissiveSampler.WrapS), distanceLevel.GetTextureAddressMode(emissiveSampler.WrapT));
 
@@ -629,6 +624,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                     indexBufferSet.IndexBuffer = new IndexBuffer(shape.Viewer.GraphicsDevice, typeof(ushort), indexData.Length, BufferUsage.None);
                     indexBufferSet.IndexBuffer.SetData(indexData);
                     indexBufferSet.IndexBuffer.Name = name;
+                    options |= SceneryMaterialOptions.PbrHasIndices;
 
                     switch (meshPrimitive.Mode)
                     {
@@ -667,8 +663,14 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                         vertexBuffer.Name = "POSITION";
                         vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
                         shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
+                        MinPosition = new Vector3(accessor.Min[0], accessor.Min[1], accessor.Min[2]);
+                        MaxPosition = new Vector3(accessor.Max[0], accessor.Max[1], accessor.Max[2]);
                     }
                     vertexAttributes.Add(vertexBufferBinding);
+                }
+                else
+                {
+                    throw new NotImplementedException("One of the glTF mesh primitives has no positions.");
                 }
 
                 if (meshPrimitive.Attributes.TryGetValue("NORMAL", out accessorNumber))
@@ -697,7 +699,12 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 }
                 else
                 {
-                    throw new NotImplementedException("The glTF has no normals.");
+                    vertexNormals = new VertexNormal[vertexAttributes.First().VertexBuffer.VertexCount];
+                    vertexNormals.Initialize();
+                    var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexNormal), vertexNormals.Length, BufferUsage.None);
+                    vertexBuffer.SetData(vertexNormals);
+                    vertexBuffer.Name = "NORMAL_DUMMY";
+                    vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
                 }
 
                 if (meshPrimitive.Attributes.TryGetValue("TEXCOORD_0", out accessorNumber))
@@ -758,9 +765,11 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                     vertexAttributes.Add(vertexBufferBinding);
                     options |= SceneryMaterialOptions.PbrHasTangents;
                 }
-                else if (indexData != null && vertexTextureUvs != null &&
-                    (options & SceneryMaterialOptions.PbrHasNormals) != 0 && (options & SceneryMaterialOptions.PbrHasNormalMap) != 0 || (options & SceneryMaterialOptions.PbrHasSkin) != 0)
+                else if (vertexTextureUvs != null && normalScale != 0
+                    || (options & SceneryMaterialOptions.PbrHasSkin) != 0 || meshPrimitive.Attributes.ContainsKey("COLOR_0"))
                 {
+                    // The condition of "COLOR_0" above is just because in the current state we can run the vertex colors through the VERTEX_INPUT_NORMALMAP pipeline.
+                    // More vertex and shadowmap shader iterations would be needed to opt this out, but "COLOR_0" is assumed to be rare, so we go this way...
                     var vertexData = CalculateTangents(indexData, vertexPositions, vertexNormals, vertexTextureUvs);
                     var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTangent), vertexData.Length, BufferUsage.WriteOnly);
                     vertexBuffer.SetData(vertexData);
@@ -769,7 +778,9 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                     options |= SceneryMaterialOptions.PbrHasTangents;
                 }
 
-                if (meshPrimitive.Attributes.TryGetValue("TEXCOORD_1", out accessorNumber))
+                if (meshPrimitive.Attributes.TryGetValue("TEXCOORD_1", out accessorNumber) &&
+                    (texCoords.X == 1 || texCoords.Y == 1 || texCoords.Z == 1 || texCoords.W == 1) && // To eliminate possible spare buffers (model problem actually)
+                    (options & SceneryMaterialOptions.PbrHasTangents) != 0) // This is just because currently we can use the texcoords 1 only through the VERTEX_INPUT_NORMALMAP pipeline.
                 {
                     if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
@@ -886,7 +897,9 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 // This is the dummy instance buffer at the end of the vertex buffers
                 vertexAttributes.Add(new VertexBufferBinding(RenderPrimitive.GetDummyVertexBuffer(shape.Viewer.GraphicsDevice)));
 
-                var sceneryMaterial = shape.Viewer.MaterialManager.Load("PBR", shape.FilePath + "#" + material.Name, (int)options, 0,
+                var key = $"{shape.FilePath}#{material.Name}#{meshPrimitive.Material ?? -1}";
+
+                var sceneryMaterial = shape.Viewer.MaterialManager.Load("PBR", key, (int)options, 0,
                     baseColorTexture, baseColorFactorVector,
                     metallicRoughnessTexture, metallicFactor, roughtnessFactor,
                     normalTexture, normalScale,
@@ -977,11 +990,13 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
             var tan1 = new Vector3[vertexCount];
             var tan2 = new Vector3[vertexCount];
 
-            for (var a = 0; a < indices.Length; a += 3)
+            var indicesLength = indices?.Length ?? vertexPosition.Length;
+
+            for (var a = 0; a < indicesLength; a += 3)
             {
-                var i1 = indices[a + 0];
-                var i2 = indices[a + 1];
-                var i3 = indices[a + 2];
+                var i1 = indices?[a + 0] ?? a + 0;
+                var i2 = indices?[a + 1] ?? a + 1;
+                var i3 = indices?[a + 2] ?? a + 2;
 
                 var v1 = vertexPosition[i1].Position;
                 var v2 = vertexPosition[i2].Position;

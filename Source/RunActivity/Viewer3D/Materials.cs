@@ -802,15 +802,11 @@ namespace Orts.Viewer3D
         // Night texture
         NightTexture = 0x800,
 
-        PbrHasBaseColorMap = 0x01000,
-        PbrHasNormalMap = 0x02000,
-        PbrHasOcclusionMap = 0x04000,
-        PbrHasEmissiveMap = 0x08000,
-        PbrHasMetalRoughnessMap = 0x10000,
-        PbrHasNormals = 0x20000,
-        PbrHasTangents = 0x40000,
-        PbrHasSkin = 0x80000,
-        PbrCullClockWise = 0x100000,
+        PbrHasIndices = 0x01000,
+        PbrHasNormals = 0x02000,
+        PbrHasTangents = 0x04000,
+        PbrHasSkin = 0x08000,
+        PbrCullClockWise = 0x10000,
 
         // Texture to be shown in tunnels and underground (used for 3D cab night textures)
         UndergroundTexture = 0x40000000,

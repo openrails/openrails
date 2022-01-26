@@ -65,7 +65,6 @@ float3   EmissiveFactor; // glTF linear emissive multiplier
 texture  OcclusionTexture; // r = occlusion, can be combined with the MetallicRoughnessTexture
 texture  MetallicRoughnessTexture; // g = roughness, b = metalness
 float3   OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
-float    HasNormalMap; // 0: doesn't have, 1: has normal map
 float3   LightColor;
 float4   TextureCoordinates; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
 float    TexturePacking; // 0: occlusionRoughnessMetallic (default), 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A)
