@@ -669,7 +669,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public void Restore(BinaryReader inf)
         {
             currentGearIndex = inf.ReadInt32();
+            Locomotive.currentGearIndexRestore = currentGearIndex;
             nextGearIndex = inf.ReadInt32();
+            Locomotive.currentnextGearRestore = nextGearIndex;
             gearedUp = inf.ReadBoolean();
             gearedDown = inf.ReadBoolean();
             clutchOn = inf.ReadBoolean();
@@ -678,6 +680,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             ManualGearUp = inf.ReadBoolean();
             ManualGearChange = inf.ReadBoolean();
             ManualGearTimerS = inf.ReadSingle();
+  //          Trace.TraceInformation("Gearbox Restore {0} {1}", currentGearIndex, Locomotive.currentGearIndexRestore);
         }
 
         public void Save(BinaryWriter outf)
@@ -697,10 +700,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public void Initialize()
         {
             if (GearBoxParams != null)
+            // if (GearBoxParams != null && !gearSaved)
             {
                 if ((!GearBoxParams.IsInitialized) && (GearBoxParams.AtLeastOneParamFound))
                     Trace.TraceWarning("Some of the gearbox parameters are missing! Default physics will be used.");
 
+//                Trace.TraceInformation("gear box initialisation#1 {0} {1} {2} {3}", CurrentGearIndex, currentGearIndex, Locomotive.currentGearIndexRestore, Locomotive.gearSaved);
                 GearBoxType = GearBoxParams.GearBoxType;
                 ClutchType = GearBoxParams.ClutchType;
                 GearBoxFreeWheelFitted = GearBoxParams.FreeWheelFitted;
@@ -749,6 +754,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
                 GearBoxOperation = GearBoxParams.GearBoxOperation;
                 OriginalGearBoxOperation = GearBoxParams.GearBoxOperation;
+
+//                Trace.TraceInformation("gear box initialisation#2 {0} {1}", CurrentGearIndex, currentGearIndex);
             }
         }
 
@@ -889,7 +896,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
         }
     }
-
+    
     public enum TypesClutch
     {
         Friction,

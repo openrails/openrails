@@ -90,6 +90,10 @@ namespace Orts.Simulation.RollingStocks
 
         public float LocomotiveMaxRailOutputPowerW;
 
+        public int currentGearIndexRestore = -1;
+        public int currentnextGearRestore = -1;
+        public bool gearSaved;
+
         public float EngineRPM;
         public SmoothedData ExhaustParticles = new SmoothedData(1);
         public SmoothedData ExhaustMagnitude = new SmoothedData(1);
@@ -159,7 +163,7 @@ namespace Orts.Simulation.RollingStocks
 
                 case "engine(dieselengineidlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselenginemaxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(ortsdieselenginegovernorrpm": GovernorRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0);  Trace.TraceInformation("Gov Input {0}", GovernorRPM);  break;
+                case "engine(ortsdieselenginegovernorrpm": GovernorRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
                 case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsdieselenginemaxpower": MaximumDieselEnginePowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
@@ -440,7 +444,11 @@ namespace Orts.Simulation.RollingStocks
 
         public override void Initialize()
         {
-             DieselEngines.Initialize();
+  //          Trace.TraceInformation("GearBox Current Index#0.5 {0}", DieselEngines[0].GearBox.CurrentGearIndex);
+
+            DieselEngines.Initialize();
+
+      //      Trace.TraceInformation("GearBox Current Index#1 {0}", DieselEngines[0].GearBox.CurrentGearIndex);
 
             if (DieselEngines[0].GearBox != null)
             {
@@ -461,6 +469,19 @@ namespace Orts.Simulation.RollingStocks
                     CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
                 }
             }
+
+            // TO BE LOOKED AT - fix restoration process for gearbox and gear controller
+            // It appears that the gearbox is initialised in two different places to cater for Basic and Advanced ENG file configurations(?).
+            // Hence the restore values recovered in gearbox class are being overwritten , and resume was not working correctly
+            // Hence restore gear position values are read as part of the diesel and restored at this point.
+            if (gearSaved)
+            {
+                DieselEngines[0].GearBox.nextGearIndex = currentnextGearRestore;
+                DieselEngines[0].GearBox.currentGearIndex = currentGearIndexRestore;
+                GearBoxController.SetValue((float)DieselEngines[0].GearBox.currentGearIndex);
+            }
+
+//            Trace.TraceInformation("GearBox Current Index#2 {0}", DieselEngines[0].GearBox.CurrentGearIndex);
 
             if (Simulator.Settings.VerboseConfigurationMessages)
             {
@@ -516,6 +537,7 @@ namespace Orts.Simulation.RollingStocks
             CurrentLocomotiveSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
             DieselEngines.Restore(inf);
             ControllerFactory.Restore(GearBoxController, inf);
+ //           Trace.TraceInformation("GearBox Controller Restore" );
             
         }
 

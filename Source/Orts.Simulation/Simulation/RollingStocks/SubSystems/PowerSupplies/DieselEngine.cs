@@ -160,7 +160,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             foreach (DieselEngine de in DEList)
             {
+              //  Trace.TraceInformation("Diesel Engines Index#1 {0} {1}", de.GearBox.CurrentGearIndex, de.GearBox.currentGearIndex);
                 de.Initialize();
+             //  Trace.TraceInformation("Diesel Engines Index#2 {0}", de.GearBox.CurrentGearIndex);
             }
         }
 
@@ -1024,11 +1026,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             ExhaustSteadyColor.A = 10;
             ExhaustDecelColor.A = 10;
 
+            //        Trace.TraceInformation("diesel engine initialisation#1 {0}", GearBox.CurrentGearIndex);
+
             if (GearBoxParams.IsInitialized)
+            //  if (GearBoxParams.IsInitialized && GearBox == null)
             {
+ //               Trace.TraceInformation("diesel engine initialisation#1");
                 GearBox = new GearBox(this);
+ //               Trace.TraceInformation("diesel engine initialisation#3 {0} {1}", GearBox.CurrentGearIndex, Locomotive.currentGearIndexRestore);
                 GearBox.Initialize();
+ //               Trace.TraceInformation("diesel engine initialisation#4 {0} {1}", GearBox.CurrentGearIndex, Locomotive.currentGearIndexRestore);
             }
+
+//            Trace.TraceInformation("diesel engine initialisation#2 {0} {1}", GearBox.CurrentGearIndex, Locomotive.currentGearIndexRestore);
         }
 
         public void InitializeMoving()
@@ -1529,12 +1539,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             OutputPowerW = inf.ReadSingle();
             DieselTemperatureDeg = inf.ReadSingle();
 
-            bool gearSaved = inf.ReadBoolean();  // read boolean which indicates gear data was saved
+            Locomotive.gearSaved = inf.ReadBoolean();  // read boolean which indicates gear data was saved
+ //           Trace.TraceInformation("gaerSaved {0}", Locomotive.gearSaved);
 
-            if (gearSaved)
+            if (Locomotive.gearSaved)
             {
                 GearBox = new GearBox(this);
                 GearBox.Restore(inf);
+    //            Trace.TraceInformation("Gearbox Restore (Diesel Engine) {0} {1}", GearBox.currentGearIndex, Locomotive.currentGearIndexRestore);
             }
         }
 
