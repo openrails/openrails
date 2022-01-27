@@ -68,6 +68,7 @@ float3   OcclusionFactor; // x = occlusion strength, y = roughness factor, z = m
 float3   LightColor;
 float4   TextureCoordinates; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
 float    TexturePacking; // 0: occlusionRoughnessMetallic (default), 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A)
+bool    HasNormals; // 0: no, 1: yes
 
 //static const float3 LightColor = float3(1.0, 1.0, 1.0);
 static const float M_PI = 3.141592653589793;
@@ -660,10 +661,10 @@ void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 	Color.a *= saturate((LightVector_ZFar.w - length(In.RelPosition.xyz)) / 50);
 }
 
-float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasNormals, bool hasTangents)
+float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents)
 {
 	float3x3 tbn = float3x3(In.Tangent, In.Bitangent, In.Normal_Light.xyz);
-    if (!hasTangents)
+    if (!hasTangents || !HasNormals)
 	{
         float3 pos_dx = ddx(In.Position.xyz);
         float3 pos_dy = ddy(In.Position.xyz);
@@ -672,12 +673,16 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasNormals, bool hasTangents)
         float3 t = (tex_dy.y * pos_dx - tex_dx.y * pos_dy) / (tex_dx.x * tex_dy.y - tex_dy.x * tex_dx.y);
 
 		float3 ng;
-        if (hasNormals)
+        if (HasNormals)
             ng = normalize(In.Normal_Light.xyz);
         else
             ng = cross(pos_dx, pos_dy);
 
-        t = normalize(t - ng * dot(ng, t));
+		if (hasTangents)
+			t = In.Tangent;
+		else
+			t = normalize(t - ng * dot(ng, t));
+
         float3 b = normalize(cross(ng, t));
         row_major float3x3 tbn = float3x3(t, b, ng);
     }
@@ -869,7 +874,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
     float3 specularEnvironmentR0 = specularColor.rgb;
     float3 specularEnvironmentR90 = float3(1.0, 1.0, 1.0) * reflectance90;
 	
-	float3 n = _PSGetNormal(In, true, true);
+	float3 n = _PSGetNormal(In, true);
 	float3 v = normalize(-In.RelPosition.xyz);
 	float3 l = normalize(LightVector_ZFar.xyz);
 	float3 h = normalize(l + v);

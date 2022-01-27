@@ -128,6 +128,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter bones;
         readonly EffectParameter textureCoordinates;
         readonly EffectParameter texturePacking;
+        readonly EffectParameter hasNormals;
         // Per-frame PBR uniforms:
         readonly EffectParameter lightColor;
         readonly EffectParameter environmentMapSpecularTexture;
@@ -290,6 +291,8 @@ namespace Orts.Viewer3D
         
         public float TexturePacking { set { texturePacking.SetValue(value); } }
 
+        public bool HasNormals { set { hasNormals.SetValue(value); } }
+
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
         {
@@ -334,6 +337,7 @@ namespace Orts.Viewer3D
             bones = Parameters["Bones"];
             textureCoordinates = Parameters["TextureCoordinates"];
             texturePacking = Parameters["TexturePacking"];
+            hasNormals = Parameters["HasNormals"];
             lightColor = Parameters["LightColor"];
             environmentMapSpecularTexture = Parameters["EnvironmentMapSpecularTexture"];
             environmentMapDiffuseTexture = Parameters["EnvironmentMapDiffuseTexture"];

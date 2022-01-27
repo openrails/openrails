@@ -1265,6 +1265,7 @@ namespace Orts.Viewer3D
                         graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[2]] = material.SamplerStateOcclusion;
                         graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[3]] = material.SamplerStateNormal;
                         graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[4]] = material.SamplerStateEmissive;
+                        shader.HasNormals = (material.Options & SceneryMaterialOptions.PbrHasNormals) != 0;
                     }
 
                     if (item.ItemData is Matrix[] bones)

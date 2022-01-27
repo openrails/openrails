@@ -577,7 +577,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 }
 
                 // G = roughness, B = metalness, linear, may be > 8 bit
-                texCoords.Y = material.PbrMetallicRoughness?.MetallicRoughnessTexture?.TexCoord ?? 1;
+                texCoords.Y = material.PbrMetallicRoughness?.MetallicRoughnessTexture?.TexCoord ?? 0;
                 var metallicRoughnessTexture = distanceLevel.GetTexture(gltfFile, material.PbrMetallicRoughness?.MetallicRoughnessTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
@@ -592,7 +592,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 var normalSamplerState = (distanceLevel.GetTextureFilter(normalSampler), distanceLevel.GetTextureAddressMode(normalSampler.WrapS), distanceLevel.GetTextureAddressMode(normalSampler.WrapT));
 
                 // R channel only, = 1.0 + strength * (sampledValue - 1.0)
-                var occlusionTexCoord = material.OcclusionTexture?.TexCoord ?? 1;
+                var occlusionTexCoord = material.OcclusionTexture?.TexCoord ?? 0;
                 var occlusionTexture = distanceLevel.GetTexture(gltfFile, material.OcclusionTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var occlusionStrength = material.OcclusionTexture?.Strength ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
                 var occlusionSampler = distanceLevel.GetSampler(gltfFile, material.OcclusionTexture?.Index);
@@ -645,8 +645,9 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
                 if (meshPrimitive.Attributes.TryGetValue("POSITION", out var accessorNumber))
                 {
-                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
+                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding) || meshPrimitive.Attributes.ContainsKey("COLOR_0"))
                     {
+                        // The condition COLOR_0 is here to allow the mesh to go through the normalmap pipeline with calculating tangents, where the positions are needed anyways.
                         var accessor = gltfFile.Accessors[accessorNumber];
                         vertexPositions = new VertexPosition[accessor.Count];
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
@@ -658,10 +659,13 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                                 vertexPositions[i] = new VertexPosition(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
                             }
                         }
-                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexPosition), vertexPositions.Length, BufferUsage.None);
-                        vertexBuffer.SetData(vertexPositions);
-                        vertexBuffer.Name = "POSITION";
-                        vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
+                        if (vertexBufferBinding.VertexBuffer == null)
+                        {
+                            var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexPosition), vertexPositions.Length, BufferUsage.None);
+                            vertexBuffer.SetData(vertexPositions);
+                            vertexBuffer.Name = "POSITION";
+                            vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
+                        }
                         shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
                         MinPosition = new Vector3(accessor.Min[0], accessor.Min[1], accessor.Min[2]);
                         MaxPosition = new Vector3(accessor.Max[0], accessor.Max[1], accessor.Max[2]);
@@ -806,7 +810,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 }
                 else if ((options & SceneryMaterialOptions.PbrHasTangents) != 0 && vertexBufferTextureUvs != null)
                 {
-                    // In the shader where the tangents are defined also needs to be a secondary texture coordinate
+                    // In the shader pipeline, where the tangents are defined, also needs to be a secondary texture coordinate
                     vertexAttributes.Add(new VertexBufferBinding(vertexBufferTextureUvs));
                 }
 
