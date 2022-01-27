@@ -181,6 +181,7 @@ namespace Orts.Viewer3D
             }
         }
 
+        static internal Func<BinaryReader, ushort> GetIntegerReader(AccessorSparseIndices.ComponentTypeEnum componentTypeEnum) => GetIntegerReader((Accessor.ComponentTypeEnum)componentTypeEnum);
         static internal Func<BinaryReader, ushort> GetIntegerReader(Accessor.ComponentTypeEnum componentTypeEnum)
         {
             switch (componentTypeEnum)
@@ -380,13 +381,15 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 GlbBinaryBuffers.Clear();
             }
 
-            internal Stream GetBufferView(Accessor accessor, out int? byteStride)
+            internal Stream GetBufferView(AccessorSparseIndices accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
+            internal Stream GetBufferView(AccessorSparseValues accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
+            internal Stream GetBufferView(Accessor accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
+            internal Stream GetBufferView(int? bufferViewNumber, int accessorByteOffset, out int? byteStride)
             {
                 byteStride = null;
-                var n = accessor.BufferView;
-                if (n == null)
+                if (bufferViewNumber == null)
                     return Stream.Null;
-                var bufferView = Gltf.BufferViews[(int)n];
+                var bufferView = Gltf.BufferViews[(int)bufferViewNumber];
                 byteStride = bufferView.ByteStride;
                 var buffer = Gltf.Buffers[bufferView.Buffer];
                 Stream stream;
@@ -406,7 +409,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                     }
                     stream = new MemoryStream(bytes);
                 }
-                stream.Seek(bufferView.ByteOffset + accessor.ByteOffset, SeekOrigin.Begin);
+                stream.Seek(bufferView.ByteOffset + accessorByteOffset, SeekOrigin.Begin);
                 return stream;
             }
 
@@ -621,6 +624,16 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                         for (var i = 0; i < indexData.Length; i++)
                             indexData[i] = read(br);
                     }
+                    if (accessor.Sparse != null)
+                    {
+                        var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
+                        using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
+                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out _)))
+                        {
+                            for (var i = 0; i < accessor.Sparse.Count; i++)
+                                indexData[readI(bri)] = read(br);
+                        }
+                    }
                     indexBufferSet.IndexBuffer = new IndexBuffer(shape.Viewer.GraphicsDevice, typeof(ushort), indexData.Length, BufferUsage.None);
                     indexBufferSet.IndexBuffer.SetData(indexData);
                     indexBufferSet.IndexBuffer.Name = name;
@@ -659,6 +672,20 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                                 vertexPositions[i] = new VertexPosition(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
                             }
                         }
+                        if (accessor.Sparse != null)
+                        {
+                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
+                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
+                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
+                            {
+                                var seek = byteStride != null ? (int)byteStride - VertexPosition.SizeInBytes : 0;
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                {
+                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
+                                    vertexPositions[readI(bri)] = new VertexPosition(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                                }
+                            }
+                        }
                         if (vertexBufferBinding.VertexBuffer == null)
                         {
                             var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexPosition), vertexPositions.Length, BufferUsage.None);
@@ -690,6 +717,20 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
                                 vertexNormals[i] = new VertexNormal(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                            }
+                        }
+                        if (accessor.Sparse != null)
+                        {
+                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
+                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
+                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
+                            {
+                                var seek = byteStride != null ? (int)byteStride - VertexNormal.SizeInBytes : 0;
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                {
+                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
+                                    vertexNormals[readI(bri)] = new VertexNormal(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                                }
                             }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexNormal), vertexNormals.Length, BufferUsage.None);
@@ -727,6 +768,20 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                                 vertexTextureUvs[i] = new VertexTextureDiffuse(new Vector2(read(br), read(br)));
                             }
                         }
+                        if (accessor.Sparse != null)
+                        {
+                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
+                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
+                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
+                            {
+                                var seek = byteStride != null ? (int)byteStride - VertexTextureDiffuse.SizeInBytes : 0;
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                {
+                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
+                                    vertexTextureUvs[readI(bri)] = new VertexTextureDiffuse(new Vector2(read(br), read(br)));
+                                }
+                            }
+                        }
                         vertexBufferTextureUvs = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureDiffuse), vertexTextureUvs.Length, BufferUsage.None);
                         vertexBufferTextureUvs.SetData(vertexTextureUvs);
                         vertexBufferTextureUvs.Name = "TEXCOORD_0";
@@ -758,6 +813,20 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
                                 vertexData[i] = new VertexTangent(new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                            }
+                        }
+                        if (accessor.Sparse != null)
+                        {
+                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
+                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
+                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
+                            {
+                                var seek = byteStride != null ? (int)byteStride - VertexTangent.SizeInBytes : 0;
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                {
+                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
+                                    vertexData[readI(bri)] = new VertexTangent(new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                                }
                             }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTangent), vertexData.Length, BufferUsage.None);
@@ -800,6 +869,20 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                                 vertexData[i] = new VertexTextureMetallic(new Vector2(read(br), read(br)));
                             }
                         }
+                        if (accessor.Sparse != null)
+                        {
+                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
+                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
+                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
+                            {
+                                var seek = byteStride != null ? (int)byteStride - VertexTextureMetallic.SizeInBytes : 0;
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                {
+                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
+                                    vertexData[readI(bri)] = new VertexTextureMetallic(new Vector2(read(br), read(br)));
+                                }
+                            }
+                        }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureMetallic), vertexData.Length, BufferUsage.None);
                         vertexBuffer.SetData(vertexData);
                         vertexBuffer.Name = "TEXCOORD_1";
@@ -830,6 +913,20 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                                 vertexData[i] = new VertexJoint(new Vector4(jointsRead(br), jointsRead(br), jointsRead(br), jointsRead(br)));
                             }
                         }
+                        if (accessor.Sparse != null)
+                        {
+                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
+                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
+                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
+                            {
+                                var seek = byteStride != null ? (int)byteStride - VertexJoint.SizeInBytes : 0;
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                {
+                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
+                                    vertexData[readI(bri)] = new VertexJoint(new Vector4(jointsRead(br), jointsRead(br), jointsRead(br), jointsRead(br)));
+                                }
+                            }
+                        }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexJoint), vertexData.Length, BufferUsage.None);
                         vertexBuffer.SetData(vertexData);
                         vertexBuffer.Name = "JOINTS_0";
@@ -855,6 +952,20 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                                 vertexData[i] = new VertexWeight(new Vector4(weightsRead(br), weightsRead(br), weightsRead(br), weightsRead(br)));
                             }
                         }
+                        if (accessor.Sparse != null)
+                        {
+                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
+                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
+                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
+                            {
+                                var seek = byteStride != null ? (int)byteStride - VertexWeight.SizeInBytes : 0;
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                {
+                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
+                                    vertexData[readI(bri)] = new VertexWeight(new Vector4(weightsRead(br), weightsRead(br), weightsRead(br), weightsRead(br)));
+                                }
+                            }
+                        }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexWeight), vertexData.Length, BufferUsage.None);
                         vertexBuffer.SetData(vertexData);
                         vertexBuffer.Name = "WEIGHTS_0";
@@ -878,6 +989,20 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
                                 vertexData[i] = new VertexColor4(new Vector4(read(br), read(br), read(br), accessor.Type == Accessor.TypeEnum.VEC3 ? 0 : read(br)));
+                            }
+                        }
+                        if (accessor.Sparse != null)
+                        {
+                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
+                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
+                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
+                            {
+                                var seek = byteStride != null ? (int)byteStride - VertexColor4.SizeInBytes : 0;
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                {
+                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
+                                    vertexData[readI(bri)] = new VertexColor4(new Vector4(read(br), read(br), read(br), accessor.Type == Accessor.TypeEnum.VEC3 ? 0 : read(br)));
+                                }
                             }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexColor4), vertexData.Length, BufferUsage.None);
