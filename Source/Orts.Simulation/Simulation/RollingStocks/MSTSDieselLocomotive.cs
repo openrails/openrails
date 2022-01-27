@@ -990,6 +990,12 @@ namespace Orts.Simulation.RollingStocks
                     {
                         data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                     }
+                    if (ThrottlePercent == 0 && data > 0)
+                    {
+                        data = DynamicBrakePercent == -1? (data / MaxForceN) * MaxCurrentA
+                            : DynamicBrakePercent == 0? (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA
+                            : data;
+                    }
                     status.AppendFormat("{0:F0} A", data);
                     break;
 
