@@ -343,14 +343,6 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                         channel.TimeArray = new float[inputAccessor.Count];
                         channel.TimeMin = inputAccessor.Min[0];
                         channel.TimeMax = inputAccessor.Max[0];
-                        switch (channel.Path)
-                        {
-                            case AnimationChannelTarget.PathEnum.rotation: channel.OutputQuaternion = new Quaternion[inputAccessor.Count]; break;
-                            case AnimationChannelTarget.PathEnum.scale:
-                            case AnimationChannelTarget.PathEnum.translation: channel.OutputVector3 = new Vector3[inputAccessor.Count]; break;
-                            case AnimationChannelTarget.PathEnum.weights: channel.OutputWeights = new float[inputAccessor.Count]; break;
-                        }
-
                         var readInput = GetNormalizedReader(inputAccessor.ComponentType);
                         using (var br = new BinaryReader(GetBufferView(inputAccessor, out _)))
                         {
@@ -359,10 +351,17 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                         }
 
                         var outputAccessor = gltfFile.Accessors[sampler.Output];
+                        switch (channel.Path)
+                        {
+                            case AnimationChannelTarget.PathEnum.rotation: channel.OutputQuaternion = new Quaternion[outputAccessor.Count]; break;
+                            case AnimationChannelTarget.PathEnum.scale:
+                            case AnimationChannelTarget.PathEnum.translation: channel.OutputVector3 = new Vector3[outputAccessor.Count]; break;
+                            case AnimationChannelTarget.PathEnum.weights: channel.OutputWeights = new float[outputAccessor.Count]; break;
+                        }
                         var readOutput = GetNormalizedReader(outputAccessor.ComponentType);
                         using (var br = new BinaryReader(GetBufferView(outputAccessor, out _)))
                         {
-                            for (var i = 0; i < channel.FrameCount; i++)
+                            for (var i = 0; i < outputAccessor.Count; i++)
                                 switch (channel.Path)
                                 {
                                     case AnimationChannelTarget.PathEnum.rotation: channel.OutputQuaternion[i] = new Quaternion(readOutput(br), readOutput(br), readOutput(br), readOutput(br)); break;
@@ -371,6 +370,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                                     case AnimationChannelTarget.PathEnum.weights: channel.OutputWeights[i] = readOutput(br); morphWarning = true; break;
                                 }
                         }
+                        channel.Interpolation = sampler.Interpolation;
                     }
                     shape.GltfAnimations.Add(j, animation);
                 }
@@ -1267,25 +1267,32 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 var amount = 0.0f;
                 switch (channel.Interpolation)
                 {
+                    // See the formula for cubic spline: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic
+                    case AnimationSampler.InterpolationEnum.CUBICSPLINE:
                     case AnimationSampler.InterpolationEnum.LINEAR: amount = time1 < time2 ? MathHelper.Clamp((time - time1) / (time2 - time1), 0, 1) : 0; break;
                     case AnimationSampler.InterpolationEnum.STEP: amount = 0; break;
-                    case AnimationSampler.InterpolationEnum.CUBICSPLINE: // TODO
                     default: amount = 0; break;
                 }
                 switch (channel.Path)
                 {
                     case AnimationChannelTarget.PathEnum.translation:
-                        var outputT = Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
+                        var outputT = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                            ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
+                            : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
                         translationM = Matrix.CreateTranslation(outputT);
                         t = true;
                         break;
                     case AnimationChannelTarget.PathEnum.rotation:
-                        var outputR = Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount);
+                        var outputR = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                            ? CsInterp(channel.OutputQuaternion[Property(frame1)], channel.OutputQuaternion[OutTangent(frame2)], channel.OutputQuaternion[Property(frame2)], channel.OutputQuaternion[InTangent(frame2)], amount)
+                            : Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount);
                         rotationM = Matrix.CreateFromQuaternion(outputR);
                         r = true;
                         break;
                     case AnimationChannelTarget.PathEnum.scale:
-                        var outputS = Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
+                        var outputS = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                            ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
+                            : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
                         scaleM = Matrix.CreateScale(outputS);
                         s = true;
                         break;
@@ -1300,6 +1307,17 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 XNAMatrices[channel.TargetNode] = scaleM * rotationM * translationM;
             }
         }
+
+        // Cubic spline helpers
+        readonly static Func<int, int> InTangent = (frame) => frame * 3;
+        readonly static Func<int, int> Property = (frame) => frame * 3 + 1;
+        readonly static Func<int, int> OutTangent = (frame) => frame * 3 + 2;
+        readonly static Func<float, float> A = (t) => 2*t*t*t - 3*t*t + 1;
+        readonly static Func<float, float> B = (t) => t*t*t - 2*t*t + t;
+        readonly static Func<float, float> C = (t) => -2*t*t*t + 3*t*t;
+        readonly static Func<float, float> D = (t) => t*t*t - t*t;
+        readonly static Func<Quaternion, Quaternion, Quaternion, Quaternion, float, Quaternion> CsInterp = (v1, b1, v2, a2, t) =>
+            Quaternion.Normalize(Quaternion.Multiply(v1, A(t)) + Quaternion.Multiply(b1, B(t)) + Quaternion.Multiply(v2, C(t)) + Quaternion.Multiply(a2, D(t)));
     }
 
     public class GltfAnimation

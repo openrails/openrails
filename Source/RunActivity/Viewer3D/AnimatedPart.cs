@@ -31,16 +31,22 @@ namespace Orts.Viewer3D
         // Shape that we're animating.
         readonly PoseableShape PoseableShape;
 
-        // .S file: number of animation key-frames that are used by this part. This is calculated from the matrices provided.
-        // glTF file: the frames are measured in seconds, so the frame count is actually the total length of the animation clip in seconds.
+        /// <summary>
+        /// .S file: number of animation key-frames that are used by this part. This is calculated from the matrices provided.
+        /// glTF file: the frames are measured in seconds, so the frame count is actually the total length of the animation clip in seconds.
+        /// </summary>
         public float FrameCount;
 
-        // .S file: Current frame of the animation.
-        // glTF file: The actual time in seconds within the animation clip.
+        /// <summary>
+        /// .S file: Current frame of the animation.
+        /// glTF file: The actual time in seconds within the animation clip.
+        /// </summary>
         float AnimationKey;
 
-        // .S file: List of the matrices we're animating for this part.
-        // glTF file: The animation clip's numbers we are playing for this part.
+        /// <summary>
+        /// .S file: List of the matrices we're animating for this part.
+        /// glTF file: The animation clip's numbers we are playing for this part.
+        /// </summary>
         public List<int> MatrixIndexes = new List<int>();
 
         /// <summary>
@@ -81,13 +87,15 @@ namespace Orts.Viewer3D
             if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.GltfAnimations.Count > 0)
             {
                 // Use the clip's length in time as the frame count
-                foreach (var channel in gltfShape.GltfAnimations[0].Channels)
+                foreach (var channel in gltfShape.GltfAnimations[matrix].Channels)
                     FrameCount = Math.Max(FrameCount, channel.TimeMax);
             }
-
-            for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
-                if (PoseableShape.Hierarchy[i] == matrix)
-                    UpdateFrameCount(i);
+            else
+            {
+                for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
+                    if (PoseableShape.Hierarchy[i] == matrix)
+                        UpdateFrameCount(i);
+            }
         }
 
         /// <summary>
