@@ -885,6 +885,9 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
     float NdotH = clamp(dot(n, h), 0.0, 1.0);
     float LdotH = clamp(dot(l, h), 0.0, 1.0);
     float VdotH = clamp(dot(v, h), 0.0, 1.0);
+
+	if (!HasNormals)
+		NdotV = 0.001; // Otherwise it goes undefined, or like that...
 	
 	float3 F = specularEnvironmentR0 + (specularEnvironmentR90 - specularEnvironmentR0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 	

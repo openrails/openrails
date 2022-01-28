@@ -146,7 +146,15 @@ namespace Orts.Viewer3D
         /// The position of the sampler states inside the hlsl shader:
         /// baseColor, metallicRoughness, occlusion, normal, emissive
         /// </summary>
-        public readonly static int[] SamplerOrder = new[] { 0, 5, 4, 2, 3 };
+        public enum Samplers
+        {
+            BaseColor = 0,
+            Overlay,
+            Normal,
+            Emissive,
+            Occlusion,
+            MetallicRoughness,
+        }
 
         public void SetViewMatrix(ref Matrix v)
         {

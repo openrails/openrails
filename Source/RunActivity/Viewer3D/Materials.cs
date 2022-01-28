@@ -1182,11 +1182,11 @@ namespace Orts.Viewer3D
             DefaultAlphaCutOff = (int)(referenceAlpha * 255f);
             DoubleSided = doubleSided;
 
-            if (!GltfSamplerStates.TryGetValue(samplerStateBaseColor, out SamplerStateBaseColor)) { SamplerStateBaseColor = GetNewSamplerState(samplerStateBaseColor); GltfSamplerStates.Add(samplerStateBaseColor, SamplerStateBaseColor); }
-            if (!GltfSamplerStates.TryGetValue(samplerStateMetallicRoughness, out SamplerStateMetallicRoughness)) { SamplerStateMetallicRoughness = GetNewSamplerState(samplerStateMetallicRoughness); GltfSamplerStates.Add(samplerStateMetallicRoughness, SamplerStateMetallicRoughness); }
-            if (!GltfSamplerStates.TryGetValue(samplerStateNormal, out SamplerStateNormal)) { SamplerStateNormal = GetNewSamplerState(samplerStateNormal); GltfSamplerStates.Add(samplerStateNormal, SamplerStateNormal); }
-            if (!GltfSamplerStates.TryGetValue(samplerStateOcclusion, out SamplerStateOcclusion)) { SamplerStateOcclusion = GetNewSamplerState(samplerStateOcclusion); GltfSamplerStates.Add(samplerStateOcclusion, SamplerStateOcclusion); }
-            if (!GltfSamplerStates.TryGetValue(samplerStateEmissive, out SamplerStateEmissive)) { SamplerStateEmissive = GetNewSamplerState(samplerStateEmissive); GltfSamplerStates.Add(samplerStateEmissive, SamplerStateEmissive); }
+            if (!GltfSamplerStates.TryGetValue(samplerStateBaseColor, out SamplerStateBaseColor)) GltfSamplerStates.Add(samplerStateBaseColor, SamplerStateBaseColor = GetNewSamplerState(samplerStateBaseColor));
+            if (!GltfSamplerStates.TryGetValue(samplerStateMetallicRoughness, out SamplerStateMetallicRoughness)) GltfSamplerStates.Add(samplerStateMetallicRoughness, SamplerStateMetallicRoughness = GetNewSamplerState(samplerStateMetallicRoughness));
+            if (!GltfSamplerStates.TryGetValue(samplerStateNormal, out SamplerStateNormal)) GltfSamplerStates.Add(samplerStateNormal, SamplerStateNormal = GetNewSamplerState(samplerStateNormal));
+            if (!GltfSamplerStates.TryGetValue(samplerStateOcclusion, out SamplerStateOcclusion)) GltfSamplerStates.Add(samplerStateOcclusion, SamplerStateOcclusion = GetNewSamplerState(samplerStateOcclusion));
+            if (!GltfSamplerStates.TryGetValue(samplerStateEmissive, out SamplerStateEmissive)) GltfSamplerStates.Add(samplerStateEmissive, SamplerStateEmissive = GetNewSamplerState(samplerStateEmissive));
         }
 
         public override bool GetBlending() => (Options & SceneryMaterialOptions.AlphaBlendingBlend) != 0;
@@ -1195,9 +1195,8 @@ namespace Orts.Viewer3D
         {
             base.SetState(graphicsDevice, previousMaterial);
 
-            var rasterizerState = ((Options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
-
-            graphicsDevice.RasterizerState = DoubleSided ? RasterizerState.CullNone : rasterizerState;
+            graphicsDevice.RasterizerState = DoubleSided ? RasterizerState.CullNone :
+                ((Options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
 
             var shader = Viewer.MaterialManager.SceneryShader;
 
@@ -1229,6 +1228,7 @@ namespace Orts.Viewer3D
             shader.OcclusionTexture = OcclusionTexture;
             shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
             shader.OcclusionFactor = new Vector3(OcclusionStrength, RoughnessFactor, MetallicFactor);
+            shader.HasNormals = (Options & SceneryMaterialOptions.PbrHasNormals) != 0;
         }
 
         static SamplerState GetNewSamplerState((TextureFilter, TextureAddressMode, TextureAddressMode) samplerAttributes)
@@ -1258,19 +1258,19 @@ namespace Orts.Viewer3D
                     {
                         shader.TextureCoordinates = gltfPrimitive.TexCoords;
                         shader.TexturePacking = gltfPrimitive.TexturePacking;
-                        var material = gltfPrimitive.Material as PbrMaterial;
-                        // There is a massive redundancy here, but rely on the driver to sort it out:
-                        graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[0]] = material.SamplerStateBaseColor;
-                        graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[1]] = material.SamplerStateMetallicRoughness;
-                        graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[2]] = material.SamplerStateOcclusion;
-                        graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[3]] = material.SamplerStateNormal;
-                        graphicsDevice.SamplerStates[SceneryShader.SamplerOrder[4]] = material.SamplerStateEmissive;
-                        shader.HasNormals = (material.Options & SceneryMaterialOptions.PbrHasNormals) != 0;
                     }
 
                     if (item.ItemData is Matrix[] bones)
                         shader.Bones = bones;
                     ShaderPasses.Current.Apply();
+
+                    // SamplerStates can be set only after the ShaderPasses.Current.Apply().
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerStateBaseColor;
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.MetallicRoughness] = SamplerStateMetallicRoughness;
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Occlusion] = SamplerStateOcclusion;
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Normal] = SamplerStateNormal;
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Emissive] = SamplerStateEmissive;
+
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }

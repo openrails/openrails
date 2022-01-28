@@ -891,10 +891,18 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                     }
                     vertexAttributes.Add(vertexBufferBinding);
                 }
-                else if ((options & SceneryMaterialOptions.PbrHasTangents) != 0 && vertexBufferTextureUvs != null)
+                else if ((options & SceneryMaterialOptions.PbrHasTangents) != 0)
                 {
                     // In the shader pipeline, where the tangents are defined, also needs to be a secondary texture coordinate
-                    vertexAttributes.Add(new VertexBufferBinding(vertexBufferTextureUvs));
+                    var vertexBufferBindings = vertexAttributes.Where(va => va.VertexBuffer.Name == "TEXCOORD_0");
+                    if (vertexBufferBindings.Any())
+                        vertexAttributes.Add(vertexBufferBindings.First());
+                    else
+                    {
+                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureMetallic), vertexAttributes.First().VertexBuffer.VertexCount, BufferUsage.None);
+                        vertexBuffer.Name = "TEXCOORD_1_DUMMY";
+                        vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
+                    }
                 }
 
                 if (meshPrimitive.Attributes.TryGetValue("JOINTS_0", out accessorNumber))
