@@ -786,7 +786,6 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
 
             var shader = Viewer.MaterialManager.SceneryShader;
             var level9_3 = Viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3);
@@ -886,8 +885,6 @@ namespace Orts.Viewer3D
                     throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.SpecularMask value.");
             }
 
-            graphicsDevice.SamplerStates[0] = GetShadowTextureAddressMode();
-
             if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
                 (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f))
             {
@@ -914,6 +911,10 @@ namespace Orts.Viewer3D
                     shader.SetMatrix(item.XNAMatrix, ref viewProj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
+
+                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
+                    graphicsDevice.SamplerStates[0] = GetShadowTextureAddressMode();
+
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
@@ -1056,8 +1057,9 @@ namespace Orts.Viewer3D
                 {
                     var wvp = item.XNAMatrix * viewproj;
                     shader.SetData(ref wvp, item.Material.GetShadowTexture());
-                    graphicsDevice.SamplerStates[0] = item.Material.GetShadowTextureAddressMode();
                     ShaderPasses.Current.Apply();
+                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
+                    graphicsDevice.SamplerStates[0] = item.Material.GetShadowTextureAddressMode();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
