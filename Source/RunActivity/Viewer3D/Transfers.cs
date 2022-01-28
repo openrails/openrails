@@ -171,7 +171,6 @@ namespace Orts.Viewer3D
             shader.ImageTexture = Texture;
             shader.ReferenceAlpha = 10;
 
-            graphicsDevice.SamplerStates[0] = TransferSamplerState;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
         }
@@ -190,6 +189,8 @@ namespace Orts.Viewer3D
                     shader.SetMatrix(item.XNAMatrix, ref viewproj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
+                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
+                    graphicsDevice.SamplerStates[0] = TransferSamplerState;
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
