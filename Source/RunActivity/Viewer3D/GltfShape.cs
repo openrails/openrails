@@ -638,15 +638,6 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                     indexBufferSet.IndexBuffer.SetData(indexData);
                     indexBufferSet.IndexBuffer.Name = name;
                     options |= SceneryMaterialOptions.PbrHasIndices;
-
-                    switch (meshPrimitive.Mode)
-                    {
-                        case MeshPrimitive.ModeEnum.TRIANGLE_STRIP: indexBufferSet.PrimitiveType = PrimitiveType.TriangleStrip; indexBufferSet.PrimitiveCount = indexData.Length - 2; break;
-                        case MeshPrimitive.ModeEnum.TRIANGLES: indexBufferSet.PrimitiveType = PrimitiveType.TriangleList; indexBufferSet.PrimitiveCount = indexData.Length / 3; break;
-                        case MeshPrimitive.ModeEnum.LINE_STRIP: indexBufferSet.PrimitiveType = PrimitiveType.LineStrip; indexBufferSet.PrimitiveCount = indexData.Length - 1; break;
-                        case MeshPrimitive.ModeEnum.LINES: indexBufferSet.PrimitiveType = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = indexData.Length / 2; break;
-                        default: indexBufferSet.PrimitiveType = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = indexData.Length / 2; break; // This is not exactly correct.
-                    }
                 }
 
                 var vertexAttributes = new List<VertexBufferBinding>();
@@ -1033,6 +1024,16 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
                 // This is the dummy instance buffer at the end of the vertex buffers
                 vertexAttributes.Add(new VertexBufferBinding(RenderPrimitive.GetDummyVertexBuffer(shape.Viewer.GraphicsDevice)));
+
+                var verticesDrawn = meshPrimitive.Indices == null ? vertexAttributes.First().VertexBuffer.VertexCount : indexData.Length;
+                switch (meshPrimitive.Mode)
+                {
+                    case MeshPrimitive.ModeEnum.TRIANGLE_STRIP: indexBufferSet.PrimitiveType = PrimitiveType.TriangleStrip; indexBufferSet.PrimitiveCount = verticesDrawn - 2; break;
+                    case MeshPrimitive.ModeEnum.TRIANGLES: indexBufferSet.PrimitiveType = PrimitiveType.TriangleList; indexBufferSet.PrimitiveCount = verticesDrawn / 3; break;
+                    case MeshPrimitive.ModeEnum.LINE_STRIP: indexBufferSet.PrimitiveType = PrimitiveType.LineStrip; indexBufferSet.PrimitiveCount = verticesDrawn - 1; break;
+                    case MeshPrimitive.ModeEnum.LINES: indexBufferSet.PrimitiveType = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = verticesDrawn / 2; break;
+                    default: indexBufferSet.PrimitiveType = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = verticesDrawn / 2; break;
+                }
 
                 var key = $"{shape.FilePath}#{material.Name}#{meshPrimitive.Material ?? -1}";
 
