@@ -48,7 +48,7 @@ namespace Orts.Viewer3D
         static Matrix PlusZToForward = Matrix.CreateFromAxisAngle(Vector3.UnitY, MathHelper.Pi);
         static readonly string[] StandardTextureExtensionFilter = new[] { ".png", ".jpg", ".jpeg" };
         static readonly string[] DdsTextureExtensionFilter = new[] { ".dds" };
-        public static TextureCube EnvironmentMapSpecularDay;
+        public static Texture2D EnvironmentMapSpecularDay;
         public static TextureCube EnvironmentMapDiffuseDay;
         public static Texture2D BrdfLutTexture;
         static readonly Dictionary<string, CubeMapFace> EnvironmentMapFaces = new Dictionary<string, CubeMapFace>
@@ -108,20 +108,17 @@ namespace Orts.Viewer3D
 
             if (EnvironmentMapSpecularDay == null)
             {
-                EnvironmentMapSpecularDay = new TextureCube(Viewer.GraphicsDevice, 512, false, SurfaceFormat.Color);
-                EnvironmentMapDiffuseDay = new TextureCube(Viewer.GraphicsDevice, 128, false, SurfaceFormat.Color);
-                EnvironmentMapSpecularDay.Name = nameof(EnvironmentMapSpecularDay);
+                // TODO: split the equirectangular specular panorama image to a cube map for saving the pixel shader instructions of converting the
+                // cartesian cooridinates to polar for sampling. Couldn't find a converter though, that also supports RGBD color encoding.
+                // RGBD is an encoding where a divider is stored in the alpha channel to reconstruct the High Dynamic Range of the RGB colors.
+                // A HDR to TGA-RGBD converter is available here: https://seenax.com/portfolio/cpp.php , this can be further converted to PNG by e.g. GIMP.
+                EnvironmentMapSpecularDay = Texture2D.FromStream(Viewer.GraphicsDevice, File.OpenRead(Path.Combine(Viewer.Game.ContentPath, "EnvMapDay/specular-RGBD.png")));
+                // Possible TODO: replace the diffuse map with spherical harmonics coefficients (9x float3), as defined in EXT_lights_image_based.
+                // See shader implementation e.g. here: https://github.com/CesiumGS/cesium/pull/7172
+                EnvironmentMapDiffuseDay = new TextureCube(Viewer.GraphicsDevice, 128, false, SurfaceFormat.ColorSRgb);
                 foreach (var face in EnvironmentMapFaces.Keys)
                 {
                     // How to do this more efficiently?
-                    using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/specular_{face}_0.png")))
-                    {
-                        var tex = Texture2D.FromStream(Viewer.GraphicsDevice, stream);
-                        var data = new Color[tex.Width * tex.Height];
-                        tex.GetData(data);
-                        EnvironmentMapSpecularDay.SetData(EnvironmentMapFaces[face], data);
-                        tex.Dispose();
-                    }
                     using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/diffuse_{face}_0.jpg")))
                     {
                         var tex = Texture2D.FromStream(Viewer.GraphicsDevice, stream);

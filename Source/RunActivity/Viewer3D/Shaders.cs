@@ -287,7 +287,7 @@ namespace Orts.Viewer3D
 
         public Vector3 LightColor { set { lightColor.SetValue(value); } }
 
-        public TextureCube EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
+        public Texture2D EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
 
         public TextureCube EnvironmentMapDiffuseTexture { set { environmentMapDiffuseTexture.SetValue(value); } }
 

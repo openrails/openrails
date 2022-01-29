@@ -1182,6 +1182,8 @@ namespace Orts.Viewer3D
             DefaultAlphaCutOff = (int)(referenceAlpha * 255f);
             DoubleSided = doubleSided;
 
+            samplerStateBaseColor.Item1 = ChangeToAnisitropic(samplerStateBaseColor.Item1);
+
             if (!GltfSamplerStates.TryGetValue(samplerStateBaseColor, out SamplerStateBaseColor)) GltfSamplerStates.Add(samplerStateBaseColor, SamplerStateBaseColor = GetNewSamplerState(samplerStateBaseColor));
             if (!GltfSamplerStates.TryGetValue(samplerStateMetallicRoughness, out SamplerStateMetallicRoughness)) GltfSamplerStates.Add(samplerStateMetallicRoughness, SamplerStateMetallicRoughness = GetNewSamplerState(samplerStateMetallicRoughness));
             if (!GltfSamplerStates.TryGetValue(samplerStateNormal, out SamplerStateNormal)) GltfSamplerStates.Add(samplerStateNormal, SamplerStateNormal = GetNewSamplerState(samplerStateNormal));
@@ -1231,13 +1233,17 @@ namespace Orts.Viewer3D
             shader.HasNormals = (Options & SceneryMaterialOptions.PbrHasNormals) != 0;
         }
 
+        // Currently isn't possible to set a glTF to anisotropic filtering, so this is a hack against the spec:
+        static TextureFilter ChangeToAnisitropic(TextureFilter textureFilter) => textureFilter == TextureFilter.Linear ? TextureFilter.Anisotropic : textureFilter;
+
         static SamplerState GetNewSamplerState((TextureFilter, TextureAddressMode, TextureAddressMode) samplerAttributes)
         {
            return new SamplerState
             {
                 Filter = samplerAttributes.Item1,
                 AddressU = samplerAttributes.Item2,
-                AddressV = samplerAttributes.Item3
+                AddressV = samplerAttributes.Item3,
+                MaxAnisotropy = 16,
             };
         }
         

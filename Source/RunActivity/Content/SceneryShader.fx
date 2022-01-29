@@ -67,11 +67,13 @@ texture  MetallicRoughnessTexture; // g = roughness, b = metalness
 float3   OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
 float3   LightColor;
 float4   TextureCoordinates; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
-float    TexturePacking; // 0: occlusionRoughnessMetallic (default), 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A)
+float    TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), TexturePacking; 3: occlusionRoughnessMetallic
 bool    HasNormals; // 0: no, 1: yes
 
 //static const float3 LightColor = float3(1.0, 1.0, 1.0);
 static const float M_PI = 3.141592653589793;
+static const float RECIPROCAL_PI = 0.31830988618;
+static const float RECIPROCAL_PI2 = 0.15915494;
 static const float MinRoughness = 0.04;
 
 sampler Image = sampler_state
@@ -126,7 +128,7 @@ sampler MetallicRoughness = sampler_state
 	MipFilter = Linear;
 };
 
-samplerCUBE EnvironmentMapSpecular = sampler_state
+sampler EnvironmentMapSpecular = sampler_state
 {
 	Texture = (EnvironmentMapSpecularTexture);
 	MagFilter = Linear;
@@ -717,18 +719,31 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents)
     return n;
 }
 
+float2 _PSCartesianToPolar(float3 n)
+{
+	float2 uv;
+	uv.x = atan2(n.z, n.x) * RECIPROCAL_PI2 + 0.5;
+	uv.y = -(asin(n.y) * RECIPROCAL_PI + 0.5);
+	return uv;
+}
+
+float4 RGBDToLinear(float4 value)
+{
+	return float4(value.xyz / value.w, 1.0);
+}
+
 float3 _PSGetIBLContribution(float3 diffuseColor, float3 specularColor, float NdotV, float perceptualRoughness, float3 n, float3 reflection)
 {
 	float2 val = float2(NdotV, 1.0 - perceptualRoughness);
 	float3 brdf = tex2D(BrdfLut, val).rgb;
 	brdf.rgb = pow(brdf.rgb, 2.2);
 
-	float3 specularLight = texCUBE(EnvironmentMapSpecular, reflection).rgb;
+	float3 specularLight = RGBDToLinear(tex2D(EnvironmentMapSpecular, _PSCartesianToPolar(reflection))).rgb;
 	specularLight.rgb = pow(specularLight.rgb, 2.2);
 	float3 specular = specularLight * (specularColor * brdf.x + brdf.y);
 
 	float3 diffuseLight = texCUBE(EnvironmentMapDiffuse, n).rgb; // irradiance (washed out)
-	diffuseLight.rgb = pow(diffuseLight.rgb, 2.2);
+	//diffuseLight.rgb = pow(diffuseLight.rgb, 2.2); // If we can upload the image with sRGB texture surfaceformat, no need to convert manually, the GPU will do that for us.
 	float3 diffuse = diffuseLight * diffuseColor;
 
 	return diffuse + specular;
@@ -825,14 +840,34 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	float occlusion = 1;
 	float metallic = 1;
 	float roughness = 1;
-	if (TexturePacking == 0 || TexturePacking == 1)
+	if (TexturePacking == 0)
+	{
+		if (OcclusionFactor.x > 0)
+		{
+			if (TextureCoordinates.y == 0) // The occlusion texcoords are technically not yet uploaded, assuming the metallic-roughness one (possibly todo)
+				occlusion = tex2D(Occlusion, In.TexCoords.xy).r;
+			else
+				occlusion = tex2D(Occlusion, In.TexCoords.zw).r;
+		}
+		if (OcclusionFactor.y > 0 || OcclusionFactor.z > 0)
+		{
+			float3 orm;
+			if (TextureCoordinates.y == 0)
+				orm = tex2D(MetallicRoughness, In.TexCoords.xy).rgb;
+			else
+				orm = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
+			roughness = orm.g;
+			metallic = orm.b;
+		}
+	}
+	else if (TexturePacking == 1 || TexturePacking == 3)
 	{
 		float3 orm;
 		if (TextureCoordinates.y == 0)
 			orm = tex2D(MetallicRoughness, In.TexCoords.xy).rgb;
 		else
 			orm = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
-		if (TexturePacking == 0)
+		if (TexturePacking == 3)
 		{
 			occlusion = orm.r;
 			roughness = orm.g;
