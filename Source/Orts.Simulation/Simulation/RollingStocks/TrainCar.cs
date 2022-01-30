@@ -629,10 +629,7 @@ namespace Orts.Simulation.RollingStocks
 
         public float CurrentElevationPercent;
 
-        public bool CurveResistanceDependent;
         public bool CurveSpeedDependent;
-        public bool TunnelResistanceDependent;
-
 
         protected float MaxDurableSafeCurveSpeedMpS;
 
@@ -743,13 +740,11 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void Initialize()
         {
-            CurveResistanceDependent = Simulator.Settings.CurveResistanceDependent;
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
-            TunnelResistanceDependent = Simulator.Settings.TunnelResistanceDependent;
             
             //CurveForceFilter.Initialize();
-            // Initialize tunnel resistance values
 
+            // Initialize tunnel resistance values
             DoubleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelAreaM2;
             SingleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.SingleTunnelAreaM2;
             DoubleTunnelPerimeterM = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelPerimeterM;
@@ -1133,21 +1128,13 @@ namespace Orts.Simulation.RollingStocks
         {
             if (Train.IsPlayerDriven)   // Only calculate tunnel resistance when it is the player train.
             {
-                if (TunnelResistanceDependent)
-                {
                     if (CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue)
                     {
-
                         float? TunnelStart;
                         float? TunnelAhead;
                         float? TunnelBehind;
 
-                        TunnelStart = CarTunnelData.FrontPositionBeyondStartOfTunnel;      // position of front of wagon wrt start of tunnel
-                        TunnelAhead = CarTunnelData.LengthMOfTunnelAheadFront;            // Length of tunnel remaining ahead of front of wagon (negative if front of wagon out of tunnel)
-                        TunnelBehind = CarTunnelData.LengthMOfTunnelBehindRear;           // Length of tunnel behind rear of wagon (negative if rear of wagon has not yet entered tunnel)
-
                         // Calculate tunnel default effective cross-section area, and tunnel perimeter - based upon the designed speed limit of the railway (TRK File)
-
                         float TunnelLengthM = CarTunnelData.LengthMOfTunnelAheadFront.Value + CarTunnelData.LengthMOfTunnelBehindRear.Value;
                         float TrainLengthTunnelM = Train.Length;
                         float TrainMassTunnelKg = Train.MassKg;
@@ -1171,9 +1158,7 @@ namespace Orts.Simulation.RollingStocks
                             TunnelPerimeterM = SingleTunnelPerimeterAreaM;
                         }
 
-                        // 
                         // Calculate first tunnel factor
-
                         float TunnelAComponent = (0.00003318f * DensityAirKgpM3 * TunnelCrossSectionAreaM2) / ((1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)));
                         float TunnelBComponent = 174.419f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2));
                         float TunnelCComponent = (2.907f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2))) / (4.0f * (TunnelCrossSectionAreaM2 / TunnelPerimeterM));
@@ -1191,7 +1176,6 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
             }
-        }
 
 
 
@@ -1806,7 +1790,7 @@ namespace Orts.Simulation.RollingStocks
 
             // get curve radius
 
-            if (CurveSpeedDependent || CurveResistanceDependent)  // Function enabled by menu selection for either curve resistance or curve speed limit
+            if (CurveSpeedDependent)  // Function enabled by menu selection for curve speed limit
             {
 
 
@@ -2055,7 +2039,6 @@ namespace Orts.Simulation.RollingStocks
 
         #endregion
 
-    
         #region Calculate friction force in curves
 
         /// <summary>
@@ -2065,16 +2048,10 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public virtual void UpdateCurveForce(float elapsedClockSeconds)
         {
-            if (CurveResistanceDependent)
-            {
-
                 if (CurrentCurveRadius > 0)
                 {
-
                     if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
                     {
-
-                        
                         float Axles = WheelAxles.Count;
                         float Bogies = Parts.Count - 1;
                         float BogieSize = Axles / Bogies;
@@ -2085,7 +2062,6 @@ namespace Orts.Simulation.RollingStocks
 
                         if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
                         {
-
                             if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
                             {
                                 if (Axles == 2)
@@ -2103,7 +2079,6 @@ namespace Orts.Simulation.RollingStocks
                                 {
                                     if (WagonType == WagonTypes.Passenger)
                                     {
-
                                         RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
                                     }
                                     else
@@ -2116,7 +2091,6 @@ namespace Orts.Simulation.RollingStocks
                                     RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
                                 }
                             }
-
                         }
                         if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
                         {
@@ -2143,12 +2117,8 @@ namespace Orts.Simulation.RollingStocks
                                 // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
 
                                 RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
- 
                             }
-
                         }
-
-
                     }
 
                     // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
@@ -2167,7 +2137,6 @@ namespace Orts.Simulation.RollingStocks
                 CurveForceFilter.Update(elapsedClockSeconds, CurveForceN);
                 CurveForceNFiltered = CurveForceFilter.SmoothedValue;
             }
-        }
 
         #endregion
 
@@ -2880,7 +2849,7 @@ namespace Orts.Simulation.RollingStocks
                     continue;
                 if (p.SumWgt < 1.5)
                 {   // single axle pony trunk
-                    float d = p.OffsetM - p.SumOffset / p.SumWgt;
+                    double d = p.OffsetM - p.SumOffset / p.SumWgt;
                     if (-.2 < d && d < .2)
                         continue;
                     p.AddWheelSetLocation(1, p.OffsetM, p0.A[0] + p.OffsetM * p0.B[0], p0.A[1] + p.OffsetM * p0.B[1], p0.A[2] + p.OffsetM * p0.B[2], 0, null);
@@ -3397,11 +3366,11 @@ namespace Orts.Simulation.RollingStocks
         public float Cos = 1;       // truck angle cosine
         public float Sin = 0;       // truck angle sin
         // line fitting variables
-        public float SumWgt;
-        public float SumOffset;
-        public float SumOffsetSq;
-        public float[] SumX = new float[4];
-        public float[] SumXOffset = new float[4];
+        public double SumWgt;
+        public double SumOffset;
+        public double SumOffsetSq;
+        public double[] SumX = new double[4];
+        public double[] SumXOffset = new double[4];
         public float[] A = new float[4];
         public float[] B = new float[4];
         public bool bogie;
@@ -3444,20 +3413,20 @@ namespace Orts.Simulation.RollingStocks
         }
         public void FindCenterLine()
         {
-            float d = SumWgt * SumOffsetSq - SumOffset * SumOffset;
+            double d = SumWgt * SumOffsetSq - SumOffset * SumOffset;
             if (d > 1e-20)
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    A[i] = (SumOffsetSq * SumX[i] - SumOffset * SumXOffset[i]) / d;
-                    B[i] = (SumWgt * SumXOffset[i] - SumOffset * SumX[i]) / d;
+                    A[i] = (float)((SumOffsetSq * SumX[i] - SumOffset * SumXOffset[i]) / d);
+                    B[i] = (float)((SumWgt * SumXOffset[i] - SumOffset * SumX[i]) / d);
                 }
             }
             else
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    A[i] = SumX[i] / SumWgt;
+                    A[i] = (float)(SumX[i] / SumWgt);
                     B[i] = 0;
                 }
             }

@@ -187,13 +187,6 @@ namespace Orts.Simulation.Physics
         public float PhysicsTrainLocoDirectionDeg;
         public float ResultantWindComponentDeg;
         public float WindResultantSpeedMpS;
-        public bool TrainWindResistanceDependent
-        {
-            get
-            {
-                return Simulator.Settings.WindResistanceDependent;
-            }
-        }
 
         // Auxiliary Water Tenders
         public float MaxAuxTenderWaterMassKG;
@@ -2108,8 +2101,6 @@ namespace Orts.Simulation.Physics
             //These will be representative of the train whilst it is on a straight track, but each wagon will vary when going around a curve.
             // Note both train and wind direction will be positive between 0 (north) and 180 (south) through east, and negative between 0 (north) and 180 (south) through west
             // Wind and train direction to be converted to an angle between 0 and 360 deg.
-            if (TrainWindResistanceDependent)
-            {
                 // Calculate Wind speed and direction, and train direction
                 // Update the value of the Wind Speed and Direction for the train
                 PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindDirection);
@@ -2142,12 +2133,6 @@ namespace Orts.Simulation.Physics
                 float WindAngleRad = MathHelper.ToRadians(ResultantWindComponentDeg);
 
                 WindResultantSpeedMpS = (float)Math.Sqrt(TrainSpeedMpS * TrainSpeedMpS + PhysicsWindSpeedMpS * PhysicsWindSpeedMpS + 2.0f * TrainSpeedMpS * PhysicsWindSpeedMpS * (float)Math.Cos(WindAngleRad));
-
-            }
-            else
-            {
-                WindResultantSpeedMpS = Math.Abs(SpeedMpS);
-            }
         }
 
 

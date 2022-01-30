@@ -1620,7 +1620,7 @@ namespace Orts.Viewer3D
 
         public ORTSDiscreteTrigger(SoundStream soundStream, Events.Source eventSound, Orts.Formats.Msts.Discrete_Trigger smsData, UserSettings settings)
         {
-            TriggerID = Events.From(settings.MSTSBINSound, eventSound, smsData.TriggerID);
+            TriggerID = Events.From(eventSound, smsData.TriggerID);
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
             SoundStream = soundStream;
         }
