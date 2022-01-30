@@ -723,7 +723,7 @@ float2 _PSCartesianToPolar(float3 n)
 {
 	float2 uv;
 	uv.x = atan2(n.z, n.x) * RECIPROCAL_PI2 + 0.5;
-	uv.y = -(asin(n.y) * RECIPROCAL_PI + 0.5);
+	uv.y = -asin(n.y) * RECIPROCAL_PI + 0.5;
 	return uv;
 }
 
