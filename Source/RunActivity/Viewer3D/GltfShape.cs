@@ -389,7 +389,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 var bufferView = Gltf.BufferViews[(int)bufferViewNumber];
                 byteStride = bufferView.ByteStride;
                 if (!BinaryBuffers.TryGetValue(bufferView.Buffer, out var bytes))
-                    BinaryBuffers.Add(bufferView.Buffer, bytes = glTFLoader.Interface.LoadBinaryBuffer(Gltf, bufferView.Buffer, uri => File.ReadAllBytes($"{GltfDir}/{Uri.UnescapeDataString(uri)}")));
+                    BinaryBuffers.Add(bufferView.Buffer, bytes = glTFLoader.Interface.LoadBinaryBuffer(Gltf, bufferView.Buffer, GltfFileName));
                 var stream = new MemoryStream(bytes);
                 stream.Seek(bufferView.ByteOffset + accessorByteOffset, SeekOrigin.Begin);
                 return stream;
