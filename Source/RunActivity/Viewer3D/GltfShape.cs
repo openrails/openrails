@@ -228,7 +228,7 @@ namespace Orts.Viewer3D
             Gltf Gltf;
             string GltfDir;
             string GltfFileName;
-            Dictionary<int, byte[]> GlbBinaryBuffers = new Dictionary<int, byte[]>();
+            Dictionary<int, byte[]> BinaryBuffers = new Dictionary<int, byte[]>();
             float MinimumScreenCoverage;
 
             /// <summary>
@@ -375,7 +375,7 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 if (morphWarning)
                     Trace.TraceInformation($"glTF morphing animation is unsupported in file {gltfFileName}");
 
-                GlbBinaryBuffers.Clear();
+                BinaryBuffers.Clear();
             }
 
             internal Stream GetBufferView(AccessorSparseIndices accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
@@ -388,24 +388,9 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                     return Stream.Null;
                 var bufferView = Gltf.BufferViews[(int)bufferViewNumber];
                 byteStride = bufferView.ByteStride;
-                var buffer = Gltf.Buffers[bufferView.Buffer];
-                Stream stream;
-                if (buffer.Uri != null)
-                {
-                    var file = $"{GltfDir}/{Uri.UnescapeDataString(buffer.Uri)}";
-                    if (!File.Exists(file))
-                        return Stream.Null;
-                    stream = File.OpenRead(file); // Need to be able to seek in the buffer
-                }
-                else
-                {
-                    if (!GlbBinaryBuffers.TryGetValue(bufferView.Buffer, out var bytes))
-                    {
-                        bytes = glTFLoader.Interface.LoadBinaryBuffer(Gltf, bufferView.Buffer, GltfFileName);
-                        GlbBinaryBuffers.Add(bufferView.Buffer, bytes);
-                    }
-                    stream = new MemoryStream(bytes);
-                }
+                if (!BinaryBuffers.TryGetValue(bufferView.Buffer, out var bytes))
+                    BinaryBuffers.Add(bufferView.Buffer, bytes = glTFLoader.Interface.LoadBinaryBuffer(Gltf, bufferView.Buffer, uri => File.ReadAllBytes($"{GltfDir}/{Uri.UnescapeDataString(uri)}")));
+                var stream = new MemoryStream(bytes);
                 stream.Seek(bufferView.ByteOffset + accessorByteOffset, SeekOrigin.Begin);
                 return stream;
             }
@@ -433,6 +418,9 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                             if (File.Exists(imagePath))
                                 using (var stream = File.OpenRead(imagePath))
                                     return Viewer.TextureManager.Get(imagePath, defaultTexture, false, extensionFilter);
+                            else
+                                using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
+                                    return Texture2D.FromStream(Viewer.GraphicsDevice, stream);
                         }
                         else if (image.BufferView != null)
                         {
@@ -464,7 +452,6 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                 var samplerIndex = textureIndex == null ? null : gltf.Textures[(int)textureIndex].Sampler;
                 return samplerIndex == null ? GltfSubObject.DefaultGltfSampler : gltf.Samplers[(int)samplerIndex];
             }
-
 
             internal TextureFilter GetTextureFilter(Sampler sampler)
             {
@@ -681,7 +668,8 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                             vertexBuffer.Name = "POSITION";
                             vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
                         }
-                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
+                        if (!shape.VertexBuffers.ContainsKey(accessorNumber))
+                            shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
                         MinPosition = new Vector3(accessor.Min[0], accessor.Min[1], accessor.Min[2]);
                         MaxPosition = new Vector3(accessor.Max[0], accessor.Max[1], accessor.Max[2]);
                     }
