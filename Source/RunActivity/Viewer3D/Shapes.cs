@@ -2138,9 +2138,22 @@ namespace Orts.Viewer3D
                     // Maximum detail!
                     displayDetailLevel = 0;
                 else if (Viewer.Settings.LODBias > -100)
+                {
                     // Not minimum detail, so find the correct level (with scaling by LODBias)
-                    while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
-                        displayDetailLevel--;
+                    if (this is GltfShape gltfShape)
+                    {
+                        // glTF lod-ding is based on minimum screen coverage.
+                        // Checking from level 0 to less detailed
+                        while (displayDetailLevel > 0 && Viewer.Camera.BiggerThan(xnaDTileTranslation, gltfShape.BoundingBoxNodes, gltfShape.MinimumScreenCoverages[displayDetailLevel - 1]))
+                            displayDetailLevel--;
+                    }
+                    else
+                    {
+                        // .s lod-ding is based on distance levels
+                        while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
+                            displayDetailLevel--;
+                    }
+                }
 
                 var displayDetail = lodControl.DistanceLevels[displayDetailLevel];
                 var distanceDetail = Viewer.Settings.LODBias == 100
