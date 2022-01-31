@@ -26,6 +26,7 @@ var hr = new XMLHttpRequest;
 var httpCodeSuccess = 200;
 var xmlHttpRequestCodeDone = 4;
 var normalTextMode = true;
+var arrowMode = true;
 
 function ApiTrainDpu() {
 	// GET to fetch data, POST to send it
@@ -55,131 +56,138 @@ function ApiTrainDpu() {
 				var Fence = "\u2590";
 
 				// Table title
-				var colspanValue = obj[0].LastCol.length + 5;
-				Str += "<tr> <td colspan='" + colspanValue + "' style='text-align: center'>" + 'Train DPU Info' + "</td></tr>";
-				Str += "<tr> <td colspan='" + colspanValue + "' class='separator'></td></tr>";
+				var colspanValue = obj[0].LastCol.length + obj[0].SymbolCol.length + 1;// 1 = firstCol
+				Str += "<tr> <td></td> <td colspan='" + colspanValue + "' style='text-align: center'>" + 'Train DPU Info' + "</td></tr>";
+				Str += "<tr> <td colspan='" + colspanValue + 3 + "' class='separator'></td></tr>";
 
+				var lineCount = 0;
 				// Customize data
 				for (const data of obj) {
 					if (data.FirstCol != "" && data.LastCol != null && data.SymbolCol != null) {
-						Str += "<tr>";
-						firstColor = false;
-						let lastColor = [];
-						let symbolColor = [];
-						var n = 0;
-						for (const dataCol of obj[0].LastCol) {
-							lastColor[n] = false;
-							symbolColor[n] = false;
-							n++;
-						}
-						keyColor = false;
-
-						// FirstCol
-						if (data.FirstCol != null) {
-							endIndexFirst = data.FirstCol.length;
-							newDataFirst = data.FirstCol.slice(0, endIndexFirst - 3);
-							stringColorFirst = data.FirstCol.slice(-3);
-						}
-
-						// LastCol
-						if (data.LastCol != null) {
-							n = 0;
-							for (const dataCol of data.LastCol) {
-								endIndexLast[n] = dataCol.length;
-								newDataLast[n] = dataCol.slice(0, endIndexLast[n] - 3);
-								stringColorLast[n] = dataCol.slice(-3);
+						if (lineCount < 6 && !arrowMode || arrowMode) {
+							Str += "<tr>";
+							firstColor = false;
+							let lastColor = [];
+							let symbolColor = [];
+							var n = 0;
+							for (const dataCol of obj[0].LastCol) {
+								lastColor[n] = false;
+								symbolColor[n] = false;
 								n++;
 							}
-						}
+							keyColor = false;
 
-						// smallSymbol
-						if (data.SymbolCol != null) {
-							n = 0;
-							for (const dataSymbol of data.SymbolCol) {
-								endIndexSymbol[n] = dataSymbol.length;
-								newDataSymbol[n] = dataSymbol.slice(0, endIndexSymbol[n] - 3);
-								smallSymbolColor[n] = dataSymbol.slice(-3);
-								n++;
-							}
-						}
-
-						// detects color
-						if (codeColor.indexOf(stringColorFirst) != -1) { firstColor = true; }
-						//detect color inside array
-						if (data.LastCol != null) {
-							n = 0;
-							for (const dataCol of data.LastCol) {
-								if (codeColor.indexOf(stringColorLast[n]) != -1) { lastColor[n] = true; }
-								n++;
-							}
-						}
-						if (data.SymbolCol != null) {
-							n = 0;
-							for (const dataSymbol of data.SymbolCol) {
-								if (codeColor.indexOf(smallSymbolColor[n]) != -1) { symbolColor[n] = true; }
-								n++;
-							}
-						}
-
-						if (data.FirstCol == null) {
-							Str += "<td></td>";
-						}
-						else if (data.FirstCol == "Sprtr") {
-							Str += "<td colspan='" + colspanValue + "' class='separator'></td>";
-						}
-						else {
-							// first col = FirstCol data
-							if (firstColor == true) {
-								Str += "<td ColorCode=" + stringColorFirst + ">" + newDataFirst + "</td>";
-							}
-							else {
-								Str += "<td>" + data.FirstCol + "</td>";
+							// FirstCol
+							if (data.FirstCol != null) {
+								endIndexFirst = data.FirstCol.length;
+								newDataFirst = data.FirstCol.slice(0, endIndexFirst - 3);
+								stringColorFirst = data.FirstCol.slice(-3);
 							}
 
-							// second col = LastCol && SymbolCol data
-							n = 0;
+							// LastCol
 							if (data.LastCol != null) {
+								n = 0;
 								for (const dataCol of data.LastCol) {
-									if (symbolColor[n] == true) { // with color
-										Str += "<td ColorCode=" + smallSymbolColor[n] + " width='16' style='text-align: left'>" + newDataSymbol[n] + "</td>";
-									}
-									else { // not color
-										Str += "<td width='16' style='text-align: center'>" + data.SymbolCol[n] + "</td>";
-									}
-									if (lastColor[n] == true) { // with color
-										if (newDataLast[n].indexOf("|") != -1) {
-											newDataLast[n] = newDataLast[n].replace("|", "");// replace fence
-										}
-										Str += "<td ColorCode=" + stringColorLast[n] + ">" + newDataLast[n] + "</td>";
-									}
-									else { // not color
-										if (data.FirstCol == obj[0].FirstCol) {
-											Str += "<td style='text-align: center'>" + data.LastCol[n] + "</td>";
-										}
-										else {
-											if (data.LastCol[n].indexOf("|") != -1) {
-												data.LastCol[n] = data.LastCol[n].replace("|", "");// replace fence
-											}
-											Str += "<td style='text-align: left'>" + data.LastCol[n] + "</td>";
-										}
-									}
-									n++
+									endIndexLast[n] = dataCol.length;
+									newDataLast[n] = dataCol.slice(0, endIndexLast[n] - 3);
+									stringColorLast[n] = dataCol.slice(-3);
+									n++;
 								}
 							}
 
-							// separator
-							if (data.FirstCol == obj[0].FirstCol) {
-								Str += "<tr> <td colspan='" + colspanValue + "' class='separator'></td></tr>";
+							// smallSymbol
+							if (data.SymbolCol != null) {
+								n = 0;
+								for (const dataSymbol of data.SymbolCol) {
+									endIndexSymbol[n] = dataSymbol.length;
+									newDataSymbol[n] = dataSymbol.slice(0, endIndexSymbol[n] - 3);
+									smallSymbolColor[n] = dataSymbol.slice(-3);
+									n++;
+								}
 							}
+
+							// detects color
+							if (codeColor.indexOf(stringColorFirst) != -1) { firstColor = true; }
+							//detect color inside array
+							if (data.LastCol != null) {
+								n = 0;
+								for (const dataCol of data.LastCol) {
+									if (codeColor.indexOf(stringColorLast[n]) != -1) { lastColor[n] = true; }
+									n++;
+								}
+							}
+							if (data.SymbolCol != null) {
+								n = 0;
+								for (const dataSymbol of data.SymbolCol) {
+									if (codeColor.indexOf(smallSymbolColor[n]) != -1) { symbolColor[n] = true; }
+									n++;
+								}
+							}
+
+							if (data.FirstCol == null) {
+								Str += "<td></td>";
+							}
+							else if (data.FirstCol == "Sprtr") {
+								Str += "<td colspan='" + colspanValue + "' class='separator'></td>";
+							}
+							else {
+								// left space
+								Str += "<td></td>";
+
+								// first col = FirstCol data
+								if (firstColor == true) {
+									Str += "<td ColorCode=" + stringColorFirst + ">" + newDataFirst + "</td>";
+								}
+								else {
+									Str += "<td>" + data.FirstCol + "</td>";
+								}
+
+								// second col = LastCol && SymbolCol data
+								n = 0;
+								if (data.LastCol != null) {
+									for (const dataCol of data.LastCol) {
+										if (symbolColor[n] == true) { // with color
+											Str += "<td ColorCode=" + smallSymbolColor[n] + " width='16' style='text-align: left'>" + newDataSymbol[n] + "</td>";
+										}
+										else { // not color
+											Str += "<td width='16' style='text-align: center'>" + data.SymbolCol[n] + "</td>";
+										}
+										if (lastColor[n] == true) { // with color
+											if (newDataLast[n].indexOf("|") != -1) {
+												newDataLast[n] = newDataLast[n].replace("|", "");// replace fence
+											}
+											Str += "<td ColorCode=" + stringColorLast[n] + ">" + newDataLast[n] + "</td>";
+										}
+										else { // not color
+											if (data.FirstCol == obj[0].FirstCol) {
+												Str += "<td style='text-align: center'>" + data.LastCol[n] + "</td>";
+											}
+											else {
+												if (data.LastCol[n].indexOf("|") != -1) {
+													data.LastCol[n] = data.LastCol[n].replace("|", "");// replace fence
+												}
+												Str += "<td style='text-align: left'>" + data.LastCol[n] + "</td>";
+											}
+										}
+										n++
+									}
+								}
+
+								// separator
+								if (data.FirstCol == obj[0].FirstCol) {
+									Str += "<tr> <td colspan='" + colspanValue + "' class='separator'></td></tr>";
+								}
+							}
+							Str += "</tr>";
 						}
-						Str += "</tr>";
+						lineCount++;
 					}
 				}
 				// separator at bottom
 				Str += "<tr> <td colspan='" + colspanValue + "' class='separator'></td></tr>";
-				Str += "</table>";
-				// space at bottom
-				Str += "<tr> <td colspan='" + colspanValue + "' onclick='changeNormalTextMode()' style='text-align: center'><img src='/or_logo.png' height='16' width='16'></img></td> </tr>";
+				// nav arrows bottom
+				Str += "<tr> <td> </td> <td colspan='" + colspanValue / 2 + "' onclick='changeNormalTextMode()' style='text-align: center'><img src='" + (normalTextMode ? '/arrow_left.png' : '/arrow_right.png') + "' height='16' width='16'></img></td>";
+				Str += "<td  colspan='" + (colspanValue / 2) + 1 + "' onclick='changeDisplayMode()'style='text-align: center'><img src='" + (arrowMode ? '/arrow_up.png' : '/arrow_down.png') + "' height='16' width='16'></img></td> <td></td> </tr>";
 				Str += "</table>";
 				TrainDpu.innerHTML = Str;
 			}
@@ -205,4 +213,8 @@ function changePageColor() {
 
 function changeNormalTextMode() {
 	normalTextMode = !normalTextMode;
+};
+
+function changeDisplayMode() {
+	arrowMode = !arrowMode;
 };
