@@ -471,6 +471,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 foreach (var eng in DEList)
                     result.AppendFormat("\t{0}", eng.GearBox.GearBoxFreeWheelEnabled);
 
+                result.AppendFormat("\t\t{0}", Simulator.Catalog.GetString("Slip"));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0}", eng.GearBox.ClutchPercent);
 
             }
 
@@ -693,7 +696,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// The RPM controller tries to reach this value
         /// </summary>
-        public float DemandedRPM;           
+        public float DemandedRPM;
+        float throttleAcclerationFactor;
         public float demandedThrottlePercent;
         /// <summary>
         /// Demanded throttle percent, usually token from parent locomotive
@@ -1071,9 +1075,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
 
             // Initially sets the demanded rpm, but this can be changed depending upon some of the following conditions.
+            // Train starts movement - in this instance ERpM is at idle, and starts speeding up, and at some point in time ERpM = SRpM. - demandedRpM = ( engine_rpm + throttle_rpm + shaft rpm ) /3
             if ((ThrottleRPMTab != null) && (State == DieselEngineState.Running))
             {
                 DemandedRPM = ThrottleRPMTab[demandedThrottlePercent];
+                DemandedRPM = MathHelper.Clamp(DemandedRPM, IdleRPM, MaxRPM);  // Clamp throttle setting within bounds
             }
 
             if (GearBox != null)
@@ -1152,7 +1158,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 if (GearBox.GearBoxFreeWheelFitted && (GearBox.GearedThrottleDecrease && GearBox.ShaftRPM > ThrottleRPMTab[demandedThrottlePercent] || GearBox.ShaftRPM > GovernorRPM))
                 {
                     GearBox.clutchOn = false;
-                    DemandedRPM = ThrottleRPMTab[demandedThrottlePercent];
                     GearBox.GearBoxFreeWheelEnabled = true;
                 }
                 else if (GearBox.GearBoxFreeWheelFitted && GearBox.ShaftRPM < ThrottleRPMTab[demandedThrottlePercent] && GearBox.ShaftRPM < GovernorRPM)
@@ -1163,6 +1168,36 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 GearBox.previousGearThrottleSetting = DemandedThrottlePercent;
 
+                // Engine with no loading wll tend to speed up if throttle is open, similarly for situation where freewheeling is occurring
+                // the following is an approximation to calculate rpm speed yhat motor can achieve when operating at no load - will increase until torque curve 
+                // can no longer overcome auxiliary functions connected to engine
+                if (Locomotive.SpeedMpS > 0.1 && (GearBox.GearBoxFreeWheelEnabled || GearBox.CurrentGear == null))
+                {
+                    var tempthrottle = DemandedThrottlePercent / 100.0f;
+                    if (tempthrottle >= 0.5)
+                    {
+                        DemandedRPM = MaxRPM;                        
+                    }
+                    else if (tempthrottle < 0.5 && tempthrottle > 0)
+                    {
+                        DemandedRPM = (2.0f * tempthrottle * (MaxRPM - IdleRPM)) + IdleRPM;
+                    }
+                    throttleAcclerationFactor = 1.0f + tempthrottle;
+                }
+                else if (!GearBox.IsClutchOn)
+                {
+                    // When clutch is slipping, then increase in engine rpm will be slower.
+
+                    var tempClutchFraction =    GearBox.ClutchPercent / 100.0f; // 100% = clutch slipping, 0% = clutch engaged
+                    tempClutchFraction = MathHelper.Clamp(tempClutchFraction, 0.1f, 1.0f);  // maintain a value between 0.1 (never want throttle increase value to be zero) and 1.0
+                    throttleAcclerationFactor = 1.0f - tempClutchFraction; // increases as clutch engages
+                }
+                else
+                {
+                    // under "normal" circumstances
+                    throttleAcclerationFactor = 1.0f;
+                }
+                               
                 // brakes engine when doing gear change
                 // During a manual gear change brake engine shaft speed to match wheel shaft speed
                 if (engineBrakingLockout && RealRPM > GearBox.ShaftRPM && RealRPM > IdleRPM)
@@ -1220,14 +1255,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     GearOverspeedShutdownEnabled = false;
                 }
 
-                // In event of over or underspeed shutdown of fluid or scoop coupling drive ErP to 0.
+                // In event of over or underspeed shutdown of fluid or scoop coupling drive ERpM to 0.
                 if ((GearOverspeedShutdownEnabled || GearUnderspeedShutdownEnabled) && (GearBox.ClutchType == TypesClutch.Fluid || GearBox.ClutchType == TypesClutch.Scoop))
                 {
                     DemandedRPM = 0;
-                }
-                                                             
+                }                                                             
             }
 
+            Trace.TraceInformation("AccelFactor {0} RpM {1}", throttleAcclerationFactor, RealRPM);
             if (RealRPM == IdleRPM)
             {
                 ExhaustParticles = InitialExhaust;
@@ -1236,7 +1271,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
             if (RealRPM < DemandedRPM)
             {
-                dRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * (DemandedRPM - RealRPM)), ChangeUpRPMpS);
+                dRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * throttleAcclerationFactor * (DemandedRPM - RealRPM)), ChangeUpRPMpS);
                 if (dRPM > 1.0f) //The forumula above generates a floating point error that we have to compensate for so we can't actually test for zero.
                 {
                     ExhaustParticles = (InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustAccelIncrease;
@@ -1253,7 +1288,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
             else if (RealRPM > DemandedRPM)
             {
-                dRPM = (float)Math.Max(-Math.Sqrt(2 * RateOfChangeDownRPMpSS * (RealRPM - DemandedRPM)), -ChangeDownRPMpS);
+                dRPM = (float)Math.Max(-Math.Sqrt(2 * RateOfChangeDownRPMpSS * throttleAcclerationFactor * (RealRPM - DemandedRPM)), -ChangeDownRPMpS);
                 ExhaustParticles = (InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
                 ExhaustMagnitude = (InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
                 ExhaustColor = ExhaustDecelColor;
