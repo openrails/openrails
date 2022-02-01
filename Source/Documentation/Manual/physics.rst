@@ -160,11 +160,17 @@ however if the modeler desires greater accuracy the following parameters can be 
 WAG/ENG file in the wagon section:
 
 ``ORTSLengthBogieCentre`` - length between bogie centres.
-``ORTSLengthCarBody`` - Length between car ends.
+
+``ORTSLengthCarBody`` - Length between car ends (typically measured between the coupler pivot points).
+
 ``ORTSLengthCouplerFace`` - length between coupler faces.
 
-``ORTSNumAxles`` - number of axles on the car.
-``ORTSNumBogies`` - number of bogies on the car.
+``ORTSNumberAxles`` - number of axles on the car.
+
+``ORTSNumberDriveAxles`` - number of driven axles on the locomotive. NB: Total axles on locomotive will be 
+``ORTSNumberAxles`` + ``ORTSNumberDriveAxles``.
+
+``ORTSNumberBogies`` - number of bogies on the car.
 
 .. _physics-adhesion:
 
