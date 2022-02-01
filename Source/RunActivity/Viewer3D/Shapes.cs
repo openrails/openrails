@@ -2125,8 +2125,12 @@ namespace Orts.Viewer3D
                     ? lodControl.DistanceLevels[lodControl.DistanceLevels.Length - 1]
                     : displayDetail;
 
-                // If set, extend the lowest LOD to the maximum viewing distance.
-                if (Viewer.Settings.LODViewingExtention && displayDetailLevel == lodControl.DistanceLevels.Length - 1)
+                // Extend the lowest LOD to the maximum viewing distance.
+                // Set to MaxValue so that an object never disappears.
+                // Many MSTS objects had a LOD of 2km which is the maximum distance that MSTS can handle.
+                // Open Rails can handle greater distances, so we override the lowest-detail LOD to make sure OR shows shapes further away than 2km.
+                // See http://www.elvastower.com/forums/index.php?/topic/35301-menu-options/page__view__findpost__p__275531
+                if (displayDetailLevel == lodControl.DistanceLevels.Length - 1)
                     distanceDetail.ViewingDistance = float.MaxValue;
 
                 for (var i = 0; i < displayDetail.SubObjects.Length; i++)
