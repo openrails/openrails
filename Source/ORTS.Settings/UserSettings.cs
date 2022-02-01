@@ -186,6 +186,8 @@ namespace ORTS.Settings
         public bool DisableTCSScripts { get; set; }
 
         // Audio settings:
+        [Default(true)]
+        public bool MSTSBINSound { get; set; }
         [Default(100)]
         public int SoundVolumePercent { get; set; }
         [Default(5)]
@@ -199,6 +201,8 @@ namespace ORTS.Settings
         [Default(false)]
         public bool ShadowAllShapes { get; set; }
         [Default(false)]
+        public bool FastFullScreenAltTab { get; set; }
+        [Default(false)]
         public bool WindowGlass { get; set; }
         [Default(false)]
         public bool ModelInstancing { get; set; }
@@ -206,6 +210,8 @@ namespace ORTS.Settings
         public bool Wire { get; set; }
         [Default(false)]
         public bool VerticalSync { get; set; }
+        [Default(0)]
+        public int Cab2DStretch { get; set; }
         [Default(2000)]
         public int ViewingDistance { get; set; }
         [Default(true)]
@@ -233,6 +239,8 @@ namespace ORTS.Settings
         public int AdhesionMovingAverageFilterSize { get; set; }
         [Default(false)]
         public bool BreakCouplers { get; set; }
+        [Default(false)]
+        public bool CurveResistanceDependent { get; set; }
         [Default(false)]
         public bool CurveSpeedDependent { get; set; }
         [Default(false)]
@@ -307,6 +315,10 @@ namespace ORTS.Settings
         public bool DoubleWire { get; set; }
         [Default(false)]
         public bool AuxActionEnabled { get; set; }
+        [Default(false)]
+        public bool CircularSpeedGauge { get; set; }
+        [Default(false)]
+        public bool LODViewingExtention { get; set; }
         [Default(false)]
         public bool PreferDDSTexture { get; set; }
         [Default(false)]

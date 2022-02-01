@@ -197,7 +197,8 @@ Audio Options
 
 .. image:: images/options-audio.png
 
-Except for very slow computers, it is suggested that you set the Sound detail level to 5.
+Except for very slow computers, it is suggested that you leave the *MSTS
+Bin compatible sound* option checked and set the Sound detail level to 5.
 
 The *% sound volume* scroll button allows adjustment of the volume of OR
 sound. Default is 40.
@@ -231,6 +232,22 @@ Note: This may reduce the frame rate.
 
 Note: Static objects provided with shadows (in the file <route>.ref) 
 will cast shadows anyway. This option adds shadows for other static objects.
+
+
+.. _options-fullscreen:
+
+Fast full-screen Alt+Tab
+------------------------
+
+When this option is selected, and OR is running full-screen, pressing
+Alt+Tab leaves OR full-screen and running, and allows the
+:ref:`Dispatcher Window <driving-dispatcher>` to be shown in front of it. 
+If this option is not selected, OR is minimized. 
+Each successive press of Alt+Tab will toggle between the map window
+and the OR window.
+
+Note: To display the Map Window, the :ref:`Map window option <options-map-window>` 
+must also be selected and the Map Window started with Ctrl+9.
 
 Glass on in-game windows
 ------------------------
@@ -272,6 +289,41 @@ If Open Rails' frame rate drops below your monitor's frame rate, you
 may see stuttering or image "tearing". To prevent this, either turn off 
 the VSync option or reduce the values for video options such as view 
 distance, anti-aliasing, or world object density.
+
+.. _options-cab-stretch:
+
+% Cab 2D stretch
+----------------
+
+OR manages not only cab interiors using 2D images in a MSTS-compatible
+way, but also supports 3D models. Most 2D cab images follow MSTS practice,
+being 1024 x 768 pixels to suit monitors with a 4:3 aspect ratio.
+
+So, the problem arises -- how to display these 4:3 cabs on a 16:9 or 16:10
+monitor?
+
+One possibility is to stretch these images horizontally to match other
+aspect ratios, as shown in the image below.
+
+.. image:: images/options-2dstretch_1.png
+
+To respect the proportions however, by default OR does no stretching and
+shows the full width of the cab interior, thus losing a portion from the
+top and bottom of the image. You can use the Up and Down Arrow keys to pan
+and reveal these missing portions.
+
+Therefore the setting for % Cab 2D Stretch has a default value of 0
+providing no stretching and a maximum value of 100 which stretches the
+picture so as to cover the complete display. Intermediate values provide a
+blend of panning and stretching.
+
+.. image:: images/options-2dstretch_2.png
+
+OR can also pillarbox or letterbox the cab by filling the missing space with 
+black bars. You can activate this mode in-game by pressing Ctrl+1. It overrides 
+any stretching.
+
+.. image:: images/options-2dstretch_3.png
 
 Viewing distance
 ----------------
@@ -371,6 +423,14 @@ divided into two parts. OR will display a message to report this.
 
 .. _options-curve-resistance:
 
+Curve dependent resistance
+--------------------------
+
+When this option is selected, resistance to train motion is influenced by
+the radius of the curve on which the train is running. This option is
+described in detail :ref:`here <physics-curve-resistance>` (theory) and
+also :ref:`here <physics-curve-resistance-application>` (OR application).
+
 Curve dependent speed limit
 ---------------------------
 
@@ -381,6 +441,26 @@ displayed as a message. This option is described in detail
 :ref:`here <physics-curve-speed-limit>` (theory) and also
 :ref:`here <physics-curve-speed-limit-application>` (OR application).
 OR does not display the damage.
+
+.. _options-tunnel-resistance:
+
+Tunnel dependent resistance
+---------------------------
+
+When this option is selected, OR takes into account the fact that trains
+in tunnels are subject to higher air resistance, and therefore need a
+higher effort at invariant speed. This option is described in detail
+:ref:`here <physics-tunnel-friction>` (theory) and
+:ref:`here <physics-tunnel-friction-application>` (OR application).
+
+.. _options-wind-resistance:
+
+Wind dependent resistance
+-------------------------
+
+When this option is selected, resistance to train motion is influenced by
+the wind speed, and the direction that it is blowing. This option is
+described in detail :ref:`here <physics-wind-resistance>`
 
 Run electric locos on non-electrified routes
 --------------------------------------------
@@ -596,6 +676,52 @@ When this option is selected, when OR is loading the shape (.s) files it
 will report errors in syntax and structure (even if these don't cause
 runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop.
 
+.. _options-etcs:
+
+ETCS circular speed gauge
+-------------------------
+
+When this option is selected, it is possible to add to the cabview a
+circular speed gauge accordingly to the European standard train control
+system ETCS.
+
+.. image:: images/options-etcs.png
+   :scale: 60 %
+   :align: center
+
+
+.. admonition:: For content developers
+
+    The gauge is added by the insertion of a block like the following
+    into the .cvf file::
+
+        Digital (
+            Type ( SPEEDOMETER DIGITAL )
+            Style ( NEEDLE )
+            Position ( 160 255 56 56 )
+            ScaleRange ( 0 250 )
+            Units ( KM_PER_HOUR )
+        )
+
+It is also possible to display the full ETCS display using the following block
+instead::
+
+		ScreenDisplay (
+			Type ( ORTS_ETCS SCREEN_DISPLAY )
+			Position ( 280 272 320 240 )
+			Units ( KM_PER_HOUR )
+			Parameters (
+				Mode FullSize
+			)
+		)
+		
+The following DMI size variants are available: FullSize (displays the whole DMI), SpeedArea
+(displays only the left part with information about distance and speed) and PlanningArea
+(displays only the planning area and navigation buttons).
+
+The information displayed in the DMI is controlled via the TCS script. For more details,
+see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
+
 Load day/night textures only when needed
 ----------------------------------------
 
@@ -670,6 +796,14 @@ lat/lon rectangle corresponding to the arid zone of North America (lat from
 105 to 120 degrees west and lon from 30 to 45 degrees north).
 The randomization is not performed either if the activity contains weather
 change events.
+
+Extend object maximum viewing distance to horizon
+-------------------------------------------------
+
+With this option selected, all objects viewable up to the viewing distance
+defined in the Video Options are displayed. As a default ORTS only
+displays objects up to 2000 m distance. Selecting this option improves
+display quality but may reduce frame rate.
 
 .. _options-dds-textures:
 
