@@ -606,17 +606,6 @@ When this option is selected, when OR is loading the shape (.s) files it
 will report errors in syntax and structure (even if these don't cause
 runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop.
 
-Load day/night textures only when needed
-----------------------------------------
-
-As a default OR loads night textures together with the day textures both at
-daytime and nighttime. When this option is selected, to reduce loading time and reduce
-memory used, night textures are not loaded in the daytime and are only
-loaded at sunset (if the game continues through sunset time); analogously day
-textures are not loaded in the nighttime if the related night textures are
-available, and are only loaded at sunrise (if the game continues through sunrise
-time).
-
 Signal light glow
 -----------------
 
