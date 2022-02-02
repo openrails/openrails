@@ -1157,7 +1157,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 // Determine when freewheeling should occur
                 if (GearBox.GearBoxFreeWheelFitted && (GearBox.GearedThrottleDecrease && GearBox.ShaftRPM > ThrottleRPMTab[demandedThrottlePercent] || GearBox.ShaftRPM > GovernorRPM))
                 {
-                    GearBox.clutchOn = false;
+                   // GearBox.clutchOn = false;
                     GearBox.GearBoxFreeWheelEnabled = true;
                 }
                 else if (GearBox.GearBoxFreeWheelFitted && GearBox.ShaftRPM < ThrottleRPMTab[demandedThrottlePercent] && GearBox.ShaftRPM < GovernorRPM)
@@ -1169,28 +1169,38 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 GearBox.previousGearThrottleSetting = DemandedThrottlePercent;
 
                 // Engine with no loading wll tend to speed up if throttle is open, similarly for situation where freewheeling is occurring
-                // the following is an approximation to calculate rpm speed yhat motor can achieve when operating at no load - will increase until torque curve 
+                // the following is an approximation to calculate rpm speed that motor can achieve when operating at no load - will increase until torque curve 
                 // can no longer overcome auxiliary functions connected to engine
-                if (Locomotive.SpeedMpS > 0.1 && (GearBox.GearBoxFreeWheelEnabled || GearBox.CurrentGear == null))
+                if (GearBox.GearBoxFreeWheelEnabled || GearBox.CurrentGear == null)
                 {
                     var tempthrottle = DemandedThrottlePercent / 100.0f;
                     if (tempthrottle >= 0.5)
                     {
-                        DemandedRPM = MaxRPM;                        
+                        DemandedRPM = MaxRPM;
                     }
                     else if (tempthrottle < 0.5 && tempthrottle > 0)
                     {
                         DemandedRPM = (2.0f * tempthrottle * (MaxRPM - IdleRPM)) + IdleRPM;
                     }
-                    throttleAcclerationFactor = 1.0f + tempthrottle;
+                    throttleAcclerationFactor = (1.0f + tempthrottle) * 4.0f;
                 }
                 else if (!GearBox.IsClutchOn)
                 {
-                    // When clutch is slipping, then increase in engine rpm will be slower.
-
-                    var tempClutchFraction =    GearBox.ClutchPercent / 100.0f; // 100% = clutch slipping, 0% = clutch engaged
+                    // When clutch is slipping, engine rpm will increase initially quickly (whilst clutch under no load) until clutch starts to engage, and then slow down as clutch engages.
+                    var tempClutchFraction = GearBox.ClutchPercent / 100.0f; // 100% = clutch slipping, 0% = clutch engaged
                     tempClutchFraction = MathHelper.Clamp(tempClutchFraction, 0.1f, 1.0f);  // maintain a value between 0.1 (never want throttle increase value to be zero) and 1.0
-                    throttleAcclerationFactor = 1.0f - tempClutchFraction; // increases as clutch engages
+                    throttleAcclerationFactor = 1.0f + tempClutchFraction; // decreases as clutch engages, thus when clutch disengaged engine rpm change high, clutch engaged, engine rpm low
+
+                    // Whilst clutch slipping use a similar approach as above to set RpM for "unloaded" engine.
+                    var tempthrottle = DemandedThrottlePercent / 100.0f;
+                    if (tempthrottle >= 0.5)
+                    {
+                        DemandedRPM = MaxRPM;
+                    }
+                    else if (tempthrottle < 0.5 && tempthrottle > 0)
+                    {
+                        DemandedRPM = (2.0f * tempthrottle * (MaxRPM - IdleRPM)) + IdleRPM;
+                    }
                 }
                 else
                 {
@@ -1384,6 +1394,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             else
             {
                 CurrentDieselOutputPowerW = (RawRpM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
+            }
+
+            // For geared locomotives the engine RpM can be higher then the throttle demanded rpm, and this gives an inflated value of power
+            // so set output power based upon throttle demanded power
+            if (HasGearBox)
+            {
+                CurrentDieselOutputPowerW = (ThrottleRPMTab[demandedThrottlePercent] - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
             }
 
             if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
