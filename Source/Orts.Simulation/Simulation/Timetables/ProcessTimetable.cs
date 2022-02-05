@@ -32,7 +32,6 @@ using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
-using Orts.Simulation.Timetables;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -2335,7 +2334,6 @@ namespace Orts.Simulation.Timetables
 
                 foreach (consistInfo consistDetails in consistSets)
                 {
-                    bool consistReverse = consistDetails.reversed;
                     string consistFile = Path.Combine(consistDirectory, consistDetails.consistFile);
 
                     string pathExtension = Path.GetExtension(consistFile);
@@ -2366,7 +2364,7 @@ namespace Orts.Simulation.Timetables
 
                     TTTrain.TcsParametersFileName = conFile.Train.TrainCfg.TcsParametersFileName;
 
-                    AddWagons(conFile, consistDetails, trainsetDirectory, simulator, consistReverse);
+                    AddWagons(conFile, consistDetails, trainsetDirectory, simulator);
 
                     // derive speed
                     if (conFile.Train.TrainCfg.MaxVelocity != null && conFile.Train.TrainCfg.MaxVelocity.A > 0)
@@ -2431,12 +2429,16 @@ namespace Orts.Simulation.Timetables
             /// <param name="consistFile">Processed consist File</param>
             /// <param name="trainsDirectory">Consist Directory</param>
             /// <param name="simulator">Simulator</param>
-            public void AddWagons(ConsistFile consistFile, consistInfo consistDetails, string trainsDirectory, Simulator simulator, bool consistReverse)
+            public void AddWagons(ConsistFile consistFile, consistInfo consistDetails, string trainsDirectory, Simulator simulator)
             {
                 int carId = 0;
 
+                List<Wagon> wagonList = consistDetails.reversed
+                    ? consistFile.Train.TrainCfg.WagonList.AsEnumerable().Reverse().ToList()
+                    : consistFile.Train.TrainCfg.WagonList;
+
                 // add wagons
-                foreach (Wagon wagon in consistFile.Train.TrainCfg.WagonList)
+                foreach (Wagon wagon in wagonList)
                 {
                     string wagonFolder = Path.Combine(trainsDirectory, wagon.Folder);
                     string wagonFilePath = Path.Combine(wagonFolder, wagon.Name + ".wag");
@@ -2454,19 +2456,14 @@ namespace Orts.Simulation.Timetables
 
                     car = RollingStock.Load(simulator, TTTrain, wagonFilePath);
                     car.UiD = wagon.UiD;
-                    car.Flipped = consistReverse ? !wagon.Flip : wagon.Flip;
-                    car.CarID = String.Concat(TTTrain.Number.ToString("0###"), "_", carId.ToString("0##"));
+                    car.Flipped = consistDetails.reversed ? !wagon.Flip : wagon.Flip;
+                    car.CarID = string.Concat(TTTrain.Number.ToString("0###"), "_", carId.ToString("0##"));
                     carId++;
                     car.OrgConsist = string.Copy(consistDetails.consistFile).ToLower();
 
                     car.SignalEvent(Event.Pantograph1Up);
 
                     TTTrain.Length += car.CarLengthM;
-                }
-
-                if (consistReverse)
-                {
-                    TTTrain.Cars.Reverse();
                 }
             }
 
