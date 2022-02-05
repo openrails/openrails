@@ -32,23 +32,6 @@ sometimes use a view other than the cabview to follow the train, and
 therefore will not see the alerter warning, selecting the related option
 *Also in external views* enables the alerter in those views as well.
 
-.. _options-map-window:
-
-Map window
------------------
-
-It is suggested to always select this option. When this option is selected,
-pressing ``<Ctrl+9>`` at runtime creates an additional window like the
-following. This window coexists with the main Open Rails window, and
-``<Alt+Tab>`` switches between it and the Open Rails window. See the related
-option :ref:`Fast fullscreen Alt+Tab <options-fullscreen>`.
-
-Through this window you can monitor train movements and also influence
-them, by setting signals and switches. A complete description of the
-dispatcher tab can be found :ref:`here <driving-dispatcher>`.
-
-.. image:: images/options-dispatcher.png
-
 Graduated release air brakes
 ----------------------------
 

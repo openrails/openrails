@@ -38,7 +38,6 @@
             this.buttonCancel = new System.Windows.Forms.Button();
             this.checkAlerter = new System.Windows.Forms.CheckBox();
             this.checkControlConfirmations = new System.Windows.Forms.CheckBox();
-            this.checkViewMapWindow = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
             this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
@@ -53,7 +52,6 @@
             this.pbLAA = new System.Windows.Forms.PictureBox();
             this.pbAlerter = new System.Windows.Forms.PictureBox();
             this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
-            this.pbMapWindow = new System.Windows.Forms.PictureBox();
             this.labelPortNumber = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.checkEnableWebServer = new System.Windows.Forms.CheckBox();
@@ -212,7 +210,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbMapWindow)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
             this.tabPageAudio.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).BeginInit();
@@ -346,18 +343,6 @@
             this.checkControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // checkViewMapWindow
-            // 
-            this.checkViewMapWindow.AutoSize = true;
-            this.checkViewMapWindow.Location = new System.Drawing.Point(32, 75);
-            this.checkViewMapWindow.Name = "checkViewMapWindow";
-            this.checkViewMapWindow.Size = new System.Drawing.Size(254, 17);
-            this.checkViewMapWindow.TabIndex = 2;
-            this.checkViewMapWindow.Text = "Map window                                                        ";
-            this.checkViewMapWindow.UseVisualStyleBackColor = true;
-            this.checkViewMapWindow.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.checkViewMapWindow.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
             // tabOptions
             // 
             this.tabOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -393,7 +378,6 @@
             this.tabPageGeneral.Controls.Add(this.pbLAA);
             this.tabPageGeneral.Controls.Add(this.pbAlerter);
             this.tabPageGeneral.Controls.Add(this.pbControlConfirmations);
-            this.tabPageGeneral.Controls.Add(this.pbMapWindow);
             this.tabPageGeneral.Controls.Add(this.labelPortNumber);
             this.tabPageGeneral.Controls.Add(this.numericWebServerPort);
             this.tabPageGeneral.Controls.Add(this.checkEnableWebServer);
@@ -406,7 +390,6 @@
             this.tabPageGeneral.Controls.Add(this.comboPressureUnit);
             this.tabPageGeneral.Controls.Add(this.labelLanguage);
             this.tabPageGeneral.Controls.Add(this.comboLanguage);
-            this.tabPageGeneral.Controls.Add(this.checkViewMapWindow);
             this.tabPageGeneral.Controls.Add(this.checkControlConfirmations);
             this.tabPageGeneral.Controls.Add(this.checkAlerterExternal);
             this.tabPageGeneral.Controls.Add(this.numericBrakePipeChargingRate);
@@ -565,18 +548,6 @@
             this.pbControlConfirmations.Click += new System.EventHandler(this.HelpIcon_Click);
             this.pbControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // pbMapWindow
-            // 
-            this.pbMapWindow.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbMapWindow.Location = new System.Drawing.Point(6, 76);
-            this.pbMapWindow.Name = "pbMapWindow";
-            this.pbMapWindow.Size = new System.Drawing.Size(18, 18);
-            this.pbMapWindow.TabIndex = 18;
-            this.pbMapWindow.TabStop = false;
-            this.pbMapWindow.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbMapWindow.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbMapWindow.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // labelPortNumber
             // 
@@ -2474,7 +2445,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbMapWindow)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
             this.tabPageAudio.ResumeLayout(false);
             this.tabPageAudio.PerformLayout();
@@ -2536,7 +2506,6 @@
         private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.CheckBox checkAlerter;
         private System.Windows.Forms.CheckBox checkControlConfirmations;
-		private System.Windows.Forms.CheckBox checkViewMapWindow;
         private System.Windows.Forms.TabControl tabOptions;
         private System.Windows.Forms.TabPage tabPageGeneral;
         private System.Windows.Forms.TabPage tabPageKeyboard;
@@ -2679,7 +2648,6 @@
         private System.Windows.Forms.Label labelPortNumber;
         private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
         private System.Windows.Forms.CheckBox checkBoxNoDieselEngineStart;
-        private System.Windows.Forms.PictureBox pbMapWindow;
         private System.Windows.Forms.PictureBox pbControlConfirmations;
         private System.Windows.Forms.PictureBox pbAlerter;
         private System.Windows.Forms.PictureBox pbLAA;

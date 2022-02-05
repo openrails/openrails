@@ -143,7 +143,6 @@ namespace ORTS
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
             checkOverspeedMonitor.Checked = Settings.SpeedControl;
             checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
-            checkViewMapWindow.Checked = Settings.ViewDispatcher;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
             checkRetainers.Checked = Settings.RetainersOnAllCars;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
@@ -427,7 +426,6 @@ namespace ORTS
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
             Settings.SpeedControl = checkOverspeedMonitor.Checked;
             Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
-            Settings.ViewDispatcher = checkViewMapWindow.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
             Settings.RetainersOnAllCars = checkRetainers.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
@@ -819,7 +817,6 @@ namespace ORTS
             {
                 (pbAlerter, new[] { checkAlerter }),
                 (pbControlConfirmations, new[] { checkControlConfirmations }),
-                (pbMapWindow, new[] { checkViewMapWindow }),
                 (pbLAA, new[] { checkUseLargeAddressAware }),
                 (pbRetainers, new[] { checkRetainers }),
                 (pbGraduatedRelease, new[] { checkGraduatedRelease }),
@@ -857,11 +854,6 @@ namespace ORTS
                 {
                     pbControlConfirmations,
                     baseUrl + "/options.html#control-confirmations"
-                },
-                {
-                    pbMapWindow,
-                    // This URL is temporary, waiting for https://open-rails.readthedocs.io to be updated to match the Manual in PDF format.
-                    baseUrl + "/options.html#dispatcher-window"
                 },
                 {
                     pbLAA,
