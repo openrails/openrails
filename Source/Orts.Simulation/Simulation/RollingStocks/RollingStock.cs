@@ -96,21 +96,6 @@ namespace Orts.Simulation.RollingStocks
             return car;
         }
 
-        public static void Save(BinaryWriter outf, TrainCar car)
-        {
-            MSTSWagon wagon = (MSTSWagon)car;   // extend this when we introduce other types of rolling stock
-            outf.Write(wagon.WagFilePath);
-            wagon.Save(outf);
-        }
-
-        public static TrainCar Restore(Simulator simulator, BinaryReader inf, Train train)
-        {
-            TrainCar car = Load(simulator, train, inf.ReadString(), false);
-            car.Restore(inf);
-            car.Initialize();
-            return car;
-        }
-
         /// <summary>
         /// Utility class to avoid loading multiple copies of the same file.
         /// </summary>
