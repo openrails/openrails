@@ -117,7 +117,7 @@ Language
 
 OR is an internationalized package. It supports many languages, and others
 can be added by following the instructions contained in the *Localization
-Manual* which can be found in the Open Rails ``Source/Trunk/Documentation``
+Manual* which can be found in the Open Rails ``Documentation``
 folder.
 
 When *System* is selected, OR automatically selects the language of the
@@ -138,7 +138,7 @@ Other units
 -----------
 
 This selects the units displayed for length, mass, pressure, etc. in the
-:ref:`F5 HUD <driving-hud>` of the simulation.
+:ref:`F5 Train Driving Info Window and also the Alt+F5 HUD <driving-hud>` of the simulation.
 
 The option *Player's Location* sets the units according to the Windows
 *Language and Region* settings on the player's computer.
@@ -146,10 +146,10 @@ The option *Player's Location* sets the units according to the Windows
 The option *Route* sets the units based on the data in the route files.
 The other options are self-explanatory.
 
-The F5 HUD uses the abbreviations *stn* for short tons (2000 lb) and
-*t* or *tn* for metric tons (tonnes).
+These windows use the abbreviations *stn* for short tons (2000 lb),
+*t* for long tons (2,240 lb) or *tn* for metric tons (tonnes).
 
-Note that the units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
+Note: The units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
 distance) are always based on data read from the route files.
 
 Disable TCS scripts
@@ -217,20 +217,22 @@ Video Options
 Dynamic shadows
 ---------------
 
-The default setting is unchecked.
 Check this option to cast shadows from movable objects such as trains.
+
+The default setting is unchecked.
 
 Note: This may reduce the frame rate.
 
 Shadow for all shapes
 ---------------------
 
-The default setting is unchecked.
 Check this option to cast shadows from static objects.
+
+The default setting is unchecked.
 
 Note: This may reduce the frame rate.
 
-Note: Static objects provided with shadows (in the file <route>.ref) 
+Note: Static objects provided with shadows (in the World files) 
 will cast shadows anyway. This option adds shadows for other static objects.
 
 
@@ -259,8 +261,11 @@ Model instancing
 ----------------
 
 When the option is checked, in cases where multiple instances of the same
-object have to be drawn, only a single draw call is sent to the GPU. This
-means lower CPU load. It is suggested to always check this option.
+object have to be drawn, only a single draw call is sent to the GPU. 
+Uncheck this option to avoid the graphical glitches which appear on some 
+hardware, but this may reduce the frame rate.
+
+The default setting is checked.
 
 Overhead wire
 -------------
@@ -328,22 +333,26 @@ any stretching.
 Viewing distance
 ----------------
 
-This option defines the maximum distance at which terrain is displayed. At
-higher distances Distant Mountains will be displayed (see below). 
-Increasing this parameter tends to increase CPU and GPU load. 
-Also, some routes are optimized for the standard MSTS maximum viewing distance (2000m).
+This option defines the maximum distance at which terrain is displayed. 
+Where the content provides "Distant Mountains", these are displayed independently (see below).
+
+Note: Some routes are optimized for the standard MSTS maximum viewing distance (2km).
 
 Note: When the option to tune settings automatically is applied, then this 
 value will be overridden and dynamically changed to maintain a target frame rate.
 
+The default distance is 2km.
+
 Distant mountains
 -----------------
 
-Distant mountains are supported in a way that is compatible with MSTS.
-Distant mountains are present in the route if it has a folder called
-LO_TILE. You may turn the feature on by checking the *Distant Mountains*
-checkbox. In addition to MSTS capability, you can select the viewing
-distance of the distant mountains.
+This option defines the maximum distance at which "Distant Mountains" are displayed. 
+
+Note: "Distant Mountains" are present in the route if it has a folder called LO_TILE. 
+
+The default setting is checked.
+
+The default distance is 40km
 
 .. image:: images/options-mountains.png
 
@@ -486,9 +495,11 @@ until the train has stopped and then hold it as red from that time up to
 two minutes before starting time. This is useful in organizing train meets
 and takeovers, however it does not always correspond to reality nor to
 MSTS operation. So with this option the player can decide which behavior
-the start signal will have. This option is checked by default. 
+the start signal will have. 
 
-Unchecking the option has no effect when in 
+This option is checked by default. 
+
+Note: Unchecking the option has no effect when in 
 :ref:`Timetable mode <timetable>`.
 
 .. _options-open-doors-ai:
@@ -536,11 +547,20 @@ This is an option which players can set to simplify either the train controls or
 This feature is intended for players who want to focus on "running" trains and don't want to be bothered 
 by complex controls or prototypical physics which may require some additional expertise to operate.
 
-Initally this option affects only trains that use vacuum braking but other controls may be added in future versions.
+Initially this option affects only trains that use vacuum braking but other controls may be added in future versions.
 
 With vacuum braking, it is sometimes necessary to operate two different controls to apply and release the brakes. 
 With "Simple control and physics" checked, the player is able to operate the brakes just with the brake valve 
 and doesn't need to consider the steam ejector separately.
+
+Diesel engines stopped at simulation start
+------------------------------------------
+
+When this option is unchecked, stationary diesel locos start the simulation with their engines running.
+Check this option for a more detailed behaviour in which the player has to start the loco's engine.
+
+The default setting is unchecked.
+
 
 .. _options-keyboard:
 
@@ -849,7 +869,9 @@ level of detail comes into view. This may be useful to sharpen distant content
 that was created for a smaller screen or a wider field of view than you are 
 currently using.
 
-If your content does not use multiple LODs, then this option will have no effect.
+The default setting is 0.
+
+Note: If your content does not use multiple LODs, then this option will have no effect.
 
 
 Adhesion proportional to rain/snow/fog
