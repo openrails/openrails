@@ -165,28 +165,74 @@ namespace Orts.Viewer3D.Debugging
 
             this.simulator = simulator;
             this.Viewer = viewer;
-			TimetableWindow = new TimetableWindow(this);
+            TimetableWindow = new TimetableWindow(this);
 
-			nodes = simulator.TDB.TrackDB.TrackNodes;
+            nodes = simulator.TDB.TrackDB.TrackNodes;
 
             // initialise the timer used to handle user input
             UITimer = new Timer();
             UITimer.Interval = 100;
             UITimer.Tick += new System.EventHandler(UITimer_Tick);
             UITimer.Start();
+        }
 
-            ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
-            windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
-            boxSetSignal.Items.Add("System Controlled");
-            boxSetSignal.Items.Add("Stop");
-            boxSetSignal.Items.Add("Approach");
-            boxSetSignal.Items.Add("Proceed");
-            chkAllowUserSwitch.Checked = false;
-            selectedTrainList = new List<Train>();
-            if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.AllowedManualSwitch = false; }
+        public int RedrawCount;
+		public Font trainFont;
+		public Font sidingFont;
+		public Font PlatformFont;
+		public Font SignalFont;
+		public SolidBrush trainBrush;
+		public SolidBrush sidingBrush;
+		public SolidBrush PlatformBrush;
+		public SolidBrush SignalBrush;
+		public SolidBrush InactiveTrainBrush;
 
-            InitData();
-            InitImage();
+		private double lastUpdateTime;
+
+      /// <summary>
+      /// When the user holds down the  "L", "R", "U", "D" buttons,
+      /// shift the view. Avoids the case when the user has to click
+      /// buttons like crazy.
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      void UITimer_Tick(object sender, EventArgs e)
+      {
+			if (Viewer.DebugViewerEnabled == false) // Ctrl+9 sets this true to initialise the window and make it visible
+			{
+				this.Visible = false;
+				firstShow = true;
+				return;
+			}
+
+			if (firstShow)
+            {
+				InitializeWindow();					
+			}
+			this.Visible = true;
+
+			if (Program.Simulator.GameTime - lastUpdateTime < 1)
+				return;
+			
+			lastUpdateTime = Program.Simulator.GameTime;
+
+			GenerateView();
+	  }
+
+		private void InitializeWindow()
+		{
+			ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
+			windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
+			boxSetSignal.Items.Add("System Controlled");
+			boxSetSignal.Items.Add("Stop");
+			boxSetSignal.Items.Add("Approach");
+			boxSetSignal.Items.Add("Proceed");
+			chkAllowUserSwitch.Checked = false;
+			selectedTrainList = new List<Train>();
+			if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.AllowedManualSwitch = false; }
+
+			InitData();
+			InitImage();
 
 			/*
           if (MultiPlayer.MPManager.IsMultiPlayer())
@@ -213,40 +259,8 @@ namespace Orts.Viewer3D.Debugging
 			tWindow.SelectedIndex = (MPManager.IsMultiPlayer()) ? 0 : 1;
 			TimetableWindow.SetControls();
 		}
-
-		public int RedrawCount;
-		public Font trainFont;
-		public Font sidingFont;
-		public Font PlatformFont;
-		public Font SignalFont;
-		public SolidBrush trainBrush;
-		public SolidBrush sidingBrush;
-		public SolidBrush PlatformBrush;
-		public SolidBrush SignalBrush;
-		public SolidBrush InactiveTrainBrush;
-
-		private double lastUpdateTime;
-
-      /// <summary>
-      /// When the user holds down the  "L", "R", "U", "D" buttons,
-      /// shift the view. Avoids the case when the user has to click
-      /// buttons like crazy.
-      /// </summary>
-      /// <param name="sender"></param>
-      /// <param name="e"></param>
-      void UITimer_Tick(object sender, EventArgs e)
-      {
-		  if (Viewer.DebugViewerEnabled == false) { this.Visible = false; firstShow = true; return; }
-		  else this.Visible = true;
-
-		 if (Program.Simulator.GameTime - lastUpdateTime < 1) return;
-		 lastUpdateTime = Program.Simulator.GameTime;
-
-			GenerateView();
-	  }
-
-	  #region initData
-	  private void InitData()
+		#region initData
+		private void InitData()
 	  {
 		  if (!loaded)
 		  {
