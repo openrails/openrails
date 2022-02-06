@@ -268,7 +268,7 @@ namespace Orts.Common
         // MSTS/MSTSBin behaviour whenever possible. NEVER return values for
         // non-MSTS events when passed an MSTS Source.
 
-        public static Event From(bool mstsBinEnabled, Source source, int eventID)
+        public static Event From(Source source, int eventID)
         {
             switch (source)
             {
@@ -301,6 +301,7 @@ namespace Orts.Common
                         // MSTSBin codes 23, 24 (documented at http://mstsbin.uktrainsim.com/)
                         case 23: return Event.EnginePowerOn;
                         case 24: return Event.EnginePowerOff;
+                        // Event 25 is possibly a vigilance reset in MSTS sound files but is never used.
                         // Event 26 is a sander toggle in MSTS sound files but is never used.
                         case 27: return Event.WaterInjector2On;
                         case 28: return Event.WaterInjector2Off;
@@ -342,7 +343,7 @@ namespace Orts.Common
                         // Event 64 is unused in MSTS.
                         // MSTSBin codes 66, 67 (documented at http://mstsbin.uktrainsim.com/)
                         case 66: return Event.Pantograph2Up;
-                        case 67: return Event.Pantograph2Down;                        // Event 25 is possibly a vigilance reset in MSTS sound files but is never used.
+                        case 67: return Event.Pantograph2Down;
 
                         // ORTS only Events
                         case 101: return Event.GearUp; // for gearbox based engines
