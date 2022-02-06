@@ -630,8 +630,6 @@ namespace Orts.Simulation.RollingStocks
         public float CurrentElevationPercent;
 
         public bool CurveSpeedDependent;
-        public bool TunnelResistanceDependent;
-
 
         protected float MaxDurableSafeCurveSpeedMpS;
 
@@ -743,11 +741,10 @@ namespace Orts.Simulation.RollingStocks
         public virtual void Initialize()
         {
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
-            TunnelResistanceDependent = Simulator.Settings.TunnelResistanceDependent;
             
             //CurveForceFilter.Initialize();
-            // Initialize tunnel resistance values
 
+            // Initialize tunnel resistance values
             DoubleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelAreaM2;
             SingleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.SingleTunnelAreaM2;
             DoubleTunnelPerimeterM = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelPerimeterM;
@@ -1131,21 +1128,9 @@ namespace Orts.Simulation.RollingStocks
         {
             if (Train.IsPlayerDriven)   // Only calculate tunnel resistance when it is the player train.
             {
-                if (TunnelResistanceDependent)
-                {
                     if (CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue)
                     {
-
-                        float? TunnelStart;
-                        float? TunnelAhead;
-                        float? TunnelBehind;
-
-                        TunnelStart = CarTunnelData.FrontPositionBeyondStartOfTunnel;      // position of front of wagon wrt start of tunnel
-                        TunnelAhead = CarTunnelData.LengthMOfTunnelAheadFront;            // Length of tunnel remaining ahead of front of wagon (negative if front of wagon out of tunnel)
-                        TunnelBehind = CarTunnelData.LengthMOfTunnelBehindRear;           // Length of tunnel behind rear of wagon (negative if rear of wagon has not yet entered tunnel)
-
                         // Calculate tunnel default effective cross-section area, and tunnel perimeter - based upon the designed speed limit of the railway (TRK File)
-
                         float TunnelLengthM = CarTunnelData.LengthMOfTunnelAheadFront.Value + CarTunnelData.LengthMOfTunnelBehindRear.Value;
                         float TrainLengthTunnelM = Train.Length;
                         float TrainMassTunnelKg = Train.MassKg;
@@ -1169,9 +1154,7 @@ namespace Orts.Simulation.RollingStocks
                             TunnelPerimeterM = SingleTunnelPerimeterAreaM;
                         }
 
-                        // 
                         // Calculate first tunnel factor
-
                         float TunnelAComponent = (0.00003318f * DensityAirKgpM3 * TunnelCrossSectionAreaM2) / ((1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)));
                         float TunnelBComponent = 174.419f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2));
                         float TunnelCComponent = (2.907f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2))) / (4.0f * (TunnelCrossSectionAreaM2 / TunnelPerimeterM));
@@ -1189,7 +1172,6 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
             }
-        }
 
 
 
