@@ -1115,10 +1115,6 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue)
                 {
-                    float? TunnelStart;
-                    float? TunnelAhead;
-                    float? TunnelBehind;
-
                     // Calculate tunnel default effective cross-section area, and tunnel perimeter - based upon the designed speed limit of the railway (TRK File)
                     float TunnelLengthM = CarTunnelData.LengthMOfTunnelAheadFront.Value + CarTunnelData.LengthMOfTunnelBehindRear.Value;
                     float TrainLengthTunnelM = Train.Length;
