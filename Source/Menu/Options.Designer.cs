@@ -73,7 +73,6 @@
             this.soundVolumeLabel = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.numericSoundDetailLevel = new System.Windows.Forms.NumericUpDown();
-            this.checkMSTSBINSound = new System.Windows.Forms.CheckBox();
             this.tabPageVideo = new System.Windows.Forms.TabPage();
             this.labelAntiAliasingValue = new System.Windows.Forms.Label();
             this.labelAntiAliasing = new System.Windows.Forms.Label();
@@ -733,7 +732,6 @@
             this.tabPageAudio.Controls.Add(this.soundVolumeLabel);
             this.tabPageAudio.Controls.Add(this.label2);
             this.tabPageAudio.Controls.Add(this.numericSoundDetailLevel);
-            this.tabPageAudio.Controls.Add(this.checkMSTSBINSound);
             this.tabPageAudio.Location = new System.Drawing.Point(4, 22);
             this.tabPageAudio.Name = "tabPageAudio";
             this.tabPageAudio.Padding = new System.Windows.Forms.Padding(3);
@@ -749,7 +747,7 @@
             0,
             0,
             0});
-            this.numericExternalSoundPassThruPercent.Location = new System.Drawing.Point(6, 81);
+            this.numericExternalSoundPassThruPercent.Location = new System.Drawing.Point(16, 72);
             this.numericExternalSoundPassThruPercent.Name = "numericExternalSoundPassThruPercent";
             this.numericExternalSoundPassThruPercent.Size = new System.Drawing.Size(54, 20);
             this.numericExternalSoundPassThruPercent.TabIndex = 5;
@@ -763,7 +761,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(66, 83);
+            this.label11.Location = new System.Drawing.Point(76, 74);
             this.label11.Margin = new System.Windows.Forms.Padding(3);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(161, 13);
@@ -777,7 +775,7 @@
             0,
             0,
             0});
-            this.numericSoundVolumePercent.Location = new System.Drawing.Point(6, 29);
+            this.numericSoundVolumePercent.Location = new System.Drawing.Point(16, 20);
             this.numericSoundVolumePercent.Minimum = new decimal(new int[] {
             10,
             0,
@@ -796,7 +794,7 @@
             // soundVolumeLabel
             // 
             this.soundVolumeLabel.AutoSize = true;
-            this.soundVolumeLabel.Location = new System.Drawing.Point(66, 31);
+            this.soundVolumeLabel.Location = new System.Drawing.Point(76, 22);
             this.soundVolumeLabel.Margin = new System.Windows.Forms.Padding(3);
             this.soundVolumeLabel.Name = "soundVolumeLabel";
             this.soundVolumeLabel.Size = new System.Drawing.Size(84, 13);
@@ -806,7 +804,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(66, 57);
+            this.label2.Location = new System.Drawing.Point(76, 48);
             this.label2.Margin = new System.Windows.Forms.Padding(3);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(91, 13);
@@ -815,7 +813,7 @@
             // 
             // numericSoundDetailLevel
             // 
-            this.numericSoundDetailLevel.Location = new System.Drawing.Point(6, 55);
+            this.numericSoundDetailLevel.Location = new System.Drawing.Point(16, 46);
             this.numericSoundDetailLevel.Maximum = new decimal(new int[] {
             5,
             0,
@@ -824,16 +822,6 @@
             this.numericSoundDetailLevel.Name = "numericSoundDetailLevel";
             this.numericSoundDetailLevel.Size = new System.Drawing.Size(54, 20);
             this.numericSoundDetailLevel.TabIndex = 3;
-            // 
-            // checkMSTSBINSound
-            // 
-            this.checkMSTSBINSound.AutoSize = true;
-            this.checkMSTSBINSound.Location = new System.Drawing.Point(6, 6);
-            this.checkMSTSBINSound.Name = "checkMSTSBINSound";
-            this.checkMSTSBINSound.Size = new System.Drawing.Size(160, 17);
-            this.checkMSTSBINSound.TabIndex = 0;
-            this.checkMSTSBINSound.Text = "MSTS Bin compatible sound";
-            this.checkMSTSBINSound.UseVisualStyleBackColor = true;
             // 
             // tabPageVideo
             // 
@@ -2653,7 +2641,6 @@
         private System.Windows.Forms.Label soundVolumeLabel;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.NumericUpDown numericSoundDetailLevel;
-        private System.Windows.Forms.CheckBox checkMSTSBINSound;
         private System.Windows.Forms.NumericUpDown numericCab2DStretch;
         private System.Windows.Forms.Label labelCab2DStretch;
         private System.Windows.Forms.Label label1;
