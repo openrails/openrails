@@ -55,7 +55,7 @@ All new features must result in the following three things existing:
 These things must be done in the required order:
 
 1. The road-map card cannot be approved without the completed discussion
-2. The pull request cannot be pending (non-draft) without the completed discussion
+2. The pull request cannot be ready for review without the completed discussion
 3. The pull request cannot be approved without the approved road-map card
 
 Our recommended order is:
@@ -63,7 +63,7 @@ Our recommended order is:
 1. Create road-map card
 2. Create forum discussion
 3. Create draft pull request
-4. When discussion is completed, pull request can be pending
+4. When discussion is completed, pull request can be ready for review
 5. When road-map card is approved, pull request can be approved (if code review is okay)
 
 **Note:** A blueprint can be used by a seasoned Open Rails developer in place of a road-map card.
@@ -130,7 +130,7 @@ Your code should be fixing exactly one bug or adding a single new feature; mixin
 
 ### Different versions of code
 
-When your pull request is draft or pending, it will not be included in any version of Open Rails unless:
+When your pull request is draft or ready for review, it will not be included in any version of Open Rails unless:
 
 * You are a member of the core team
 * A member of the core team adds a particular label

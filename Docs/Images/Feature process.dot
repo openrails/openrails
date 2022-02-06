@@ -1,11 +1,11 @@
 digraph {
-    roadmapPending [label="Road-map (pending)"]
+    roadmapCreated [label="Road-map (created)"]
     roadmapApproved [label="Road-map (approved)"]
     discussion [label="Discussion (1 week)"]
     prDraft [label="Pull request (draft)"] [style=dashed]
-    prPending [label="Pull request (pending)"]
+    prReadyForReview [label="Pull request (ready for review)"]
     prApproved [label="Pull request (approved)"]
-    roadmapPending -> roadmapApproved
-    discussion -> {roadmapApproved,prPending} -> prApproved
-    roadmapPending -> discussion -> prDraft -> prPending [style=dashed]
+    roadmapCreated -> roadmapApproved
+    discussion -> {roadmapApproved,prReadyForReview} -> prApproved
+    roadmapCreated -> discussion -> prDraft -> prReadyForReview [style=dashed]
 }
