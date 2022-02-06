@@ -25,6 +25,33 @@ your train will be in motion or stopped. To look around in the simulation, you
 can select different views using the keyboard, as described in 
 :ref:`Changing the View <driving-changing-view>`.
 
+Cab Letter-Boxing
+----------------
+
+OR manages not only cab interiors using 2D images in a MSTS-compatible
+way, but also supports 3D models. Most 2D cab images follow MSTS practice,
+being 1024 x 768 pixels to suit monitors with a 4:3 aspect ratio.
+
+.. image:: images/options-2dstretch_1.png
+
+So, the problem arises -- how to display these 4:3 cabs on a 16:9 or 16:10
+monitor?
+
+One possibility is to enlarge these images to fill the width of wider monitors, 
+as shown in the image below.
+
+In doing so, we lose a portion from the top and bottom of the image. 
+You can use the Up and Down Arrow keys to pan and reveal these missing portions.
+
+.. image:: images/options-2dstretch_2.png
+
+Instead of enlarging the image, OR can also 'letterbox' it by showing the full height
+and filling the missing space with black bars. 
+You can activate this mode in-game by pressing Ctrl+1.
+
+.. image:: images/options-2dstretch_3.png
+
+
 Open Rails Driving Controls
 ===========================
 

@@ -206,8 +206,6 @@ namespace ORTS.Settings
         public bool Wire { get; set; }
         [Default(false)]
         public bool VerticalSync { get; set; }
-        [Default(0)]
-        public int Cab2DStretch { get; set; }
         [Default(2000)]
         public int ViewingDistance { get; set; }
         [Default(true)]
