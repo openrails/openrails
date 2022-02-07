@@ -156,8 +156,8 @@ The option *Player's Location* sets the units according to the Windows
 The option *Route* sets the units based on the data in the route files.
 The other options are self-explanatory.
 
-These windows use the abbreviations *stn* for short tons (2000 lb),
-*t* for long tons (2,240 lb) or *tn* for metric tons (tonnes).
+These windows use the abbreviations *t-us* for short tons (2,000 lb),
+*t-uk* for long tons (2,240 lb) and *t* for metric tons (1,000 kg).
 
 Note: The units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
 distance) are always based on data read from the route files.
