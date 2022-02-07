@@ -1030,19 +1030,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             ExhaustSteadyColor.A = 10;
             ExhaustDecelColor.A = 10;
 
-            //        Trace.TraceInformation("diesel engine initialisation#1 {0}", GearBox.CurrentGearIndex);
-
             if (GearBoxParams.IsInitialized)
-            //  if (GearBoxParams.IsInitialized && GearBox == null)
             {
- //               Trace.TraceInformation("diesel engine initialisation#1");
                 GearBox = new GearBox(this);
- //               Trace.TraceInformation("diesel engine initialisation#3 {0} {1}", GearBox.CurrentGearIndex, Locomotive.currentGearIndexRestore);
                 GearBox.Initialize();
- //               Trace.TraceInformation("diesel engine initialisation#4 {0} {1}", GearBox.CurrentGearIndex, Locomotive.currentGearIndexRestore);
             }
-
-//            Trace.TraceInformation("diesel engine initialisation#2 {0} {1}", GearBox.CurrentGearIndex, Locomotive.currentGearIndexRestore);
         }
 
         public void InitializeMoving()
@@ -1271,8 +1263,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     DemandedRPM = 0;
                 }                                                             
             }
-
-            Trace.TraceInformation("AccelFactor {0} RpM {1}", throttleAcclerationFactor, RealRPM);
             if (RealRPM == IdleRPM)
             {
                 ExhaustParticles = InitialExhaust;
