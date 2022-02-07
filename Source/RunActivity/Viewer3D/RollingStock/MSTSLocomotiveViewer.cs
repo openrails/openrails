@@ -1827,9 +1827,9 @@ namespace Orts.Viewer3D.RollingStock
                 if (Gauge is CVCFirebox)
                     destH = Math.Min(destH, (int)(yratio * (Control.PositionY + 0.5 * Gauge.Area.Height)) - destY);
             }
-            if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
+            if (Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
             {
-                if (Num < 0 && Gauge.NegativeColor.A != 0)
+                if (Num < 0 && Control.MinValue < 0 && Gauge.NegativeColor.A != 0)
                 {
                     if ((Gauge.NumNegativeColors >= 2) && (Num < Gauge.NegativeSwitchVal))
                         DrawColor = new Color(Gauge.SecondNegativeColor.R, Gauge.SecondNegativeColor.G, Gauge.SecondNegativeColor.B, Gauge.SecondNegativeColor.A);
