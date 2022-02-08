@@ -27,6 +27,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Orts.Common.Scripting
 {
@@ -83,7 +84,7 @@ namespace Orts.Common.Scripting
             var scriptName = Path.GetFileName(scriptPath);
             try
             {
-                var syntaxTrees = path.Select(file => CSharpSyntaxTree.ParseText(File.ReadAllText(file), null, file));
+                var syntaxTrees = path.Select(file => { using (var stream = File.OpenRead(file)) return CSharpSyntaxTree.ParseText(SourceText.From(stream, Encoding.UTF8), null, file); });
                 var compilation = CSharpCompilation.Create(
                     scriptName,
                     syntaxTrees,
