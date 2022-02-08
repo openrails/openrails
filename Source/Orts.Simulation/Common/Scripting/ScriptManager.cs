@@ -27,6 +27,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 
 namespace Orts.Common.Scripting
 {
@@ -81,20 +82,34 @@ namespace Orts.Common.Scripting
         {
             var scriptPath = path.Length > 1 ? Path.GetDirectoryName(path[0]) : path[0];
             var scriptName = Path.GetFileName(scriptPath);
+            var symbolsName = Path.ChangeExtension(scriptName, "pdb");
             try
             {
-                var syntaxTrees = path.Select(file => CSharpSyntaxTree.ParseText(File.ReadAllText(file), null, file));
+                var syntaxTrees = path.Select(file => CSharpSyntaxTree.ParseText(File.ReadAllText(file), null, file, Encoding.UTF8));
                 var compilation = CSharpCompilation.Create(
                     scriptName,
                     syntaxTrees,
                     References,
                     CompilationOptions);
-                var ms = new MemoryStream();
-                var result = compilation.Emit(ms);
+
+                var emitOptions = new EmitOptions(
+                    debugInformationFormat: DebugInformationFormat.PortablePdb,
+                    pdbFilePath: symbolsName);
+
+                var assemblyStream = new MemoryStream();
+                var symbolsStream = new MemoryStream();
+
+                var result = compilation.Emit(
+                    assemblyStream,
+                    symbolsStream,
+                    options: emitOptions);
+
                 if (result.Success)
                 {
-                    ms.Seek(0, SeekOrigin.Begin);
-                    var script = Assembly.Load(ms.ToArray());
+                    assemblyStream.Seek(0, SeekOrigin.Begin);
+                    symbolsStream.Seek(0, SeekOrigin.Begin);
+
+                    var script = Assembly.Load(assemblyStream.ToArray(), symbolsStream.ToArray());
                     // in netcore:
                     //var script = AssemblyLoadContext.Default.LoadFromStream(ms);
                     if (script == null)
