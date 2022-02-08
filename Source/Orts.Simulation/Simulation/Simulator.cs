@@ -354,7 +354,7 @@ namespace Orts.Simulation
             Confirmer = new Confirmer(this, 1.5);
             HazzardManager = new HazzardManager(this);
             FuelManager = new FuelManager(this);
-            ScriptManager = new ScriptManager();
+            ScriptManager = new ScriptManager(this);
             Log = new CommandLog(this);
         }
 
