@@ -6828,7 +6828,7 @@ public void SteamStartGearBoxIncrease()
                     if (SteamGearPosition > 0.0f) // Gear number can't go below zero
                     {
                         SteamGearPosition -= 1.0f;
-                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, SteamGearPosition);
+                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, SteamGearPosition);
                         if (SteamGearPosition == 1.0)
                         {
 
