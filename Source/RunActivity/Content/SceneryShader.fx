@@ -23,6 +23,9 @@
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
+#define MAX_LIGHTS 30
+#define MAX_BONES 50
+
 float4x4 World;         // model -> world [max number of bones]
 float4x4 WorldViewProjection;  // model -> world -> view -> projection (in case of skinned model only View x Projection)
 float4x4 LightViewProjectionShadowProjection0;  // world -> light view -> light projection -> shadow map projection
@@ -56,7 +59,7 @@ texture  ImageTexture; // .s: linear RGBA, glTF (PBR): 8 bit sRGB + linear A
 texture  OverlayTexture;
 float	 OverlayScale;
 
-float4x4 Bones[50]; // model -> world [max number of bones]
+float4x4 Bones[MAX_BONES]; // model -> world [max number of bones]
 float4   BaseColorFactor; // glTF linear color multiplier
 texture  NormalTexture; // linear RGB
 float    NormalScale;
@@ -68,13 +71,27 @@ float3   OcclusionFactor; // x = occlusion strength, y = roughness factor, z = m
 float3   LightColor;
 float4   TextureCoordinates; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
 float    TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), TexturePacking; 3: occlusionRoughnessMetallic
-bool    HasNormals; // 0: no, 1: yes
+bool     HasNormals; // 0: no, 1: yes
+
+int		NumLights; // The number of the lights used
+float	LightTypes[MAX_LIGHTS]; // 0: directional, 1: point, 2: spot
+float3	LightPositions[MAX_LIGHTS];
+float3	LightDirections[MAX_LIGHTS];
+float3	LightColors[MAX_LIGHTS];
+float	LightIntensities[MAX_LIGHTS];
+float	LightRanges[MAX_LIGHTS];
+float	LightInnerConeCos[MAX_LIGHTS];
+float	LightOuterConeCos[MAX_LIGHTS];
 
 //static const float3 LightColor = float3(1.0, 1.0, 1.0);
 static const float M_PI = 3.141592653589793;
 static const float RECIPROCAL_PI = 0.31830988618;
 static const float RECIPROCAL_PI2 = 0.15915494;
 static const float MinRoughness = 0.04;
+
+static const int LightType_Directional = 0;
+static const int LightType_Point = 1;
+static const int LightType_Spot = 2;
 
 sampler Image = sampler_state
 {
@@ -651,6 +668,42 @@ void _PSApplyHeadlights(inout float3 Color, in float3 OriginalColor, in VERTEX_O
 	Color += OriginalColor * HeadlightColor.rgb * HeadlightColor.a * shading;
 }
 
+// LightVector_ZFar: sun direction
+// In.LightDir_Fog: -pointToLight
+
+
+float3 _PSGetLightIntensity(in int i, in float l, in float pointToLight)
+{
+	float rangeAttenuation = 1.0;
+	float spotAttenuation = 1.0;
+
+	if (LightTypes[i] != LightType_Directional)
+	{
+		float pointLightDistance = length(pointToLight);
+		if (LightRanges[i] <= 0)
+			rangeAttenuation = 1.0 / pow(pointLightDistance, 2);
+		else
+			// TODO: A cheaper method id suggested in the glTF lights extension
+			rangeAttenuation = max(min(1.0 - pow(pointLightDistance / LightRanges[i], 4), 1), 0) / pow(pointLightDistance, 2);
+	}
+	if (LightTypes[i] == LightType_Spot)
+	{
+		float actualConeCos = dot(l, LightDirections[i]);
+		if (actualConeCos > LightOuterConeCos[i]) // inside outer cone
+		{
+			if (actualConeCos < LightInnerConeCos[i]) // outside inner cone
+				spotAttenuation = smoothstep(LightOuterConeCos[i], LightInnerConeCos[i], actualConeCos);
+			else
+				spotAttenuation = 1;
+		}
+		else
+		{
+			spotAttenuation = 0;
+		}
+	}
+	return LightIntensities[i] * LightColors[i] * rangeAttenuation * spotAttenuation;
+}
+
 // Applies distance fog to the pixel.
 void _PSApplyFog(inout float3 Color, in VERTEX_OUTPUT In)
 {
@@ -897,6 +950,9 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	}
 
 	float perceptualRoughness = clamp(roughness * OcclusionFactor.y, MinRoughness, 1.0);
+	float alphaRoughness = perceptualRoughness * perceptualRoughness;
+	float roughnessSq = alphaRoughness * alphaRoughness;
+	
 	metallic = clamp(metallic * OcclusionFactor.z, 0.0, 1.0);
 	
 	float3 f0 = float3(0.04, 0.04, 0.04);
@@ -911,35 +967,52 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	
 	float3 n = _PSGetNormal(In, true);
 	float3 v = normalize(-In.RelPosition.xyz);
-	float3 l = normalize(LightVector_ZFar.xyz);
-	float3 h = normalize(l + v);
+
+	float NdotV = 0.001; // Otherwise it goes undefined at dot(), or like that...
+	if (HasNormals)
+		NdotV = abs(dot(n, v)) + 0.001;
+
 	float3 reflection = -normalize(reflect(v, n));
+	float3 litColor = _PSGetIBLContribution(diffuseColor, specularColor, NdotV, perceptualRoughness, n, reflection);
 
-	float NdotL = clamp(dot(n, l), 0.001, 1.0);
-    float NdotV = abs(dot(n, v)) + 0.001;
-    float NdotH = clamp(dot(n, h), 0.0, 1.0);
-    float LdotH = clamp(dot(l, h), 0.0, 1.0);
-    float VdotH = clamp(dot(v, h), 0.0, 1.0);
+	float3 diffuseContrib = (float3)0;
+	float3 specContrib = (float3)0;
 
-	if (!HasNormals)
-		NdotV = 0.001; // Otherwise it goes undefined, or like that...
-	
-	float3 F = specularEnvironmentR0 + (specularEnvironmentR90 - specularEnvironmentR0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
-	
-	float alphaRoughness = perceptualRoughness * perceptualRoughness;
-	float roughnessSq = alphaRoughness * alphaRoughness;
-	float attenuationL = 2.0 * NdotL / (NdotL + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotL * NdotL)));
-    float attenuationV = 2.0 * NdotV / (NdotV + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotV * NdotV)));
-    float G = attenuationL * attenuationV;
-	
-    float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
-	float D = roughnessSq / (M_PI * f * f);
-	
-	float3 diffuseContrib = (1.0 - F) * diffuseColor / M_PI * diffuseShadowFactor;
-	float3 specContrib = F * G * D / (4.0 * NdotL * NdotV) * shadowFactor;
-    float3 litColor = NdotL * LightColor * (diffuseContrib + specContrib + headlightContrib);
+	// LightVector_ZFar: sun direction
+	// In.LightDir_Fog: -pointToLight
 
-	litColor += _PSGetIBLContribution(diffuseColor, specularColor, NdotV, perceptualRoughness, n, reflection);
+	[loop]
+	for (int i = 0; i < NumLights; i++)
+	{
+		float3 pointToLight;
+		if (LightTypes[i] != LightType_Directional)
+			pointToLight = In.Shadow.xyz - LightPositions[i]; // In.Shadow.xyz is the absolute world position of the point
+		else
+			pointToLight = LightDirections[i];
+
+		float3 l = normalize(pointToLight);
+		float3 h = normalize(l + v);
+
+		float NdotL = clamp(dot(n, l), 0.001, 1.0);
+		float NdotH = clamp(dot(n, h), 0.0, 1.0);
+		float LdotH = clamp(dot(l, h), 0.0, 1.0);
+		float VdotH = clamp(dot(v, h), 0.0, 1.0);
+
+		float3 F = specularEnvironmentR0 + (specularEnvironmentR90 - specularEnvironmentR0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
+
+		float attenuationL = 2.0 * NdotL / (NdotL + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotL * NdotL)));
+		float attenuationV = 2.0 * NdotV / (NdotV + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotV * NdotV)));
+		float G = attenuationL * attenuationV;
+
+		float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
+		float D = roughnessSq / (M_PI * f * f);
+
+		float3 intensity = _PSGetLightIntensity(i, l, pointToLight);
+
+		diffuseContrib += intensity * NdotL * (1.0 - F) * diffuseColor / M_PI * diffuseShadowFactor;
+		specContrib += intensity * NdotL * F * G * D / (4.0 * NdotL * NdotV) * shadowFactor;
+	}
+	litColor += diffuseContrib + specContrib;
 
 	// Occlusion:
 	litColor = lerp(litColor, litColor * occlusion, OcclusionFactor.x);

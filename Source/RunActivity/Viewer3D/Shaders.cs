@@ -130,10 +130,18 @@ namespace Orts.Viewer3D
         readonly EffectParameter texturePacking;
         readonly EffectParameter hasNormals;
         // Per-frame PBR uniforms:
-        readonly EffectParameter lightColor;
         readonly EffectParameter environmentMapSpecularTexture;
         readonly EffectParameter environmentMapDiffuseTexture;
         readonly EffectParameter brdfLutTexture;
+        readonly EffectParameter numLights;
+        readonly EffectParameter lightPositions;
+        readonly EffectParameter lightDirections;
+        readonly EffectParameter lightColors;
+        readonly EffectParameter lightIntensities;
+        readonly EffectParameter lightRanges;
+        readonly EffectParameter lightInnerConeCos;
+        readonly EffectParameter lightOuterConeCos;
+        readonly EffectParameter lightTypes;
 
         Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
@@ -141,6 +149,7 @@ namespace Orts.Viewer3D
         bool _imageTextureIsNight;
 
         public const int MAX_BONES = 50;
+        public const int MAX_LIGHTS = 30;
 
         /// <summary>
         /// The position of the sampler states inside the hlsl shader:
@@ -285,7 +294,6 @@ namespace Orts.Viewer3D
         
         public Vector3 OcclusionFactor { set { occlusionFactor.SetValue(value); } }
 
-        public Vector3 LightColor { set { lightColor.SetValue(value); } }
 
         public Texture2D EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
 
@@ -300,6 +308,16 @@ namespace Orts.Viewer3D
         public float TexturePacking { set { texturePacking.SetValue(value); } }
 
         public bool HasNormals { set { hasNormals.SetValue(value); } }
+
+        public int NumLights { set { numLights.SetValue(value); } }
+        public Vector3[] LightPositions { set { lightPositions.SetValue(value); } }
+        public Vector3[] LightDirections { set { lightDirections.SetValue(value); } }
+        public Vector3[] LightColors { set { lightColors.SetValue(value); } }
+        public float[] LightIntensities { set { lightIntensities.SetValue(value); } }
+        public float[] LightRanges { set { lightRanges.SetValue(value); } }
+        public float[] LightInnerConeCos { set { lightInnerConeCos.SetValue(value); } }
+        public float[] LightOuterConeCos { set { lightOuterConeCos.SetValue(value); } }
+        public float[] LightTypes { set { lightTypes.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
@@ -346,10 +364,18 @@ namespace Orts.Viewer3D
             textureCoordinates = Parameters["TextureCoordinates"];
             texturePacking = Parameters["TexturePacking"];
             hasNormals = Parameters["HasNormals"];
-            lightColor = Parameters["LightColor"];
             environmentMapSpecularTexture = Parameters["EnvironmentMapSpecularTexture"];
             environmentMapDiffuseTexture = Parameters["EnvironmentMapDiffuseTexture"];
             brdfLutTexture = Parameters["BrdfLutTexture"];
+            numLights = Parameters["NumLights"];
+            lightPositions = Parameters["LightPositions"];
+            lightDirections = Parameters["LightDirections"];
+            lightColors = Parameters["LightColors"];
+            lightIntensities = Parameters["LightIntensities"];
+            lightRanges = Parameters["LightRanges"];
+            lightInnerConeCos = Parameters["LightInnerConeCos"];
+            lightOuterConeCos = Parameters["LightOuterConeCos"];
+            lightTypes = Parameters["LightTypes"];
         }
     }
 
