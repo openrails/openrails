@@ -234,6 +234,7 @@ namespace ORTS.Scripting.Api
         public Func<bool> TractionAuthorization;
         /// <summary>
         /// Train brake pipe pressure. Returns float.MaxValue if no data is available.
+        /// For vacuum brake system, the pressure is considered as absolute.
         /// </summary>
         public Func<float> BrakePipePressureBar;
         /// <summary>
@@ -241,13 +242,39 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> LocomotiveBrakeCylinderPressureBar;
         /// <summary>
-        /// True if power must be cut if the brake is applied.
+        /// True if power must be cut if the pneumatic brake is applied.
         /// </summary>
         public Func<bool> DoesBrakeCutPower;
         /// <summary>
-        /// Train brake pressure value which triggers the power cut-off.
+        /// True if power must be cut if the vacuum brake is applied.
+        /// </summary>
+        public Func<bool> DoesVacuumBrakeCutPower;
+        /// <summary>
+        /// Brake cylinder pressure value which triggers the power cut-off.
         /// </summary>
         public Func<float> BrakeCutsPowerAtBrakeCylinderPressureBar;
+        /// <summary>
+        /// Brake pipe pressure value which triggers the power cut-off.
+        /// For vacuum brake system, the pressure is considered as absolute.
+        /// </summary>
+        public Func<float> BrakeCutsPowerAtBrakePipePressureBar;
+        /// <summary>
+        /// Brake pipe pressure value which cancels the power cut-off.
+        /// For vacuum brake system, the pressure is considered as absolute.
+        /// </summary>
+        public Func<float> BrakeRestoresPowerAtBrakePipePressureBar;
+        /// <summary>
+        /// Train speed above which the power cut-off may be enabled.
+        /// </summary>
+        public Func<float> BrakeCutsPowerForMinimumSpeedMpS;
+        /// <summary>
+        /// True if traction cut-off cancellation needs for the throttle to be at zero or in dynamic brake position.
+        /// </summary>
+        public Func<bool> BrakeCutsPowerUntilTractionCommandCancelled;
+        /// <summary>
+        /// Type of behaviour for traction cut-off when brakes are applied.
+        /// </summary>
+        public Func<BrakeTractionCutOffModeType> BrakeTractionCutOffMode;
         /// <summary>
         /// State of the train brake controller.
         /// </summary>
@@ -535,6 +562,81 @@ namespace ORTS.Scripting.Api
         /// Set at virtual to keep compatibility with scripts not providing this method.
         /// </summary>
         public virtual void Restore(BinaryReader inf) { }
+        /// <summary>
+        /// Traction cut-off request due to brake application
+        /// True if cut-off is requested
+        /// </summary>
+        protected bool TractionCutOffRequested = false;
+        /// <summary>
+        /// Updates the traction cut-off request (due to brake application).
+        /// </summary>
+        /// <returns>true if traction cut-off is requested</returns>
+        public virtual void UpdateTractionCutOff()
+        {
+            // If BrakeCutsPowerForSpeedAbove is not set (== 0), the brake pressure check is always active.
+            if (SpeedMpS() >= BrakeCutsPowerForMinimumSpeedMpS())
+            {
+                switch (BrakeTractionCutOffMode())
+                {
+                    case BrakeTractionCutOffModeType.None:
+                        TractionCutOffRequested = false;
+                        break;
+
+                    case BrakeTractionCutOffModeType.AirBrakeCylinderSinglePressure:
+                        if (LocomotiveBrakeCylinderPressureBar() >= BrakeCutsPowerAtBrakeCylinderPressureBar())
+                        {
+                            TractionCutOffRequested = true;
+                        }
+                        else if (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f)
+                        {
+                            TractionCutOffRequested = false;
+                        }
+                        break;
+
+                    case BrakeTractionCutOffModeType.AirBrakePipeSinglePressure:
+                        if (BrakePipePressureBar() <= BrakeCutsPowerAtBrakePipePressureBar())
+                        {
+                            TractionCutOffRequested = true;
+                        }
+                        else if (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f)
+                        {
+                            TractionCutOffRequested = false;
+                        }
+                        break;
+
+                    case BrakeTractionCutOffModeType.AirBrakePipeHysteresis:
+                        if (BrakePipePressureBar() <= BrakeCutsPowerAtBrakePipePressureBar())
+                        {
+                            TractionCutOffRequested = true;
+                        }
+                        else if (BrakePipePressureBar() >= BrakeRestoresPowerAtBrakePipePressureBar()
+                            && (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f))
+                        {
+                            TractionCutOffRequested = false;
+                        }
+                        break;
+
+                    case BrakeTractionCutOffModeType.VacuumBrakePipeHysteresis:
+                        if (BrakePipePressureBar() >= BrakeCutsPowerAtBrakePipePressureBar())
+                        {
+                            TractionCutOffRequested = true;
+                        }
+                        else if (BrakePipePressureBar() <= BrakeRestoresPowerAtBrakePipePressureBar()
+                            && (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f))
+                        {
+                            TractionCutOffRequested = false;
+                        }
+                        break;
+                }
+            }
+            else
+            {
+                if (!BrakeCutsPowerUntilTractionCommandCancelled() || ThrottlePercent() <= 0f)
+                {
+                    TractionCutOffRequested = false;
+                }
+            }
+        }
     }
 
     // Represents the same enum as TrackMonitorSignalAspect
@@ -687,6 +789,15 @@ namespace ORTS.Scripting.Api
         /// Red color. Train control system intervention speed. Computer has to apply full service or emergency brake to maintain speed restriction.
         /// </summary>
         Intervention,
+    }
+
+    public enum BrakeTractionCutOffModeType
+    {
+        None,
+        AirBrakeCylinderSinglePressure,
+        AirBrakePipeSinglePressure,
+        AirBrakePipeHysteresis,
+        VacuumBrakePipeHysteresis,
     }
 
     public struct SignalFeatures
