@@ -800,7 +800,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (DieselEngines[0].GearBox != null)
             {
-                if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic || DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Automatic)
+                if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
                 {
                     DieselEngines[0].GearBox.AutoGearUp();
                     GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
@@ -817,7 +817,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (DieselEngines[0].GearBox != null)
             {
-                if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic || DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Automatic)
+                if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
                 {
                     DieselEngines[0].GearBox.AutoGearDown();
                     GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
@@ -948,13 +948,14 @@ namespace Orts.Simulation.RollingStocks
         {
             var status = new StringBuilder(base.GetDebugStatus());
 
-            if (DieselEngines.HasGearBox)
+            if (DieselEngines.HasGearBox && DieselTransmissionType == DieselTransmissionTypes.Mechanic)
             {
                 status.AppendFormat("\t{0} {1}-{2}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString(), DieselEngines[0].GearBox.GearBoxType);
+            }
                 status.AppendFormat("\t{0} {1}\t\t{2}\n",
                 Simulator.Catalog.GetString("Fuel"),
                 FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
-            }
+
 
             if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {

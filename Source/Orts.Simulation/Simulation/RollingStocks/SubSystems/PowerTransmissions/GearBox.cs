@@ -33,13 +33,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public int GearBoxNumberOfGears = 1;
         public int GearBoxDirectDriveGear = 1;
         public bool FreeWheelFitted = false;
-        public TypesGearBox GearBoxType = TypesGearBox.A;
+        public TypesGearBox GearBoxType = TypesGearBox.Unknown;
         // GearboxType ( A ) - power is continuous during gear changes (and throttle does not need to be adjusted)
         // GearboxType ( B ) - power is interrupted during gear changes - but the throttle does not need to be adjusted when changing gear
         // GearboxType ( C ) - power is interrupted and if GearboxOperation is Manual throttle must be closed when changing gear
         // GearboxType ( D ) - power is interrupted and if GearboxOperation is Manual throttle must be closed when changing gear, clutch will remain engaged, and can stall engine
 
-        public TypesClutch ClutchType = TypesClutch.Friction;
+        public TypesClutch ClutchType = TypesClutch.Unknown;
 
 
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
@@ -52,7 +52,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float GearBoxOverspeedPercentageForFailure = 150f;
         public float GearBoxBackLoadForceN = 1000;
         public float GearBoxCoastingForceN = 500;
-        public float GearBoxUpGearProportion = 1.0f;
+        public float GearBoxUpGearProportion = 0.85f;
         public float GearBoxDownGearProportion = 0.35f;
 
         int initLevel;
@@ -493,7 +493,7 @@ public Gear NextGear
                     }
 
                 }
-                else
+                else // Legacy operation
                 {
 
                     if (CurrentGear == null)
@@ -532,8 +532,8 @@ public Gear NextGear
 
         public bool AutoClutch = true;
 
-        public TypesClutch ClutchType = TypesClutch.Friction;
-        public TypesGearBox GearBoxType = TypesGearBox.A;
+        public TypesClutch ClutchType = TypesClutch.Unknown;
+        public TypesGearBox GearBoxType = TypesGearBox.Unknown;
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxOperation OriginalGearBoxOperation = GearBoxOperation.Manual;
  
@@ -881,7 +881,7 @@ public Gear NextGear
                 }
 
             }
-            else
+            else // Legacy operation
             {
                 if ((clutch <= 0.05) || (clutch >= 1f))
                 {
@@ -981,6 +981,7 @@ public Gear NextGear
 
     public enum TypesClutch
     {
+        Unknown,
         Friction,
         Fluid,
         Scoop
@@ -988,6 +989,7 @@ public Gear NextGear
 
     public enum TypesGearBox
     {
+        Unknown,
         A,
         B,
         C,

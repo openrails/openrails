@@ -1291,6 +1291,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (GearBox.CurrentGear != null)
                     {
+                        // Maintain Shaft RpM and Engine RpM equasl when clutch is on
                         if (GearBox.IsClutchOn)
                             DemandedRPM = GearBox.ShaftRPM;
                     }
@@ -1646,7 +1647,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
             {
-                MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
+                MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowerW parameter
             }
             else
             {

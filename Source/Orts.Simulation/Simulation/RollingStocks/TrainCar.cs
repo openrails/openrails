@@ -2175,7 +2175,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             var loco = this as MSTSDieselLocomotive;
-            if (loco != null && loco.DieselEngines.HasGearBox)
+            if (loco != null && loco.DieselEngines.HasGearBox && loco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
                 return String.Format("{0}\t{1}\t{2}\t{3}\t{4:F0}%\t{5} - {6:F0} rpm\t\t{7}\t{8}\t{9}\t",
                 CarID,
