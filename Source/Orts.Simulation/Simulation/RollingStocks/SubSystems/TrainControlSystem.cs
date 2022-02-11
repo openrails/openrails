@@ -349,7 +349,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.PantographCount = () => Locomotive.Pantographs.Count;
                 Script.GetPantographState = (pantoID) =>
                 {
-                    if (pantoID >= Pantographs.MinPantoID && pantoID <= Pantographs.MaxPantoID)
+                   if (pantoID >= Pantographs.MinPantoID && pantoID <= Pantographs.MaxPantoID)
                     {
                         return Locomotive.Pantographs[pantoID].State;
                     }
@@ -892,12 +892,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 buffer = new string('\0', 256);
                 length = NativeMethods.GetPrivateProfileString(sectionName, keyName, null, buffer, buffer.Length, TrainParametersFileName);
 
-            if (length > 0)
-            {
-                buffer.Trim();
-                return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+                if (length > 0)
+                {
+                    buffer.Trim();
+                    return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+                }
             }
-        }
 
             if (File.Exists(ParametersFileName))
             {
