@@ -287,7 +287,7 @@ namespace Orts.Viewer3D
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
-        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
+        public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
         {
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
         }

@@ -3126,7 +3126,7 @@ namespace Orts.Viewer3D.RollingStock
             }*/ //removed with 3D digits
 
             if (TrainCarShape != null)
-                TrainCarShape.PrepareFrame(frame, elapsedTime, MatrixVisible);
+                TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisible);
         }
 
         internal override void Mark()
