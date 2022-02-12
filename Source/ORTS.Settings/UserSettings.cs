@@ -123,6 +123,7 @@ namespace ORTS.Settings
 
         public enum DirectXFeature
         {
+            Level /* Default value which gets replaced with what is supported */,
             Level9_1,
             Level9_3,
             Level10_0,
@@ -364,8 +365,13 @@ namespace ORTS.Settings
         [Default("")]
         public string ScreenshotPath { get; set; }
         [Default("")]
-        public string DirectXFeatureLevel { get; set; }
-        public bool IsDirectXFeatureLevelIncluded(DirectXFeature level) => (int)level <= (int)Enum.Parse(typeof(DirectXFeature), "Level" + this.DirectXFeatureLevel);
+        public string DirectXFeatureLevel
+        {
+            get => DirectXFeatureEnum.ToString().Replace("Level", "");
+            set => DirectXFeatureEnum = (DirectXFeature)Enum.Parse(typeof(DirectXFeature), "Level" + value);
+        }
+        DirectXFeature DirectXFeatureEnum;
+        public bool IsDirectXFeatureLevelIncluded(DirectXFeature level) => level <= DirectXFeatureEnum;
         [Default(true)]
         public bool ShadowMapBlur { get; set; }
         [Default(4)]
