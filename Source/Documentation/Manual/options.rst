@@ -146,8 +146,8 @@ The option *Player's Location* sets the units according to the Windows
 The option *Route* sets the units based on the data in the route files.
 The other options are self-explanatory.
 
-These windows use the abbreviations *t-us* for short tons (2,000 lb),
-*t-uk* for long tons (2,240 lb) and *t* for metric tons (1,000 kg).
+These windows use the abbreviations *t-us* for short tons (2000 lb),
+*t-uk* for long tons (2240 lb) and *t* for metric tons (1000 kg).
 
 Note: The units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
 distance) are always based on data read from the route files.
@@ -399,10 +399,14 @@ This option allows the running of electric locomotives on non-electrified routes
 Steam locomotive hot start
 --------------------------
 
-This option allows starting the game with the boiler water temperature
-already at a value that allows running the locomotive. If the option is
-not selected, you will have to wait until the water temperature reaches a
-high enough value.
+With this option selected, the temperature and pressure of steam in the boiler is ready to pull the train.
+If not, the boiler pressure will be at 2/3 of maximum, which is only adequate for light work.
+If your schedule gives you time to raise the pressure close to maximum, then 
+switch from AI Firing to Manual Firing (Ctrl+F) and increase the Blower (N) to 100% to raise a draught. 
+Replenish the coal using R and Shift+R to keep the fire mass close to 100%.
+Full pressure may be reached in 5 minutes or so.
+
+The default setting is checked.
 
 .. _options-forced-red:
 
