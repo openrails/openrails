@@ -472,11 +472,6 @@ When this option is selected, resistance to train motion is influenced by
 the wind speed, and the direction that it is blowing. This option is
 described in detail :ref:`here <physics-wind-resistance>`
 
-Run electric locos on non-electrified routes
---------------------------------------------
-
-This option allows the running of electric locomotives on non-electrified routes.
-
 Steam locomotive hot start
 --------------------------
 
