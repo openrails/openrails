@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System;
+using System.Linq;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -81,11 +82,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     var gearType = stf.ReadString();
                     try
                     {
-                        GearBoxType = (TypesGearBox)Enum.Parse(typeof(TypesGearBox), gearType);
+                        GearBoxType = (TypesGearBox)Enum.Parse(typeof(TypesGearBox), gearType.First().ToString().ToUpper() + gearType.Substring(1));
                     }
                     catch
                     {
-                        STFException.TraceWarning(stf, "Assumed unknown gear type " + gearType);
+                        STFException.TraceWarning(stf, "Assumed unknown gear box type " + gearType);
                     }
                     break;
                 case "engine(ortsmainclutchtype":
@@ -93,11 +94,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     var clutchType = stf.ReadString();
                     try
                     {
-                        ClutchType = (TypesClutch)Enum.Parse(typeof(TypesClutch), clutchType);
+                        ClutchType = (TypesClutch)Enum.Parse(typeof(TypesClutch), clutchType.First().ToString().ToUpper() + clutchType.Substring(1));
                     }
                     catch
                     {
-                        STFException.TraceWarning(stf, "Assumed unknown gear type " + clutchType);
+                        STFException.TraceWarning(stf, "Assumed unknown main clutch type " + clutchType);
                     }
                     break;
                 case "engine(gearboxoperation":
@@ -105,11 +106,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     var gearOperation = stf.ReadString();
                     try
                     {
-                        GearBoxOperation = (GearBoxOperation)Enum.Parse(typeof(GearBoxOperation), gearOperation);
+                        GearBoxOperation = (GearBoxOperation)Enum.Parse(typeof(GearBoxOperation), gearOperation.First().ToString().ToUpper() + gearOperation.Substring(1));
                     }
                     catch
                     {
-                        STFException.TraceWarning(stf, "Assumed unknown gear operation type " + gearOperation);
+                        STFException.TraceWarning(stf, "Assumed unknown gear box operation type " + gearOperation);
                     }
                     initLevel++;
                     break;
@@ -118,12 +119,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     var engineBraking = stf.ReadString();
                     try
                     {
-
-                        GearBoxEngineBraking = (GearBoxEngineBraking)Enum.Parse(typeof(GearBoxEngineBraking), engineBraking);
+                        GearBoxEngineBraking = (GearBoxEngineBraking)Enum.Parse(typeof(GearBoxEngineBraking), engineBraking.First().ToString().ToUpper() + engineBraking.Substring(1));
                     }
                     catch
                     {
-                        STFException.TraceWarning(stf, "Assumed unknown gear operation type " + engineBraking);
+                        STFException.TraceWarning(stf, "Assumed unknown gear box engine braking type " + engineBraking);
                     }
                     break;
                 case "engine(gearboxmaxspeedforgears":
