@@ -982,11 +982,11 @@ namespace Orts.Simulation.RollingStocks
             switch (loadUnits)
             {
                 case CABViewControlUnits.AMPS:
-                    if (ThrottlePercent > 0)
+                    if (ThrottlePercent >= 0 && DynamicBrakePercent == -1)
                     {
                         data = (data / MaxForceN) * MaxCurrentA;
                     }
-                    if (DynamicBrakePercent > 0)
+                    if (ThrottlePercent == 0 && DynamicBrakePercent >= 0)
                     {
                         data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                     }

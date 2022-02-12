@@ -355,8 +355,10 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var pdl in ParticleDrawers.Values)
                 foreach (var pd in pdl)
                     pd.Mark();
-            if (_CabRenderer != null)
-                _CabRenderer.Mark();
+
+            _CabRenderer?.Mark();
+            ThreeDimentionCabViewer?.Mark();
+
             base.Mark();
         }
 
@@ -1827,9 +1829,9 @@ namespace Orts.Viewer3D.RollingStock
                 if (Gauge is CVCFirebox)
                     destH = Math.Min(destH, (int)(yratio * (Control.PositionY + 0.5 * Gauge.Area.Height)) - destY);
             }
-            if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
+            if (Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
             {
-                if (Num < 0 && Gauge.NegativeColor.A != 0)
+                if (Num < 0 && Control.MinValue < 0 && Gauge.NegativeColor.A != 0)
                 {
                     if ((Gauge.NumNegativeColors >= 2) && (Num < Gauge.NegativeSwitchVal))
                         DrawColor = new Color(Gauge.SecondNegativeColor.R, Gauge.SecondNegativeColor.G, Gauge.SecondNegativeColor.B, Gauge.SecondNegativeColor.A);
@@ -3129,9 +3131,13 @@ namespace Orts.Viewer3D.RollingStock
 
         internal override void Mark()
         {
-            // TODO: This is likely wrong; we should mark textures, shapes and other graphical resources here.
+            TrainCarShape?.Mark();
+            foreach (ThreeDimCabDigit threeDimCabDigit in DigitParts3D.Values)
+            {
+                threeDimCabDigit.Mark();
+            }
         }
-    } // Class ThreeDimentionCabViewer
+    }
 
     public class ThreeDimCabDigit
     {
