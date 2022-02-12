@@ -60,8 +60,6 @@ namespace Orts.Viewer3D.Processes
         {
             Profiler.SetThread();
             Game.SetThreadLanguage();
-            if (!Game.Settings.WebServer)
-                return;
 
             string myWebContentPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Content\\Web");
             EndPointManager.UseIpv6 = true;

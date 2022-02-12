@@ -42,7 +42,6 @@
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
             this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
-            this.pbEnableWebServer = new System.Windows.Forms.PictureBox();
             this.pbDisableTcsScripts = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
             this.pbPressureUnit = new System.Windows.Forms.PictureBox();
@@ -56,7 +55,6 @@
             this.pbMapWindow = new System.Windows.Forms.PictureBox();
             this.labelPortNumber = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
-            this.checkEnableWebServer = new System.Windows.Forms.CheckBox();
             this.checkOverspeedMonitor = new System.Windows.Forms.CheckBox();
             this.checkDisableTCSScripts = new System.Windows.Forms.CheckBox();
             this.labelOtherUnits = new System.Windows.Forms.Label();
@@ -211,7 +209,6 @@
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbEnableWebServer)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcsScripts)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).BeginInit();
@@ -393,7 +390,6 @@
             // tabPageGeneral
             // 
             this.tabPageGeneral.Controls.Add(this.pbOverspeedMonitor);
-            this.tabPageGeneral.Controls.Add(this.pbEnableWebServer);
             this.tabPageGeneral.Controls.Add(this.pbDisableTcsScripts);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
             this.tabPageGeneral.Controls.Add(this.pbPressureUnit);
@@ -407,7 +403,6 @@
             this.tabPageGeneral.Controls.Add(this.pbMapWindow);
             this.tabPageGeneral.Controls.Add(this.labelPortNumber);
             this.tabPageGeneral.Controls.Add(this.numericWebServerPort);
-            this.tabPageGeneral.Controls.Add(this.checkEnableWebServer);
             this.tabPageGeneral.Controls.Add(this.checkOverspeedMonitor);
             this.tabPageGeneral.Controls.Add(this.checkDisableTCSScripts);
             this.tabPageGeneral.Controls.Add(this.labelOtherUnits);
@@ -444,18 +439,6 @@
             this.pbOverspeedMonitor.Click += new System.EventHandler(this.HelpIcon_Click);
             this.pbOverspeedMonitor.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbOverspeedMonitor.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // pbEnableWebServer
-            // 
-            this.pbEnableWebServer.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbEnableWebServer.Location = new System.Drawing.Point(6, 309);
-            this.pbEnableWebServer.Name = "pbEnableWebServer";
-            this.pbEnableWebServer.Size = new System.Drawing.Size(18, 18);
-            this.pbEnableWebServer.TabIndex = 29;
-            this.pbEnableWebServer.TabStop = false;
-            this.pbEnableWebServer.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbEnableWebServer.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbEnableWebServer.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbDisableTcsScripts
             // 
@@ -594,9 +577,9 @@
             this.labelPortNumber.AutoSize = true;
             this.labelPortNumber.Location = new System.Drawing.Point(105, 333);
             this.labelPortNumber.Name = "labelPortNumber";
-            this.labelPortNumber.Size = new System.Drawing.Size(181, 13);
+            this.labelPortNumber.Size = new System.Drawing.Size(167, 13);
             this.labelPortNumber.TabIndex = 17;
-            this.labelPortNumber.Text = "Port number                                       ";
+            this.labelPortNumber.Text = "Web server port                            ";
             // 
             // numericWebServerPort
             // 
@@ -619,18 +602,6 @@
             0,
             0,
             0});
-            // 
-            // checkEnableWebServer
-            // 
-            this.checkEnableWebServer.AutoSize = true;
-            this.checkEnableWebServer.Location = new System.Drawing.Point(32, 308);
-            this.checkEnableWebServer.Name = "checkEnableWebServer";
-            this.checkEnableWebServer.Size = new System.Drawing.Size(255, 17);
-            this.checkEnableWebServer.TabIndex = 15;
-            this.checkEnableWebServer.Text = "Enable webserver                                                ";
-            this.checkEnableWebServer.UseVisualStyleBackColor = true;
-            this.checkEnableWebServer.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.checkEnableWebServer.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkOverspeedMonitor
             // 
@@ -2588,7 +2559,6 @@
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbEnableWebServer)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcsScripts)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).EndInit();
@@ -2810,7 +2780,6 @@
         private System.Windows.Forms.NumericUpDown numericActWeatherRandomizationLevel;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox checkShadowAllShapes;
-        private System.Windows.Forms.CheckBox checkEnableWebServer;
         private System.Windows.Forms.NumericUpDown numericWebServerPort;
         private System.Windows.Forms.Label labelPortNumber;
         private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
@@ -2825,7 +2794,6 @@
         private System.Windows.Forms.PictureBox pbLanguage;
         private System.Windows.Forms.PictureBox pbPressureUnit;
         private System.Windows.Forms.PictureBox pbOtherUnits;
-        private System.Windows.Forms.PictureBox pbEnableWebServer;
         private System.Windows.Forms.PictureBox pbDisableTcsScripts;
         private System.Windows.Forms.PictureBox pbOverspeedMonitor;
         private System.Windows.Forms.TrackBar trackAntiAliasing;
