@@ -189,7 +189,6 @@ namespace ORTS
             numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
             numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
-            checkCurveResistanceDependent.Checked = Settings.CurveResistanceDependent;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
             checkTunnelResistanceDependent.Checked = Settings.TunnelResistanceDependent;
             checkWindResistanceDependent.Checked = Settings.WindResistanceDependent;
@@ -472,7 +471,6 @@ namespace ORTS
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
-            Settings.CurveResistanceDependent = checkCurveResistanceDependent.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
             Settings.TunnelResistanceDependent = checkTunnelResistanceDependent.Checked;
             Settings.WindResistanceDependent = checkWindResistanceDependent.Checked;
