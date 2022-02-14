@@ -1206,13 +1206,13 @@ namespace Orts.Viewer3D.Popups
 
                 TableAddLine(table);
 
-                    TableAddLine(table, $"{Viewer.Catalog.GetString("Wind Speed:")} {Viewer.Catalog.GetStringFmt("{0:N2} mph", Me.ToMi(pS.TopH(train.PhysicsWindSpeedMpS)))}   " +
-                                        $"{Viewer.Catalog.GetString("Wind Direction:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.PhysicsWindDirectionDeg)}   " +
-                                        $"{Viewer.Catalog.GetString("Train Direction:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.PhysicsTrainLocoDirectionDeg)}   " +
-                                        $"{Viewer.Catalog.GetString("ResWind:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.ResultantWindComponentDeg)}   " +
-                                        $"{Viewer.Catalog.GetString("ResSpeed:")} {Viewer.Catalog.GetStringFmt("{0:N2} mph", Me.ToMi(pS.TopH(train.WindResultantSpeedMpS)))}");
-                    TableAddLine(table);
-                }
+                TableAddLine(table, $"{Viewer.Catalog.GetString("Wind Speed:")} {Viewer.Catalog.GetStringFmt("{0:N2} mph", Me.ToMi(pS.TopH(train.PhysicsWindSpeedMpS)))}   " +
+                                    $"{Viewer.Catalog.GetString("Wind Direction:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.PhysicsWindDirectionDeg)}   " +
+                                    $"{Viewer.Catalog.GetString("Train Direction:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.PhysicsTrainLocoDirectionDeg)}   " +
+                                    $"{Viewer.Catalog.GetString("ResWind:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.ResultantWindComponentDeg)}   " +
+                                    $"{Viewer.Catalog.GetString("ResSpeed:")} {Viewer.Catalog.GetStringFmt("{0:N2} mph", Me.ToMi(pS.TopH(train.WindResultantSpeedMpS)))}");
+                TableAddLine(table);
+            }
 
             TableSetCells(table, 0,
                 Viewer.Catalog.GetString("Car"),

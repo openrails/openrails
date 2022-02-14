@@ -188,7 +188,7 @@ namespace Orts.Viewer3D
                 // Many MSTS objects had a LOD of 2km which is the maximum distance that MSTS can handle.
                 // Open Rails can handle greater distances, so we override the lowest-detail LOD to make sure OR shows shapes further away than 2km.
                 // See http://www.elvastower.com/forums/index.php?/topic/35301-menu-options/page__view__findpost__p__275531
-                    ObjectViewingDistance = float.MaxValue;
+                ObjectViewingDistance = float.MaxValue;
             }
 
             // Create all the primitives for the shared shape.
