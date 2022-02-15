@@ -4102,9 +4102,7 @@ namespace Orts.Simulation.Physics
         {
             if (SpeedMpS < -.1 || SpeedMpS > .1)
                 return;
-            int first = -1;
-            int last = -1;
-            FindLeadLocomotives(ref first, ref last);
+            FindLeadLocomotives(out int first, out int last);
             for (int i = 0; i < Cars.Count; i++)
             {
                 Cars[i].BrakeSystem.FrontBrakeHoseConnected = first < i && i <= last;
@@ -4145,9 +4143,7 @@ namespace Orts.Simulation.Physics
                         break;
                 }
             }
-            int first = -1;
-            int last = -1;
-            FindLeadLocomotives(ref first, ref last);
+            FindLeadLocomotives(out int first, out int last);
             int step = 100 / RetainerPercent;
             for (int i = 0; i < Cars.Count; i++)
             {
@@ -4170,7 +4166,7 @@ namespace Orts.Simulation.Physics
         // for example a double headed steam locomotive will most often have a tender separating the two locomotives, 
         // so the second locomotive will not be identified, nor will a locomotive added at the rear of the train. 
 
-        public void FindLeadLocomotives(ref int first, ref int last)
+        public void FindLeadLocomotives(out int first, out int last)
         {
             first = last = -1;
             if (LeadLocomotiveIndex >= 0)
@@ -4210,9 +4206,7 @@ namespace Orts.Simulation.Physics
 
         public TrainCar FindLeadLocomotive()
         {
-            int first = -1;
-            int last = -1;
-            FindLeadLocomotives(ref first, ref last);
+            FindLeadLocomotives(out int first, out int last);
             if (first != -1 && first < LeadLocomotiveIndex)
             {
                 return Cars[first];
