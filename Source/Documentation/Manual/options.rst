@@ -243,7 +243,7 @@ semitransparent mode.
 Model instancing
 ----------------
 
-When the option is checked, in cases where multiple instances of the same
+When the option is checked, in cases where multiple instances of the same 
 object have to be drawn, only a single draw call is sent to the GPU. 
 Uncheck this option to avoid the graphical glitches which appear on some 
 hardware, but this may reduce the frame rate.
