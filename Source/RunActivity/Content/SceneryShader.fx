@@ -23,9 +23,6 @@
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-#define MAX_LIGHTS 30
-#define MAX_BONES 50
-
 float4x4 World;         // model -> world [max number of bones]
 float4x4 WorldViewProjection;  // model -> world -> view -> projection (in case of skinned model only View x Projection)
 float4x4 LightViewProjectionShadowProjection0;  // world -> light view -> light projection -> shadow map projection
@@ -58,6 +55,10 @@ float    ReferenceAlpha;
 texture  ImageTexture; // .s: linear RGBA, glTF (PBR): 8 bit sRGB + linear A
 texture  OverlayTexture;
 float	 OverlayScale;
+
+// Defines are set in the Shaders.cs, leave these commented out:
+//#define MAX_LIGHTS 20
+//#define MAX_BONES 50
 
 float4x4 Bones[MAX_BONES]; // model -> world [max number of bones]
 float4   BaseColorFactor; // glTF linear color multiplier
@@ -92,6 +93,10 @@ static const float MinRoughness = 0.04;
 static const int LightType_Directional = 0;
 static const int LightType_Point = 1;
 static const int LightType_Spot = 2;
+static const int LightType_Headlight = 3;
+
+static const float FullBrightness = 1.0;
+static const float ShadowBrightness = 0.5;
 
 sampler Image = sampler_state
 {
@@ -561,13 +566,6 @@ float _PSGetAmbientEffect(in VERTEX_OUTPUT In)
 	return In.Normal_Light.w * ZBias_Lighting.y;
 }
 
-// Gets the specular light effect.
-float _PSGetSpecularEffect(in VERTEX_OUTPUT In)
-{
-	float3 halfVector = normalize(-In.RelPosition.xyz) + LightVector_ZFar.xyz;
-	return In.Normal_Light.w * ZBias_Lighting.w * pow(saturate(dot(In.Normal_Light.xyz, normalize(halfVector))), ZBias_Lighting.z);
-}
-
 // Gets the shadow effect.
 float3 _Level9_1GetShadowEffect(in VERTEX_OUTPUT In)
 {
@@ -661,10 +659,10 @@ void _PSApplyHeadlights(inout float3 Color, in float3 OriginalColor, in VERTEX_O
 	float coneDot = dot(headlightToSurface, HeadlightDirection.xyz);
 
 	float shading = step(0, coneDot);
-	shading *= step(0, dot(In.Normal_Light.xyz, -headlightToSurface));
-	shading *= saturate(HeadlightDirection.w / (1 - coneDot));
-	shading *= saturate(1 - length(In.LightDir_Fog.xyz) * HeadlightRcpDistance);
-	shading *= HeadlightPosition.w;
+	shading *= step(0, dot(In.Normal_Light.xyz, -headlightToSurface)); // NdotL
+	shading *= saturate(HeadlightDirection.w / (1 - coneDot)); // cone attenuation
+	shading *= saturate(1 - length(In.LightDir_Fog.xyz) * HeadlightRcpDistance); // rangeAttenuation
+	shading *= HeadlightPosition.w; // intensity
 	Color += OriginalColor * HeadlightColor.rgb * HeadlightColor.a * shading;
 }
 
@@ -672,36 +670,69 @@ void _PSApplyHeadlights(inout float3 Color, in float3 OriginalColor, in VERTEX_O
 // In.LightDir_Fog: -pointToLight
 
 
-float3 _PSGetLightIntensity(in int i, in float l, in float pointToLight)
+float3 _PSGetLightVector(in int i, in float3 pointAbsolutePosition, inout float3 intensity)
 {
-	float rangeAttenuation = 1.0;
-	float spotAttenuation = 1.0;
+	float rangeAttenuation = 1;
+	float spotAttenuation = 1;
 
+	float3 pointToLight = (float3)0;
 	if (LightTypes[i] != LightType_Directional)
 	{
+		pointToLight = LightPositions[i] - pointAbsolutePosition;
+
 		float pointLightDistance = length(pointToLight);
-		if (LightRanges[i] <= 0)
-			rangeAttenuation = 1.0 / pow(pointLightDistance, 2);
+		if (LightTypes[i] == LightType_Headlight)
+		{
+			// The pre-PBR headlight range attenuation is linear
+			if (LightRanges[i] > 0)
+				rangeAttenuation *= max(min(1 - pointLightDistance / LightRanges[i], 1), 0);
+		}
 		else
-			// TODO: A cheaper method id suggested in the glTF lights extension
-			rangeAttenuation = max(min(1.0 - pow(pointLightDistance / LightRanges[i], 4), 1), 0) / pow(pointLightDistance, 2);
+		{
+			rangeAttenuation /= pow(pointLightDistance, 2);
+			if (LightRanges[i] > 0)
+				rangeAttenuation *= max(min(1 - pow(pointLightDistance / LightRanges[i], 4), 1), 0);
+		}
 	}
-	if (LightTypes[i] == LightType_Spot)
+	else
 	{
-		float actualConeCos = dot(l, LightDirections[i]);
-		if (actualConeCos > LightOuterConeCos[i]) // inside outer cone
-		{
-			if (actualConeCos < LightInnerConeCos[i]) // outside inner cone
-				spotAttenuation = smoothstep(LightOuterConeCos[i], LightInnerConeCos[i], actualConeCos);
-			else
-				spotAttenuation = 1;
-		}
-		else
-		{
-			spotAttenuation = 0;
-		}
+		pointToLight = LightDirections[i];
 	}
-	return LightIntensities[i] * LightColors[i] * rangeAttenuation * spotAttenuation;
+
+	float3 l = normalize(pointToLight);
+	
+	if (LightTypes[i] == LightType_Spot || LightTypes[i] == LightType_Headlight)
+		spotAttenuation = smoothstep(LightOuterConeCos[i], LightInnerConeCos[i], dot(l, LightDirections[i]));
+	
+	intensity = LightIntensities[i] * LightColors[i] * rangeAttenuation * spotAttenuation;
+	return l;
+}
+
+float3 _PSApplyMstsLights(in float3 diffuseColor, in VERTEX_OUTPUT In, float shadowFactor)
+{
+	float diffuseShadowFactor = lerp(ShadowBrightness, FullBrightness, saturate(shadowFactor));
+	
+	float3 n = In.Normal_Light.xyz;
+	float3 v = normalize(-In.RelPosition.xyz);
+
+	float3 diffuseContrib = (float3)0;
+	float3 specContrib = (float3)0;
+	float3 intensity = (float3)0;
+
+	[loop]
+	for (int i = 0; i < NumLights; i++)
+	{
+		// In.Shadow.xyz is the absolute world position of the point
+		float3 l = _PSGetLightVector(i, In.Shadow.xyz, intensity);
+		float3 h = normalize(l + v);
+
+		float NdotL = clamp(dot(n, l), 0.001, 1.0);
+		float NdotH = clamp(dot(n, h), 0.0, 1.0);
+
+		diffuseContrib += intensity * NdotL * diffuseColor / M_PI * diffuseShadowFactor;
+		specContrib += intensity * NdotL * ZBias_Lighting.w * pow(NdotH, ZBias_Lighting.z) * shadowFactor;
+	}
+	return diffuseContrib + specContrib;
 }
 
 // Applies distance fog to the pixel.
@@ -780,7 +811,17 @@ float2 _PSCartesianToPolar(float3 n)
 	return uv;
 }
 
-float4 RGBDToLinear(float4 value)
+float3 _PSSrgbToLinear(float3 color)
+{
+	return pow(color.rgb, 2.2);
+}
+
+float3 _PSLinearToSrgb(float3 color)
+{
+	return pow(color.rgb, 1.0 / 2.2);
+}
+
+float4 _PSRgbdToLinear(float4 value)
 {
 	return float4(value.xyz / value.w, 1.0);
 }
@@ -789,14 +830,14 @@ float3 _PSGetIBLContribution(float3 diffuseColor, float3 specularColor, float Nd
 {
 	float2 val = float2(NdotV, 1.0 - perceptualRoughness);
 	float3 brdf = tex2D(BrdfLut, val).rgb;
-	brdf.rgb = pow(brdf.rgb, 2.2);
+	brdf.rgb = _PSSrgbToLinear(brdf.rgb);
 
-	float3 specularLight = RGBDToLinear(tex2D(EnvironmentMapSpecular, _PSCartesianToPolar(reflection))).rgb;
-	specularLight.rgb = pow(specularLight.rgb, 2.2);
+	float3 specularLight = _PSRgbdToLinear(tex2D(EnvironmentMapSpecular, _PSCartesianToPolar(reflection))).rgb;
+	specularLight.rgb = _PSSrgbToLinear(specularLight.rgb);
 	float3 specular = specularLight * (specularColor * brdf.x + brdf.y);
 
 	float3 diffuseLight = texCUBE(EnvironmentMapDiffuse, n).rgb; // irradiance (washed out)
-	//diffuseLight.rgb = pow(diffuseLight.rgb, 2.2); // If we can upload the image with sRGB texture surfaceformat, no need to convert manually, the GPU will do that for us.
+	//diffuseLight.rgb = _PSSrgbToLinear(diffuseLight.rgb); // If we can upload the image with sRGB texture surfaceformat, no need to convert manually, the GPU will do that for us.
 	float3 diffuse = diffuseLight * diffuseColor;
 
 	return diffuse + specular;
@@ -804,9 +845,6 @@ float3 _PSGetIBLContribution(float3 diffuseColor, float3 specularColor, float Nd
 
 float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX_OUTPUT In) : COLOR0
 {
-	const float FullBrightness = 1.0;
-	const float ShadowBrightness = 0.5;
-
 	float4 Color = tex2D(Image, In.TexCoords.xy);
 	if (ShaderModel3 && ClampTexCoords) {
 		// We need to clamp the rendering to within the [0..1] range only.
@@ -817,16 +855,20 @@ float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX
 
 	// Alpha testing:
 	clip(Color.a - ReferenceAlpha);
+	
+	float shadowFactor = _PSGetShadowEffect(ShaderModel3, true, In);
+	
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * shadowFactor + ImageTextureIsNight));
 	// Specular effect next.
-	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In);
+	// 
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), Overcast.x);
 	// Night-time darkens everything, except night-time textures.
 	litColor *= NightColorModifier;
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color.rgb, In);
+	litColor += _PSApplyMstsLights(Color.rgb, In, shadowFactor);
+	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	if (ShaderModel3) _PSSceneryFade(Color, In);
@@ -851,9 +893,6 @@ float4 PSImage9_1(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 {
-	const float FullBrightness = 1.0;
-	const float ShadowBrightness = 0.5;
-
 	bool ShaderModel3 = true;
 	
 	// This is for being able to call the original functions for the ambient lighting:
@@ -872,8 +911,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	else
 		Color = tex2D(Image, In.TexCoords.zw);
 
-	// Decode from sRGB to linear.
-	Color.rgb = pow(Color.rgb, 2.2);
+	Color.rgb = _PSSrgbToLinear(Color.rgb);
 	// Apply the linear multipliers.
 	Color *= In.Color * BaseColorFactor;
 	// Alpha testing:
@@ -883,8 +921,8 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	// Contributions from the OpenRails environment:
 	float shadowFactor = _PSGetShadowEffect(true, true, InGeneral);
 	float diffuseShadowFactor = lerp(ShadowBrightness, FullBrightness, saturate(shadowFactor));
-	float3 headlightContrib = 0;
-	_PSApplyHeadlights(headlightContrib, Color.rgb, InGeneral); // inout: headlightContrib
+	//float3 headlightContrib = 0;
+	//_PSApplyHeadlights(headlightContrib, Color.rgb, InGeneral); // inout: headlightContrib
 	_PSSceneryFade(Color, InGeneral);
 	float fade = Color.a;
 	///////////////////////
@@ -977,6 +1015,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 
 	float3 diffuseContrib = (float3)0;
 	float3 specContrib = (float3)0;
+	float3 intensity = (float3)0;
 
 	// LightVector_ZFar: sun direction
 	// In.LightDir_Fog: -pointToLight
@@ -984,13 +1023,8 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	[loop]
 	for (int i = 0; i < NumLights; i++)
 	{
-		float3 pointToLight;
-		if (LightTypes[i] != LightType_Directional)
-			pointToLight = In.Shadow.xyz - LightPositions[i]; // In.Shadow.xyz is the absolute world position of the point
-		else
-			pointToLight = LightDirections[i];
-
-		float3 l = normalize(pointToLight);
+		// In.Shadow.xyz is the absolute world position of the point
+		float3 l = _PSGetLightVector(i, In.Shadow.xyz, intensity);
 		float3 h = normalize(l + v);
 
 		float NdotL = clamp(dot(n, l), 0.001, 1.0);
@@ -1007,8 +1041,6 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 		float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
 		float D = roughnessSq / (M_PI * f * f);
 
-		float3 intensity = _PSGetLightIntensity(i, l, pointToLight);
-
 		diffuseContrib += intensity * NdotL * (1.0 - F) * diffuseColor / M_PI * diffuseShadowFactor;
 		specContrib += intensity * NdotL * F * G * D / (4.0 * NdotL * NdotV) * shadowFactor;
 	}
@@ -1023,7 +1055,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 		emissive = tex2D(Emissive, In.TexCoords.xy).rgb;
 	else
 		emissive = tex2D(Emissive, In.TexCoords.zw).rgb;
-	litColor += pow(emissive, 2.2) * EmissiveFactor;
+	litColor += _PSSrgbToLinear(emissive) * EmissiveFactor;
 
 	///////////////////////
 	// Contributions from the OpenRails environment:
@@ -1035,7 +1067,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	///////////////////////
 
 	// Transform back to sRGB:
-	litColor = pow(litColor, 1.0 / 2.2);
+	litColor = _PSLinearToSrgb(litColor);
 
 	return float4(litColor, fade);
 }
@@ -1053,7 +1085,8 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= NightColorModifier;
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color.rgb, In);
+	litColor += _PSApplyMstsLights(Color.rgb, In, 1);
+	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -1062,9 +1095,6 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 {
-	const float FullBrightness = 1.0;
-	const float ShadowBrightness = 0.5;
-
 	float4 Color = tex2D(Image, In.TexCoords.xy);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
 	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
@@ -1076,7 +1106,8 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	// Overlay image for terrain.
 	litColor.rgb *= tex2D(Overlay, In.TexCoords.xy * OverlayScale).rgb * 2;
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color.rgb, In);
+	litColor += _PSApplyMstsLights(Color.rgb, In, _PSGetShadowEffect(ShaderModel3, true, In));
+	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -1109,7 +1140,8 @@ float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= NightColorModifier;
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color.rgb, In);
+	litColor += _PSApplyMstsLights(Color.rgb, In, 1);
+	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -1131,7 +1163,8 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= HalfNightColorModifier;
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color.rgb, In);
+	litColor += _PSApplyMstsLights(Color.rgb, In, 1);
+	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -1149,7 +1182,8 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 	// No overcast effect for full-bright.
 	// No night-time effect for full-bright.
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color.rgb, In);
+	litColor += _PSApplyMstsLights(Color.rgb, In, 1);
+	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -1178,15 +1212,15 @@ float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 
 technique ImageLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSImage9_1();
+		VertexShader = compile vs_4_0 VSGeneral9_1();
+		PixelShader = compile ps_4_0 PSImage9_1();
 	}
 }
 
 technique ImageLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSImage9_3();
+		VertexShader = compile vs_4_0 VSGeneral9_3();
+		PixelShader = compile ps_4_0 PSImage9_3();
 	}
 }
 
@@ -1213,105 +1247,105 @@ technique PbrSkinned {
 
 technique TransferLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSTransfer9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSImage9_1();
+		VertexShader = compile vs_4_0 VSTransfer9_1();
+		PixelShader = compile ps_4_0 PSImage9_1();
 	}
 }
 
 technique TransferLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSTransfer3();
-		PixelShader = compile ps_4_0_level_9_3 PSImage9_3Clamp();
+		VertexShader = compile vs_4_0 VSTransfer3();
+		PixelShader = compile ps_4_0 PSImage9_3Clamp();
 	}
 }
 
 technique Forest {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSForest();
-		PixelShader = compile ps_4_0_level_9_1 PSVegetation();
+		VertexShader = compile vs_4_0 VSForest();
+		PixelShader = compile ps_4_0 PSVegetation();
 	}
 }
 
 technique VegetationLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSVegetation();
+		VertexShader = compile vs_4_0 VSGeneral9_1();
+		PixelShader = compile ps_4_0 PSVegetation();
 	}
 }
 
 technique VegetationLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSVegetation();
+		VertexShader = compile vs_4_0 VSGeneral9_3();
+		PixelShader = compile ps_4_0 PSVegetation();
 	}
 }
 
 technique TerrainLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSTerrain9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSTerrain9_1();
+		VertexShader = compile vs_4_0 VSTerrain9_1();
+		PixelShader = compile ps_4_0 PSTerrain9_1();
 	}
 }
 
 technique TerrainLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSTerrain9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSTerrain9_3();
+		VertexShader = compile vs_4_0 VSTerrain9_3();
+		PixelShader = compile ps_4_0 PSTerrain9_3();
 	}
 }
 
 technique DarkShadeLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSDarkShade();
+		VertexShader = compile vs_4_0 VSGeneral9_1();
+		PixelShader = compile ps_4_0 PSDarkShade();
 	}
 }
 
 technique DarkShadeLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSDarkShade();
+		VertexShader = compile vs_4_0 VSGeneral9_3();
+		PixelShader = compile ps_4_0 PSDarkShade();
 	}
 }
 
 technique HalfBrightLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSHalfBright();
+		VertexShader = compile vs_4_0 VSGeneral9_1();
+		PixelShader = compile ps_4_0 PSHalfBright();
 	}
 }
 
 technique HalfBrightLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSHalfBright();
+		VertexShader = compile vs_4_0 VSGeneral9_3();
+		PixelShader = compile ps_4_0 PSHalfBright();
 	}
 }
 
 technique FullBrightLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSFullBright();
+		VertexShader = compile vs_4_0 VSGeneral9_1();
+		PixelShader = compile ps_4_0 PSFullBright();
 	}
 }
 
 technique FullBrightLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSFullBright();
+		VertexShader = compile vs_4_0 VSGeneral9_3();
+		PixelShader = compile ps_4_0 PSFullBright();
 	}
 }
 
 technique SignalLight {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSSignalLight();
-		PixelShader = compile ps_4_0_level_9_1 PSSignalLight();
+		VertexShader = compile vs_4_0 VSSignalLight();
+		PixelShader = compile ps_4_0 PSSignalLight();
 	}
 }
 
 technique SignalLightGlow {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSSignalLightGlow();
-		PixelShader = compile ps_4_0_level_9_1 PSSignalLight();
+		VertexShader = compile vs_4_0 VSSignalLightGlow();
+		PixelShader = compile ps_4_0 PSSignalLight();
 	}
 }

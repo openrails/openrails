@@ -48,6 +48,7 @@ namespace Orts.Viewer3D
             };
             var context = new ProcessorContext();
             var processor = new EffectProcessor();
+            processor.Defines = $"MAX_LIGHTS={SceneryShader.MAX_LIGHTS};MAX_BONES={SceneryShader.MAX_BONES}";
             var effect = processor.Process(input, context);
             return effect.GetEffectCode();
         }
@@ -149,7 +150,7 @@ namespace Orts.Viewer3D
         bool _imageTextureIsNight;
 
         public const int MAX_BONES = 50;
-        public const int MAX_LIGHTS = 30;
+        public const int MAX_LIGHTS = 20;
 
         /// <summary>
         /// The position of the sampler states inside the hlsl shader:

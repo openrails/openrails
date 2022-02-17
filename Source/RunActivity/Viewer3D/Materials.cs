@@ -593,7 +593,7 @@ namespace Orts.Viewer3D
             SceneryShader.BrdfLutTexture = GltfShape.BrdfLutTexture;
 
             LightManager.BeginFrame();
-            LightManager.AddLight(sunDirection, Vector3.One, 5);
+            LightManager.AddLight(sunDirection, Vector3.One, 1);
 
             // Headlight illumination
             if (Viewer.PlayerLocomotiveViewer != null
@@ -657,7 +657,7 @@ namespace Orts.Viewer3D
                         intensity = MathHelper.Clamp(intensity, 0, clampValue);
                     }
 
-                    LightManager.AddLight(LightManager.LightType.Spot, lightDrawer.LightConePosition, lightDrawer.LightConeDirection, color, intensity, range, 0, lightDrawer.LightConeMinDotProduct);
+                    LightManager.AddLight(LightManager.LightType.Headlight, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity * 10, range, 1, lightDrawer.LightConeMinDotProduct);
                 }
             }
             else
@@ -690,7 +690,8 @@ namespace Orts.Viewer3D
         {
             Directional = 0,
             Point = 1,
-            Spot = 2
+            Spot = 2,
+            Headlight = 3
         }
 
         int NumLights;
@@ -740,14 +741,14 @@ namespace Orts.Viewer3D
             if (NumLights == 0)
                 return;
 
-            MaterialManager.SceneryShader.LightTypes = LightTypes.Take(NumLights).ToArray();
-            MaterialManager.SceneryShader.LightPositions = LightPositions.Take(NumLights).ToArray();
-            MaterialManager.SceneryShader.LightDirections = LightDirections.Take(NumLights).ToArray();
-            MaterialManager.SceneryShader.LightColors = LightColors.Take(NumLights).ToArray();
-            MaterialManager.SceneryShader.LightIntensities = LightIntensities.Take(NumLights).ToArray();
-            MaterialManager.SceneryShader.LightRanges = LightRanges.Take(NumLights).ToArray();
-            MaterialManager.SceneryShader.LightInnerConeCos = LightInnerConeCos.Take(NumLights).ToArray();
-            MaterialManager.SceneryShader.LightOuterConeCos = LightOuterConeCos.Take(NumLights).ToArray();
+            MaterialManager.SceneryShader.LightTypes = LightTypes.ToArray();
+            MaterialManager.SceneryShader.LightPositions = LightPositions.ToArray();
+            MaterialManager.SceneryShader.LightDirections = LightDirections.ToArray();
+            MaterialManager.SceneryShader.LightColors = LightColors.ToArray();
+            MaterialManager.SceneryShader.LightIntensities = LightIntensities.ToArray();
+            MaterialManager.SceneryShader.LightRanges = LightRanges.ToArray();
+            MaterialManager.SceneryShader.LightInnerConeCos = LightInnerConeCos.ToArray();
+            MaterialManager.SceneryShader.LightOuterConeCos = LightOuterConeCos.ToArray();
         }
     }
 
