@@ -577,6 +577,8 @@ namespace Orts.Viewer3D
         static readonly Vector3 MoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
         const float SunIntensity = 1;
         const float MoonIntensity = SunIntensity / 380000;
+        float HeadLightIntensity = 100000; // Can be 10 in case of linear calculation method
+        float DayNightMultiplier = 1;
 
         internal Vector3 sunDirection;
         bool lastLightState;
@@ -584,6 +586,7 @@ namespace Orts.Viewer3D
         float fadeDuration = -1;
         float clampValue = 1;
         float distance = 1000;
+
         internal void UpdateShaders()
         {
             if(Viewer.Settings.UseMSTSEnv == false)
@@ -607,9 +610,7 @@ namespace Orts.Viewer3D
             }
 
             // Headlight illumination
-            if (Viewer.PlayerLocomotiveViewer != null
-                && Viewer.PlayerLocomotiveViewer.lightDrawer != null
-                && Viewer.PlayerLocomotiveViewer.lightDrawer.HasLightCone)
+            if (Viewer.PlayerLocomotiveViewer?.lightDrawer?.HasLightCone ?? false)
             {
                 var lightDrawer = Viewer.PlayerLocomotiveViewer.lightDrawer;
                 var lightState = lightDrawer.IsLightConeActive;
@@ -623,49 +624,45 @@ namespace Orts.Viewer3D
                     else if (lightDrawer.LightConeFadeOut > 0)
                     {
                         fadeStartTimer = Viewer.Simulator.GameTime;
-                        fadeDuration = -lightDrawer.LightConeFadeOut;
+                        fadeDuration = lightDrawer.LightConeFadeOut;
                     }
                     lastLightState = lightState;
-                }
-                else if (!lastLightState && fadeDuration < 0 && Viewer.Simulator.GameTime > fadeStartTimer - fadeDuration)
-                {
-                    fadeDuration = 0;
                 }
                 if (sunDirection.Y <= -0.05)
                 {
                     clampValue = 1; // at nighttime max headlight
-                    distance = lightDrawer.LightConeDistance; // and max distance
+                    DayNightMultiplier = 1;
                 }
                 else if (sunDirection.Y >= 0.15)
                 {
                     clampValue = 0.5f; // at daytime min headlight
-                    distance = lightDrawer.LightConeDistance*0.1f; // and min distance
-
+                    DayNightMultiplier = 0.1f;
                 }
                 else
                 {
                     clampValue = 1 - 2.5f * (sunDirection.Y + 0.05f); // in the meantime interpolate
-                    distance = lightDrawer.LightConeDistance*(1-4.5f*(sunDirection.Y + 0.05f)); //ditto
+                    DayNightMultiplier = 1 - 4.5f * (sunDirection.Y + 0.05f);
                 }
 
                 // The original shaders followed the phylisophy of wanting 50% brightness at half the range. (LightConeDistance is only the half)
                 // For the new calculation method the full range is needed.
-                var range = distance * 2;
+                var range = lightDrawer.LightConeDistance * 2 * DayNightMultiplier;
                 var color = new Vector3(lightDrawer.LightConeColor.X, lightDrawer.LightConeColor.Y, lightDrawer.LightConeColor.Z);
 
-                var intensity = 0f;
-                if (fadeDuration != 0)
-                {
-                    intensity = (float)(Viewer.Simulator.GameTime - fadeStartTimer) / fadeDuration * clampValue;
-                    if (intensity < 0)
-                        intensity += 1;
-                    intensity = MathHelper.Clamp(intensity, 0, clampValue);
-                }
+                var intensity = (float)(Viewer.Simulator.GameTime - fadeStartTimer) / (fadeDuration + float.Epsilon);
+                if (!lightState)
+                    intensity = 1 - intensity;
+                intensity = MathHelper.Clamp(intensity, 0, 1);
+                intensity = MathHelper.Clamp(intensity * DayNightMultiplier * clampValue, 0, clampValue);
+                intensity *= HeadLightIntensity;
 
-                // The original shader used linear range attenuation with full-lit pixels within the range, that's what the LightManager.LightType.Headlight simulates:
-                //LightManager.AddLight(LightManager.LightType.Headlight, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity * 10, range, 1, lightDrawer.LightConeMinDotProduct);
-                // The PBR spot light uses invere-sqared attenuation with realisticcaly lit pixels within the range, use LightManager.LightType.Spot for that:
-                LightManager.AddLight(LightManager.LightType.Spot, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity * 100000, range, 1, lightDrawer.LightConeMinDotProduct);
+                if (intensity > 0)
+                {
+                    // The original shader used linear range attenuation with full-lit pixels within the range, that's what the LightManager.LightType.Headlight simulates:
+                    //LightManager.AddLight(LightManager.LightType.Headlight, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
+                    // The PBR spot light uses invere-sqared attenuation with realisticcaly lit pixels within the range, use LightManager.LightType.Spot for that:
+                    LightManager.AddLight(LightManager.LightType.Spot, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
+                }
             }
             // End headlight illumination
             if (Viewer.Settings.UseMSTSEnv == false)
