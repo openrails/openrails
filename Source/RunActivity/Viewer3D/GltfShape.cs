@@ -263,6 +263,7 @@ namespace Orts.Viewer3D
             string GltfDir;
             string GltfFileName;
             Dictionary<int, byte[]> BinaryBuffers;
+            List<GltfLight> Lights;
 
             /// <summary>
             /// All inverse bind matrices in a gltf file. The key is the accessor number.
@@ -286,6 +287,11 @@ namespace Orts.Viewer3D
                 Gltf = gltfFile;
                 GltfDir = Path.GetDirectoryName(gltfFileName);
                 GltfFileName = gltfFileName;
+
+                KHR_lights lights = null;
+                object extension = null;
+                if (gltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
+                    lights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString());
 
                 var meshes = new Dictionary<int, Node>();
                 TempStack.Clear();
@@ -312,7 +318,6 @@ namespace Orts.Viewer3D
                         }
                     }
 
-                    object extension = null;
                     if (node.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
                     {
                         var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString());
@@ -330,10 +335,33 @@ namespace Orts.Viewer3D
                         }
                     }
 
-                    // Create subobjects only for meshes belonging to the common root or the specific lod only:
+                    // Collect meshes and lights belonging to the common root or the specific lod only:
                     if (lods[nodeNumber] == -1 || lods[nodeNumber] == lodId)
+                    {
                         if (node.Mesh != null)
                             meshes.Add(nodeNumber, node);
+
+                        if (node.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
+                        {
+                            var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual>(extension.ToString());
+                            var lightId = ext?.light;
+                            if (lightId != null)
+                            {
+                                var light = lights.lights[(int)lightId];
+                                Lights = Lights ?? new List<GltfLight>();
+                                Lights.Add(new GltfLight
+                                {
+                                    Name = light.name,
+                                    Type = light.type,
+                                    Color = new Vector3(light.color[0], light.color[1], light.color[2]),
+                                    Intensity = light.intensity,
+                                    InnerConeAngle = light.innerConeAngle,
+                                    OuterConeAngle = light.outerConeAngle,
+                                    Node = nodeNumber,
+                                });
+                            }
+                        }
+                    }
                 }
                 Matrices = matrices;
                 var subObjects = new List<SubObject>();
@@ -1389,6 +1417,35 @@ namespace Orts.Viewer3D
         {
             public int[] Ids { get; set; }
         }
+
+        class KHR_lights_punctual
+        {
+            public int light { get; set; }
+        }
+
+        class KHR_lights_punctual_toplevel
+        {
+            public string name { get; set; }
+            public LightType type { get; set; }
+            public float[] color { get; set; }
+            public float intensity { get; set; }
+            public float range { get; set; }
+            public float innerConeAngle { get; set; }
+            public float outerConeAngle { get; set; }
+        }
+
+        class KHR_lights
+        {
+            public KHR_lights_punctual_toplevel[] lights { get; set; }
+        }
+
+        public enum LightType
+        {
+            Directional = 0,
+            Point = 1,
+            Spot = 2
+        }
+
     }
 
     public partial class PoseableShape
@@ -1526,5 +1583,17 @@ namespace Orts.Viewer3D
         public Quaternion[] OutputQuaternion;
         public float[] OutputWeights;
         public int FrameCount;
+    }
+
+    class GltfLight
+    {
+        public string Name { get; set; }
+        public GltfShape.LightType Type { get; set; }
+        public Vector3 Color { get; set; }
+        public float Intensity { get; set; }
+        public float Range { get; set; }
+        public float InnerConeAngle { get; set; }
+        public float OuterConeAngle { get; set; }
+        public int Node { get; set; }
     }
 }
