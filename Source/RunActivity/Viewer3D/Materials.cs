@@ -573,6 +573,10 @@ namespace Orts.Viewer3D
         }
 
         public static Color FogColor = new Color(110, 110, 110, 255);
+        static readonly Vector3 SunColor = Vector3.One;
+        static readonly Vector3 MoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
+        const float SunIntensity = 1;
+        const float MoonIntensity = SunIntensity / 380000;
 
         internal Vector3 sunDirection;
         bool lastLightState;
@@ -593,7 +597,14 @@ namespace Orts.Viewer3D
             SceneryShader.BrdfLutTexture = GltfShape.BrdfLutTexture;
 
             LightManager.BeginFrame();
-            LightManager.AddLight(sunDirection, Vector3.One, 1);
+            // Ensure that the first light is always the sun/moon, because the ambient and shadow effects will be calculated based on the first light.
+            if (sunDirection.Y > -0.05)
+                LightManager.AddLight(sunDirection, SunColor, SunIntensity);
+            else
+            {
+                var moonDirection = Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskylunarDirection : Viewer.World.Sky.lunarDirection;
+                LightManager.AddLight(moonDirection, MoonGlow, MoonIntensity);
+            }
 
             // Headlight illumination
             if (Viewer.PlayerLocomotiveViewer != null
@@ -657,7 +668,10 @@ namespace Orts.Viewer3D
                         intensity = MathHelper.Clamp(intensity, 0, clampValue);
                     }
 
-                    LightManager.AddLight(LightManager.LightType.Headlight, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity * 10, range, 1, lightDrawer.LightConeMinDotProduct);
+                    // The original shader used linear range attenuation with full-lit pixels within the range, that's what the LightManager.LightType.Headlight simulates:
+                    //LightManager.AddLight(LightManager.LightType.Headlight, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity * 10, range, 1, lightDrawer.LightConeMinDotProduct);
+                    // The PBR spot light uses invere-sqared attenuation with realisticcaly lit pixels within the range, use LightManager.LightType.Spot for that:
+                    LightManager.AddLight(LightManager.LightType.Spot, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity * 100000, range, 1, lightDrawer.LightConeMinDotProduct);
                 }
             }
             else

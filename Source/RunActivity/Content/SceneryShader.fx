@@ -683,15 +683,14 @@ float3 _PSGetLightVector(in int i, in float3 pointAbsolutePosition, inout float3
 		float pointLightDistance = length(pointToLight);
 		if (LightTypes[i] == LightType_Headlight)
 		{
-			// The pre-PBR headlight range attenuation is linear
 			if (LightRanges[i] > 0)
-				rangeAttenuation *= max(min(1 - pointLightDistance / LightRanges[i], 1), 0);
+				rangeAttenuation *= clamp(1 - pointLightDistance / LightRanges[i], 0, 1); // The pre-PBR headlight used linear range attenuation.
 		}
 		else
 		{
-			rangeAttenuation /= pow(pointLightDistance, 2);
+			rangeAttenuation /= pow(pointLightDistance, 2); // The realistic range attenuation is inverse-squared.
 			if (LightRanges[i] > 0)
-				rangeAttenuation *= max(min(1 - pow(pointLightDistance / LightRanges[i], 4), 1), 0);
+				rangeAttenuation *= clamp(1 - pow(pointLightDistance / LightRanges[i], 4), 0, 1);
 		}
 	}
 	else
@@ -726,8 +725,12 @@ float3 _PSApplyMstsLights(in float3 diffuseColor, in VERTEX_OUTPUT In, float sha
 		float3 l = _PSGetLightVector(i, In.Shadow.xyz, intensity);
 		float3 h = normalize(l + v);
 
-		float NdotL = clamp(dot(n, l), 0.001, 1.0);
 		float NdotH = clamp(dot(n, h), 0.0, 1.0);
+		float NdotL = 1;
+		if (LightTypes[i] != LightType_Headlight)
+			NdotL = clamp(dot(n, l), 0.001, 1.0); // Non-headlight lights use realistic lighting.
+		else
+			NdotL = step(0, dot(n, l)); // Pre-PBR headlight used full lit pixels within the headlights range everywhere.
 
 		diffuseContrib += intensity * NdotL * diffuseColor / M_PI * diffuseShadowFactor;
 		specContrib += intensity * NdotL * ZBias_Lighting.w * pow(NdotH, ZBias_Lighting.z) * shadowFactor;
@@ -921,8 +924,6 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	// Contributions from the OpenRails environment:
 	float shadowFactor = _PSGetShadowEffect(true, true, InGeneral);
 	float diffuseShadowFactor = lerp(ShadowBrightness, FullBrightness, saturate(shadowFactor));
-	//float3 headlightContrib = 0;
-	//_PSApplyHeadlights(headlightContrib, Color.rgb, InGeneral); // inout: headlightContrib
 	_PSSceneryFade(Color, InGeneral);
 	float fade = Color.a;
 	///////////////////////
@@ -1086,7 +1087,6 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 	litColor *= NightColorModifier;
 	// Headlights effect use original Color.
 	litColor += _PSApplyMstsLights(Color.rgb, In, 1);
-	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -1107,7 +1107,6 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	litColor.rgb *= tex2D(Overlay, In.TexCoords.xy * OverlayScale).rgb * 2;
 	// Headlights effect use original Color.
 	litColor += _PSApplyMstsLights(Color.rgb, In, _PSGetShadowEffect(ShaderModel3, true, In));
-	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -1141,7 +1140,6 @@ float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 	litColor *= NightColorModifier;
 	// Headlights effect use original Color.
 	litColor += _PSApplyMstsLights(Color.rgb, In, 1);
-	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -1164,7 +1162,6 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 	litColor *= HalfNightColorModifier;
 	// Headlights effect use original Color.
 	litColor += _PSApplyMstsLights(Color.rgb, In, 1);
-	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -1183,7 +1180,6 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 	// No night-time effect for full-bright.
 	// Headlights effect use original Color.
 	litColor += _PSApplyMstsLights(Color.rgb, In, 1);
-	//_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
