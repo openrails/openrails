@@ -97,11 +97,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter shadowMapLimit;
         readonly EffectParameter zBias_Lighting;
         readonly EffectParameter fog;
-        readonly EffectParameter lightVector_ZFar;
-        readonly EffectParameter headlightPosition;
-        readonly EffectParameter headlightDirection;
-        readonly EffectParameter headlightRcpDistance;
-        readonly EffectParameter headlightColor;
+        readonly EffectParameter zFar;
         readonly EffectParameter overcast;
         readonly EffectParameter viewerPos;
         readonly EffectParameter imageTextureIsNight;
@@ -242,25 +238,10 @@ namespace Orts.Viewer3D
             fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 1f / depth));
         }
 
-        public void SetLightVector_ZFar(Vector3 sunDirection, int zFar)
+        public void SetLightVector_ZFar(Vector3 sunDirection, float zFarDistance)
         {
             _sunDirection = sunDirection;
-            lightVector_ZFar.SetValue(new Vector4(sunDirection.X, sunDirection.Y, sunDirection.Z, zFar));
-        }
-
-        public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float distance, float minDotProduct, float fadeTime, float fadeDuration, float clampValue, ref Vector4 color)
-        {
-            var lighting = fadeTime / fadeDuration * clampValue;
-            if (lighting < 0) lighting = 1 + lighting;
-            headlightPosition.SetValue(new Vector4(position, MathHelper.Clamp(lighting, 0, clampValue)));
-            headlightDirection.SetValue(new Vector4(direction, 0.5f * (1 - minDotProduct))); // We want 50% brightness at the given dot product.
-            headlightRcpDistance.SetValue(1f / distance); // Needed to be separated (direction * distance) because no pre-shaders are supported in XNA 4
-            headlightColor.SetValue(color);
-        }
-
-        public void SetHeadlightOff()
-        {
-            headlightPosition.SetValue(Vector4.Zero);
+            zFar.SetValue(zFarDistance);
         }
 
         public float SignalLightIntensity { set { signalLightIntensity.SetValue(value); } }
@@ -335,11 +316,7 @@ namespace Orts.Viewer3D
             shadowMapLimit = Parameters["ShadowMapLimit"];
             zBias_Lighting = Parameters["ZBias_Lighting"];
             fog = Parameters["Fog"];
-            lightVector_ZFar = Parameters["LightVector_ZFar"];
-            headlightPosition = Parameters["HeadlightPosition"];
-            headlightDirection = Parameters["HeadlightDirection"];
-            headlightRcpDistance = Parameters["HeadlightRcpDistance"];
-            headlightColor = Parameters["HeadlightColor"];
+            zFar = Parameters["ZFar"];
             overcast = Parameters["Overcast"];
             viewerPos = Parameters["ViewerPos"];
             imageTextureIsNight = Parameters["ImageTextureIsNight"];

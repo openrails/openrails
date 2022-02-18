@@ -37,11 +37,7 @@ float4   ShadowMapLimit;
 float4   ZBias_Lighting;  // x = z-bias, y = diffuse, z = specular, w = step(1, z)
 float4   Fog;  // rgb = color of fog; a = reciprocal of distance from camera, everything is
 			   // normal color; FogDepth = FogStart, i.e. FogEnd = 2 * FogStart.
-float4   LightVector_ZFar;  // xyz = direction vector to sun (world), w = z-far distance
-float4   HeadlightPosition;     // xyz = position; w = lighting fading.
-float4   HeadlightDirection;    // xyz = normalized direction (length = distance to light); w = 0.5 * (1 - min dot product).
-float    HeadlightRcpDistance;  // reciprocal length = reciprocal distance to light
-float4   HeadlightColor;        // rgba = color
+float    ZFar;
 float2   Overcast;      // Lower saturation & brightness when overcast. x = FullBrightness, y = HalfBrightness
 float3   ViewerPos;     // Viewer's world coordinates.
 float    ImageTextureIsNight;
@@ -302,7 +298,7 @@ void _VSNormalProjection(in float3 InNormal, in float4x4 WorldTransform, inout f
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
-	OutNormal_Light.w = dot(OutNormal_Light.xyz, LightVector_ZFar.xyz) * 0.5 + 0.5;
+	OutNormal_Light.w = dot(OutNormal_Light.xyz, LightDirections[0]) * 0.5 + 0.5; // [0] is always the sun/moon
 }
 
 void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
@@ -647,26 +643,6 @@ float3 _PSGetOvercastColor(in float4 Color, in VERTEX_OUTPUT In)
 	return lerp(intensity, Color.rgb, 0.8) * 0.5;
 }
 
-// Applies the lighting effect of the train's headlights, including
-// fade-in/fade-out animations.
-/*
-void _PSApplyHeadlights(inout float3 Color, in float3 OriginalColor, in VERTEX_OUTPUT In)
-{
-	float3 headlightToSurface = normalize(In.LightDir_Fog.xyz);
-	float coneDot = dot(headlightToSurface, HeadlightDirection.xyz);
-
-	float shading = step(0, coneDot);
-	shading *= step(0, dot(In.Normal_Light.xyz, -headlightToSurface)); // NdotL
-	shading *= saturate(HeadlightDirection.w / (1 - coneDot)); // cone attenuation
-	shading *= saturate(1 - length(In.LightDir_Fog.xyz) * HeadlightRcpDistance); // rangeAttenuation
-	shading *= HeadlightPosition.w; // intensity
-	Color += OriginalColor * HeadlightColor.rgb * HeadlightColor.a * shading;
-}
-*/
-// LightVector_ZFar: sun direction
-// In.LightDir_Fog: -pointToLight
-
-
 float3 _PSGetLightVector(in int i, in float3 pointAbsolutePosition, inout float3 intensity)
 {
 	float rangeAttenuation = 1;
@@ -744,7 +720,7 @@ void _PSApplyFog(inout float3 Color, in VERTEX_OUTPUT In)
 void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 {
 	if (ReferenceAlpha < 0.01) Color.a = 1;
-	Color.a *= saturate((LightVector_ZFar.w - length(In.RelPosition.xyz)) / 50);
+	Color.a *= saturate((ZFar - length(In.RelPosition.xyz)) / 50);
 }
 
 float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents)
@@ -1014,9 +990,6 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	float3 diffuseContrib = (float3)0;
 	float3 specContrib = (float3)0;
 	float3 intensity = (float3)0;
-
-	// LightVector_ZFar: sun direction
-	// In.LightDir_Fog: -pointToLight
 
 	[loop]
 	for (int i = 0; i < NumLights; i++)
