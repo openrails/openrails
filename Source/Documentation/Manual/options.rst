@@ -630,52 +630,6 @@ When this option is selected, when OR is loading the shape (.s) files it
 will report errors in syntax and structure (even if these don't cause
 runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop.
 
-.. _options-etcs:
-
-ETCS circular speed gauge
--------------------------
-
-When this option is selected, it is possible to add to the cabview a
-circular speed gauge accordingly to the European standard train control
-system ETCS.
-
-.. image:: images/options-etcs.png
-   :scale: 60 %
-   :align: center
-
-
-.. admonition:: For content developers
-
-    The gauge is added by the insertion of a block like the following
-    into the .cvf file::
-
-        Digital (
-            Type ( SPEEDOMETER DIGITAL )
-            Style ( NEEDLE )
-            Position ( 160 255 56 56 )
-            ScaleRange ( 0 250 )
-            Units ( KM_PER_HOUR )
-        )
-
-It is also possible to display the full ETCS display using the following block
-instead::
-
-		ScreenDisplay (
-			Type ( ORTS_ETCS SCREEN_DISPLAY )
-			Position ( 280 272 320 240 )
-			Units ( KM_PER_HOUR )
-			Parameters (
-				Mode FullSize
-			)
-		)
-		
-The following DMI size variants are available: FullSize (displays the whole DMI), SpeedArea
-(displays only the left part with information about distance and speed) and PlanningArea
-(displays only the planning area and navigation buttons).
-
-The information displayed in the DMI is controlled via the TCS script. For more details,
-see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
-
 Load day/night textures only when needed
 ----------------------------------------
 
@@ -750,14 +704,6 @@ lat/lon rectangle corresponding to the arid zone of North America (lat from
 105 to 120 degrees west and lon from 30 to 45 degrees north).
 The randomization is not performed either if the activity contains weather
 change events.
-
-Extend object maximum viewing distance to horizon
--------------------------------------------------
-
-With this option selected, all objects viewable up to the viewing distance
-defined in the Video Options are displayed. As a default ORTS only
-displays objects up to 2000 m distance. Selecting this option improves
-display quality but may reduce frame rate.
 
 .. _options-dds-textures:
 
