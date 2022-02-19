@@ -1786,13 +1786,9 @@ namespace Orts.Simulation.RollingStocks
 
             // get curve radius
 
-            if (CurveSpeedDependent)  // Function enabled by menu selection for curve speed limit
-            {
-
-
                 if (CurrentCurveRadius > 0)  // only check curve speed if it is a curve
                 {
-                    float SpeedToleranceMpS =  Me.FromMi( pS.FrompH(2.5f));  // Set bandwidth tolerance for resetting notifications
+                float SpeedToleranceMpS = Me.FromMi(pS.FrompH(2.5f));  // Set bandwidth tolerance for resetting notifications
                     
                     // If super elevation set in Route (TRK) file
                     if (Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
@@ -1890,7 +1886,7 @@ namespace Orts.Simulation.RollingStocks
                     float Sin2Theta = 0.5f * (1 - (float)Math.Cos(2.0 * SuperElevationAngleRad));
                     float CriticalMinSpeedMpS = (float)Math.Sqrt((GravitationalAccelerationMpS2 * CurrentCurveRadius * HalfTrackGaugeM * Sin2Theta) / (CosTheta * (CentreOfGravityM.Y * CosTheta + HalfTrackGaugeM * SinTheta)));
 
-                    if (CurveSpeedDependent)
+                if (CurveSpeedDependent) // Function enabled by menu selection for curve speed limit
                     {
                         
                         // This section not required any more???????????
@@ -1917,7 +1913,7 @@ namespace Orts.Simulation.RollingStocks
                                 {
                                     if (Train.IsFreight)
                                     {
-                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your freight car {0} may be damaged. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric) ));
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your freight car {0} may be damaged. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric)));
                                     }
                                     else
                                     {
@@ -1935,7 +1931,7 @@ namespace Orts.Simulation.RollingStocks
 
                             }
                         }
-                        else if ( s < MaxSafeCurveSpeedMps - SpeedToleranceMpS)  // Reset notification once spped drops
+                    else if (s < MaxSafeCurveSpeedMps - SpeedToleranceMpS)  // Reset notification once spped drops
                         {
                             if (IsMaxSafeCurveSpeed)
                             {
@@ -1969,7 +1965,7 @@ namespace Orts.Simulation.RollingStocks
                             }
 
                         }
-                        else if ( s < CriticalMaxSpeedMpS - SpeedToleranceMpS) // Reset notification once speed drops
+                    else if (s < CriticalMaxSpeedMpS - SpeedToleranceMpS) // Reset notification once speed drops
                         {
                             if (IsCriticalMaxSpeed)
                             {
@@ -1992,26 +1988,26 @@ namespace Orts.Simulation.RollingStocks
 
                         // if speed doesn't reach minimum speed required around the curve then set notification
                        // Breaking of brake hose will not apply to TT mode or AI trains or if on a curve less then 150m to cover operation in shunting yards, where track would mostly have no superelevation
-//                        if (s < CriticalMinSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain) && CurrentCurveRadius > 150 ) 
-//                       {
-//                            if (!IsCriticalMinSpeed)
-//                            {
-//                                IsCriticalMinSpeed = true; // set flag for IsCriticalSpeed not reached
-//
-//                                if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
-//                                {
-//                                      Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too slow for this curve, and Car " + CarID + "may topple over."));
-//                                }
-//                            }
-//
-//                        }
-//                        else if (s > CriticalMinSpeedMpS + SpeedToleranceMpS) // Reset notification once speed increases
-//                        {
-//                            if (IsCriticalMinSpeed)
-//                            {
-//                                IsCriticalMinSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
-//                            }
-//                        }
+                    //                        if (s < CriticalMinSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain) && CurrentCurveRadius > 150 ) 
+                    //                       {
+                    //                            if (!IsCriticalMinSpeed)
+                    //                            {
+                    //                                IsCriticalMinSpeed = true; // set flag for IsCriticalSpeed not reached
+                    //
+                    //                                if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
+                    //                                {
+                    //                                      Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too slow for this curve, and Car " + CarID + "may topple over."));
+                    //                                }
+                    //                            }
+                    //
+                    //                        }
+                    //                        else if (s > CriticalMinSpeedMpS + SpeedToleranceMpS) // Reset notification once speed increases
+                    //                        {
+                    //                            if (IsCriticalMinSpeed)
+                    //                            {
+                    //                                IsCriticalMinSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
+                    //                            }
+                    //                        }
 
 #if DEBUG_CURVE_SPEED
                    Trace.TraceInformation("================================== TrainCar.cs - DEBUG_CURVE_SPEED ==============================================================");
@@ -2030,7 +2026,7 @@ namespace Orts.Simulation.RollingStocks
                     IsCriticalMinSpeed = false;   // reset flag for IsCriticalMinSpeed reached
                     IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
                 }
-            }
+
         }
 
         #endregion
