@@ -195,6 +195,7 @@
     <Compile Include="Viewer3D\Weather.cs" />
     <Compile Include="Viewer3D\WebServices\ControlValue.cs" />
     <Compile Include="Viewer3D\WebServices\TrackMonitorDisplay.cs" />
+    <Compile Include="Viewer3D\WebServices\TrainDpuDisplay.cs" />
     <Compile Include="Viewer3D\WebServices\TrainDrivingDisplay.cs" />
     <Compile Include="Viewer3D\WebServices\TrainInfo.cs" />
     <Compile Include="Viewer3D\WebServices\WebServer.cs" />
@@ -786,6 +787,9 @@
     <Content Include="Viewer3D\WebServices\Web\TrackMonitorTrainDriving\index.js" />
     <Content Include="Viewer3D\WebServices\Web\TrackMonitor\SignalAspects.png" />
     <Content Include="Viewer3D\WebServices\Web\TrackMonitor\TrackMonitorImages.png" />
+    <Content Include="Viewer3D\WebServices\Web\TrainDpu\index.css" />
+    <Content Include="Viewer3D\WebServices\Web\TrainDpu\index.html" />
+    <Content Include="Viewer3D\WebServices\Web\TrainDpu\index.js" />
     <Content Include="Viewer3D\WebServices\Web\TrainDriving\index.css" />
     <Content Include="Viewer3D\WebServices\Web\TrainDriving\index.html" />
     <Content Include="Viewer3D\WebServices\Web\TrainDriving\index.js" />
