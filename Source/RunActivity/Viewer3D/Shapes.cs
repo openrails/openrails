@@ -1355,6 +1355,7 @@ namespace Orts.Viewer3D
         public Material Material { get; protected set; }
         public int[] Hierarchy { get; protected set; } // the hierarchy from the sub_object
         public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
+        public ShapeLight Light { get; protected set; }
 
         protected internal VertexBuffer VertexBuffer;
         protected internal IndexBuffer IndexBuffer;
@@ -1407,7 +1408,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Loader")]
         public virtual void Mark()
         {
-            Material.Mark();
+            Material?.Mark();
         }
     }
 
@@ -2183,6 +2184,7 @@ namespace Orts.Viewer3D
 
                         var interior = (flags & ShapeFlags.Interior) != 0;
                         frame.AddAutoPrimitive(mstsLocation, distanceDetail.ViewSphereRadius, distanceDetail.ViewingDistance * lodBias, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags, bones);
+                        frame.AddLight(shapePrimitive.Light, xnaMatrix.Translation, Vector3.TransformNormal(-Vector3.UnitZ, xnaMatrix));
                     }
                 }
             }
@@ -2226,6 +2228,19 @@ namespace Orts.Viewer3D
             foreach (var lod in LodControls)
                 lod.Mark();
         }
+    }
+
+    public class ShapeLight
+    {
+        public string Name;
+        public LightMode Type;
+        public Vector3 Position;
+        public Vector3 Direction;
+        public Vector3 Color;
+        public float Intensity;
+        public float Range;
+        public float InnerConeCos;
+        public float OuterConeCos;
     }
 
     public class TrItemLabel

@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.ComponentModel;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Common;
@@ -36,6 +37,7 @@ namespace Orts.Viewer3D
         public static List<string> ExtensionsSupported = new List<string>
         {
             "MSFT_texture_dds",
+            "KHR_lights_punctual",
         };
 
         string FileDir { get; set; }
@@ -263,7 +265,6 @@ namespace Orts.Viewer3D
             string GltfDir;
             string GltfFileName;
             Dictionary<int, byte[]> BinaryBuffers;
-            List<GltfLight> Lights;
 
             /// <summary>
             /// All inverse bind matrices in a gltf file. The key is the accessor number.
@@ -271,7 +272,7 @@ namespace Orts.Viewer3D
             internal Dictionary<int, Matrix[]> AllInverseBindMatrices = new Dictionary<int, Matrix[]>();
 
             public Matrix[] Matrices = new Matrix[0];
-            Viewer Viewer;
+            internal Viewer Viewer;
 
             static readonly Stack<int> TempStack = new Stack<int>(); // (nodeNumber, parentIndex)
 
@@ -288,12 +289,13 @@ namespace Orts.Viewer3D
                 GltfDir = Path.GetDirectoryName(gltfFileName);
                 GltfFileName = gltfFileName;
 
-                KHR_lights lights = null;
+                KHR_lights gltfLights = null;
                 object extension = null;
                 if (gltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
-                    lights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString());
+                    gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString());
 
                 var meshes = new Dictionary<int, Node>();
+                var lights = new Dictionary<int, KHR_lights_punctual>();
                 TempStack.Clear();
                 Array.ForEach(gltfFile.Scenes.ElementAtOrDefault(gltfFile.Scene ?? 0).Nodes, node => TempStack.Push(node));
                 var hierarchy = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray();
@@ -343,23 +345,9 @@ namespace Orts.Viewer3D
 
                         if (node.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
                         {
-                            var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual>(extension.ToString());
-                            var lightId = ext?.light;
+                            var lightId = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual_index>(extension.ToString())?.light;
                             if (lightId != null)
-                            {
-                                var light = lights.lights[(int)lightId];
-                                Lights = Lights ?? new List<GltfLight>();
-                                Lights.Add(new GltfLight
-                                {
-                                    Name = light.name,
-                                    Type = light.type,
-                                    Color = new Vector3(light.color[0], light.color[1], light.color[2]),
-                                    Intensity = light.intensity,
-                                    InnerConeAngle = light.innerConeAngle,
-                                    OuterConeAngle = light.outerConeAngle,
-                                    Node = nodeNumber,
-                                });
-                            }
+                                lights.Add(nodeNumber, gltfLights.lights[(int)lightId]);
                         }
                     }
                 }
@@ -373,6 +361,10 @@ namespace Orts.Viewer3D
 
                     for (var i = 0; i < mesh.Primitives.Length; i++)
                         subObjects.Add(new GltfSubObject(mesh.Primitives[i], $"{mesh.Name}[{i}]", hierIndex, hierarchy, Helpers.TextureFlags.None, gltfFile, shape, this, skin));
+                }
+                foreach (var hierIndex in lights.Keys)
+                {
+                    subObjects.Add(new GltfSubObject(lights[hierIndex], hierIndex, hierarchy, gltfFile, shape, this));
                 }
                 SubObjects = subObjects.ToArray();
 
@@ -609,6 +601,11 @@ namespace Orts.Viewer3D
                 WrapT = Sampler.WrapTEnum.REPEAT,
                 Name = nameof(DefaultGltfSampler)
             };
+
+            public GltfSubObject(KHR_lights_punctual light, int hierarchyIndex, int[] hierarchy, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel)
+            {
+                ShapePrimitives = new[] { new GltfPrimitive(light, gltfFile, distanceLevel, hierarchyIndex, hierarchy) };
+            }
 
             public GltfSubObject(MeshPrimitive meshPrimitive, string name, int hierarchyIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel, Skin skin)
             {
@@ -1148,6 +1145,21 @@ namespace Orts.Viewer3D
             public readonly float TexturePacking;
 
 
+            public GltfPrimitive(KHR_lights_punctual light, Gltf gltfFile, GltfDistanceLevel distanceLevel, int hierarchyIndex, int[] hierarchy)
+                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Vector4.Zero, 0)
+            {
+                Light = new ShapeLight
+                {
+                    Name = light.name,
+                    Type = light.type,
+                    Color = new Vector3(light.color[0], light.color[1], light.color[2]),
+                    Intensity = light.intensity,
+                    Range = light.range,
+                    InnerConeCos = (float)Math.Cos(light.innerConeAngle),
+                    OuterConeCos = (float)Math.Cos(light.outerConeAngle),
+                };
+            }
+
             public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords, int texturePacking)
                 : base(vertexAttributes.ToArray())
             {
@@ -1418,34 +1430,32 @@ namespace Orts.Viewer3D
             public int[] Ids { get; set; }
         }
 
-        class KHR_lights_punctual
+        class KHR_lights_punctual_index
         {
             public int light { get; set; }
         }
 
-        class KHR_lights_punctual_toplevel
+        public class KHR_lights_punctual
         {
+            public LightMode type { get; set; }
+            [DefaultValue("")]
             public string name { get; set; }
-            public LightType type { get; set; }
+            [DefaultValue(new[] { 1f, 1f, 1f })]
             public float[] color { get; set; }
+            [DefaultValue(1)]
             public float intensity { get; set; }
+            [DefaultValue(0)]
             public float range { get; set; }
+            [DefaultValue(0)]
             public float innerConeAngle { get; set; }
+            [DefaultValue(MathHelper.PiOver4)]
             public float outerConeAngle { get; set; }
         }
 
         class KHR_lights
         {
-            public KHR_lights_punctual_toplevel[] lights { get; set; }
+            public KHR_lights_punctual[] lights { get; set; }
         }
-
-        public enum LightType
-        {
-            Directional = 0,
-            Point = 1,
-            Spot = 2
-        }
-
     }
 
     public partial class PoseableShape
@@ -1583,17 +1593,5 @@ namespace Orts.Viewer3D
         public Quaternion[] OutputQuaternion;
         public float[] OutputWeights;
         public int FrameCount;
-    }
-
-    class GltfLight
-    {
-        public string Name { get; set; }
-        public GltfShape.LightType Type { get; set; }
-        public Vector3 Color { get; set; }
-        public float Intensity { get; set; }
-        public float Range { get; set; }
-        public float InnerConeAngle { get; set; }
-        public float OuterConeAngle { get; set; }
-        public int Node { get; set; }
     }
 }

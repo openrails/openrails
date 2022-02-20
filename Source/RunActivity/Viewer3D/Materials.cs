@@ -301,8 +301,6 @@ namespace Orts.Viewer3D
         public static Texture2D WhiteTexture;
         public static Texture2D RedTexture;
 
-        LightManager LightManager;
-
         [CallOnThread("Render")]
         public SharedMaterialManager(Viewer viewer)
         {
@@ -350,8 +348,6 @@ namespace Orts.Viewer3D
             RedTexture = new Texture2D(viewer.RenderProcess.GraphicsDevice, 1, 1);
             RedTexture.SetData(new[] { Color.Red });
             RedTexture.Name = nameof(RedTexture);
-
-            LightManager = new LightManager(this);
         }
 
         public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null)
@@ -573,19 +569,8 @@ namespace Orts.Viewer3D
         }
 
         public static Color FogColor = new Color(110, 110, 110, 255);
-        static readonly Vector3 SunColor = Vector3.One;
-        static readonly Vector3 MoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
-        const float SunIntensity = 1;
-        const float MoonIntensity = SunIntensity / 380000;
-        float HeadLightIntensity = 100000; // Can be 10 in case of linear calculation method
-        float DayNightMultiplier = 1;
 
         internal Vector3 sunDirection;
-        bool lastLightState;
-        double fadeStartTimer;
-        float fadeDuration = -1;
-        float clampValue = 1;
-        float distance = 1000;
 
         internal void UpdateShaders()
         {
@@ -599,72 +584,6 @@ namespace Orts.Viewer3D
             SceneryShader.EnvironmentMapDiffuseTexture = GltfShape.EnvironmentMapDiffuseDay;
             SceneryShader.BrdfLutTexture = GltfShape.BrdfLutTexture;
 
-            LightManager.BeginFrame();
-            // Ensure that the first light is always the sun/moon, because the ambient and shadow effects will be calculated based on the first light.
-            if (sunDirection.Y > -0.05)
-                LightManager.AddLight(sunDirection, SunColor, SunIntensity);
-            else
-            {
-                var moonDirection = Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskylunarDirection : Viewer.World.Sky.lunarDirection;
-                LightManager.AddLight(moonDirection, MoonGlow, MoonIntensity);
-            }
-
-            // Headlight illumination
-            if (Viewer.PlayerLocomotiveViewer?.lightDrawer?.HasLightCone ?? false)
-            {
-                var lightDrawer = Viewer.PlayerLocomotiveViewer.lightDrawer;
-                var lightState = lightDrawer.IsLightConeActive;
-                if (lightState != lastLightState)
-                {
-                    if (lightDrawer.LightConeFadeIn > 0)
-                    {
-                        fadeStartTimer = Viewer.Simulator.GameTime;
-                        fadeDuration = lightDrawer.LightConeFadeIn;
-                    }
-                    else if (lightDrawer.LightConeFadeOut > 0)
-                    {
-                        fadeStartTimer = Viewer.Simulator.GameTime;
-                        fadeDuration = lightDrawer.LightConeFadeOut;
-                    }
-                    lastLightState = lightState;
-                }
-                if (sunDirection.Y <= -0.05)
-                {
-                    clampValue = 1; // at nighttime max headlight
-                    DayNightMultiplier = 1;
-                }
-                else if (sunDirection.Y >= 0.15)
-                {
-                    clampValue = 0.5f; // at daytime min headlight
-                    DayNightMultiplier = 0.1f;
-                }
-                else
-                {
-                    clampValue = 1 - 2.5f * (sunDirection.Y + 0.05f); // in the meantime interpolate
-                    DayNightMultiplier = 1 - 4.5f * (sunDirection.Y + 0.05f);
-                }
-
-                // The original shaders followed the phylisophy of wanting 50% brightness at half the range. (LightConeDistance is only the half)
-                // For the new calculation method the full range is needed.
-                var range = lightDrawer.LightConeDistance * 2 * DayNightMultiplier;
-                var color = new Vector3(lightDrawer.LightConeColor.X, lightDrawer.LightConeColor.Y, lightDrawer.LightConeColor.Z);
-
-                var intensity = (float)(Viewer.Simulator.GameTime - fadeStartTimer) / (fadeDuration + float.Epsilon);
-                if (!lightState)
-                    intensity = 1 - intensity;
-                intensity = MathHelper.Clamp(intensity, 0, 1);
-                intensity = MathHelper.Clamp(intensity * DayNightMultiplier * clampValue, 0, clampValue);
-                intensity *= HeadLightIntensity;
-
-                if (intensity > 0)
-                {
-                    // The original shader used linear range attenuation with full-lit pixels within the range, that's what the LightManager.LightType.Headlight simulates:
-                    //LightManager.AddLight(LightManager.LightType.Headlight, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
-                    // The PBR spot light uses invere-sqared attenuation with realisticcaly lit pixels within the range, use LightManager.LightType.Spot for that:
-                    LightManager.AddLight(LightManager.LightType.Spot, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
-                }
-            }
-            // End headlight illumination
             if (Viewer.Settings.UseMSTSEnv == false)
             {
                 SceneryShader.Overcast = Viewer.Simulator.Weather.OvercastFactor;
@@ -679,76 +598,6 @@ namespace Orts.Viewer3D
                 ParticleEmitterShader.SetFog(Viewer.Simulator.Weather.FogDistance, ref SharedMaterialManager.FogColor);
                 SceneryShader.ViewerPos = Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation);
             }
-
-            LightManager.UpdateShaders();
-        }
-    }
-
-    public class LightManager
-    {
-        public enum LightType
-        {
-            Directional = 0,
-            Point = 1,
-            Spot = 2,
-            Headlight = 3
-        }
-
-        int NumLights;
-        Vector3[] LightPositions = new Vector3[SceneryShader.MAX_LIGHTS];
-        Vector3[] LightDirections = new Vector3[SceneryShader.MAX_LIGHTS];
-        Vector3[] LightColors = new Vector3[SceneryShader.MAX_LIGHTS];
-        float[] LightIntensities = new float[SceneryShader.MAX_LIGHTS];
-        float[] LightRanges = new float[SceneryShader.MAX_LIGHTS];
-        float[] LightInnerConeCos = new float[SceneryShader.MAX_LIGHTS];
-        float[] LightOuterConeCos = new float[SceneryShader.MAX_LIGHTS];
-        float[] LightTypes = new float[SceneryShader.MAX_LIGHTS];
-
-        SharedMaterialManager MaterialManager;
-
-        public LightManager(SharedMaterialManager materialManager)
-        {
-            MaterialManager = materialManager;
-        }
-
-        public void BeginFrame() => NumLights = 0;
-
-        public void AddLight(Vector3 direction, Vector3 color, float intensity) => AddLight(LightType.Directional, Vector3.Zero, direction, color, intensity, -1, 0, 0);
-        public void AddLight(Vector3 position, Vector3 color, float intensity, float range) => AddLight(LightType.Point, position, Vector3.Zero, color, intensity, range, 0, 0);
-        public void AddLight(Vector3 position, Vector3 direction, Vector3 color, float intensity, float range, float innerConeCos, float outerConeCos)
-            => AddLight(LightType.Spot, position, direction, color, intensity, range, innerConeCos, outerConeCos);
-        
-        public void AddLight(LightType type, Vector3 position, Vector3 direction, Vector3 color, float intensity, float range, float innerConeCos, float outerConeCos)
-        {
-            if (NumLights >= SceneryShader.MAX_LIGHTS)
-                return;
-
-            LightTypes[NumLights] = (float)type;
-            LightPositions[NumLights] = position;
-            LightDirections[NumLights] = direction;
-            LightColors[NumLights] = color;
-            LightIntensities[NumLights] = intensity;
-            LightRanges[NumLights] = range;
-            LightInnerConeCos[NumLights] = innerConeCos;
-            LightOuterConeCos[NumLights] = outerConeCos;
-            NumLights++;
-        }
-
-        public void UpdateShaders()
-        {
-            MaterialManager.SceneryShader.NumLights = NumLights;
-
-            if (NumLights == 0)
-                return;
-
-            MaterialManager.SceneryShader.LightTypes = LightTypes.ToArray();
-            MaterialManager.SceneryShader.LightPositions = LightPositions.ToArray();
-            MaterialManager.SceneryShader.LightDirections = LightDirections.ToArray();
-            MaterialManager.SceneryShader.LightColors = LightColors.ToArray();
-            MaterialManager.SceneryShader.LightIntensities = LightIntensities.ToArray();
-            MaterialManager.SceneryShader.LightRanges = LightRanges.ToArray();
-            MaterialManager.SceneryShader.LightInnerConeCos = LightInnerConeCos.ToArray();
-            MaterialManager.SceneryShader.LightOuterConeCos = LightOuterConeCos.ToArray();
         }
     }
 
