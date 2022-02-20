@@ -59,7 +59,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public override void InitializeMoving()
         {
             NotchController.SetValue(0);
-            NotchController.CurrentNotch = 0;
+            if (NotchController.NotchCount() > 0) NotchController.CurrentNotch = 0;
         }
 
         public override float Update(float elapsedSeconds)
