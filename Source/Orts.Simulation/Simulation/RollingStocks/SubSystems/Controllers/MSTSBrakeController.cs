@@ -60,6 +60,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             NotchController.SetValue(0);
             if (NotchController.NotchCount() > 0) NotchController.CurrentNotch = 0;
+            else NotchController.CurrentNotch = -1;
         }
 
         public override float Update(float elapsedSeconds)
