@@ -23,7 +23,7 @@ Download and install Visual Studio 2019 Community Edition from Microsoft.
 
 ![](images/authorising_visual_studio_installer.png)
 
-![](images/prompt_from_visual_studio_installer.png)<br />
+![](images/prompt_from_visual_studio_installer.png)
 
 ### VS Installation
 
@@ -50,13 +50,15 @@ You will be prompted to "Get started" and should "Clone a repository" from
 
 ![](images/orts_solution.png)
 
-On completion, the Solution Explorer view will list the solution ORTS.sln. Pick it to receive a prompt:
+On completion, the Solution Explorer view will list the solution ORTS.sln. 
+
+Pick it to receive a prompt:
 
 ![](images/framework_not_installed.png)
 
 The purpose of the Launcher project is to check whether the user's PC has the software libraries installed to run Open Rails. It uses libraries which are installed on even old PCs, so that it can run on them without error and report any problems.
 
-However the framework needed to build that project is not installed automatically, so choose the option highlighted in the image above.  <p>&nbsp;</p>
+However the framework needed to build that project is not installed automatically, so choose the option highlighted by the cursor in the image above.  <p>&nbsp;</p>
 
 ![](images/open_rails_projects.png)
 
@@ -68,7 +70,7 @@ Note: There is no project called OpenRails. Instead, the Launcher project builds
 
 ![](images/build_projects.png)
 
-Use *Build > Rebuild Solution* to compile and link the source code into executable and DLL files.
+Use *Build > Rebuild Solution* to compile and link the source code into executable and DLL files.<p>&nbsp;</p>
 
 ![](images/successful_build.png)
 
@@ -90,7 +92,7 @@ Now pressing F5, Start or *Debug > Start Debugging* will launch the project Menu
 
 ## Content
 
-Without content, all you can run is Menu.exe (or OpenRails.exe which runs Menu.exe) and some of the contributed tools.<p>&nbsp;</p>
+Without content, all you can run is Menu.exe (or OpenRails.exe which runs Menu.exe) and some of the contributed tools.
 
 ![](images/menu_option_content.png)
 
@@ -103,11 +105,11 @@ Unzip into a new folder.<p>&nbsp;</p>
 
 ![](images/add_demo_model_1.png)
 
-Start Open Rails Menu.exe, and use *Options > Content > Add* to add the folder "Demo Model 1" to the list of installation profiles.<p>&nbsp;</p>
+Using Open Rails Menu.exe and *Options > Content > Add*, add the folder "Demo Model 1" to the list of installation profiles.<p>&nbsp;</p>
 
 ![](images/installation_profiles.png)
 
-Select Demo model 1 as the Installation profile.
+Select Demo model 1 as the Installation profile.<p>&nbsp;</p>
 
 ![](images/start_activity.png)
 
@@ -121,12 +123,14 @@ From Visual Studio, using *Project > Properties > Debug > Command line arguments
 
 ## Installing Tools for Open Rails Manual
 
-Note: This section is based on this [Pull Request](https://github.com/openrails/openrails/pull/557)
-There are several components to  install but after that producing a revised manual is just a click away.
+The Open Rails manual is written in [ReStructuredText](https://docutils.sourceforge.io/rst.html) which is processed into a [multi-page HTML document](https://open-rails.readthedocs.io/en/latest/) or a  [single-page PDF document](http://openrails.org/files/OpenRails-Testing-Manual.pdfvmw).
+
+Note: This section is based on this [Pull Request](https://github.com/openrails/openrails/pull/557).
+There are several components to  install but, after that, producing a revised manual is just a click away.
 
 ### Install Visual Studio Code
 
-This interactive development environment (IDE) is unrelated to the Visual Studio IDE. The Open Rails manual is written in [ReStructuredText](https://docutils.sourceforge.io/rst.html) which is processed into a [multi-page HTML document](https://open-rails.readthedocs.io/en/latest/) or a  [single-page PDF document](http://openrails.org/files/OpenRails-Testing-Manual.pdfvmw).
+This interactive development environment (IDE) is not related to the Visual Studio IDE. 
 
 ### Download and install Visual Code
 
@@ -136,11 +140,11 @@ Download from [Download Visual Studio Code - Mac, Linux, Windows](https://code.v
 
 ![](images/add_vs_extension.png)
 
-Use the icon to add a new extension.
+Use the icon to add a new extension.<p>&nbsp;</p>
 
 ![](images/search_for_remote_containers.png)
 
-Search for the extension "Remote Containers".
+Search for the extension "Remote Containers".<p>&nbsp;</p>
 
 ![](images/install_remote_containers.png)
 
@@ -152,11 +156,11 @@ And install it into Visual Studio Code.
 
 Download from [https://docs.docker.com/desktop/windows/install/](https://docs.docker.com/desktop/windows/install/) and run the installer.
 
-Docker provides a closed environment so that our script to build the manual can be run knowing that it will not be broken by any subsequent changes on the PC.
+Docker provides a closed environment so that our script to build the manual can be run knowing that it will not be broken by any subsequent changes on the PC.<p>&nbsp;</p>
 
 ![](images/settings_for_docker_desktop.png)
 
-Use the default settings.
+Use the default settings.<p>&nbsp;</p>
 
 ![](images/progress_for_docker_desktop.png)
 
@@ -166,27 +170,27 @@ You will be prompted to close and restart your PC.
 
 ![](images/wsl2_for_docker_desktop.png)
 
-You may receive a prompt to install WSL 2 separately. Click the link.
+You may receive a prompt to install WSL 2 separately. Click the link to the website.
 
 ![](images/enable_virtual_machine.png)
 
-The link takes you to Step 3 and 4.
+The link takes you to Step 3 and 4.<p>&nbsp;</p>
 
 ![](images/run_powershell.png)
 
-Run PowerShell as Administrator.
+Run PowerShell as Administrator.<p>&nbsp;</p>
 
 ![](images/enable_virtual_machine_feature.png)
 
-Enter the command provided.
+Enter the command provided.<p>&nbsp;</p>
 
 ![](images/download_wsl_2.png)
 
-Return to the webpage for Step 4 and download WSL 2 and install it. 
+Return to the webpage for Step 4 and download WSL 2 and install it. <p>&nbsp;</p>
 
 ![](images/install_wsl_2.png)
 
-Once this is installed, return to the Docker Desktop prompt and press Restart.
+Once this is installed, return to the Docker Desktop prompt and press Restart.<p>&nbsp;</p>
 
 ![](images/restart_docker_desktop.png)
 
@@ -196,23 +200,23 @@ Now that Docker Desktop is running, start Visual Studio Code.
 
 ![](images/find_vsc_commands.png)
 
-Press F1 to find the command list and search for Remote Containers: Open Folder in Container...
+Press F1 to find the command list and search for Remote Containers: Open Folder in Container...<p>&nbsp;</p>
 
 ![](images/find_manual_folder.png)
 
-Using Windows File Explorer, search your repository for Source\Documentation\Manual
+Using Windows File Explorer, search your repository for Source\Documentation\Manual<p>&nbsp;</p>
 
 ![](images/manual_file_list.png)
 
-All the manual files will be listed. 
+All the manual files will be listed. <p>&nbsp;</p>
 
 ![](images/build_html_manual.png)
 
-To build the manual, enter a command in the Terminal pane of Visual Studio Code. The default command is "make html" which builds the file Source\Documentation\Manual\_build\html\index.html
+To build the manual, enter a command in the Terminal pane of Visual Studio Code. The default command is _make html_ which builds the file Source\Documentation\Manual\\_build\html\index.html<p>&nbsp;</p>
 
 ![](images/html_manual.png)
 
-There is a shortcut for this command: Ctrl+Shift+B.
+There is a shortcut for this command: Ctrl+Shift+B.<p>&nbsp;</p>
 
 ![](images/pdf_manual.png)
 
