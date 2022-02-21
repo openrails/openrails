@@ -166,7 +166,7 @@ Use the default settings.<p>&nbsp;</p>
 
 Installation takes a few minutes.
 
-You will be prompted to close and restart your PC.
+You will be prompted to close and restart your PC.<p>&nbsp;</p>
 
 ![](images/wsl2_for_docker_desktop.png)
 
@@ -197,6 +197,8 @@ Once this is installed, return to the Docker Desktop prompt and press Restart.<p
 This re-starts Docker Desktop, not your PC.
 
 Now that Docker Desktop is running, start Visual Studio Code.
+
+Note: Before using Visual Studio Code to edit the manual, you should always start Docker Desktop first.<p>&nbsp;</p>
 
 ![](images/find_vsc_commands.png)
 
