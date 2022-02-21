@@ -1155,9 +1155,12 @@ namespace Orts.Viewer3D
                     Color = new Vector3(light.color[0], light.color[1], light.color[2]),
                     Intensity = light.intensity,
                     Range = light.range,
-                    InnerConeCos = (float)Math.Cos(light.innerConeAngle),
-                    OuterConeCos = (float)Math.Cos(light.outerConeAngle),
                 };
+                if (Light.Type == LightMode.Spot && light.spot != null)
+                {
+                    Light.InnerConeCos = (float)Math.Cos(light.spot.innerConeAngle);
+                    Light.OuterConeCos = (float)Math.Cos(light.spot.outerConeAngle);
+                }
             }
 
             public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords, int texturePacking)
@@ -1446,6 +1449,12 @@ namespace Orts.Viewer3D
             public float intensity { get; set; }
             [DefaultValue(0)]
             public float range { get; set; }
+
+            public KHR_lights_punctual_spot spot { get; set; }
+        }
+
+        public class KHR_lights_punctual_spot
+        {
             [DefaultValue(0)]
             public float innerConeAngle { get; set; }
             [DefaultValue(MathHelper.PiOver4)]

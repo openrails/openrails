@@ -2184,7 +2184,7 @@ namespace Orts.Viewer3D
 
                         var interior = (flags & ShapeFlags.Interior) != 0;
                         frame.AddAutoPrimitive(mstsLocation, distanceDetail.ViewSphereRadius, distanceDetail.ViewingDistance * lodBias, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags, bones);
-                        frame.AddLight(shapePrimitive.Light, xnaMatrix.Translation, Vector3.TransformNormal(-Vector3.UnitZ, xnaMatrix));
+                        frame.AddLight(shapePrimitive.Light, ref xnaMatrix, lodBias);
                     }
                 }
             }
