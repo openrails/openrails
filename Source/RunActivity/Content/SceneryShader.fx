@@ -746,7 +746,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents)
 			t = normalize(t - ng * dot(ng, t));
 
         float3 b = normalize(cross(ng, t));
-        row_major float3x3 tbn = float3x3(t, b, ng);
+        tbn = float3x3(t, b, ng);
     }
 	float3 n;
 	if (NormalScale > 0)
@@ -980,9 +980,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	float3 n = _PSGetNormal(In, true);
 	float3 v = normalize(-In.RelPosition.xyz);
 
-	float NdotV = 0.001; // Otherwise it goes undefined at dot(), or like that...
-	if (HasNormals)
-		NdotV = abs(dot(n, v)) + 0.001;
+	float NdotV = abs(dot(n, v)) + 0.001;
 
 	float3 reflection = -normalize(reflect(v, n));
 	float3 litColor = _PSGetIBLContribution(diffuseColor, specularColor, NdotV, perceptualRoughness, n, reflection);
