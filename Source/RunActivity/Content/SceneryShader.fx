@@ -723,7 +723,7 @@ void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 	Color.a *= saturate((ZFar - length(In.RelPosition.xyz)) / 50);
 }
 
-float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents)
+float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, bool isFrontFace)
 {
 	bool hasNormalMap = NormalScale > 0;
 	float3x3 tbn = float3x3(In.Tangent.xyz, In.Bitangent.xyz, In.Normal_Light.xyz);
@@ -753,6 +753,12 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents)
 			tbn[1].xyz = normalize(cross(ng, t));
 		}
     }
+	if (isFrontFace) // Does it work reversed?! We should negate in case of back face...
+	{
+		tbn[0] *= -1;
+		tbn[1] *= -1;
+		tbn[2] *= -1;
+	}
 	float3 n;
 	if (hasNormalMap)
 	{
@@ -872,7 +878,7 @@ float4 PSImage9_1(in VERTEX_OUTPUT In) : COLOR0
     return PSImage(false, false, In);
 }
 
-float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
+float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR0
 {
 	bool ShaderModel3 = true;
 	
@@ -982,7 +988,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
     float3 specularEnvironmentR0 = specularColor.rgb;
     float3 specularEnvironmentR90 = float3(1.0, 1.0, 1.0) * reflectance90;
 	
-	float3 n = _PSGetNormal(In, true);
+	float3 n = _PSGetNormal(In, true, isFrontFace);
 	float3 v = normalize(-In.RelPosition.xyz);
 
 	float NdotV = abs(dot(n, v)) + 0.001;
