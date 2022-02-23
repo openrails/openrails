@@ -34,7 +34,7 @@ texture  ShadowMapTexture1;
 texture  ShadowMapTexture2;
 texture  ShadowMapTexture3;
 float4   ShadowMapLimit;
-float4   ZBias_Lighting;  // x = z-bias, y = diffuse, z = specular, w = step(1, z)
+float4   ZBias_Lighting;  // x = z-bias, y = diffuse (not unlit), z = specular, w = step(1, z)
 float4   Fog;  // rgb = color of fog; a = reciprocal of distance from camera, everything is
 			   // normal color; FogDepth = FogStart, i.e. FogEnd = 2 * FogStart.
 float    ZFar;
@@ -1037,6 +1037,10 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 		emissive = tex2D(Emissive, In.TexCoords.zw).rgb;
 	litColor += _PSSrgbToLinear(emissive) * EmissiveFactor;
 
+	// Unlit material
+	if (!ZBias_Lighting.y)
+		litColor = Color.rgb;
+
 	///////////////////////
 	// Contributions from the OpenRails environment:
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
@@ -1105,8 +1109,6 @@ float4 PSTerrain9_1(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 {
-	const float ShadowBrightness = 0.5;
-
 	float4 Color = tex2D(Image, In.TexCoords.xy);
     // Alpha testing:
     clip(Color.a - ReferenceAlpha);

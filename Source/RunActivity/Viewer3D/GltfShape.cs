@@ -38,6 +38,7 @@ namespace Orts.Viewer3D
         {
             "MSFT_texture_dds",
             "KHR_lights_punctual",
+            "KHR_materials_unlit",
         };
 
         string FileDir { get; set; }
@@ -612,7 +613,9 @@ namespace Orts.Viewer3D
                 var material = meshPrimitive.Material == null ? DefaultGltfMaterial : gltfFile.Materials[(int)meshPrimitive.Material];
 
                 var options = SceneryMaterialOptions.None;
-                options |= SceneryMaterialOptions.Diffuse;
+
+                if (!material.Extensions?.ContainsKey("KHR_materials_unlit") ?? true)
+                    options |= SceneryMaterialOptions.Diffuse;
 
                 if (skin != null)
                 {
