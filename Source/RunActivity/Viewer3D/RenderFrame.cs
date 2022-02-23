@@ -551,11 +551,11 @@ namespace Orts.Viewer3D
 
             // Ensure that the first light is always the sun/moon, because the ambient and shadow effects will be calculated based on the first light.
             if (SolarDirection.Y > -0.05)
-                AddLight(SolarDirection, SunColor, SunIntensity);
+                AddLight(-SolarDirection, SunColor, SunIntensity);
             else
             {
                 var moonDirection = viewer.Settings.UseMSTSEnv ? viewer.World.MSTSSky.mstsskylunarDirection : viewer.World.Sky.lunarDirection;
-                AddLight(moonDirection, MoonGlow, MoonIntensity);
+                AddLight(-moonDirection, MoonGlow, MoonIntensity);
             }
 
             // Headlight illumination
@@ -610,9 +610,9 @@ namespace Orts.Viewer3D
                 if (intensity > 0)
                 {
                     // The original shader used linear range attenuation with full-lit pixels within the range, that's what the LightManager.LightType.Headlight simulates:
-                    //AddLight(LightMode.Headlight, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
+                    //AddLight((LightMode)3, lightDrawer.LightConePosition, lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
                     // The PBR spot light uses invere-sqared attenuation with realisticcaly lit pixels within the range, use LightManager.LightType.Spot for that:
-                    AddLight(LightMode.Spot, lightDrawer.LightConePosition, -lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
+                    AddLight(LightMode.Spot, lightDrawer.LightConePosition, lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
                 }
             }
         }
@@ -1078,11 +1078,7 @@ namespace Orts.Viewer3D
 
         public void AddLight(ShapeLight light, ref Matrix worldMatrix, float lodBias)
         {
-            // Culling based on the light range, as suggested in the specification.
-            var viewingDistance = light?.Range > 0 ? light.Range : float.MaxValue;
-            var mstsLocation = worldMatrix.Translation;
-            mstsLocation.Z *= -1; // For Camera.InRange() the position must be converted to the weird so called "mstsLocation".
-            if (light != null && Camera != null && Camera.InRange(mstsLocation, 0, viewingDistance * lodBias))
+            if (light != null)
                 AddLight(light.Type, worldMatrix.Translation, Vector3.TransformNormal(-Vector3.UnitZ, worldMatrix), light.Color, light.Intensity, light.Range, light.InnerConeCos, light.OuterConeCos);
         }
         public void AddLight(Vector3 direction, Vector3 color, float intensity) => AddLight(LightMode.Directional, Vector3.Zero, direction, color, intensity, -1, 0, 0);

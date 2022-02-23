@@ -297,8 +297,8 @@ void _VSNormalProjection(in float3 InNormal, in float4x4 WorldTransform, inout f
 	OutNormal_Light.xyz = normalize(mul(InNormal, (float3x3)WorldTransform).xyz);
 	
 	// Normal lighting (range 0.0 - 1.0)
-	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
-	OutNormal_Light.w = dot(OutNormal_Light.xyz, LightDirections[0]) * 0.5 + 0.5; // [0] is always the sun/moon
+	// For VSForest() it is calculated in Shaders.cs eyeVector.SetValue(), the sun direction is uploaded to this shader negated, to conform with glTF lights extension
+	OutNormal_Light.w = dot(OutNormal_Light.xyz, -LightDirections[0]) * 0.5 + 0.5; // [0] is always the sun/moon
 }
 
 void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
@@ -668,13 +668,13 @@ float3 _PSGetLightVector(in int i, in float3 pointAbsolutePosition, inout float3
 	}
 	else
 	{
-		pointToLight = LightDirections[i];
+		pointToLight = -LightDirections[i];
 	}
 
 	float3 l = normalize(pointToLight);
 	
 	if (LightTypes[i] == LightType_Spot || LightTypes[i] == LightType_Headlight)
-		spotAttenuation = smoothstep(LightOuterConeCos[i], LightInnerConeCos[i], dot(l, LightDirections[i]));
+		spotAttenuation = smoothstep(LightOuterConeCos[i], LightInnerConeCos[i], dot(LightDirections[i], -l));
 	
 	intensity = LightIntensities[i] * LightColors[i] * rangeAttenuation * spotAttenuation;
 	return l;
@@ -725,31 +725,36 @@ void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 
 float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents)
 {
+	bool hasNormalMap = NormalScale > 0;
 	float3x3 tbn = float3x3(In.Tangent.xyz, In.Bitangent.xyz, In.Normal_Light.xyz);
     if (!hasTangents || !HasNormals)
 	{
         float3 pos_dx = ddx(In.Position.xyz);
         float3 pos_dy = ddy(In.Position.xyz);
-        float3 tex_dx = ddx(float3(In.TexCoords.xy, 0.0));
-        float3 tex_dy = ddy(float3(In.TexCoords.xy, 0.0));
-        float3 t = (tex_dy.y * pos_dx - tex_dx.y * pos_dy) / (tex_dx.x * tex_dy.y - tex_dy.x * tex_dx.y);
 
 		float3 ng;
-        if (HasNormals)
-            ng = normalize(In.Normal_Light.xyz);
-        else
-            ng = cross(pos_dx, pos_dy);
-
-		if (hasTangents)
-			t = In.Tangent.xyz;
+		if (HasNormals)
+			ng = normalize(In.Normal_Light.xyz);
 		else
-			t = normalize(t - ng * dot(ng, t));
+			ng = cross(pos_dx, pos_dy);
+		tbn[2].xyz = ng;
+		
+		if (hasNormalMap)
+		{
+			float3 tex_dx = ddx(float3(In.TexCoords.xy, 0.0));
+			float3 tex_dy = ddy(float3(In.TexCoords.xy, 0.0));
+			float3 t = (tex_dy.y * pos_dx - tex_dx.y * pos_dy) / (tex_dx.x * tex_dy.y - tex_dy.x * tex_dx.y);
 
-        float3 b = normalize(cross(ng, t));
-        tbn = float3x3(t, b, ng);
+			if (hasTangents)
+				t = In.Tangent.xyz;
+			else
+				t = normalize(t - ng * dot(ng, t));
+			tbn[0].xyz = t;
+			tbn[1].xyz = normalize(cross(ng, t));
+		}
     }
 	float3 n;
-	if (NormalScale > 0)
+	if (hasNormalMap)
 	{
 		if (TexturePacking == 2)
 		{
@@ -982,8 +987,11 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 
 	float NdotV = abs(dot(n, v)) + 0.001;
 
-	float3 reflection = -normalize(reflect(v, n));
+	float3 reflection = normalize(reflect(-v, n));
 	float3 litColor = _PSGetIBLContribution(diffuseColor, specularColor, NdotV, perceptualRoughness, n, reflection);
+
+	// Occlusion doesn't apply to lights, so do it in advance
+	litColor = lerp(litColor, litColor * occlusion, OcclusionFactor.x);
 
 	float3 diffuseContrib = (float3)0;
 	float3 specContrib = (float3)0;
@@ -1015,9 +1023,6 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In) : COLOR0
 	}
 	litColor += diffuseContrib + specContrib;
 
-	// Occlusion:
-	litColor = lerp(litColor, litColor * occlusion, OcclusionFactor.x);
-	
 	// Emissive color:
 	float3 emissive;
 	if (TextureCoordinates.w == 0)
