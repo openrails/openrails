@@ -802,9 +802,9 @@ float3 _PSLinearToSrgb(float3 color)
 	return pow(color.rgb, 1.0 / 2.2);
 }
 
-float4 _PSRgbdToLinear(float4 value)
+float3 _PSRgbdToLinear(float4 value)
 {
-	return float4(value.xyz / value.w, 1.0);
+	return value.xyz / value.w;
 }
 
 float3 _PSGetIBLContribution(float3 diffuseColor, float3 specularColor, float NdotV, float perceptualRoughness, float3 n, float3 reflection)

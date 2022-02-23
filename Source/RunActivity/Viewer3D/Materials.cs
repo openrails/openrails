@@ -296,10 +296,11 @@ namespace Orts.Viewer3D
         public readonly DebugShader DebugShader;
 
         public static Texture2D MissingTexture;
+        public static TextureCube BlackCubeTexture;
         public static Texture2D DefaultSnowTexture;
         public static Texture2D DefaultDMSnowTexture;
         public static Texture2D WhiteTexture;
-        public static Texture2D RedTexture;
+        public static Texture2D BlackTexture;
 
         [CallOnThread("Render")]
         public SharedMaterialManager(Viewer viewer)
@@ -334,6 +335,9 @@ namespace Orts.Viewer3D
 
             // TODO: This should happen on the loader thread.
             MissingTexture = SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
+            BlackCubeTexture = new TextureCube(Viewer.GraphicsDevice, 2, false, SurfaceFormat.Color);
+            for (var i = 0; i < 6; i++)
+                    BlackCubeTexture.SetData((CubeMapFace)i, Enumerable.Repeat(Color.Black, 2 * 2).ToArray());
 
             // Managing default snow textures
             var defaultSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultSnow.ace";
@@ -345,9 +349,9 @@ namespace Orts.Viewer3D
             WhiteTexture.SetData(new[] { Color.White });
             WhiteTexture.Name = nameof(WhiteTexture);
 
-            RedTexture = new Texture2D(viewer.RenderProcess.GraphicsDevice, 1, 1);
-            RedTexture.SetData(new[] { Color.Red });
-            RedTexture.Name = nameof(RedTexture);
+            BlackTexture = new Texture2D(viewer.RenderProcess.GraphicsDevice, 1, 1);
+            BlackTexture.SetData(new[] { Color.Black });
+            BlackTexture.Name = nameof(BlackTexture);
         }
 
         public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null)
@@ -580,9 +584,18 @@ namespace Orts.Viewer3D
                 sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
 
             SceneryShader.SetLightVector_ZFar(sunDirection, Viewer.Settings.ViewingDistance);
-            SceneryShader.EnvironmentMapSpecularTexture = GltfShape.EnvironmentMapSpecularDay;
-            SceneryShader.EnvironmentMapDiffuseTexture = GltfShape.EnvironmentMapDiffuseDay;
-            SceneryShader.BrdfLutTexture = GltfShape.BrdfLutTexture;
+            if (sunDirection.Y > -0.05)
+            {
+                SceneryShader.EnvironmentMapSpecularTexture = GltfShape.EnvironmentMapSpecularDay;
+                SceneryShader.EnvironmentMapDiffuseTexture = GltfShape.EnvironmentMapDiffuseDay;
+                SceneryShader.BrdfLutTexture = GltfShape.BrdfLutTexture;
+            }
+            else
+            {
+                SceneryShader.EnvironmentMapSpecularTexture = BlackTexture;
+                SceneryShader.EnvironmentMapDiffuseTexture = BlackCubeTexture;
+                SceneryShader.BrdfLutTexture = BlackTexture;
+            }
 
             if (Viewer.Settings.UseMSTSEnv == false)
             {
