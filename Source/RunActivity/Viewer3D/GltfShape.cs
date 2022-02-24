@@ -202,6 +202,7 @@ namespace Orts.Viewer3D
         public class GltfLodControl : LodControl
         {
             Dictionary<string, Gltf> Gltfs = new Dictionary<string, Gltf>();
+            static readonly float[] defaultScreenCoverages = new[] { 0.2f, 0.05f, 0.001f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
 
             public GltfLodControl(GltfShape shape, Dictionary<int, string> externalLods)
             {
@@ -237,9 +238,11 @@ namespace Orts.Viewer3D
                                 var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString());
                                 if (ext?.Ids != null)
                                     internalLodsNumber = ext.Ids.Length + 1;
-                                var MSFT_screencoverage = new[] { 0.2f, 0.005f, 0.001f , 0f, 0f, 0f, 0f, 0f, 0f, 0f }; // FIXME: Load this from the "Extras"
+                                var screenCoverages = defaultScreenCoverages;
+                                if (rootNode.Extras?.TryGetValue("MSFT_screencoverage", out extension) ?? false)
+                                    screenCoverages = Newtonsoft.Json.JsonConvert.DeserializeObject<float[]>(extension.ToString());
                                 shape.MinimumScreenCoverages = new float[internalLodsNumber];
-                                Array.Copy(MSFT_screencoverage, shape.MinimumScreenCoverages, internalLodsNumber);
+                                Array.Copy(screenCoverages, shape.MinimumScreenCoverages, internalLodsNumber);
                             }
                         }
                     }
