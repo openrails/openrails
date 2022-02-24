@@ -243,7 +243,7 @@ namespace Orts.Viewer3D
         }
         public bool NightTexturesNotLoaded; // At least one night texture hasn't been loaded
         public bool DayTexturesNotLoaded; // At least one day texture hasn't been loaded
-        public ulong LoadMemoryThreshold; // Above this threshold loader doesn't bulk load day or night textures
+        public long LoadMemoryThreshold; // Above this threshold loader doesn't bulk load day or night textures
         public bool tryLoadingNightTextures = false;
         public bool tryLoadingDayTextures = false;
 
@@ -432,7 +432,7 @@ namespace Orts.Viewer3D
             CabXOffsetPixels = inf.ReadInt32();
             NightTexturesNotLoaded = inf.ReadBoolean();
             DayTexturesNotLoaded = inf.ReadBoolean();
-            LoadMemoryThreshold = (ulong)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+            LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
             tryLoadingNightTextures = true;
             tryLoadingDayTextures = true;
 
@@ -532,7 +532,7 @@ namespace Orts.Viewer3D
             // b) that all loading is performed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
             MaterialManager.LoadPrep();
-            LoadMemoryThreshold = (ulong)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+            LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
             Load();
 
             // MUST be after loading is done! (Or we try and load shapes on the main thread.)
