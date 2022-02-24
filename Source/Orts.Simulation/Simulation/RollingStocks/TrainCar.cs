@@ -614,10 +614,7 @@ namespace Orts.Simulation.RollingStocks
 
         public float CurrentElevationPercent;
 
-        public bool CurveResistanceDependent;
         public bool CurveSpeedDependent;
-        public bool TunnelResistanceDependent;
-
 
         protected float MaxDurableSafeCurveSpeedMpS;
 
@@ -728,13 +725,11 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void Initialize()
         {
-            CurveResistanceDependent = Simulator.Settings.CurveResistanceDependent;
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
-            TunnelResistanceDependent = Simulator.Settings.TunnelResistanceDependent;
             
             //CurveForceFilter.Initialize();
-            // Initialize tunnel resistance values
 
+            // Initialize tunnel resistance values
             DoubleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelAreaM2;
             SingleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.SingleTunnelAreaM2;
             DoubleTunnelPerimeterM = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelPerimeterM;
@@ -1118,62 +1113,47 @@ namespace Orts.Simulation.RollingStocks
         {
             if (Train.IsPlayerDriven)   // Only calculate tunnel resistance when it is the player train.
             {
-                if (TunnelResistanceDependent)
+                if (CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue)
                 {
-                    if (CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue)
+                    // Calculate tunnel default effective cross-section area, and tunnel perimeter - based upon the designed speed limit of the railway (TRK File)
+                    float TunnelLengthM = CarTunnelData.LengthMOfTunnelAheadFront.Value + CarTunnelData.LengthMOfTunnelBehindRear.Value;
+                    float TrainLengthTunnelM = Train.Length;
+                    float TrainMassTunnelKg = Train.MassKg;
+                    float PrevTrainCrossSectionAreaM2 = TrainCrossSectionAreaM2;
+                    TrainCrossSectionAreaM2 = CarWidthM * CarHeightM;
+                    if (TrainCrossSectionAreaM2 < PrevTrainCrossSectionAreaM2)
                     {
+                        TrainCrossSectionAreaM2 = PrevTrainCrossSectionAreaM2;  // Assume locomotive cross-sectional area is the largest, if not use new one.
+                    }
+                    const float DensityAirKgpM3 = 1.2f;
 
-                        float? TunnelStart;
-                        float? TunnelAhead;
-                        float? TunnelBehind;
-
-                        TunnelStart = CarTunnelData.FrontPositionBeyondStartOfTunnel;      // position of front of wagon wrt start of tunnel
-                        TunnelAhead = CarTunnelData.LengthMOfTunnelAheadFront;            // Length of tunnel remaining ahead of front of wagon (negative if front of wagon out of tunnel)
-                        TunnelBehind = CarTunnelData.LengthMOfTunnelBehindRear;           // Length of tunnel behind rear of wagon (negative if rear of wagon has not yet entered tunnel)
-
-                        // Calculate tunnel default effective cross-section area, and tunnel perimeter - based upon the designed speed limit of the railway (TRK File)
-
-                        float TunnelLengthM = CarTunnelData.LengthMOfTunnelAheadFront.Value + CarTunnelData.LengthMOfTunnelBehindRear.Value;
-                        float TrainLengthTunnelM = Train.Length;
-                        float TrainMassTunnelKg = Train.MassKg;
-                        float PrevTrainCrossSectionAreaM2 = TrainCrossSectionAreaM2;
-                        TrainCrossSectionAreaM2 = CarWidthM * CarHeightM;
-                        if (TrainCrossSectionAreaM2 < PrevTrainCrossSectionAreaM2)
-                        {
-                            TrainCrossSectionAreaM2 = PrevTrainCrossSectionAreaM2;  // Assume locomotive cross-sectional area is the largest, if not use new one.
-                        }
-                        const float DensityAirKgpM3 = 1.2f;
-
-                        // Determine tunnel X-sect area and perimeter based upon number of tracks
-                        if (CarTunnelData.numTunnelPaths >= 2)
-                        {
-                            TunnelCrossSectionAreaM2 = DoubleTunnelCrossSectAreaM2; // Set values for double track tunnels and above
-                            TunnelPerimeterM = DoubleTunnelPerimeterM;
-                        }
-                        else
-                        {
-                            TunnelCrossSectionAreaM2 = SingleTunnelCrossSectAreaM2; // Set values for single track tunnels
-                            TunnelPerimeterM = SingleTunnelPerimeterAreaM;
-                        }
-
-                        // 
-                        // Calculate first tunnel factor
-
-                        float TunnelAComponent = (0.00003318f * DensityAirKgpM3 * TunnelCrossSectionAreaM2) / ((1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)));
-                        float TunnelBComponent = 174.419f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2));
-                        float TunnelCComponent = (2.907f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2))) / (4.0f * (TunnelCrossSectionAreaM2 / TunnelPerimeterM));
-
-                        float TempTunnel1 = (float)Math.Sqrt(TunnelBComponent + (TunnelCComponent * (TunnelLengthM - TrainLengthTunnelM) / TrainLengthTunnelM));
-                        float TempTunnel2 = (1.0f - (1.0f / (1.0f + TempTunnel1))) * (1.0f - (1.0f / (1.0f + TempTunnel1)));
-
-                        float UnitAerodynamicDrag = ((TunnelAComponent * TrainLengthTunnelM) / Kg.ToTonne(TrainMassTunnelKg)) * TempTunnel2;
-
-                        TunnelForceN = UnitAerodynamicDrag * Kg.ToTonne(MassKG) * AbsSpeedMpS * AbsSpeedMpS;
+                    // Determine tunnel X-sect area and perimeter based upon number of tracks
+                    if (CarTunnelData.numTunnelPaths >= 2)
+                    {
+                        TunnelCrossSectionAreaM2 = DoubleTunnelCrossSectAreaM2; // Set values for double track tunnels and above
+                        TunnelPerimeterM = DoubleTunnelPerimeterM;
                     }
                     else
                     {
-                        TunnelForceN = 0.0f; // Reset tunnel force to zero when train is no longer in the tunnel
+                        TunnelCrossSectionAreaM2 = SingleTunnelCrossSectAreaM2; // Set values for single track tunnels
+                        TunnelPerimeterM = SingleTunnelPerimeterAreaM;
                     }
+
+                    // Calculate first tunnel factor
+                    float TunnelAComponent = (0.00003318f * DensityAirKgpM3 * TunnelCrossSectionAreaM2) / ((1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)));
+                    float TunnelBComponent = 174.419f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2));
+                    float TunnelCComponent = (2.907f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2))) / (4.0f * (TunnelCrossSectionAreaM2 / TunnelPerimeterM));
+
+                    float TempTunnel1 = (float)Math.Sqrt(TunnelBComponent + (TunnelCComponent * (TunnelLengthM - TrainLengthTunnelM) / TrainLengthTunnelM));
+                    float TempTunnel2 = (1.0f - (1.0f / (1.0f + TempTunnel1))) * (1.0f - (1.0f / (1.0f + TempTunnel1)));
+
+                    float UnitAerodynamicDrag = ((TunnelAComponent * TrainLengthTunnelM) / Kg.ToTonne(TrainMassTunnelKg)) * TempTunnel2;
+
+                    TunnelForceN = UnitAerodynamicDrag * Kg.ToTonne(MassKG) * AbsSpeedMpS * AbsSpeedMpS;
+                }
+                else
+                {
+                    TunnelForceN = 0.0f; // Reset tunnel force to zero when train is no longer in the tunnel
                 }
             }
         }
@@ -1791,7 +1771,7 @@ namespace Orts.Simulation.RollingStocks
 
             // get curve radius
 
-            if (CurveSpeedDependent || CurveResistanceDependent)  // Function enabled by menu selection for either curve resistance or curve speed limit
+            if (CurveSpeedDependent)  // Function enabled by menu selection for curve speed limit
             {
 
 
@@ -2039,7 +2019,6 @@ namespace Orts.Simulation.RollingStocks
         }
 
         #endregion
-
     
         #region Calculate friction force in curves
 
@@ -2050,108 +2029,94 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public virtual void UpdateCurveForce(float elapsedClockSeconds)
         {
-            if (CurveResistanceDependent)
+            if (CurrentCurveRadius > 0)
             {
+                if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
+                {                        
+                    float Axles = WheelAxles.Count;
+                    float Bogies = Parts.Count - 1;
+                    float BogieSize = Axles / Bogies;
 
-                if (CurrentCurveRadius > 0)
-                {
+                    RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
 
-                    if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
+                    // Calculate the number of axles in a car
+
+                    if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
                     {
-
-                        
-                        float Axles = WheelAxles.Count;
-                        float Bogies = Parts.Count - 1;
-                        float BogieSize = Axles / Bogies;
-
-                        RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
-
-                        // Calculate the number of axles in a car
-
-                        if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
+                        if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
                         {
-
-                            if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
+                            if (Axles == 2)
                             {
-                                if (Axles == 2)
-                                {
-                                    RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
-                                }
-                                else if (Axles == 3)
-                                {
-                                    RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
-                                }
+                                RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
                             }
-                            else if (Bogies == 2)
+                            else if (Axles == 3)
                             {
-                                if (Axles == 2)
-                                {
-                                    if (WagonType == WagonTypes.Passenger)
-                                    {
-
-                                        RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
-                                    }
-                                    else
-                                    {
-                                        RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
-                                    }
-                                }
-                                else if (Axles == 3)
-                                {
-                                    RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
-                                }
+                                RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
                             }
-
                         }
-                        if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
+                        else if (Bogies == 2)
                         {
-                            if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
+                            if (Axles == 2)
                             {
-                                if (Axles == 2)
+                                if (WagonType == WagonTypes.Passenger)
                                 {
-                                    RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+                                    RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
                                 }
-                                else if (Axles == 3)
+                                else
                                 {
-                                    RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
+                                    RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
                                 }
                             }
-                            else // assume steam locomotive
+                            else if (Axles == 3)
                             {
-
-                                if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
-                                {
-                                    LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
-                                }
-
-                                //    Approximation for calculating rigid wheelbase for steam locomotives
-                                // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
-
-                                RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
- 
+                                RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
                             }
-
                         }
-
-
                     }
+                    if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
+                    {
+                        if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
+                        {
+                            if (Axles == 2)
+                            {
+                                RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+                            }
+                            else if (Axles == 3)
+                            {
+                                RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
+                            }
+                        }
+                        else // assume steam locomotive
+                        {
 
-                    // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
-                    // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
+                            if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
+                            {
+                                LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
+                            }
 
-                    CurveForceN = MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
-                    float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
-                    CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
-                    CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
+                            //    Approximation for calculating rigid wheelbase for steam locomotives
+                            // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
+
+                            RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f); 
+                        }
+                    }
                 }
-                else
-                {
-                    CurveForceN = 0f;
-                }
-                //CurveForceNFiltered = CurveForceFilter.Filter(CurveForceN, elapsedClockSeconds);
-                CurveForceFilter.Update(elapsedClockSeconds, CurveForceN);
-                CurveForceNFiltered = CurveForceFilter.SmoothedValue;
+
+                // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
+                // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
+
+                CurveForceN = MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
+                float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
+                CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
+                CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
             }
+            else
+            {
+                CurveForceN = 0f;
+            }
+            //CurveForceNFiltered = CurveForceFilter.Filter(CurveForceN, elapsedClockSeconds);
+            CurveForceFilter.Update(elapsedClockSeconds, CurveForceN);
+            CurveForceNFiltered = CurveForceFilter.SmoothedValue;
         }
 
         #endregion

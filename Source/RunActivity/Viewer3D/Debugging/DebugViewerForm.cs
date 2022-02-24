@@ -1547,13 +1547,8 @@ namespace Orts.Viewer3D.Debugging
 			  boxSetSignal.Items.RemoveAt(4);
 
 		  if (signalPickedItem.Signal.enabledTrain != null && signalPickedItem.Signal.CallOnEnabled)
-		  {
-			  if (signalPickedItem.Signal.enabledTrain.Train.AllowedCallOnSignal != signalPickedItem.Signal)
-			  boxSetSignal.Items.Add("Enable call on");
-			  /*else
-				  boxSetSignal.Items.Add("Disable call on");*/
-			  // To disable Call On signal must be manually set to stop, to avoid signal state change
-			  // in the interval between this list is shown and the option is selected by dispatcher
+          {
+                if (!signalPickedItem.Signal.CallOnManuallyAllowed) boxSetSignal.Items.Add("Allow call on");
 		  }
 
 		  boxSetSignal.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);

@@ -524,7 +524,6 @@ namespace Orts.Viewer3D
             shader.OverlayTexture = PatchTextureOverlay;
             shader.OverlayScale = OverlayScale;
 
-            graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
         }
 
@@ -541,6 +540,8 @@ namespace Orts.Viewer3D
                     shader.SetMatrix(item.XNAMatrix, ref viewproj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
+                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
+                    graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
