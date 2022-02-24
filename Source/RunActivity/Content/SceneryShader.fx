@@ -67,7 +67,7 @@ texture  MetallicRoughnessTexture; // g = roughness, b = metalness
 float3   OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
 float3   LightColor;
 float4   TextureCoordinates; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
-float    TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), TexturePacking; 3: occlusionRoughnessMetallic
+float    TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic
 bool     HasNormals; // 0: no, 1: yes
 
 int		NumLights; // The number of the lights used
@@ -762,7 +762,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, bool isFrontFace)
 	float3 n;
 	if (hasNormalMap)
 	{
-		if (TexturePacking == 2)
+		if (TexturePacking == 2 || TexturePacking == 4 || TexturePacking == 5)
 		{
 			// Probably this is specific to the BC5 normal maps, which is not supported in MonoGame anyway...
 			float2 normalXY;
@@ -936,14 +936,14 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 			metallic = orm.b;
 		}
 	}
-	else if (TexturePacking == 1 || TexturePacking == 3)
+	else if (TexturePacking == 1 || TexturePacking == 3 || TexturePacking == 4 || TexturePacking == 5)
 	{
 		float3 orm;
 		if (TextureCoordinates.y == 0)
 			orm = tex2D(MetallicRoughness, In.TexCoords.xy).rgb;
 		else
 			orm = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
-		if (TexturePacking == 3)
+		if (TexturePacking == 3 || TexturePacking == 5)
 		{
 			occlusion = orm.r;
 			roughness = orm.g;

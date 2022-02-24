@@ -36,9 +36,12 @@ namespace Orts.Viewer3D
     {
         public static List<string> ExtensionsSupported = new List<string>
         {
-            "MSFT_texture_dds",
             "KHR_lights_punctual",
             "KHR_materials_unlit",
+            "MSFT_lod",
+            "MSFT_texture_dds",
+            "MSFT_packing_normalRoughnessMetallic",
+            "MSFT_packing_occlusionRoughnessMetallic",
         };
 
         string FileDir { get; set; }
@@ -499,8 +502,7 @@ namespace Orts.Viewer3D
                         {
                             var imagePath = source != null ? Path.Combine(GltfDir, Uri.UnescapeDataString(image.Uri)) : "";
                             if (File.Exists(imagePath))
-                                using (var stream = File.OpenRead(imagePath))
-                                    return Viewer.TextureManager.Get(imagePath, defaultTexture, false, extensionFilter);
+                                return Viewer.TextureManager.Get(imagePath, defaultTexture, false, extensionFilter);
                             else
                                 using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
                                     return Texture2D.FromStream(Viewer.GraphicsDevice, stream);
@@ -640,6 +642,38 @@ namespace Orts.Viewer3D
 
                 Vector4 texCoords = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
 
+
+                // 0: occlusion (R), roughnessMetallic (GB) together, normal (RGB) separate, this is the standard
+                // 1: roughnessMetallicOcclusion together, normal (RGB) separate
+                // 2: normalRoughnessMetallic (RG+B+A) together, occlusion (R) separate
+                // 3: occlusionRoughnessMetallic together, normal (RGB) separate
+                // 4: roughnessMetallicOcclusion together, normal (RG) 2 channel separate
+                // 5: occlusionRoughnessMetallic together, normal (RG) 2 channel separate
+                int texturePacking = 0;
+
+                object extension = null;
+                int? msftNormalIndex = null;
+                int? msftOrmIndex = null;
+                int? msftRmoIndex = null;
+                if (material.Extensions?.TryGetValue("MSFT_packing_normalRoughnessMetallic", out extension) ?? false)
+                    msftNormalIndex = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_normalRoughnessMetallic>(extension.ToString())?.NormalRoughnessMetallicTexture?.Index;
+                else if (material.Extensions?.TryGetValue("MSFT_packing_occlusionRoughnessMetallic", out extension) ?? false)
+                {
+                    var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_occlusionRoughnessMetallic>(extension.ToString());
+                    msftOrmIndex = ext?.OcclusionRoughnessMetallicTexture?.Index;
+                    msftRmoIndex = ext?.RoughnessMetallicOcclusionTexture?.Index;
+                    msftNormalIndex = ext?.NormalTexture?.Index;
+                }
+                if (msftOrmIndex != null)
+                    texturePacking = msftNormalIndex != null ? 5 : 3;
+                else if (msftRmoIndex != null)
+                    texturePacking = msftNormalIndex != null ? 4 : 1;
+                else if (msftNormalIndex != null)
+                    texturePacking = 2;
+                var normalIndex = msftNormalIndex ?? material.NormalTexture?.Index;
+                var metallicRoughtnessIndex = msftRmoIndex ?? msftOrmIndex ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture?.Index;
+                var occlusionIndex = msftOrmIndex ?? material.OcclusionTexture?.Index;
+
                 // 8 bit sRGB + A. Needs decoding to linear in the shader.
                 texCoords.X = material.PbrMetallicRoughness?.BaseColorTexture?.TexCoord ?? 0;
                 var baseColorTexture = distanceLevel.GetTexture(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture?.Index, SharedMaterialManager.WhiteTexture);
@@ -656,25 +690,25 @@ namespace Orts.Viewer3D
 
                 // G = roughness, B = metalness, linear, may be > 8 bit
                 texCoords.Y = material.PbrMetallicRoughness?.MetallicRoughnessTexture?.TexCoord ?? 0;
-                var metallicRoughnessTexture = distanceLevel.GetTexture(gltfFile, material.PbrMetallicRoughness?.MetallicRoughnessTexture?.Index, SharedMaterialManager.WhiteTexture);
+                var metallicRoughnessTexture = distanceLevel.GetTexture(gltfFile, metallicRoughtnessIndex, SharedMaterialManager.WhiteTexture);
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
-                var metallicRoughnessSampler = distanceLevel.GetSampler(gltfFile, material.PbrMetallicRoughness?.MetallicRoughnessTexture?.Index);
+                var metallicRoughnessSampler = distanceLevel.GetSampler(gltfFile, metallicRoughtnessIndex);
                 var metallicRoughnessSamplerState = (distanceLevel.GetTextureFilter(metallicRoughnessSampler), distanceLevel.GetTextureAddressMode(metallicRoughnessSampler.WrapS), distanceLevel.GetTextureAddressMode(metallicRoughnessSampler.WrapT));
 
                 // RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
                 texCoords.Z = material.NormalTexture?.TexCoord ?? 0;
-                var normalTexture = distanceLevel.GetTexture(gltfFile, material.NormalTexture?.Index, SharedMaterialManager.WhiteTexture);
+                var normalTexture = normalIndex != metallicRoughtnessIndex ? distanceLevel.GetTexture(gltfFile, normalIndex, SharedMaterialManager.WhiteTexture) : metallicRoughnessTexture;
                 var normalScale = material.NormalTexture?.Scale ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
-                var normalSampler = distanceLevel.GetSampler(gltfFile, material.NormalTexture?.Index);
-                var normalSamplerState = (distanceLevel.GetTextureFilter(normalSampler), distanceLevel.GetTextureAddressMode(normalSampler.WrapS), distanceLevel.GetTextureAddressMode(normalSampler.WrapT));
+                var normalSampler = normalIndex != metallicRoughtnessIndex ? distanceLevel.GetSampler(gltfFile, normalIndex) : metallicRoughnessSampler;
+                var normalSamplerState = normalIndex != metallicRoughtnessIndex ? (distanceLevel.GetTextureFilter(normalSampler), distanceLevel.GetTextureAddressMode(normalSampler.WrapS), distanceLevel.GetTextureAddressMode(normalSampler.WrapT)) : metallicRoughnessSamplerState;
 
                 // R channel only, = 1.0 + strength * (sampledValue - 1.0)
                 var occlusionTexCoord = material.OcclusionTexture?.TexCoord ?? 0;
-                var occlusionTexture = distanceLevel.GetTexture(gltfFile, material.OcclusionTexture?.Index, SharedMaterialManager.WhiteTexture);
+                var occlusionTexture = occlusionIndex != metallicRoughtnessIndex ? distanceLevel.GetTexture(gltfFile, occlusionIndex, SharedMaterialManager.WhiteTexture) : metallicRoughnessTexture;
                 var occlusionStrength = material.OcclusionTexture?.Strength ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
-                var occlusionSampler = distanceLevel.GetSampler(gltfFile, material.OcclusionTexture?.Index);
-                var occlusionSamplerState = (distanceLevel.GetTextureFilter(occlusionSampler), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapS), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapT));
+                var occlusionSampler = occlusionIndex != metallicRoughtnessIndex ? distanceLevel.GetSampler(gltfFile, occlusionIndex) : metallicRoughnessSampler;
+                var occlusionSamplerState = occlusionIndex != metallicRoughtnessIndex ? (distanceLevel.GetTextureFilter(occlusionSampler), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapS), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapT)) : metallicRoughnessSamplerState;
 
                 // 8 bit sRGB. Needs decoding to linear in the shader.
                 texCoords.W = material.EmissiveTexture?.TexCoord ?? 0;
@@ -683,8 +717,6 @@ namespace Orts.Viewer3D
                 var emissiveFactorVector = new Vector3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
                 var emissiveSampler = distanceLevel.GetSampler(gltfFile, material.EmissiveTexture?.Index);
                 var emissiveSamplerState = (distanceLevel.GetTextureFilter(emissiveSampler), distanceLevel.GetTextureAddressMode(emissiveSampler.WrapS), distanceLevel.GetTextureAddressMode(emissiveSampler.WrapT));
-
-                int texturePacking = 0; // TODO
 
                 var indexBufferSet = new GltfIndexBufferSet();
                 ushort[] indexData = null;
@@ -1143,7 +1175,12 @@ namespace Orts.Viewer3D
             public readonly Vector4 TexCoords;
 
             /// <summary>
-            /// 0: occlusionRoughnessMetallic (default), 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A)
+            /// 0: occlusion (R), roughnessMetallic (GB) together, normal (RGB) separate, this is the standard
+            /// 1: roughnessMetallicOcclusion together, normal (RGB) separate
+            /// 2: normalRoughnessMetallic (RG+B+A) together, occlusion (R) separate
+            /// 3: occlusionRoughnessMetallic together, normal (RGB) separate
+            /// 4: roughnessMetallicOcclusion together, normal (RG) 2 channel separate
+            /// 5: occlusionRoughnessMetallic together, normal (RG) 2 channel separate
             /// </summary>
             public readonly float TexturePacking;
 
@@ -1429,6 +1466,23 @@ namespace Orts.Viewer3D
         class MSFT_texture_dds
         {
             public int Source { get; set; }
+        }
+
+        class MSFT_packing_normalRoughnessMetallic
+        {
+            public MSFT_packing_Texture NormalRoughnessMetallicTexture { get; set; }
+        }
+
+        class MSFT_packing_occlusionRoughnessMetallic
+        {
+            public MSFT_packing_Texture OcclusionRoughnessMetallicTexture { get; set; }
+            public MSFT_packing_Texture RoughnessMetallicOcclusionTexture { get; set; }
+            public MSFT_packing_Texture NormalTexture { get; set; }
+        }
+
+        class MSFT_packing_Texture
+        {
+            public int? Index { get; set; }
         }
 
         class MSFT_lod
