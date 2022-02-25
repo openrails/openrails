@@ -754,6 +754,14 @@ void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 	Color.a *= saturate((ZFar - length(In.RelPosition.xyz)) / 50);
 }
 
+float4 _PSTex2D(sampler s, float4 inTexCoords, float texCoords)
+{
+	if (texCoords == 0)
+		return tex2D(s, inTexCoords.xy);
+	else
+		return tex2D(s, inTexCoords.zw);
+}
+
 float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, bool isFrontFace)
 {
 	bool hasNormalMap = NormalScale > 0;
@@ -796,22 +804,15 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, bool isFrontFace)
 		if (TexturePacking == 2 || TexturePacking == 4 || TexturePacking == 5)
 		{
 			// Probably this is specific to the BC5 normal maps, which is not supported in MonoGame anyway...
-			float2 normalXY;
-			if (TextureCoordinates1.z == 0)
-				normalXY = tex2D(Normal, In.TexCoords.xy).rg;
-			else
-				normalXY = tex2D(Normal, In.TexCoords.zw).rg;
+			float2 normalXY = _PSTex2D(Normal, In.TexCoords, TextureCoordinates1.z).rg;
 			normalXY = float2(2.0, 2.0) * normalXY - float2(1.0, 1.0);
 			float normalZ = sqrt(saturate(1.0 - dot(normalXY, normalXY)));
 			n = float3(normalXY.xy, normalZ);
 		}
 		else
 		{
-			if (TextureCoordinates1.z == 0)
-				n = tex2D(Normal, In.TexCoords.xy).rgb;
-			else
-				n = tex2D(Normal, In.TexCoords.zw).rgb;
-			n = (2.0 * n - 1.0);
+			n = _PSTex2D(Normal, In.TexCoords, TextureCoordinates1.z).rgb;
+			n = 2.0 * n - 1.0;
 		}
 		n = normalize(mul((n * float3(NormalScale, NormalScale, 1.0)), tbn));
 	}
@@ -924,12 +925,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	InGeneral.Shadow = In.Shadow;
 	InGeneral.Fog = In.Tangent.w;
 
-	float4 Color;
-	if (TextureCoordinates1.x == 0)
-		Color = tex2D(Image, In.TexCoords.xy);
-	else
-		Color = tex2D(Image, In.TexCoords.zw);
-
+	float4 Color = _PSTex2D(Image, In.TexCoords, TextureCoordinates1.x);
 	Color.rgb = _PSSrgbToLinear(Color.rgb);
 	// Apply the linear multipliers.
 	Color *= In.Color * BaseColorFactor;
@@ -951,30 +947,18 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	if (TexturePacking == 0)
 	{
 		if (OcclusionFactor.x > 0)
-		{
-			if (TextureCoordinates2.w == 0)
-				occlusion = tex2D(Occlusion, In.TexCoords.xy).r;
-			else
-				occlusion = tex2D(Occlusion, In.TexCoords.zw).r;
-		}
+			occlusion = _PSTex2D(Occlusion, In.TexCoords, TextureCoordinates2.w).r;
+
 		if (OcclusionFactor.y > 0 || OcclusionFactor.z > 0)
 		{
-			float3 orm;
-			if (TextureCoordinates1.y == 0)
-				orm = tex2D(MetallicRoughness, In.TexCoords.xy).rgb;
-			else
-				orm = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
+			float3 orm = _PSTex2D(MetallicRoughness, In.TexCoords, TextureCoordinates1.y).rgb;
 			roughness = orm.g;
 			metallic = orm.b;
 		}
 	}
 	else if (TexturePacking == 1 || TexturePacking == 3 || TexturePacking == 4 || TexturePacking == 5)
 	{
-		float3 orm;
-		if (TextureCoordinates1.y == 0)
-			orm = tex2D(MetallicRoughness, In.TexCoords.xy).rgb;
-		else
-			orm = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
+		float3 orm = _PSTex2D(MetallicRoughness, In.TexCoords, TextureCoordinates1.y).rgb;
 		if (TexturePacking == 3 || TexturePacking == 5)
 		{
 			occlusion = orm.r;
@@ -990,18 +974,10 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	}
 	else if (TexturePacking == 2)
 	{
-		float4 nrm;
-		if (TextureCoordinates1.y == 0)
-			nrm = tex2D(MetallicRoughness, In.TexCoords.xy);
-		else
-			nrm = tex2D(MetallicRoughness, In.TexCoords.zw);
+		float4 nrm = _PSTex2D(Normal, In.TexCoords, TextureCoordinates1.z);
 		roughness = nrm.b;
 		metallic = nrm.a;
-
-		if (TextureCoordinates1.z == 0)
-			occlusion = tex2D(Occlusion, In.TexCoords.xy).r;
-		else
-			occlusion = tex2D(Occlusion, In.TexCoords.zw).r;
+		occlusion = _PSTex2D(Occlusion, In.TexCoords, TextureCoordinates2.w).r;
 	}
 
 	float perceptualRoughness = clamp(roughness * OcclusionFactor.y, MinRoughness, 1.0);
@@ -1033,6 +1009,10 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	if (ClearcoatFactor > 0)
 	{
 
+
+		//float3 Fr = max(float3(1.0 - perceptualRoughness), f0) - f0;
+		//float3 k_S = f0 + Fr * pow(1.0 - NdotV, 5.0);
+		//float3 clearcoatSpecular = _PSGetIBLSpecular(k_S, NdotV, perceptualRoughness, reflection);
 	}
 #endif
 
@@ -1070,12 +1050,8 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	litColor += diffuseContrib + specContrib;
 
 	// Emissive color:
-	float3 emissive;
-	if (TextureCoordinates1.w == 0)
-		emissive = tex2D(Emissive, In.TexCoords.xy).rgb;
-	else
-		emissive = tex2D(Emissive, In.TexCoords.zw).rgb;
-	litColor += _PSSrgbToLinear(emissive) * EmissiveFactor;
+	float3 emissive = _PSSrgbToLinear(_PSTex2D(Emissive, In.TexCoords, TextureCoordinates1.w).rgb) * EmissiveFactor;
+	litColor += emissive;
 
 	// Unlit material
 	if (!ZBias_Lighting.y)
