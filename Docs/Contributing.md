@@ -44,7 +44,18 @@ If you'd like to add a feature, you can get started immediately. However, we wou
 
 The following diagram shows the required order (solid lines) and recommended order (dashed lines):
 
-![Visual representation of the process a feature goes through, described below](Images/Feature%20process.svg)
+```mermaid
+flowchart
+  roadmapCreated(["Road-map (created)"])
+  roadmapApproved(["Road-map (approved)"])
+  discussion(["Discussion (1 week)"])
+  prDraft(["Pull request (draft)"])
+  prReadyForReview(["Pull request (ready for review)"])
+  prApproved(["Pull request (approved)"])
+  roadmapCreated --> roadmapApproved
+  discussion --> roadmapApproved & prReadyForReview --> prApproved
+  roadmapCreated -.-> discussion -.-> prDraft -.-> prReadyForReview
+```
 
 All new features must result in the following three things existing:
 
