@@ -572,6 +572,33 @@ namespace Orts.Viewer3D
                 return TextureFilter.Linear;
             }
 
+            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, TextureInfo textureInfo, Texture2D defaultTexture)
+            {
+                var texCoord = textureInfo?.TexCoord ?? 0;
+                var texture = GetTexture(gltf, textureInfo?.Index, defaultTexture);
+                var sampler = GetSampler(gltf, textureInfo?.Index);
+                var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
+                return (texCoord, texture, samplerState);
+            }
+
+            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, MaterialNormalTextureInfo textureInfo, Texture2D defaultTexture)
+            {
+                var texCoord = textureInfo?.TexCoord ?? 0;
+                var texture = GetTexture(gltf, textureInfo?.Index, defaultTexture);
+                var sampler = GetSampler(gltf, textureInfo?.Index);
+                var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
+                return (texCoord, texture, samplerState);
+            }
+
+            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, MaterialOcclusionTextureInfo textureInfo, Texture2D defaultTexture)
+            {
+                var texCoord = textureInfo?.TexCoord ?? 0;
+                var texture = GetTexture(gltf, textureInfo?.Index, defaultTexture);
+                var sampler = GetSampler(gltf, textureInfo?.Index);
+                var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
+                return (texCoord, texture, samplerState);
+            }
+
             internal TextureAddressMode GetTextureAddressMode(Sampler.WrapTEnum wrapEnum) => GetTextureAddressMode((Sampler.WrapSEnum)wrapEnum);
             internal TextureAddressMode GetTextureAddressMode(Sampler.WrapSEnum wrapEnum)
             {
@@ -643,83 +670,78 @@ namespace Orts.Viewer3D
                 var referenceAlpha = material.AlphaCutoff; // default is 0.5
                 var doubleSided = material.DoubleSided;
 
-                Vector4 texCoords = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
+                Vector4 texCoords1 = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
+                Vector4 texCoords2 = Vector4.Zero; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
 
-
+                object extension = null;
+                MaterialNormalTextureInfo msftNormalInfo = null;
+                TextureInfo msftOrmInfo = null;
+                TextureInfo msftRmoInfo = null;
+                if (material.Extensions?.TryGetValue("MSFT_packing_normalRoughnessMetallic", out extension) ?? false)
+                    msftNormalInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_normalRoughnessMetallic>(extension.ToString())?.NormalRoughnessMetallicTexture;
+                else if (material.Extensions?.TryGetValue("MSFT_packing_occlusionRoughnessMetallic", out extension) ?? false)
+                {
+                    var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_occlusionRoughnessMetallic>(extension.ToString());
+                    msftOrmInfo = ext?.OcclusionRoughnessMetallicTexture;
+                    msftRmoInfo = ext?.RoughnessMetallicOcclusionTexture;
+                    msftNormalInfo = ext?.NormalTexture;
+                }
                 // 0: occlusion (R), roughnessMetallic (GB) together, normal (RGB) separate, this is the standard
                 // 1: roughnessMetallicOcclusion together, normal (RGB) separate
                 // 2: normalRoughnessMetallic (RG+B+A) together, occlusion (R) separate
                 // 3: occlusionRoughnessMetallic together, normal (RGB) separate
                 // 4: roughnessMetallicOcclusion together, normal (RG) 2 channel separate
                 // 5: occlusionRoughnessMetallic together, normal (RG) 2 channel separate
-                int texturePacking = 0;
+                var texturePacking =
+                    msftOrmInfo != null ? msftNormalInfo != null ? 5 : 3 :
+                    msftRmoInfo != null ? msftNormalInfo != null ? 4 : 1 :
+                                          msftNormalInfo != null ? 2 : 0;
 
-                object extension = null;
-                int? msftNormalIndex = null;
-                int? msftOrmIndex = null;
-                int? msftRmoIndex = null;
-                if (material.Extensions?.TryGetValue("MSFT_packing_normalRoughnessMetallic", out extension) ?? false)
-                    msftNormalIndex = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_normalRoughnessMetallic>(extension.ToString())?.NormalRoughnessMetallicTexture?.Index;
-                else if (material.Extensions?.TryGetValue("MSFT_packing_occlusionRoughnessMetallic", out extension) ?? false)
+                // baseColor texture is 8 bit sRGB + A. Needs decoding to linear in the shader.
+                // metallicRoughness texture G = roughness, B = metalness, linear, may be > 8 bit
+                // normal texture is RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
+                // occlusion texture R channel only, = 1.0 + strength * (sampledValue - 1.0)
+                // emissive texture 8 bit sRGB. Needs decoding to linear in the shader.
+                Texture2D baseColorTexture = null, metallicRoughnessTexture = null, normalTexture = null, occlusionTexture = null, emissiveTexture = null, clearcoatTexture = null, clearcoatRoughnessTexture = null, clearcoatNormalTexture = null;
+                (TextureFilter, TextureAddressMode, TextureAddressMode) baseColorSamplerState = default, metallicRoughnessSamplerState = default, normalSamplerState = default, occlusionSamplerState = default, emissiveSamplerState = default, clearcoatSamplerState = default, clearcoatRoughnessSamplerState = default, clearcoatNormalSamplerState = default;
+                float clearcoatFactor = 0, clearcoatRoughnessFactor = 0, clearcoatNormalScale = 1;
+
+                (texCoords1.X, baseColorTexture, baseColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords1.Y, metallicRoughnessTexture, metallicRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, msftRmoInfo ?? msftOrmInfo ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords1.Z, normalTexture, normalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, msftNormalInfo ?? material.NormalTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords1.W, emissiveTexture, emissiveSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.EmissiveTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords2.W, occlusionTexture, occlusionSamplerState) = msftOrmInfo != null
+                    ? distanceLevel.GetTextureInfo(gltfFile, msftOrmInfo, SharedMaterialManager.WhiteTexture)
+                    : distanceLevel.GetTextureInfo(gltfFile, material.OcclusionTexture, SharedMaterialManager.WhiteTexture);
+                
+                if (material.Extensions?.TryGetValue("KHR_materials_clearcoat", out extension) ?? false)
                 {
-                    var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_occlusionRoughnessMetallic>(extension.ToString());
-                    msftOrmIndex = ext?.OcclusionRoughnessMetallicTexture?.Index;
-                    msftRmoIndex = ext?.RoughnessMetallicOcclusionTexture?.Index;
-                    msftNormalIndex = ext?.NormalTexture?.Index;
-                }
-                if (msftOrmIndex != null)
-                    texturePacking = msftNormalIndex != null ? 5 : 3;
-                else if (msftRmoIndex != null)
-                    texturePacking = msftNormalIndex != null ? 4 : 1;
-                else if (msftNormalIndex != null)
-                    texturePacking = 2;
-                var normalIndex = msftNormalIndex ?? material.NormalTexture?.Index;
-                var metallicRoughtnessIndex = msftRmoIndex ?? msftOrmIndex ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture?.Index;
-                var occlusionIndex = msftOrmIndex ?? material.OcclusionTexture?.Index;
+                    var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_clearcoat>(extension.ToString());
 
-                // 8 bit sRGB + A. Needs decoding to linear in the shader.
-                texCoords.X = material.PbrMetallicRoughness?.BaseColorTexture?.TexCoord ?? 0;
-                var baseColorTexture = distanceLevel.GetTexture(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture?.Index, SharedMaterialManager.WhiteTexture);
+                    (texCoords2.X, clearcoatTexture, clearcoatSamplerState) = distanceLevel.GetTextureInfo(gltfFile, ext.ClearcoatTexture, SharedMaterialManager.WhiteTexture);
+                    (texCoords2.Y, clearcoatRoughnessTexture, clearcoatRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, ext.ClearcoatRoughnessTexture, SharedMaterialManager.WhiteTexture);
+                    (texCoords2.Z, clearcoatNormalTexture, clearcoatNormalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, ext.ClearcoatNormalTexture, SharedMaterialManager.WhiteTexture);
+
+                    clearcoatFactor = ext.ClearcoatFactor;
+                    clearcoatRoughnessFactor = ext.ClearcoatRoughnessFactor;
+                    clearcoatNormalScale = ext.ClearcoatNormalTexture?.Scale ?? 1;
+                }
+
                 var baseColorFactor = material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f };
                 var baseColorFactorVector = new Vector4(baseColorFactor[0], baseColorFactor[1], baseColorFactor[2], baseColorFactor[3]);
-                var baseColorSampler = distanceLevel.GetSampler(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture?.Index);
-                var baseColorSamplerState = (distanceLevel.GetTextureFilter(baseColorSampler), distanceLevel.GetTextureAddressMode(baseColorSampler.WrapS), distanceLevel.GetTextureAddressMode(baseColorSampler.WrapT));
-                switch (baseColorSampler.WrapS)
-                {
-                    case Sampler.WrapSEnum.REPEAT: options |= SceneryMaterialOptions.TextureAddressModeWrap; break;
-                    case Sampler.WrapSEnum.CLAMP_TO_EDGE: options |= SceneryMaterialOptions.TextureAddressModeClamp; break;
-                    case Sampler.WrapSEnum.MIRRORED_REPEAT: options |= SceneryMaterialOptions.TextureAddressModeMirror; break;
-                }
-
-                // G = roughness, B = metalness, linear, may be > 8 bit
-                texCoords.Y = material.PbrMetallicRoughness?.MetallicRoughnessTexture?.TexCoord ?? 0;
-                var metallicRoughnessTexture = distanceLevel.GetTexture(gltfFile, metallicRoughtnessIndex, SharedMaterialManager.WhiteTexture);
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
-                var metallicRoughnessSampler = distanceLevel.GetSampler(gltfFile, metallicRoughtnessIndex);
-                var metallicRoughnessSamplerState = (distanceLevel.GetTextureFilter(metallicRoughnessSampler), distanceLevel.GetTextureAddressMode(metallicRoughnessSampler.WrapS), distanceLevel.GetTextureAddressMode(metallicRoughnessSampler.WrapT));
-
-                // RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
-                texCoords.Z = material.NormalTexture?.TexCoord ?? 0;
-                var normalTexture = normalIndex != metallicRoughtnessIndex ? distanceLevel.GetTexture(gltfFile, normalIndex, SharedMaterialManager.WhiteTexture) : metallicRoughnessTexture;
                 var normalScale = material.NormalTexture?.Scale ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
-                var normalSampler = normalIndex != metallicRoughtnessIndex ? distanceLevel.GetSampler(gltfFile, normalIndex) : metallicRoughnessSampler;
-                var normalSamplerState = normalIndex != metallicRoughtnessIndex ? (distanceLevel.GetTextureFilter(normalSampler), distanceLevel.GetTextureAddressMode(normalSampler.WrapS), distanceLevel.GetTextureAddressMode(normalSampler.WrapT)) : metallicRoughnessSamplerState;
-
-                // R channel only, = 1.0 + strength * (sampledValue - 1.0)
-                var occlusionTexCoord = material.OcclusionTexture?.TexCoord ?? 0;
-                var occlusionTexture = occlusionIndex != metallicRoughtnessIndex ? distanceLevel.GetTexture(gltfFile, occlusionIndex, SharedMaterialManager.WhiteTexture) : metallicRoughnessTexture;
                 var occlusionStrength = material.OcclusionTexture?.Strength ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
-                var occlusionSampler = occlusionIndex != metallicRoughtnessIndex ? distanceLevel.GetSampler(gltfFile, occlusionIndex) : metallicRoughnessSampler;
-                var occlusionSamplerState = occlusionIndex != metallicRoughtnessIndex ? (distanceLevel.GetTextureFilter(occlusionSampler), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapS), distanceLevel.GetTextureAddressMode(occlusionSampler.WrapT)) : metallicRoughnessSamplerState;
-
-                // 8 bit sRGB. Needs decoding to linear in the shader.
-                texCoords.W = material.EmissiveTexture?.TexCoord ?? 0;
-                var emissiveTexture = distanceLevel.GetTexture(gltfFile, material.EmissiveTexture?.Index, SharedMaterialManager.WhiteTexture);
                 var emissiveFactor = material.EmissiveFactor ?? new[] { 0f, 0f, 0f };
                 var emissiveFactorVector = new Vector3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
-                var emissiveSampler = distanceLevel.GetSampler(gltfFile, material.EmissiveTexture?.Index);
-                var emissiveSamplerState = (distanceLevel.GetTextureFilter(emissiveSampler), distanceLevel.GetTextureAddressMode(emissiveSampler.WrapS), distanceLevel.GetTextureAddressMode(emissiveSampler.WrapT));
+
+                switch (baseColorSamplerState.Item2)
+                {
+                    case TextureAddressMode.Wrap: options |= SceneryMaterialOptions.TextureAddressModeWrap; break;
+                    case TextureAddressMode.Clamp: options |= SceneryMaterialOptions.TextureAddressModeClamp; break;
+                    case TextureAddressMode.Mirror: options |= SceneryMaterialOptions.TextureAddressModeMirror; break;
+                }
 
                 var indexBufferSet = new GltfIndexBufferSet();
                 ushort[] indexData = null;
@@ -955,7 +977,7 @@ namespace Orts.Viewer3D
                 }
 
                 if (meshPrimitive.Attributes.TryGetValue("TEXCOORD_1", out accessorNumber) &&
-                    (texCoords.X == 1 || texCoords.Y == 1 || texCoords.Z == 1 || texCoords.W == 1) && // To eliminate possible spare buffers (model problem actually)
+                    (texCoords1.X == 1 || texCoords1.Y == 1 || texCoords1.Z == 1 || texCoords1.W == 1) && // To eliminate possible spare buffers (model problem actually)
                     (options & SceneryMaterialOptions.PbrHasTangents) != 0) // This is just because currently we can use the texcoords 1 only through the VERTEX_INPUT_NORMALMAP pipeline.
                 {
                     if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
@@ -1162,7 +1184,7 @@ namespace Orts.Viewer3D
                     occlusionSamplerState,
                     emissiveSamplerState);
 
-                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords, texturePacking) };
+                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords1, texturePacking) };
                 ShapePrimitives[0].SortIndex = 0;
             }
         }
@@ -1473,19 +1495,14 @@ namespace Orts.Viewer3D
 
         class MSFT_packing_normalRoughnessMetallic
         {
-            public MSFT_packing_Texture NormalRoughnessMetallicTexture { get; set; }
+            public MaterialNormalTextureInfo NormalRoughnessMetallicTexture { get; set; }
         }
 
         class MSFT_packing_occlusionRoughnessMetallic
         {
-            public MSFT_packing_Texture OcclusionRoughnessMetallicTexture { get; set; }
-            public MSFT_packing_Texture RoughnessMetallicOcclusionTexture { get; set; }
-            public MSFT_packing_Texture NormalTexture { get; set; }
-        }
-
-        class MSFT_packing_Texture
-        {
-            public int? Index { get; set; }
+            public TextureInfo OcclusionRoughnessMetallicTexture { get; set; }
+            public TextureInfo RoughnessMetallicOcclusionTexture { get; set; }
+            public MaterialNormalTextureInfo NormalTexture { get; set; }
         }
 
         class MSFT_lod
@@ -1524,6 +1541,15 @@ namespace Orts.Viewer3D
         class KHR_lights
         {
             public KHR_lights_punctual[] lights { get; set; }
+        }
+
+        public class KHR_materials_clearcoat
+        {
+            public float ClearcoatFactor { get; set; }
+            public TextureInfo ClearcoatTexture { get; set; }
+            public float ClearcoatRoughnessFactor { get; set; }
+            public TextureInfo ClearcoatRoughnessTexture { get; set; }
+            public MaterialNormalTextureInfo ClearcoatNormalTexture { get; set; }
         }
     }
 
