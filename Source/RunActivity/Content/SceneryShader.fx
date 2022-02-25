@@ -64,9 +64,16 @@ texture  EmissiveTexture; // 8 bit sRGB
 float3   EmissiveFactor; // glTF linear emissive multiplier
 texture  OcclusionTexture; // r = occlusion, can be combined with the MetallicRoughnessTexture
 texture  MetallicRoughnessTexture; // g = roughness, b = metalness
+texture  ClearcoatTexture;
+float    ClearcoatFactor;
+texture  ClearcoatRoughnessTexture;
+float    ClearcoatRoughnessFactor;
+texture  ClearcoatNormalTexture;
+float    ClearcoatNormalScale;
 float3   OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
 float3   LightColor;
-float4   TextureCoordinates; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
+float4   TextureCoordinates1; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
+float4   TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
 float    TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic
 bool     HasNormals; // 0: no, 1: yes
 
@@ -141,6 +148,30 @@ sampler Occlusion = sampler_state
 sampler MetallicRoughness = sampler_state
 {
 	Texture = (MetallicRoughnessTexture);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
+};
+
+sampler Clearcoat = sampler_state
+{
+	Texture = (ClearcoatTexture);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
+};
+
+sampler ClearcoatRoughness = sampler_state
+{
+	Texture = (ClearcoatRoughnessTexture);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
+};
+
+sampler ClearcoatNormal = sampler_state
+{
+	Texture = (ClearcoatNormalTexture);
 	MagFilter = Linear;
 	MinFilter = Linear;
 	MipFilter = Linear;
@@ -766,7 +797,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, bool isFrontFace)
 		{
 			// Probably this is specific to the BC5 normal maps, which is not supported in MonoGame anyway...
 			float2 normalXY;
-			if (TextureCoordinates.z == 0)
+			if (TextureCoordinates1.z == 0)
 				normalXY = tex2D(Normal, In.TexCoords.xy).rg;
 			else
 				normalXY = tex2D(Normal, In.TexCoords.zw).rg;
@@ -776,7 +807,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, bool isFrontFace)
 		}
 		else
 		{
-			if (TextureCoordinates.z == 0)
+			if (TextureCoordinates1.z == 0)
 				n = tex2D(Normal, In.TexCoords.xy).rgb;
 			else
 				n = tex2D(Normal, In.TexCoords.zw).rgb;
@@ -813,7 +844,7 @@ float3 _PSRgbdToLinear(float4 value)
 	return value.xyz / value.w;
 }
 
-float3 _PSGetIBLContribution(float3 diffuseColor, float3 specularColor, float NdotV, float perceptualRoughness, float3 n, float3 reflection)
+float3 _PSGetIBLSpecular(float3 specularColor, float NdotV, float perceptualRoughness, float3 reflection)
 {
 	float2 val = float2(NdotV, 1.0 - perceptualRoughness);
 	float3 brdf = tex2D(BrdfLut, val).rgb;
@@ -821,13 +852,14 @@ float3 _PSGetIBLContribution(float3 diffuseColor, float3 specularColor, float Nd
 
 	float3 specularLight = _PSRgbdToLinear(tex2D(EnvironmentMapSpecular, _PSCartesianToPolar(reflection))).rgb;
 	specularLight.rgb = _PSSrgbToLinear(specularLight.rgb);
-	float3 specular = specularLight * (specularColor * brdf.x + brdf.y);
+	return specularLight * (specularColor * brdf.x + brdf.y);
+}
 
+float3 _PSGetIBLDiffuse(float3 diffuseColor, float3 n)
+{
 	float3 diffuseLight = texCUBE(EnvironmentMapDiffuse, n).rgb; // irradiance (washed out)
 	//diffuseLight.rgb = _PSSrgbToLinear(diffuseLight.rgb); // If we can upload the image with sRGB texture surfaceformat, no need to convert manually, the GPU will do that for us.
-	float3 diffuse = diffuseLight * diffuseColor;
-
-	return diffuse + specular;
+	return diffuseLight * diffuseColor;
 }
 
 float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX_OUTPUT In) : COLOR0
@@ -893,7 +925,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	InGeneral.Fog = In.Tangent.w;
 
 	float4 Color;
-	if (TextureCoordinates.x == 0)
+	if (TextureCoordinates1.x == 0)
 		Color = tex2D(Image, In.TexCoords.xy);
 	else
 		Color = tex2D(Image, In.TexCoords.zw);
@@ -920,7 +952,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	{
 		if (OcclusionFactor.x > 0)
 		{
-			if (TextureCoordinates.y == 0) // The occlusion texcoords are technically not yet uploaded, assuming the metallic-roughness one (possibly todo)
+			if (TextureCoordinates2.w == 0)
 				occlusion = tex2D(Occlusion, In.TexCoords.xy).r;
 			else
 				occlusion = tex2D(Occlusion, In.TexCoords.zw).r;
@@ -928,7 +960,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 		if (OcclusionFactor.y > 0 || OcclusionFactor.z > 0)
 		{
 			float3 orm;
-			if (TextureCoordinates.y == 0)
+			if (TextureCoordinates1.y == 0)
 				orm = tex2D(MetallicRoughness, In.TexCoords.xy).rgb;
 			else
 				orm = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
@@ -939,7 +971,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	else if (TexturePacking == 1 || TexturePacking == 3 || TexturePacking == 4 || TexturePacking == 5)
 	{
 		float3 orm;
-		if (TextureCoordinates.y == 0)
+		if (TextureCoordinates1.y == 0)
 			orm = tex2D(MetallicRoughness, In.TexCoords.xy).rgb;
 		else
 			orm = tex2D(MetallicRoughness, In.TexCoords.zw).rgb;
@@ -959,14 +991,14 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	else if (TexturePacking == 2)
 	{
 		float4 nrm;
-		if (TextureCoordinates.y == 0)
+		if (TextureCoordinates1.y == 0)
 			nrm = tex2D(MetallicRoughness, In.TexCoords.xy);
 		else
 			nrm = tex2D(MetallicRoughness, In.TexCoords.zw);
 		roughness = nrm.b;
 		metallic = nrm.a;
 
-		if (TextureCoordinates.z == 0)
+		if (TextureCoordinates1.z == 0)
 			occlusion = tex2D(Occlusion, In.TexCoords.xy).r;
 		else
 			occlusion = tex2D(Occlusion, In.TexCoords.zw).r;
@@ -994,7 +1026,15 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	float NdotV = abs(dot(n, v)) + 0.001;
 
 	float3 reflection = normalize(reflect(-v, n));
-	float3 litColor = _PSGetIBLContribution(diffuseColor, specularColor, NdotV, perceptualRoughness, n, reflection);
+	float3 litColor = _PSGetIBLSpecular(specularColor, NdotV, perceptualRoughness, reflection);
+	litColor += _PSGetIBLDiffuse(diffuseColor, n);
+
+#ifdef CLEARCOAT
+	if (ClearcoatFactor > 0)
+	{
+
+	}
+#endif
 
 	// Occlusion doesn't apply to lights, so do it in advance
 	litColor = lerp(litColor, litColor * occlusion, OcclusionFactor.x);
@@ -1031,7 +1071,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 
 	// Emissive color:
 	float3 emissive;
-	if (TextureCoordinates.w == 0)
+	if (TextureCoordinates1.w == 0)
 		emissive = tex2D(Emissive, In.TexCoords.xy).rgb;
 	else
 		emissive = tex2D(Emissive, In.TexCoords.zw).rgb;

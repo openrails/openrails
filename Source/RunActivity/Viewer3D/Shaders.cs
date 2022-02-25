@@ -49,6 +49,8 @@ namespace Orts.Viewer3D
             var context = new ProcessorContext();
             var processor = new EffectProcessor();
             processor.Defines = $"MAX_LIGHTS={SceneryShader.MAX_LIGHTS};MAX_BONES={SceneryShader.MAX_BONES}";
+            if (SceneryShader.ClearcoatEnabled)
+                processor.Defines += ";CLEARCOAT";
             var effect = processor.Process(input, context);
             return effect.GetEffectCode();
         }
@@ -121,9 +123,16 @@ namespace Orts.Viewer3D
         readonly EffectParameter occlusionTexture;
         readonly EffectParameter metallicRoughnessTexture;
         readonly EffectParameter occlusionFactor;
+        readonly EffectParameter clearcoatTexture;
+        readonly EffectParameter clearcoatFactor;
+        readonly EffectParameter clearcoatRoughnessTexture;
+        readonly EffectParameter clearcoatRoughnessFactor;
+        readonly EffectParameter clearcoatNormalTexture;
+        readonly EffectParameter clearcoatNormalScale;
         readonly EffectParameter referenceAlpha;
         readonly EffectParameter bones;
-        readonly EffectParameter textureCoordinates;
+        readonly EffectParameter textureCoordinates1;
+        readonly EffectParameter textureCoordinates2;
         readonly EffectParameter texturePacking;
         readonly EffectParameter hasNormals;
         // Per-frame PBR uniforms:
@@ -147,6 +156,7 @@ namespace Orts.Viewer3D
 
         public const int MAX_BONES = 50;
         public const int MAX_LIGHTS = 20;
+        public const bool ClearcoatEnabled = false;
 
         /// <summary>
         /// The position of the sampler states inside the hlsl shader:
@@ -160,6 +170,9 @@ namespace Orts.Viewer3D
             Emissive,
             Occlusion,
             MetallicRoughness,
+            Clearcoat,
+            ClearcoatRoughness,
+            ClearcoatNormal,
         }
 
         public void SetViewMatrix(ref Matrix v)
@@ -264,6 +277,12 @@ namespace Orts.Viewer3D
 
         public Texture2D OcclusionTexture { set { occlusionTexture.SetValue(value); } }
 
+        public Texture2D ClearcoatTexture { set { clearcoatTexture.SetValue(value); } }
+
+        public Texture2D ClearcoatRoughnessTexture { set { clearcoatRoughnessTexture.SetValue(value); } }
+
+        public Texture2D ClearcoatNormalTexture { set { clearcoatNormalTexture.SetValue(value); } }
+
         public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
 
         public float OverlayScale { set { overlayScale.SetValue(value); } }
@@ -276,6 +295,12 @@ namespace Orts.Viewer3D
         
         public Vector3 OcclusionFactor { set { occlusionFactor.SetValue(value); } }
 
+        public float ClearcoatFactor { set { clearcoatFactor.SetValue(value); } }
+
+        public float ClearcoatRoughnessFactor { set { clearcoatRoughnessFactor.SetValue(value); } }
+
+        public float ClearcoatNormalScale { set { clearcoatNormalScale.SetValue(value); } }
+
 
         public Texture2D EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
 
@@ -285,7 +310,9 @@ namespace Orts.Viewer3D
 
         public Matrix[] Bones { set { bones.SetValue(value); } }
         
-        public Vector4 TextureCoordinates { set { textureCoordinates.SetValue(value); } }
+        public Vector4 TextureCoordinates1 { set { textureCoordinates1.SetValue(value); } }
+        
+        public Vector4 TextureCoordinates2 { set { textureCoordinates2.SetValue(value); } }
         
         public float TexturePacking { set { texturePacking.SetValue(value); } }
 
@@ -332,14 +359,21 @@ namespace Orts.Viewer3D
             normalTexture = Parameters["NormalTexture"];
             metallicRoughnessTexture = Parameters["MetallicRoughnessTexture"];
             occlusionTexture = Parameters["OcclusionTexture"];
+            clearcoatTexture = Parameters["ClearcoatTexture"];
+            clearcoatRoughnessTexture = Parameters["ClearcoatRoughnessTexture"];
+            clearcoatNormalTexture = Parameters["ClearcoatNormalTexture"];
             referenceAlpha = Parameters["ReferenceAlpha"];
             overlayScale = Parameters["OverlayScale"];
             baseColorFactor = Parameters["BaseColorFactor"];
             emissiveFactor = Parameters["EmissiveFactor"];
             normalScale = Parameters["NormalScale"];
             occlusionFactor = Parameters["OcclusionFactor"];
+            clearcoatFactor = Parameters["ClearcoatFactor"];
+            clearcoatRoughnessFactor = Parameters["ClearcoatRoughnessFactor"];
+            clearcoatNormalScale = Parameters["ClearcoatNormalScale"];
             bones = Parameters["Bones"];
-            textureCoordinates = Parameters["TextureCoordinates"];
+            textureCoordinates1 = Parameters["TextureCoordinates1"];
+            textureCoordinates2 = Parameters["TextureCoordinates2"];
             texturePacking = Parameters["TexturePacking"];
             hasNormals = Parameters["HasNormals"];
             environmentMapSpecularTexture = Parameters["EnvironmentMapSpecularTexture"];

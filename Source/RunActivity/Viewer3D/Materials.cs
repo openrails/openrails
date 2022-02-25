@@ -445,12 +445,18 @@ namespace Orts.Viewer3D
             Texture2D normalTexture, float normalScale,
             Texture2D occlusionTexture, float occlusionStrength,
             Texture2D emissiveTexture, Vector3 emissiveFactor,
+            Texture2D clearcoatTexture, float clearcoatFactor,
+            Texture2D clearcoatRoughnessTexture, float clearcoatRoughnessFactor,
+            Texture2D clearcoatNormalTexture, float clearcoatNormalScale,
             float referenceAlpha, bool doubleSided,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateNormal,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateOcclusion,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive)
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoat,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatRoughness,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal)
         {
             var materialKey = (materialName, materialUniqueId?.ToLower(), options, mipMapBias, (Effect)null);
 
@@ -465,12 +471,18 @@ namespace Orts.Viewer3D
                             normalTexture, normalScale,
                             occlusionTexture, occlusionStrength,
                             emissiveTexture, emissiveFactor,
+                            clearcoatTexture, clearcoatFactor,
+                            clearcoatRoughnessTexture, clearcoatRoughnessFactor,
+                            clearcoatNormalTexture, clearcoatNormalScale,
                             referenceAlpha, doubleSided,
                             samplerStateBaseColor,
                             samplerStateMetallicRoughness,
                             samplerStateNormal,
                             samplerStateOcclusion,
-                            samplerStateEmissive);
+                            samplerStateEmissive,
+                            samplerStateClearcoat,
+                            samplerStateClearcoatRoughness,
+                            samplerStateClearcoatNormal);
                         break;
                     default:
                         Trace.TraceInformation("Skipped unknown material type {0}", materialName);
@@ -1096,6 +1108,12 @@ namespace Orts.Viewer3D
         protected readonly float OcclusionStrength;
         protected readonly Texture2D EmissiveTexture;
         protected readonly Vector3 EmissiveFactor;
+        protected readonly Texture2D ClearcoatTexture;
+        protected readonly float ClearcoatFactor;
+        protected readonly Texture2D ClearcoatRoughnessTexture;
+        protected readonly float ClearcoatRoughnessFactor;
+        protected readonly Texture2D ClearcoatNormalTexture;
+        protected readonly float ClearcoatNormalScale;
 
         bool EmissiveFollowsDayNightCycle;
         bool DoubleSided;
@@ -1105,6 +1123,9 @@ namespace Orts.Viewer3D
         public SamplerState SamplerStateNormal;
         public SamplerState SamplerStateOcclusion;
         public SamplerState SamplerStateEmissive;
+        public SamplerState SamplerStateClearcoat;
+        public SamplerState SamplerStateClearcoatRoughness;
+        public SamplerState SamplerStateClearcoatNormal;
 
         static readonly Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState> GltfSamplerStates = new Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState>();
 
@@ -1114,12 +1135,18 @@ namespace Orts.Viewer3D
             Texture2D normalTexture, float normalScale,
             Texture2D occlusionTexture, float occlusionStrength,
             Texture2D emissiveTexture, Vector3 emissiveFactor,
+            Texture2D clearcoatTexture, float clearcoatFactor,
+            Texture2D clearcoatRoughnessTexture, float clearcoatRoughnessFactor,
+            Texture2D clearcoatNormalTexture, float clearcoatNormalScale,
             float referenceAlpha, bool doubleSided,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateNormal,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateOcclusion,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive)
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoat,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatRoughness,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal)
             : base(viewer, materialUniqueId, options, mipMapBias)
         {
             Texture = baseColorTexture;
@@ -1133,6 +1160,13 @@ namespace Orts.Viewer3D
             OcclusionStrength = occlusionStrength;
             EmissiveTexture = emissiveTexture;
             EmissiveFactor = emissiveFactor;
+            ClearcoatTexture = clearcoatTexture;
+            ClearcoatFactor = clearcoatFactor;
+            ClearcoatRoughnessTexture = clearcoatRoughnessTexture;
+            ClearcoatRoughnessFactor = clearcoatRoughnessFactor;
+            ClearcoatNormalTexture = clearcoatNormalTexture;
+            ClearcoatNormalScale = clearcoatNormalScale;
+
             DefaultAlphaCutOff = (int)(referenceAlpha * 255f);
             DoubleSided = doubleSided;
 
@@ -1143,6 +1177,9 @@ namespace Orts.Viewer3D
             if (!GltfSamplerStates.TryGetValue(samplerStateNormal, out SamplerStateNormal)) GltfSamplerStates.Add(samplerStateNormal, SamplerStateNormal = GetNewSamplerState(samplerStateNormal));
             if (!GltfSamplerStates.TryGetValue(samplerStateOcclusion, out SamplerStateOcclusion)) GltfSamplerStates.Add(samplerStateOcclusion, SamplerStateOcclusion = GetNewSamplerState(samplerStateOcclusion));
             if (!GltfSamplerStates.TryGetValue(samplerStateEmissive, out SamplerStateEmissive)) GltfSamplerStates.Add(samplerStateEmissive, SamplerStateEmissive = GetNewSamplerState(samplerStateEmissive));
+            if (!GltfSamplerStates.TryGetValue(samplerStateClearcoat, out SamplerStateClearcoat)) GltfSamplerStates.Add(samplerStateClearcoat, SamplerStateClearcoat = GetNewSamplerState(samplerStateClearcoat));
+            if (!GltfSamplerStates.TryGetValue(samplerStateClearcoatRoughness, out SamplerStateClearcoatRoughness)) GltfSamplerStates.Add(samplerStateClearcoatRoughness, SamplerStateClearcoatRoughness = GetNewSamplerState(samplerStateClearcoatRoughness));
+            if (!GltfSamplerStates.TryGetValue(samplerStateClearcoatNormal, out SamplerStateClearcoatNormal)) GltfSamplerStates.Add(samplerStateClearcoatNormal, SamplerStateClearcoatNormal = GetNewSamplerState(samplerStateClearcoatNormal));
         }
 
         public override bool GetBlending() => (Options & SceneryMaterialOptions.AlphaBlendingBlend) != 0;
@@ -1185,6 +1222,15 @@ namespace Orts.Viewer3D
             shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
             shader.OcclusionFactor = new Vector3(OcclusionStrength, RoughnessFactor, MetallicFactor);
             shader.HasNormals = (Options & SceneryMaterialOptions.PbrHasNormals) != 0;
+            shader.ClearcoatFactor = ClearcoatFactor;
+            if (ClearcoatFactor > 0 && SceneryShader.ClearcoatEnabled)
+            {
+                shader.ClearcoatTexture = ClearcoatTexture;
+                shader.ClearcoatRoughnessTexture = ClearcoatRoughnessTexture;
+                shader.ClearcoatRoughnessFactor = ClearcoatRoughnessFactor;
+                shader.ClearcoatNormalTexture = ClearcoatNormalTexture;
+                shader.ClearcoatNormalScale = ClearcoatNormalScale;
+            }
         }
 
         // Currently isn't possible to set a glTF to anisotropic filtering, so this is a hack against the spec:
@@ -1216,7 +1262,8 @@ namespace Orts.Viewer3D
 
                     if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)
                     {
-                        shader.TextureCoordinates = gltfPrimitive.TexCoords;
+                        shader.TextureCoordinates1 = gltfPrimitive.TexCoords1;
+                        shader.TextureCoordinates2 = gltfPrimitive.TexCoords2;
                         shader.TexturePacking = gltfPrimitive.TexturePacking;
                     }
 
@@ -1230,6 +1277,12 @@ namespace Orts.Viewer3D
                     graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Occlusion] = SamplerStateOcclusion;
                     graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Normal] = SamplerStateNormal;
                     graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Emissive] = SamplerStateEmissive;
+                    if (ClearcoatFactor > 0 && SceneryShader.ClearcoatEnabled)
+                    {
+                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Clearcoat] = SamplerStateClearcoat;
+                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Clearcoat] = SamplerStateClearcoat;
+                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Clearcoat] = SamplerStateClearcoat;
+                    }
 
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }

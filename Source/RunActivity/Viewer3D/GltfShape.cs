@@ -1177,14 +1177,20 @@ namespace Orts.Viewer3D
                     normalTexture, normalScale,
                     occlusionTexture, occlusionStrength,
                     emissiveTexture, emissiveFactorVector,
+                    clearcoatTexture, clearcoatFactor,
+                    clearcoatRoughnessTexture, clearcoatRoughnessFactor,
+                    clearcoatNormalTexture, clearcoatNormalScale,
                     referenceAlpha, doubleSided,
                     baseColorSamplerState,
                     metallicRoughnessSamplerState,
                     normalSamplerState,
                     occlusionSamplerState,
-                    emissiveSamplerState);
+                    emissiveSamplerState,
+                    clearcoatSamplerState,
+                    clearcoatRoughnessSamplerState,
+                    clearcoatNormalSamplerState);
 
-                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords1, texturePacking) };
+                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords1, texCoords2, texturePacking) };
                 ShapePrimitives[0].SortIndex = 0;
             }
         }
@@ -1197,7 +1203,8 @@ namespace Orts.Viewer3D
             /// <summary>
             /// x: baseColor, y: roughness-metallic, z: normal, w: emissive
             /// </summary>
-            public readonly Vector4 TexCoords;
+            public readonly Vector4 TexCoords1;
+            public readonly Vector4 TexCoords2;
 
             /// <summary>
             /// 0: occlusion (R), roughnessMetallic (GB) together, normal (RGB) separate, this is the standard
@@ -1211,7 +1218,7 @@ namespace Orts.Viewer3D
 
 
             public GltfPrimitive(KHR_lights_punctual light, Gltf gltfFile, GltfDistanceLevel distanceLevel, int hierarchyIndex, int[] hierarchy)
-                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Vector4.Zero, 0)
+                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Vector4.Zero, Vector4.Zero, 0)
             {
                 Light = new ShapeLight
                 {
@@ -1228,7 +1235,7 @@ namespace Orts.Viewer3D
                 }
             }
 
-            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords, int texturePacking)
+            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords1, Vector4 texCoords2, int texturePacking)
                 : base(vertexAttributes.ToArray())
             {
                 Material = material;
@@ -1237,7 +1244,8 @@ namespace Orts.Viewer3D
                 PrimitiveType = indexBufferSet.PrimitiveType;
                 Hierarchy = hierarchy;
                 HierarchyIndex = hierarchyIndex;
-                TexCoords = texCoords;
+                TexCoords1 = texCoords1;
+                TexCoords2 = texCoords2;
                 TexturePacking = texturePacking;
 
                 if (skin == null)
