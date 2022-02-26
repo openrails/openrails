@@ -702,9 +702,14 @@ namespace Orts.Viewer3D
                 // normal texture is RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
                 // occlusion texture R channel only, = 1.0 + strength * (sampledValue - 1.0)
                 // emissive texture 8 bit sRGB. Needs decoding to linear in the shader.
+                // clearcoat texture R channel only
+                // clearcoatRoughness texture G channel only
                 Texture2D baseColorTexture = null, metallicRoughnessTexture = null, normalTexture = null, occlusionTexture = null, emissiveTexture = null, clearcoatTexture = null, clearcoatRoughnessTexture = null, clearcoatNormalTexture = null;
                 (TextureFilter, TextureAddressMode, TextureAddressMode) baseColorSamplerState = default, metallicRoughnessSamplerState = default, normalSamplerState = default, occlusionSamplerState = default, emissiveSamplerState = default, clearcoatSamplerState = default, clearcoatRoughnessSamplerState = default, clearcoatNormalSamplerState = default;
-                float clearcoatFactor = 0, clearcoatRoughnessFactor = 0, clearcoatNormalScale = 1;
+
+                KHR_materials_clearcoat clearcoat = null;
+                if (material.Extensions?.TryGetValue("KHR_materials_clearcoat", out extension) ?? false)
+                    clearcoat = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_clearcoat>(extension.ToString());
 
                 (texCoords1.X, baseColorTexture, baseColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords1.Y, metallicRoughnessTexture, metallicRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, msftRmoInfo ?? msftOrmInfo ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture, SharedMaterialManager.WhiteTexture);
@@ -713,19 +718,9 @@ namespace Orts.Viewer3D
                 (texCoords2.W, occlusionTexture, occlusionSamplerState) = msftOrmInfo != null
                     ? distanceLevel.GetTextureInfo(gltfFile, msftOrmInfo, SharedMaterialManager.WhiteTexture)
                     : distanceLevel.GetTextureInfo(gltfFile, material.OcclusionTexture, SharedMaterialManager.WhiteTexture);
-                
-                if (material.Extensions?.TryGetValue("KHR_materials_clearcoat", out extension) ?? false)
-                {
-                    var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_clearcoat>(extension.ToString());
-
-                    (texCoords2.X, clearcoatTexture, clearcoatSamplerState) = distanceLevel.GetTextureInfo(gltfFile, ext.ClearcoatTexture, SharedMaterialManager.WhiteTexture);
-                    (texCoords2.Y, clearcoatRoughnessTexture, clearcoatRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, ext.ClearcoatRoughnessTexture, SharedMaterialManager.WhiteTexture);
-                    (texCoords2.Z, clearcoatNormalTexture, clearcoatNormalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, ext.ClearcoatNormalTexture, SharedMaterialManager.WhiteTexture);
-
-                    clearcoatFactor = ext.ClearcoatFactor;
-                    clearcoatRoughnessFactor = ext.ClearcoatRoughnessFactor;
-                    clearcoatNormalScale = ext.ClearcoatNormalTexture?.Scale ?? 1;
-                }
+                (texCoords2.X, clearcoatTexture, clearcoatSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords2.Y, clearcoatRoughnessTexture, clearcoatRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatRoughnessTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords2.Z, clearcoatNormalTexture, clearcoatNormalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatNormalTexture, SharedMaterialManager.WhiteTexture);
 
                 var baseColorFactor = material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f };
                 var baseColorFactorVector = new Vector4(baseColorFactor[0], baseColorFactor[1], baseColorFactor[2], baseColorFactor[3]);
@@ -735,6 +730,9 @@ namespace Orts.Viewer3D
                 var occlusionStrength = material.OcclusionTexture?.Strength ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
                 var emissiveFactor = material.EmissiveFactor ?? new[] { 0f, 0f, 0f };
                 var emissiveFactorVector = new Vector3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
+                var clearcoatFactor = clearcoat?.ClearcoatFactor ?? 0;
+                var clearcoatRoughnessFactor = clearcoat?.ClearcoatRoughnessFactor ?? 0;
+                var clearcoatNormalScale = clearcoat?.ClearcoatNormalTexture?.Scale ?? 1;
 
                 switch (baseColorSamplerState.Item2)
                 {

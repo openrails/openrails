@@ -156,7 +156,7 @@ namespace Orts.Viewer3D
 
         public const int MAX_BONES = 50;
         public const int MAX_LIGHTS = 20;
-        public const bool ClearcoatEnabled = false;
+        public const bool ClearcoatEnabled = true;
 
         /// <summary>
         /// The position of the sampler states inside the hlsl shader:
