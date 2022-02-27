@@ -88,7 +88,6 @@ namespace ORTS
             public bool? Valid { get; private set; } // 3 possibilities: invalid, unknown validity, valid
             public string VersionOrBuild { get; private set; }
             public bool IsMultiplayer { get; private set; }
-            public bool DbfEval { get; private set; } //Debrief Eval
 
             public Save(string fileName, string youngestVersionFailedToRestore)
             {
@@ -140,9 +139,6 @@ namespace ORTS
                         Distance = distance;
                         Valid = valid;
                         VersionOrBuild = versionOrBuild;
-
-                        //Debrief Eval
-                        DbfEval = System.IO.File.Exists(fileName.Substring(0, fileName.Length - 5) + ".dbfeval");
                     }
                     catch { }
                 }
@@ -288,25 +284,10 @@ namespace ORTS
                 Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             return reply == DialogResult.Yes;
         }
-        bool AcceptOfNonvalidDbfSetup(Save save)
-        {
-            var reply = MessageBox.Show(catalog.GetStringFmt(
-                   "The selected file contains Debrief Eval data.\nBut Debrief Evaluation checkbox (Main menu) is unchecked.\nYou cannot continue with the Evaluation on course.\n\nContinue?"),
-                   Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-
-            return reply == DialogResult.Yes;
-        }
 
         void ResumeSave()
         {
             var save = saveBindingSource.Current as Save;
-
-            //Debrief Eval
-            if (save.DbfEval && !Settings.DebriefActivityEval)
-            {
-                if (!AcceptOfNonvalidDbfSetup(save))
-                    return;
-            }
 
             if (save.Valid != false) // I.e. true or null. Check is for safety as buttons should be disabled if Save is invalid.
             {
@@ -406,7 +387,11 @@ namespace ORTS
                 for (var i = 0; i < selectedRows.Count; i++)
                 {
                     var save = selectedRows[i].DataBoundItem as Save;
-                    foreach (var fileName in new[] { Path.GetFileName(save.File), Path.ChangeExtension(Path.GetFileName(save.File), "png") })
+                    foreach (var fileName in new[] 
+                        { Path.GetFileName(save.File)
+                        , Path.ChangeExtension(Path.GetFileName(save.File), "png")
+                        , Path.ChangeExtension(Path.GetFileName(save.File), "dbfeval.txt")
+                        })
                     {
                         try
                         {

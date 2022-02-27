@@ -138,10 +138,6 @@ namespace ORTS.Settings
         [Default(true)]
         public bool Logging { get; set; }
         [Default(false)]
-        public bool DebriefActivityEval { get; set; }
-        [Default(false)]
-        public bool DebriefTTActivityEval { get; set; }
-        [Default(false)]
         public bool FullScreen { get; set; }
         [Default("")]
         public string Multiplayer_User { get; set; }

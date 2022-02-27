@@ -631,15 +631,14 @@ This feature displays a real-time evaluation of the player's performance
 during the activity run and a final report at the end of an activity.
 The evaluation reports various parameters to provide to the player info in order 
 to improve his train driving ability.
-While the activity is running relevant data are stored and displayed.
-The stored data are used to generate a report at the end of the activity.
+While the activity is running, relevant data are stored and displayed.
+The stored data is used to generate a report at the end of the activity.
 
 
 ``How It Works``
 ''''''''''''''''
 
-Activity evaluation is enabled only for Activity mode, and requires the 
-"Debrief evaluation" checkbox in the main menu window to be enabled.
+Activity evaluation is enabled only for Activity mode.
 Checking some checkboxes within the various option tabs of the main menu 
 provides additional parameters for the activity evaluation. 
 
@@ -652,23 +651,11 @@ and here an example about the Options/Simulation tab:
 .. image:: images/dbfeval-options-simulation.png
 
 Checkboxes shown as unchecked in the two above pictures may be checked or 
-unchecked, but don't have effect to activity evaluation.
+unchecked, but don't have effect on activity evaluation.
 
 A tab named "Evaluation" is present on the F1 Help Information Monitor.
 Once the activity is running it displays dynamic information about the player 
 train performance up to that moment.
-
-If the "Debrief evaluation" checkbox is unchecked, a message reminds this.
-
-   
-
-.. image:: images/dbfeval-evaluation-unchecked.png
-   :scale: 100%
-   :align: center
-
-
-In case that Debrief evaluation was checked, **Actual status: (**\ |darr| **)**\ , is displayed.
-
    
 
 .. image:: images/dbfeval-evaluation-ini.png
@@ -711,9 +698,7 @@ This report is made up of several sections.
 
     \newpage
 
-Activity saves (F2) will save also the evaluation data, if the "Debrief evaluation" 
-checkbox was checked.
-In such case the activity saves will have the "Eval" checkbox checked in the resume window.
+Activity saves (F2) will save also the evaluation data.
 
 .. image:: images/dbfeval-resume.png
    :scale: 100%
