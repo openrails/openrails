@@ -817,7 +817,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, float normalScale
 		}
 		else
 		{
-			n = _PSTex2D(Normal, In.TexCoords, texCoordsSelector).rgb;
+			n = _PSTex2D(normalSampler, In.TexCoords, texCoordsSelector).rgb;
 			n = 2.0 * n - 1.0;
 		}
 		n = normalize(mul((n * float3(normalScale, normalScale, 1.0)), tbn));
@@ -992,8 +992,8 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	
 	metallic = clamp(metallic * OcclusionFactor.z, 0.0, 1.0);
 	
-	float3 f0 = float3(0.04, 0.04, 0.04);
-	float3 f90 = float3(1.0, 1.0, 1.0);
+	float3 f0 = (float3)0.04;  // (float3)(pow((ior - 1) / (ior + 1), 2)) = (float3)0.04, if ior = 1.5
+	float3 f90 = (float3)1.0;
 	float3 diffuseColor = Color.rgb * (f90 - f0);
 	diffuseColor *= 1.0 - metallic;
 	
@@ -1017,37 +1017,33 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 #ifdef CLEARCOAT
 	float3 clearcoat = (float3)0;
 	float clearcoatRoughnessSq = 0;
-	float3 clearcoatF0 = (float3)0;
+	float3 clearcoatF0 = (float3)0.04; // (float3)(pow((ior - 1) / (ior + 1), 2)) = (float3)0.04, if ior = 1.5
 	float3 clearcoatNormal = n;
 	float clearcoatNdotV = NdotV;
 	float clearcoatFactor = ClearcoatFactor;
 
 	if (ClearcoatFactor > 0)
 	{
-		float2 clearcoatSample = _PSTex2D(Clearcoat, In.TexCoords, TextureCoordinates2.x).rg;
-		clearcoatFactor *= clearcoatSample.r;
+		float clearcoatSample = _PSTex2D(Clearcoat, In.TexCoords, TextureCoordinates2.x).r;
+		clearcoatFactor *= clearcoatSample;
 
-		float clearcoatRoughness = clearcoatSample.g;
-		if (TextureCoordinates2.y != TextureCoordinates2.x)
-			clearcoatRoughness = _PSTex2D(ClearcoatRoughness, In.TexCoords, TextureCoordinates2.y).g;
+		// TODO: implement clearcoat texturepacking for being able to check whether these two textures are the same
+		float clearcoatRoughness = _PSTex2D(ClearcoatRoughness, In.TexCoords, TextureCoordinates2.y).g;
 		clearcoatRoughness = clamp(clearcoatRoughness * ClearcoatRoughnessFactor, 0.0, 1.0);
+
 		float clearcoatAlphaRoughness = clearcoatRoughness * clearcoatRoughness;
 		clearcoatRoughnessSq = clearcoatAlphaRoughness * clearcoatAlphaRoughness;
 
-		float ior = 1.5;
-		clearcoatF0 = (float3)(pow((ior - 1) / (ior + 1), 2));
+		// TODO: implement clearcoat texturepacking for being able to check whether the clearcoat normal is the same as the base normal
+		clearcoatNormal = _PSGetNormal(In, true, ClearcoatNormalScale, ClearcoatNormal, TextureCoordinates2.z, isFrontFace);
+		clearcoatNdotV = abs(dot(clearcoatNormal, v)) + 0.001;
 
-		if (TextureCoordinates1.z != TextureCoordinates2.z)
-		{
-			clearcoatNormal = _PSGetNormal(In, true, ClearcoatNormalScale, ClearcoatNormal, TextureCoordinates2.z, isFrontFace);
-			clearcoatNdotV = abs(dot(clearcoatNormal, v)) + 0.001;
-		}
 		float3 Fr = max((float3)(1.0 - clearcoatRoughness), f0) - f0;
 		float3 k_S = f0 + Fr * pow(1.0 - clearcoatNdotV, 5.0);
 
 		float3 clearcoatReflection = normalize(reflect(-v, clearcoatNormal));
 		clearcoat = _PSGetIBLSpecular(k_S, clearcoatNdotV, clearcoatRoughness, clearcoatReflection);
-		clearcoat = lerp(k_S, k_S * occlusion, OcclusionFactor.x);
+		clearcoat = lerp(clearcoat, clearcoat * occlusion, OcclusionFactor.x);
 	}
 #endif
 
@@ -1105,7 +1101,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 				f = (clearcoatNdotH * clearcoatRoughnessSq - clearcoatNdotH) * clearcoatNdotH + 1.0;
 				D = clearcoatRoughnessSq / (M_PI * f * f);
 
-				clearcoat += clearcoatNdotL * F * G * D / (4.0 * clearcoatNdotL * clearcoatNdotV) * shadowFactor;
+				clearcoat += intensity * clearcoatNdotL * F * G * D / (4.0 * clearcoatNdotL * clearcoatNdotV) * shadowFactor;
 			}
 #endif
 		}

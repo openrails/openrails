@@ -38,6 +38,7 @@ namespace Orts.Viewer3D
         {
             "KHR_lights_punctual",
             "KHR_materials_unlit",
+            "KHR_materials_clearcoat",
             "MSFT_lod",
             "MSFT_texture_dds",
             "MSFT_packing_normalRoughnessMetallic",
