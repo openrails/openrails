@@ -485,6 +485,37 @@ namespace Orts.Viewer3D
                 return stream;
             }
 
+            internal int GetSizeInBytes(Accessor accessor) => GetComponentNumber(accessor) * GetCompenentSizeInBytes(accessor);
+            
+            int GetComponentNumber(Accessor accessor)
+            {
+                switch (accessor.Type)
+                {
+                    case Accessor.TypeEnum.SCALAR: return 1;
+                    case Accessor.TypeEnum.VEC2: return 2;
+                    case Accessor.TypeEnum.VEC3: return 3;
+                    case Accessor.TypeEnum.VEC4:
+                    case Accessor.TypeEnum.MAT2: return 4;
+                    case Accessor.TypeEnum.MAT3: return 9;
+                    case Accessor.TypeEnum.MAT4: return 16;
+                    default: return 1;
+                }
+            }
+
+            int GetCompenentSizeInBytes(Accessor accessor)
+            {
+                switch (accessor.ComponentType)
+                {
+                    case Accessor.ComponentTypeEnum.BYTE:
+                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return 1;
+                    case Accessor.ComponentTypeEnum.SHORT:
+                    case Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return 2;
+                    case Accessor.ComponentTypeEnum.UNSIGNED_INT:
+                    case Accessor.ComponentTypeEnum.FLOAT:
+                    default: return 4;
+                }
+            }
+
             internal Texture2D GetTexture(Gltf gltf, int? textureIndex, Texture2D defaultTexture)
             {
                 if (textureIndex != null)
@@ -508,13 +539,31 @@ namespace Orts.Viewer3D
                             if (File.Exists(imagePath))
                                 return Viewer.TextureManager.Get(imagePath, defaultTexture, false, extensionFilter);
                             else
-                                using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
-                                    return Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                            {
+                                try
+                                {
+                                    using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
+                                        return Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                                }
+                                catch
+                                {
+                                    Trace.TraceWarning($"glTF missing texture {imagePath} in file {GltfFileName}");
+                                    return SharedMaterialManager.MissingTexture;
+                                }
+                            }
                         }
                         else if (image.BufferView != null)
                         {
-                            using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
-                                return Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                            try
+                            {
+                                using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
+                                    return Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                            }
+                            catch
+                            {
+                                Trace.TraceWarning($"glTF missing image {image.BufferView} in file {GltfFileName}");
+                                return SharedMaterialManager.MissingTexture;
+                            }
                         }
                     }
                 }
@@ -784,10 +833,11 @@ namespace Orts.Viewer3D
                     {
                         // The condition COLOR_0 is here to allow the mesh to go through the normalmap pipeline with calculating tangents, where the positions are needed anyways.
                         var accessor = gltfFile.Accessors[accessorNumber];
+                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         vertexPositions = new VertexPosition[accessor.Count];
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
-                            var seek = byteStride != null ? (int)byteStride - VertexPosition.SizeInBytes : 0;
+                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexPositions.Length; i++)
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -800,7 +850,7 @@ namespace Orts.Viewer3D
                             using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
                             using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
                             {
-                                var seek = byteStride != null ? (int)byteStride - VertexPosition.SizeInBytes : 0;
+                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
                                 {
                                     if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -833,14 +883,16 @@ namespace Orts.Viewer3D
                     if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
+                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         vertexNormals = new VertexNormal[accessor.Count];
+                        var read = GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
-                            var seek = byteStride != null ? (int)byteStride - VertexNormal.SizeInBytes : 0;
+                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexNormals.Length; i++)
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexNormals[i] = new VertexNormal(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                                vertexNormals[i] = new VertexNormal(new Vector3(read(br), read(br), read(br)));
                             }
                         }
                         if (accessor.Sparse != null)
@@ -849,11 +901,11 @@ namespace Orts.Viewer3D
                             using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
                             using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
                             {
-                                var seek = byteStride != null ? (int)byteStride - VertexNormal.SizeInBytes : 0;
+                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
                                 {
                                     if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexNormals[readI(bri)] = new VertexNormal(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                                    vertexNormals[readI(bri)] = new VertexNormal(new Vector3(read(br), read(br), read(br)));
                                 }
                             }
                         }
@@ -881,11 +933,12 @@ namespace Orts.Viewer3D
                     if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
+                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         vertexTextureUvs = new VertexTextureDiffuse[accessor.Count];
                         var read = GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
-                            var seek = byteStride != null ? (int)byteStride - VertexTextureDiffuse.SizeInBytes : 0;
+                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexTextureUvs.Length; i++)
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -898,7 +951,7 @@ namespace Orts.Viewer3D
                             using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
                             using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
                             {
-                                var seek = byteStride != null ? (int)byteStride - VertexTextureDiffuse.SizeInBytes : 0;
+                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
                                 {
                                     if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -929,14 +982,16 @@ namespace Orts.Viewer3D
                     if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
+                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexTangent[accessor.Count];
+                        var read = GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
-                            var seek = byteStride != null ? (int)byteStride - VertexTangent.SizeInBytes : 0;
+                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexData[i] = new VertexTangent(new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                                vertexData[i] = new VertexTangent(new Vector4(read(br), read(br), read(br), read(br)));
                             }
                         }
                         if (accessor.Sparse != null)
@@ -945,11 +1000,11 @@ namespace Orts.Viewer3D
                             using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
                             using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
                             {
-                                var seek = byteStride != null ? (int)byteStride - VertexTangent.SizeInBytes : 0;
+                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
                                 {
                                     if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexData[readI(bri)] = new VertexTangent(new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
+                                    vertexData[readI(bri)] = new VertexTangent(new Vector4(read(br), read(br), read(br), read(br)));
                                 }
                             }
                         }
@@ -982,11 +1037,12 @@ namespace Orts.Viewer3D
                     if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
+                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexTextureMetallic[accessor.Count];
                         var read = GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
-                            var seek = byteStride != null ? (int)byteStride - VertexTextureMetallic.SizeInBytes : 0;
+                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -999,7 +1055,7 @@ namespace Orts.Viewer3D
                             using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
                             using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
                             {
-                                var seek = byteStride != null ? (int)byteStride - VertexTextureMetallic.SizeInBytes : 0;
+                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
                                 {
                                     if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -1034,11 +1090,12 @@ namespace Orts.Viewer3D
                     if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
+                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexJoint[accessor.Count];
                         var jointsRead = GetIntegerReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
-                            var seek = byteStride != null ? (int)byteStride - VertexJoint.SizeInBytes : 0;
+                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -1051,7 +1108,7 @@ namespace Orts.Viewer3D
                             using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
                             using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
                             {
-                                var seek = byteStride != null ? (int)byteStride - VertexJoint.SizeInBytes : 0;
+                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
                                 {
                                     if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -1073,11 +1130,12 @@ namespace Orts.Viewer3D
                     if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
+                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexWeight[accessor.Count];
                         var weightsRead = GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
-                            var seek = byteStride != null ? (int)byteStride - VertexWeight.SizeInBytes : 0;
+                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -1090,7 +1148,7 @@ namespace Orts.Viewer3D
                             using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
                             using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
                             {
-                                var seek = byteStride != null ? (int)byteStride - VertexWeight.SizeInBytes : 0;
+                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
                                 {
                                     if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -1112,11 +1170,12 @@ namespace Orts.Viewer3D
                     if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
                     {
                         var accessor = gltfFile.Accessors[accessorNumber];
+                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexColor4[accessor.Count];
                         var read = GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
-                            var seek = byteStride != null ? (int)byteStride - VertexColor4.SizeInBytes : 0;
+                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
@@ -1129,7 +1188,7 @@ namespace Orts.Viewer3D
                             using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
                             using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
                             {
-                                var seek = byteStride != null ? (int)byteStride - VertexColor4.SizeInBytes : 0;
+                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
                                 {
                                     if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
