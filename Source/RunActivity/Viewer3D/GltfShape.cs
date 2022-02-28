@@ -485,11 +485,11 @@ namespace Orts.Viewer3D
                 return stream;
             }
 
-            internal int GetSizeInBytes(Accessor accessor) => GetComponentNumber(accessor) * GetCompenentSizeInBytes(accessor);
+            internal int GetSizeInBytes(Accessor accessor) => GetComponentNumber(accessor.Type) * GetCompenentSizeInBytes(accessor.ComponentType);
             
-            int GetComponentNumber(Accessor accessor)
+            int GetComponentNumber(Accessor.TypeEnum type)
             {
-                switch (accessor.Type)
+                switch (type)
                 {
                     case Accessor.TypeEnum.SCALAR: return 1;
                     case Accessor.TypeEnum.VEC2: return 2;
@@ -502,9 +502,9 @@ namespace Orts.Viewer3D
                 }
             }
 
-            int GetCompenentSizeInBytes(Accessor accessor)
+            int GetCompenentSizeInBytes(Accessor.ComponentTypeEnum componentType)
             {
-                switch (accessor.ComponentType)
+                switch (componentType)
                 {
                     case Accessor.ComponentTypeEnum.BYTE:
                     case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return 1;
@@ -514,6 +514,33 @@ namespace Orts.Viewer3D
                     case Accessor.ComponentTypeEnum.FLOAT:
                     default: return 4;
                 }
+            }
+
+            readonly List<float> BufferValues = new List<float>();
+            void ReadBuffer(Func<BinaryReader, float> read, BinaryReader br, Accessor.TypeEnum sourceType, int seek)
+            {
+                BufferValues.Clear();
+                for (var i = 0; i < GetComponentNumber(sourceType); i++)
+                    BufferValues.Add(read(br));
+                br.BaseStream.Seek(seek, SeekOrigin.Current);
+            }
+
+            internal Vector2 ReadVector2(Func<BinaryReader, float> read, BinaryReader br, Accessor.TypeEnum sourceType, int seek)
+            {
+                ReadBuffer(read, br, sourceType, seek);
+                return new Vector2(BufferValues.ElementAtOrDefault(0), BufferValues.ElementAtOrDefault(1));
+            }
+
+            internal Vector3 ReadVector3(Func<BinaryReader, float> read, BinaryReader br, Accessor.TypeEnum sourceType, int seek)
+            {
+                ReadBuffer(read, br, sourceType, seek);
+                return new Vector3(BufferValues.ElementAtOrDefault(0), BufferValues.ElementAtOrDefault(1), BufferValues.ElementAtOrDefault(2));
+            }
+
+            internal Vector4 ReadVector4(Func<BinaryReader, float> read, BinaryReader br, Accessor.TypeEnum sourceType, int seek)
+            {
+                ReadBuffer(read, br, sourceType, seek);
+                return new Vector4(BufferValues.ElementAtOrDefault(0), BufferValues.ElementAtOrDefault(1), BufferValues.ElementAtOrDefault(2), BufferValues.ElementAtOrDefault(3));
             }
 
             internal Texture2D GetTexture(Gltf gltf, int? textureIndex, Texture2D defaultTexture)
@@ -835,14 +862,12 @@ namespace Orts.Viewer3D
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         vertexPositions = new VertexPosition[accessor.Count];
+                        var read = GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexPositions.Length; i++)
-                            {
-                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexPositions[i] = new VertexPosition(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
-                            }
+                                vertexPositions[i] = new VertexPosition(distanceLevel.ReadVector3(read, br, accessor.Type, seek));
                         }
                         if (accessor.Sparse != null)
                         {
@@ -852,10 +877,7 @@ namespace Orts.Viewer3D
                             {
                                 var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
-                                {
-                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexPositions[readI(bri)] = new VertexPosition(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()));
-                                }
+                                    vertexPositions[readI(bri)] = new VertexPosition(distanceLevel.ReadVector3(read, br, accessor.Type, seek));
                             }
                         }
                         if (vertexBufferBinding.VertexBuffer == null)
@@ -890,10 +912,7 @@ namespace Orts.Viewer3D
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexNormals.Length; i++)
-                            {
-                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexNormals[i] = new VertexNormal(new Vector3(read(br), read(br), read(br)));
-                            }
+                                vertexNormals[i] = new VertexNormal(distanceLevel.ReadVector3(read, br, accessor.Type, seek));
                         }
                         if (accessor.Sparse != null)
                         {
@@ -903,10 +922,7 @@ namespace Orts.Viewer3D
                             {
                                 var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
-                                {
-                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexNormals[readI(bri)] = new VertexNormal(new Vector3(read(br), read(br), read(br)));
-                                }
+                                    vertexNormals[readI(bri)] = new VertexNormal(distanceLevel.ReadVector3(read, br, accessor.Type, seek));
                             }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexNormal), vertexNormals.Length, BufferUsage.None);
@@ -940,10 +956,7 @@ namespace Orts.Viewer3D
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexTextureUvs.Length; i++)
-                            {
-                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexTextureUvs[i] = new VertexTextureDiffuse(new Vector2(read(br), read(br)));
-                            }
+                                vertexTextureUvs[i] = new VertexTextureDiffuse(distanceLevel.ReadVector2(read, br, accessor.Type, seek));
                         }
                         if (accessor.Sparse != null)
                         {
@@ -953,10 +966,7 @@ namespace Orts.Viewer3D
                             {
                                 var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
-                                {
-                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexTextureUvs[readI(bri)] = new VertexTextureDiffuse(new Vector2(read(br), read(br)));
-                                }
+                                    vertexTextureUvs[readI(bri)] = new VertexTextureDiffuse(distanceLevel.ReadVector2(read, br, accessor.Type, seek));
                             }
                         }
                         vertexBufferTextureUvs = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureDiffuse), vertexTextureUvs.Length, BufferUsage.None);
@@ -989,10 +999,7 @@ namespace Orts.Viewer3D
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
-                            {
-                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexData[i] = new VertexTangent(new Vector4(read(br), read(br), read(br), read(br)));
-                            }
+                                vertexData[i] = new VertexTangent(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
                         }
                         if (accessor.Sparse != null)
                         {
@@ -1002,10 +1009,7 @@ namespace Orts.Viewer3D
                             {
                                 var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
-                                {
-                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexData[readI(bri)] = new VertexTangent(new Vector4(read(br), read(br), read(br), read(br)));
-                                }
+                                    vertexData[readI(bri)] = new VertexTangent(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
                             }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTangent), vertexData.Length, BufferUsage.None);
@@ -1044,10 +1048,7 @@ namespace Orts.Viewer3D
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
-                            {
-                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexData[i] = new VertexTextureMetallic(new Vector2(read(br), read(br)));
-                            }
+                                vertexData[i] = new VertexTextureMetallic(distanceLevel.ReadVector2(read, br, accessor.Type, seek));
                         }
                         if (accessor.Sparse != null)
                         {
@@ -1057,10 +1058,7 @@ namespace Orts.Viewer3D
                             {
                                 var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
-                                {
-                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexData[readI(bri)] = new VertexTextureMetallic(new Vector2(read(br), read(br)));
-                                }
+                                    vertexData[readI(bri)] = new VertexTextureMetallic(distanceLevel.ReadVector2(read, br, accessor.Type, seek));
                             }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureMetallic), vertexData.Length, BufferUsage.None);
@@ -1092,14 +1090,14 @@ namespace Orts.Viewer3D
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexJoint[accessor.Count];
-                        var jointsRead = GetIntegerReader(accessor.ComponentType);
+                        var read = GetIntegerReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
                             {
                                 if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexData[i] = new VertexJoint(new Vector4(jointsRead(br), jointsRead(br), jointsRead(br), jointsRead(br)));
+                                vertexData[i] = new VertexJoint(new Vector4(read(br), read(br), read(br), read(br)));
                             }
                         }
                         if (accessor.Sparse != null)
@@ -1112,7 +1110,7 @@ namespace Orts.Viewer3D
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
                                 {
                                     if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexData[readI(bri)] = new VertexJoint(new Vector4(jointsRead(br), jointsRead(br), jointsRead(br), jointsRead(br)));
+                                    vertexData[readI(bri)] = new VertexJoint(new Vector4(read(br), read(br), read(br), read(br)));
                                 }
                             }
                         }
@@ -1132,15 +1130,12 @@ namespace Orts.Viewer3D
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexWeight[accessor.Count];
-                        var weightsRead = GetNormalizedReader(accessor.ComponentType);
+                        var read = GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
-                            {
-                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexData[i] = new VertexWeight(new Vector4(weightsRead(br), weightsRead(br), weightsRead(br), weightsRead(br)));
-                            }
+                                vertexData[i] = new VertexWeight(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
                         }
                         if (accessor.Sparse != null)
                         {
@@ -1150,10 +1145,7 @@ namespace Orts.Viewer3D
                             {
                                 var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
-                                {
-                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexData[readI(bri)] = new VertexWeight(new Vector4(weightsRead(br), weightsRead(br), weightsRead(br), weightsRead(br)));
-                                }
+                                    vertexData[readI(bri)] = new VertexWeight(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
                             }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexWeight), vertexData.Length, BufferUsage.None);
@@ -1177,10 +1169,7 @@ namespace Orts.Viewer3D
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                             for (var i = 0; i < vertexData.Length; i++)
-                            {
-                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexData[i] = new VertexColor4(new Vector4(read(br), read(br), read(br), accessor.Type == Accessor.TypeEnum.VEC3 ? 0 : read(br)));
-                            }
+                                vertexData[i] = new VertexColor4(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
                         }
                         if (accessor.Sparse != null)
                         {
@@ -1190,10 +1179,7 @@ namespace Orts.Viewer3D
                             {
                                 var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
-                                {
-                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexData[readI(bri)] = new VertexColor4(new Vector4(read(br), read(br), read(br), accessor.Type == Accessor.TypeEnum.VEC3 ? 0 : read(br)));
-                                }
+                                    vertexData[readI(bri)] = new VertexColor4(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
                             }
                         }
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexColor4), vertexData.Length, BufferUsage.None);
