@@ -963,7 +963,7 @@ namespace Orts.Simulation.RollingStocks
 
             var status = new StringBuilder();
             // ID
-            status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
+            status.AppendFormat("{0}({1})\t", CarID.Replace(" ", ""), DPUnitID);
             // Throttle
             status.AppendFormat("{0}\t", throttle);
 

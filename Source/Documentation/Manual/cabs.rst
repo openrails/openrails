@@ -478,8 +478,10 @@ Load field. Default is AMPS in a metric environment and KILO_LBS in
 the other cases. Selectable LoadUnits are AMPS, NEWTONS, KILO_NEWTONS, 
 LBS and KILO_KBS.
 
-The screen display can be rotated adding parameter 
+The screen display can be rotated in 2D cabs adding parameter 
 ORTSAngle ( number ) in the ScreenDisplay block. The angle is in degrees.
+
+Info specific for 3D cabs can be found :ref:`here <cabs-distributed-power-3d>` .
 
 For every keyboard command related to Distributed Power, a cabview control 
 is also available. Here's a list of the cabview controls::
@@ -1012,6 +1014,41 @@ Here below is an example of an entry for a 3D cab::
   ScaleRange ( 0 5000 )
   Units ( LBS )
   ) 
+
+
+.. _cabs-distributed-power-3d:
+
+Distributed power display
+-------------------------
+
+Following info applies to the creation of a distributed power display in 2D cabs, in 
+addition to what is described :ref:`here <cabs-distributed-power>` for 2D cabs.
+
+In the 3Dcab .s file an ORTS_DISTRIBUTED_POWER object must be defined, with the same 
+syntax rules of the digitals, so e.g. ORTS_DISTRIBUTED_POWER:0:8:DPI , 
+where 8 is the selected character font size and DPI is the DPI.ace texture associated.
+
+In the folder where the 3D cab files are located (usually CABVIEW3D) such file DPI.ace 
+must be present. A sample file for that can be found in 
+``Documentation\SampleFiles\Manual\DPI.zip`` . Here is how such file looks like
+
+.. image:: images/cabs-dpi-ace.png 
+  :align: center
+  :scale: 80%
+
+Customizations for such file are possible following these rules:
+
+1. Horizontal/vertical ratio must be kept
+2. The first four lines must have the characters centered in their rectangle.
+3. From the 5th line on characters may be also spaced in a thicker way (as is for 
+   the ``Idle`` string in the above picture)
+4. From the 5th line on strings may be replaced bo strings in other national languages, 
+   provided that the new strings aren't wider than the original ones.
+5. It should be possible to have a transparent background if preferred.
+
+
+Except for the first column, fields 
+in the 3D distributed power display are always with center alignment.
 
 Alignment for digital controls
 ------------------------------
