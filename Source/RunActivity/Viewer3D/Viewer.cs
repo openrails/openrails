@@ -218,29 +218,8 @@ namespace Orts.Viewer3D
 
         public CommandLog Log { get { return Simulator.Log; } }
 
-        public bool IsBeforeNoon
-        {
-            get
-            {
-                return Program.Simulator.ClockTime % 86400 < 43200;
-            }
-        }
-        public bool IsDaytime      // After dawn and before dusk, so definitely daytime
-        {
-            get
-            {
-                return (MaterialManager.sunDirection.Y > 0.05f && IsBeforeNoon)
-                || (MaterialManager.sunDirection.Y > 0.15f && !IsBeforeNoon);
-            }
-        }
-        public bool IsNighttime    // Before dawn and after dusk, so definitely nighttime
-        {
-            get
-            {
-                return (MaterialManager.sunDirection.Y < -0.05f && !IsBeforeNoon)
-                || (MaterialManager.sunDirection.Y < -0.15f && IsBeforeNoon);
-            }
-        }
+        public bool DontLoadNightTextures; // Checkbox set and time of day allows not to load textures
+        public bool DontLoadDayTextures; // Checkbox set and time of day allows not to load textures
         public bool NightTexturesNotLoaded; // At least one night texture hasn't been loaded
         public bool DayTexturesNotLoaded; // At least one day texture hasn't been loaded
         public ulong LoadMemoryThreshold; // Above this threshold loader doesn't bulk load day or night textures
@@ -527,9 +506,8 @@ namespace Orts.Viewer3D
                 CameraActivate();
 
             // Prepare the world to be loaded and then load it from the correct thread for debugging/tracing purposes.
-            // This ensures that
-            // a) we have all the required objects loaded when the 3D view first appears and
-            // b) that all loading is performed on a single thread that we can handle in debugging and tracing.
+            // This ensures that a) we have all the required objects loaded when the 3D view first appears and b) that
+            // all loading is performed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
             if (Simulator.Settings.ConditionalLoadOfDayOrNightTextures) // We need to compute sun height only in this case
             {
