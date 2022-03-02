@@ -389,7 +389,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.GetControlMode = () => (TRAIN_CONTROL)(int)Locomotive.Train.ControlMode;
                 Script.NextStationName = () => Locomotive.Train.StationStops != null && Locomotive.Train.StationStops.Count > 0 ? Locomotive.Train.StationStops[0].PlatformItem.Name : "";
                 Script.NextStationDistanceM = () => Locomotive.Train.StationStops != null && Locomotive.Train.StationStops.Count > 0 ? Locomotive.Train.StationStops[0].DistanceToTrainM : float.MaxValue;
-                Script.Locomotive = () => Locomotive;
 
                 // TrainControlSystem functions
                 Script.SpeedCurve = (arg1, arg2, arg3, arg4, arg5) => SpeedCurve(arg1, arg2, arg3, arg4, arg5);

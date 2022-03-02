@@ -184,13 +184,6 @@ namespace Orts.Simulation.Physics
         public float PhysicsTrainLocoDirectionDeg;
         public float ResultantWindComponentDeg;
         public float WindResultantSpeedMpS;
-        public bool TrainWindResistanceDependent
-        {
-            get
-            {
-                return Simulator.Settings.WindResistanceDependent;
-            }
-        }
 
         // Auxiliary Water Tenders
         public float MaxAuxTenderWaterMassKG;
@@ -225,7 +218,6 @@ namespace Orts.Simulation.Physics
         public int IndexNextSignal = -1;                 // Index in SignalObjectItems for next signal
         public int IndexNextSpeedlimit = -1;             // Index in SignalObjectItems for next speedpost
         public SignalObject[] NextSignalObject = new SignalObject[2];  // direct reference to next signal
-        public SignalObject AllowedCallOnSignal;         // Signal for which train has call on allowed by dispatcher
 
         // Local max speed independently from signal and speedpost speed;
         // depends from various parameters like route max speed, overall or section efficiency of service,
@@ -2108,46 +2100,38 @@ namespace Orts.Simulation.Physics
             //These will be representative of the train whilst it is on a straight track, but each wagon will vary when going around a curve.
             // Note both train and wind direction will be positive between 0 (north) and 180 (south) through east, and negative between 0 (north) and 180 (south) through west
             // Wind and train direction to be converted to an angle between 0 and 360 deg.
-            if (TrainWindResistanceDependent)
-            {
-                // Calculate Wind speed and direction, and train direction
-                // Update the value of the Wind Speed and Direction for the train
-                PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindDirection);
-                PhysicsWindSpeedMpS = Simulator.Weather.WindSpeed;
-                float TrainSpeedMpS = Math.Abs(SpeedMpS);
+            // Calculate Wind speed and direction, and train direction
+            // Update the value of the Wind Speed and Direction for the train
+            PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindDirection);
+            PhysicsWindSpeedMpS = Simulator.Weather.WindSpeed;
+            float TrainSpeedMpS = Math.Abs(SpeedMpS);
 
-                // If a westerly direction (ie -ve) convert to an angle between 0 and 360
-                if (PhysicsWindDirectionDeg < 0)
-                    PhysicsWindDirectionDeg += 360;
+            // If a westerly direction (ie -ve) convert to an angle between 0 and 360
+            if (PhysicsWindDirectionDeg < 0)
+                PhysicsWindDirectionDeg += 360;
 
-                if (PhysicsTrainLocoDirectionDeg < 0)
-                    PhysicsTrainLocoDirectionDeg += 360;
+            if (PhysicsTrainLocoDirectionDeg < 0)
+                PhysicsTrainLocoDirectionDeg += 360;
 
-                // calculate angle between train and eind direction
-                if (PhysicsWindDirectionDeg > PhysicsTrainLocoDirectionDeg)
-                    ResultantWindComponentDeg = PhysicsWindDirectionDeg - PhysicsTrainLocoDirectionDeg;
-                else if (PhysicsTrainLocoDirectionDeg > PhysicsWindDirectionDeg)
-                    ResultantWindComponentDeg = PhysicsTrainLocoDirectionDeg - PhysicsWindDirectionDeg;
-                else
-                    ResultantWindComponentDeg = 0.0f;
-
-                // Correct wind direction if it is greater then 360 deg, then correct to a value less then 360
-                if (Math.Abs(ResultantWindComponentDeg) > 360)
-                    ResultantWindComponentDeg = ResultantWindComponentDeg - 360.0f;
-
-                // Wind angle should be kept between 0 and 180 the formulas do not cope with angles > 180. If angle > 180, denotes wind of "other" side of train
-                if (ResultantWindComponentDeg > 180)
-                    ResultantWindComponentDeg = 360 - ResultantWindComponentDeg;
-
-                float WindAngleRad = MathHelper.ToRadians(ResultantWindComponentDeg);
-
-                WindResultantSpeedMpS = (float)Math.Sqrt(TrainSpeedMpS * TrainSpeedMpS + PhysicsWindSpeedMpS * PhysicsWindSpeedMpS + 2.0f * TrainSpeedMpS * PhysicsWindSpeedMpS * (float)Math.Cos(WindAngleRad));
-
-            }
+            // calculate angle between train and eind direction
+            if (PhysicsWindDirectionDeg > PhysicsTrainLocoDirectionDeg)
+                ResultantWindComponentDeg = PhysicsWindDirectionDeg - PhysicsTrainLocoDirectionDeg;
+            else if (PhysicsTrainLocoDirectionDeg > PhysicsWindDirectionDeg)
+                ResultantWindComponentDeg = PhysicsTrainLocoDirectionDeg - PhysicsWindDirectionDeg;
             else
-            {
-                WindResultantSpeedMpS = Math.Abs(SpeedMpS);
-            }
+                ResultantWindComponentDeg = 0.0f;
+
+            // Correct wind direction if it is greater then 360 deg, then correct to a value less then 360
+            if (Math.Abs(ResultantWindComponentDeg) > 360)
+                ResultantWindComponentDeg = ResultantWindComponentDeg - 360.0f;
+
+            // Wind angle should be kept between 0 and 180 the formulas do not cope with angles > 180. If angle > 180, denotes wind of "other" side of train
+            if (ResultantWindComponentDeg > 180)
+                ResultantWindComponentDeg = 360 - ResultantWindComponentDeg;
+
+            float WindAngleRad = MathHelper.ToRadians(ResultantWindComponentDeg);
+
+            WindResultantSpeedMpS = (float)Math.Sqrt(TrainSpeedMpS * TrainSpeedMpS + PhysicsWindSpeedMpS * PhysicsWindSpeedMpS + 2.0f * TrainSpeedMpS * PhysicsWindSpeedMpS * (float)Math.Cos(WindAngleRad));
         }
 
 
@@ -2893,8 +2877,6 @@ namespace Orts.Simulation.Physics
                 // system will take back control of the signal
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
-
-                AllowedCallOnSignal = null;
             }
             UpdateSectionStateManual();                                                           // update track occupation          //
             UpdateManualMode(SignalObjIndex);                                                     // update route clearance           //
@@ -2922,8 +2904,6 @@ namespace Orts.Simulation.Physics
                 // system will take back control of the signal
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
-
-                AllowedCallOnSignal = null;
             }
             UpdateSectionStateExplorer();                                                         // update track occupation          //
             UpdateExplorerMode(SignalObjIndex);                                                   // update route clearance           //
@@ -7456,8 +7436,6 @@ namespace Orts.Simulation.Physics
                     signalObject.holdState = SignalObject.HoldState.None;
                 }
 
-                AllowedCallOnSignal = null;
-
                 signalObject.resetSignalEnabled();
             }
         }
@@ -7609,9 +7587,6 @@ namespace Orts.Simulation.Physics
 
         public virtual bool TestCallOn(SignalObject thisSignal, bool allowOnNonePlatform, TCSubpathRoute thisRoute, string dumpfile)
         {
-            if (AllowedCallOnSignal == thisSignal)
-                return true;
-
             bool intoPlatform = false;
 
             foreach (Train.TCRouteElement routeElement in thisSignal.signalRoute)
@@ -7955,8 +7930,6 @@ namespace Orts.Simulation.Physics
                 //the following is added by JTang, passing a hold signal, will take back control by the system
                 if (thisSignal.holdState == SignalObject.HoldState.ManualPass ||
                     thisSignal.holdState == SignalObject.HoldState.ManualApproach) thisSignal.holdState = SignalObject.HoldState.None;
-
-                AllowedCallOnSignal = null;
 
                 thisSignal.resetSignalEnabled();
             }

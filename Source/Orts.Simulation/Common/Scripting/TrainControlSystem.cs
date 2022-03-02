@@ -300,10 +300,6 @@ namespace ORTS.Scripting.Api
         /// Get distance of next station if any, else max float value
         /// </summary>
         public Func<float> NextStationDistanceM;
-        /// <summary>
-        /// Get locomotive handle
-        /// </summary>
-        public Func<MSTSLocomotive> Locomotive;
 
         /// <summary>
         /// (float targetDistanceM, float targetSpeedMpS, float slope, float delayS, float decelerationMpS2)

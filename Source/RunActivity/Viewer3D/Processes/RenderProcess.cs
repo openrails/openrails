@@ -100,7 +100,7 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             GraphicsDeviceManager.IsFullScreen = Game.Settings.FullScreen;
             GraphicsDeviceManager.PreferMultiSampling = (AntiAliasingMethod)Game.Settings.AntiAliasing != AntiAliasingMethod.None;
-            GraphicsDeviceManager.HardwareModeSwitch = !Game.Settings.FastFullScreenAltTab;
+            GraphicsDeviceManager.HardwareModeSwitch = false; // for fast full-screen Alt-Tab switching
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
         }
 

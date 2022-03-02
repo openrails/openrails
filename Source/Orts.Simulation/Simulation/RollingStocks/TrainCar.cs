@@ -614,10 +614,7 @@ namespace Orts.Simulation.RollingStocks
 
         public float CurrentElevationPercent;
 
-        public bool CurveResistanceDependent;
         public bool CurveSpeedDependent;
-        public bool TunnelResistanceDependent;
-
 
         protected float MaxDurableSafeCurveSpeedMpS;
 
@@ -728,13 +725,11 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void Initialize()
         {
-            CurveResistanceDependent = Simulator.Settings.CurveResistanceDependent;
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
-            TunnelResistanceDependent = Simulator.Settings.TunnelResistanceDependent;
             
             //CurveForceFilter.Initialize();
-            // Initialize tunnel resistance values
 
+            // Initialize tunnel resistance values
             DoubleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelAreaM2;
             SingleTunnelCrossSectAreaM2 = (float)Simulator.TRK.Tr_RouteFile.SingleTunnelAreaM2;
             DoubleTunnelPerimeterM = (float)Simulator.TRK.Tr_RouteFile.DoubleTunnelPerimeterM;
@@ -1118,62 +1113,47 @@ namespace Orts.Simulation.RollingStocks
         {
             if (Train.IsPlayerDriven)   // Only calculate tunnel resistance when it is the player train.
             {
-                if (TunnelResistanceDependent)
+                if (CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue)
                 {
-                    if (CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue)
+                    // Calculate tunnel default effective cross-section area, and tunnel perimeter - based upon the designed speed limit of the railway (TRK File)
+                    float TunnelLengthM = CarTunnelData.LengthMOfTunnelAheadFront.Value + CarTunnelData.LengthMOfTunnelBehindRear.Value;
+                    float TrainLengthTunnelM = Train.Length;
+                    float TrainMassTunnelKg = Train.MassKg;
+                    float PrevTrainCrossSectionAreaM2 = TrainCrossSectionAreaM2;
+                    TrainCrossSectionAreaM2 = CarWidthM * CarHeightM;
+                    if (TrainCrossSectionAreaM2 < PrevTrainCrossSectionAreaM2)
                     {
+                        TrainCrossSectionAreaM2 = PrevTrainCrossSectionAreaM2;  // Assume locomotive cross-sectional area is the largest, if not use new one.
+                    }
+                    const float DensityAirKgpM3 = 1.2f;
 
-                        float? TunnelStart;
-                        float? TunnelAhead;
-                        float? TunnelBehind;
-
-                        TunnelStart = CarTunnelData.FrontPositionBeyondStartOfTunnel;      // position of front of wagon wrt start of tunnel
-                        TunnelAhead = CarTunnelData.LengthMOfTunnelAheadFront;            // Length of tunnel remaining ahead of front of wagon (negative if front of wagon out of tunnel)
-                        TunnelBehind = CarTunnelData.LengthMOfTunnelBehindRear;           // Length of tunnel behind rear of wagon (negative if rear of wagon has not yet entered tunnel)
-
-                        // Calculate tunnel default effective cross-section area, and tunnel perimeter - based upon the designed speed limit of the railway (TRK File)
-
-                        float TunnelLengthM = CarTunnelData.LengthMOfTunnelAheadFront.Value + CarTunnelData.LengthMOfTunnelBehindRear.Value;
-                        float TrainLengthTunnelM = Train.Length;
-                        float TrainMassTunnelKg = Train.MassKg;
-                        float PrevTrainCrossSectionAreaM2 = TrainCrossSectionAreaM2;
-                        TrainCrossSectionAreaM2 = CarWidthM * CarHeightM;
-                        if (TrainCrossSectionAreaM2 < PrevTrainCrossSectionAreaM2)
-                        {
-                            TrainCrossSectionAreaM2 = PrevTrainCrossSectionAreaM2;  // Assume locomotive cross-sectional area is the largest, if not use new one.
-                        }
-                        const float DensityAirKgpM3 = 1.2f;
-
-                        // Determine tunnel X-sect area and perimeter based upon number of tracks
-                        if (CarTunnelData.numTunnelPaths >= 2)
-                        {
-                            TunnelCrossSectionAreaM2 = DoubleTunnelCrossSectAreaM2; // Set values for double track tunnels and above
-                            TunnelPerimeterM = DoubleTunnelPerimeterM;
-                        }
-                        else
-                        {
-                            TunnelCrossSectionAreaM2 = SingleTunnelCrossSectAreaM2; // Set values for single track tunnels
-                            TunnelPerimeterM = SingleTunnelPerimeterAreaM;
-                        }
-
-                        // 
-                        // Calculate first tunnel factor
-
-                        float TunnelAComponent = (0.00003318f * DensityAirKgpM3 * TunnelCrossSectionAreaM2) / ((1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)));
-                        float TunnelBComponent = 174.419f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2));
-                        float TunnelCComponent = (2.907f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2))) / (4.0f * (TunnelCrossSectionAreaM2 / TunnelPerimeterM));
-
-                        float TempTunnel1 = (float)Math.Sqrt(TunnelBComponent + (TunnelCComponent * (TunnelLengthM - TrainLengthTunnelM) / TrainLengthTunnelM));
-                        float TempTunnel2 = (1.0f - (1.0f / (1.0f + TempTunnel1))) * (1.0f - (1.0f / (1.0f + TempTunnel1)));
-
-                        float UnitAerodynamicDrag = ((TunnelAComponent * TrainLengthTunnelM) / Kg.ToTonne(TrainMassTunnelKg)) * TempTunnel2;
-
-                        TunnelForceN = UnitAerodynamicDrag * Kg.ToTonne(MassKG) * AbsSpeedMpS * AbsSpeedMpS;
+                    // Determine tunnel X-sect area and perimeter based upon number of tracks
+                    if (CarTunnelData.numTunnelPaths >= 2)
+                    {
+                        TunnelCrossSectionAreaM2 = DoubleTunnelCrossSectAreaM2; // Set values for double track tunnels and above
+                        TunnelPerimeterM = DoubleTunnelPerimeterM;
                     }
                     else
                     {
-                        TunnelForceN = 0.0f; // Reset tunnel force to zero when train is no longer in the tunnel
+                        TunnelCrossSectionAreaM2 = SingleTunnelCrossSectAreaM2; // Set values for single track tunnels
+                        TunnelPerimeterM = SingleTunnelPerimeterAreaM;
                     }
+
+                    // Calculate first tunnel factor
+                    float TunnelAComponent = (0.00003318f * DensityAirKgpM3 * TunnelCrossSectionAreaM2) / ((1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)));
+                    float TunnelBComponent = 174.419f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2));
+                    float TunnelCComponent = (2.907f * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2)) * (1 - (TrainCrossSectionAreaM2 / TunnelCrossSectionAreaM2))) / (4.0f * (TunnelCrossSectionAreaM2 / TunnelPerimeterM));
+
+                    float TempTunnel1 = (float)Math.Sqrt(TunnelBComponent + (TunnelCComponent * (TunnelLengthM - TrainLengthTunnelM) / TrainLengthTunnelM));
+                    float TempTunnel2 = (1.0f - (1.0f / (1.0f + TempTunnel1))) * (1.0f - (1.0f / (1.0f + TempTunnel1)));
+
+                    float UnitAerodynamicDrag = ((TunnelAComponent * TrainLengthTunnelM) / Kg.ToTonne(TrainMassTunnelKg)) * TempTunnel2;
+
+                    TunnelForceN = UnitAerodynamicDrag * Kg.ToTonne(MassKG) * AbsSpeedMpS * AbsSpeedMpS;
+                }
+                else
+                {
+                    TunnelForceN = 0.0f; // Reset tunnel force to zero when train is no longer in the tunnel
                 }
             }
         }
@@ -1791,232 +1771,228 @@ namespace Orts.Simulation.RollingStocks
 
             // get curve radius
 
-            if (CurveSpeedDependent || CurveResistanceDependent)  // Function enabled by menu selection for either curve resistance or curve speed limit
+            if (CurrentCurveRadius > 0)  // only check curve speed if it is a curve
             {
+                float SpeedToleranceMpS = Me.FromMi(pS.FrompH(2.5f));  // Set bandwidth tolerance for resetting notifications
 
-
-                if (CurrentCurveRadius > 0)  // only check curve speed if it is a curve
+                // If super elevation set in Route (TRK) file
+                if (Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
                 {
-                    float SpeedToleranceMpS =  Me.FromMi( pS.FrompH(2.5f));  // Set bandwidth tolerance for resetting notifications
-                    
-                    // If super elevation set in Route (TRK) file
-                    if (Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
+                    SuperelevationM = Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[CurrentCurveRadius];
+
+                }
+                else
+                {
+                    // Set to OR default values
+                    if (CurrentCurveRadius > 2000)
                     {
-                        SuperelevationM = Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[CurrentCurveRadius];
+                        if (RouteSpeedMpS > 55.0)   // If route speed limit is greater then 200km/h, assume high speed passenger route
+                        {
+                            // Calculate superelevation based upon the route speed limit and the curve radius
+                            // SE = ((TrackGauge x Velocity^2 ) / Gravity x curve radius)
+
+                            SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadius);
+
+                        }
+                        else
+                        {
+                            SuperelevationM = 0.0254f;  // Assume minimal superelevation if conventional mixed route
+                        }
 
                     }
-                    else
+                    // Set Superelevation value - based upon standard figures
+                    else if (CurrentCurveRadius <= 2000 & CurrentCurveRadius > 1600)
                     {
-                        // Set to OR default values
-                        if (CurrentCurveRadius > 2000)
-                        {
-                            if (RouteSpeedMpS > 55.0)   // If route speed limit is greater then 200km/h, assume high speed passenger route
-                            {
-                                // Calculate superelevation based upon the route speed limit and the curve radius
-                                // SE = ((TrackGauge x Velocity^2 ) / Gravity x curve radius)
-
-                                SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadius);
-
-                            }
-                            else
-                            {
-                                SuperelevationM = 0.0254f;  // Assume minimal superelevation if conventional mixed route
-                            }
-
-                        }
-                        // Set Superelevation value - based upon standard figures
-                        else if (CurrentCurveRadius <= 2000 & CurrentCurveRadius > 1600)
-                        {
-                            SuperelevationM = 0.0254f;  // Assume 1" (or 0.0254m)
-                        }
-                        else if (CurrentCurveRadius <= 1600 & CurrentCurveRadius > 1200)
-                        {
-                            SuperelevationM = 0.038100f;  // Assume 1.5" (or 0.038100m)
-                        }
-                        else if (CurrentCurveRadius <= 1200 & CurrentCurveRadius > 1000)
-                        {
-                            SuperelevationM = 0.050800f;  // Assume 2" (or 0.050800m)
-                        }
-                        else if (CurrentCurveRadius <= 1000 & CurrentCurveRadius > 800)
-                        {
-                            SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
-                        }
-                        else if (CurrentCurveRadius <= 800 & CurrentCurveRadius > 600)
-                        {
-                            SuperelevationM = 0.0889f;  // Assume 3.5" (or 0.0889m)
-                        }
-                        else if (CurrentCurveRadius <= 600 & CurrentCurveRadius > 500)
-                        {
-                            SuperelevationM = 0.1016f;  // Assume 4" (or 0.1016m)
-                        }
-                        // for tighter radius curves assume on branch lines and less superelevation
-                        else if (CurrentCurveRadius <= 500 & CurrentCurveRadius > 280)
-                        {
-                            SuperelevationM = 0.0889f;  // Assume 3" (or 0.0762m)
-                        }
-                        else if (CurrentCurveRadius <= 280 & CurrentCurveRadius > 0)
-                        {
-                            SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
-                        }
+                        SuperelevationM = 0.0254f;  // Assume 1" (or 0.0254m)
                     }
+                    else if (CurrentCurveRadius <= 1600 & CurrentCurveRadius > 1200)
+                    {
+                        SuperelevationM = 0.038100f;  // Assume 1.5" (or 0.038100m)
+                    }
+                    else if (CurrentCurveRadius <= 1200 & CurrentCurveRadius > 1000)
+                    {
+                        SuperelevationM = 0.050800f;  // Assume 2" (or 0.050800m)
+                    }
+                    else if (CurrentCurveRadius <= 1000 & CurrentCurveRadius > 800)
+                    {
+                        SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
+                    }
+                    else if (CurrentCurveRadius <= 800 & CurrentCurveRadius > 600)
+                    {
+                        SuperelevationM = 0.0889f;  // Assume 3.5" (or 0.0889m)
+                    }
+                    else if (CurrentCurveRadius <= 600 & CurrentCurveRadius > 500)
+                    {
+                        SuperelevationM = 0.1016f;  // Assume 4" (or 0.1016m)
+                    }
+                    // for tighter radius curves assume on branch lines and less superelevation
+                    else if (CurrentCurveRadius <= 500 & CurrentCurveRadius > 280)
+                    {
+                        SuperelevationM = 0.0889f;  // Assume 3" (or 0.0762m)
+                    }
+                    else if (CurrentCurveRadius <= 280 & CurrentCurveRadius > 0)
+                    {
+                        SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
+                    }
+                }
 
 #if DEBUG_USER_SUPERELEVATION
                        Trace.TraceInformation(" ============================================= User SuperElevation (TrainCar.cs) ========================================");
                         Trace.TraceInformation("CarID {0} TrackSuperElevation {1} Curve Radius {2}",  CarID, SuperelevationM, CurrentCurveRadius);
 #endif
 
-                    // Calulate equal wheel loading speed for current curve and superelevation - this was considered the "safe" speed to travel around a curve . In this instance the load on the both railes is evenly distributed.
-                    // max equal load speed = SQRT ( (superelevation x gravity x curve radius) / track gauge)
-                    // SuperElevation is made up of two components = rail superelevation + the amount of sideways force that a passenger will be comfortable with. This is expressed as a figure similar to superelevation.
+                // Calulate equal wheel loading speed for current curve and superelevation - this was considered the "safe" speed to travel around a curve . In this instance the load on the both railes is evenly distributed.
+                // max equal load speed = SQRT ( (superelevation x gravity x curve radius) / track gauge)
+                // SuperElevation is made up of two components = rail superelevation + the amount of sideways force that a passenger will be comfortable with. This is expressed as a figure similar to superelevation.
 
-                    SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.0001f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value, having a value of zero causes problems with calculations
+                SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.0001f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value, having a value of zero causes problems with calculations
 
-                    SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Balanced superelevation only angle
+                SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Balanced superelevation only angle
 
-                    MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM); // Used for calculating curve resistance
+                MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM); // Used for calculating curve resistance
 
-                    // Railway companies often allow the vehicle to exceed the equal loading speed, provided that the passengers didn't feel uncomfortable, and that the car was not likely to excced the maximum critical speed
-                    SuperElevationTotalM = SuperelevationM + UnbalancedSuperElevationM;
+                // Railway companies often allow the vehicle to exceed the equal loading speed, provided that the passengers didn't feel uncomfortable, and that the car was not likely to excced the maximum critical speed
+                SuperElevationTotalM = SuperelevationM + UnbalancedSuperElevationM;
 
-                    float SuperElevationTotalAngleRad = (float)Math.Sinh(SuperElevationTotalM); // Total superelevation includes both balanced and unbalanced superelevation
+                float SuperElevationTotalAngleRad = (float)Math.Sinh(SuperElevationTotalM); // Total superelevation includes both balanced and unbalanced superelevation
 
-                    float MaxSafeCurveSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
+                float MaxSafeCurveSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
 
-                    // Calculate critical speed - indicates the speed above which stock will overturn - sum of the moments of centrifrugal force and the vertical weight of the vehicle around the CoG
-                    // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
-                    // centrifrugal force = Stock Weight x factor for movement of resultant force due to superelevation.
+                // Calculate critical speed - indicates the speed above which stock will overturn - sum of the moments of centrifrugal force and the vertical weight of the vehicle around the CoG
+                // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
+                // centrifrugal force = Stock Weight x factor for movement of resultant force due to superelevation.
 
-                    float SinTheta = (float)Math.Sin(SuperElevationAngleRad);
-                    float CosTheta = (float)Math.Cos(SuperElevationAngleRad);
-                    float HalfTrackGaugeM = TrackGaugeM / 2.0f;
+                float SinTheta = (float)Math.Sin(SuperElevationAngleRad);
+                float CosTheta = (float)Math.Cos(SuperElevationAngleRad);
+                float HalfTrackGaugeM = TrackGaugeM / 2.0f;
 
-                    float CriticalMaxSpeedMpS = (float)Math.Sqrt((CurrentCurveRadius * GravitationalAccelerationMpS2 * (CentreOfGravityM.Y * SinTheta + HalfTrackGaugeM * CosTheta)) / (CentreOfGravityM.Y * CosTheta - HalfTrackGaugeM * SinTheta));
+                float CriticalMaxSpeedMpS = (float)Math.Sqrt((CurrentCurveRadius * GravitationalAccelerationMpS2 * (CentreOfGravityM.Y * SinTheta + HalfTrackGaugeM * CosTheta)) / (CentreOfGravityM.Y * CosTheta - HalfTrackGaugeM * SinTheta));
 
-                    float Sin2Theta = 0.5f * (1 - (float)Math.Cos(2.0 * SuperElevationAngleRad));
-                    float CriticalMinSpeedMpS = (float)Math.Sqrt((GravitationalAccelerationMpS2 * CurrentCurveRadius * HalfTrackGaugeM * Sin2Theta) / (CosTheta * (CentreOfGravityM.Y * CosTheta + HalfTrackGaugeM * SinTheta)));
+                float Sin2Theta = 0.5f * (1 - (float)Math.Cos(2.0 * SuperElevationAngleRad));
+                float CriticalMinSpeedMpS = (float)Math.Sqrt((GravitationalAccelerationMpS2 * CurrentCurveRadius * HalfTrackGaugeM * Sin2Theta) / (CosTheta * (CentreOfGravityM.Y * CosTheta + HalfTrackGaugeM * SinTheta)));
 
-                    if (CurveSpeedDependent)
+                if (CurveSpeedDependent) // Function enabled by menu selection for curve speed limit
+                {
+
+                    // This section not required any more???????????
+                    // This section tests for the durability value of the consist. Durability value will non-zero if read from consist files. 
+                    // Timetable mode does not read consistent durability values for consists, and therefore value will be zero at this time. 
+                    // Hence a large value of durability (10.0) is assumed, thus effectively disabling it in TT mode
+                    //                        if (Simulator.CurveDurability != 0.0)
+                    //                        {
+                    //                            MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * Simulator.CurveDurability;  // Finds user setting for durability
+                    //                        }
+                    //                        else
+                    //                        {
+                    //                            MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * 10.0f;  // Value of durability has not been set, so set to a large value
+                    //                        }
+
+                    // Test current speed to see if greater then equal loading speed around the curve
+                    if (s > MaxSafeCurveSpeedMps)
                     {
-                        
-                        // This section not required any more???????????
-                        // This section tests for the durability value of the consist. Durability value will non-zero if read from consist files. 
-                        // Timetable mode does not read consistent durability values for consists, and therefore value will be zero at this time. 
-                        // Hence a large value of durability (10.0) is assumed, thus effectively disabling it in TT mode
-                        //                        if (Simulator.CurveDurability != 0.0)
-                        //                        {
-                        //                            MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * Simulator.CurveDurability;  // Finds user setting for durability
-                        //                        }
-                        //                        else
-                        //                        {
-                        //                            MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * 10.0f;  // Value of durability has not been set, so set to a large value
-                        //                        }
-
-                        // Test current speed to see if greater then equal loading speed around the curve
-                        if (s > MaxSafeCurveSpeedMps)
+                        if (!IsMaxSafeCurveSpeed)
                         {
-                            if (!IsMaxSafeCurveSpeed)
+                            IsMaxSafeCurveSpeed = true; // set flag for IsMaxSafeCurveSpeed reached
+
+                            if (Train.IsPlayerDriven && !Simulator.TimetableMode)    // Warning messages will only apply if this is player train and not running in TT mode
                             {
-                                IsMaxSafeCurveSpeed = true; // set flag for IsMaxSafeCurveSpeed reached
-
-                                if (Train.IsPlayerDriven && !Simulator.TimetableMode)    // Warning messages will only apply if this is player train and not running in TT mode
+                                if (Train.IsFreight)
                                 {
-                                    if (Train.IsFreight)
-                                    {
-                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your freight car {0} may be damaged. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric) ));
-                                    }
-                                    else
-                                    {
-                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your passengers in car {0} are feeling uncomfortable. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric))); 
-                                    }
-
-                                    if (dbfmaxsafecurvespeedmps != MaxSafeCurveSpeedMps)//Debrief eval
-                                    {
-                                        dbfmaxsafecurvespeedmps = MaxSafeCurveSpeedMps;
-                                        //ldbfevalcurvespeed = true;
-                                        DbfEvalTravellingTooFast++;
-                                        train.DbfEvalValueChanged = true;//Debrief eval
-                                    }
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your freight car {0} may be damaged. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric)));
+                                }
+                                else
+                                {
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your passengers in car {0} are feeling uncomfortable. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric)));
                                 }
 
-                            }
-                        }
-                        else if ( s < MaxSafeCurveSpeedMps - SpeedToleranceMpS)  // Reset notification once spped drops
-                        {
-                            if (IsMaxSafeCurveSpeed)
-                            {
-                                IsMaxSafeCurveSpeed = false; // reset flag for IsMaxSafeCurveSpeed reached - if speed on curve decreases
-
-
-                            }
-                        }
-
-                        // If speed exceeds the overturning speed, then indicated that an error condition has been reached.
-                        if (s > CriticalMaxSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain)) // Breaking of brake hose will not apply to TT mode or AI trains)
-                        {
-                            if (!IsCriticalMaxSpeed)
-                            {
-                                IsCriticalMaxSpeed = true; // set flag for IsCriticalSpeed reached
-
-                                if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
+                                if (dbfmaxsafecurvespeedmps != MaxSafeCurveSpeedMps)//Debrief eval
                                 {
-                                    BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
-                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose on Car " + CarID + ". You will need to repair the hose and restart."));
-
-                                    dbfEvalsnappedbrakehose = true;//Debrief eval
-
-                                    if (!ldbfevaltrainoverturned)
-                                    {
-                                        ldbfevaltrainoverturned = true;
-                                        DbfEvalTrainOverturned++;
-                                        train.DbfEvalValueChanged = true;//Debrief eval
-                                    }
-                                }
-                            }
-
-                        }
-                        else if ( s < CriticalMaxSpeedMpS - SpeedToleranceMpS) // Reset notification once speed drops
-                        {
-                            if (IsCriticalMaxSpeed)
-                            {
-                                IsCriticalMaxSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
-                                ldbfevaltrainoverturned = false;
-
-                                if (dbfEvalsnappedbrakehose)
-                                {
-                                    DbfEvalTravellingTooFastSnappedBrakeHose++;//Debrief eval
-                                    dbfEvalsnappedbrakehose = false;
+                                    dbfmaxsafecurvespeedmps = MaxSafeCurveSpeedMps;
+                                    //ldbfevalcurvespeed = true;
+                                    DbfEvalTravellingTooFast++;
                                     train.DbfEvalValueChanged = true;//Debrief eval
                                 }
+                            }
 
+                        }
+                    }
+                    else if (s < MaxSafeCurveSpeedMps - SpeedToleranceMpS)  // Reset notification once spped drops
+                    {
+                        if (IsMaxSafeCurveSpeed)
+                        {
+                            IsMaxSafeCurveSpeed = false; // reset flag for IsMaxSafeCurveSpeed reached - if speed on curve decreases
+
+
+                        }
+                    }
+
+                    // If speed exceeds the overturning speed, then indicated that an error condition has been reached.
+                    if (s > CriticalMaxSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain)) // Breaking of brake hose will not apply to TT mode or AI trains)
+                    {
+                        if (!IsCriticalMaxSpeed)
+                        {
+                            IsCriticalMaxSpeed = true; // set flag for IsCriticalSpeed reached
+
+                            if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
+                            {
+                                BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose on Car " + CarID + ". You will need to repair the hose and restart."));
+
+                                dbfEvalsnappedbrakehose = true;//Debrief eval
+
+                                if (!ldbfevaltrainoverturned)
+                                {
+                                    ldbfevaltrainoverturned = true;
+                                    DbfEvalTrainOverturned++;
+                                    train.DbfEvalValueChanged = true;//Debrief eval
+                                }
                             }
                         }
 
+                    }
+                    else if (s < CriticalMaxSpeedMpS - SpeedToleranceMpS) // Reset notification once speed drops
+                    {
+                        if (IsCriticalMaxSpeed)
+                        {
+                            IsCriticalMaxSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
+                            ldbfevaltrainoverturned = false;
 
-                        // This alarm indication comes up even in shunting yard situations where typically no superelevation would be present.
-                        // Code is disabled until a bteer way is determined to work out whether track piees are superelevated or not.
+                            if (dbfEvalsnappedbrakehose)
+                            {
+                                DbfEvalTravellingTooFastSnappedBrakeHose++;//Debrief eval
+                                dbfEvalsnappedbrakehose = false;
+                                train.DbfEvalValueChanged = true;//Debrief eval
+                            }
 
-                        // if speed doesn't reach minimum speed required around the curve then set notification
-                       // Breaking of brake hose will not apply to TT mode or AI trains or if on a curve less then 150m to cover operation in shunting yards, where track would mostly have no superelevation
-//                        if (s < CriticalMinSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain) && CurrentCurveRadius > 150 ) 
-//                       {
-//                            if (!IsCriticalMinSpeed)
-//                            {
-//                                IsCriticalMinSpeed = true; // set flag for IsCriticalSpeed not reached
-//
-//                                if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
-//                                {
-//                                      Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too slow for this curve, and Car " + CarID + "may topple over."));
-//                                }
-//                            }
-//
-//                        }
-//                        else if (s > CriticalMinSpeedMpS + SpeedToleranceMpS) // Reset notification once speed increases
-//                        {
-//                            if (IsCriticalMinSpeed)
-//                            {
-//                                IsCriticalMinSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
-//                            }
-//                        }
+                        }
+                    }
+
+
+                    // This alarm indication comes up even in shunting yard situations where typically no superelevation would be present.
+                    // Code is disabled until a bteer way is determined to work out whether track piees are superelevated or not.
+
+                    // if speed doesn't reach minimum speed required around the curve then set notification
+                    // Breaking of brake hose will not apply to TT mode or AI trains or if on a curve less then 150m to cover operation in shunting yards, where track would mostly have no superelevation
+                    //                        if (s < CriticalMinSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain) && CurrentCurveRadius > 150 ) 
+                    //                       {
+                    //                            if (!IsCriticalMinSpeed)
+                    //                            {
+                    //                                IsCriticalMinSpeed = true; // set flag for IsCriticalSpeed not reached
+                    //
+                    //                                if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
+                    //                                {
+                    //                                      Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too slow for this curve, and Car " + CarID + "may topple over."));
+                    //                                }
+                    //                            }
+                    //
+                    //                        }
+                    //                        else if (s > CriticalMinSpeedMpS + SpeedToleranceMpS) // Reset notification once speed increases
+                    //                        {
+                    //                            if (IsCriticalMinSpeed)
+                    //                            {
+                    //                                IsCriticalMinSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
+                    //                            }
+                    //                        }
 
 #if DEBUG_CURVE_SPEED
                    Trace.TraceInformation("================================== TrainCar.cs - DEBUG_CURVE_SPEED ==============================================================");
@@ -2025,21 +2001,20 @@ namespace Orts.Simulation.RollingStocks
                    Trace.TraceInformation("Current Speed {0} Equal Load Speed {1} Max Safe Speed {2} Critical Max Speed {3} Critical Min Speed {4}", MpS.ToMpH(s), MpS.ToMpH(MaxCurveEqualLoadSpeedMps), MpS.ToMpH(MaxSafeCurveSpeedMps), MpS.ToMpH(CriticalMaxSpeedMpS), MpS.ToMpH(CriticalMinSpeedMpS));
                    Trace.TraceInformation("IsMaxSafeSpeed {0} IsCriticalSpeed {1}", IsMaxSafeCurveSpeed, IsCriticalSpeed);
 #endif
-                    }
+                }
 
-                }
-                else
-                {
-                    // reset flags if train is on a straight - in preparation for next curve
-                    IsCriticalMaxSpeed = false;   // reset flag for IsCriticalMaxSpeed reached
-                    IsCriticalMinSpeed = false;   // reset flag for IsCriticalMinSpeed reached
-                    IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
-                }
             }
+            else
+            {
+                // reset flags if train is on a straight - in preparation for next curve
+                IsCriticalMaxSpeed = false;   // reset flag for IsCriticalMaxSpeed reached
+                IsCriticalMinSpeed = false;   // reset flag for IsCriticalMinSpeed reached
+                IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
+            }
+
         }
 
         #endregion
-
     
         #region Calculate friction force in curves
 
@@ -2050,108 +2025,94 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public virtual void UpdateCurveForce(float elapsedClockSeconds)
         {
-            if (CurveResistanceDependent)
+            if (CurrentCurveRadius > 0)
             {
+                if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
+                {                        
+                    float Axles = WheelAxles.Count;
+                    float Bogies = Parts.Count - 1;
+                    float BogieSize = Axles / Bogies;
 
-                if (CurrentCurveRadius > 0)
-                {
+                    RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
 
-                    if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
+                    // Calculate the number of axles in a car
+
+                    if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
                     {
-
-                        
-                        float Axles = WheelAxles.Count;
-                        float Bogies = Parts.Count - 1;
-                        float BogieSize = Axles / Bogies;
-
-                        RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
-
-                        // Calculate the number of axles in a car
-
-                        if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
+                        if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
                         {
-
-                            if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
+                            if (Axles == 2)
                             {
-                                if (Axles == 2)
-                                {
-                                    RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
-                                }
-                                else if (Axles == 3)
-                                {
-                                    RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
-                                }
+                                RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
                             }
-                            else if (Bogies == 2)
+                            else if (Axles == 3)
                             {
-                                if (Axles == 2)
-                                {
-                                    if (WagonType == WagonTypes.Passenger)
-                                    {
-
-                                        RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
-                                    }
-                                    else
-                                    {
-                                        RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
-                                    }
-                                }
-                                else if (Axles == 3)
-                                {
-                                    RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
-                                }
+                                RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
                             }
-
                         }
-                        if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
+                        else if (Bogies == 2)
                         {
-                            if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
+                            if (Axles == 2)
                             {
-                                if (Axles == 2)
+                                if (WagonType == WagonTypes.Passenger)
                                 {
-                                    RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+                                    RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
                                 }
-                                else if (Axles == 3)
+                                else
                                 {
-                                    RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
+                                    RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
                                 }
                             }
-                            else // assume steam locomotive
+                            else if (Axles == 3)
                             {
-
-                                if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
-                                {
-                                    LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
-                                }
-
-                                //    Approximation for calculating rigid wheelbase for steam locomotives
-                                // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
-
-                                RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
- 
+                                RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
                             }
-
                         }
-
-
                     }
+                    if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
+                    {
+                        if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
+                        {
+                            if (Axles == 2)
+                            {
+                                RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+                            }
+                            else if (Axles == 3)
+                            {
+                                RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
+                            }
+                        }
+                        else // assume steam locomotive
+                        {
 
-                    // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
-                    // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
+                            if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
+                            {
+                                LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
+                            }
 
-                    CurveForceN = MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
-                    float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
-                    CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
-                    CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
+                            //    Approximation for calculating rigid wheelbase for steam locomotives
+                            // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
+
+                            RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f); 
+                        }
+                    }
                 }
-                else
-                {
-                    CurveForceN = 0f;
-                }
-                //CurveForceNFiltered = CurveForceFilter.Filter(CurveForceN, elapsedClockSeconds);
-                CurveForceFilter.Update(elapsedClockSeconds, CurveForceN);
-                CurveForceNFiltered = CurveForceFilter.SmoothedValue;
+
+                // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
+                // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
+
+                CurveForceN = MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
+                float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
+                CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
+                CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
             }
+            else
+            {
+                CurveForceN = 0f;
+            }
+            //CurveForceNFiltered = CurveForceFilter.Filter(CurveForceN, elapsedClockSeconds);
+            CurveForceFilter.Update(elapsedClockSeconds, CurveForceN);
+            CurveForceNFiltered = CurveForceFilter.SmoothedValue;
         }
 
         #endregion
@@ -2865,7 +2826,7 @@ namespace Orts.Simulation.RollingStocks
                     continue;
                 if (p.SumWgt < 1.5)
                 {   // single axle pony trunk
-                    float d = p.OffsetM - p.SumOffset / p.SumWgt;
+                    double d = p.OffsetM - p.SumOffset / p.SumWgt;
                     if (-.2 < d && d < .2)
                         continue;
                     p.AddWheelSetLocation(1, p.OffsetM, p0.A[0] + p.OffsetM * p0.B[0], p0.A[1] + p.OffsetM * p0.B[1], p0.A[2] + p.OffsetM * p0.B[2], 0, null);
@@ -3382,11 +3343,11 @@ namespace Orts.Simulation.RollingStocks
         public float Cos = 1;       // truck angle cosine
         public float Sin = 0;       // truck angle sin
         // line fitting variables
-        public float SumWgt;
-        public float SumOffset;
-        public float SumOffsetSq;
-        public float[] SumX = new float[4];
-        public float[] SumXOffset = new float[4];
+        public double SumWgt;
+        public double SumOffset;
+        public double SumOffsetSq;
+        public double[] SumX = new double[4];
+        public double[] SumXOffset = new double[4];
         public float[] A = new float[4];
         public float[] B = new float[4];
         public bool bogie;
@@ -3429,20 +3390,20 @@ namespace Orts.Simulation.RollingStocks
         }
         public void FindCenterLine()
         {
-            float d = SumWgt * SumOffsetSq - SumOffset * SumOffset;
+            double d = SumWgt * SumOffsetSq - SumOffset * SumOffset;
             if (d > 1e-20)
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    A[i] = (SumOffsetSq * SumX[i] - SumOffset * SumXOffset[i]) / d;
-                    B[i] = (SumWgt * SumXOffset[i] - SumOffset * SumX[i]) / d;
+                    A[i] = (float)((SumOffsetSq * SumX[i] - SumOffset * SumXOffset[i]) / d);
+                    B[i] = (float)((SumWgt * SumXOffset[i] - SumOffset * SumX[i]) / d);
                 }
             }
             else
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    A[i] = SumX[i] / SumWgt;
+                    A[i] = (float)(SumX[i] / SumWgt);
                     B[i] = 0;
                 }
             }
