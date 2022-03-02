@@ -68,11 +68,8 @@ namespace Orts.Viewer3D
 
         public Orts.Viewer3D.SkyViewer.Date date;
 
-        // Size of the sun- and moon-position lookup table arrays.
-        // Must be an integral divisor of 1440 (which is the number of minutes in a day).
-        private int maxSteps = 72;
-        private double mstsskyoldClockTime;
-        private int step1, step2;
+        private SkySteps skySteps = new SkySteps();
+
         // Phase of the moon
         public int mstsskymoonPhase;
         // Wind speed and direction
@@ -128,11 +125,11 @@ namespace Orts.Viewer3D
             {
                 // First time around, initialize the following items:
                 mstsskyworldLoc = new WorldLatLon();
-                mstsskyoldClockTime = MSTSSkyViewer.Simulator.ClockTime % 86400;
-                while (mstsskyoldClockTime < 0) mstsskyoldClockTime += 86400;
-                step1 = step2 = (int)(mstsskyoldClockTime / 1200);
-                step2 = step2 < maxSteps - 1 ? step2 + 1 : 0; // limit to max. steps in case activity starts near midnight
-                // Get the current latitude and longitude coordinates
+                skySteps.OldClockTime = MSTSSkyViewer.Simulator.ClockTime % 86400;
+                while (skySteps.OldClockTime < 0) skySteps.OldClockTime += 86400;
+                skySteps.Step1 = skySteps.Step2 = (int)(skySteps.OldClockTime / 1200);
+                skySteps.Step2 = skySteps.Step2 < skySteps.MaxSteps - 1 ? skySteps.Step2 + 1 : 0; // limit to max. steps in case activity starts near midnight
+                                                                                                  // Get the current latitude and longitude coordinates
                 mstsskyworldLoc.ConvertWTC(MSTSSkyViewer.Camera.TileX, MSTSSkyViewer.Camera.TileZ, MSTSSkyViewer.Camera.Location, ref mstsskylatitude, ref mstsskylongitude);
                 if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
                 {
@@ -144,10 +141,10 @@ namespace Orts.Viewer3D
                     date.year = 2017;
                 }
                 // Fill in the sun- and moon-position lookup tables
-                for (int i = 0; i < maxSteps; i++)
+                for (int i = 0; i < skySteps.MaxSteps; i++)
                 {
-                    mstsskysolarPosArray[i] = SunMoonPos.SolarAngle(mstsskylatitude, mstsskylongitude, ((float)i / maxSteps), date);
-                    mstsskylunarPosArray[i] = SunMoonPos.LunarAngle(mstsskylatitude, mstsskylongitude, ((float)i / maxSteps), date);
+                    mstsskysolarPosArray[i] = SunMoonPos.SolarAngle(mstsskylatitude, mstsskylongitude, ((float)i / skySteps.MaxSteps), date);
+                    mstsskylunarPosArray[i] = SunMoonPos.LunarAngle(mstsskylatitude, mstsskylongitude, ((float)i / skySteps.MaxSteps), date);
                 }
                 // Phase of the moon is generated at random
                 mstsskymoonPhase = Viewer.Random.Next(8);
@@ -209,58 +206,14 @@ namespace Orts.Viewer3D
                 }
             }
 
-            ////////////////////////////////////////////////////////////////////
-
-            // Current solar and lunar position are calculated by interpolation in the lookup arrays.
-            // Using the Lerp() function, so need to calculate the in-between differential
-            float diff = (float)(MSTSSkyViewer.Simulator.ClockTime - mstsskyoldClockTime) / 1200;
-            // The rest of this increments/decrements the array indices and checks for overshoot/undershoot.
-            if (MSTSSkyViewer.Simulator.ClockTime >= (mstsskyoldClockTime + 1200)) // Plus key, or normal forward in time
-            {
-                step1++;
-                step2++;
-                mstsskyoldClockTime = MSTSSkyViewer.Simulator.ClockTime;
-                diff = 0;
-                if (step2 >= maxSteps) // Midnight.
-                {
-                    step2 = 0;
-                }
-                if (step1 >= maxSteps) // Midnight.
-                {
-                    step1 = 0;
-                }
-            }
-            if (MSTSSkyViewer.Simulator.ClockTime <= (mstsskyoldClockTime - 1200)) // Minus key
-            {
-                step1--;
-                step2--;
-                mstsskyoldClockTime = MSTSSkyViewer.Simulator.ClockTime;
-                diff = 0;
-                if (step1 < 0) // Midnight.
-                {
-                    step1 = maxSteps - 1;
-                }
-                if (step2 < 0) // Midnight.
-                {
-                    step2 = maxSteps - 1;
-                }
-            }
-
-
-            mstsskysolarDirection.X = MathHelper.Lerp(mstsskysolarPosArray[step1].X, mstsskysolarPosArray[step2].X, diff);
-            mstsskysolarDirection.Y = MathHelper.Lerp(mstsskysolarPosArray[step1].Y, mstsskysolarPosArray[step2].Y, diff);
-            mstsskysolarDirection.Z = MathHelper.Lerp(mstsskysolarPosArray[step1].Z, mstsskysolarPosArray[step2].Z, diff);
-            mstsskylunarDirection.X = MathHelper.Lerp(mstsskylunarPosArray[step1].X, mstsskylunarPosArray[step2].X, diff);
-            mstsskylunarDirection.Y = MathHelper.Lerp(mstsskylunarPosArray[step1].Y, mstsskylunarPosArray[step2].Y, diff);
-            mstsskylunarDirection.Z = MathHelper.Lerp(mstsskylunarPosArray[step1].Z, mstsskylunarPosArray[step2].Z, diff);
+            skySteps.SetSunAndMoonDirection(ref mstsskysolarDirection, ref mstsskylunarDirection, ref mstsskysolarPosArray, ref mstsskylunarPosArray,
+                MSTSSkyViewer.Simulator.ClockTime);
 
             frame.AddPrimitive(MSTSSkyMaterial, MSTSSkyMesh, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
         }
 
         public void LoadPrep()
         {
-
-
             mstsskyworldLoc = new WorldLatLon();
             // Get the current latitude and longitude coordinates
             mstsskyworldLoc.ConvertWTC(MSTSSkyViewer.Camera.TileX, MSTSSkyViewer.Camera.TileZ, MSTSSkyViewer.Camera.Location, ref mstsskylatitude, ref mstsskylongitude);
@@ -274,7 +227,6 @@ namespace Orts.Viewer3D
             mstsskyworldLoc = null;
             mstsskylatitude = 0;
             mstsskylongitude = 0;
-
         }
 
         [CallOnThread("Loader")]

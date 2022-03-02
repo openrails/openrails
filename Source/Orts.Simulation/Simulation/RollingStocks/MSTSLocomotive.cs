@@ -341,8 +341,8 @@ namespace Orts.Simulation.RollingStocks
         public float EngineBrakeApplyRatePSIpS = 12.5f;
         public float BrakePipeTimeFactorS = 0.0015f;
         public float BrakePipeDischargeTimeFactor;
-        public float BrakeServiceTimeFactorS;
-        public float BrakeEmergencyTimeFactorS;
+        public float BrakeServiceTimeFactorPSIpS;
+        public float BrakeEmergencyTimeFactorPSIpS;
         public float BrakePipeChargingRatePSIorInHgpS;
         public float BrakePipeQuickChargingRatePSIpS;
         public InterpolatorDiesel2D TractiveForceCurves;
@@ -944,8 +944,8 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(ortsenginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsbrakepipetimefactor": BrakePipeTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-                case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-                case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+                case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorPSIpS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+                case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorPSIpS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsbrakepipequickchargingrate": BrakePipeQuickChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsbrakepipedischargetimemult": BrakePipeDischargeTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -1079,6 +1079,7 @@ public List<CabView> CabViewList = new List<CabView>();
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
+            DynamicBrakeMaxCurrentA = locoCopy.DynamicBrakeMaxCurrentA;
             CombinedControlType = locoCopy.CombinedControlType;
             CombinedControlSplitPosition = locoCopy.CombinedControlSplitPosition;
             DynamicBrakeDelayS = locoCopy.DynamicBrakeDelayS;
@@ -1486,30 +1487,30 @@ public List<CabView> CabViewList = new List<CabView>();
             }
 
             // Initialise Brake Emergency Time Factor
-            if (BrakeEmergencyTimeFactorS == 0) // Check to see if BrakeEmergencyTimeFactorS has been set in the ENG file.
+            if (BrakeEmergencyTimeFactorPSIpS == 0) // Check to see if BrakeEmergencyTimeFactorS has been set in the ENG file.
             {
                 // Set Default Brake Emergency Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakeEmergencyTimeFactorS = 1.0f; // Vacuum brakes
+                    BrakeEmergencyTimeFactorPSIpS = 1.0f; // Vacuum brakes
                 }
                 else
                 {
-                    BrakeEmergencyTimeFactorS = 0.1f; // Air brakes
+                    BrakeEmergencyTimeFactorPSIpS = 0.1f; // Air brakes
                 }
             }
 
             // Initialise Brake Service Time Factor
-            if (BrakeServiceTimeFactorS == 0) // Check to see if BrakeServiceTimeFactorS has been set in the ENG file.
+            if (BrakeServiceTimeFactorPSIpS == 0) // Check to see if BrakeServiceTimeFactorS has been set in the ENG file.
             {
                 // Set Default Brake Service Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakeServiceTimeFactorS = 10.0f; // Vacuum brakes
+                    BrakeServiceTimeFactorPSIpS = 10.0f; // Vacuum brakes
                 }
                 else
                 {
-                    BrakeServiceTimeFactorS = 1.009f; // Air brakes
+                    BrakeServiceTimeFactorPSIpS = 1.009f; // Air brakes
                 }
             }
 
@@ -1653,6 +1654,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 TrainControlSystem.InitializeMoving();
                 TrainBrakeController.InitializeMoving();
                 BrakeSystem.LocoInitializeMoving();
+                EngineBrakeController?.InitializeMoving();
             }
         }
 
@@ -4553,11 +4555,11 @@ public List<CabView> CabViewList = new List<CabView>();
                                     MaxCurrentA = (float)cvc.MaxValue;
                                 if (DynamicBrakeMaxCurrentA == 0)
                                     DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
-                                if (ThrottlePercent > 0)
+                                if (ThrottlePercent >= 0 && DynamicBrakePercent == -1)
                                 {
                                     data = (data / MaxForceN) * MaxCurrentA;
                                 }
-                                if (DynamicBrakePercent > 0)
+                                if (ThrottlePercent == 0 && DynamicBrakePercent >= 0)
                                 {
                                     data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                                 }
@@ -5208,7 +5210,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     break;
 
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_COMMAND_BUTTON_OPEN:
-                    data = LocomotivePowerSupply.BatterySwitch.CommandButtonOn ? 1 : 0;
+                    data = LocomotivePowerSupply.BatterySwitch.CommandButtonOff ? 1 : 0;
                     break;
 
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_ON:

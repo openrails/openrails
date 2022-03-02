@@ -160,11 +160,17 @@ however if the modeler desires greater accuracy the following parameters can be 
 WAG/ENG file in the wagon section:
 
 ``ORTSLengthBogieCentre`` - length between bogie centres.
-``ORTSLengthCarBody`` - Length between car ends.
+
+``ORTSLengthCarBody`` - Length between car ends (typically measured between the coupler pivot points).
+
 ``ORTSLengthCouplerFace`` - length between coupler faces.
 
-``ORTSNumAxles`` - number of axles on the car.
-``ORTSNumBogies`` - number of bogies on the car.
+``ORTSNumberAxles`` - number of axles on the car.
+
+``ORTSNumberDriveAxles`` - number of driven axles on the locomotive. NB: Total axles on locomotive will be 
+``ORTSNumberAxles`` + ``ORTSNumberDriveAxles``.
+
+``ORTSNumberBogies`` - number of bogies on the car.
 
 .. _physics-adhesion:
 
@@ -2040,6 +2046,8 @@ unit) signals for braking and throttle position, etc. The
 player-controlled locomotive generates the MU signals which are passed 
 along to every unit in the train. 
 
+.. _distributed-power:
+
 Distributed Power
 -----------------
 
@@ -2113,6 +2121,9 @@ while the trailing pushing unit is controlled *async* independently.
 The actual set value of traction or dynamic brake of *async* group is shown in 
 lines *Throttle* and *Dynamic Brake*, respectively, in brackets, e.g.: 
 Throttle: 0% (50%).
+
+Distributed power info and commands can also be displayed and operated through 
+cabview controls, as explained :ref:`here <cabs-distributed-power>`
 
 The complete distributed power configuration is displayed in the 
 Distributed Power Info extended HUD page, where the state of all locomotives 

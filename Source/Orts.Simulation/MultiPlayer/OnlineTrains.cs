@@ -130,6 +130,7 @@ namespace Orts.MultiPlayer
             }
             return tmp;
         }
+
         public void AddPlayers(MSGPlayer player, OnlinePlayer p)
         {
             if (Players.ContainsKey(player.user)) return;
@@ -181,38 +182,37 @@ namespace Orts.MultiPlayer
                 }
                 else throw new Exception();
             }
+
             for (var i = 0; i < player.cars.Length; i++)// cars.Length-1; i >= 0; i--) {
             {
-
                 string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + player.cars[i];
-                TrainCar car = null;
+                TrainCar car;
+
                 try
                 {
-                    car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
+                    car = RollingStock.Load(MPManager.Simulator, train, wagonFilePath);
                     car.CarLengthM = player.lengths[i] / 100.0f;
                 }
                 catch (Exception error)
                 {
-                    System.Console.WriteLine(error.Message);
-                    car = MPManager.Instance().SubCar(wagonFilePath, player.lengths[i]);
+                    Console.WriteLine(error.Message);
+                    car = MPManager.Instance().SubCar(train, wagonFilePath, player.lengths[i]);
                 }
-                if (car == null) continue;
-                bool flip = true;
-                if (player.flipped[i] == 0) flip = false;
-                car.Flipped = flip;
+
+                if (car == null)
+                    continue;
+
+                car.Flipped = player.flipped[i] != 0;
                 car.CarID = player.ids[i];
-                train.Cars.Add(car);
-                car.Train = train;
-                MSTSWagon w = (MSTSWagon)car;
-                if (w != null)
+
+                if (car is MSTSWagon w)
                 {
                     w.SignalEvent((player.pantofirst == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 1);
                     w.SignalEvent((player.pantosecond == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 2);
                     w.SignalEvent((player.pantothird == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 3);
                     w.SignalEvent((player.pantofourth == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 4);
                 }
-
-            }// for each rail car
+            }
 
             if (train.Cars.Count == 0)
             {
@@ -254,8 +254,7 @@ namespace Orts.MultiPlayer
             if (train.LeadLocomotive == null)
             {
                 train.LeadNextLocomotive();
-                if (train.LeadLocomotive != null) p.LeadingLocomotiveID = train.LeadLocomotive.CarID;
-                else p.LeadingLocomotiveID = "NA";
+                p.LeadingLocomotiveID = train.LeadLocomotive?.CarID ?? "NA";
             }
 
             if (train.LeadLocomotive != null)
@@ -266,7 +265,10 @@ namespace Orts.MultiPlayer
             {
                 train.Name = train.GetTrainName(train.Cars[0].CarID);
             }
-            else if (player !=null && player.user != null) train.Name = player.user;
+            else if (player?.user != null)
+            {
+                train.Name = player.user;
+            }
 
             if (MPManager.IsServer())
             {
@@ -276,7 +278,6 @@ namespace Orts.MultiPlayer
 
             Players.Add(player.user, p);
             MPManager.Instance().AddOrRemoveTrain(train, true);
-
         }
 
         public void SwitchPlayerTrain(MSGPlayerTrainSw player)

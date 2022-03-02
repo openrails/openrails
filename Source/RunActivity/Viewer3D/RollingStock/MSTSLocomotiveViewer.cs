@@ -32,6 +32,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
+using Orts.Viewer3D.RollingStock.SubSystems;
 using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
 using ORTS.Common;
 using ORTS.Common.Input;
@@ -354,8 +355,10 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var pdl in ParticleDrawers.Values)
                 foreach (var pd in pdl)
                     pd.Mark();
-            if (_CabRenderer != null)
-                _CabRenderer.Mark();
+
+            _CabRenderer?.Mark();
+            ThreeDimentionCabViewer?.Mark();
+
             base.Mark();
         }
 
@@ -1189,7 +1192,7 @@ namespace Orts.Viewer3D.RollingStock
                         if (digital != null)
                         {
                             CabViewDigitalRenderer cvdr;
-                            if (viewer.Settings.CircularSpeedGauge && digital.ControlStyle == CABViewControlStyles.NEEDLE)
+                            if (digital.ControlStyle == CABViewControlStyles.NEEDLE)
                                 cvdr = new CircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
                             else
                                 cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
@@ -1205,6 +1208,15 @@ namespace Orts.Viewer3D.RollingStock
                             if (screen.ControlType == CABViewControlTypes.ORTS_ETCS)
                             {
                                 var cvr = new DriverMachineInterfaceRenderer(viewer, car, screen, _Shader);
+                                cvr.SortIndex = controlSortIndex;
+                                CabViewControlRenderersList[i].Add(cvr);
+                                if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
+                                count[(int)cvc.ControlType]++;
+                                continue;
+                            }
+                            else if (screen.ControlType == CABViewControlTypes.ORTS_DISTRIBUTED_POWER)
+                            {
+                                var cvr = new DistributedPowerInterfaceRenderer(viewer, car, screen, _Shader);
                                 cvr.SortIndex = controlSortIndex;
                                 CabViewControlRenderersList[i].Add(cvr);
                                 if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
@@ -1301,7 +1313,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (digital != null)
                 {
                     CabViewDigitalRenderer cvdr;
-                    if (viewer.Settings.CircularSpeedGauge && digital.ControlStyle == CABViewControlStyles.NEEDLE)
+                    if (digital.ControlStyle == CABViewControlStyles.NEEDLE)
                         cvdr = new CircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
                     else
                         cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
@@ -1317,6 +1329,15 @@ namespace Orts.Viewer3D.RollingStock
                     if (screen.ControlType == CABViewControlTypes.ORTS_ETCS)
                     {
                         var cvr = new DriverMachineInterfaceRenderer(viewer, car, screen, _Shader);
+                        cvr.SortIndex = controlSortIndex;
+                        CabViewControlRenderersList[i].Add(cvr);
+                        if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
+                        count[(int)cvc.ControlType]++;
+                        continue;
+                    }
+                    else if (screen.ControlType == CABViewControlTypes.ORTS_DISTRIBUTED_POWER)
+                    {
+                        var cvr = new DistributedPowerInterfaceRenderer(viewer, car, screen, _Shader);
                         cvr.SortIndex = controlSortIndex;
                         CabViewControlRenderersList[i].Add(cvr);
                         if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
@@ -1560,7 +1581,7 @@ namespace Orts.Viewer3D.RollingStock
         bool IsMouseWithin();
         void HandleUserInput();
         string GetControlName();
-
+        string ControlLabel { get; }
     }
 
     /// <summary>
@@ -1808,9 +1829,9 @@ namespace Orts.Viewer3D.RollingStock
                 if (Gauge is CVCFirebox)
                     destH = Math.Min(destH, (int)(yratio * (Control.PositionY + 0.5 * Gauge.Area.Height)) - destY);
             }
-            if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
+            if (Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
             {
-                if (Num < 0 && Gauge.NegativeColor.A != 0)
+                if (Num < 0 && Control.MinValue < 0 && Gauge.NegativeColor.A != 0)
                 {
                     if ((Gauge.NumNegativeColors >= 2) && (Num < Gauge.NegativeSwitchVal))
                         DrawColor = new Color(Gauge.SecondNegativeColor.R, Gauge.SecondNegativeColor.G, Gauge.SecondNegativeColor.B, Gauge.SecondNegativeColor.A);
@@ -2100,6 +2121,13 @@ namespace Orts.Viewer3D.RollingStock
                     index = (int)data;
                     break;
                 case CABViewControlTypes.ORTS_SCREEN_SELECT:
+                case CABViewControlTypes.ORTS_DP_MOVE_TO_BACK:
+                case CABViewControlTypes.ORTS_DP_MOVE_TO_FRONT:
+                case CABViewControlTypes.ORTS_DP_TRACTION:
+                case CABViewControlTypes.ORTS_DP_IDLE:
+                case CABViewControlTypes.ORTS_DP_BRAKE:
+                case CABViewControlTypes.ORTS_DP_MORE:
+                case CABViewControlTypes.ORTS_DP_LESS:
                     index = ButtonState ? 1 : 0;
                     break;
                 case CABViewControlTypes.ORTS_STATIC_DISPLAY:
@@ -2188,6 +2216,8 @@ namespace Orts.Viewer3D.RollingStock
         {
             return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(GetControlType().ToString());
         }
+
+        public string ControlLabel => Control.Label;
 
         /// <summary>
         /// Handles cabview mouse events, and changes the corresponding locomotive control values.
@@ -2419,6 +2449,49 @@ namespace Orts.Viewer3D.RollingStock
                     if (ChangedValue(1) > 0 ^ Locomotive.TrainControlSystem.TCSCommandButtonDown[commandIndex])
                         new TCSButtonCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandButtonDown[commandIndex], commandIndex);
                     new TCSSwitchCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.TCSCommandSwitchOn[commandIndex] ? 1 : 0) > 0, commandIndex);
+                    break;
+
+                case CABViewControlTypes.ORTS_DP_MOVE_TO_FRONT:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPMoveToFrontCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_MOVE_TO_BACK:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPMoveToBackCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_IDLE:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPIdleCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_TRACTION:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPTractionCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_BRAKE:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPDynamicBrakeCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_MORE:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPMoreCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_DP_LESS:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new DPLessCommand(Viewer.Log);
+                    ButtonState = buttonState;
                     break;
             }
 
@@ -3053,14 +3126,18 @@ namespace Orts.Viewer3D.RollingStock
             }*/ //removed with 3D digits
 
             if (TrainCarShape != null)
-                TrainCarShape.PrepareFrame(frame, elapsedTime, MatrixVisible);
+                TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisible);
         }
 
         internal override void Mark()
         {
-            // TODO: This is likely wrong; we should mark textures, shapes and other graphical resources here.
+            TrainCarShape?.Mark();
+            foreach (ThreeDimCabDigit threeDimCabDigit in DigitParts3D.Values)
+            {
+                threeDimCabDigit.Mark();
+            }
         }
-    } // Class ThreeDimentionCabViewer
+    }
 
     public class ThreeDimCabDigit
     {

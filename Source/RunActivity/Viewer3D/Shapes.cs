@@ -51,7 +51,7 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
 
         Dictionary<string, SharedShape> Shapes = new Dictionary<string, SharedShape>();
-        Dictionary<string, bool> ShapeMarks;
+        Dictionary<string, bool> ShapeMarks = new Dictionary<string, bool>();
         SharedShape EmptyShape;
 
         [CallOnThread("Render")]
@@ -88,7 +88,7 @@ namespace Orts.Viewer3D
 
         public void Mark()
         {
-            ShapeMarks = new Dictionary<string, bool>(Shapes.Count);
+            ShapeMarks.Clear();
             foreach (var path in Shapes.Keys)
                 ShapeMarks.Add(path, false);
         }
@@ -102,7 +102,10 @@ namespace Orts.Viewer3D
         public void Sweep()
         {
             foreach (var path in ShapeMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+            {
+                Shapes[path].Dispose();
                 Shapes.Remove(path);
+            }
         }
 
         [CallOnThread("Updater")]
@@ -182,11 +185,11 @@ namespace Orts.Viewer3D
                 // Object radius should extend from central location to the furthest instance location PLUS the actual object radius.
                 ObjectRadius = shapes.Max(s => (Location.Location - s.Location.Location).Length()) + dlHighest.ViewSphereRadius;
 
-                // Object viewing distance is easy because it's based on the outside of the object radius.
-                if (viewer.Settings.LODViewingExtention)
-                    ObjectViewingDistance = float.MaxValue;
-                else
-                    ObjectViewingDistance = dlLowest.ViewingDistance;
+                // Set to MaxValue so that an object never disappears.
+                // Many MSTS objects had a LOD of 2km which is the maximum distance that MSTS can handle.
+                // Open Rails can handle greater distances, so we override the lowest-detail LOD to make sure OR shows shapes further away than 2km.
+                // See http://www.elvastower.com/forums/index.php?/topic/35301-menu-options/page__view__findpost__p__275531
+                ObjectViewingDistance = float.MaxValue;
             }
 
             // Create all the primitives for the shared shape.
@@ -285,7 +288,7 @@ namespace Orts.Viewer3D
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
-        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
+        public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
         {
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
         }
@@ -1350,7 +1353,7 @@ namespace Orts.Viewer3D
         }
     }
 
-    public class ShapePrimitive : RenderPrimitive
+    public class ShapePrimitive : RenderPrimitive, IDisposable
     {
         public Material Material { get; protected set; }
         public int[] Hierarchy { get; protected set; } // the hierarchy from the sub_object
@@ -1409,6 +1412,13 @@ namespace Orts.Viewer3D
         public virtual void Mark()
         {
             Material?.Mark();
+        }
+
+        public void Dispose()
+        {
+            VertexBuffer.Dispose();
+            IndexBuffer.Dispose();
+            PrimitiveCount = 0;
         }
     }
 
@@ -1551,7 +1561,7 @@ namespace Orts.Viewer3D
     }
 #endif
 
-    public class SharedShape
+    public class SharedShape : IDisposable
     {
         static List<string> ShapeWarnings = new List<string>();
 
@@ -1684,7 +1694,7 @@ namespace Orts.Viewer3D
             }
         }
 
-        public class LodControl
+        public class LodControl : IDisposable
         {
             public DistanceLevel[] DistanceLevels;
 
@@ -1705,11 +1715,21 @@ namespace Orts.Viewer3D
             internal void Mark()
             {
                 foreach (var dl in DistanceLevels)
+                {
                     dl.Mark();
+                }
+            }
+
+            public void Dispose()
+            {
+                foreach (var dl in DistanceLevels)
+                {
+                    dl.Dispose();
+                }
             }
         }
 
-        public class DistanceLevel
+        public class DistanceLevel : IDisposable
         {
             public float ViewingDistance;
             public float ViewSphereRadius;
@@ -1746,11 +1766,21 @@ namespace Orts.Viewer3D
             internal void Mark()
             {
                 foreach (var so in SubObjects)
+                {
                     so.Mark();
+                }
+            }
+
+            public void Dispose()
+            {
+                foreach (var so in SubObjects)
+                {
+                    so.Dispose();
+                }
             }
         }
 
-        public class SubObject
+        public class SubObject : IDisposable
         {
             static readonly SceneryMaterialOptions[] UVTextureAddressModeMap = new[] {
                 SceneryMaterialOptions.TextureAddressModeWrap,
@@ -1973,7 +2003,17 @@ namespace Orts.Viewer3D
             internal void Mark()
             {
                 foreach (var prim in ShapePrimitives)
+                {
                     prim.Mark();
+                }
+            }
+
+            public void Dispose()
+            {
+                foreach (var prim in ShapePrimitives)
+                {
+                    prim.Dispose();
+                }
             }
         }
 
@@ -2161,8 +2201,12 @@ namespace Orts.Viewer3D
                     ? lodControl.DistanceLevels[lodControl.DistanceLevels.Length - 1]
                     : displayDetail;
 
-                // If set, extend the lowest LOD to the maximum viewing distance.
-                if (Viewer.Settings.LODViewingExtention && displayDetailLevel == lodControl.DistanceLevels.Length - 1)
+                // Extend the lowest LOD to the maximum viewing distance.
+                // Set to MaxValue so that an object never disappears.
+                // Many MSTS objects had a LOD of 2km which is the maximum distance that MSTS can handle.
+                // Open Rails can handle greater distances, so we override the lowest-detail LOD to make sure OR shows shapes further away than 2km.
+                // See http://www.elvastower.com/forums/index.php?/topic/35301-menu-options/page__view__findpost__p__275531
+                if (displayDetailLevel == lodControl.DistanceLevels.Length - 1)
                     distanceDetail.ViewingDistance = float.MaxValue;
 
                 for (var i = 0; i < displayDetail.SubObjects.Length; i++)
@@ -2226,7 +2270,17 @@ namespace Orts.Viewer3D
         {
             Viewer.ShapeManager.Mark(this);
             foreach (var lod in LodControls)
+            {
                 lod.Mark();
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var lod in LodControls)
+            {
+                lod.Dispose();
+            }
         }
     }
 

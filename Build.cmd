@@ -32,7 +32,6 @@ CALL :list-or-check-tool "MSBuild.exe" "[UTS] Microsoft Visual Studio build tool
 CALL :list-or-check-tool "lazbuild.exe" "[UTS] Lazarus compiler"
 CALL :list-or-check-tool "strip.exe" "[UTS] Lazarus tool"
 CALL :list-or-check-tool "xunit.console.x86.exe" "[UTS] XUnit tool"
-CALL :list-or-check-tool "editbin.exe" "[UTS] Microsoft Visual Studio editbin tool"
 CALL :list-or-check-tool "rcedit-x86.exe" "[UTS] Electron rcedit tool"
 CALL :list-or-check-tool "7za.exe" "[UTS] 7-zip tool"
 CALL :list-or-check-tool "OfficeToPDF.exe" "[TS] Office-to-PDF conversion tool"
@@ -108,11 +107,6 @@ PUSHD Source\Locales && CALL Update.bat non-interactive && POPD || GOTO :error
 REM Run unit tests (9009 means XUnit itself wasn't found, which is an error).
 xunit.console.x86 Program\Tests.dll -nunit xunit.xml
 IF "%ERRORLEVEL%" == "9009" GOTO :error
-
-CALL :copy "Program\RunActivity.exe" "Program\RunActivityLAA.exe" || GOTO :error
-editbin /NOLOGO /LARGEADDRESSAWARE "Program\RunActivityLAA.exe" || GOTO :error
-CALL :copy "Program\RunActivity.exe.config" "Program\RunActivityLAA.exe.config" || GOTO :error
-ECHO Created large address aware version of RunActivity.exe.
 
 REM Copy the web content
 ROBOCOPY /MIR /NJH /NJS "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web"

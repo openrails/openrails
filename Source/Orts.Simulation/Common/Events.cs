@@ -268,23 +268,11 @@ namespace Orts.Common
         // MSTS/MSTSBin behaviour whenever possible. NEVER return values for
         // non-MSTS events when passed an MSTS Source.
 
-        public static Event From(bool mstsBinEnabled, Source source, int eventID)
+        public static Event From(Source source, int eventID)
         {
             switch (source)
             {
                 case Source.MSTSCar:
-                    if (mstsBinEnabled)
-                    {
-                        switch (eventID)
-                        {
-                            // MSTSBin codes (documented at http://mstsbin.uktrainsim.com/)
-                            case 23: return Event.EnginePowerOn;
-                            case 24: return Event.EnginePowerOff;
-                            case 66: return Event.Pantograph2Up;
-                            case 67: return Event.Pantograph2Down;
-                            default: break;
-                        }
-                    }
                     switch (eventID)
                     {
                         // Calculated from inspection of existing engine .sms files and extensive testing.
@@ -310,8 +298,9 @@ namespace Orts.Common
                         case 20: return Event.DynamicBrakeChange;
                         case 21: return Event.EngineBrakePressureIncrease; // Event 21 is defined in sound files but never used in MSTS.
                         case 22: return Event.EngineBrakePressureDecrease; // Event 22 is defined in sound files but never used in MSTS.
-                        // Event 23 is unused in MSTS.
-                        // Event 24 is unused in MSTS.
+                        // MSTSBin codes 23, 24 (documented at http://mstsbin.uktrainsim.com/)
+                        case 23: return Event.EnginePowerOn;
+                        case 24: return Event.EnginePowerOff;
                         // Event 25 is possibly a vigilance reset in MSTS sound files but is never used.
                         // Event 26 is a sander toggle in MSTS sound files but is never used.
                         case 27: return Event.WaterInjector2On;
@@ -352,6 +341,9 @@ namespace Orts.Common
                         case 62: return Event.UncoupleB;
                         case 63: return Event.UncoupleC;
                         // Event 64 is unused in MSTS.
+                        // MSTSBin codes 66, 67 (documented at http://mstsbin.uktrainsim.com/)
+                        case 66: return Event.Pantograph2Up;
+                        case 67: return Event.Pantograph2Down;
 
                         // ORTS only Events
                         case 101: return Event.GearUp; // for gearbox based engines

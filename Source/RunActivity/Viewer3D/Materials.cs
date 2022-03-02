@@ -37,7 +37,7 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
         readonly GraphicsDevice GraphicsDevice;
         Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
-        Dictionary<string, bool> TextureMarks;
+        Dictionary<string, bool> TextureMarks = new Dictionary<string, bool>();
 
         [CallOnThread("Render")]
         internal SharedTextureManager(Viewer viewer, GraphicsDevice graphicsDevice)
@@ -254,7 +254,7 @@ namespace Orts.Viewer3D
         
         public void Mark()
         {
-            TextureMarks = new Dictionary<string, bool>(Textures.Count);
+            TextureMarks.Clear();
             foreach (var path in Textures.Keys)
                 TextureMarks.Add(path, false);
         }
@@ -268,7 +268,10 @@ namespace Orts.Viewer3D
         public void Sweep()
         {
             foreach (var path in TextureMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+            {
+                Textures[path].Dispose();
                 Textures.Remove(path);
+        }
         }
 
         [CallOnThread("Updater")]
@@ -882,7 +885,6 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
 
             var shader = Viewer.MaterialManager.SceneryShader;
             var level9_3 = Viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3);
@@ -981,8 +983,6 @@ namespace Orts.Viewer3D
                     throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.SpecularMask value.");
             }
 
-            graphicsDevice.SamplerStates[0] = GetShadowTextureAddressMode();
-
             if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && IsNightTimeOrUnderground())
             {
                 shader.ImageTexture = NightTexture;
@@ -1008,6 +1008,10 @@ namespace Orts.Viewer3D
                     shader.SetMatrix(item.XNAMatrix, ref viewProj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
+
+                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
+                    graphicsDevice.SamplerStates[0] = GetShadowTextureAddressMode();
+
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
@@ -1361,10 +1365,11 @@ namespace Orts.Viewer3D
                 {
                     var wvp = item.XNAMatrix * viewproj;
                     shader.SetData(ref wvp, item.Material.GetShadowTexture());
-                    graphicsDevice.SamplerStates[0] = item.Material.GetShadowTextureAddressMode();
                     if (item.ItemData is Matrix[] bones)
                         shader.Bones = bones;
                     ShaderPasses.Current.Apply();
+                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
+                    graphicsDevice.SamplerStates[0] = item.Material.GetShadowTextureAddressMode();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
