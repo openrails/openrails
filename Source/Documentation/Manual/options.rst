@@ -32,6 +32,30 @@ sometimes use a view other than the cabview to follow the train, and
 therefore will not see the alerter warning, selecting the related option
 *Also in external views* enables the alerter in those views as well.
 
+
+.. _options-control-confirmations:
+Control confirmations
+---------------------
+
+Following MSTS practice, whenever you make adjustments to the train
+controls (e.g. open the throttle) OR briefly shows a message near the
+bottom of the screen.
+
+.. image:: images/options-confirmations.png
+
+This is helpful for operations that don't have visible feedback and also
+allows you to control the train without being in the cab.
+
+Uncheck this option if you prefer to monitor your cab instruments and
+don't want to see these messages.
+
+OR uses the same message scheme for system messages such as "Game saved"
+or "Replay ended" but you cannot suppress these system messages.
+
+Control confirmations can also be toggled on and off at runtime using the 
+key combination Ctrl-Alt-F10. 
+
+
 .. _options-map-window:
 
 Map window
@@ -57,40 +81,6 @@ speaking, operating with the option checked is equivalent to passenger
 standard and unchecked is equivalent to freight standard. A complete
 description of this option can be found :ref:`here <physics-braking>`.
 
-Large address aware binaries
-----------------------------
-
-It is suggested to leave this option checked. When it is unchecked, Open
-Rails can use a maximum of 2 GB of RAM. When it is checked, the maximum is
-4 GB for 64-bit Windows systems, and 2 or 3 GB for 32-bit Windows systems.
-To increase the maximum RAM used by OR in 32-bit Windows systems from 2 to
-3 GB see the information found `here <http://knowledge.autodesk.com/
-support/autocad/troubleshooting/caas/sfdcarticles/sfdcarticles/
-How-to-enable-a-3GB-switch-on-Windows-Vista-Windows-7-or-Windows-XP-s.html>`_.
-
-Take note that the RAM increase from 2 to 3 GB in 32-bit systems can slow
-down computer operation when not using OR.
-
-Control confirmations
----------------------
-
-Following MSTS practice, whenever you make adjustments to the train
-controls (e.g. open the throttle) OR briefly shows a message near the
-bottom of the screen.
-
-.. image:: images/options-confirmations.png
-
-This is helpful for operations that don't have visible feedback and also
-allows you to control the train without being in the cab.
-
-Uncheck this option if you prefer to monitor your cab instruments and
-don't want to see these messages.
-
-OR uses the same message scheme for system messages such as "Game saved"
-or "Replay ended" but you cannot suppress these system messages.
-
-Control confirmations can also be toggled on and off at runtime using the 
-key combination Ctrl-Alt-F10. 
 
 
 .. _options-retainers:

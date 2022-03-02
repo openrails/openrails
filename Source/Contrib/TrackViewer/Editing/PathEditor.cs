@@ -564,7 +564,7 @@ namespace ORTS.TrackViewer.Editing
             TrainpathNode closestNode = null;
             foreach (TrainpathNode node in drawnPathData.DrawnNodes)
             {
-                float distanceSquared = CloseToMouse.GetGroundDistanceSquared(node.Location, drawArea.MouseLocation);
+                float distanceSquared = WorldLocation.GetDistanceSquared2D(node.Location, drawArea.MouseLocation);
                 // by using '<=' instead of '<' we should get the latest one, which overrides earlier ones
                 // To prevent numerical issues, we add a small number (smaller than two junctions would normally be together
                 if (distanceSquared <= closestMouseDistanceSquared + 0.1f)
