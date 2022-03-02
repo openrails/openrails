@@ -935,8 +935,9 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	Color.rgb = _PSSrgbToLinear(Color.rgb);
 	// Apply the linear multipliers.
 	Color *= In.Color * BaseColorFactor;
-	// Alpha testing:
-	clip(Color.a - ReferenceAlpha);
+	// Alpha testing. Without the > 0 check glithches appear.
+	if (ReferenceAlpha > 0 && ReferenceAlpha > Color.a)
+		discard;
 	
 	///////////////////////
 	// Contributions from the OpenRails environment:

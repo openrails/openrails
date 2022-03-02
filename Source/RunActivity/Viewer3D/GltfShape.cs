@@ -47,6 +47,7 @@ namespace Orts.Viewer3D
 
         string FileDir { get; set; }
         int SkeletonRootNode;
+        public bool MsfsFlavoured;
 
         /// <summary>
         /// glTF specification declares that the model's forward is +Z. However OpenRails uses -Z as forward,
@@ -175,14 +176,15 @@ namespace Orts.Viewer3D
             return matrix;
         }
 
-        static internal Func<BinaryReader, float> GetNormalizedReader(Accessor.ComponentTypeEnum componentType)
+        internal Func<BinaryReader, float> GetNormalizedReader(Accessor.ComponentTypeEnum componentType)
         {
             switch (componentType)
             {
                 case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return (br) => br.ReadByte() / 255.0f;
                 case Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return (br) => br.ReadUInt16() / 65535.0f;
                 case Accessor.ComponentTypeEnum.BYTE: return (br) => Math.Max(br.ReadSByte() / 127.0f, -1.0f);
-                case Accessor.ComponentTypeEnum.SHORT: return (br) => Math.Max(br.ReadInt16() / 32767.0f, -1.0f);
+                // Component type 5122 "SHORT" is a 16 bit int by the glTF specification, but is used as a 16 bit float (half) by asobo-msfs: 
+                case Accessor.ComponentTypeEnum.SHORT: return (br) => MsfsFlavoured ? ToTwoByteFloat(br.ReadBytes(2)) : Math.Max(br.ReadInt16() / 32767.0f, -1.0f); // the prior is br.ReadHalf() in fact
                 case Accessor.ComponentTypeEnum.FLOAT:
                 default: return (br) => br.ReadSingle();
             }
@@ -193,11 +195,38 @@ namespace Orts.Viewer3D
         {
             switch (componentTypeEnum)
             {
+                case Accessor.ComponentTypeEnum.BYTE: return (br) => (ushort)br.ReadSByte();
                 case Accessor.ComponentTypeEnum.UNSIGNED_INT: return (br) => (ushort)br.ReadUInt32();
                 case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return (br) => br.ReadByte();
                 case Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
                 default: return (br) => br.ReadUInt16();
             }
+        }
+
+        static float ToTwoByteFloat(byte[] bytes) // Hi, Lo
+        {
+            var intVal = BitConverter.ToInt32(new byte[] { bytes[0], bytes[1], 0, 0 }, 0);
+
+            int mant = intVal & 0x03ff;
+            int exp = intVal & 0x7c00;
+            if (exp == 0x7c00) exp = 0x3fc00;
+            else if (exp != 0)
+            {
+                exp += 0x1c000;
+                if (mant == 0 && exp > 0x1c400)
+                    return BitConverter.ToSingle(BitConverter.GetBytes((intVal & 0x8000) << 16 | exp << 13 | 0x3ff), 0);
+            }
+            else if (mant != 0)
+            {
+                exp = 0x1c400;
+                do
+                {
+                    mant <<= 1;
+                    exp -= 0x400;
+                } while ((mant & 0x400) == 0);
+                mant &= 0x3ff;
+            }
+            return BitConverter.ToSingle(BitConverter.GetBytes((intVal & 0x8000) << 16 | (exp | mant) << 13), 0);
         }
 
         public class GltfLodControl : LodControl
@@ -225,6 +254,9 @@ namespace Orts.Viewer3D
                         if (unsupportedExtensions.Any())
                             Trace.TraceWarning($"glTF required extension {string.Join(", ", unsupportedExtensions)} is unsupported in file {externalLods[id]}");
                     }
+
+                    if (gltfFile.Asset?.Extensions?.ContainsKey("ASOBO_asset_optimized") ?? false)
+                        shape.MsfsFlavoured = true;
 
                     var internalLodsNumber = 0;
                     if (id == 0)
@@ -281,6 +313,7 @@ namespace Orts.Viewer3D
 
             public Matrix[] Matrices = new Matrix[0];
             internal Viewer Viewer;
+            internal GltfShape Shape;
 
             static readonly Stack<int> TempStack = new Stack<int>(); // (nodeNumber, parentIndex)
 
@@ -290,6 +323,7 @@ namespace Orts.Viewer3D
                 ViewSphereRadius = 100;
                 var morphWarning = false;
 
+                Shape = shape;
                 Viewer = shape.Viewer;
                 BinaryBuffers = shape.BinaryBuffers;
 
@@ -429,7 +463,7 @@ namespace Orts.Viewer3D
                             channel.TimeArray = new float[inputAccessor.Count];
                             channel.TimeMin = inputAccessor.Min[0];
                             channel.TimeMax = inputAccessor.Max[0];
-                            var readInput = GetNormalizedReader(inputAccessor.ComponentType);
+                            var readInput = shape.GetNormalizedReader(inputAccessor.ComponentType);
                             using (var br = new BinaryReader(GetBufferView(inputAccessor, out _)))
                             {
                                 for (var i = 0; i < inputAccessor.Count; i++)
@@ -444,7 +478,7 @@ namespace Orts.Viewer3D
                                 case AnimationChannelTarget.PathEnum.translation: channel.OutputVector3 = new Vector3[outputAccessor.Count]; break;
                                 case AnimationChannelTarget.PathEnum.weights: channel.OutputWeights = new float[outputAccessor.Count]; break;
                             }
-                            var readOutput = GetNormalizedReader(outputAccessor.ComponentType);
+                            var readOutput = shape.GetNormalizedReader(outputAccessor.ComponentType);
                             using (var br = new BinaryReader(GetBufferView(outputAccessor, out _)))
                             {
                                 for (var i = 0; i < outputAccessor.Count; i++)
@@ -732,20 +766,23 @@ namespace Orts.Viewer3D
                     shape.SkeletonRootNode = skin.Skeleton ?? 0;
                 }
 
-                // This is according to the glTF spec:
-                if (distanceLevel.Matrices[hierarchyIndex].Determinant() > 0)
+                if (!shape.MsfsFlavoured && distanceLevel.Matrices[hierarchyIndex].Determinant() > 0)
+                    // This is according to the glTF spec
                     options |= SceneryMaterialOptions.PbrCullClockWise;
+                else if (shape.MsfsFlavoured && distanceLevel.Matrices[hierarchyIndex].Determinant() < 0)
+                    // Msfs seems to be using this reversed
+                    options |= SceneryMaterialOptions.PbrCullClockWise;
+
+                var referenceAlpha = 0f;
+                var doubleSided = material.DoubleSided;
 
                 switch (material.AlphaMode)
                 {
                     case glTFLoader.Schema.Material.AlphaModeEnum.BLEND: options |= SceneryMaterialOptions.AlphaBlendingBlend; break;
-                    case glTFLoader.Schema.Material.AlphaModeEnum.MASK: options |= SceneryMaterialOptions.AlphaTest; break;
+                    case glTFLoader.Schema.Material.AlphaModeEnum.MASK: options |= SceneryMaterialOptions.AlphaTest; referenceAlpha = material.AlphaCutoff; break;
                     case glTFLoader.Schema.Material.AlphaModeEnum.OPAQUE:
                     default: break;
                 }
-
-                var referenceAlpha = material.AlphaCutoff; // default is 0.5
-                var doubleSided = material.DoubleSided;
 
                 Vector4 texCoords1 = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
                 Vector4 texCoords2 = Vector4.Zero; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
@@ -862,7 +899,7 @@ namespace Orts.Viewer3D
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         vertexPositions = new VertexPosition[accessor.Count];
-                        var read = GetNormalizedReader(accessor.ComponentType);
+                        var read = shape.GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
@@ -907,7 +944,7 @@ namespace Orts.Viewer3D
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         vertexNormals = new VertexNormal[accessor.Count];
-                        var read = GetNormalizedReader(accessor.ComponentType);
+                        var read = shape.GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
@@ -951,7 +988,7 @@ namespace Orts.Viewer3D
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         vertexTextureUvs = new VertexTextureDiffuse[accessor.Count];
-                        var read = GetNormalizedReader(accessor.ComponentType);
+                        var read = shape.GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
@@ -994,7 +1031,7 @@ namespace Orts.Viewer3D
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexTangent[accessor.Count];
-                        var read = GetNormalizedReader(accessor.ComponentType);
+                        var read = shape.GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
@@ -1043,7 +1080,7 @@ namespace Orts.Viewer3D
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexTextureMetallic[accessor.Count];
-                        var read = GetNormalizedReader(accessor.ComponentType);
+                        var read = shape.GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
@@ -1130,7 +1167,7 @@ namespace Orts.Viewer3D
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexWeight[accessor.Count];
-                        var read = GetNormalizedReader(accessor.ComponentType);
+                        var read = shape.GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
@@ -1164,7 +1201,7 @@ namespace Orts.Viewer3D
                         var accessor = gltfFile.Accessors[accessorNumber];
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
                         var vertexData = new VertexColor4[accessor.Count];
-                        var read = GetNormalizedReader(accessor.ComponentType);
+                        var read = shape.GetNormalizedReader(accessor.ComponentType);
                         using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
                         {
                             var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
@@ -1313,7 +1350,7 @@ namespace Orts.Viewer3D
                         {
                             var accessor = gltfFile.Accessors[(int)skin.InverseBindMatrices];
                             InverseBindMatrices = new Matrix[accessor.Count];
-                            var read = GetNormalizedReader(accessor.ComponentType);
+                            var read = distanceLevel.Shape.GetNormalizedReader(accessor.ComponentType);
                             using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out _)))
                             {
                                 for (var i = 0; i < InverseBindMatrices.Length; i++)
