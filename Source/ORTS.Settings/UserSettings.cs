@@ -240,8 +240,6 @@ namespace ORTS.Settings
         public bool TunnelResistanceDependent { get; set; }
         [Default(false)]
         public bool WindResistanceDependent { get; set; }
-        [Default(false)]
-        public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]
         public bool HotStart { get; set; }
         [Default(false)]
