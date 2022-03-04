@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011 by the Open Rails project.
+// COPYRIGHT 2010, 2011 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -24,16 +24,19 @@ namespace ORTS.Common
 {
     public class SmoothedData
     {
-        public readonly float SmoothPeriodS = 3;
+        const float DefaultSmoothPeriodS = 3;
+
+        public readonly float SmoothPeriodS;
+
         protected float value = float.NaN;
         protected float smoothedValue = float.NaN;
 
         public SmoothedData()
+            : this(DefaultSmoothPeriodS)
         {
         }
 
         public SmoothedData(float smoothPeriodS)
-            : this()
         {
             SmoothPeriodS = smoothPeriodS;
         }
