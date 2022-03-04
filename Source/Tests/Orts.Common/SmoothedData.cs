@@ -24,11 +24,11 @@ namespace Tests.Orts.Common
     {
         [Theory]
         // FPS-like tests
-        [InlineData(5, 3, 0.318)]
-        [InlineData(10, 3, 0.337)]
-        [InlineData(30, 3, 0.350)]
+        [InlineData(5, 3, 0.353)]
+        [InlineData(10, 3, 0.353)]
+        [InlineData(30, 3, 0.353)]
         [InlineData(60, 3, 0.353)]
-        [InlineData(120, 3, 0.355)]
+        [InlineData(120, 3, 0.353)]
         // Physics-like tests
         [InlineData(60, 1, 0.000)] // Exhaust particles
         [InlineData(60, 2, 0.066)] // Smoke colour

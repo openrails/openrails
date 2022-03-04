@@ -1,4 +1,4 @@
-// COPYRIGHT 2010, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -28,6 +28,7 @@ namespace ORTS.Common
 
         public readonly float SmoothPeriodS;
 
+        protected float rate = 0;
         protected float value = float.NaN;
         protected float smoothedValue = float.NaN;
 
@@ -39,6 +40,8 @@ namespace ORTS.Common
         public SmoothedData(float smoothPeriodS)
         {
             SmoothPeriodS = smoothPeriodS;
+            // Convert the input assuming 60 FPS (arbitary)
+            rate = (float)(-60 * Math.Log(1 - 1 / (60 * SmoothPeriodS)));
         }
 
         public void Update(float periodS, float newValue)
@@ -56,13 +59,11 @@ namespace ORTS.Common
 
         protected void SmoothValue(ref float smoothedValue, float periodS, float newValue)
         {
-            var rate = SmoothPeriodS / periodS;
-            if (float.IsNaN(smoothedValue) || float.IsInfinity(smoothedValue))
-                smoothedValue = newValue;
-            else if (rate < 1)
+            var ratio = (float)Math.Exp(-rate * periodS);
+            if (float.IsNaN(smoothedValue) || float.IsInfinity(smoothedValue) || ratio < 0.5)
                 smoothedValue = newValue;
             else
-                smoothedValue = (smoothedValue * (rate - 1) + newValue) / rate;
+                smoothedValue = smoothedValue * ratio + newValue * (1 - ratio);
         }
 
         public void ForceSmoothValue(float forcedValue)
