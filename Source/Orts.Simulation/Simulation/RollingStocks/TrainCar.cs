@@ -681,6 +681,7 @@ namespace Orts.Simulation.RollingStocks
             Tender,
             Passenger,
             Freight,
+            EOT,
         }
         public WagonTypes WagonType;
 
@@ -2945,7 +2946,8 @@ namespace Orts.Simulation.RollingStocks
             // NOTE: Traveller is at the FRONT of the TrainCar!
 
             // Don't add vibrations to train cars less than 2.5 meter in length; they're unsuitable for these calculations.
-            if (CarLengthM < 2.5f) return;
+            // Don't let vibrate car before EOT to avoid EOT not moving together with that car
+            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars[Train.Cars.Count - 2] == this) return;
             if (Simulator.Settings.CarVibratingLevel != 0)
             {
 

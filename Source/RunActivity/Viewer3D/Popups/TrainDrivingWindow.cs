@@ -17,6 +17,7 @@
 
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using ORTS.Common;
 using ORTS.Common.Input;
@@ -1057,6 +1058,18 @@ namespace Orts.Viewer3D.Popups
             }
 
             AddSeparator();
+
+           // EOT
+
+            if (locomotive.Train.EOT != null)
+            {
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString("EOT"),
+                    LastCol = $"{locomotive.Train.EOT?.EOTState.ToString()}"
+                });
+                AddSeparator();
+            }
 
             // Distributed Power
 

@@ -31,6 +31,7 @@ using Orts.Parsers.OR;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
 using System;
@@ -2389,6 +2390,7 @@ namespace Orts.Simulation.Timetables
                 // set train details
                 TTTrain.CheckFreight();
                 TTTrain.SetDPUnitIDs();
+                TTTrain.ReinitializeEOT();
                 TTTrain.SpeedSettings.routeSpeedMpS = (float)simulator.TRK.Tr_RouteFile.SpeedLimit;
 
                 if (!confMaxSpeed.HasValue || confMaxSpeed.Value <= 0f)
@@ -2447,6 +2449,11 @@ namespace Orts.Simulation.Timetables
 
                     if (wagon.IsEngine)
                         wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
+                    else if (wagon.IsEOT)
+                    {
+                        wagonFolder =  simulator.BasePath + @"\trains\orts_eot\" + wagon.Folder;
+                        wagonFilePath = wagonFolder + @"\" + wagon.Name + ".eot";
+                    }
 
                     if (!File.Exists(wagonFilePath))
                     {
@@ -2464,6 +2471,8 @@ namespace Orts.Simulation.Timetables
                     car.SignalEvent(Event.Pantograph1Up);
 
                     TTTrain.Length += car.CarLengthM;
+                    if (car is EOT)
+                        TTTrain.EOT = car as EOT;
                 }
             }
 
