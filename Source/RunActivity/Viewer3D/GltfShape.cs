@@ -27,6 +27,7 @@ using System.ComponentModel;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Common;
+using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using glTFLoader.Schema;
 
@@ -152,7 +153,7 @@ namespace Orts.Viewer3D
         public override Matrix SetRenderMatrices(ShapePrimitive baseShapePrimitive, Matrix[] animatedMatrices, ref Matrix tileTranslation, out Matrix[] bones)
         {
             var shapePrimitive = baseShapePrimitive as GltfPrimitive;
-            bones = Enumerable.Repeat(Matrix.Identity, Math.Min(SceneryShader.MAX_BONES, shapePrimitive.Joints.Length)).ToArray();
+            bones = Enumerable.Repeat(Matrix.Identity, Math.Min(RenderProcess.MAX_BONES, shapePrimitive.Joints.Length)).ToArray();
             for (var j = 0; j < bones.Length; j++)
             {
                 bones[j] = shapePrimitive.InverseBindMatrices[j];

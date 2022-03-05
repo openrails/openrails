@@ -413,14 +413,14 @@ namespace Orts.Viewer3D
         readonly RenderItemCollection RenderItemsSequence = new RenderItemCollection();
 
         int NumLights;
-        readonly Vector3[] LightPositions = new Vector3[SceneryShader.MAX_LIGHTS];
-        readonly Vector3[] LightDirections = new Vector3[SceneryShader.MAX_LIGHTS];
-        readonly Vector3[] LightColors = new Vector3[SceneryShader.MAX_LIGHTS];
-        readonly float[] LightIntensities = new float[SceneryShader.MAX_LIGHTS];
-        readonly float[] LightRanges = new float[SceneryShader.MAX_LIGHTS];
-        readonly float[] LightInnerConeCos = new float[SceneryShader.MAX_LIGHTS];
-        readonly float[] LightOuterConeCos = new float[SceneryShader.MAX_LIGHTS];
-        readonly float[] LightTypes = new float[SceneryShader.MAX_LIGHTS];
+        readonly Vector3[] LightPositions = new Vector3[RenderProcess.MAX_LIGHTS];
+        readonly Vector3[] LightDirections = new Vector3[RenderProcess.MAX_LIGHTS];
+        readonly Vector3[] LightColors = new Vector3[RenderProcess.MAX_LIGHTS];
+        readonly float[] LightIntensities = new float[RenderProcess.MAX_LIGHTS];
+        readonly float[] LightRanges = new float[RenderProcess.MAX_LIGHTS];
+        readonly float[] LightInnerConeCos = new float[RenderProcess.MAX_LIGHTS];
+        readonly float[] LightOuterConeCos = new float[RenderProcess.MAX_LIGHTS];
+        readonly float[] LightTypes = new float[RenderProcess.MAX_LIGHTS];
 
         public bool IsScreenChanged { get; internal set; }
         ShadowMapMaterial ShadowMapMaterial;
@@ -1084,7 +1084,7 @@ namespace Orts.Viewer3D
         public void AddLight(Vector3 direction, Vector3 color, float intensity) => AddLight(LightMode.Directional, Vector3.Zero, direction, color, intensity, -1, 0, 0);
         public void AddLight(LightMode type, Vector3 position, Vector3 direction, Vector3 color, float intensity, float range, float innerConeCos, float outerConeCos)
         {
-            if (NumLights >= SceneryShader.MAX_LIGHTS)
+            if (NumLights >= RenderProcess.MAX_LIGHTS)
                 return;
 
             LightTypes[NumLights] = (float)type;

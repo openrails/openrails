@@ -48,9 +48,11 @@ namespace Orts.Viewer3D
             };
             var context = new ProcessorContext();
             var processor = new EffectProcessor();
-            processor.Defines = $"MAX_LIGHTS={SceneryShader.MAX_LIGHTS};MAX_BONES={SceneryShader.MAX_BONES}";
-            if (SceneryShader.ClearcoatEnabled)
-                processor.Defines += ";CLEARCOAT";
+
+            processor.Defines = $"MAX_LIGHTS={RenderProcess.MAX_LIGHTS};MAX_BONES={RenderProcess.MAX_BONES}";
+            if (RenderProcess.CLEARCOAT) processor.Defines += ";CLEARCOAT";
+            if (RenderProcess.LEVEL_9_3) processor.Defines += ";LEVEL_9_3";
+
             var effect = processor.Process(input, context);
             return effect.GetEffectCode();
         }
@@ -153,10 +155,6 @@ namespace Orts.Viewer3D
         Vector4 _zBias_Lighting;
         Vector3 _sunDirection;
         bool _imageTextureIsNight;
-
-        public const int MAX_BONES = 50;
-        public const int MAX_LIGHTS = 20;
-        public const bool ClearcoatEnabled = true;
 
         /// <summary>
         /// The position of the sampler states inside the hlsl shader:
