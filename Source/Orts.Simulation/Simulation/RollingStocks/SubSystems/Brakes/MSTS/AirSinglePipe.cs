@@ -315,8 +315,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 EmergResPressurePSI = maxPressurePSI;
             FullServPressurePSI = fullServPressurePSI;
             AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
-            AuxResPressurePSI = AutoCylPressurePSI == 0 ? (maxPressurePSI > BrakeLine1PressurePSI ? maxPressurePSI : BrakeLine1PressurePSI)
-                : Math.Max(maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
+            AuxResPressurePSI = TwoPipes ? maxPressurePSI : Math.Max(maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
             TripleValveState = ValveState.Lap;
             HoldingValve = ValveState.Release;
             HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
