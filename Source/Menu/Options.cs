@@ -150,7 +150,6 @@ namespace ORTS
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
             checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
-            checkEnableWebServer.Checked = Settings.WebServer;
             numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
@@ -431,7 +430,7 @@ namespace ORTS
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
-            Settings.WebServer = checkEnableWebServer.Checked;
+            Settings.WebServerPort = (int)numericWebServerPort.Value;
 
             // Audio tab
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
@@ -820,7 +819,6 @@ namespace ORTS
                 (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
                 (pbDisableTcsScripts, new[] { checkDisableTCSScripts }),
-                (pbEnableWebServer, new[] { checkEnableWebServer }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
@@ -877,10 +875,6 @@ namespace ORTS
                 {
                     pbDisableTcsScripts,
                     baseUrl + "/options.html#disable-tcs-scripts"
-                },
-                {
-                    pbEnableWebServer,
-                    baseUrl + "/options.html#enable-web-server"
                 },
                 {
                     pbOverspeedMonitor,
