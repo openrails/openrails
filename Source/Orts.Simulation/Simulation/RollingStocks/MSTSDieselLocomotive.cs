@@ -982,11 +982,11 @@ namespace Orts.Simulation.RollingStocks
             switch (loadUnits)
             {
                 case CABViewControlUnits.AMPS:
-                    if (ThrottlePercent > 0)
+                    if (ThrottlePercent >= 0 && DynamicBrakePercent == -1)
                     {
                         data = (data / MaxForceN) * MaxCurrentA;
                     }
-                    if (DynamicBrakePercent > 0)
+                    if (ThrottlePercent == 0 && DynamicBrakePercent >= 0)
                     {
                         data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                     }
@@ -1056,7 +1056,8 @@ namespace Orts.Simulation.RollingStocks
             {
                 var indexIni = trainBrakeStatus.IndexOf(tokenIni) + tokenIni.Length + 1;
                 var indexEnd = trainBrakeStatus.IndexOf(tokenEnd) - indexIni;
-                brakeInfoValue = trainBrakeStatus.Substring(indexIni, indexEnd).TrimEnd();
+                if (indexEnd > 0)// BP found before EOT
+                    brakeInfoValue = trainBrakeStatus.Substring(indexIni, indexEnd).TrimEnd();
             }
             return brakeInfoValue;
         }

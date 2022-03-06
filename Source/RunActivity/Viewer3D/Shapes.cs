@@ -51,7 +51,7 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
 
         Dictionary<string, SharedShape> Shapes = new Dictionary<string, SharedShape>();
-        Dictionary<string, bool> ShapeMarks;
+        Dictionary<string, bool> ShapeMarks = new Dictionary<string, bool>();
         SharedShape EmptyShape;
 
         [CallOnThread("Render")]
@@ -87,7 +87,7 @@ namespace Orts.Viewer3D
 
         public void Mark()
         {
-            ShapeMarks = new Dictionary<string, bool>(Shapes.Count);
+            ShapeMarks.Clear();
             foreach (var path in Shapes.Keys)
                 ShapeMarks.Add(path, false);
         }
@@ -101,7 +101,10 @@ namespace Orts.Viewer3D
         public void Sweep()
         {
             foreach (var path in ShapeMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+            {
+                Shapes[path].Dispose();
                 Shapes.Remove(path);
+            }
         }
 
         [CallOnThread("Updater")]
@@ -284,7 +287,7 @@ namespace Orts.Viewer3D
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
-        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
+        public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
         {
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
         }
@@ -1343,7 +1346,7 @@ namespace Orts.Viewer3D
         }
     }
 
-    public class ShapePrimitive : RenderPrimitive
+    public class ShapePrimitive : RenderPrimitive, IDisposable
     {
         public Material Material { get; protected set; }
         public int[] Hierarchy { get; protected set; } // the hierarchy from the sub_object
@@ -1393,6 +1396,13 @@ namespace Orts.Viewer3D
         public virtual void Mark()
         {
             Material.Mark();
+        }
+
+        public void Dispose()
+        {
+            VertexBuffer.Dispose();
+            IndexBuffer.Dispose();
+            PrimitiveCount = 0;
         }
     }
 
@@ -1535,7 +1545,7 @@ namespace Orts.Viewer3D
     }
 #endif
 
-    public class SharedShape
+    public class SharedShape : IDisposable
     {
         static List<string> ShapeWarnings = new List<string>();
 
@@ -1668,7 +1678,7 @@ namespace Orts.Viewer3D
             }
         }
 
-        public class LodControl
+        public class LodControl : IDisposable
         {
             public DistanceLevel[] DistanceLevels;
 
@@ -1687,11 +1697,21 @@ namespace Orts.Viewer3D
             internal void Mark()
             {
                 foreach (var dl in DistanceLevels)
+                {
                     dl.Mark();
+                }
+            }
+
+            public void Dispose()
+            {
+                foreach (var dl in DistanceLevels)
+                {
+                    dl.Dispose();
+                }
             }
         }
 
-        public class DistanceLevel
+        public class DistanceLevel : IDisposable
         {
             public float ViewingDistance;
             public float ViewSphereRadius;
@@ -1726,11 +1746,21 @@ namespace Orts.Viewer3D
             internal void Mark()
             {
                 foreach (var so in SubObjects)
+                {
                     so.Mark();
+                }
+            }
+
+            public void Dispose()
+            {
+                foreach (var so in SubObjects)
+                {
+                    so.Dispose();
+                }
             }
         }
 
-        public class SubObject
+        public class SubObject : IDisposable
         {
             static readonly SceneryMaterialOptions[] UVTextureAddressModeMap = new[] {
                 SceneryMaterialOptions.TextureAddressModeWrap,
@@ -1951,7 +1981,17 @@ namespace Orts.Viewer3D
             internal void Mark()
             {
                 foreach (var prim in ShapePrimitives)
+                {
                     prim.Mark();
+                }
+            }
+
+            public void Dispose()
+            {
+                foreach (var prim in ShapePrimitives)
+                {
+                    prim.Dispose();
+                }
             }
         }
 
@@ -2184,7 +2224,17 @@ namespace Orts.Viewer3D
         {
             Viewer.ShapeManager.Mark(this);
             foreach (var lod in LodControls)
+            {
                 lod.Mark();
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var lod in LodControls)
+            {
+                lod.Dispose();
+            }
         }
     }
 

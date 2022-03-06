@@ -32,27 +32,8 @@ sometimes use a view other than the cabview to follow the train, and
 therefore will not see the alerter warning, selecting the related option
 *Also in external views* enables the alerter in those views as well.
 
-Graduated release air brakes
-----------------------------
 
-Selecting this option allows a partial release of the brakes. Generally
-speaking, operating with the option checked is equivalent to passenger
-standard and unchecked is equivalent to freight standard. A complete
-description of this option can be found :ref:`here <physics-braking>`.
-
-Large address aware binaries
-----------------------------
-
-It is suggested to leave this option checked. When it is unchecked, Open
-Rails can use a maximum of 2 GB of RAM. When it is checked, the maximum is
-4 GB for 64-bit Windows systems, and 2 or 3 GB for 32-bit Windows systems.
-To increase the maximum RAM used by OR in 32-bit Windows systems from 2 to
-3 GB see the information found `here <http://knowledge.autodesk.com/
-support/autocad/troubleshooting/caas/sfdcarticles/sfdcarticles/
-How-to-enable-a-3GB-switch-on-Windows-Vista-Windows-7-or-Windows-XP-s.html>`_.
-
-Take note that the RAM increase from 2 to 3 GB in 32-bit systems can slow
-down computer operation when not using OR.
+.. _options-control-confirmations:
 
 Control confirmations
 ---------------------
@@ -74,6 +55,16 @@ or "Replay ended" but you cannot suppress these system messages.
 
 Control confirmations can also be toggled on and off at runtime using the 
 key combination Ctrl-Alt-F10. 
+
+
+Graduated release air brakes
+----------------------------
+
+Selecting this option allows a partial release of the brakes. Generally
+speaking, operating with the option checked is equivalent to passenger
+standard and unchecked is equivalent to freight standard. A complete
+description of this option can be found :ref:`here <physics-braking>`.
+
 
 
 .. _options-retainers:
@@ -110,7 +101,7 @@ Language
 
 OR is an internationalized package. It supports many languages, and others
 can be added by following the instructions contained in the *Localization
-Manual* which can be found in the Open Rails ``Source/Trunk/Documentation``
+Manual* which can be found in the Open Rails ``Documentation``
 folder.
 
 When *System* is selected, OR automatically selects the language of the
@@ -131,7 +122,7 @@ Other units
 -----------
 
 This selects the units displayed for length, mass, pressure, etc. in the
-:ref:`F5 HUD <driving-hud>` of the simulation.
+:ref:`F5 Train Driving Info Window and also the Alt+F5 HUD <driving-hud>` of the simulation.
 
 The option *Player's Location* sets the units according to the Windows
 *Language and Region* settings on the player's computer.
@@ -139,10 +130,10 @@ The option *Player's Location* sets the units according to the Windows
 The option *Route* sets the units based on the data in the route files.
 The other options are self-explanatory.
 
-The F5 HUD uses the abbreviations *stn* for short tons (2000 lb) and
-*t* or *tn* for metric tons (tonnes).
+These windows use the abbreviations *t-us* for short tons (2000 lb),
+*t-uk* for long tons (2240 lb) and *t* for metric tons (1000 kg).
 
-Note that the units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
+Note: The units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
 distance) are always based on data read from the route files.
 
 Disable TCS scripts
@@ -209,20 +200,22 @@ Video Options
 Dynamic shadows
 ---------------
 
-The default setting is unchecked.
 Check this option to cast shadows from movable objects such as trains.
+
+The default setting is unchecked.
 
 Note: This may reduce the frame rate.
 
 Shadow for all shapes
 ---------------------
 
-The default setting is unchecked.
 Check this option to cast shadows from static objects.
+
+The default setting is unchecked.
 
 Note: This may reduce the frame rate.
 
-Note: Static objects provided with shadows (in the file <route>.ref) 
+Note: Static objects provided with shadows (in the World files) 
 will cast shadows anyway. This option adds shadows for other static objects.
 
 Glass on in-game windows
@@ -234,9 +227,12 @@ semitransparent mode.
 Model instancing
 ----------------
 
-When the option is checked, in cases where multiple instances of the same
-object have to be drawn, only a single draw call is sent to the GPU. This
-means lower CPU load. It is suggested to always check this option.
+When the option is checked, in cases where multiple instances of the same 
+object have to be drawn, only a single draw call is sent to the GPU. 
+Uncheck this option to avoid the graphical glitches which appear on some 
+hardware, but this may reduce the frame rate.
+
+The default setting is checked.
 
 Overhead wire
 -------------
@@ -269,22 +265,26 @@ distance, anti-aliasing, or world object density.
 Viewing distance
 ----------------
 
-This option defines the maximum distance at which terrain is displayed. At
-higher distances Distant Mountains will be displayed (see below). 
-Increasing this parameter tends to increase CPU and GPU load. 
-Also, some routes are optimized for the standard MSTS maximum viewing distance (2000m).
+This option defines the maximum distance at which terrain is displayed. 
+Where the content provides "Distant Mountains", these are displayed independently (see below).
+
+Note: Some routes are optimized for the standard MSTS maximum viewing distance (2km).
 
 Note: When the option to tune settings automatically is applied, then this 
 value will be overridden and dynamically changed to maintain a target frame rate.
 
+The default distance is 2km.
+
 Distant mountains
 -----------------
 
-Distant mountains are supported in a way that is compatible with MSTS.
-Distant mountains are present in the route if it has a folder called
-LO_TILE. You may turn the feature on by checking the *Distant Mountains*
-checkbox. In addition to MSTS capability, you can select the viewing
-distance of the distant mountains.
+This option defines the maximum distance at which "Distant Mountains" are displayed. 
+
+Note: "Distant Mountains" are present in the route if it has a folder called LO_TILE. 
+
+The default setting is checked.
+
+The default distance is 40km
 
 .. image:: images/options-mountains.png
 
@@ -383,10 +383,14 @@ This option allows the running of electric locomotives on non-electrified routes
 Steam locomotive hot start
 --------------------------
 
-This option allows starting the game with the boiler water temperature
-already at a value that allows running the locomotive. If the option is
-not selected, you will have to wait until the water temperature reaches a
-high enough value.
+With this option selected, the temperature and pressure of steam in the boiler is ready to pull the train.
+If not, the boiler pressure will be at 2/3 of maximum, which is only adequate for light work.
+If your schedule gives you time to raise the pressure close to maximum, then 
+switch from AI Firing to Manual Firing (Ctrl+F) and increase the Blower (N) to 100% to raise a draught. 
+Replenish the coal using R and Shift+R to keep the fire mass close to 100%.
+Full pressure may be reached in 5 minutes or so.
+
+The default setting is checked.
 
 .. _options-forced-red:
 
@@ -399,9 +403,11 @@ until the train has stopped and then hold it as red from that time up to
 two minutes before starting time. This is useful in organizing train meets
 and takeovers, however it does not always correspond to reality nor to
 MSTS operation. So with this option the player can decide which behavior
-the start signal will have. This option is checked by default. 
+the start signal will have. 
 
-Unchecking the option has no effect when in 
+This option is checked by default. 
+
+Note: Unchecking the option has no effect when in 
 :ref:`Timetable mode <timetable>`.
 
 .. _options-open-doors-ai:
@@ -449,11 +455,20 @@ This is an option which players can set to simplify either the train controls or
 This feature is intended for players who want to focus on "running" trains and don't want to be bothered 
 by complex controls or prototypical physics which may require some additional expertise to operate.
 
-Initally this option affects only trains that use vacuum braking but other controls may be added in future versions.
+Initially this option affects only trains that use vacuum braking but other controls may be added in future versions.
 
 With vacuum braking, it is sometimes necessary to operate two different controls to apply and release the brakes. 
 With "Simple control and physics" checked, the player is able to operate the brakes just with the brake valve 
 and doesn't need to consider the steam ejector separately.
+
+Diesel engines stopped at simulation start
+------------------------------------------
+
+When this option is unchecked, stationary diesel locos start the simulation with their engines running.
+Check this option for a more detailed behaviour in which the player has to start the loco's engine.
+
+The default setting is unchecked.
+
 
 .. _options-keyboard:
 
@@ -708,7 +723,9 @@ level of detail comes into view. This may be useful to sharpen distant content
 that was created for a smaller screen or a wider field of view than you are 
 currently using.
 
-If your content does not use multiple LODs, then this option will have no effect.
+The default setting is 0.
+
+Note: If your content does not use multiple LODs, then this option will have no effect.
 
 
 Adhesion proportional to rain/snow/fog

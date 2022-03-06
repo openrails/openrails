@@ -74,7 +74,8 @@ namespace ORTS.Common
             {
                 foreach (ManagementObject display in new ManagementClass("Win32_VideoController").GetInstances())
                 {
-                    output.WriteLine("Video      = {0} ({1:F1} GB RAM){2}", (string)display["Description"], (float)(uint)display["AdapterRAM"] / 1024 / 1024 / 1024, GetPnPDeviceDrivers(display));
+                    // ? used as display["AdapterRAM"] may be null on a virtual machine (e.g. VMWare)
+                    output.WriteLine("Video      = {0} ({1:F1} GB RAM){2}", (string)display["Description"], (float?)(uint?)display["AdapterRAM"] / 1024 / 1024 / 1024, GetPnPDeviceDrivers(display));
                 }
             }
             catch (Exception error)
