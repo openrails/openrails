@@ -10,25 +10,83 @@ Please see the [Community](http://openrails.org/share/community/) page on our we
 
 If you've found a bug in Open Rails, please report it in [our bug tracker on Launchpad](https://bugs.launchpad.net/or).
 
-## Making a suggestion
+## Suggesting a feature
 
-If you've got an idea for Open Rails, please report it in [our road-map on Trello](https://trello.com/b/DS2h3Pxc/open-rails-roadmap).
+If you've got a feature suggestion for Open Rails, please report it in [our road-map on Trello](https://trello.com/b/DS2h3Pxc/open-rails-roadmap).
 
-## Writing code
+## Making changes
+
+You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, if you'd like your feature to be included in the official version, there is a process to ensure that the community agrees and to review the code for potential issues prior to inclusion.
+
+In most cases, you can get started immediately with making the changes and creating a pull request. We do ask for some additional steps to be taken for some bugs and all new features, but they can come before or after the pull request. Please feel free to share ideas and proposals as pull requests!
+
+**Note:** You must start your work from the "master" branch and merged pull requests back into the "master" branch, unless we direct you otherwise.
+
+### Documentation and translations
+
+If you'd like to improve the [documentation](./), [manual](../Source/Documentation/Manual), or [translations](../Source/Locales) you can get started immediately.
+
+There are no requirements for the pull request.
+
+### Bug process
+
+If you'd like to fix a bug, you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our bug tracker on Launchpad](https://bugs.launchpad.net/or). If it has not, you can report the bug *and* fix it!
+
+There are no requirements for creating the pull request.
+
+These things must be done in the required order:
+
+1. If the changes adds or removes more than 10 lines each, a bug report must be linked in the description before it can be approved
+
+### Feature process
+
+If you'd like to add a feature, you can get started immediately. However, we would prefer you to to do some things first. These will ensure that people are aware you are working on a particular feature and give the community some time to resolve any potential issues.
+
+The following diagram shows the required order (solid lines) and recommended order (dashed lines):
+
+```mermaid
+flowchart
+  roadmapCreated(["Road-map (created)"])
+  roadmapApproved(["Road-map (approved)"])
+  discussion(["Discussion (1 week)"])
+  prDraft(["Pull request (draft)"])
+  prReadyForReview(["Pull request (ready for review)"])
+  prApproved(["Pull request (approved)"])
+  roadmapCreated --> roadmapApproved
+  discussion --> roadmapApproved & prReadyForReview --> prApproved
+  roadmapCreated -.-> discussion -.-> prDraft -.-> prReadyForReview
+```
+
+All new features must result in the following three things existing:
+
+1. A road-map card in [Trello](https://trello.com/b/DS2h3Pxc/open-rails-roadmap)
+2. A forum discussion in [Elvas Tower](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/) more than one week old with all issues resolved
+3. A pull request
+
+These things must be done in the required order:
+
+1. The road-map card cannot be approved without the completed discussion
+2. The pull request cannot be ready for review without the completed discussion
+3. The pull request cannot be approved without the approved road-map card
+
+Our recommended order is:
+
+1. Create road-map card
+2. Create forum discussion
+3. Create draft pull request
+4. When discussion is completed, pull request can be ready for review
+5. When road-map card is approved, pull request can be approved (if code review is okay)
+
+**Note:** A blueprint can be used by a seasoned Open Rails developer in place of a road-map card.
 
 ### Choosing what to work on
 
-You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, we won't necessarily include all changes in the official version, so here are the ways to ensure that what you're working on will be accepted:
+If you do not know what to work on, you can find bugs and features we are interested in fixed/adding here:
 
-* If you'd like to work on something that is already known about and accepted, please check through [the confirmed bugs](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED) and [accepted feature requests (anything except the first two columns)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap).
-* If you don't see anything you'd like to work on in the _confirmed bugs_ or _accepted feature requests_, please reach out to us in the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/). You can also [report a bug](https://bugs.launchpad.net/or/+filebug), [make a suggestion for the road-map](https://trello.com/c/zznjApL8/102-click-me-to-read-how-this-works), or [create a blueprint](https://blueprints.launchpad.net/or/+addspec) yourself. Blueprints should only be used by seasoned Open Rails developers. In each case, we'll get back to you on whether we think it is appropriate for inclusion (see [how bugs and feature requests are accepted](#how-bugs-and-features-are-accepted)).
+* [Confirmed bugs](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED)
+* [Accepted feature requests (anything in an N.M or N.x list)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap)
 
-When choosing what to work on from the road-map, if multiple things are interesting to you, we would prefer that you choose the item with the highest priority (see list below). This is only a guideline for helping to choose, though, so if you do want to work on something with a low priority, that's fine - all we ask is that you let us know in the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/).
-
-1. The next minor release (e.g. 1.4)
-2. Current major release (e.g. 1.x)
-3. Next major release (e.g. 2.x)
-4. Future
+If multiple things are interesting to you, we would prefer that you choose the item with the highest priority to us - a higher importance or heat in Launchpad bugs and lowest version number in Trello cards.
 
 If you're unsure what you could contribute to in the code, and nothing looks interesting in the _confirmed bugs_ and _accepted feature requests_, please get in touch on the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/), giving us some idea of your experience and interests, and we'll do our best to find something for you.
 
@@ -81,15 +139,22 @@ If you are in any doubt about the use of data by multiple threads, or your imple
 
 Your code should be fixing exactly one bug or adding a single new feature; mixing multiple bug fixes or new features makes it harder to review your changes and risks them not being accepted.
 
-### Testing and Unstable Versions
+### Different versions of code
 
-Changes to the Git "master" branch are selected by peer review and the branch is automatically published as the "Testing Version" every Friday.
-Changes to the Git "unstable" branch are automatically selected and published as the "Unstable Version" every 15 minutes.
-Your changes should always start from the "master" branch and not the "unstable" branch.
+When your pull request is draft or ready for review, it will not be included in any version of Open Rails unless:
+
+* You are a member of the core team
+* A member of the core team adds a particular label
+
+If your pull request satisfies the above criteria, it will be automatically included in the Unstable Version (unless there are merge conflicts).
+
+After your pull request is merged, it will be included in the Testing Version and Unstable Version.
+
+When we start preparing for a new Stable Version, all code in the Testing Version is used, but no further changes are included during the preparation time (typically 1 month).
 
 ### Submitting your code
 
-When you're done writing code, you should make a pull request on GitHub or a merge request on Launchpad. The title and description of the requests should clearly and concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
+When you're done writing code, you should make a pull request on GitHub. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
 
 * Bug report
 * Road-map card
@@ -115,12 +180,12 @@ A member of [our management team](https://launchpad.net/~orsupervisors/+members)
 
 ## Reviewing pull requests
 
-If you are reviewing someone elses code for Open Rails, you will need to ensure that they have met the above "Writing code" guidelines as best as possible. This will necessitate, at minimum:
+If you are reviewing someone else's code for Open Rails, you will need to ensure that they have met the above "Making changes" guidelines as best as possible. This will necessitate, at minimum:
 
 * Check for linked bug report or feature request
 * Check bug report is triaged, and feature request is approved
   * For a bug report, it should have status "Triaged"
-  * For a road-map card, it should not be in the first two columns ("Unsorted" and "Not planned")
+  * For a road-map card, it should be in an N.M or N.x list
   * For a blueprint, it should have direction "Approved"
 * Read through all of the changes to the code
 * Check that all new code follows the requirements:
@@ -136,7 +201,7 @@ If you are reviewing someone elses code for Open Rails, you will need to ensure 
 
 Although we'd like all code written to exactly match the guidelines given in this document, that is not practical - not least because nobody is likely able to remember every single detail of the guidelines at any one time, whether writing or reviewing code. Therefore, there is always going to be some leeway between the guidelines and what is accepted into Open Rails.
 
-You should take special care when reviewing first-time and new contributors, to ensure that we accept their contribution even when it does not strictly conform to the guidelines, as this will encourage them to continue contributing.
+You should take extra care when reviewing first-time and new contributors, to ensure that we accept their contribution even when it does not strictly conform to the guidelines, as this will encourage them to continue contributing.
 
 For all contributions that deviate from the guidelines, there are a few approaches you can take:
 
@@ -145,13 +210,3 @@ For all contributions that deviate from the guidelines, there are a few approach
 * Accept the code as-is, leaving a note for how to improve for the next pull request
 
 It is expected that most contributors will quickly correct their code based on feedback, either in the same pull request or subsequent ones, depending on the path taken above. However, if a contributor continues to not meet the same part of the guidelines, you are free to become more strict with them - it's still helpful to suggest the corrected code, but do not feel obliged to spend time helping the same person with the same part of the guidelines repeatedly.
-
-## Merging pull requests
-
-If you are merging a pull request, you will need to ensure that the merge commit message contains links to whichever of the following are appropriate:
-
-* Bug report
-* Road-map card
-* Blueprint
-
-These links will be used by automated and manual processes to check on the progress of the project.

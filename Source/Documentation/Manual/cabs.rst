@@ -16,8 +16,50 @@ OR supports with a high degree of compatibility all functions available in
 MSTS for 2D cabs, and provides some significant enhancements described in the 
 next paragraphs.
 
-OR adds support for the ETCS circular speed gauge, as described 
-:ref:`here <options-etcs>`.
+
+ETCS circular speed gauge
+-------------------------
+
+You can add to the cabview a
+circular speed gauge accordingly to the European standard train control
+system ETCS.
+
+.. image:: images/options-etcs.png
+   :scale: 60 %
+   :align: center
+
+
+.. admonition:: For content developers
+
+    The gauge is added by the insertion of a block like the following
+    into the .cvf file::
+
+        Digital (
+            Type ( SPEEDOMETER DIGITAL )
+            Style ( NEEDLE )
+            Position ( 160 255 56 56 )
+            ScaleRange ( 0 250 )
+            Units ( KM_PER_HOUR )
+        )
+
+It is also possible to display the full ETCS display using the following block
+instead::
+
+		ScreenDisplay (
+			Type ( ORTS_ETCS SCREEN_DISPLAY )
+			Position ( 280 272 320 240 )
+			Units ( KM_PER_HOUR )
+			Parameters (
+				Mode FullSize
+			)
+		)
+		
+The following DMI size variants are available: FullSize (displays the whole DMI), SpeedArea
+(displays only the left part with information about distance and speed) and PlanningArea
+(displays only the planning area and navigation buttons).
+
+The information displayed in the DMI is controlled via the TCS script. For more details,
+see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
 
 .. _cabs-battery-switch:
 

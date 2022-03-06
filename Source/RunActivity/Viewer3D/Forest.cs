@@ -426,7 +426,6 @@ namespace Orts.Viewer3D
 
             // Enable alpha blending for everything: this allows distance scenery to appear smoothly.
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
-            graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -443,6 +442,10 @@ namespace Orts.Viewer3D
                     shader.SetMatrix(item.XNAMatrix, ref viewproj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
+
+                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
+                    graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
+
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
