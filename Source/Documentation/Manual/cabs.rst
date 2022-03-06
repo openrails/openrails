@@ -20,7 +20,7 @@ next paragraphs.
 ETCS circular speed gauge
 -------------------------
 
-When this option is selected, it is possible to add to the cabview a
+You can add to the cabview a
 circular speed gauge accordingly to the European standard train control
 system ETCS.
 

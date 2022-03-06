@@ -1398,10 +1398,9 @@ namespace Orts.Viewer3D.RollingStock
         internal override void Mark()
         {
             TrainCarShape.Mark();
-            if (FreightShape != null)
-                FreightShape.Mark();
-            if (InteriorShape != null)
-                InteriorShape.Mark();
+            FreightShape?.Mark();
+            InteriorShape?.Mark();
+            FreightAnimations?.Mark();
         }
     }
 }

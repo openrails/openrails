@@ -234,6 +234,11 @@ namespace Orts.Viewer3D.WebServices
         public IEnumerable<TrainDrivingDisplay.ListLabel> TrainDrivingDisplay([QueryField] bool normalText) => Viewer.TrainDrivingDisplayList(normalText);
         #endregion
 
+        #region /API/TRAINDPUDISPLAY
+        [Route(HttpVerbs.Get, "/TRAINDPUDISPLAY")]
+        public IEnumerable<TrainDpuDisplay.ListLabel> TrainDpuDisplay([QueryField] bool normalText) => Viewer.TrainDpuDisplayList(normalText);
+        #endregion
+
         // Note: to see the JSON, use "localhost:2150/API/CABCONTROLS" - Beware: case matters
         // Note: to run the webpage, use "localhost:2150/CabControls/index.html" - case doesn't matter
         // or use "localhost:2150/CabControls/"

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-09-15 03:48:21+0200\n"
-"PO-Revision-Date: 2021-09-15 03:48:21+0200\n"
+"POT-Creation-Date: 2021-11-03 02:28:12+0300\n"
+"PO-Revision-Date: 2021-11-03 02:28:15+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -169,9 +169,9 @@ msgid "Running"
 msgstr ""
 
 #: ../../Orts.Simulation/Common/Scripting/PowerSupply/CircuitBreaker.cs:49
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:161
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:169
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:178
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:163
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:171
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:180
 #: ../../Orts.Simulation/Common/Scripting/PowerSupply/TractionCutOffRelay.cs:47
 msgid "Unavailable"
 msgstr ""
@@ -195,109 +195,109 @@ msgid "Closed"
 msgstr ""
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:150
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:152
 msgctxt "PowerSupply"
 msgid "Steam"
 msgstr ""
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:151
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:153
 msgctxt "PowerSupply"
 msgid "DieselMechanical"
 msgstr ""
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:152
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:154
 msgctxt "PowerSupply"
 msgid "DieselHydraulic"
 msgstr ""
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:153
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:155
 msgctxt "PowerSupply"
 msgid "DieselElectric"
 msgstr ""
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:154
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:156
 msgctxt "PowerSupply"
 msgid "Electric"
 msgstr ""
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:155
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:157
 msgctxt "PowerSupply"
 msgid "DualMode"
 msgstr ""
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:156
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:158
 msgctxt "PowerSupply"
 msgid "ControlCar"
 msgstr ""
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:162
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:164
 msgctxt "PowerSupply"
 msgid "Off"
 msgstr ""
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:163
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:165
 msgctxt "PowerSupply"
 msgid "On ongoing"
 msgstr ""
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:164
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:166
 msgctxt "PowerSupply"
 msgid "On"
 msgstr ""
 
 #. Context: Pantograph
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:170
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:172
 msgctxt "Pantograph"
 msgid "Down"
 msgstr ""
 
 #. Context: Pantograph
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:171
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:173
 msgctxt "Pantograph"
 msgid "Lowering"
 msgstr ""
 
 #. Context: Pantograph
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:172
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:174
 msgctxt "Pantograph"
 msgid "Raising"
 msgstr ""
 
 #. Context: Pantograph
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:173
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:175
 msgctxt "Pantograph"
 msgid "Up"
 msgstr ""
 
 #. Context: Engine
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:179
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:181
 msgctxt "Engine"
 msgid "Stopped"
 msgstr ""
 
 #. Context: Engine
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:180
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:182
 msgctxt "Engine"
 msgid "Stopping"
 msgstr ""
 
 #. Context: Engine
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:181
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:183
 msgctxt "Engine"
 msgid "Starting"
 msgstr ""
 
 #. Context: Engine
-#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:182
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:184
 msgctxt "Engine"
 msgid "Running"
 msgstr ""
@@ -861,10 +861,10 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:230
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:139
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:80
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:84
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:92
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:101
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:82
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:87
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:141
 msgid "Handbrake"
 msgstr ""
@@ -1537,36 +1537,36 @@ msgstr ""
 msgid "Auxiliary power"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2570
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2575
 msgid "No water scoop on this loco"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2577
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2582
 msgid "Scoop is broken, can't refill"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2584
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2589
 msgid "Scoop is broken by junction track"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2594
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2599
 msgid "Scoop is not over trough, can't refill"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2917
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2922
 msgid "Sand supply has been exhausted"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2605
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2610
 msgid "Refill: Loco must be moving forward."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2614
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2619
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0} for water to enter tender."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2624
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2629
 msgid "Refill: Water supply now replenished."
 msgstr ""
 
@@ -1965,8 +1965,8 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6645
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6666
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6668
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1942
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1944
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2167
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2169
 msgid "Yes"
 msgstr ""
 
@@ -1991,8 +1991,8 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6645
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6666
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6668
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1942
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1944
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2167
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2169
 msgid "No"
 msgstr ""
 
@@ -2431,36 +2431,41 @@ msgctxt "HUD"
 msgid "Power"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1950
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1981
 msgid "Starting unload"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4009
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4040
 msgid "Incompatible data"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4023
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4054
 msgid "Starting refill"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4032
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4063
 msgid "Preparing for unload"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1726
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1951
 msgid ""
 "You were travelling too fast for this curve, and have snapped a brake hose on "
 "Car "
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1688
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1635
+#, csharp-format
+msgid "Car {0} has derailed on the curve."
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1913
 #, csharp-format
 msgid ""
 "You are travelling too fast for this curve. Slow down, your freight car {0} "
 "may be damaged. The recommended speed for this curve is {1}"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1692
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1917
 #, csharp-format
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers in car "
@@ -2469,8 +2474,8 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:126
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:134
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:78
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:80
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:82
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:85
 msgid "BC"
 msgstr ""
 

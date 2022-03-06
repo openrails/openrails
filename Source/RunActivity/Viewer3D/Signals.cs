@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Event = Orts.Common.Event;
 using Events = Orts.Common.Events;
 
@@ -175,8 +176,6 @@ namespace Orts.Viewer3D
 
         class SignalShapeHead
         {
-            static readonly Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
-
             readonly Viewer Viewer;
             readonly SignalShape SignalShape;
 #if DEBUG_SIGNAL_SHAPES
@@ -196,7 +195,7 @@ namespace Orts.Viewer3D
             private readonly SignalLightState[] lightStates;
 
             public SignalShapeHead(Viewer viewer, SignalShape signalShape, int index, SignalHead signalHead,
-                        Orts.Formats.Msts.SignalItem mstsSignalItem, Orts.Formats.Msts.SignalShape.SignalSubObj mstsSignalSubObj)
+                        SignalItem mstsSignalItem, Formats.Msts.SignalShape.SignalSubObj mstsSignalSubObj)
             {
                 Viewer = viewer;
                 SignalShape = signalShape;
@@ -217,10 +216,7 @@ namespace Orts.Viewer3D
 
                 var mstsSignalType = viewer.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
 
-                if (SignalTypes.ContainsKey(mstsSignalType.Name))
-                    SignalTypeData = SignalTypes[mstsSignalType.Name];
-                else
-                    SignalTypeData = SignalTypes[mstsSignalType.Name] = new SignalTypeData(viewer, mstsSignalType);
+                SignalTypeData = viewer.SignalTypeDataManager.Get(mstsSignalType);
 
                 if (SignalTypeData.Semaphore)
                 {
@@ -412,142 +408,200 @@ namespace Orts.Viewer3D
             [CallOnThread("Loader")]
             internal void Mark()
             {
-                SignalTypeData.Material.Mark();
-                SignalTypeData.GlowMaterial?.Mark();
+                SignalTypeData.Mark();
+            }
+        }
+    }
+
+    public class SignalTypeDataManager
+    {
+        readonly Viewer Viewer;
+
+        Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
+        Dictionary<string, bool> SignalTypesMarks = new Dictionary<string, bool>();
+
+        public SignalTypeDataManager(Viewer viewer)
+        {
+            Viewer = viewer;
+        }
+
+        public SignalTypeData Get(SignalType mstsSignalType)
+        {
+            if (!SignalTypes.ContainsKey(mstsSignalType.Name))
+            {
+                SignalTypes[mstsSignalType.Name] = new SignalTypeData(Viewer, mstsSignalType);
+            }
+
+            return SignalTypes[mstsSignalType.Name];
+        }
+
+        public void Mark()
+        {
+            SignalTypesMarks.Clear();
+            foreach (string signalTypeName in SignalTypes.Keys)
+            {
+                SignalTypesMarks.Add(signalTypeName, false);
             }
         }
 
-        class SignalTypeData
+        public void Mark(SignalTypeData signalType)
         {
-            public readonly Material Material;
-            public readonly Material GlowMaterial;
+            if (SignalTypes.ContainsValue(signalType))
+            {
+                SignalTypesMarks[SignalTypes.First(x => x.Value == signalType).Key] = true;
+            }
+        }
+
+        public void Sweep()
+        {
+            foreach (var signalTypeName in SignalTypesMarks.Where(x => !x.Value).Select(x => x.Key))
+            {
+                SignalTypes.Remove(signalTypeName);
+            }
+        }
+    }
+
+    public class SignalTypeData
+    {
+        readonly Viewer Viewer;
+
+        public readonly Material Material;
+        public readonly Material GlowMaterial;
 #if DEBUG_SIGNAL_SHAPES
             public readonly SignalTypeDataType Type;
 #endif
-            public readonly List<SignalLightPrimitive> Lights = new List<SignalLightPrimitive>();
-            public readonly List<bool> LightsSemaphoreChange = new List<bool>();
-            public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
-            public readonly float FlashTimeOn;
-            public readonly float FlashTimeTotal;
-            public readonly float OnOffTimeS;
-            public readonly bool Semaphore;
-            public readonly bool DayLight = true;
-            public readonly float SemaphoreAnimationTime;
-            public bool AreSemaphoresReindexed;
+        public readonly List<SignalLightPrimitive> Lights = new List<SignalLightPrimitive>();
+        public readonly List<bool> LightsSemaphoreChange = new List<bool>();
+        public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
+        public readonly float FlashTimeOn;
+        public readonly float FlashTimeTotal;
+        public readonly float OnOffTimeS;
+        public readonly bool Semaphore;
+        public readonly bool DayLight = true;
+        public readonly float SemaphoreAnimationTime;
+        public bool AreSemaphoresReindexed;
 
-            public SignalTypeData(Viewer viewer, Orts.Formats.Msts.SignalType mstsSignalType)
+        public SignalTypeData(Viewer viewer, SignalType mstsSignalType)
+        {
+            Viewer = viewer;
+
+            if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
             {
-                if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
-                {
-                    Trace.TraceWarning("Skipped invalid light texture {1} for signal type {0}", mstsSignalType.Name, mstsSignalType.LightTextureName);
-                    Material = viewer.MaterialManager.Load("missing-signal-light");
+                Trace.TraceWarning("Skipped invalid light texture {1} for signal type {0}", mstsSignalType.Name, mstsSignalType.LightTextureName);
+                Material = viewer.MaterialManager.Load("missing-signal-light");
 #if DEBUG_SIGNAL_SHAPES
                     Type = SignalTypeDataType.Normal;
 #endif
-                    FlashTimeOn = 1;
-                    FlashTimeTotal = 2;
-                }
-                else
-                {
-                    var mstsLightTexture = viewer.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
-                    Material = viewer.MaterialManager.Load("SignalLight", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, mstsLightTexture.TextureFile));
-                    GlowMaterial = viewer.MaterialManager.Load("SignalLightGlow");
+                FlashTimeOn = 1;
+                FlashTimeTotal = 2;
+            }
+            else
+            {
+                var mstsLightTexture = viewer.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
+                Material = viewer.MaterialManager.Load("SignalLight", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, mstsLightTexture.TextureFile));
+                GlowMaterial = viewer.MaterialManager.Load("SignalLightGlow");
 #if DEBUG_SIGNAL_SHAPES
                     Type = (SignalTypeDataType)mstsSignalType.FnType;
 #endif
-                    if (mstsSignalType.Lights != null)
-                    {
-                        // Set up some heuristic glow values from the available data:
-                        //   Typical electric light is 3.0/5.0
-                        //   Semaphore is 0.0/5.0
-                        //   Theatre box is 0.0/0.0
-                        var glowDay = 3.0f;
-                        var glowNight = 5.0f;
-
-                        if (mstsSignalType.Semaphore)
-                            glowDay = 0.0f;
-                        if (mstsSignalType.FnType == MstsSignalFunction.INFO || mstsSignalType.FnType == MstsSignalFunction.SHUNTING) // These are good at identifying theatre boxes.
-                            glowDay = glowNight = 0.0f;
-
-                        // use values from signal if defined
-                        if (mstsSignalType.DayGlow.HasValue)
-                        {
-                            glowDay = mstsSignalType.DayGlow.Value;
-                        }
-                        if (mstsSignalType.NightGlow.HasValue)
-                        {
-                            glowNight = mstsSignalType.NightGlow.Value;
-                        }
-
-                        foreach (var mstsSignalLight in mstsSignalType.Lights)
-                        {
-                            if (!viewer.SIGCFG.LightsTable.ContainsKey(mstsSignalLight.Name))
-                            {
-                                Trace.TraceWarning("Skipped invalid light {1} for signal type {0}", mstsSignalType.Name, mstsSignalLight.Name);
-                                continue;
-                            }
-                            var mstsLight = viewer.SIGCFG.LightsTable[mstsSignalLight.Name];
-                            Lights.Add(new SignalLightPrimitive(viewer, new Vector3(-mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), glowDay, glowNight, mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
-                            LightsSemaphoreChange.Add(mstsSignalLight.SemaphoreChange);
-                        }
-                    }
-
-                    foreach (KeyValuePair<string, Orts.Formats.Msts.SignalDrawState> sdrawstate in mstsSignalType.DrawStates)
-                        DrawAspects.Add(sdrawstate.Value.Index, new SignalAspectData(mstsSignalType, sdrawstate.Value));
-                    FlashTimeOn = mstsSignalType.FlashTimeOn;
-                    FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
-                    Semaphore = mstsSignalType.Semaphore;
-                    SemaphoreAnimationTime = mstsSignalType.SemaphoreInfo;
-                    DayLight = mstsSignalType.DayLight;
-                }
-
-                OnOffTimeS = mstsSignalType.OnOffTimeS;
-            }
-        }
-
-        enum SignalTypeDataType
-        {
-            Normal,
-            Distance,
-            Repeater,
-            Shunting,
-            Info,
-        }
-
-        class SignalAspectData
-        {
-            public readonly bool[] DrawLights;
-            public readonly bool[] FlashLights;
-            public float SemaphorePos;
-
-            public SignalAspectData(Orts.Formats.Msts.SignalType mstsSignalType, Orts.Formats.Msts.SignalDrawState drawStateData)
-            {
                 if (mstsSignalType.Lights != null)
                 {
-                    DrawLights = new bool[mstsSignalType.Lights.Count];
-                    FlashLights = new bool[mstsSignalType.Lights.Count];
-                }
-                else
-                {
-                    DrawLights = null;
-                    FlashLights = null;
-                }
+                    // Set up some heuristic glow values from the available data:
+                    //   Typical electric light is 3.0/5.0
+                    //   Semaphore is 0.0/5.0
+                    //   Theatre box is 0.0/0.0
+                    var glowDay = 3.0f;
+                    var glowNight = 5.0f;
 
-                if (drawStateData.DrawLights != null)
-                {
-                    foreach (var drawLight in drawStateData.DrawLights)
+                    if (mstsSignalType.Semaphore)
+                        glowDay = 0.0f;
+                    if (mstsSignalType.FnType == MstsSignalFunction.INFO || mstsSignalType.FnType == MstsSignalFunction.SHUNTING) // These are good at identifying theatre boxes.
+                        glowDay = glowNight = 0.0f;
+
+                    // use values from signal if defined
+                    if (mstsSignalType.DayGlow.HasValue)
                     {
-                        if (drawLight.LightIndex < 0 || DrawLights == null || drawLight.LightIndex >= DrawLights.Length)
-                            Trace.TraceWarning("Skipped extra draw light {0}", drawLight.LightIndex);
-                        else
+                        glowDay = mstsSignalType.DayGlow.Value;
+                    }
+                    if (mstsSignalType.NightGlow.HasValue)
+                    {
+                        glowNight = mstsSignalType.NightGlow.Value;
+                    }
+
+                    foreach (var mstsSignalLight in mstsSignalType.Lights)
+                    {
+                        if (!viewer.SIGCFG.LightsTable.ContainsKey(mstsSignalLight.Name))
                         {
-                            DrawLights[drawLight.LightIndex] = true;
-                            FlashLights[drawLight.LightIndex] = drawLight.Flashing;
+                            Trace.TraceWarning("Skipped invalid light {1} for signal type {0}", mstsSignalType.Name, mstsSignalLight.Name);
+                            continue;
                         }
+                        var mstsLight = viewer.SIGCFG.LightsTable[mstsSignalLight.Name];
+                        Lights.Add(new SignalLightPrimitive(viewer, new Vector3(-mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), glowDay, glowNight, mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
+                        LightsSemaphoreChange.Add(mstsSignalLight.SemaphoreChange);
                     }
                 }
-                SemaphorePos = drawStateData.SemaphorePos;
+
+                foreach (KeyValuePair<string, SignalDrawState> sdrawstate in mstsSignalType.DrawStates)
+                    DrawAspects.Add(sdrawstate.Value.Index, new SignalAspectData(mstsSignalType, sdrawstate.Value));
+                FlashTimeOn = mstsSignalType.FlashTimeOn;
+                FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
+                Semaphore = mstsSignalType.Semaphore;
+                SemaphoreAnimationTime = mstsSignalType.SemaphoreInfo;
+                DayLight = mstsSignalType.DayLight;
             }
+
+            OnOffTimeS = mstsSignalType.OnOffTimeS;
+        }
+
+        public void Mark()
+        {
+            Viewer.SignalTypeDataManager.Mark(this);
+            Material.Mark();
+            GlowMaterial?.Mark();
+        }
+    }
+
+    enum SignalTypeDataType
+    {
+        Normal,
+        Distance,
+        Repeater,
+        Shunting,
+        Info,
+    }
+
+    public class SignalAspectData
+    {
+        public readonly bool[] DrawLights;
+        public readonly bool[] FlashLights;
+        public float SemaphorePos;
+
+        public SignalAspectData(SignalType mstsSignalType, SignalDrawState drawStateData)
+        {
+            if (mstsSignalType.Lights != null)
+            {
+                DrawLights = new bool[mstsSignalType.Lights.Count];
+                FlashLights = new bool[mstsSignalType.Lights.Count];
+            }
+            else
+            {
+                DrawLights = null;
+                FlashLights = null;
+            }
+
+            if (drawStateData.DrawLights != null)
+            {
+                foreach (var drawLight in drawStateData.DrawLights)
+                {
+                    if (drawLight.LightIndex < 0 || DrawLights == null || drawLight.LightIndex >= DrawLights.Length)
+                        Trace.TraceWarning("Skipped extra draw light {0}", drawLight.LightIndex);
+                    else
+                    {
+                        DrawLights[drawLight.LightIndex] = true;
+                        FlashLights[drawLight.LightIndex] = drawLight.Flashing;
+                    }
+                }
+            }
+            SemaphorePos = drawStateData.SemaphorePos;
         }
     }
 

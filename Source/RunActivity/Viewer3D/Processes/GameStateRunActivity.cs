@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2021 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -36,7 +36,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace Orts.Viewer3D.Processes
@@ -77,6 +76,14 @@ namespace Orts.Viewer3D.Processes
         public GameStateRunActivity(string[] args)
         {
             Arguments = args;
+        }
+
+        internal override void Dispose()
+        {
+            Loading.Dispose();
+            LoadingScreen.Dispose();
+            LoadingBar.Dispose();
+            base.Dispose();
         }
 
         internal override void Update(RenderFrame frame, double totalRealSeconds)
@@ -1240,12 +1247,11 @@ namespace Orts.Viewer3D.Processes
             return 0;
         }
 
-        class LoadingPrimitive : RenderPrimitive
+        class LoadingPrimitive : RenderPrimitive, IDisposable
         {
             public readonly LoadingMaterial Material;
             readonly VertexBuffer VertexBuffer;
 
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
             public LoadingPrimitive(Game game)
             {
                 Material = GetMaterial(game);
@@ -1268,6 +1274,11 @@ namespace Orts.Viewer3D.Processes
                     new VertexPositionTexture(new Vector3(-dd - 0.5f, -dd + 0.5f, -3), new Vector2(0, 1)),
                     new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -3), new Vector2(1, 1)),
                 };
+            }
+
+            public void Dispose()
+            {
+                Material.Dispose();
             }
             
             public override void Draw(GraphicsDevice graphicsDevice)
@@ -1343,17 +1354,21 @@ namespace Orts.Viewer3D.Processes
             }
         }
 
-        class LoadingMaterial : Material
+        class LoadingMaterial : Material, IDisposable
         {
             public readonly LoadingShader Shader;
             public readonly Texture2D Texture;
 
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
             public LoadingMaterial(Game game)
                 : base(null, null)
             {
                 Shader = new LoadingShader(game.RenderProcess.GraphicsDevice);
                 Texture = GetTexture(game);
+            }
+
+            public void Dispose()
+            {
+                Texture?.Dispose();
             }
 
             virtual protected Texture2D GetTexture(Game game)

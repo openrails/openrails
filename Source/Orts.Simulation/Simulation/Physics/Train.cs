@@ -50,15 +50,13 @@
 // #define DEBUG_COUPLER_FORCES
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation.AIs;
 using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
-using Orts.Parsers.Msts;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
@@ -71,7 +69,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Event = Orts.Common.Event;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 
 namespace Orts.Simulation.Physics
 {
@@ -80,6 +77,7 @@ namespace Orts.Simulation.Physics
         public List<TrainCar> Cars = new List<TrainCar>();           // listed front to back
         public int Number;
         public string Name;
+        public string TcsParametersFileName;
         public static int TotalNumber = 1; // start at 1 (0 is reserved for player train)
         public TrainCar FirstCar
         {
@@ -220,7 +218,6 @@ namespace Orts.Simulation.Physics
         public int IndexNextSignal = -1;                 // Index in SignalObjectItems for next signal
         public int IndexNextSpeedlimit = -1;             // Index in SignalObjectItems for next speedpost
         public SignalObject[] NextSignalObject = new SignalObject[2];  // direct reference to next signal
-        public SignalObject AllowedCallOnSignal;         // Signal for which train has call on allowed by dispatcher
 
         // Local max speed independently from signal and speedpost speed;
         // depends from various parameters like route max speed, overall or section efficiency of service,
@@ -656,11 +653,9 @@ namespace Orts.Simulation.Physics
 
         }
 
-        //================================================================================================//
         /// <summary>
         /// Restore
-        /// <\summary>
-
+        /// </summary>
         public Train(Simulator simulator, BinaryReader inf)
         {
             Init(simulator);
@@ -945,7 +940,11 @@ namespace Orts.Simulation.Physics
             if (count > 0)
             {
                 for (int i = 0; i < count; ++i)
-                    Cars.Add(RollingStock.Restore(simulator, inf, this));
+                {
+                    TrainCar car = RollingStock.Load(simulator, this, inf.ReadString(), false);
+                    car.Restore(inf);
+                    car.Initialize();
+                }
             }
             SetDPUnitIDs(true);
         }
@@ -1006,12 +1005,9 @@ namespace Orts.Simulation.Physics
             }
         }
 
-
-        //================================================================================================//
         /// <summary>
         /// save game state
-        /// <\summary>
-
+        /// </summary>
         public virtual void Save(BinaryWriter outf)
         {
             SaveCars(outf);
@@ -1201,8 +1197,11 @@ namespace Orts.Simulation.Physics
         private void SaveCars(BinaryWriter outf)
         {
             outf.Write(Cars.Count);
-            foreach (TrainCar car in Cars)
-                RollingStock.Save(outf, car);
+            foreach (MSTSWagon wagon in Cars.OfType<MSTSWagon>())
+            {
+                outf.Write(wagon.WagFilePath);
+                wagon.Save(outf);
+            }
         }
 
         static void SaveTrafficSDefinition(BinaryWriter outf, Traffic_Service_Definition thisTSD)
@@ -2878,8 +2877,6 @@ namespace Orts.Simulation.Physics
                 // system will take back control of the signal
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
-
-                AllowedCallOnSignal = null;
             }
             UpdateSectionStateManual();                                                           // update track occupation          //
             UpdateManualMode(SignalObjIndex);                                                     // update route clearance           //
@@ -2907,8 +2904,6 @@ namespace Orts.Simulation.Physics
                 // system will take back control of the signal
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
-
-                AllowedCallOnSignal = null;
             }
             UpdateSectionStateExplorer();                                                         // update track occupation          //
             UpdateExplorerMode(SignalObjIndex);                                                   // update route clearance           //
@@ -4242,9 +4237,8 @@ namespace Orts.Simulation.Physics
 
         public void PropagateBrakePressure(float elapsedClockSeconds)
         {
-            if (LeadLocomotiveIndex >= 0)
+            if (LeadLocomotive is MSTSLocomotive lead)
             {
-                MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
                     lead.TrainBrakeController.UpdatePressure(ref EqualReservoirPressurePSIorInHg, elapsedClockSeconds, ref BrakeLine4);
                 if (lead.EngineBrakeController != null)
@@ -7442,8 +7436,6 @@ namespace Orts.Simulation.Physics
                     signalObject.holdState = SignalObject.HoldState.None;
                 }
 
-                AllowedCallOnSignal = null;
-
                 signalObject.resetSignalEnabled();
             }
         }
@@ -7595,9 +7587,6 @@ namespace Orts.Simulation.Physics
 
         public virtual bool TestCallOn(SignalObject thisSignal, bool allowOnNonePlatform, TCSubpathRoute thisRoute, string dumpfile)
         {
-            if (AllowedCallOnSignal == thisSignal)
-                return true;
-
             bool intoPlatform = false;
 
             foreach (Train.TCRouteElement routeElement in thisSignal.signalRoute)
@@ -7941,8 +7930,6 @@ namespace Orts.Simulation.Physics
                 //the following is added by JTang, passing a hold signal, will take back control by the system
                 if (thisSignal.holdState == SignalObject.HoldState.ManualPass ||
                     thisSignal.holdState == SignalObject.HoldState.ManualApproach) thisSignal.holdState = SignalObject.HoldState.None;
-
-                AllowedCallOnSignal = null;
 
                 thisSignal.resetSignalEnabled();
             }

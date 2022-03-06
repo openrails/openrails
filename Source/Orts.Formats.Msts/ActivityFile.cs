@@ -1285,6 +1285,7 @@ namespace Orts.Formats.Msts
         public MaxVelocity MaxVelocity;
         int NextWagonUID;
         public float Durability = 1.0f;   // Value assumed if attribute not found.
+        public string TcsParametersFileName = string.Empty;
 
         public List<Wagon> WagonList = new List<Wagon>();
 
@@ -1299,6 +1300,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("durability", ()=>{ Durability = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("wagon", ()=>{ WagonList.Add(new Wagon(stf)); }),
                 new STFReader.TokenProcessor("engine", ()=>{ WagonList.Add(new Wagon(stf)); }),
+                new STFReader.TokenProcessor("ortstraincontrolsystemparameters", () => TcsParametersFileName = stf.ReadStringBlock(null)),
             });
         }
     }
