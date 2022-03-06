@@ -106,9 +106,6 @@
             this.checkHotStart = new System.Windows.Forms.CheckBox();
             this.checkSimpleControlsPhysics = new System.Windows.Forms.CheckBox();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
-            this.checkCurveResistanceDependent = new System.Windows.Forms.CheckBox();
-            this.checkTunnelResistanceDependent = new System.Windows.Forms.CheckBox();
-            this.checkWindResistanceDependent = new System.Windows.Forms.CheckBox();
             this.labelAdhesionMovingAverageFilterSize = new System.Windows.Forms.Label();
             this.numericAdhesionMovingAverageFilterSize = new System.Windows.Forms.NumericUpDown();
             this.checkBreakCouplers = new System.Windows.Forms.CheckBox();
@@ -1157,9 +1154,6 @@
             this.tabPageSimulation.Controls.Add(this.checkHotStart);
             this.tabPageSimulation.Controls.Add(this.checkSimpleControlsPhysics);
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
-            this.tabPageSimulation.Controls.Add(this.checkCurveResistanceDependent);
-            this.tabPageSimulation.Controls.Add(this.checkTunnelResistanceDependent);
-            this.tabPageSimulation.Controls.Add(this.checkWindResistanceDependent);
             this.tabPageSimulation.Controls.Add(this.labelAdhesionMovingAverageFilterSize);
             this.tabPageSimulation.Controls.Add(this.numericAdhesionMovingAverageFilterSize);
             this.tabPageSimulation.Controls.Add(this.checkBreakCouplers);
@@ -1257,37 +1251,6 @@
             this.checkCurveSpeedDependent.TabIndex = 5;
             this.checkCurveSpeedDependent.Text = "Curve dependent speed limit";
             this.checkCurveSpeedDependent.UseVisualStyleBackColor = true;
-            // 
-            // checkCurveResistanceDependent
-            // 
-            this.checkCurveResistanceDependent.AutoSize = true;
-            this.checkCurveResistanceDependent.Location = new System.Drawing.Point(6, 77);
-            this.checkCurveResistanceDependent.Name = "checkCurveResistanceDependent";
-            this.checkCurveResistanceDependent.Size = new System.Drawing.Size(159, 17);
-            this.checkCurveResistanceDependent.TabIndex = 4;
-            this.checkCurveResistanceDependent.Text = "Curve dependent resistance";
-            this.checkCurveResistanceDependent.UseVisualStyleBackColor = true;
-            // 
-            // checkTunnelResistanceDependent
-            // 
-            this.checkTunnelResistanceDependent.AutoSize = true;
-            this.checkTunnelResistanceDependent.Location = new System.Drawing.Point(6, 123);
-            this.checkTunnelResistanceDependent.Name = "checkTunnelResistanceDependent";
-            this.checkTunnelResistanceDependent.Size = new System.Drawing.Size(164, 17);
-            this.checkTunnelResistanceDependent.TabIndex = 6;
-            this.checkTunnelResistanceDependent.Text = "Tunnel dependent resistance";
-            this.checkTunnelResistanceDependent.UseVisualStyleBackColor = true;
-            // 
-            // checkWindResistanceDependent
-            // 
-            this.checkWindResistanceDependent.AutoSize = true;
-            this.checkWindResistanceDependent.Location = new System.Drawing.Point(6, 146);
-            this.checkWindResistanceDependent.Name = "checkWindResistanceDependent";
-            this.checkWindResistanceDependent.Size = new System.Drawing.Size(156, 17);
-            this.checkWindResistanceDependent.TabIndex = 4;
-            this.checkWindResistanceDependent.Text = "Wind dependent resistance";
-            this.checkWindResistanceDependent.UseVisualStyleBackColor = true;
-
             // 
             // labelAdhesionMovingAverageFilterSize
             // 
