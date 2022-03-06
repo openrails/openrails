@@ -26,6 +26,9 @@ using Orts.Processes;
 using System.IO;
 using System.Windows.Forms;
 using CancellationTokenSource = System.Threading.CancellationTokenSource;
+using System.Net.Sockets;
+using System.Diagnostics;
+using System;
 
 namespace Orts.Viewer3D.Processes
 {
@@ -63,8 +66,22 @@ namespace Orts.Viewer3D.Processes
 
             string myWebContentPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Content\\Web");
             EndPointManager.UseIpv6 = true;
-            using (EmbedIO.WebServer server = WebServer.CreateWebServer($"http://*:{Game.Settings.WebServerPort}", myWebContentPath))
-                server.RunAsync(StopServer.Token).Wait();
+            try
+            {
+                using (EmbedIO.WebServer server = WebServer.CreateWebServer($"http://*:{Game.Settings.WebServerPort}", myWebContentPath))
+                    server.RunAsync(StopServer.Token).Wait();
+            }
+            catch(AggregateException ex)
+            {
+                if (ex.InnerException is SocketException)
+                {
+                    Trace.TraceWarning($"Port {Game.Settings.WebServerPort} is already in use. Continuing without webserver");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
     }
 }

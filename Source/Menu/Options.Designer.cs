@@ -425,18 +425,6 @@
             this.pbOverspeedMonitor.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbOverspeedMonitor.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // pbEnableWebServer
-            // 
-            this.pbEnableWebServer.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbEnableWebServer.Location = new System.Drawing.Point(6, 286);
-            this.pbEnableWebServer.Name = "pbEnableWebServer";
-            this.pbEnableWebServer.Size = new System.Drawing.Size(18, 18);
-            this.pbEnableWebServer.TabIndex = 29;
-            this.pbEnableWebServer.TabStop = false;
-            this.pbEnableWebServer.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbEnableWebServer.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbEnableWebServer.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
             // pbDisableTcsScripts
             // 
             this.pbDisableTcsScripts.Image = global::ORTS.Properties.Resources.info_18;
@@ -587,18 +575,6 @@
             0,
             0,
             0});
-            // 
-            // checkEnableWebServer
-            // 
-            this.checkEnableWebServer.AutoSize = true;
-            this.checkEnableWebServer.Location = new System.Drawing.Point(32, 285);
-            this.checkEnableWebServer.Name = "checkEnableWebServer";
-            this.checkEnableWebServer.Size = new System.Drawing.Size(255, 17);
-            this.checkEnableWebServer.TabIndex = 15;
-            this.checkEnableWebServer.Text = "Enable webserver                                                ";
-            this.checkEnableWebServer.UseVisualStyleBackColor = true;
-            this.checkEnableWebServer.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.checkEnableWebServer.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkOverspeedMonitor
             // 
