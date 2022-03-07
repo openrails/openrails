@@ -375,10 +375,6 @@ displayed as a message. This option is described in detail
 :ref:`here <physics-curve-speed-limit-application>` (OR application).
 OR does not display the damage.
 
-Run electric locos on non-electrified routes
---------------------------------------------
-
-This option allows the running of electric locomotives on non-electrified routes.
 
 Steam locomotive hot start
 --------------------------
