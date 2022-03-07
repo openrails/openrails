@@ -32,44 +32,8 @@ sometimes use a view other than the cabview to follow the train, and
 therefore will not see the alerter warning, selecting the related option
 *Also in external views* enables the alerter in those views as well.
 
-.. _options-map-window:
 
-Map window
------------------
-
-It is suggested to always select this option. When this option is selected,
-pressing ``<Ctrl+9>`` at runtime creates an additional window like the
-following. This window coexists with the main Open Rails window, and
-``<Alt+Tab>`` switches between it and the Open Rails window. See the related
-option :ref:`Fast fullscreen Alt+Tab <options-fullscreen>`.
-
-Through this window you can monitor train movements and also influence
-them, by setting signals and switches. A complete description of the
-dispatcher tab can be found :ref:`here <driving-dispatcher>`.
-
-.. image:: images/options-dispatcher.png
-
-Graduated release air brakes
-----------------------------
-
-Selecting this option allows a partial release of the brakes. Generally
-speaking, operating with the option checked is equivalent to passenger
-standard and unchecked is equivalent to freight standard. A complete
-description of this option can be found :ref:`here <physics-braking>`.
-
-Large address aware binaries
-----------------------------
-
-It is suggested to leave this option checked. When it is unchecked, Open
-Rails can use a maximum of 2 GB of RAM. When it is checked, the maximum is
-4 GB for 64-bit Windows systems, and 2 or 3 GB for 32-bit Windows systems.
-To increase the maximum RAM used by OR in 32-bit Windows systems from 2 to
-3 GB see the information found `here <http://knowledge.autodesk.com/
-support/autocad/troubleshooting/caas/sfdcarticles/sfdcarticles/
-How-to-enable-a-3GB-switch-on-Windows-Vista-Windows-7-or-Windows-XP-s.html>`_.
-
-Take note that the RAM increase from 2 to 3 GB in 32-bit systems can slow
-down computer operation when not using OR.
+.. _options-control-confirmations:
 
 Control confirmations
 ---------------------
@@ -91,6 +55,16 @@ or "Replay ended" but you cannot suppress these system messages.
 
 Control confirmations can also be toggled on and off at runtime using the 
 key combination Ctrl-Alt-F10. 
+
+
+Graduated release air brakes
+----------------------------
+
+Selecting this option allows a partial release of the brakes. Generally
+speaking, operating with the option checked is equivalent to passenger
+standard and unchecked is equivalent to freight standard. A complete
+description of this option can be found :ref:`here <physics-braking>`.
+
 
 
 .. _options-retainers:
@@ -401,10 +375,6 @@ displayed as a message. This option is described in detail
 :ref:`here <physics-curve-speed-limit-application>` (OR application).
 OR does not display the damage.
 
-Run electric locos on non-electrified routes
---------------------------------------------
-
-This option allows the running of electric locomotives on non-electrified routes.
 
 Steam locomotive hot start
 --------------------------
@@ -620,17 +590,6 @@ Show shape warnings
 When this option is selected, when OR is loading the shape (.s) files it
 will report errors in syntax and structure (even if these don't cause
 runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop.
-
-Load day/night textures only when needed
-----------------------------------------
-
-As a default OR loads night textures together with the day textures both at
-daytime and nighttime. When this option is selected, to reduce loading time and reduce
-memory used, night textures are not loaded in the daytime and are only
-loaded at sunset (if the game continues through sunset time); analogously day
-textures are not loaded in the nighttime if the related night textures are
-available, and are only loaded at sunrise (if the game continues through sunrise
-time).
 
 Signal light glow
 -----------------

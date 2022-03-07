@@ -236,8 +236,6 @@ namespace ORTS.Settings
         public bool TunnelResistanceDependent { get; set; }
         [Default(false)]
         public bool WindResistanceDependent { get; set; }
-        [Default(false)]
-        public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]
         public bool HotStart { get; set; }
         [Default(false)]
@@ -320,8 +318,6 @@ namespace ORTS.Settings
         public bool AdhesionProportionalToWeather { get; set; }
         [Default(false)]
         public bool NoForcedRedAtStationStops { get; set; }
-        [Default(false)]
-        public bool ConditionalLoadOfDayOrNightTextures { get; set; }
         [Default(100)]
         public int PrecipitationBoxHeight { get; set; }
         [Default(500)]

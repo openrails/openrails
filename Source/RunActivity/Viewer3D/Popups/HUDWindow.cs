@@ -718,19 +718,17 @@ namespace Orts.Viewer3D.Popups
             var train = locomotive.Train;
 
             int numberOfDieselLocomotives = 0;
-            int maxNumberOfEngines = 0;
             for (var i = 0; i<train.Cars.Count; i++)
             {
                 if (train.Cars[i] is MSTSDieselLocomotive)
                 {
                     numberOfDieselLocomotives++;
-                    maxNumberOfEngines = Math.Max(maxNumberOfEngines, (train.Cars[i] as MSTSDieselLocomotive).DieselEngines.Count);
                 }
             }
             if (numberOfDieselLocomotives > 0)
             {
                 var row = table.CurrentRow;
-                TableAddLines(table, MSTSDieselLocomotive.GetDebugTableBase(numberOfDieselLocomotives, maxNumberOfEngines));
+                TableAddLines(table, MSTSDieselLocomotive.GetDebugTableBase(numberOfDieselLocomotives));
                 var k = 0;
                 var dpUnitId = 0;
                 for (var i = 0; i<train.Cars.Count; i++)
@@ -1497,11 +1495,11 @@ namespace Orts.Viewer3D.Popups
         readonly ulong ProcessVirtualAddressLimit;
         #endregion
 
-        public uint GetWorkingSetSize()
+        public ulong GetWorkingSetSize()
         {
             // Get memory usage (working set).
             GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.Size);
-            return (uint)ProcessMemoryCounters.WorkingSetSize;
+            return (ulong)ProcessMemoryCounters.WorkingSetSize;
         }
 
         public ulong GetVirtualAddressLimit()

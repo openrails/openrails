@@ -366,11 +366,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                 break;
                         }
 
-
                         if (!Simulator.TRK.Tr_RouteFile.Electrified)
-                            Simulator.Confirmer.Warning(Simulator.Catalog.GetString("No power line!"));
-                        if (Simulator.Settings.OverrideNonElectrifiedRoutes)
-                            Simulator.Confirmer.Information(Simulator.Catalog.GetString("Power line condition overridden."));
+                            Simulator.Confirmer.Information(Simulator.Catalog.GetString("Pantograph raised even though this route is not electrified"));
                     }
                     break;
             }
