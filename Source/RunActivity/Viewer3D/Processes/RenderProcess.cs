@@ -67,11 +67,6 @@ namespace Orts.Viewer3D.Processes
         public static int[] ShadowMapDiameter; // diameter of shadow map
         public static float[] ShadowMapLimit; // diameter of shadow map far edge from camera
 
-        public static bool LEVEL_9_3;
-        public static int MAX_BONES;
-        public static int MAX_LIGHTS; // must not be lower than 2.
-        public static bool CLEARCOAT;
-
         internal RenderProcess(Game game)
         {
             Game = game;
@@ -107,11 +102,6 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager.PreferMultiSampling = (AntiAliasingMethod)Game.Settings.AntiAliasing != AntiAliasingMethod.None;
             GraphicsDeviceManager.HardwareModeSwitch = false; // for fast full-screen Alt-Tab switching
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
-
-            LEVEL_9_3 = false;// !Game.Settings.IsDirectXFeatureLevelIncluded(DirectXFeature.Level10_0);
-            MAX_BONES = LEVEL_9_3 ? 1 : 50;
-            MAX_LIGHTS = LEVEL_9_3 ? 2 : 20;
-            CLEARCOAT = LEVEL_9_3 ? false : true;
         }
 
         void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
