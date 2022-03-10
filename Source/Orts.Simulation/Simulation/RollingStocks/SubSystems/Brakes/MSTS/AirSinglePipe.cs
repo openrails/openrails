@@ -740,7 +740,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                         train.LeadPipePressurePSI = lead.BrakeSystem.BrakeLine1PressurePSI;  // Keep a record of current train pipe pressure in lead locomotive
                     }
-                    
+
                     // Propagate air pipe pressure along the train (brake pipe and main reservoir pipe)
 #if DEBUG_TRAIN_PIPE_LEAK
 
@@ -764,19 +764,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             {
                                 float pressureDiffPSI = car.BrakeSystem.BrakeLine1PressurePSI - prevCar.BrakeSystem.BrakeLine1PressurePSI;
                                 // Based on the principle of pressure equalization between adjacent cars
-                            // First, we define a variable storing the pressure diff between cars, but limited to a maximum flow rate depending on pipe characteristics
-                            // The sign in the equation determines the direction of air flow.
+                                // First, we define a variable storing the pressure diff between cars, but limited to a maximum flow rate depending on pipe characteristics
+                                // The sign in the equation determines the direction of air flow.
                                 float trainPipePressureDiffPropagationPSI = pressureDiffPSI * Math.Min(trainPipeTimeVariationS / brakePipeTimeFactorS, 1);
 
-                            // Air flows from high pressure to low pressure, until pressure is equal in both cars.
-                            // Brake pipe volumes of both cars are taken into account, so pressure increase/decrease is proportional to relative volumes.
-                            // If TrainPipePressureDiffPropagationPSI equals to p1-p0 the equalization is achieved in one step.
+                                // Air flows from high pressure to low pressure, until pressure is equal in both cars.
+                                // Brake pipe volumes of both cars are taken into account, so pressure increase/decrease is proportional to relative volumes.
+                                // If TrainPipePressureDiffPropagationPSI equals to p1-p0 the equalization is achieved in one step.
                                 car.BrakeSystem.BrakeLine1PressurePSI -= trainPipePressureDiffPropagationPSI * prevCar.BrakeSystem.BrakePipeVolumeM3 / (prevCar.BrakeSystem.BrakePipeVolumeM3 + car.BrakeSystem.BrakePipeVolumeM3);
                                 prevCar.BrakeSystem.BrakeLine1PressurePSI += trainPipePressureDiffPropagationPSI * car.BrakeSystem.BrakePipeVolumeM3 / (prevCar.BrakeSystem.BrakePipeVolumeM3 + car.BrakeSystem.BrakePipeVolumeM3);
-                        }
+                            }
                             // Main reservoir pipe
                             if (prevCar.BrakeSystem.TwoPipes && car.BrakeSystem.TwoPipes)
-                        {
+                            {
                                 float pressureDiffPSI = car.BrakeSystem.BrakeLine2PressurePSI - prevCar.BrakeSystem.BrakeLine2PressurePSI;
                                 float trainPipePressureDiffPropagationPSI = pressureDiffPSI * Math.Min(trainPipeTimeVariationS / brakePipeTimeFactorS, 1);
                                 car.BrakeSystem.BrakeLine2PressurePSI -= trainPipePressureDiffPropagationPSI * prevCar.BrakeSystem.BrakePipeVolumeM3 / (prevCar.BrakeSystem.BrakePipeVolumeM3 + car.BrakeSystem.BrakePipeVolumeM3);
@@ -785,7 +785,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         }
                         // Empty the brake pipe if the brake hose is not connected and angle cocks are open
                         if (!car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen)
-                            {
+                        {
                             car.BrakeSystem.BrakeLine1PressurePSI = Math.Max(car.BrakeSystem.BrakeLine1PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
                             if (car.BrakeSystem.TwoPipes)
                             {
@@ -810,7 +810,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // Join main reservoirs of adjacent locomotives
             if (first != -1 && last != -1)
             {
-            float sumv = 0;
+                float sumv = 0;
                 float sumpv = 0;
                 for (int i = first; i <= last; i++)
                 {
