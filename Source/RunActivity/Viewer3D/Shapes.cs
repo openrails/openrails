@@ -257,7 +257,7 @@ namespace Orts.Viewer3D
     /// Has a heirarchy of objects that can be moved by adjusting the XNAMatrices
     /// at each node.
     /// </summary>
-    public partial class PoseableShape : StaticShape
+    public class PoseableShape : StaticShape
     {
         protected static Dictionary<string, bool> SeenShapeAnimationError = new Dictionary<string, bool>();
 
@@ -298,11 +298,20 @@ namespace Orts.Viewer3D
         /// </summary>
         public void AnimateMatrix(int iMatrix, float key)
         {
-            if (SharedShape is GltfShape)
+            if (SharedShape is GltfShape gltfShape)
             {
-                // iMatrix is the number of the animation, not the number of the node,
-                // key is the time, not the number of the frame.
-                AnimateGltfMatrices(iMatrix, key);
+                if (!gltfShape.HasAnimation(iMatrix))
+                {
+                    if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
+                        Trace.TraceInformation("No animation number {1} in shape {0}", SharedShape.FilePath, iMatrix);
+                    SeenShapeAnimationError[SharedShape.FilePath] = true;
+                }
+                else
+                {
+                    // iMatrix is the number of the animation, not the number of the node,
+                    // key is the time, not the number of the frame.
+                    gltfShape.Animate(iMatrix, key, XNAMatrices);
+                }
                 return;
             }
 
