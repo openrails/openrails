@@ -355,7 +355,7 @@ The diesel locomotive model in ORTS simulates the behavior of two basic
 types of diesel engine driven locomotives-- diesel-electric and
 diesel-mechanical. The diesel engine model is the same for both types, but
 acts differently because of the different type of load. Basic controls
-(direction, throttle, dynamic brake, air brakes) are common across all
+(direction, throttle, and brakes) are common across all
 classes of engines. Diesel engines can be started or stopped by pressing
 the START/STOP key (``<Shift+Y>`` in English keyboards). The starting and
 stopping sequence is driven by a *starter* logic, which can be customized,
@@ -688,6 +688,78 @@ in MSTS are not yet implemented, such as ``GearBoxBackLoadForce``,
 Output performance is very different compared with MSTS. The output force
 is computed using the diesel engine torque characteristics to get results
 that are more precise.
+
+To indicate that the diesel is a mechanical transmission, ``ORTSDieselTransmissionType``
+needs to be set to "Mechanic".
+
+Two ORTS mechanical gearbox configurations can be set up.
+
+These two gearboxes can be selected by the use of the following parameter:
+
+``ORTSGearBoxType ( A )`` - represents a semi-automatic pre-selector gearbox that gives 
+a continuous power output that is not interrupted when changing gears.
+
+``ORTSGearBoxType ( B )`` - represents a semi-automatic pre-selector type gear box where 
+although there is a break in tractive effort when changing from one gear to another, 
+the engine speed is reduced by a shaft brake if needed, so that there is no need for 
+the driver to adjust the throttle.
+
+One of three possible types of main clutch are selectable for each of the above gear box 
+types, as follows:
+
+``ORTSMainClutchType ( Friction )`` - represents a mechanical friction clutch.
+
+``ORTSMainClutchType ( Fluid )`` - represents a fluid coupling. Where a transmission includes 
+both a friction clutch and a fluid coupling then ORTSMainClutchType ( “Fluid” ) should be 
+used in the eng file.
+
+``ORTSMainClutchType ( Scoop )`` - represents a fluid coupling that includes a scoop device to 
+disconnect the engine from the transmission at idle speed.
+
+``ORTSGearBoxFreeWheel`` - indicates whether a freewheel mechanism is included in the transmission.
+( 0 ) - should be used for transmissions that do not include a freewheel. This option will allow 
+‘engine braking’ to occur when appropriate.
+( 1 ) - should be used for transmissions that include a freewheel. This option will allow the train 
+to coast with the engine in gear.
+
+``GearBoxNumberOfGears`` - The number of gears available in the gear box.
+
+Currently only a BASIC model configuration is available (ie no user defined traction curves or 
+diesel engine curves are supported). OR calculates the tractive force curves for each gear based 
+on the "inbuilt" torque curve of a typical diesel engine. 
+
+``GearBoxMaxSpeedForGears`` - sets the maximum speed for each gear, corresponding to maximum engine 
+rpm and maximum power . As an example, the values for a typical British Railways first generation dmu are:
+
+GearBoxMaxSpeedForGears( 15.3 27 41 65.5 ) The default values are in mph, although other units can be entered. 
+In the above case the maximum permitted speed of the train is 70 mph; a small amount of ‘overspeed’ being allowed
+ in top gear. The fourth gear speed of 65.5 mph corresponds to the maximum engine rpm set in the eng file by 
+ ``DieselEngineMaxRPM``. The diesel engine may continue to ‘runaway’ above its normal ‘maximum speed’ until it 
+ reaches the maximum governed speed or ‘redline’ speed at which the engine governor will cut off the fuel 
+ supply until the engine speed is reduced. This speed can be set in basic Open Rails eng files using ``ORTSDieselEngineGovenorRpM``. 
+ In the case of the above train, then these would be
+
+DieselEngineMaxRPM( 1800 )
+ORTSDieselEngineGovenorRpM ( 2000 )
+
+If under any circumstances the engine reaches ``ORTSDieselEngineGovenorRpM`` then the diesel engine will automatically be shut down.
+
+"ORTSGearBoxTractiveForceAtSpeed" - The tractive force available in each gear at the speed indicated in GearBoxMaxSpeedForGears. Units 
+by default are in N, however lbf, N or kN. Published values for tractive effort of geared locomotives and multiple units 
+are generally those at the maximum speed for each gear.
+
+Hence a typical gear configuration for a diesel mechanic locomotive might look like the following:
+
+ ORTSDieselTransmissionType ( Mechanic )
+
+ ORTSGearBoxType ( B )
+ ORTSMainClutchType ( "Friction" )
+ ORTSGearBoxFreeWheel ( 0 )
+
+ GearBoxOperation( Manual )
+ GearBoxNumberOfGears( 6 )
+ GearBoxMaxSpeedForGears( 4.5mph 6mph 9mph 14.5mph 21mph 33mph )
+ ORTSGearBoxTractiveForceatSpeed( 35400lbf 26600lbf 17700lbf 11200lbf 7600lbf 4830lbf )
 
 .. _physics-traction-cut-off-relay:
 
