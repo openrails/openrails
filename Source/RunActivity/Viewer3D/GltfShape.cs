@@ -70,7 +70,8 @@ namespace Orts.Viewer3D
             ["nz"] = CubeMapFace.NegativeZ
         };
 
-        public Dictionary<int, GltfAnimation> GltfAnimations = new Dictionary<int, GltfAnimation>();
+        List<GltfAnimation> GltfAnimations = new List<GltfAnimation>();
+        
         public float[] MinimumScreenCoverages = new[] { 0f };
         public readonly Vector4[] BoundingBoxNodes = new Vector4[8];
 
@@ -305,7 +306,7 @@ namespace Orts.Viewer3D
             Gltf Gltf;
             string GltfDir;
             string GltfFileName;
-            Dictionary<int, byte[]> BinaryBuffers;
+            Dictionary<int, byte[]> BinaryBuffers => Shape.BinaryBuffers;
 
             /// <summary>
             /// All inverse bind matrices in a gltf file. The key is the accessor number.
@@ -326,7 +327,6 @@ namespace Orts.Viewer3D
 
                 Shape = shape;
                 Viewer = shape.Viewer;
-                BinaryBuffers = shape.BinaryBuffers;
 
                 Gltf = gltfFile;
                 GltfDir = Path.GetDirectoryName(gltfFileName);
@@ -443,9 +443,9 @@ namespace Orts.Viewer3D
                         // Use MatrixNames for storing animation and articulation names.
                         // Here the MatrixNames are not bound to nodes (and matrices), but rather to the animation number.
                         shape.MatrixNames[j] = gltfAnimation.Name;
-                        if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
+if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
 
-                        GltfAnimation animation = new GltfAnimation();
+                        GltfAnimation animation = new GltfAnimation(gltfAnimation.Name);
                         for (var k = 0; k < gltfAnimation.Channels.Length; k++)
                         {
                             var gltfChannel = gltfAnimation.Channels[k];
@@ -460,7 +460,6 @@ namespace Orts.Viewer3D
 
                             var sampler = gltfAnimation.Samplers[gltfChannel.Sampler];
                             var inputAccessor = gltfFile.Accessors[sampler.Input];
-                            channel.FrameCount = inputAccessor.Count;
                             channel.TimeArray = new float[inputAccessor.Count];
                             channel.TimeMin = inputAccessor.Min[0];
                             channel.TimeMax = inputAccessor.Max[0];
@@ -493,14 +492,11 @@ namespace Orts.Viewer3D
                             }
                             channel.Interpolation = sampler.Interpolation;
                         }
-                        shape.GltfAnimations.Add(j, animation);
+                        shape.GltfAnimations.Add(animation);
                     }
                     if (morphWarning)
                         Trace.TraceInformation($"glTF morphing animation is unsupported in file {gltfFileName}");
                 }
-
-                // At the end of the loading release the unused references
-                BinaryBuffers = null;
             }
 
             internal Stream GetBufferView(AccessorSparseIndices accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
@@ -1641,48 +1637,23 @@ namespace Orts.Viewer3D
             public TextureInfo ClearcoatRoughnessTexture { get; set; }
             public MaterialNormalTextureInfo ClearcoatNormalTexture { get; set; }
         }
-    }
 
-    public partial class PoseableShape
-    {
+        public bool HasAnimation(int number) => GltfAnimations.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
+        public bool AnimationIsArticulation(int number) => GltfAnimations.ElementAtOrDefault(number)?.Channels?.FirstOrDefault()?.TimeArray == null;
+        public float GetAnimationLength(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TimeMax).Max() ?? 0;
+        public IEnumerable<int> GetArticulationTargetNodes(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TargetNode);
+
         /// <summary>
         /// Calculate the animation matrices of a glTF animation.
         /// </summary>
         /// <param name="animationNumber">The number of the animation to advance.</param>
         /// <param name="time">Actual time in the animation clip in seconds.</param>
-        protected void AnimateGltfMatrices(int animationNumber, float time)
+        public void Animate(int animationNumber, float time, Matrix[] animatedMatrices)
         {
-            if (!(SharedShape is GltfShape shape))
-                return;
-
-            if (shape.GltfAnimations == null || shape.GltfAnimations.Count == 0)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(shape.FilePath))
-                    Trace.TraceInformation("No animations available in shape {0}", shape.FilePath);
-                SeenShapeAnimationError[shape.FilePath] = true;
-                return;  // animation is missing
-            }
-
-            if (animationNumber < 0 || animationNumber >= shape.GltfAnimations.Count)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(shape.FilePath))
-                    Trace.TraceInformation("No animation number {1} in shape {0}", shape.FilePath, animationNumber);
-                SeenShapeAnimationError[shape.FilePath] = true;
-                return;  // mismatched matricies
-            }
-
-            var channels = shape.GltfAnimations[animationNumber].Channels;
-            if (channels == null)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(shape.FilePath))
-                    Trace.TraceInformation("No animations found in animation {1} of shape {0}", shape.FilePath, animationNumber);
-                SeenShapeAnimationError[shape.FilePath] = true;
-                return;
-            }
-
             // Start with the intial pose in the shape file.
-            shape.Matrices.CopyTo(XNAMatrices, 0);
+            Matrices.CopyTo(animatedMatrices, 0);
 
+            var channels = GltfAnimations[animationNumber].Channels;
             foreach (var channel in channels)
             {
                 var scaleM = new Matrix();
@@ -1738,12 +1709,12 @@ namespace Orts.Viewer3D
                     case AnimationChannelTarget.PathEnum.weights:
                     default: break;
                 }
-                XNAMatrices[channel.TargetNode].Decompose(out var scale, out var rotation, out var translation);
+                animatedMatrices[channel.TargetNode].Decompose(out var scale, out var rotation, out var translation);
                 if (!s) scaleM = Matrix.CreateScale(scale);
                 if (!r) rotationM = Matrix.CreateFromQuaternion(rotation);
                 if (!t) translationM = Matrix.CreateTranslation(translation);
 
-                XNAMatrices[channel.TargetNode] = scaleM * rotationM * translationM;
+                animatedMatrices[channel.TargetNode] = scaleM * rotationM * translationM;
             }
         }
 
@@ -1759,14 +1730,18 @@ namespace Orts.Viewer3D
             Quaternion.Normalize(Quaternion.Multiply(v1, A(t)) + Quaternion.Multiply(b1, B(t)) + Quaternion.Multiply(v2, C(t)) + Quaternion.Multiply(a2, D(t)));
     }
 
-    public class GltfAnimation
+    class GltfAnimation
     {
+        public string Name;
         public List<GltfAnimationChannel> Channels = new List<GltfAnimationChannel>();
 
-        public GltfAnimation() { }
+        public GltfAnimation(string name)
+        {
+            Name = name;
+        }
     }
 
-    public class GltfAnimationChannel
+    class GltfAnimationChannel
     {
         public int TargetNode; // ref to index in hierarchy, e.g. Matrices(index)
         public AnimationChannelTarget.PathEnum Path; // e.g. rotation or tcb_rot, translation or linear_pos, scale, tcb_pos
@@ -1777,6 +1752,5 @@ namespace Orts.Viewer3D
         public Vector3[] OutputVector3;
         public Quaternion[] OutputQuaternion;
         public float[] OutputWeights;
-        public int FrameCount;
     }
 }

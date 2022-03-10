@@ -84,11 +84,10 @@ namespace Orts.Viewer3D
             }
 
             // glTF file:
-            if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.GltfAnimations.Count > 0)
+            if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.HasAnimation(matrix))
             {
                 // Use the clip's length in time as the frame count
-                foreach (var channel in gltfShape.GltfAnimations[matrix].Channels)
-                    FrameCount = Math.Max(FrameCount, channel.TimeMax);
+                FrameCount = gltfShape.GetAnimationLength(matrix);
             }
             else
             {
@@ -166,12 +165,19 @@ namespace Orts.Viewer3D
         /// </summary>
         public void UpdateLoop(float change)
         {
-            if (PoseableShape.SharedShape.Animations == null || PoseableShape.SharedShape.Animations.Count == 0 || FrameCount == 0)
-                return;
-
-            // The speed of rotation is set at 8 frames of animation per rotation at 30 FPS (so 16 frames = 60 FPS, etc.).
-            var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 8 / 30f;
-            SetFrameWrap(AnimationKey + change * frameRate);
+            if (PoseableShape.SharedShape.Animations?.Count > 0 && FrameCount > 0)
+            {
+                // .S shape
+                // The speed of rotation is set at 8 frames of animation per rotation at 30 FPS (so 16 frames = 60 FPS, etc.).
+                var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 8 / 30f;
+                SetFrameWrap(AnimationKey + change * frameRate);
+            }
+            else if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.GetAnimationLength(MatrixIndexes.FirstOrDefault()) > 0)
+            {
+                // glTf shape
+                var frameRate = 1f;
+                SetFrameWrap(AnimationKey + change * frameRate);
+            }
         }
 
         /// <summary>
@@ -189,7 +195,7 @@ namespace Orts.Viewer3D
                 else
                     SetFrame(0);
             }
-            else if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.GltfAnimations.Count > 0)
+            else if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.GetAnimationLength(MatrixIndexes.FirstOrDefault()) > 0)
             {
                 // glTf shape
                 if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds < FrameCount))
