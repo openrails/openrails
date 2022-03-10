@@ -3485,10 +3485,10 @@ public List<CabView> CabViewList = new List<CabView>();
 
                         if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
                         {
-                GearBoxController.StartIncrease();
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
-                AlerterReset(TCSEvent.GearBoxChanged);
-                SignalGearBoxChangeEvents();
+                            GearBoxController.StartIncrease();
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                            AlerterReset(TCSEvent.GearBoxChanged);
+                            SignalGearBoxChangeEvents();
                             dieselloco.DieselEngines[0].GearBox.clutchOn = false;
                             dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
 
@@ -3548,10 +3548,10 @@ public List<CabView> CabViewList = new List<CabView>();
 
                         if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
                         {
-                GearBoxController.StartDecrease();
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
-                AlerterReset(TCSEvent.GearBoxChanged);
-                SignalGearBoxChangeEvents();
+                            GearBoxController.StartDecrease();
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                            AlerterReset(TCSEvent.GearBoxChanged);
+                            SignalGearBoxChangeEvents();
                             dieselloco.DieselEngines[0].GearBox.clutchOn = false;
                             dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
                         }

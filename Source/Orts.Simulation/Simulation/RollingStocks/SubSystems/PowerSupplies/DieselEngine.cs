@@ -349,8 +349,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         }
                         else
                         {
-                        temp += (de.DemandedThrottlePercent * 0.01f * de.GearBox.TractiveForceN);
-                }
+                            temp += (de.DemandedThrottlePercent * 0.01f * de.GearBox.TractiveForceN);
+                        }
                     }
                 }
                 return temp;
@@ -432,8 +432,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
             else
             {
-            foreach (var eng in DEList)
-                result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.CurrentDieselOutputPowerW, Locomotive.IsMetric, false, false));
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.CurrentDieselOutputPowerW, Locomotive.IsMetric, false, false));
             }
 
             result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Load"));
@@ -450,8 +450,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
             else
             {
-            foreach (var eng in DEList)
-                result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
+                foreach (var eng in DEList)
+                    result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
             }
 
             result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Flow"));
@@ -1063,8 +1063,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             if (!Simulator.Settings.NoDieselEngineStart && !Locomotive.gearSaved)
             {
-            RealRPM = IdleRPM;
-            State = DieselEngineState.Running;
+                RealRPM = IdleRPM;
+                State = DieselEngineState.Running;
             }
             else if (Locomotive.gearSaved)
             {
@@ -1298,18 +1298,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 else   // Legacy or MSTS Gearboxes
                 {
-                if (RealRPM > 0)
-                    GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
-                else
-                    GearBox.ClutchPercent = 100f;
-                
-                if (GearBox.CurrentGear != null)
-                {
+                    if (RealRPM > 0)
+                        GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
+                    else
+                        GearBox.ClutchPercent = 100f;
+
+                    if (GearBox.CurrentGear != null)
+                    {
                         // Maintain Shaft RpM and Engine RpM equasl when clutch is on
-                    if (GearBox.IsClutchOn)
-                        DemandedRPM = GearBox.ShaftRPM;
+                        if (GearBox.IsClutchOn)
+                            DemandedRPM = GearBox.ShaftRPM;
+                    }
                 }
-            }
             }
 
             if (RealRPM == IdleRPM)
@@ -1589,11 +1589,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     else
                     {
-                    if (State == DieselEngineState.Stopped || State == DieselEngineState.Stopping)
-                    {
-                        DemandedRPM = StartingRPM;
-                        State = DieselEngineState.Starting;
-                    }
+                        if (State == DieselEngineState.Stopped || State == DieselEngineState.Stopping)
+                        {
+                            DemandedRPM = StartingRPM;
+                            State = DieselEngineState.Starting;
+                        }
                     }
                     break;
 

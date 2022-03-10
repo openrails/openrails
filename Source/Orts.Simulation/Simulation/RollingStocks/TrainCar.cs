@@ -2150,7 +2150,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 locomotivetypetext = "Unpowered Control Trailer Car";
             }
-            
+
             var loco = this as MSTSDieselLocomotive;
             if (loco != null && loco.DieselEngines.HasGearBox && loco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
@@ -2170,7 +2170,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-            return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t{8}\t",
+                return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t{8}\t",
                 CarID,
                 Flipped ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
@@ -2182,7 +2182,7 @@ namespace Orts.Simulation.RollingStocks
                 String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
                 Simulator.Catalog.GetString(locomotivetypetext)
                 );
-        }
+            }
         }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }

@@ -284,7 +284,7 @@ namespace Orts.Viewer3D.Popups
                 }
                 else
                 {
-                ForceGraphMotiveForce.AddSample(loco.MotiveForceN / loco.MaxForceN);
+                    ForceGraphMotiveForce.AddSample(loco.MotiveForceN / loco.MaxForceN);
                 }
 
                 if (locoD != null && locoD.DieselEngines.HasGearBox && locoD.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
@@ -293,7 +293,7 @@ namespace Orts.Viewer3D.Popups
                 }
                 else
                 {
-                ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
+                    ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
                 }
 
                 ForceGraphNumOfSubsteps.AddSample((float)loco.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS / (float)loco.LocomotiveAxle.AxleRevolutionsInt.MaxSubsteps);
