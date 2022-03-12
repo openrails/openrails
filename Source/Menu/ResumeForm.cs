@@ -254,7 +254,7 @@ namespace ORTS
                                     if (!save.IsMultiplayer ^ Multiplayer)
                                         saves.Add(save);
                                     // Save a warning to show later.
-                                    warning += catalog.GetStringFmt("Warning: Save {0} found from a route with an unexpected name:\n{1}.\n\n", save.RealTime, save.RouteName);
+                                    warning += catalog.GetStringFmt("Warning: Save {0} found from a route with an unexpected name:\n{1}.\n\n", save.File, save.RouteName);
                                 }
                             }
                         }
@@ -390,8 +390,11 @@ namespace ORTS
                     foreach (var fileName in new[] 
                         { Path.GetFileName(save.File)
                         , Path.ChangeExtension(Path.GetFileName(save.File), "png")
-                        , Path.ChangeExtension(Path.GetFileName(save.File), "dbfeval.txt")
-                        })
+                        , Path.ChangeExtension(Path.GetFileName(save.File), "replay")
+                        , Path.ChangeExtension(Path.GetFileName(save.File), "txt")
+                        , Path.ChangeExtension(Path.GetFileName(save.File), "evaluation.txt")
+                        }
+                    )
                     {
                         try
                         {
@@ -437,11 +440,12 @@ namespace ORTS
                     var save = new Save(saveFile, Settings.YoungestVersionFailedToRestore);
                     if (save.Valid == false)
                     {
-                        foreach (var fileName in new[] { 
-                            save.File, 
-                            Path.ChangeExtension(save.File, "png"), 
-                            Path.ChangeExtension(save.File, "txt"),
-                            Path.ChangeExtension(save.File, "replay") 
+                        foreach (var fileName in new[] 
+                            { save.File
+                            , Path.ChangeExtension(Path.GetFileName(save.File), "png")
+                            , Path.ChangeExtension(Path.GetFileName(save.File), "replay")
+                            , Path.ChangeExtension(Path.GetFileName(save.File), "txt")
+                            , Path.ChangeExtension(Path.GetFileName(save.File), "evaluation.txt")
                             }
                         )
                         {

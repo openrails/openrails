@@ -122,13 +122,14 @@ by that locomotive will appear.
 If you instead select a specific activity, you won't have to perform any 
 further selections.
 
-Debrief Evaluation
+Activity Evaluation
 ''''''''''''''''''
 
-During the activity session, data about the activity is stored and may be displayed in real time, and at 
-the end of the activity a report file is generated.
-This provides a summary of the player's skills as a train driver.
-Debrief evaluation is described :ref:`here <debriefeval>`.
+During the activity session, data about performance is stored and may be viewed as the activity progresses.
+At the end of the activity a report file is generated which provides a summary of 
+the player's skills as a train driver.
+
+Activity evaluation is described :ref:`here <debriefeval>`.
 
 If you have selected the related Experimental Option, at runtime you can 
 switch :ref:`Autopilot mode <driving-autopilot>` on or off, which allows you

@@ -55,6 +55,7 @@ namespace Orts.Viewer3D.Processes
         static Viewer Viewer { get { return Program.Viewer; } set { Program.Viewer = value; } }
         static ORTraceListener ORTraceListener { get { return Program.ORTraceListener; } set { Program.ORTraceListener = value; } }
         static string logFileName { get { return Program.logFileName; } set { Program.logFileName = value; } }
+        static string EvaluationFilename { get { return Program.EvaluationFilename; } set { Program.EvaluationFilename = value; } }
 
         // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
         // that are likely to match the previously chosen route and activity.
@@ -385,13 +386,6 @@ namespace Orts.Viewer3D.Processes
                     outf.Write(argument);
                 outf.Write(Acttype);
 
-                // The Save command is the only command that doesn't take any action. It just serves as a marker.
-                new SaveCommand(Simulator.Log, FileStem);
-                Simulator.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, FileStem + ".replay"));
-
-                // Copy the logfile to the save folder
-                CopyLog(Path.Combine(UserSettings.UserDataFolder, FileStem + ".txt"));
-
                 Simulator.Save(outf);
                 Viewer.Save(outf, FileStem);
                 // Save multiplayer parameters
@@ -403,6 +397,19 @@ namespace Orts.Viewer3D.Processes
                 // Write out position within file so we can check when restoring.
                 outf.Write(outf.BaseStream.Position);
             }
+
+            // Having written .save file, write other files: .replay, .txt, .evaluation.txt
+
+            // The Save command is the only command that doesn't take any action. It just serves as a marker.
+            new SaveCommand(Simulator.Log, FileStem);
+            Simulator.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, FileStem + ".replay"));
+
+            // Copy the logfile to the save folder
+            CopyLog(Path.Combine(UserSettings.UserDataFolder, FileStem + ".txt"));
+
+            // Copy the evaluation file to the save folder
+            if (File.Exists(Program.EvaluationFilename))
+                File.Copy(Program.EvaluationFilename, Path.Combine(UserSettings.UserDataFolder, FileStem + ".evaluation.txt"), true); 
         }
 
         private static void SaveEvaluation(BinaryWriter outf)
@@ -752,10 +759,8 @@ namespace Orts.Viewer3D.Processes
                 {
                     fileName = settings.LoggingFilename;
                 }
-                foreach (var ch in Path.GetInvalidFileNameChars())
-                    fileName = fileName.Replace(ch, '.');
+                logFileName = GetFilePath(settings, fileName);
 
-                logFileName = Path.Combine(settings.LoggingPath, fileName);
                 // Ensure we start with an empty file.
                 if (!appendLog)
                     File.Delete(logFileName);
@@ -793,6 +798,33 @@ namespace Orts.Viewer3D.Processes
                 Console.WriteLine("Logging is disabled, only fatal errors will appear here.");
                 LogSeparator();
             }
+            InitEvaluation(settings);
+        }
+
+        /// <summary>
+        /// Sanitises the user's filename, adds logging path (Windows Desktop by default) and deletes any file already existing.
+        /// </summary>
+        /// <param name="settings"></param>
+        void InitEvaluation(UserSettings settings)
+        {
+            EvaluationFilename = GetFilePath(settings, settings.EvaluationFilename);
+
+            // Ensure we start with an empty file.
+            File.Delete(EvaluationFilename);
+        }
+
+        /// <summary>
+        /// Sanitise user's filename and combine with logging path
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        private string GetFilePath(UserSettings settings, string fileName)
+        {
+            foreach (var ch in Path.GetInvalidFileNameChars())
+                fileName = fileName.Replace(ch, '.');
+
+            return Path.Combine(settings.LoggingPath, fileName);
         }
 
         #region Loading progress indication calculations

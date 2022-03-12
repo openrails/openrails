@@ -49,8 +49,7 @@ namespace Orts.Viewer3D.Popups
         Dictionary<int, string> DbfEvalActDepart = new Dictionary<int, string>();//Debrief eval
 
         Dictionary<string, double> DbfEvalValues = new Dictionary<string, double>();//Debrief eval
-        
-        public static string logFileName { get { return Program.logFileName; } set { Program.logFileName = value; } }
+
         ControlLayout scrollbox;
         ControlLayoutHorizontal line;
 
@@ -548,9 +547,10 @@ namespace Orts.Viewer3D.Popups
                             ShowEvaluation(locomotive, nmissedstation, dbfstationstopsremaining, playerTrain, colWidth, lcurvespeeddependent, lbreakcouplers, ndbfEvalTaskAccomplished);
                         }
 
-                        //if (dbfevaliscompleted | dbfevalisfinished | dbfevalissuccessful)
+                        if (dbfevaliscompleted | dbfevalisfinished | dbfevalissuccessful)
                         {
                             ReportEvaluation(owner, cl, locomotive, nmissedstation, labeltext, noverspeedcoupling, dbfstationstopsremaining, playerTrain, colWidth, indicator, lcurvespeeddependent, lbreakcouplers, ndbfEvalTaskAccomplished);
+                            System.Diagnostics.Process.Start("notepad.exe", Program.EvaluationFilename);    //Show debrief eval file
                         }
                     }
                 }));
@@ -597,13 +597,9 @@ namespace Orts.Viewer3D.Popups
             colWidth = (cl.RemainingWidth - cl.TextHeight) / 14;
 
             var activityname = owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.ToString().Trim();
-            logFileName = UserSettings.UserDataFolder + "\\" + GameStateRunActivity.FileStem + ".dbfeval.txt";
-
-            //Ensure we start with an empty file.
-            if (File.Exists(logFileName) && !lDebriefEvalFile) File.Delete(logFileName);
 
             //Create file.
-            if (!lDebriefEvalFile) wDbfEval = new StreamWriter(File.Open(logFileName, FileMode.Create), System.Text.Encoding.UTF8);
+            if (!lDebriefEvalFile) wDbfEval = new StreamWriter(File.Open(Program.EvaluationFilename, FileMode.Create), System.Text.Encoding.UTF8);
 
             labeltext = "";
             //--------------------------------------------------------------------------------
@@ -614,8 +610,8 @@ namespace Orts.Viewer3D.Popups
             //--------------------------------------------------------------------------------
             consolewltext("Version      = " + (VersionInfo.Version.Length > 0 ? VersionInfo.Version : "<none>"));
             consolewltext("Build        = " + VersionInfo.Build);
-            if (logFileName.Length > 0)
-                consolewltext("Debrief file = " + logFileName);
+            if (Program.EvaluationFilename.Length > 0)
+                consolewltext("Debrief file = " + Program.EvaluationFilename);
 
             consolewltext("Executable   = " + Path.GetFileName(Application.ExecutablePath));
             LogSeparator(80);
@@ -627,7 +623,7 @@ namespace Orts.Viewer3D.Popups
             indicator.Color = Color.LightGreen;
             line = scrollbox.AddLayoutHorizontalLineOfText();
             //line.Add(indicator = new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString(filename)));
-            line.Add(indicator = new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString(logFileName)));
+            line.Add(indicator = new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString(Program.EvaluationFilename)));
             indicator.Color = Color.LightGreen;
             line = scrollbox.AddLayoutHorizontalLineOfText();
             labeltext = "-------------";
@@ -996,12 +992,10 @@ namespace Orts.Viewer3D.Popups
             LogSeparator(80);
             writeline();
 
-
             if (!lDebriefEvalFile)
             {
                 lDebriefEvalFile = true;
-                wDbfEval.Close();//Close output file
-                System.Diagnostics.Process.Start("notepad.exe", logFileName);//Show debrief eval file
+                wDbfEval.Close();
             }
         }
 

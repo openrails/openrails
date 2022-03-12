@@ -43,7 +43,8 @@ namespace Orts
         public static DispatchViewer DebugViewer;
         public static SoundDebugForm SoundDebugForm;
         public static ORTraceListener ORTraceListener;
-        public static string logFileName = "";
+        public static string logFileName = "";          // contains path to file
+        public static string EvaluationFilename = "";   // contains path to file
 
         /// <summary>
         /// The main entry point for the application.

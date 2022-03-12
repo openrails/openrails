@@ -621,7 +621,7 @@ within the cabview, see :ref:`here <cabs-odometer>`.
 .. _debriefeval:
 
 
-Debrief Evaluation
+Activity Evaluation
 ------------------
 
 ``Description``
@@ -651,7 +651,7 @@ and here an example about the Options/Simulation tab:
 .. image:: images/dbfeval-options-simulation.png
 
 Checkboxes shown as unchecked in the two above pictures may be checked or 
-unchecked, but don't have effect on activity evaluation.
+unchecked, but don't have any effect on activity evaluation.
 
 A tab named "Evaluation" is present on the F1 Help Information Monitor.
 Once the activity is running it displays dynamic information about the player 
@@ -666,7 +666,7 @@ train performance up to that moment.
 
    \newpage
    
-Clicking **Actual status: (**\ |darr| **)**\  expanded real-time display appears.
+Clicking **Actual status: (**\ |darr| **)**\  shows an expanded real-time display.
 
 
 .. image:: images/dbfeval-evaluation-expanded.png
@@ -677,8 +677,6 @@ Clicking **Actual status: (**\ |darr| **)**\  expanded real-time display appears
 
 Clicking **Actual status: (**\ |uarr| **)**\  collapses all items.
 
-Once the activity has ended, the report file is created and a new window displays it.
-
 .. image:: images/dbfeval-evaluation-ended.png
    :scale: 100%
    :align: center
@@ -688,6 +686,9 @@ Once the activity has ended, the report file is created and a new window display
 
    \newpage
 
+Once the activity has ended, as soon as the player views the Evaluation tab, a report file is 
+created and shown in an editor window as follows.
+
 This report is made up of several sections.
 
 .. image:: images/dbfeval-report.png
@@ -696,13 +697,12 @@ This report is made up of several sections.
 
 .. raw:: latex
 
-    \newpage
+The report file OpenRailsEvaluation.txt is saved alongside the log file OpenRailsLog.txt and
+the default location for this is the Windows Desktop.
 
-Activity saves (F2) will save also the evaluation data.
+The Save Game (F2) command also copies any evaluation report alongside the save files so it can be
+kept and reviewed. This copy is deleted when the other files for that save are deleted.
 
-.. image:: images/dbfeval-resume.png
-   :scale: 100%
-   :align: center
 
 .. _driving-hud:
 
