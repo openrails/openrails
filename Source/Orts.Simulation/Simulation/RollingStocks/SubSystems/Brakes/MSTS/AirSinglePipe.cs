@@ -424,17 +424,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // triple valve set to release pressure in brake cylinder and EP valve set
-            if (TripleValveState == ValveState.Release && HoldingValve == ValveState.Release)
+            if (TripleValveState == ValveState.Release)
             {
-                if (threshold < RetainerPressureThresholdPSI)
-                    threshold = RetainerPressureThresholdPSI;
-                if (AutoCylPressurePSI > threshold)
-                {
-                    AutoCylPressurePSI -= elapsedClockSeconds * ReleaseRatePSIpS;
-                    if (AutoCylPressurePSI < threshold)
-                        AutoCylPressurePSI = threshold;
-                }
-
                 if ((Car as MSTSWagon).EmergencyReservoirPresent)
 				{
                     if (AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
@@ -472,6 +463,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     AuxResPressurePSI -= dp;
                     BrakeLine1PressurePSI += dp * AuxBrakeLineVolumeRatio;
                 }
+            }
+
+            // Handle brake release: reduce cylinder pressure if all triple valve, EP holding valve and retainers allow so
+            float minCylPressurePSI = Math.Max(threshold, RetainerPressureThresholdPSI);
+            if (TripleValveState == ValveState.Release && HoldingValve == ValveState.Release && AutoCylPressurePSI > minCylPressurePSI)
+            {
+                AutoCylPressurePSI -= elapsedClockSeconds * ReleaseRatePSIpS;
+                if (AutoCylPressurePSI < minCylPressurePSI)
+                    AutoCylPressurePSI = minCylPressurePSI;
             }
 
             // Charge Auxiliary reservoir for MRP
