@@ -149,9 +149,6 @@ namespace ORTS.Settings
         public bool IsModeActivity { get; set; } // false indicates Timetable mode
 
         // General settings:
-
-        [Default(false)]
-        public bool WebServer { get; set; }
         [Default(2150)]
         public int WebServerPort { get; set; }
 

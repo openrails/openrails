@@ -298,6 +298,7 @@ namespace Orts.Simulation.RollingStocks
         // Set values for display in HUD
         public float WagonCoefficientFrictionHUD;
         public float LocomotiveCoefficientFrictionHUD;
+        public float HuDGearMaximumTractiveForce;
 
         public PressureUnit MainPressureUnit = PressureUnit.None;
         public Dictionary<BrakeSystemComponent, PressureUnit> BrakeSystemPressureUnits = new Dictionary<BrakeSystemComponent, PressureUnit>
@@ -3475,10 +3476,48 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             if (GearBoxController != null)
             {
-                GearBoxController.StartIncrease();
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
-                AlerterReset(TCSEvent.GearBoxChanged);
-                SignalGearBoxChangeEvents();
+                if (this is MSTSDieselLocomotive)
+                {
+                    var dieselloco = this as MSTSDieselLocomotive;
+
+                    if (dieselloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                    {
+
+                        if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
+                        {
+                            GearBoxController.StartIncrease();
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                            AlerterReset(TCSEvent.GearBoxChanged);
+                            SignalGearBoxChangeEvents();
+                            dieselloco.DieselEngines[0].GearBox.clutchOn = false;
+                            dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
+
+                        }
+                        else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.C)
+                        {
+
+                            if (ThrottlePercent == 0)
+                            {
+                                GearBoxController.StartIncrease();
+                                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                                AlerterReset(TCSEvent.GearBoxChanged);
+                                SignalGearBoxChangeEvents();
+                                dieselloco.DieselEngines[0].GearBox.clutchOn = false;
+                            }
+                            else
+                            {
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Throttle must be reduced to Idle before gear change can happen."));
+                            }
+                        }
+                    }
+                    else  // Legacy operation
+                    {
+                        GearBoxController.StartIncrease();
+                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                        AlerterReset(TCSEvent.GearBoxChanged);
+                        SignalGearBoxChangeEvents();
+                    }
+                }
             }
 
             ChangeGearUp();
@@ -3500,10 +3539,47 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             if (GearBoxController != null)
             {
-                GearBoxController.StartDecrease();
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
-                AlerterReset(TCSEvent.GearBoxChanged);
-                SignalGearBoxChangeEvents();
+                if (this is MSTSDieselLocomotive)
+                {
+                    var dieselloco = this as MSTSDieselLocomotive;
+
+                    if (dieselloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                    {
+
+                        if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
+                        {
+                            GearBoxController.StartDecrease();
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                            AlerterReset(TCSEvent.GearBoxChanged);
+                            SignalGearBoxChangeEvents();
+                            dieselloco.DieselEngines[0].GearBox.clutchOn = false;
+                            dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
+                        }
+                        else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.C)
+                        {
+                            if (ThrottlePercent == 0)
+                            {
+                                GearBoxController.StartDecrease();
+                                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                                AlerterReset(TCSEvent.GearBoxChanged);
+                                SignalGearBoxChangeEvents();
+                                dieselloco.DieselEngines[0].GearBox.clutchOn = false;
+                            }
+                            else
+                            {
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Throttle must be reduced to Idle before gear change can happen."));
+                            }
+                        }
+                    }
+                    else // Legacy operation
+                    {
+                        GearBoxController.StartDecrease();
+                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                        AlerterReset(TCSEvent.GearBoxChanged);
+                        SignalGearBoxChangeEvents();
+
+                    }
+                }
             }
 
             ChangeGearDown();
@@ -3559,19 +3635,32 @@ public List<CabView> CabViewList = new List<CabView>();
             }
         }
 
-        public void SetGearBoxValue(float value)
+        public void SetGearBoxValue(float value) // control for cabview
         {
             var controller = GearBoxController;
             var oldValue = controller.CurrentValue;
             var change = controller.SetValue(value);
+            var dieselloco = this as MSTSDieselLocomotive;
             if (change != 0)
             {
                 //new GarBoxCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
                 SignalEvent(change > 0 ? Event.GearUp : Event.GearDown);
                 AlerterReset(TCSEvent.GearBoxChanged);
             }
-            if (oldValue != controller.CurrentValue)
+
+            if (controller.CurrentValue > oldValue)
+            {
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                if (dieselloco != null)
+                    dieselloco.DieselEngines[0].GearBox.ManualGearUp = true;
+
+            }
+            else if (controller.CurrentValue < oldValue)
+            {
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                if (dieselloco != null)
+                    dieselloco.DieselEngines[0].GearBox.ManualGearDown = true;
+            }
         }
         #endregion
 

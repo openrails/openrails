@@ -142,14 +142,12 @@ Disable TCS scripts
 This option disables the train control system scripts for locomotives where
 these have been implemented.
 
-Enable web server
+Web server port
 -----------------
 
-This option enables an internal web server that can be used to display game and
-train status information in a web browser, intended for use on secondary screens.
-
-When activated, the server can be accessed from a browser on the local machine at
+The web server can be accessed from a browser on the local machine at
 ``http://localhost:<port>``, where ``<port>`` is the specified port number.
+Change the default value of 2150 if it conflicts with other services.
 
 If you `open
 <https://www.howtogeek.com/394735/how-do-i-open-a-port-on-windows-firewall/>`_
