@@ -499,15 +499,6 @@ pressing ``<F12>`` a file with the name dump.csv is generated in the
 configured Open Rails logging folder (placed on the Desktop by default).
 This file can be used for later analysis.
 
-Evaluation Options
-==================
-
-.. image:: images/options-evaluation.png
-
-When data logging is started (see preceding paragraph), data selected in
-this panel are logged, allowing a later evaluation on how the activity was
-executed by the player.
-
 .. _options-Content:
 
 Content Options
