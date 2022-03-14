@@ -550,7 +550,6 @@ namespace Orts.Viewer3D.Popups
                         if (dbfevaliscompleted | dbfevalisfinished | dbfevalissuccessful)
                         {
                             ReportEvaluation(owner, cl, locomotive, nmissedstation, labeltext, noverspeedcoupling, dbfstationstopsremaining, playerTrain, colWidth, indicator, lcurvespeeddependent, lbreakcouplers, ndbfEvalTaskAccomplished);
-                            System.Diagnostics.Process.Start("notepad.exe", Program.EvaluationFilename);    //Show debrief eval file
                         }
                     }
                 }));
@@ -996,6 +995,7 @@ namespace Orts.Viewer3D.Popups
             {
                 lDebriefEvalFile = true;
                 wDbfEval.Close();
+                System.Diagnostics.Process.Start("notepad.exe", Program.EvaluationFilename);    //Show debrief eval file
             }
         }
 
