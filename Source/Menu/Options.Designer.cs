@@ -41,7 +41,7 @@
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
             this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
-            this.pbDisableTcsScripts = new System.Windows.Forms.PictureBox();
+            this.pbEnableTcsScripts = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
             this.pbPressureUnit = new System.Windows.Forms.PictureBox();
             this.pbLanguage = new System.Windows.Forms.PictureBox();
@@ -53,7 +53,7 @@
             this.labelPortNumber = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.checkOverspeedMonitor = new System.Windows.Forms.CheckBox();
-            this.checkDisableTCSScripts = new System.Windows.Forms.CheckBox();
+            this.checkEnableTCSScripts = new System.Windows.Forms.CheckBox();
             this.labelOtherUnits = new System.Windows.Forms.Label();
             this.labelPressureUnit = new System.Windows.Forms.Label();
             this.comboOtherUnits = new System.Windows.Forms.ComboBox();
@@ -194,7 +194,7 @@
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcsScripts)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbEnableTcsScripts)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
@@ -329,9 +329,9 @@
             this.checkControlConfirmations.AutoSize = true;
             this.checkControlConfirmations.Location = new System.Drawing.Point(32, 52);
             this.checkControlConfirmations.Name = "checkControlConfirmations";
-            this.checkControlConfirmations.Size = new System.Drawing.Size(256, 17);
+            this.checkControlConfirmations.Size = new System.Drawing.Size(285, 17);
             this.checkControlConfirmations.TabIndex = 4;
-            this.checkControlConfirmations.Text = "Control confirmations                                            ";
+            this.checkControlConfirmations.Text = "Show control confirmations                                            ";
             this.checkControlConfirmations.UseVisualStyleBackColor = true;
             this.checkControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
@@ -360,7 +360,7 @@
             // tabPageGeneral
             // 
             this.tabPageGeneral.Controls.Add(this.pbOverspeedMonitor);
-            this.tabPageGeneral.Controls.Add(this.pbDisableTcsScripts);
+            this.tabPageGeneral.Controls.Add(this.pbEnableTcsScripts);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
             this.tabPageGeneral.Controls.Add(this.pbPressureUnit);
             this.tabPageGeneral.Controls.Add(this.pbLanguage);
@@ -372,7 +372,7 @@
             this.tabPageGeneral.Controls.Add(this.labelPortNumber);
             this.tabPageGeneral.Controls.Add(this.numericWebServerPort);
             this.tabPageGeneral.Controls.Add(this.checkOverspeedMonitor);
-            this.tabPageGeneral.Controls.Add(this.checkDisableTCSScripts);
+            this.tabPageGeneral.Controls.Add(this.checkEnableTCSScripts);
             this.tabPageGeneral.Controls.Add(this.labelOtherUnits);
             this.tabPageGeneral.Controls.Add(this.labelPressureUnit);
             this.tabPageGeneral.Controls.Add(this.comboOtherUnits);
@@ -406,17 +406,17 @@
             this.pbOverspeedMonitor.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbOverspeedMonitor.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // pbDisableTcsScripts
+            // pbEnableTcsScripts
             // 
-            this.pbDisableTcsScripts.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbDisableTcsScripts.Location = new System.Drawing.Point(6, 263);
-            this.pbDisableTcsScripts.Name = "pbDisableTcsScripts";
-            this.pbDisableTcsScripts.Size = new System.Drawing.Size(18, 18);
-            this.pbDisableTcsScripts.TabIndex = 28;
-            this.pbDisableTcsScripts.TabStop = false;
-            this.pbDisableTcsScripts.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbDisableTcsScripts.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbDisableTcsScripts.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            this.pbEnableTcsScripts.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbEnableTcsScripts.Location = new System.Drawing.Point(6, 263);
+            this.pbEnableTcsScripts.Name = "pbEnableTcsScripts";
+            this.pbEnableTcsScripts.Size = new System.Drawing.Size(18, 18);
+            this.pbEnableTcsScripts.TabIndex = 28;
+            this.pbEnableTcsScripts.TabStop = false;
+            this.pbEnableTcsScripts.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbEnableTcsScripts.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbEnableTcsScripts.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbOtherUnits
             // 
@@ -557,17 +557,17 @@
             this.checkOverspeedMonitor.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkOverspeedMonitor.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // checkDisableTCSScripts
+            // checkEnableTCSScripts
             // 
-            this.checkDisableTCSScripts.AutoSize = true;
-            this.checkDisableTCSScripts.Location = new System.Drawing.Point(32, 262);
-            this.checkDisableTCSScripts.Name = "checkDisableTCSScripts";
-            this.checkDisableTCSScripts.Size = new System.Drawing.Size(256, 17);
-            this.checkDisableTCSScripts.TabIndex = 13;
-            this.checkDisableTCSScripts.Text = "Disable TCS scripts                                              ";
-            this.checkDisableTCSScripts.UseVisualStyleBackColor = true;
-            this.checkDisableTCSScripts.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.checkDisableTCSScripts.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            this.checkEnableTCSScripts.AutoSize = true;
+            this.checkEnableTCSScripts.Location = new System.Drawing.Point(32, 262);
+            this.checkEnableTCSScripts.Name = "checkEnableTCSScripts";
+            this.checkEnableTCSScripts.Size = new System.Drawing.Size(240, 17);
+            this.checkEnableTCSScripts.TabIndex = 13;
+            this.checkEnableTCSScripts.Text = "Use TCS scripts                                              ";
+            this.checkEnableTCSScripts.UseVisualStyleBackColor = true;
+            this.checkEnableTCSScripts.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkEnableTCSScripts.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // labelOtherUnits
             // 
@@ -2363,7 +2363,7 @@
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcsScripts)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbEnableTcsScripts)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
@@ -2546,7 +2546,7 @@
         private System.Windows.Forms.Label labelContent;
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
-        private System.Windows.Forms.CheckBox checkDisableTCSScripts;
+        private System.Windows.Forms.CheckBox checkEnableTCSScripts;
         private System.Windows.Forms.NumericUpDown precipitationBoxHeight;
         private System.Windows.Forms.NumericUpDown precipitationBoxWidth;
         private System.Windows.Forms.Label label23;
@@ -2580,7 +2580,7 @@
         private System.Windows.Forms.PictureBox pbLanguage;
         private System.Windows.Forms.PictureBox pbPressureUnit;
         private System.Windows.Forms.PictureBox pbOtherUnits;
-        private System.Windows.Forms.PictureBox pbDisableTcsScripts;
+        private System.Windows.Forms.PictureBox pbEnableTcsScripts;
         private System.Windows.Forms.PictureBox pbOverspeedMonitor;
         private System.Windows.Forms.TrackBar trackAntiAliasing;
         private System.Windows.Forms.Label labelAntiAliasingValue;
