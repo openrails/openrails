@@ -142,6 +142,8 @@ Disable TCS scripts
 This option disables the train control system scripts for locomotives where
 these have been implemented.
 
+.. _options-web-server-port:
+
 Web server port
 -----------------
 
