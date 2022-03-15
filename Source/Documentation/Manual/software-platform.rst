@@ -120,7 +120,7 @@ a browser on the smae PC. Then enter "localhost:2150" into your browser address 
 Sample Web Pages
 ----------------
 
-A number of web-pages are included in the Open Rails isntallation as examples of 
+A number of web-pages are included in the Open Rails installation as examples of 
 what can be done with the APIs.
 
 Some of these sample pages repeat data from the in-game panels to provide a more convenient display.
