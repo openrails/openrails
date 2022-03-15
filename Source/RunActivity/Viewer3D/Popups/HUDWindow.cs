@@ -310,8 +310,20 @@ namespace Orts.Viewer3D.Popups
                 LocomotiveGraphsThrottle.AddSample(loco.ThrottlePercent * 0.01f);
                 if (locoD != null)
                 {
-                    LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
-                    LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
+                    if (locoD.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                    {
+                        // Power for a DM is different to a DE, the following adjusts the display accordingly.
+                        // If multiple diesel engines then this code may not work
+                        //   Power(Watts) = Torque(Nm) * rpm / 9.54.
+                        var tempPowerDisplay = locoD.DieselEngines[0].GearBox.torqueCurveMultiplier * locoD.DieselEngines[0].DieselTorqueTab[locoD.DieselEngines[0].RealRPM] * locoD.DieselEngines[0].RealRPM / 9.54f;
+                        LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
+                        LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
+                    }
+                    else
+                    {
+                        LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
+                        LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
+                    }
                 }
                 if (locoE != null)
                 {
