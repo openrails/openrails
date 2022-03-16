@@ -26,8 +26,6 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.IO.Compression;
-using SharpCompress.Archives;
-using SharpCompress.Readers;
 
 namespace ORTS.Common
 {
@@ -132,7 +130,6 @@ namespace ORTS.Common
             switch (PrepareForRead(vfsPath))
             {
                 case ZipArchiveEntry entry: return new StreamReader(entry.Open(), detectEncodingFromByteOrderMarks);
-                case IArchiveEntry entry: return new StreamReader(entry.OpenEntryStream(), detectEncodingFromByteOrderMarks);
                 case string path: return new StreamReader(path, detectEncodingFromByteOrderMarks);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
             }
@@ -144,7 +141,6 @@ namespace ORTS.Common
             switch (PrepareForRead(vfsPath))
             {
                 case ZipArchiveEntry entry: return new StreamReader(entry.Open(), encoding);
-                case IArchiveEntry entry: return new StreamReader(entry.OpenEntryStream(), encoding);
                 case string path: return new StreamReader(path, encoding);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
             }
@@ -155,7 +151,6 @@ namespace ORTS.Common
             switch (PrepareForRead(vfsPath))
             {
                 case ZipArchiveEntry entry: return new StreamReader(entry.Open(), Encoding.UTF8);
-                case IArchiveEntry entry: return new StreamReader(entry.OpenEntryStream(), Encoding.UTF8);
                 case string path: return File.OpenText(path);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
             }
@@ -166,7 +161,6 @@ namespace ORTS.Common
             switch (PrepareForRead(vfsPath))
             {
                 case ZipArchiveEntry entry: return entry.Open();
-                case IArchiveEntry entry: return entry.OpenEntryStream();
                 case string path: return File.OpenRead(path);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
             }
@@ -193,7 +187,6 @@ namespace ORTS.Common
             switch (PrepareForRead(vfsPath))
             {
                 case ZipArchiveEntry entry: return entry.LastWriteTime.DateTime;
-                case IArchiveEntry entry: return entry.LastModifiedTime ?? DateTime.MinValue;
                 case string path: return File.GetLastWriteTime(path);
                 default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
             }
@@ -280,7 +273,6 @@ namespace ORTS.Common
                 switch (archive)
                 {
                     case ZipArchive zipArchive: zipArchive.Dispose(); break;
-                    case IArchive scArchive: scArchive.Dispose(); break;
                 }
             }
             OpenArchives.Clear();
@@ -440,17 +432,11 @@ namespace ORTS.Common
             var mountNode = VfsRoot.ChangeDirectory(mountpoint, true);
             try
             {
-                if (Path.GetExtension(archivePath).ToLower() == ".zip")
+                if (Path.GetExtension(archivePath).ToLowerInvariant() == ".zip")
                 {
                     using (var archive = new ZipArchive(new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.Read)))
                         foreach (var entry in archive.Entries.Where(entry => !string.IsNullOrEmpty(entry.Name) && !entry.FullName.EndsWith("/") && !entry.FullName.EndsWith(@"\"))) // && (entry.ExternalAttributes & (int)FileAttributes.Directory) == 0))
                             createVirtualArchiveFile(entry.FullName);
-                }
-                else
-                {
-                    using (var archive = ArchiveFactory.Open(new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.Read)))
-                        foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
-                            createVirtualArchiveFile(entry.Key);
                 }
             }
             catch
@@ -491,10 +477,8 @@ namespace ORTS.Common
                 var archiveKey = $"{threadId}@{foundNode.AbsolutePath}";
                 if (!OpenArchives.TryGetValue(archiveKey, out var archive))
                 {
-                    if (Path.GetExtension(foundNode.AbsolutePath.ToLower()) == ".zip")
+                    if (Path.GetExtension(foundNode.AbsolutePath.ToLowerInvariant()) == ".zip")
                         archive = new ZipArchive(File.OpenRead(foundNode.AbsolutePath), ZipArchiveMode.Read);
-                    else
-                        archive = ArchiveFactory.Open(File.OpenRead(foundNode.AbsolutePath));
 
                     OpenArchives.TryAdd(archiveKey, archive);
                     if (LogLevel > 2)
@@ -508,10 +492,6 @@ namespace ORTS.Common
                     case ZipArchive zipArchive:
                         archiveEntry = zipArchive.Entries.Where(entry => entry.FullName == foundNode.SubPath).FirstOrDefault();
                         fullName = ((ZipArchiveEntry)archiveEntry).FullName;
-                        break;
-                    case IArchive scArchive:
-                        archiveEntry = scArchive.Entries.Where(entry => entry.Key == foundNode.SubPath).FirstOrDefault();
-                        fullName = ((IArchiveEntry)archiveEntry).Key;
                         break;
                 }
                 if (archiveEntry != null)
@@ -573,7 +553,7 @@ namespace ORTS.Common
             return null;
         }
 
-        static bool IsArchiveSupported(string filename) => SupportedArchiveExtensions.Contains(Path.GetExtension(filename).ToLower());
+        static bool IsArchiveSupported(string filename) => SupportedArchiveExtensions.Contains(Path.GetExtension(filename).ToLowerInvariant());
 
         static string NormalizeSystemPath(string path) => Path.GetFullPath(new Uri(path).LocalPath).Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/').Trim('"');
         static string NormalizeVirtualPath(string path)
