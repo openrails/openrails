@@ -85,7 +85,7 @@ namespace ORTS.Common
         /// 3 is to log all runtime file accesses as well.
         /// </summary>
         public static int LogLevel { get; set; } = 1;
-        public static bool NoAutoMount { get; set; }
+        public static bool AutoMount { get; set; }
         public static bool IsInitialized => VfsRoot != null;
 
         /// <summary>
@@ -413,7 +413,7 @@ namespace ORTS.Common
                 {
                     if (IsArchiveSupported(file))
                     {
-                        if (NoAutoMount)
+                        if (!AutoMount)
                         {
                             message = $"VFS skipped auto-mounting archive by user settings: {file}";
                             Trace.TraceInformation(message);

@@ -210,7 +210,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkVfsNoAutoMount = new System.Windows.Forms.CheckBox();
+            this.checkVfsAutoMount = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1997,7 +1997,7 @@
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactorChange);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactor);
             this.tabPageExperimental.Controls.Add(this.checkAdhesionPropToWeather);
-            this.tabPageExperimental.Controls.Add(this.checkVfsNoAutoMount);
+            this.tabPageExperimental.Controls.Add(this.checkVfsAutoMount);
             this.tabPageExperimental.Controls.Add(this.checkCircularSpeedGauge);
             this.tabPageExperimental.Controls.Add(this.checkSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
@@ -2622,13 +2622,13 @@
             // 
             // checkVfsNoAutoMount
             // 
-            this.checkVfsNoAutoMount.AutoSize = true;
-            this.checkVfsNoAutoMount.Location = new System.Drawing.Point(6, 212);
-            this.checkVfsNoAutoMount.Name = "checkVfsNoAutoMount";
-            this.checkVfsNoAutoMount.Size = new System.Drawing.Size(256, 17);
-            this.checkVfsNoAutoMount.TabIndex = 21;
-            this.checkVfsNoAutoMount.Text = "Disable virtual file system auto-mounting archives";
-            this.checkVfsNoAutoMount.UseVisualStyleBackColor = true;
+            this.checkVfsAutoMount.AutoSize = true;
+            this.checkVfsAutoMount.Location = new System.Drawing.Point(6, 212);
+            this.checkVfsAutoMount.Name = "checkVfsNoAutoMount";
+            this.checkVfsAutoMount.Size = new System.Drawing.Size(256, 17);
+            this.checkVfsAutoMount.TabIndex = 21;
+            this.checkVfsAutoMount.Text = "Enable virtual file system auto-mounting archives";
+            this.checkVfsAutoMount.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -2898,6 +2898,6 @@
         private System.Windows.Forms.Button buttonContentFile;
         private System.Windows.Forms.Label labelVfsLogLevel;
         private System.Windows.Forms.NumericUpDown numericVfsLogLevel;
-        private System.Windows.Forms.CheckBox checkVfsNoAutoMount;
+        private System.Windows.Forms.CheckBox checkVfsAutoMount;
     }
 }

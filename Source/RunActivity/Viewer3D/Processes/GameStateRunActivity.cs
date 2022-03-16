@@ -106,7 +106,7 @@ namespace Orts.Viewer3D.Processes
         {
             // The virtual file system must be initialized before loading anything.
             Vfs.LogLevel = Game.Settings.VfsLogLevel;
-            Vfs.NoAutoMount = Game.Settings.VfsNoAutoMount;
+            Vfs.AutoMount = Game.Settings.VfsAutoMount;
             Vfs.Initialize(Game.Settings.Menu_Selection[0], Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath));
 
             // Load loading image first!

@@ -339,7 +339,7 @@ namespace ORTS
             trackAdhesionFactor_ValueChanged(null, null);
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
             numericVfsLogLevel.Value = Settings.VfsLogLevel;
-            checkVfsNoAutoMount.Checked = Settings.VfsNoAutoMount;
+            checkVfsAutoMount.Checked = Settings.VfsAutoMount;
             precipitationBoxHeight.Value = Settings.PrecipitationBoxHeight;
             precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
             precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
@@ -542,7 +542,7 @@ namespace ORTS
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
             Settings.VfsLogLevel = Vfs.LogLevel = (int)numericVfsLogLevel.Value;
-            Settings.VfsNoAutoMount = Vfs.NoAutoMount = checkVfsNoAutoMount.Checked;
+            Settings.VfsAutoMount = Vfs.AutoMount = checkVfsAutoMount.Checked;
             Settings.PrecipitationBoxHeight = (int)precipitationBoxHeight.Value;
             Settings.PrecipitationBoxWidth = (int)precipitationBoxWidth.Value;
             Settings.PrecipitationBoxLength = (int)precipitationBoxLength.Value;

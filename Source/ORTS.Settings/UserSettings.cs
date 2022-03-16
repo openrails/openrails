@@ -312,7 +312,7 @@ namespace ORTS.Settings
         [Default(1)]
         public int VfsLogLevel { get; set; }
         [Default(false)]
-        public bool VfsNoAutoMount { get; set; }
+        public bool VfsAutoMount { get; set; }
         [Default(60)]
         public int PerformanceTunerTarget { get; set; }
         [Default(false)]
