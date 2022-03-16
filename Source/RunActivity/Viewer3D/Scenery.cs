@@ -77,12 +77,7 @@ namespace Orts.Viewer3D
         public void Load()
         {
             var cancellation = Viewer.LoaderProcess.CancellationToken;
-            Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfDayOrNightTextures &&
-            ((Viewer.MaterialManager.sunDirection.Y > 0.05f && Program.Simulator.ClockTime % 86400 < 43200) ||
-            (Viewer.MaterialManager.sunDirection.Y > 0.15f && Program.Simulator.ClockTime % 86400 >= 43200))) ? true : false;
-            Viewer.DontLoadDayTextures = (Program.Simulator.Settings.ConditionalLoadOfDayOrNightTextures &&
-            ((Viewer.MaterialManager.sunDirection.Y < -0.05f && Program.Simulator.ClockTime % 86400 >= 43200) ||
-            (Viewer.MaterialManager.sunDirection.Y < -0.15f && Program.Simulator.ClockTime % 86400 < 43200))) ? true : false;
+
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
                 TileX = VisibleTileX;
@@ -113,7 +108,7 @@ namespace Orts.Viewer3D
                 Viewer.tryLoadingNightTextures = true; // when Tiles loaded change you can try
                 Viewer.tryLoadingDayTextures = true; // when Tiles loaded change you can try
             }
-            else if (Viewer.NightTexturesNotLoaded && Program.Simulator.ClockTime % 86400 >= 43200 && Viewer.tryLoadingNightTextures)
+            else if (Viewer.NightTexturesNotLoaded && !Viewer.IsBeforeNoon && Viewer.tryLoadingNightTextures)
             {
                 var sunHeight = Viewer.MaterialManager.sunDirection.Y;
                 if (sunHeight < 0.10f && sunHeight > 0.01)
@@ -133,7 +128,7 @@ namespace Orts.Viewer3D
                 else if (sunHeight <= 0.01)
                     Viewer.NightTexturesNotLoaded = false; // too late to try, we must give up and we don't load the night textures
             }
-            else if (Viewer.DayTexturesNotLoaded && Program.Simulator.ClockTime % 86400 < 43200 && Viewer.tryLoadingDayTextures)
+            else if (Viewer.DayTexturesNotLoaded && Viewer.IsBeforeNoon && Viewer.tryLoadingDayTextures)
             {
                 var sunHeight = Viewer.MaterialManager.sunDirection.Y;
                 if (sunHeight > -0.10f && sunHeight < -0.01)
@@ -462,10 +457,10 @@ namespace Orts.Viewer3D
                         if (Program.Simulator.CarSpawnerLists != null && ((CarSpawnerObj)worldObject).ListName != null)
                         {
                             ((CarSpawnerObj)worldObject).CarSpawnerListIdx = Program.Simulator.CarSpawnerLists.FindIndex(x => x.ListName == ((CarSpawnerObj)worldObject).ListName);
-                            if (((CarSpawnerObj)worldObject).CarSpawnerListIdx < 0 || ((CarSpawnerObj)worldObject).CarSpawnerListIdx > Program.Simulator.CarSpawnerLists.Count-1) 
+                            if (((CarSpawnerObj)worldObject).CarSpawnerListIdx < 0 || ((CarSpawnerObj)worldObject).CarSpawnerListIdx > Program.Simulator.CarSpawnerLists.Count - 1)
                                 ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
                         }
-                        else 
+                        else
                             ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
                         carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
                     }
@@ -479,9 +474,13 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(StaticObj))
                     {
-                        //          preTestShape for lookup if it is an animated clock shape with subobjects named as clock hands 
+                        // preTestShape for lookup if it is an animated clock shape with subobjects named as clock hands 
                         StaticShape preTestShape = (new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
-                        var animNodes = preTestShape.SharedShape.Animations?[0]?.anim_nodes ?? new List<anim_node>();
+
+                        // FirstOrDefault() checks for "animations( 0 )" as this is a valid entry in *.s files
+                        // and is included by MSTSexporter for Blender 2.8+ Release V4.0 or older
+                        var animNodes = preTestShape.SharedShape.Animations?.FirstOrDefault()?.anim_nodes ?? new List<anim_node>();
+
                         var isAnimatedClock = animNodes.Exists(node => Regex.IsMatch(node.Name, @"^orts_[hmsc]hand_clock", RegexOptions.IgnoreCase));
                         if (isAnimatedClock)
                         {

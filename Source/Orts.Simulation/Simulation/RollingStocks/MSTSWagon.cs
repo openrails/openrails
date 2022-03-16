@@ -81,6 +81,10 @@ namespace Orts.Simulation.RollingStocks
         public bool IsDavisFriction = true; // Default to new Davis type friction
         public bool IsBelowMergeSpeed = true; // set indicator for low speed operation as per given speed
 
+
+        public bool GenericItem1;
+        public bool GenericItem2;
+
         Interpolator BrakeShoeFrictionFactor;  // Factor of friction for wagon brake shoes
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
         float TempMassDiffRatio;
@@ -2852,14 +2856,13 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateWindForce()
         {
-
             // Calculate compensation for  wind
             // There are two components due to wind - 
             // Drag, impact of wind on train, will increase resistance when head on, will decrease resistance when acting as a tailwind.
             // Lateral resistance - due to wheel flange being pushed against rail due to side wind.
             // Calculation based upon information provided in AREA 1942 Proceedings - https://archive.org/details/proceedingsofann431942amer - pg 56
 
-            if (Train.TrainWindResistanceDependent && !CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue && AbsSpeedMpS > 2.2352) // Only calculate wind resistance if option selected in options menu, and not in a tunnel, and speed is sufficient for wind effects (>5mph)
+            if (!CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue && AbsSpeedMpS > 2.2352) // Only calculate wind resistance if option selected in options menu, and not in a tunnel, and speed is sufficient for wind effects (>5mph)
             {
 
                 // Wagon Direction
@@ -2968,7 +2971,6 @@ namespace Orts.Simulation.RollingStocks
                         {
                             PrevCarLead = false;
                         }
-
                     }
 
                     // If tender is coupled to a trailing locomotive then reduce resistance
@@ -2976,11 +2978,8 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LateralWindResistanceForceN *= TrailLocoResistanceFactor;
                     }
-
                 }
-
-                    WindForceN = LateralWindResistanceForceN + WindDragResistanceForceN;
-
+                WindForceN = LateralWindResistanceForceN + WindDragResistanceForceN;
             }
             else
             {

@@ -8417,6 +8417,7 @@ namespace Orts.Simulation.Signalling
         private InternalBlockstate internalBlockState = InternalBlockstate.Open;    // internal blockstate
         public Permission hasPermission = Permission.Denied;  // Permission to pass red signal
         public HoldState holdState = HoldState.None;
+        public bool CallOnManuallyAllowed;
 
         public List<int> sigfound = new List<int>();  // active next signal - used for signals with NORMAL heads only
         public int reqNormalSignal = -1;              // ref of normal signal requesting route clearing (only used for signals without NORMAL heads)
@@ -10110,8 +10111,8 @@ namespace Orts.Simulation.Signalling
         public void resetSignalEnabled()
         {
             // reset train information
-
             enabledTrain = null;
+            CallOnManuallyAllowed = false;
             trainRouteDirectionIndex = 0;
             signalRoute.Clear();
             fullRoute = hasFixedRoute;
@@ -12196,7 +12197,7 @@ namespace Orts.Simulation.Signalling
 
             if (enabledTrain.Train != null && signalRoute != null)
             {
-                bool callOnValid = enabledTrain.Train.TestCallOn(this, allowOnNonePlatform, signalRoute, dumpfile);
+                bool callOnValid = CallOnManuallyAllowed || enabledTrain.Train.TestCallOn(this, allowOnNonePlatform, signalRoute, dumpfile);
                 return (callOnValid);
             }
 
@@ -12720,12 +12721,12 @@ namespace Orts.Simulation.Signalling
             {
                 if (state && CallOnEnabled)
                 {
-                    enabledTrain.Train.AllowedCallOnSignal = this;
                     clearHoldSignalDispatcher();
+                    CallOnManuallyAllowed = true;
                 }
-                else if (enabledTrain.Train.AllowedCallOnSignal == this)
+                else
                 {
-                    enabledTrain.Train.AllowedCallOnSignal = null;
+                    CallOnManuallyAllowed = false;
                 }
             }
         }

@@ -76,11 +76,7 @@ namespace ORTS
         {
             get
             {
-                var programNormal = System.IO.Path.Combine(Application.StartupPath, "RunActivity.exe");
-                var programLAA = System.IO.Path.Combine(Application.StartupPath, "RunActivityLAA.exe");
-                if (Settings.UseLargeAddressAware && File.Exists(programLAA))
-                    return programLAA;
-                return programNormal;
+                return System.IO.Path.Combine(Application.StartupPath, "RunActivity.exe");
             }
         }
 
@@ -183,7 +179,6 @@ namespace ORTS
                     "OpenRails.exe",
                     "Menu.exe",
                     "RunActivity.exe",
-                    "RunActivityLAA.exe",
                     "Updater.exe",
                 };
                 var tools = new List<ToolStripItem>();
@@ -830,7 +825,7 @@ namespace ORTS
                 var extension = System.IO.Path.GetExtension(path).ToLower();
                 if (extension == ".act")
                     radioButtonModeActivity.Checked = true;
-                else if (extension == ".timetable_or")
+                else if (extension == ".timetable_or" || extension == ".timetable-or")
                     radioButtonModeTimetable.Checked = true;
             }
             UpdateEnabled();

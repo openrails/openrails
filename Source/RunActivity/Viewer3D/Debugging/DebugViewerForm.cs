@@ -165,28 +165,74 @@ namespace Orts.Viewer3D.Debugging
 
             this.simulator = simulator;
             this.Viewer = viewer;
-			TimetableWindow = new TimetableWindow(this);
+            TimetableWindow = new TimetableWindow(this);
 
-			nodes = simulator.TDB.TrackDB.TrackNodes;
+            nodes = simulator.TDB.TrackDB.TrackNodes;
 
             // initialise the timer used to handle user input
             UITimer = new Timer();
             UITimer.Interval = 100;
             UITimer.Tick += new System.EventHandler(UITimer_Tick);
             UITimer.Start();
+        }
 
-            ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
-            windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
-            boxSetSignal.Items.Add("System Controlled");
-            boxSetSignal.Items.Add("Stop");
-            boxSetSignal.Items.Add("Approach");
-            boxSetSignal.Items.Add("Proceed");
-            chkAllowUserSwitch.Checked = false;
-            selectedTrainList = new List<Train>();
-            if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.AllowedManualSwitch = false; }
+        public int RedrawCount;
+		public Font trainFont;
+		public Font sidingFont;
+		public Font PlatformFont;
+		public Font SignalFont;
+		public SolidBrush trainBrush;
+		public SolidBrush sidingBrush;
+		public SolidBrush PlatformBrush;
+		public SolidBrush SignalBrush;
+		public SolidBrush InactiveTrainBrush;
 
-            InitData();
-            InitImage();
+		private double lastUpdateTime;
+
+      /// <summary>
+      /// When the user holds down the  "L", "R", "U", "D" buttons,
+      /// shift the view. Avoids the case when the user has to click
+      /// buttons like crazy.
+      /// </summary>
+      /// <param name="sender"></param>
+      /// <param name="e"></param>
+      void UITimer_Tick(object sender, EventArgs e)
+      {
+			if (Viewer.DebugViewerEnabled == false) // Ctrl+9 sets this true to initialise the window and make it visible
+			{
+				this.Visible = false;
+				firstShow = true;
+				return;
+			}
+
+			if (firstShow)
+            {
+				InitializeWindow();					
+			}
+			this.Visible = true;
+
+			if (Program.Simulator.GameTime - lastUpdateTime < 1)
+				return;
+			
+			lastUpdateTime = Program.Simulator.GameTime;
+
+			GenerateView();
+	  }
+
+		private void InitializeWindow()
+		{
+			ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
+			windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
+			boxSetSignal.Items.Add("System Controlled");
+			boxSetSignal.Items.Add("Stop");
+			boxSetSignal.Items.Add("Approach");
+			boxSetSignal.Items.Add("Proceed");
+			chkAllowUserSwitch.Checked = false;
+			selectedTrainList = new List<Train>();
+			if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.AllowedManualSwitch = false; }
+
+			InitData();
+			InitImage();
 
 			/*
           if (MultiPlayer.MPManager.IsMultiPlayer())
@@ -213,40 +259,8 @@ namespace Orts.Viewer3D.Debugging
 			tWindow.SelectedIndex = (MPManager.IsMultiPlayer()) ? 0 : 1;
 			TimetableWindow.SetControls();
 		}
-
-		public int RedrawCount;
-		public Font trainFont;
-		public Font sidingFont;
-		public Font PlatformFont;
-		public Font SignalFont;
-		public SolidBrush trainBrush;
-		public SolidBrush sidingBrush;
-		public SolidBrush PlatformBrush;
-		public SolidBrush SignalBrush;
-		public SolidBrush InactiveTrainBrush;
-
-		private double lastUpdateTime;
-
-      /// <summary>
-      /// When the user holds down the  "L", "R", "U", "D" buttons,
-      /// shift the view. Avoids the case when the user has to click
-      /// buttons like crazy.
-      /// </summary>
-      /// <param name="sender"></param>
-      /// <param name="e"></param>
-      void UITimer_Tick(object sender, EventArgs e)
-      {
-		  if (Viewer.DebugViewerEnabled == false) { this.Visible = false; firstShow = true; return; }
-		  else this.Visible = true;
-
-		 if (Program.Simulator.GameTime - lastUpdateTime < 1) return;
-		 lastUpdateTime = Program.Simulator.GameTime;
-
-			GenerateView();
-	  }
-
-	  #region initData
-	  private void InitData()
+		#region initData
+		private void InitData()
 	  {
 		  if (!loaded)
 		  {
@@ -1154,9 +1168,10 @@ namespace Orts.Viewer3D.Debugging
 						if (stepDistance + stepLength >= initialNodeOffset && stepDistance <= initialNodeOffset + DisplayDistance)
 						{
 							var currentLocation = currentPosition.WorldLocation;
-							scaledA.X = (previousLocation.TileX * 2048 + previousLocation.Location.X - subX) * xScale; scaledA.Y = pbCanvas.Height - (previousLocation.TileZ * 2048 + previousLocation.Location.Z - subY) * yScale;
-							scaledB.X = (currentLocation.TileX * 2048 + currentLocation.Location.X - subX) * xScale; scaledB.Y = pbCanvas.Height - (currentPosition.TileZ * 2048 + currentPosition.Location.Z - subY) * yScale;
-							g.DrawLine(pathPen, scaledA, scaledB);
+							scaledA.X = (float)((previousLocation.TileX * WorldLocation.TileSize + previousLocation.Location.X - subX) * xScale); 
+							scaledA.Y = (float)(pbCanvas.Height - (previousLocation.TileZ * WorldLocation.TileSize + previousLocation.Location.Z - subY) * yScale);
+							scaledB.X = (float)((currentLocation.TileX * WorldLocation.TileSize + currentLocation.Location.X - subX) * xScale); 
+							scaledB.Y = (float)(pbCanvas.Height - (currentPosition.TileZ * WorldLocation.TileSize + currentPosition.Location.Z - subY) * yScale); g.DrawLine(pathPen, scaledA, scaledB);
 						}
 					}
 					lastObjDistance = obj.Distance;
@@ -1547,13 +1562,8 @@ namespace Orts.Viewer3D.Debugging
 			  boxSetSignal.Items.RemoveAt(4);
 
 		  if (signalPickedItem.Signal.enabledTrain != null && signalPickedItem.Signal.CallOnEnabled)
-		  {
-			  if (signalPickedItem.Signal.enabledTrain.Train.AllowedCallOnSignal != signalPickedItem.Signal)
-			  boxSetSignal.Items.Add("Enable call on");
-			  /*else
-				  boxSetSignal.Items.Add("Disable call on");*/
-			  // To disable Call On signal must be manually set to stop, to avoid signal state change
-			  // in the interval between this list is shown and the option is selected by dispatcher
+          {
+                if (!signalPickedItem.Signal.CallOnManuallyAllowed) boxSetSignal.Items.Add("Allow call on");
 		  }
 
 		  boxSetSignal.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);

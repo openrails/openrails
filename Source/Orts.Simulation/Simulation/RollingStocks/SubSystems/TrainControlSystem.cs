@@ -167,6 +167,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         string ScriptName;
         string SoundFileName;
         string ParametersFileName;
+        string TrainParametersFileName;
         TrainControlSystem Script;
 
         public ETCSStatus ETCSStatus { get { return Script?.ETCSStatus; } }
@@ -209,6 +210,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             ScriptName = other.ScriptName;
             SoundFileName = other.SoundFileName;
             ParametersFileName = other.ParametersFileName;
+            TrainParametersFileName = other.TrainParametersFileName;
             if (other.VigilanceMonitor != null) VigilanceMonitor = new MonitoringDevice(other.VigilanceMonitor);
             if (other.OverspeedMonitor != null) OverspeedMonitor = new MonitoringDevice(other.OverspeedMonitor);
             if (other.EmergencyStopMonitor != null) EmergencyStopMonitor = new MonitoringDevice(other.EmergencyStopMonitor);
@@ -233,6 +235,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 if (ParametersFileName != null)
                 {
                     ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
+                }
+
+                if (Locomotive.Train.TcsParametersFileName != null)
+                {
+                    TrainParametersFileName = Path.Combine(Simulator.BasePath, @"TRAINS\CONSISTS\SCRIPT\", Locomotive.Train.TcsParametersFileName);
                 }
 
                 if (Script == null)
@@ -382,7 +389,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.GetControlMode = () => (TRAIN_CONTROL)(int)Locomotive.Train.ControlMode;
                 Script.NextStationName = () => Locomotive.Train.StationStops != null && Locomotive.Train.StationStops.Count > 0 ? Locomotive.Train.StationStops[0].PlatformItem.Name : "";
                 Script.NextStationDistanceM = () => Locomotive.Train.StationStops != null && Locomotive.Train.StationStops.Count > 0 ? Locomotive.Train.StationStops[0].DistanceToTrainM : float.MaxValue;
-                Script.Locomotive = () => Locomotive;
 
                 // TrainControlSystem functions
                 Script.SpeedCurve = (arg1, arg2, arg3, arg4, arg5) => SpeedCurve(arg1, arg2, arg3, arg4, arg5);
@@ -861,18 +867,35 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         private T LoadParameter<T>(string sectionName, string keyName, T defaultValue)
         {
-            var buffer = new String('\0', 256);
+            string buffer;
+            int length;
 
-            var length = ORTS.Common.NativeMethods.GetPrivateProfileString(sectionName, keyName, null, buffer, buffer.Length, ParametersFileName);
-            if (length > 0)
+            if (File.Exists(TrainParametersFileName))
             {
-                buffer.Trim();
-                return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
-            }
-            else
-                return defaultValue;
-        }
+                buffer = new string('\0', 256);
+                length = NativeMethods.GetPrivateProfileString(sectionName, keyName, null, buffer, buffer.Length, TrainParametersFileName);
 
+                if (length > 0)
+                {
+                    buffer.Trim();
+                    return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+                }
+            }
+
+            if (File.Exists(ParametersFileName))
+            {
+                buffer = new string('\0', 256);
+                length = NativeMethods.GetPrivateProfileString(sectionName, keyName, null, buffer, buffer.Length, ParametersFileName);
+
+                if (length > 0)
+                {
+                    buffer.Trim();
+                    return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+                }
+            }
+
+            return defaultValue;
+        }
 
         // Converts the generic string (e.g. ORTS_TCS5) shown when browsing with the mouse on a TCS control
         // to a customized string defined in the script
@@ -902,7 +925,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.Restore(inf);
             }
         }
-
     }
 
     public class MSTSTrainControlSystem : TrainControlSystem

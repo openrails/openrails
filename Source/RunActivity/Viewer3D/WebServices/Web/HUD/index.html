@@ -30,15 +30,16 @@ along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 <body onload="setInterval (ApiHeadUpDisplay, 500)">
   <ul>
-    <li><a id="common">Common</a></li>
-    <li><a id="consist">Consist</a></li>
-    <li><a id="locomotive">Locomotive</a></li>
-    <li><a id="power supply">Power Supply</a></li>
-    <li><a id="brake">Brake</a></li>
-    <li><a id="force">Force</a></li>
-    <li><a id="dispatcher">Dispatcher</a></li>
-    <li><a id="weather">Weather</a></li>
-    <li><a id="debug">Debug</a></li>
+	<li><a id="common">Common</a></li>
+	<li><a id="consist">Consist</a></li>
+	<li><a id="locomotive">Locomotive</a></li>
+	<li><a id="distributed power">Distributed Power</a></li>
+	<li><a id="power supply">Power Supply</a></li>
+	<li><a id="brake">Brake</a></li>
+	<li><a id="force">Force</a></li>
+	<li><a id="dispatcher">Dispatcher</a></li>
+	<li><a id="weather">Weather</a></li>
+	<li><a id="debug">Debug</a></li>
   </ul>
   <div id=menu><a href="/">Back to Menu</a></div>
   <h2>Open Rails - Head Up Display</h2>
@@ -57,23 +58,26 @@ document.getElementById("consist").onclick = function (){
 document.getElementById("locomotive").onclick = function (){
 	pageNo = 2;
 }
-document.getElementById("power supply").onclick = function (){
-	pageNo = 3;
+document.getElementById("distributed power").onclick = function () {
+    pageNo = 3;
 }
-document.getElementById("brake").onclick = function (){
+document.getElementById("power supply").onclick = function (){
 	pageNo = 4;
 }
-document.getElementById("force").onclick = function (){
+document.getElementById("brake").onclick = function (){
 	pageNo = 5;
 }
-document.getElementById("dispatcher").onclick = function (){
+document.getElementById("force").onclick = function (){
 	pageNo = 6;
 }
-document.getElementById("weather").onclick = function (){
+document.getElementById("dispatcher").onclick = function (){
 	pageNo = 7;
 }
-document.getElementById("debug").onclick = function (){
+document.getElementById("weather").onclick = function (){
 	pageNo = 8;
+}
+document.getElementById("debug").onclick = function (){
+	pageNo = 9;
 }
 </script>
 </body>

@@ -109,9 +109,6 @@ namespace Orts.Simulation.RollingStocks
 
         public override void Initialize()
         {
-            if (!ElectricPowerSupply.RouteElectrified)
-                Trace.WriteLine("Warning: The route is not electrified. Electric driven trains will not run!");
-
             base.Initialize();
 
             // If DrvWheelWeight is not in ENG file, then calculate drivewheel weight freom FoA

@@ -50,15 +50,13 @@
 // #define DEBUG_COUPLER_FORCES
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation.AIs;
 using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
-using Orts.Parsers.Msts;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
@@ -71,7 +69,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Event = Orts.Common.Event;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 
 namespace Orts.Simulation.Physics
 {
@@ -80,6 +77,7 @@ namespace Orts.Simulation.Physics
         public List<TrainCar> Cars = new List<TrainCar>();           // listed front to back
         public int Number;
         public string Name;
+        public string TcsParametersFileName;
         public static int TotalNumber = 1; // start at 1 (0 is reserved for player train)
         public TrainCar FirstCar
         {
@@ -186,13 +184,6 @@ namespace Orts.Simulation.Physics
         public float PhysicsTrainLocoDirectionDeg;
         public float ResultantWindComponentDeg;
         public float WindResultantSpeedMpS;
-        public bool TrainWindResistanceDependent
-        {
-            get
-            {
-                return Simulator.Settings.WindResistanceDependent;
-            }
-        }
 
         // Auxiliary Water Tenders
         public float MaxAuxTenderWaterMassKG;
@@ -227,7 +218,6 @@ namespace Orts.Simulation.Physics
         public int IndexNextSignal = -1;                 // Index in SignalObjectItems for next signal
         public int IndexNextSpeedlimit = -1;             // Index in SignalObjectItems for next speedpost
         public SignalObject[] NextSignalObject = new SignalObject[2];  // direct reference to next signal
-        public SignalObject AllowedCallOnSignal;         // Signal for which train has call on allowed by dispatcher
 
         // Local max speed independently from signal and speedpost speed;
         // depends from various parameters like route max speed, overall or section efficiency of service,
@@ -663,11 +653,9 @@ namespace Orts.Simulation.Physics
 
         }
 
-        //================================================================================================//
         /// <summary>
         /// Restore
-        /// <\summary>
-
+        /// </summary>
         public Train(Simulator simulator, BinaryReader inf)
         {
             Init(simulator);
@@ -952,7 +940,11 @@ namespace Orts.Simulation.Physics
             if (count > 0)
             {
                 for (int i = 0; i < count; ++i)
-                    Cars.Add(RollingStock.Restore(simulator, inf, this));
+                {
+                    TrainCar car = RollingStock.Load(simulator, this, inf.ReadString(), false);
+                    car.Restore(inf);
+                    car.Initialize();
+                }
             }
             SetDPUnitIDs(true);
         }
@@ -1013,12 +1005,9 @@ namespace Orts.Simulation.Physics
             }
         }
 
-
-        //================================================================================================//
         /// <summary>
         /// save game state
-        /// <\summary>
-
+        /// </summary>
         public virtual void Save(BinaryWriter outf)
         {
             SaveCars(outf);
@@ -1208,8 +1197,11 @@ namespace Orts.Simulation.Physics
         private void SaveCars(BinaryWriter outf)
         {
             outf.Write(Cars.Count);
-            foreach (TrainCar car in Cars)
-                RollingStock.Save(outf, car);
+            foreach (MSTSWagon wagon in Cars.OfType<MSTSWagon>())
+            {
+                outf.Write(wagon.WagFilePath);
+                wagon.Save(outf);
+            }
         }
 
         static void SaveTrafficSDefinition(BinaryWriter outf, Traffic_Service_Definition thisTSD)
@@ -2108,46 +2100,38 @@ namespace Orts.Simulation.Physics
             //These will be representative of the train whilst it is on a straight track, but each wagon will vary when going around a curve.
             // Note both train and wind direction will be positive between 0 (north) and 180 (south) through east, and negative between 0 (north) and 180 (south) through west
             // Wind and train direction to be converted to an angle between 0 and 360 deg.
-            if (TrainWindResistanceDependent)
-            {
-                // Calculate Wind speed and direction, and train direction
-                // Update the value of the Wind Speed and Direction for the train
-                PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindDirection);
-                PhysicsWindSpeedMpS = Simulator.Weather.WindSpeed;
-                float TrainSpeedMpS = Math.Abs(SpeedMpS);
+            // Calculate Wind speed and direction, and train direction
+            // Update the value of the Wind Speed and Direction for the train
+            PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindDirection);
+            PhysicsWindSpeedMpS = Simulator.Weather.WindSpeed;
+            float TrainSpeedMpS = Math.Abs(SpeedMpS);
 
-                // If a westerly direction (ie -ve) convert to an angle between 0 and 360
-                if (PhysicsWindDirectionDeg < 0)
-                    PhysicsWindDirectionDeg += 360;
+            // If a westerly direction (ie -ve) convert to an angle between 0 and 360
+            if (PhysicsWindDirectionDeg < 0)
+                PhysicsWindDirectionDeg += 360;
 
-                if (PhysicsTrainLocoDirectionDeg < 0)
-                    PhysicsTrainLocoDirectionDeg += 360;
+            if (PhysicsTrainLocoDirectionDeg < 0)
+                PhysicsTrainLocoDirectionDeg += 360;
 
-                // calculate angle between train and eind direction
-                if (PhysicsWindDirectionDeg > PhysicsTrainLocoDirectionDeg)
-                    ResultantWindComponentDeg = PhysicsWindDirectionDeg - PhysicsTrainLocoDirectionDeg;
-                else if (PhysicsTrainLocoDirectionDeg > PhysicsWindDirectionDeg)
-                    ResultantWindComponentDeg = PhysicsTrainLocoDirectionDeg - PhysicsWindDirectionDeg;
-                else
-                    ResultantWindComponentDeg = 0.0f;
-
-                // Correct wind direction if it is greater then 360 deg, then correct to a value less then 360
-                if (Math.Abs(ResultantWindComponentDeg) > 360)
-                    ResultantWindComponentDeg = ResultantWindComponentDeg - 360.0f;
-
-                // Wind angle should be kept between 0 and 180 the formulas do not cope with angles > 180. If angle > 180, denotes wind of "other" side of train
-                if (ResultantWindComponentDeg > 180)
-                    ResultantWindComponentDeg = 360 - ResultantWindComponentDeg;
-
-                float WindAngleRad = MathHelper.ToRadians(ResultantWindComponentDeg);
-
-                WindResultantSpeedMpS = (float)Math.Sqrt(TrainSpeedMpS * TrainSpeedMpS + PhysicsWindSpeedMpS * PhysicsWindSpeedMpS + 2.0f * TrainSpeedMpS * PhysicsWindSpeedMpS * (float)Math.Cos(WindAngleRad));
-
-            }
+            // calculate angle between train and eind direction
+            if (PhysicsWindDirectionDeg > PhysicsTrainLocoDirectionDeg)
+                ResultantWindComponentDeg = PhysicsWindDirectionDeg - PhysicsTrainLocoDirectionDeg;
+            else if (PhysicsTrainLocoDirectionDeg > PhysicsWindDirectionDeg)
+                ResultantWindComponentDeg = PhysicsTrainLocoDirectionDeg - PhysicsWindDirectionDeg;
             else
-            {
-                WindResultantSpeedMpS = Math.Abs(SpeedMpS);
-            }
+                ResultantWindComponentDeg = 0.0f;
+
+            // Correct wind direction if it is greater then 360 deg, then correct to a value less then 360
+            if (Math.Abs(ResultantWindComponentDeg) > 360)
+                ResultantWindComponentDeg = ResultantWindComponentDeg - 360.0f;
+
+            // Wind angle should be kept between 0 and 180 the formulas do not cope with angles > 180. If angle > 180, denotes wind of "other" side of train
+            if (ResultantWindComponentDeg > 180)
+                ResultantWindComponentDeg = 360 - ResultantWindComponentDeg;
+
+            float WindAngleRad = MathHelper.ToRadians(ResultantWindComponentDeg);
+
+            WindResultantSpeedMpS = (float)Math.Sqrt(TrainSpeedMpS * TrainSpeedMpS + PhysicsWindSpeedMpS * PhysicsWindSpeedMpS + 2.0f * TrainSpeedMpS * PhysicsWindSpeedMpS * (float)Math.Cos(WindAngleRad));
         }
 
 
@@ -2893,8 +2877,6 @@ namespace Orts.Simulation.Physics
                 // system will take back control of the signal
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
-
-                AllowedCallOnSignal = null;
             }
             UpdateSectionStateManual();                                                           // update track occupation          //
             UpdateManualMode(SignalObjIndex);                                                     // update route clearance           //
@@ -2922,8 +2904,6 @@ namespace Orts.Simulation.Physics
                 // system will take back control of the signal
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
-
-                AllowedCallOnSignal = null;
             }
             UpdateSectionStateExplorer();                                                         // update track occupation          //
             UpdateExplorerMode(SignalObjIndex);                                                   // update route clearance           //
@@ -4122,9 +4102,7 @@ namespace Orts.Simulation.Physics
         {
             if (SpeedMpS < -.1 || SpeedMpS > .1)
                 return;
-            int first = -1;
-            int last = -1;
-            FindLeadLocomotives(ref first, ref last);
+            FindLeadLocomotives(out int first, out int last);
             for (int i = 0; i < Cars.Count; i++)
             {
                 Cars[i].BrakeSystem.FrontBrakeHoseConnected = first < i && i <= last;
@@ -4165,9 +4143,7 @@ namespace Orts.Simulation.Physics
                         break;
                 }
             }
-            int first = -1;
-            int last = -1;
-            FindLeadLocomotives(ref first, ref last);
+            FindLeadLocomotives(out int first, out int last);
             int step = 100 / RetainerPercent;
             for (int i = 0; i < Cars.Count; i++)
             {
@@ -4190,7 +4166,7 @@ namespace Orts.Simulation.Physics
         // for example a double headed steam locomotive will most often have a tender separating the two locomotives, 
         // so the second locomotive will not be identified, nor will a locomotive added at the rear of the train. 
 
-        public void FindLeadLocomotives(ref int first, ref int last)
+        public void FindLeadLocomotives(out int first, out int last)
         {
             first = last = -1;
             if (LeadLocomotiveIndex >= 0)
@@ -4230,9 +4206,7 @@ namespace Orts.Simulation.Physics
 
         public TrainCar FindLeadLocomotive()
         {
-            int first = -1;
-            int last = -1;
-            FindLeadLocomotives(ref first, ref last);
+            FindLeadLocomotives(out int first, out int last);
             if (first != -1 && first < LeadLocomotiveIndex)
             {
                 return Cars[first];
@@ -4257,9 +4231,8 @@ namespace Orts.Simulation.Physics
 
         public void PropagateBrakePressure(float elapsedClockSeconds)
         {
-            if (LeadLocomotiveIndex >= 0)
+            if (LeadLocomotive is MSTSLocomotive lead)
             {
-                MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
                     lead.TrainBrakeController.UpdatePressure(ref EqualReservoirPressurePSIorInHg, elapsedClockSeconds, ref BrakeLine4);
                 if (lead.EngineBrakeController != null)
@@ -7457,8 +7430,6 @@ namespace Orts.Simulation.Physics
                     signalObject.holdState = SignalObject.HoldState.None;
                 }
 
-                AllowedCallOnSignal = null;
-
                 signalObject.resetSignalEnabled();
             }
         }
@@ -7610,9 +7581,6 @@ namespace Orts.Simulation.Physics
 
         public virtual bool TestCallOn(SignalObject thisSignal, bool allowOnNonePlatform, TCSubpathRoute thisRoute, string dumpfile)
         {
-            if (AllowedCallOnSignal == thisSignal)
-                return true;
-
             bool intoPlatform = false;
 
             foreach (Train.TCRouteElement routeElement in thisSignal.signalRoute)
@@ -7956,8 +7924,6 @@ namespace Orts.Simulation.Physics
                 //the following is added by JTang, passing a hold signal, will take back control by the system
                 if (thisSignal.holdState == SignalObject.HoldState.ManualPass ||
                     thisSignal.holdState == SignalObject.HoldState.ManualApproach) thisSignal.holdState = SignalObject.HoldState.None;
-
-                AllowedCallOnSignal = null;
 
                 thisSignal.resetSignalEnabled();
             }

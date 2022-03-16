@@ -261,11 +261,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     // Calculate adjustment times for varying lengths of trains
                     float AdjLargeEjectorChargingRateInHgpS = 0.0f;
                     float AdjSmallEjectorChargingRateInHgpS = 0.0f;
+                    float AdjBrakeServiceTimeFactorPSIpS = 0.0f;
 
                     AdjLargeEjectorChargingRateInHgpS = (Me3.FromFt3(200.0f) / Car.Train.TotalTrainBrakeSystemVolumeM3) * LargeEjectorChargingRateInHgpS;
                     AdjSmallEjectorChargingRateInHgpS = (Me3.FromFt3(200.0f) / Car.Train.TotalTrainBrakeSystemVolumeM3) * SmallEjectorChargingRateInHgpS;
 
-                    float AdjBrakeServiceTimeFactorS = (Me3.FromFt3(200.0f) / Car.Train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeServiceTimeFactorS;
+                    AdjBrakeServiceTimeFactorPSIpS = (Me3.FromFt3(200.0f) / Car.Train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeServiceTimeFactorPSIpS;
                     AdjTrainPipeLeakLossPSI = (Car.Train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.TrainBrakePipeLeakPSIorInHgpS;
 
                     // Only adjust lead pressure when locomotive car is processed, otherwise lead pressure will be "over adjusted"
@@ -342,7 +343,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             lead.BrakeFlagIncrease = false;
                             lead.BrakeFlagDecrease = true;
                                                         
-                            lead.BrakeSystem.BrakeLine1PressurePSI += elapsedClockSeconds / AdjBrakeServiceTimeFactorS;
+                            lead.BrakeSystem.BrakeLine1PressurePSI += elapsedClockSeconds * AdjBrakeServiceTimeFactorPSIpS;
                             if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                             {
                                 lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;

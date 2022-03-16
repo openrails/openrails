@@ -365,7 +365,7 @@ namespace ORTS.TrackViewer.Editing
         public int FindJunctionOrEndIndex(bool wantJunctionNode)
         {
             int bestIndex = -1;
-            float bestDistance2 = 1e10f;
+            double bestDistance2 = 1e10f;
             for (int j = 0; j < TrackDB.TrackNodes.Count(); j++)
             {
                 TrackNode tn = TrackDB.TrackNodes[j];
@@ -374,12 +374,12 @@ namespace ORTS.TrackViewer.Editing
                 if (!wantJunctionNode && !tn.TrEndNode) continue;
                 if (tn.UiD.TileX != Location.TileX || tn.UiD.TileZ != Location.TileZ) continue;
 
-                float dx = tn.UiD.X - Location.Location.X;
+                double dx = tn.UiD.X - Location.Location.X;
                 dx += (tn.UiD.TileX - Location.TileX) * 2048;
-                float dz = tn.UiD.Z - Location.Location.Z;
+                double dz = tn.UiD.Z - Location.Location.Z;
                 dz += (tn.UiD.TileZ - Location.TileZ) * 2048;
-                float dy = tn.UiD.Y - Location.Location.Y;
-                float d = dx * dx + dy * dy + dz * dz;
+                double dy = tn.UiD.Y - Location.Location.Y;
+                double d = dx * dx + dy * dy + dz * dz;
                 if (bestDistance2 > d)
                 {
                     bestIndex = j;

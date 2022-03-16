@@ -144,8 +144,6 @@ namespace ORTS
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
             checkOverspeedMonitor.Checked = Settings.SpeedControl;
             checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
-            checkViewMapWindow.Checked = Settings.ViewDispatcher;
-            checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
             checkRetainers.Checked = Settings.RetainersOnAllCars;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
@@ -153,12 +151,9 @@ namespace ORTS
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
             checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
-            checkEnableWebServer.Checked = Settings.WebServer;
             numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
-
-            checkMSTSBINSound.Checked = Settings.MSTSBINSound;
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
             numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
             numericExternalSoundPassThruPercent.Value = Settings.ExternalSoundPassThruPercent;
@@ -166,12 +161,10 @@ namespace ORTS
             // Video tab
             checkDynamicShadows.Checked = Settings.DynamicShadows;
             checkShadowAllShapes.Checked = Settings.ShadowAllShapes;
-            checkFastFullScreenAltTab.Checked = Settings.FastFullScreenAltTab;
             checkWindowGlass.Checked = Settings.WindowGlass;
             checkModelInstancing.Checked = Settings.ModelInstancing;
             checkWire.Checked = Settings.Wire;
             checkVerticalSync.Checked = Settings.VerticalSync;
-            numericCab2DStretch.Value = Settings.Cab2DStretch;
             numericViewingDistance.Value = Settings.ViewingDistance;
             checkDistantMountains.Checked = Settings.DistantMountains;
             labelDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
@@ -194,11 +187,7 @@ namespace ORTS
             numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
             numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
-            checkCurveResistanceDependent.Checked = Settings.CurveResistanceDependent;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
-            checkTunnelResistanceDependent.Checked = Settings.TunnelResistanceDependent;
-            checkWindResistanceDependent.Checked = Settings.WindResistanceDependent;
-            checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkHotStart.Checked = Settings.HotStart;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
@@ -326,10 +315,7 @@ namespace ORTS
             numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
-            checkConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfDayOrNightTextures;
             checkSignalLightGlow.Checked = Settings.SignalLightGlow;
-            checkCircularSpeedGauge.Checked = Settings.CircularSpeedGauge;
-            checkLODViewingExtention.Checked = Settings.LODViewingExtention;
             checkPreferDDSTexture.Checked = Settings.PreferDDSTexture;
             checkUseLocationPassingPaths.Checked = Settings.UseLocationPassingPaths;
             checkUseMSTSEnv.Checked = Settings.UseMSTSEnv;
@@ -441,8 +427,6 @@ namespace ORTS
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
             Settings.SpeedControl = checkOverspeedMonitor.Checked;
             Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
-            Settings.ViewDispatcher = checkViewMapWindow.Checked;
-            Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
             Settings.RetainersOnAllCars = checkRetainers.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
@@ -450,10 +434,9 @@ namespace ORTS
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
-            Settings.WebServer = checkEnableWebServer.Checked;
+            Settings.WebServerPort = (int)numericWebServerPort.Value;
 
             // Audio tab
-            Settings.MSTSBINSound = checkMSTSBINSound.Checked;
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
             Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;
             Settings.ExternalSoundPassThruPercent = (int)numericExternalSoundPassThruPercent.Value;
@@ -461,12 +444,10 @@ namespace ORTS
             // Video tab
             Settings.DynamicShadows = checkDynamicShadows.Checked;
             Settings.ShadowAllShapes = checkShadowAllShapes.Checked;
-            Settings.FastFullScreenAltTab = checkFastFullScreenAltTab.Checked;
             Settings.WindowGlass = checkWindowGlass.Checked;
             Settings.ModelInstancing = checkModelInstancing.Checked;
             Settings.Wire = checkWire.Checked;
             Settings.VerticalSync = checkVerticalSync.Checked;
-            Settings.Cab2DStretch = (int)numericCab2DStretch.Value;
             Settings.ViewingDistance = (int)numericViewingDistance.Value;
             Settings.DistantMountains = checkDistantMountains.Checked;
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
@@ -483,11 +464,7 @@ namespace ORTS
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
-            Settings.CurveResistanceDependent = checkCurveResistanceDependent.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
-            Settings.TunnelResistanceDependent = checkTunnelResistanceDependent.Checked;
-            Settings.WindResistanceDependent = checkWindResistanceDependent.Checked;
-            Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.HotStart = checkHotStart.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
@@ -530,10 +507,7 @@ namespace ORTS
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.LODBias = trackLODBias.Value;
-            Settings.ConditionalLoadOfDayOrNightTextures = checkConditionalLoadOfNightTextures.Checked;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
-            Settings.CircularSpeedGauge = checkCircularSpeedGauge.Checked;
-            Settings.LODViewingExtention = checkLODViewingExtention.Checked;
             Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
             Settings.UseLocationPassingPaths = checkUseLocationPassingPaths.Checked;
             Settings.UseMSTSEnv = checkUseMSTSEnv.Checked;
@@ -864,8 +838,6 @@ namespace ORTS
             {
                 (pbAlerter, new[] { checkAlerter }),
                 (pbControlConfirmations, new[] { checkControlConfirmations }),
-                (pbMapWindow, new[] { checkViewMapWindow }),
-                (pbLAA, new[] { checkUseLargeAddressAware }),
                 (pbRetainers, new[] { checkRetainers }),
                 (pbGraduatedRelease, new[] { checkGraduatedRelease }),
                 (pbBrakePipeChargingRate, new[] { lBrakePipeChargingRate }),
@@ -873,7 +845,6 @@ namespace ORTS
                 (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
                 (pbDisableTcsScripts, new[] { checkDisableTCSScripts }),
-                (pbEnableWebServer, new[] { checkEnableWebServer }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
@@ -904,15 +875,6 @@ namespace ORTS
                     baseUrl + "/options.html#control-confirmations"
                 },
                 {
-                    pbMapWindow,
-                    // This URL is temporary, waiting for https://open-rails.readthedocs.io to be updated to match the Manual in PDF format.
-                    baseUrl + "/options.html#dispatcher-window"
-                },
-                {
-                    pbLAA,
-                    baseUrl + "/options.html#large-address-aware-binaries"
-                },
-                {
                     pbRetainers,
                     baseUrl + "/options.html#retainer-valve-on-all-cars"
                 },
@@ -939,10 +901,6 @@ namespace ORTS
                 {
                     pbDisableTcsScripts,
                     baseUrl + "/options.html#disable-tcs-scripts"
-                },
-                {
-                    pbEnableWebServer,
-                    baseUrl + "/options.html#enable-web-server"
                 },
                 {
                     pbOverspeedMonitor,

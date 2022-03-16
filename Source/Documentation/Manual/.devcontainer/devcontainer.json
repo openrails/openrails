@@ -1,0 +1,22 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "workspaceMount": "source=${localWorkspaceFolder},target=/docs,type=bind",
+    "workspaceFolder": "/docs",
+    "remoteUser": "vscode",
+    "features": {
+        "common": {
+            "username": "automatic",
+            "uid": "automatic",
+            "gid": "automatic",
+            "installZsh": true,
+            "installOhMyZsh": true,
+            "upgradePackages": true,
+            "nonFreePackages": false
+        }
+    },
+    "extensions": [
+        "TatsuyaNakamori.resttext"
+    ]
+}

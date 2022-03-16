@@ -16,8 +16,50 @@ OR supports with a high degree of compatibility all functions available in
 MSTS for 2D cabs, and provides some significant enhancements described in the 
 next paragraphs.
 
-OR adds support for the ETCS circular speed gauge, as described 
-:ref:`here <options-etcs>`.
+
+ETCS circular speed gauge
+-------------------------
+
+You can add to the cabview a
+circular speed gauge accordingly to the European standard train control
+system ETCS.
+
+.. image:: images/options-etcs.png
+   :scale: 60 %
+   :align: center
+
+
+.. admonition:: For content developers
+
+    The gauge is added by the insertion of a block like the following
+    into the .cvf file::
+
+        Digital (
+            Type ( SPEEDOMETER DIGITAL )
+            Style ( NEEDLE )
+            Position ( 160 255 56 56 )
+            ScaleRange ( 0 250 )
+            Units ( KM_PER_HOUR )
+        )
+
+It is also possible to display the full ETCS display using the following block
+instead::
+
+		ScreenDisplay (
+			Type ( ORTS_ETCS SCREEN_DISPLAY )
+			Position ( 280 272 320 240 )
+			Units ( KM_PER_HOUR )
+			Parameters (
+				Mode FullSize
+			)
+		)
+		
+The following DMI size variants are available: FullSize (displays the whole DMI), SpeedArea
+(displays only the left part with information about distance and speed) and PlanningArea
+(displays only the planning area and navigation buttons).
+
+The information displayed in the DMI is controlled via the TCS script. For more details,
+see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
 
 .. _cabs-battery-switch:
 
@@ -403,6 +445,69 @@ Here is an example of use of the odometer control blocks within a .cvf file::
     Units ( FEET )
   )
 
+.. _cabs-distributed-power:
+
+Distributed Power
+-----------------
+
+The principles of Distributed Power are described :ref:`here <distributed-power>` .
+
+Distributed Power data can be displayed using control ORTS_DISTRIBUTED_POWER. Here 
+an example of use::
+
+	ScreenDisplay (
+      Type ( ORTS_DISTRIBUTED_POWER SCREEN_DISPLAY )
+      Position (  164.4 286.5 136 52 )
+		Parameters (
+         FullTable True
+         LoadUnits AMPS
+		)
+      Units ( KM_PER_HOUR )
+		ORTSDisplay ( 1 )
+		ORTSScreenPage ( "2300-0" )
+   )  
+
+Here below an example of the output of the above control.
+
+.. image:: images/cabs-distributed-power.png
+
+When parameter FullTable is set to False, only the first 6 lines 
+are displayed.
+Optional parameter LoadUnits defines which is the UoM used for the 
+Load field. Default is AMPS in a metric environment and KILO_LBS in 
+the other cases. Selectable LoadUnits are AMPS, NEWTONS, KILO_NEWTONS, 
+LBS and KILO_KBS.
+
+The screen display can be rotated in 2D cabs adding parameter 
+ORTSAngle ( number ) in the ScreenDisplay block. The angle is in degrees.
+
+Info specific for 3D cabs can be found :ref:`here <cabs-distributed-power-3d>` .
+
+For every keyboard command related to Distributed Power, a cabview control 
+is also available. Here's a list of the cabview controls::
+
+   - ORTS_DP_MOVE_TO_FRONT
+   - ORTS_DP_MOVE_TO_BACK
+   - ORTS_DP_IDLE
+   - ORTS_DP_TRACTION
+   - ORTS_DP_BRAKE
+   - ORTS_DP_MORE
+   - ORTS_DP_LESS
+
+Here an example of use of one of the controls::
+
+   TwoState (
+		Type ( ORTS_DP_MOVE_TO_FRONT TWO_STATE )
+		Position ( 163.2 378.4 13.75 10 )
+		Graphic ( "..\\..\\Common.Cab\\ES44v3\\softkey1trans.ace" )
+		NumFrames ( 2 2 1 )
+		Style ( WHILE_PRESSED )
+		MouseControl ( 1 )
+		ORTSDisplay ( 1 )
+		ORTSScreenPage ( "2300-0" )
+	)
+
+
 Animated 2D Wipers
 ------------------
 
@@ -466,6 +571,69 @@ if e.g. the wiper moves from left to right and back, only the frames related
 to the motion from left to right have to be included. For the reverse 
 motion the same frames are used from last to first. SwitchVal can vary from 0 to 1.
 
+Control Labels
+--------------
+
+The string appearing on the screen when the mouse browses over a command control 
+can be customized with following line, to be added within the control block in the 
+.cvf file::
+
+   ORTSLabel ( "string" )
+   
+Multiple screen pages on displays
+---------------------------------
+
+Modern locomotives have one or more displays in their cabs, and often in such 
+displays it is possible to switch among more screen pages. Fields and controls 
+described in this paragraph enable the implementation of .cvf files with such 
+functionality, for both 2D and 3D cabs.
+
+In the .cvf control blocks following further fields may be optionally present::
+
+  ORTSDisplay ( numeric ), indicating the display ID number (from 0 to 7) 
+  to which the control is linked; if such field is missing, display ID number 
+  zero is assumed;
+
+  ORTSScreenPage ( alphanumeric-string ) indicating the screen ID string to 
+  which the control is linked; that means that the control is displayed/may be 
+  operated only if its screen is active in that moment; a missing entry 
+  indicates that the control is displayed independently from the selected screen page; 
+  at game start such controls are enabled, plus the ones with line 
+  ORTSScreenPage ( "default" ); more ORTSScreenPage() entries in a single control 
+  are possible.
+
+A new on/off control, called ORTS_SCREEN_SELECT is available, which, in addition to the usual fields and to 
+the optional fields ORTSDisplay and ORTSScreenPage contains one or more of following fields::
+
+  ORTSNewScreenPage ( alphanumeric-string numeric ): when the control is clicked, 
+  the controls with field ORTSScreenPage equal to the string of this field and 
+  with field ORTSDisplay equal to the numeric will be displayed on such display 
+  in place of the ones displayed up to that moment. if the numeric is missing within 
+  ORTSNewScreenPage, the involved display is the one referenced in field ORTSDisplay 
+  of ORTS_SCREEN_SELECT.
+
+A further control is available, named ORTS_STATIC_DISPLAY, which is specially devoted to the loading of the 
+background of screen pages (their static part). 
+Here is an example of usage of it::
+
+	MultiStateDisplay (
+		Type ( ORTS_STATIC_DISPLAY MULTI_STATE_DISPLAY )
+		Position ( 246 151 105 16 )
+		Graphic ( semproniostatic.ace )
+		States ( 1 1 1
+			State (
+				Style ( 0 )
+				SwitchVal ( 0 )
+			)
+		)
+			ORTSScreenPage ( "sempronio" )
+		)
+
+With this block, the static part of the "sempronio" screen page is loaded on display 0 when such screen 
+becomes the active one.
+
+.cvf files not using fields and controls listed in this paragraph work as usual, with no changes needed. 
+
 Further OR cab controls
 -----------------------
 
@@ -480,6 +648,44 @@ and the mirrors.
 The control blocks are like the one shown for the cab light. The Type strings 
 are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
 
+.. _cabs-generic-items:
+
+Cab controls for generic items
+------------------------------
+
+OR supports the cabview controls for two generic two-state items. 
+The cabview controls aree called ``<ORTS_GENERIC_ITEM1>`` and 
+``<ORTS_GENERIC_ITEM2>``. Their state can be toggled also by respectively 
+clicking keys ``<Shift+.>`` and ``<Shift+,>``.
+
+Sound events are associated, that is::
+
+   240: GenericItem1On
+   241: GenericItem1Off
+   242: GenericItem2On
+   243: GenericItem2Off
+
+Animations within the .s file of the locomotive, either stopped/moving or 
+two-state can be associated to the item state. Linked stopped/moving (wiper type) 
+animations are named ``<ORTSITEM1CONTINUOUS>`` and ``<ORTSITEM2CONTINUOUS>``. 
+Linked two-state animations (doors type) are named ``<ORTSITEM1TWOSTATE>`` and
+``<ORTSITEM2TWOSTATE>``. 
+The default animation speed for stopped/moving type animations is 8 FPS. 
+It may be modified with following parameter in the .sd file::
+
+   ESD_CustomAnimationSpeed ( 8 )
+
+Examples of use are fan control, open/close of aerodynamic coverages of couplers 
+in high speed trains, menu pages switching.
+
+Animations within the 3D cab .s file are also available, as follows::
+
+        ORTS_ITEM1CONTINUOUS
+        ORTS_ITEM2CONTINUOUS
+        ORTS_ITEM1TWOSTATE
+        ORTS_ITEM2TWOSTATE
+
+in analogy to the four animations for the locomotive .s file.
 
 High-resolution Cab Backgrounds and Controls
 --------------------------------------------
@@ -808,6 +1014,41 @@ Here below is an example of an entry for a 3D cab::
   ScaleRange ( 0 5000 )
   Units ( LBS )
   ) 
+
+
+.. _cabs-distributed-power-3d:
+
+Distributed power display
+-------------------------
+
+Following info applies to the creation of a distributed power display in 2D cabs, in 
+addition to what is described :ref:`here <cabs-distributed-power>` for 2D cabs.
+
+In the 3Dcab .s file an ORTS_DISTRIBUTED_POWER object must be defined, with the same 
+syntax rules of the digitals, so e.g. ORTS_DISTRIBUTED_POWER:0:8:DPI , 
+where 8 is the selected character font size and DPI is the DPI.ace texture associated.
+
+In the folder where the 3D cab files are located (usually CABVIEW3D) such file DPI.ace 
+must be present. A sample file for that can be found in 
+``Documentation\SampleFiles\Manual\DPI.zip`` . Here is how such file looks like
+
+.. image:: images/cabs-dpi-ace.png 
+  :align: center
+  :scale: 80%
+
+Customizations for such file are possible following these rules:
+
+1. Horizontal/vertical ratio must be kept
+2. The first four lines must have the characters centered in their rectangle.
+3. From the 5th line on characters may be also spaced in a thicker way (as is for 
+   the ``Idle`` string in the above picture)
+4. From the 5th line on strings may be replaced bo strings in other national languages, 
+   provided that the new strings aren't wider than the original ones.
+5. It should be possible to have a transparent background if preferred.
+
+
+Except for the first column, fields 
+in the 3D distributed power display are always with center alignment.
 
 Alignment for digital controls
 ------------------------------
