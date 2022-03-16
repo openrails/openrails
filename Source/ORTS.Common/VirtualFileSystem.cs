@@ -608,10 +608,23 @@ namespace ORTS.Common
     {
         readonly Dictionary<string, VfsNode> Children = new Dictionary<string, VfsNode>();
         readonly VfsNode Parent;
+
+        /// <summary>
+        /// The node's own name without the path.
+        /// </summary>
         readonly string Name;
 
+        /// <summary>
+        /// Either the real operating system path of the node's referenced file or directory,
+        /// or the path to the archive containing the node's referenced file.
+        /// </summary>
         public string AbsolutePath { get; private set; }
+
+        /// <summary>
+        /// In case the node's referenced file is inside of an archive, then the in-archive part of the path, else null.
+        /// </summary>
         public string SubPath { get; }
+        
         public bool IsDirectory { get; }
 
         public VfsNode(string name, bool isDirecotry) : this(name) => IsDirectory = isDirecotry;
