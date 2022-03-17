@@ -55,6 +55,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float EmergAuxVolumeRatio = 1.4f;
         protected string DebugType = string.Empty;
         protected string RetainerDebugState = string.Empty;
+        protected bool MRPAuxResCharging;
         protected float CylVolumeM3;
 
 
@@ -119,6 +120,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             EmergResChargingRatePSIpS = thiscopy.EmergResChargingRatePSIpS;
             EmergAuxVolumeRatio = thiscopy.EmergAuxVolumeRatio;
             TwoPipes = thiscopy.TwoPipes;
+            MRPAuxResCharging = thiscopy.MRPAuxResCharging;
             HoldingValve = thiscopy.HoldingValve;
         }
 
@@ -254,6 +256,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "wagon(ortsbrakeinsensitivity": BrakeInsensitivityPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsemergencyvalveactuationrate": EmergencyValveActuationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 15f); break;
+                case "wagon(ortsmainrespipeauxrescharging": MRPAuxResCharging = this is AirTwinPipe && stf.ReadBoolBlock(true); break;
             }
         }
 
@@ -468,7 +471,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 						AuxResPressurePSI -= dp * EmergAuxVolumeRatio;
 					}
 				}
-                if (AuxResPressurePSI < BrakeLine1PressurePSI && (!TwoPipes || !(Car as MSTSWagon).DistributorPresent || BrakeLine2PressurePSI < BrakeLine1PressurePSI) && !BleedOffValveOpen)
+                if (AuxResPressurePSI < BrakeLine1PressurePSI && (!TwoPipes || !MRPAuxResCharging || !(Car as MSTSWagon).DistributorPresent || BrakeLine2PressurePSI < BrakeLine1PressurePSI) && !BleedOffValveOpen)
                 {
                     float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS; // Change in pressure for train brake pipe.
                     if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
@@ -500,6 +503,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             // Charge Auxiliary reservoir for MRP
             if (TwoPipes
+                && MRPAuxResCharging
                 && (Car as MSTSWagon).DistributorPresent
                 && AuxResPressurePSI < BrakeLine2PressurePSI
                 && AuxResPressurePSI < ControlResPressurePSI
