@@ -3046,6 +3046,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 
 .. index::
    single: BrakePipeVolume
+   single: ORTSEmergencyValveActuationRate
+   single: ORTSMainResPipeAuxResCharging
    single: ORTSMainResChargingRate
    single: ORTSEngineBrakeReleaseRate
    single: ORTSEngineBrakeApplicationRate
@@ -3067,6 +3069,14 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   brake servicetimefactor instead, but the Open Rails Development team
   doesn't believe this is worth the effort by the user for the added
   realism.
+- ``Wagon(ORTSEmergencyValveActuationRate`` -- Threshold rate for emergency
+  brake actuation of the triple valve. If the pressure in the brake pipe
+  decreases at a higher rate than specified, the triple valve will switch to
+  emergency mode.
+- ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
+  for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
+  reservoirs. If set to false, the main reservoir pipe will not be used
+  by the brake system.
 - ``Engine(ORTSMainResChargingRate`` -- Rate of main reservoir pressure change
   in psi per second when the compressor is on (default .4).
 - ``Engine(ORTSEngineBrakeReleaseRate`` -- Rate of engine brake pressure
