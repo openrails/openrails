@@ -114,7 +114,7 @@ to any browser. This can be running on the same PC as Open Rails or another PC
 or other device which is connected to your local network.
 
 The simplest way to access these samples is to start the game and then launch
-a browser on the smae PC. Then enter "localhost:2150" into your browser address bar. 
+a browser on the same PC. Then enter "localhost:2150" into your browser address bar. 
 (2150 is the default port number set in :ref:`Menu > Options > General <options-web-server-port>`)
 
 Sample Web Pages
