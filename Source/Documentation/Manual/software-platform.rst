@@ -35,7 +35,8 @@ MonoGame is an open source implementation of the Microsoft XNA 4 Framework and p
 Frames per Second (FPS) Performance
 ===================================
 
-FPS rate is as default not linked to the sync rate of the monitor. However, with :ref:`this option <options-vsync>` FPS rate may be set at the value of the monitor refresh rate.
+FPS rate is as default not linked to the sync rate of the monitor. 
+However, with :ref:`this option <options-vsync>` FPS rate may be set at the value of the monitor refresh rate.
 
 Game Clock and Internal Clock
 =============================
@@ -101,15 +102,26 @@ the software will contribute to better overall performance -- potentially
 allowing high polygon models with densely populated routes at acceptable 
 frame rates.
 
+.. _web-server:
+
 Web Server
 ==========
 
 .. _sample-web-pages:
 
+The game uses a built-in web-server to deliver standard and custom web-pages
+to any browser. This can be running on the same PC as Open Rails or another PC 
+or other device which is connected to your local network.
+
+The simplest way to access these samples is to start the game and then launch
+a browser on the same PC. Then enter "localhost:2150" into your browser address bar. 
+(2150 is the default port number set in :ref:`Menu > Options > General <options-web-server-port>`)
+
 Sample Web Pages
 ----------------
 
-These pages give examples of what can be done with the APIs.
+A number of web-pages are included in the Open Rails installation as examples of 
+what can be done with the APIs.
 
 Some of these sample pages repeat data from the in-game panels to provide a more convenient display.
 

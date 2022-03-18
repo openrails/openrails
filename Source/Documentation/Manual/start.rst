@@ -180,6 +180,22 @@ Now, click on ``Start``, and OR will start loading the data needed for your
 game. When loading completes you will be within the cab of your 
 locomotive! You can read further in the chapter :ref:`Driving a Train <driving>`.
 
+Firewall
+========
+
+The game uses a built-in web-server to deliver standard and custom  web-pages
+to any browser - see :ref:`Web Server <web-server>`.
+
+
+When the game runs for the first time, the web-server will try to use a
+port on your PC to serve any browser that you might want to run. 
+The Windows OS will detect this and pop up a prompt to ask permission for this.
+
+.. image:: images/firewall.png
+
+We recommend that you grant permission as a private network even if you
+don't plan to use a browser straight away.
+
 Multiplayer Mode
 ----------------
 
