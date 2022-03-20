@@ -149,7 +149,7 @@ namespace ORTS
             comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
-            checkEnableTCSScripts.Checked = !Settings.DisableTCSScripts;// Inverted as "Enable scripts" is better UI than "Disable scripts"
+            checkEnableTCSScripts.Checked = !Settings.DisableTCSScripts;    // Inverted as "Enable scripts" is better UI than "Disable scripts"
             numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
@@ -190,7 +190,7 @@ namespace ORTS
             checkHotStart.Checked = Settings.HotStart;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
-            checkBoxNoDieselEngineStart.Checked = Settings.NoDieselEngineStart;
+            checkDieselEngineStart.Checked = !Settings.NoDieselEngineStart; // Inverted as "EngineStart" is better UI than "NoEngineStart"
 
             // Keyboard tab
             InitializeKeyboardSettings();
@@ -464,7 +464,7 @@ namespace ORTS
             Settings.HotStart = checkHotStart.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
-            Settings.NoDieselEngineStart = checkBoxNoDieselEngineStart.Checked;
+            Settings.NoDieselEngineStart = !checkDieselEngineStart.Checked; // Inverted as "EngineStart" is better UI than "NoEngineStart"
 
             // Keyboard tab
             // These are edited live.
