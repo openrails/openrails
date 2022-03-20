@@ -188,17 +188,17 @@ namespace ORTS.Settings
         public int ExternalSoundPassThruPercent { get; set; } // higher = louder sound
 
         // Video settings:
-        [Default(false)]
+        [Default(true)]
         public bool DynamicShadows { get; set; }
         [Default(false)]
         public bool ShadowAllShapes { get; set; }
         [Default(false)]
         public bool WindowGlass { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool ModelInstancing { get; set; }
         [Default(true)]
         public bool Wire { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool VerticalSync { get; set; }
         [Default(2000)]
         public int ViewingDistance { get; set; }
