@@ -215,10 +215,14 @@ namespace Orts.Simulation.RollingStocks
 
         // Adhesion parameters
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
+        float SlipFrictionCoefficientFactor;
         public float SteamStaticWheelForce;
         public float SteamTangentialWheelForce;
         public float SteamDrvWheelWeightLbs;  // Weight on each drive axle
         public float PreviousThrottleSetting = 0.0f;  // Holds the value of the previous throttle setting for calculating the correct antislip speed
+        float WheelSlipTimeS;
+        float WheelStopSlipTimeS;
+        float CurrentWheelSlipAdhesionMultiplier;
 
         // parameters for Track Sander based upon compressor air and abrasive table for 1/2" sand blasting nozzle @ 50psi
         public float MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
@@ -3016,13 +3020,54 @@ public List<CabView> CabViewList = new List<CabView>();
 
             }
 
-            if (WheelSlip && ThrottlePercent > 0.2f && !BrakeSkid)   // Test to see if loco wheel is slipping, then coeff of friction will be decreased below static value. Sanding will override this somewhat
+            // When wheel slips or skids, then dynamic (kinetic) coeff of friction will be decreased below static value. Sanding will override this somewhat.
+            // The transition between static and dynamic friction appears to decrease at an exponential rate until it reaches a steady state dynamic value.
+            // 
+
+
+            // Test to see if loco wheel is slipping or skidding due to brake application
+            if (WheelSlip && ((ThrottlePercent > 0.2f && !BrakeSkid) || (ThrottlePercent < 0.1f && BrakeSkid)))   
             {
-                BaseFrictionCoefficientFactor *= 0.5f;  // Descrease friction to take into account dynamic (kinetic) friction, typically kinetic friction is approximately 50% of static friction.
+
+                WheelStopSlipTimeS = 0; // Reset stop slip time if wheel slip starts
+
+                // Exponential curve is used to transition between static friction and dynamic friction when wheel slips
+                // Exponential constant calculated between two points, using this tool - https://mathcracker.com/exponential-function-calculator#results
+                // Google search suggests that Steel on steel has a static coeff = 0.74, and a dynamic coeff = 0.57. Hence reduction = 0.77.
+                // Constant points facilitate a decrease from 1 to 0.7 in 3 seconds - P1 = (0, 1), P2 = (3, 0.77). Hence exp constant = −0.0871
+                var expAdhesion = -0.0871;
+                WheelSlipTimeS += elapsedClockSeconds;
+                WheelSlipTimeS = MathHelper.Clamp(WheelSlipTimeS, 0.0f, 3.0f); // Ensure that time to transition between the two friction cases is maintained - currently set to 3 secs
+
+                float adhesionMultiplier = (float) Math.Exp(expAdhesion * WheelSlipTimeS);
+                CurrentWheelSlipAdhesionMultiplier = adhesionMultiplier;
+
+                BaseFrictionCoefficientFactor *= adhesionMultiplier;  // Descrease friction to take into account dynamic (kinetic) friction, typically kinetic friction is approximately 50% of static friction.
+                SlipFrictionCoefficientFactor = BaseFrictionCoefficientFactor;
+
+                BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.05f, 1.0f); // Ensure friction coefficient never exceeds a "reasonable" value
             }
-            else if (WheelSlip && ThrottlePercent < 0.1f && BrakeSkid) // Test to see if loco wheel is skidding due to brake application
+            else
             {
-                BaseFrictionCoefficientFactor *= 0.5f;  // Descrease friction to take into account dynamic (kinetic) friction, typically kinetic friction is approximately 50% of static friction.
+                WheelSlipTimeS = 0; // Reset slip time if wheel slip stops
+
+                if (SlipFrictionCoefficientFactor < BaseFrictionCoefficientFactor && SlipFrictionCoefficientFactor != 0) // Once these two are equal then assume that wheels have stopped slipping.
+                {
+//                    Trace.TraceInformation("SlipFriction {0} Base {1}", SlipFrictionCoefficientFactor, BaseFrictionCoefficientFactor);
+                    // Exponential curve is used to transition between dynamic friction and static friction when wheel stops slipping
+                    // Constant points facilitate an increase from 0.7 to 1 in 3 seconds - P1 = (3, 0.77), P2 = (0, 1). Hence exp constant = 0.0871
+                    var expAdhesion = 0.0871;
+                    WheelStopSlipTimeS += elapsedClockSeconds;
+                    WheelStopSlipTimeS = MathHelper.Clamp(WheelStopSlipTimeS, 0.0f, 3.0f); // Ensure that time to transition between the two friction cases is maintained - currently set to 3 secs
+
+                    float adhesionMultiplier = CurrentWheelSlipAdhesionMultiplier * (float)Math.Exp(expAdhesion * WheelStopSlipTimeS);
+
+//                    Trace.TraceInformation("adhesion {0} StopTime {1} Base {2} Current {3}", adhesionMultiplier, WheelStopSlipTimeS, BaseFrictionCoefficientFactor, CurrentWheelSlipAdhesionMultiplier);
+
+                    BaseFrictionCoefficientFactor *= adhesionMultiplier;  // Descrease friction to take into account dynamic (kinetic) friction, typically kinetic friction is approximately 50% of static friction.
+                    SlipFrictionCoefficientFactor = BaseFrictionCoefficientFactor;
+                    BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.05f, 1.0f); // Ensure friction coefficient never exceeds a "reasonable" value
+                }
             }
 
             var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
