@@ -24,15 +24,15 @@ msgstr ""
 #: sidings.rsids
 msgctxt "sidings.rsids"
 msgid "Sidings"
-msgstr ""
+msgstr "Станционные Пути"
 
 #: sidings.savepaths1
 msgid "Do you want to save the path with filename \""
-msgstr ""
+msgstr "Хотите сохранить маршрут с именем файла \""
 
 #: sidings.savepaths2
 msgid "\" and description \""
-msgstr ""
+msgstr "\" и описанием \""
 
 #: stations.irgendwas
 msgctxt "stations.irgendwas"
@@ -41,15 +41,15 @@ msgstr ""
 
 #: stations.savedlgtitle
 msgid "save stations"
-msgstr ""
+msgstr "сохранить станции"
 
 #: stations.vrznotexists
 msgid "The stationfile has to be saved in \"Activities\\Openrails\\\" of the route. Should this folder be created?"
-msgstr ""
+msgstr "Список станций нужно сохранить в папке \"Activities\\Openrails\\\" полигона. Создать эту папку?"
 
 #: tform1.caption
 msgid "Timetable-Editor"
-msgstr "Редактор Расписания"
+msgstr "Редактор Расписаний"
 
 #: tform1.infobutton.hint
 msgid "Info"
@@ -57,7 +57,7 @@ msgstr "Инфо"
 
 #: tform1.menuitem1.caption
 msgid "automatic column width"
-msgstr "авто-ширина"
+msgstr "подбор ширины столбца"
 
 #: tform1.menuitem2.caption
 msgctxt "tform1.menuitem2.caption"
@@ -85,120 +85,120 @@ msgstr ""
 
 #: tform1.menuitem7.caption
 msgid "delete row"
-msgstr ""
+msgstr "убрать строку"
 
 #: tform1.menuitem8.caption
 msgid "delete column"
-msgstr ""
+msgstr "убрать столбец"
 
 #: tform1.speedbutton1.hint
 msgid "new"
-msgstr ""
+msgstr "новое расписание"
 
 #: tform1.speedbutton10.caption
 msgid "shift"
-msgstr ""
+msgstr "сдвиг"
 
 #: tform1.speedbutton10.hint
 msgid "paste and shift"
-msgstr ""
+msgstr "вставка-сдвиг"
 
 #: tform1.speedbutton11.hint
 msgctxt "TFORM1.SPEEDBUTTON11.HINT"
 msgid "save"
-msgstr ""
+msgstr "сохранить"
 
 #: tform1.speedbutton12.hint
 msgid "Undo"
-msgstr ""
+msgstr "Отменить"
 
 #: tform1.speedbutton13.hint
 msgid "Redo"
-msgstr ""
+msgstr "Вернуть"
 
 #: tform1.speedbutton14.hint
 msgid "zip timetable, consists and paths"
-msgstr ""
+msgstr "упаковать расписания, маршруты и составы"
 
 #: tform1.speedbutton15.hint
 msgid "Import another timetable"
-msgstr ""
+msgstr "Импортировать другое расписание"
 
 #: tform1.speedbutton16.hint
 msgctxt "TFORM1.SPEEDBUTTON16.HINT"
 msgid "Sidings"
-msgstr ""
+msgstr "Станц.Пути"
 
 #: tform1.speedbutton2.hint
 msgid "open"
-msgstr ""
+msgstr "открыть расписание"
 
 #: tform1.speedbutton3.hint
 msgctxt "tform1.speedbutton3.hint"
 msgid "save as"
-msgstr ""
+msgstr "сохранить как"
 
 #: tform1.speedbutton4.caption
 msgid "Row"
-msgstr ""
+msgstr "Строка"
 
 #: tform1.speedbutton4.hint
 msgid "add row"
-msgstr ""
+msgstr "доб.строку"
 
 #: tform1.speedbutton5.caption
 msgid "Col."
-msgstr ""
+msgstr "Столб."
 
 #: tform1.speedbutton5.hint
 msgid "add column"
-msgstr ""
+msgstr "доб.столбец"
 
 #: tform1.speedbutton6.hint
 msgid "define train"
-msgstr ""
+msgstr "задать поезд"
 
 #: tform1.speedbutton7.hint
 msgid "define dispose action"
-msgstr ""
+msgstr "задать окончание рейса"
 
 #: tform1.speedbutton8.hint
 msgctxt "TFORM1.SPEEDBUTTON8.HINT"
 msgid "copy"
-msgstr ""
+msgstr "скопировать"
 
 #: tform1.speedbutton9.hint
 msgctxt "TFORM1.SPEEDBUTTON9.HINT"
 msgid "paste"
-msgstr ""
+msgstr "вставить"
 
 #: tform1.spinedit1.hint
 msgid "fixed rows"
-msgstr ""
+msgstr "закрепить строк"
 
 #: tform1.spinedit2.hint
 msgid "fixed columns"
-msgstr ""
+msgstr "закрепить столбцов"
 
 #: tform2.button1.caption
 msgid "close"
-msgstr ""
+msgstr "закрыть"
 
 #: tform2.caption
 msgid "about"
-msgstr ""
+msgstr "о программе"
 
 #: tform2.label1.caption
 msgid "Timetable Editor"
-msgstr ""
+msgstr "Open Rails"
 
 #: tform2.label2.caption
 msgid "Open Rails"
-msgstr ""
+msgstr "Редактор Расписаний"
 
 #: tform2.statictext1.caption
 msgid "Version: 1.5"
-msgstr ""
+msgstr "Версия: 1.5"
 
 #: tform3.bitbtn2.caption
 msgctxt "TFORM3.BITBTN2.CAPTION"
@@ -207,11 +207,11 @@ msgstr ""
 
 #: tform3.caption
 msgid "Train"
-msgstr ""
+msgstr "Поезд"
 
 #: tform3.checkbox2.caption
 msgid "multi"
-msgstr ""
+msgstr "составной"
 
 #: tform3.checkbox3.caption
 msgid "create$"
