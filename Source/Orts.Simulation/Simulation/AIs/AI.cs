@@ -375,6 +375,9 @@ namespace Orts.Simulation.AIs
                 bool activeTrains = false;
                 for (double runTime = firstAITime; runTime < Simulator.ClockTime && !endPreRun; runTime += 5.0) // update with 5 secs interval
                 {
+                    var loaderSpan = (float)playerTrain.StartTime - firstAITime;
+                    Simulator.TimetableLoadedFraction = ((float)clockTime - firstAITime) / loaderSpan;
+
                     int fullsec = Convert.ToInt32(runTime);
                     if (fullsec % 3600 < 5) Trace.Write(" " + (fullsec / 3600).ToString("00") + ":00 ");
 
