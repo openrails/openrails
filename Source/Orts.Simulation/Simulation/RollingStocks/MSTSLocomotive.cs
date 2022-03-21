@@ -3034,10 +3034,10 @@ public List<CabView> CabViewList = new List<CabView>();
                 // Exponential curve is used to transition between static friction and dynamic friction when wheel slips
                 // Exponential constant calculated between two points, using this tool - https://mathcracker.com/exponential-function-calculator#results
                 // Google search suggests that Steel on steel has a static coeff = 0.74, and a dynamic coeff = 0.57. Hence reduction = 0.77.
-                // Constant points facilitate a decrease from 1 to 0.7 in 3 seconds - P1 = (0, 1), P2 = (3, 0.77). Hence exp constant = −0.0871
-                var expAdhesion = -0.0871;
+                // Constant points facilitate a decrease from 1 to 0.7 in 3 seconds - P1 = (0, 1), P2 = (5, 0.77). Hence exp constant = −0.0523
+                var expAdhesion = -0.0523;
                 WheelSlipTimeS += elapsedClockSeconds;
-                WheelSlipTimeS = MathHelper.Clamp(WheelSlipTimeS, 0.0f, 3.0f); // Ensure that time to transition between the two friction cases is maintained - currently set to 3 secs
+                WheelSlipTimeS = MathHelper.Clamp(WheelSlipTimeS, 0.0f, 5.0f); // Ensure that time to transition between the two friction cases is maintained - currently set to 3 secs
 
                 float adhesionMultiplier = (float) Math.Exp(expAdhesion * WheelSlipTimeS);
                 CurrentWheelSlipAdhesionMultiplier = adhesionMultiplier;
@@ -3053,12 +3053,12 @@ public List<CabView> CabViewList = new List<CabView>();
 
                 if (SlipFrictionCoefficientFactor < BaseFrictionCoefficientFactor && SlipFrictionCoefficientFactor != 0) // Once these two are equal then assume that wheels have stopped slipping.
                 {
-//                    Trace.TraceInformation("SlipFriction {0} Base {1}", SlipFrictionCoefficientFactor, BaseFrictionCoefficientFactor);
+                    //                    Trace.TraceInformation("SlipFriction {0} Base {1}", SlipFrictionCoefficientFactor, BaseFrictionCoefficientFactor);
                     // Exponential curve is used to transition between dynamic friction and static friction when wheel stops slipping
-                    // Constant points facilitate an increase from 0.7 to 1 in 3 seconds - P1 = (3, 0.77), P2 = (0, 1). Hence exp constant = 0.0871
-                    var expAdhesion = 0.0871;
+                    // Constant points facilitate an increase from 0.7 to 1 in 3 seconds - P1 = (5, 0.77), P2 = (0, 1). Hence exp constant = 0.0523
+                    var expAdhesion = 0.0523;
                     WheelStopSlipTimeS += elapsedClockSeconds;
-                    WheelStopSlipTimeS = MathHelper.Clamp(WheelStopSlipTimeS, 0.0f, 3.0f); // Ensure that time to transition between the two friction cases is maintained - currently set to 3 secs
+                    WheelStopSlipTimeS = MathHelper.Clamp(WheelStopSlipTimeS, 0.0f, 5.0f); // Ensure that time to transition between the two friction cases is maintained - currently set to 3 secs
 
                     float adhesionMultiplier = CurrentWheelSlipAdhesionMultiplier * (float)Math.Exp(expAdhesion * WheelStopSlipTimeS);
 
