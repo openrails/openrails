@@ -419,13 +419,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
-                result.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), Simulator.Catalog.GetString(" "));
+                result.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), Simulator.Catalog.GetString(" "));  // Leave maximum power out
                 foreach (var eng in DEList)
                 {
-                    //   Power(Watts) = Torque(Nm) * rpm / 9.54.
-                    var tempPowerDisplay = eng.GearBox.torqueCurveMultiplier * eng.DieselTorqueTab[eng.RealRPM] * eng.RealRPM / 9.54f;
-                    tempPowerDisplay = MathHelper.Clamp(tempPowerDisplay, 0, MaxOutputPowerW);  // Clamp throttle setting within bounds
-                    result.AppendFormat("\t{0}", FormatStrings.FormatPower(tempPowerDisplay, Locomotive.IsMetric, false, false));
+                    result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.CurrentDieselOutputPowerW, Locomotive.IsMetric, false, false));
                 }
             }
             else
@@ -923,14 +920,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
-                {
-                    return CurrentDieselOutputPowerW <= 0f ? 0f : (((Locomotive.MotiveForceN * Locomotive.SpeedMpS) + (Locomotive.DieselEngines.NumOfActiveEngines > 0 ? Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines : 0f)) * 100f / CurrentDieselOutputPowerW);
-                }
-                else
-                {
-                    return CurrentDieselOutputPowerW <= 0f ? 0f : ((OutputPowerW + (Locomotive.DieselEngines.NumOfActiveEngines > 0 ? Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines : 0f)) * 100f / CurrentDieselOutputPowerW);
-                }
+                return CurrentDieselOutputPowerW <= 0f ? 0f : ((OutputPowerW + (Locomotive.DieselEngines.NumOfActiveEngines > 0 ? Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines : 0f)) * 100f / CurrentDieselOutputPowerW);
             }
         }
         /// <summary>
@@ -1440,7 +1430,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             // so set output power based upon throttle demanded power
             if (HasGearBox && Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
-                CurrentDieselOutputPowerW = (ThrottleRPMTab[demandedThrottlePercent] - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
+                //   Power(Watts) = Torque(Nm) * rpm / 9.54.
+                CurrentDieselOutputPowerW = GearBox.torqueCurveMultiplier * DieselTorqueTab[RealRPM] * RealRPM / 9.54f;
+                CurrentDieselOutputPowerW = MathHelper.Clamp(CurrentDieselOutputPowerW, 0, MaximumDieselPowerW);  // Clamp throttle setting within bounds
             }
 
             if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
