@@ -1041,14 +1041,15 @@ a factor to reduce the value of M.E.P.
 
 Thus our formula from above becomes::
 
-    TE = Cyl/2 x (0.85 x BP x d2 x s) / D
+    TE = Cyl/2 x (C x BP x d2 x s) / D
 
 Where:
 
 - BP = Boiler Pressure (gauge pressure - psi)
-- 0.85 -- factor to account for losses in the engine, typically values
+- C = factor to account for losses in the engine, typically values
   between 0.7 and 0.85 were used by different manufacturers and railway
-  companies.
+  companies. Default is set @ 0.85. User can change by adding the 
+  ``ORTSTractiveEffortFactor`` parameter to the ENG file.
 
 Factor of Adhesion
 ..................
