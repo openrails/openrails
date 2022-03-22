@@ -81,6 +81,8 @@ namespace Orts.Simulation.Timetables
 
         public bool BinaryPaths = false;
 
+        public static int? PlayerTrainOriginalStartTime; // Set by TimetableInfo.ProcessTimetable() and read by AI.PrerunAI()
+
         //================================================================================================//
         /// <summary>
         ///  Constructor - empty constructor
@@ -172,7 +174,7 @@ namespace Orts.Simulation.Timetables
                     addPathNoLoadFailure = playerTrain.ProcessDisposeInfo(ref trainList, null, simulator);
                     if (!addPathNoLoadFailure) loadPathNoFailure = false;
                 }
-
+                PlayerTrainOriginalStartTime = playerTrain.StartTime; // Saved here for use after playerTrain.StartTime gets changed.
                 reqPlayerTrain = InitializePlayerTrain(playerTrain, ref Paths, ref trainList);
                 simulator.TrainDictionary.Add(reqPlayerTrain.Number, reqPlayerTrain);
                 simulator.NameDictionary.Add(reqPlayerTrain.Name.ToLower(), reqPlayerTrain);
