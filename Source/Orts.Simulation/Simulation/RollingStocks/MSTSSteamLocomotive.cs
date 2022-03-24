@@ -840,6 +840,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "engine(ortssteammaxgearpistonrate": MaxSteamGearPistonRateFtpM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsgearedtractiveeffortfactor": GearedTractiveEffortFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortstractiveeffortfactor": TractiveEffortFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamlocomotivetype":
                     stf.MustMatch("(");
                     var steamengineType = stf.ReadString();
@@ -905,6 +906,7 @@ namespace Orts.Simulation.RollingStocks
             EjectorLargeSteamConsumptionLbpS = locoCopy.EjectorLargeSteamConsumptionLbpS;
             ShovelMassKG = locoCopy.ShovelMassKG;
             GearedTractiveEffortFactor = locoCopy.GearedTractiveEffortFactor;
+            TractiveEffortFactor = locoCopy.TractiveEffortFactor;
             MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
             MaxLocoTenderWaterMassKG = locoCopy.MaxLocoTenderWaterMassKG;
             MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
@@ -1254,11 +1256,11 @@ namespace Orts.Simulation.RollingStocks
 
             // ******************  Test Locomotive and Gearing type *********************** 
 
-            // if the maximum cutoff for the locomotive is less then the default value, then decrease it so that tractive effort is not excessive. 
-            // At some future stage it may be worthwhile to add an extra parameter to the ENG file to allow user setting.
-            if (CutoffController.MaximumValue < TractiveEffortFactor)
+            // If the maximum cutoff for the locomotive is less then the default tractive effort constant value, then flag to the user to check. See this reference - 
+            // https://babel.hathitrust.org/cgi/pt?id=wu.89089676290&view=1up&seq=510&skin=2021&q1=booster
+            if (CutoffController.MaximumValue < TractiveEffortFactor && Simulator.Settings.VerboseConfigurationMessages && ( CutoffController.MaximumValue < 0.7 || TractiveEffortFactor >= 0.85))
             {
-                TractiveEffortFactor = CutoffController.MaximumValue;
+                Trace.TraceInformation("Maximum Cutoff setting {0} is less then the TractiveEffortFactor {1}, is this correct?", CutoffController.MaximumValue, TractiveEffortFactor);
             }
 
             if (SteamEngineType == SteamEngineTypes.Compound)
