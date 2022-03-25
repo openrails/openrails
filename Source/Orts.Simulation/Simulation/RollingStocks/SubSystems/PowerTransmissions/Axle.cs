@@ -754,6 +754,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         ///             2*K*umax^2*dV
         ///     u = ---------------------
         ///           umax^2*dv^2 + K^2
+        /// For high slip speeds (after the inflexion point of u), the formula is
+        /// replaced with an exponentially decaying function (with smooth coupling)
+        /// reaching half of maximum adhesion at infinity. Quick fix until
+        /// further investigation is done to get non zero adhesion at infinity
         /// </summary>
         /// <param name="slipSpeed">Difference between train speed and wheel speed MpS</param>
         /// <param name="speed">Current speed MpS</param>
@@ -768,6 +772,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (K == 0.0)
                 K = 1;
             slipSpeed *= 3.6f;
+            float x = Math.Abs(slipSpeed * umax / K);
+            float sqrt3 = (float)Math.Sqrt(3);
+            if (x > sqrt3)
+            {
+                float inftyFactor = 0.4f; // At infinity, adhesion is 40% of maximum
+                return Math.Sign(slipSpeed) * umax * ((sqrt3 / 2 - inftyFactor) * (float)Math.Exp((sqrt3 - x) / (2 * sqrt3 - 4 * inftyFactor)) + inftyFactor);
+            }
             return 2.0f * K * umax * umax * (slipSpeed / (umax * umax * slipSpeed * slipSpeed + K * K));
         }
 
