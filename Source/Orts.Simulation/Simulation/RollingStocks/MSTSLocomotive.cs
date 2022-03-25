@@ -2580,7 +2580,11 @@ public List<CabView> CabViewList = new List<CabView>();
             {
 
                 //Compute axle inertia from parameters if possible
-                if (AxleInertiaKgm2 <= 0) // if no axleinertia value supplied in ENG file, calculate axleinertia value.
+                if (AxleInertiaKgm2 > 10000.0f) // if axleinertia value supplied in ENG file, then use in calculations
+                {
+                    LocomotiveAxle.InertiaKgm2 = AxleInertiaKgm2;
+                }
+                else // if no value in ENG file, calculate axleinertia value.
                 {
                     if (WheelAxles.Count > 0 && DriverWheelRadiusM > 0)
                     {
@@ -2590,16 +2594,16 @@ public List<CabView> CabViewList = new List<CabView>();
                         float lowerLimit = WheelAxles.Count * (9000.0f * DriverWheelRadiusM - 1750.0f);
                         lowerLimit = lowerLimit < 100.0f ? 100.0f : lowerLimit;
 
-                        AxleInertiaKgm2 = (upperLimit - lowerLimit) / (5000000.0f) * MaxPowerW + lowerLimit;
+                        LocomotiveAxle.InertiaKgm2 = (upperLimit - lowerLimit) / (5000000.0f) * MaxPowerW + lowerLimit;
                     }
                     else
-                        AxleInertiaKgm2 = 32000.0f;
+                        LocomotiveAxle.InertiaKgm2 = 32000.0f;
                 }
                 //Limit the inertia to 40000 kgm2
-                LocomotiveAxle.InertiaKgm2 = Math.Min(AxleInertiaKgm2, 40000);
+                LocomotiveAxle.InertiaKgm2 = LocomotiveAxle.InertiaKgm2 > 40000.0f ? 40000.0f : LocomotiveAxle.InertiaKgm2;
 
                 LocomotiveAxle.AxleRevolutionsInt.MinStep = LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f;
-                LocomotiveAxle.AxleDiameterM = 2*DriverWheelRadiusM;
+
 
                 //Set axle model parameters
 
