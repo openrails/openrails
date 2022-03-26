@@ -66,7 +66,7 @@
         <div class="col-md-4">
           <!-- Button to trigger modal -->
           <a href="#modal2" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
-            <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the executables</h2>
+            <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download executables for the Testing Version</h2>
             <p>
               See the installation guides below for the pre-requisites you'll need.
             </p>
