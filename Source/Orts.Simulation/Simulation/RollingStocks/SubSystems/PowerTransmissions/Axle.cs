@@ -348,17 +348,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Compensated Axle force value, this provided the motive force equivalent excluding brake force, in Newtons
         /// </summary>
-        float compensatedaxleForceN;
-        /// <summary>
-        /// Read only axle force value, in Newtons
-        /// </summary>
-        public float CompensatedAxleForceN
-        {
-            get
-            {
-                return compensatedaxleForceN;
-            }
-        }
+        public float CompensatedAxleForceN { get; protected set; }
 
         /// <summary>
         /// Read/Write axle weight parameter in Newtons
@@ -665,81 +655,40 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     break;
                 case AxleDriveType.ForceDriven:
                     //Axle revolutions integration
-                    if (TrainSpeedMpS > 0.01f)
+                    float frictionalForceN = brakeRetardForceN
+                        + slipDerivationMpSS * dampingNs
+                        + Math.Abs(SlipSpeedMpS) * frictionN; // Dissipative forces: they will never increase wheel speed
+                    float motiveAxleForceN = driveForceN - axleForceN; // Rest of forces that can increase or decrease wheel speed
+                    float totalAxleForceN = motiveAxleForceN - Math.Sign(axleSpeedMpS) * frictionalForceN;
+                    if (axleSpeedMpS == 0)
                     {
-                        axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
-                            (
-                                driveForceN * transmissionEfficiency
-                                - brakeRetardForceN
-                                - slipDerivationMpSS * dampingNs
-                                - Math.Abs(SlipSpeedMpS) * frictionN
-                                - AxleForceN
-                            )
-                            / totalInertiaKgm2
-                        );
-
-                        compensateAxleForceN = axleForceN + brakeRetardForceN;
-
-                        if (Math.Abs(compensateAxleForceN) > Math.Abs(driveForceN))
-                        {
-                            compensateAxleForceN = driveForceN;
-                        }
-
-                        if (brakeRetardForceN > driveForceN && AxleSpeedMpS < 0.1f)
-                        {
-                            axleSpeedMpS = 0.0f;
-                            axleForceN = -brakeRetardForceN + driveForceN;
-                            compensateAxleForceN = driveForceN;
-                        }
-                    }
-                    else if (TrainSpeedMpS < -0.01f)
-                    {
-
-                            axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
-                                (
-                                    driveForceN * transmissionEfficiency
-                                    + brakeRetardForceN
-                                    - slipDerivationMpSS * dampingNs
-                                    + Math.Abs(SlipSpeedMpS) * frictionN
-                                    - AxleForceN
-                                )
-                                / totalInertiaKgm2
-                            );
-
-                        compensateAxleForceN = axleForceN - brakeRetardForceN;
-
-                        if (Math.Abs(compensateAxleForceN) > Math.Abs(driveForceN))
-                        {
-                            compensateAxleForceN = driveForceN;
-                        }
-
-                        if (brakeRetardForceN > Math.Abs(driveForceN) && AxleSpeedMpS > -0.1f)
-                        {
-                            axleSpeedMpS = 0.0f;
-                            axleForceN = brakeRetardForceN - driveForceN;
-                            compensateAxleForceN = driveForceN;
-                        }
-                    }
-                    else
-                    {
-                        if (Math.Abs(driveForceN) < 1f)
-                        {
-                            Reset();
-                            axleSpeedMpS = 0.0f;                          
-                            //axleForceN = 0.0f;
-                        }
+                        if (motiveAxleForceN > frictionalForceN) totalAxleForceN = motiveAxleForceN - frictionalForceN;
+                        else if (motiveAxleForceN < -frictionalForceN) totalAxleForceN = motiveAxleForceN + frictionalForceN;
                         else
                         {
-                            axleForceN = driveForceN - brakeRetardForceN;
-                            compensateAxleForceN = driveForceN;
-                            if (Math.Abs(axleSpeedMpS) < 0.01f)
-                                Reset();
+                            totalAxleForceN = 0;
+                            frictionalForceN = Math.Abs(motiveAxleForceN);
                         }
-
-                        //Reset(TrainSpeedMpS);
-                        //axleForceN = driveForceN - brakeRetardForceN;
-                        //axleSpeedMpS = AxleRevolutionsInt.Value;
                     }
+                    float prevSpeedMpS = axleSpeedMpS;
+                    if (totalAxleForceN != 0)
+                    {
+                        axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
+                               totalAxleForceN * axleDiameterM * axleDiameterM / 4
+                               / totalInertiaKgm2
+                           );
+                    }
+                    if ((prevSpeedMpS > 0 && axleSpeedMpS < 0 && motiveAxleForceN > -frictionalForceN) || (prevSpeedMpS < 0 && axleSpeedMpS > 0 && motiveAxleForceN < frictionalForceN))
+                    {
+                        Reset();
+                        axleSpeedMpS = 0;
+                    }
+                    // TODO: We should calculate frictional brake force here
+                    // Adding and substracting the brake force is correct for normal operation,
+                    // but during wheelslip this will produce wrong results
+                    if (axleSpeedMpS > 0) compensateAxleForceN = axleForceN + brakeRetardForceN;
+                    else if (axleSpeedMpS < 0) compensateAxleForceN = axleForceN - brakeRetardForceN;
+                    else compensateAxleForceN = 0;
                     break;
                 default:
                     totalInertiaKgm2 = inertiaKgm2;
@@ -763,9 +712,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
 
             // Set output MotiveForce to actual value exclusive of brake force.
-            compensatedaxleForceN = CompensatedFilterMovingAverage.Update(Math.Abs(compensatedaxleForceN) > Math.Abs(driveForceN) ? driveForceN : compensateAxleForceN);
+            CompensatedAxleForceN = CompensatedFilterMovingAverage.Update(compensateAxleForceN);
 
-            axleForceN = FilterMovingAverage.Update(Math.Abs(axleForceN) > Math.Abs(driveForceN) ? driveForceN : axleForceN);
+            axleForceN = FilterMovingAverage.Update(axleForceN);
         }
 
         /// <summary>
@@ -805,6 +754,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         ///             2*K*umax^2*dV
         ///     u = ---------------------
         ///           umax^2*dv^2 + K^2
+        /// For high slip speeds (after the inflexion point of u), the formula is
+        /// replaced with an exponentially decaying function (with smooth coupling)
+        /// reaching half of maximum adhesion at infinity. Quick fix until
+        /// further investigation is done to get non zero adhesion at infinity
         /// </summary>
         /// <param name="slipSpeed">Difference between train speed and wheel speed MpS</param>
         /// <param name="speed">Current speed MpS</param>
@@ -819,6 +772,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (K == 0.0)
                 K = 1;
             slipSpeed *= 3.6f;
+            float x = Math.Abs(slipSpeed * umax / K);
+            float sqrt3 = (float)Math.Sqrt(3);
+            if (x > sqrt3)
+            {
+                float inftyFactor = 0.4f; // At infinity, adhesion is 40% of maximum
+                return Math.Sign(slipSpeed) * umax * ((sqrt3 / 2 - inftyFactor) * (float)Math.Exp((sqrt3 - x) / (2 * sqrt3 - 4 * inftyFactor)) + inftyFactor);
+            }
             return 2.0f * K * umax * umax * (slipSpeed / (umax * umax * slipSpeed * slipSpeed + K * K));
         }
 
