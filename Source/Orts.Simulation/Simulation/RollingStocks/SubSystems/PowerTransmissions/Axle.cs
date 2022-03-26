@@ -629,70 +629,50 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // Hence CompensatedAxleForce is the actual output force on the axle. 
             var compensateAxleForceN = axleForceN;
 
-            switch (driveType)
-            {
-                case AxleDriveType.NotDriven:
-                    //Axle revolutions integration
-                    axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
-                        axleDiameterM * axleDiameterM / (4.0f * (totalInertiaKgm2))
-                        * (2.0f * transmissionRatio / axleDiameterM * (-Math.Abs(brakeRetardForceN)) - AxleForceN));
-                    break;
-                case AxleDriveType.MotorDriven:
-                    //Axle revolutions integration
-                    if (TrainSpeedMpS == 0.0f)
-                    {
-                        dampingNs = 0.0f;
-                        brakeRetardForceN = 0.0f;
-                    }
-                    axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
-                        axleDiameterM * axleDiameterM / (4.0f * (totalInertiaKgm2))
-                        * (2.0f * transmissionRatio / axleDiameterM * motor.DevelopedTorqueNm * transmissionEfficiency
-                        - Math.Abs(brakeRetardForceN) - (axleSpeedMpS > 0.0 ? Math.Abs(dampingNs) : 0.0f)) - AxleForceN);
+            float motiveAxleForceN = -axleForceN;
+            if (driveType == AxleDriveType.ForceDriven)
+                motiveAxleForceN += driveForceN * transmissionEfficiency;
+            else if (driveType == AxleDriveType.MotorDriven)
+                motiveAxleForceN += motor.DevelopedTorqueNm * transmissionEfficiency * AxleDiameterM / 2;
 
-                    //update motor values
-                    motor.RevolutionsRad = axleSpeedMpS * 2.0f * transmissionRatio / (axleDiameterM);
-                    motor.Update(timeSpan);
-                    break;
-                case AxleDriveType.ForceDriven:
-                    //Axle revolutions integration
-                    float frictionalForceN = brakeRetardForceN
-                        + slipDerivationMpSS * dampingNs
-                        + Math.Abs(SlipSpeedMpS) * frictionN; // Dissipative forces: they will never increase wheel speed
-                    float motiveAxleForceN = driveForceN - axleForceN; // Rest of forces that can increase or decrease wheel speed
-                    float totalAxleForceN = motiveAxleForceN - Math.Sign(axleSpeedMpS) * frictionalForceN;
-                    if (axleSpeedMpS == 0)
-                    {
-                        if (motiveAxleForceN > frictionalForceN) totalAxleForceN = motiveAxleForceN - frictionalForceN;
-                        else if (motiveAxleForceN < -frictionalForceN) totalAxleForceN = motiveAxleForceN + frictionalForceN;
-                        else
-                        {
-                            totalAxleForceN = 0;
-                            frictionalForceN = Math.Abs(motiveAxleForceN);
-                        }
-                    }
-                    float prevSpeedMpS = axleSpeedMpS;
-                    if (totalAxleForceN != 0)
-                    {
-                        axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
-                               totalAxleForceN * axleDiameterM * axleDiameterM / 4
-                               / totalInertiaKgm2
-                           );
-                    }
-                    if ((prevSpeedMpS > 0 && axleSpeedMpS < 0 && motiveAxleForceN > -frictionalForceN) || (prevSpeedMpS < 0 && axleSpeedMpS > 0 && motiveAxleForceN < frictionalForceN))
-                    {
-                        Reset();
-                        axleSpeedMpS = 0;
-                    }
-                    // TODO: We should calculate frictional brake force here
-                    // Adding and substracting the brake force is correct for normal operation,
-                    // but during wheelslip this will produce wrong results
-                    if (axleSpeedMpS > 0) compensateAxleForceN = axleForceN + brakeRetardForceN;
-                    else if (axleSpeedMpS < 0) compensateAxleForceN = axleForceN - brakeRetardForceN;
-                    else compensateAxleForceN = 0;
-                    break;
-                default:
-                    totalInertiaKgm2 = inertiaKgm2;
-                    break;
+            float frictionalForceN = brakeRetardForceN
+                + slipDerivationMpSS * dampingNs
+                + Math.Abs(SlipSpeedMpS) * frictionN; // Dissipative forces: they will never increase wheel speed
+            float totalAxleForceN = motiveAxleForceN - Math.Sign(axleSpeedMpS) * frictionalForceN;
+            if (axleSpeedMpS == 0)
+            {
+                if (motiveAxleForceN > frictionalForceN) totalAxleForceN = motiveAxleForceN - frictionalForceN;
+                else if (motiveAxleForceN < -frictionalForceN) totalAxleForceN = motiveAxleForceN + frictionalForceN;
+                else
+                {
+                    totalAxleForceN = 0;
+                    frictionalForceN = Math.Abs(motiveAxleForceN);
+                }
+            }
+            float prevSpeedMpS = axleSpeedMpS;
+            if (totalAxleForceN != 0)
+            {
+                axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
+                       totalAxleForceN * axleDiameterM * axleDiameterM / 4
+                       / totalInertiaKgm2
+                   );
+            }
+            if ((prevSpeedMpS > 0 && axleSpeedMpS < 0 && motiveAxleForceN > -frictionalForceN) || (prevSpeedMpS < 0 && axleSpeedMpS > 0 && motiveAxleForceN < frictionalForceN))
+            {
+                Reset();
+                axleSpeedMpS = 0;
+            }
+            // TODO: We should calculate brake force here
+            // Adding and substracting the brake force is correct for normal operation,
+            // but during wheelslip this will produce wrong results
+            if (axleSpeedMpS > 0) compensateAxleForceN = axleForceN + brakeRetardForceN;
+            else if (axleSpeedMpS < 0) compensateAxleForceN = axleForceN - brakeRetardForceN;
+            else compensateAxleForceN = 0;
+
+            if (driveType == AxleDriveType.MotorDriven)
+            {
+                motor.RevolutionsRad = axleSpeedMpS * 2.0f * transmissionRatio / (axleDiameterM);
+                motor.Update(timeSpan);
             }
             if (timeSpan > 0.0f)
             {
