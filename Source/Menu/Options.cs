@@ -274,16 +274,16 @@ namespace ORTS
                 { "unstable", catalog.GetString("Daily updates which may contain serious defects. For developers only.") },
                 { "", catalog.GetString("No updates.") },
             };
-            var spacing = labelUpdateChannel.Margin.Size;
-            var indent = 150;
-            var top = labelUpdateChannel.Bottom + spacing.Height;
+            var spacing = labelUpdateMode.Margin.Size;
+            var indent = 180;
+            var top = labelUpdateMode.Bottom + spacing.Height;
             foreach (var channel in UpdateManager.GetChannels())
             {
                 var radio = new RadioButton()
                 {
                     Text = updateChannelNames[channel.ToLowerInvariant()],
-                    Margin = labelUpdateChannel.Margin,
-                    Left = spacing.Width,
+                    Margin = labelUpdateMode.Margin,
+                    Left = spacing.Width + 32, // to leave room for HelpIcon
                     Top = top,
                     Checked = updateManager.ChannelName.Equals(channel, StringComparison.InvariantCultureIgnoreCase),
                     AutoSize = true,
@@ -293,14 +293,14 @@ namespace ORTS
                 var label = new Label()
                 {
                     Text = updateChannelDescriptions[channel.ToLowerInvariant()],
-                    Margin = labelUpdateChannel.Margin,
+                    Margin = labelUpdateMode.Margin,
                     Left = spacing.Width + indent,
                     Top = top + 2, // Offset to align with radio button text
                     Width = tabPageSystem.ClientSize.Width - indent - spacing.Width * 2,
                     AutoSize = true,
                 };
                 tabPageSystem.Controls.Add(label);
-                top += label.Height + spacing.Height;
+                top += label.Height + spacing.Height - 3; // -3 to close them up a bit
             }
 
 
@@ -828,6 +828,7 @@ namespace ORTS
 
                 // System
                 (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
+                (pbUpdateMode, new Control[] { labelUpdateMode }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -869,10 +870,6 @@ namespace ORTS
                     baseUrl + "/options.html#brake-pipe-charging-rate"
                 },
                 {
-                    pbLanguage,
-                    baseUrl + "/options.html#language"
-                },
-                {
                     pbPressureUnit,
                     baseUrl + "/options.html#pressure-unit"
                 },
@@ -887,6 +884,15 @@ namespace ORTS
                 {
                     pbOverspeedMonitor,
                     baseUrl + "/options.html#overspeed-monitor"
+                },
+                // System tab
+                {
+                    pbLanguage,
+                    baseUrl + "/options.html#language"
+                },
+                {
+                    pbUpdateMode,
+                    baseUrl + "/options.html#updater-options"
                 },
             };
             if (urls.TryGetValue(sender, out var url))
