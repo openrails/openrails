@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -44,7 +44,6 @@
             this.pbDisableTcsScripts = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
             this.pbPressureUnit = new System.Windows.Forms.PictureBox();
-            this.pbLanguage = new System.Windows.Forms.PictureBox();
             this.pbBrakePipeChargingRate = new System.Windows.Forms.PictureBox();
             this.pbGraduatedRelease = new System.Windows.Forms.PictureBox();
             this.pbRetainers = new System.Windows.Forms.PictureBox();
@@ -58,8 +57,6 @@
             this.labelPressureUnit = new System.Windows.Forms.Label();
             this.comboOtherUnits = new System.Windows.Forms.ComboBox();
             this.comboPressureUnit = new System.Windows.Forms.ComboBox();
-            this.labelLanguage = new System.Windows.Forms.Label();
-            this.comboLanguage = new System.Windows.Forms.ComboBox();
             this.checkAlerterExternal = new System.Windows.Forms.CheckBox();
             this.checkRetainers = new System.Windows.Forms.CheckBox();
             this.tabPageAudio = new System.Windows.Forms.TabPage();
@@ -146,7 +143,7 @@
             this.nameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bindingSourceContent = new System.Windows.Forms.BindingSource(this.components);
-            this.tabPageUpdater = new System.Windows.Forms.TabPage();
+            this.tabPageSystem = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
             this.label27 = new System.Windows.Forms.Label();
@@ -190,6 +187,9 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.pbLanguage = new System.Windows.Forms.PictureBox();
+            this.labelLanguage = new System.Windows.Forms.Label();
+            this.comboLanguage = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -197,7 +197,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcsScripts)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbBrakePipeChargingRate)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbGraduatedRelease)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbRetainers)).BeginInit();
@@ -227,7 +226,7 @@
             this.panelContent.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
-            this.tabPageUpdater.SuspendLayout();
+            this.tabPageSystem.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).BeginInit();
@@ -241,6 +240,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -349,7 +349,7 @@
             this.tabOptions.Controls.Add(this.tabPageDataLogger);
             this.tabOptions.Controls.Add(this.tabPageEvaluate);
             this.tabOptions.Controls.Add(this.tabPageContent);
-            this.tabOptions.Controls.Add(this.tabPageUpdater);
+            this.tabOptions.Controls.Add(this.tabPageSystem);
             this.tabOptions.Controls.Add(this.tabPageExperimental);
             this.tabOptions.Location = new System.Drawing.Point(13, 12);
             this.tabOptions.Name = "tabOptions";
@@ -363,7 +363,6 @@
             this.tabPageGeneral.Controls.Add(this.pbDisableTcsScripts);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
             this.tabPageGeneral.Controls.Add(this.pbPressureUnit);
-            this.tabPageGeneral.Controls.Add(this.pbLanguage);
             this.tabPageGeneral.Controls.Add(this.pbBrakePipeChargingRate);
             this.tabPageGeneral.Controls.Add(this.pbGraduatedRelease);
             this.tabPageGeneral.Controls.Add(this.pbRetainers);
@@ -377,8 +376,6 @@
             this.tabPageGeneral.Controls.Add(this.labelPressureUnit);
             this.tabPageGeneral.Controls.Add(this.comboOtherUnits);
             this.tabPageGeneral.Controls.Add(this.comboPressureUnit);
-            this.tabPageGeneral.Controls.Add(this.labelLanguage);
-            this.tabPageGeneral.Controls.Add(this.comboLanguage);
             this.tabPageGeneral.Controls.Add(this.checkControlConfirmations);
             this.tabPageGeneral.Controls.Add(this.checkAlerterExternal);
             this.tabPageGeneral.Controls.Add(this.numericBrakePipeChargingRate);
@@ -441,18 +438,6 @@
             this.pbPressureUnit.Click += new System.EventHandler(this.HelpIcon_Click);
             this.pbPressureUnit.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbPressureUnit.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // pbLanguage
-            // 
-            this.pbLanguage.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbLanguage.Location = new System.Drawing.Point(6, 180);
-            this.pbLanguage.Name = "pbLanguage";
-            this.pbLanguage.Size = new System.Drawing.Size(18, 18);
-            this.pbLanguage.TabIndex = 25;
-            this.pbLanguage.TabStop = false;
-            this.pbLanguage.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbLanguage.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbBrakePipeChargingRate
             // 
@@ -610,27 +595,6 @@
             this.comboPressureUnit.Name = "comboPressureUnit";
             this.comboPressureUnit.Size = new System.Drawing.Size(121, 21);
             this.comboPressureUnit.TabIndex = 11;
-            // 
-            // labelLanguage
-            // 
-            this.labelLanguage.AutoSize = true;
-            this.labelLanguage.Location = new System.Drawing.Point(156, 180);
-            this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
-            this.labelLanguage.Name = "labelLanguage";
-            this.labelLanguage.Size = new System.Drawing.Size(130, 13);
-            this.labelLanguage.TabIndex = 10;
-            this.labelLanguage.Text = "Language                         ";
-            this.labelLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.labelLanguage.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // comboLanguage
-            // 
-            this.comboLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboLanguage.FormattingEnabled = true;
-            this.comboLanguage.Location = new System.Drawing.Point(32, 177);
-            this.comboLanguage.Name = "comboLanguage";
-            this.comboLanguage.Size = new System.Drawing.Size(121, 21);
-            this.comboLanguage.TabIndex = 9;
             // 
             // checkAlerterExternal
             // 
@@ -1685,27 +1649,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle8;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1738,21 +1702,24 @@
             // 
             this.bindingSourceContent.DataSource = typeof(ORTS.OptionsForm.ContentFolder);
             // 
-            // tabPageUpdater
+            // tabPageSystem
             // 
-            this.tabPageUpdater.Controls.Add(this.labelUpdateChannel);
-            this.tabPageUpdater.Location = new System.Drawing.Point(4, 22);
-            this.tabPageUpdater.Name = "tabPageUpdater";
-            this.tabPageUpdater.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageUpdater.Size = new System.Drawing.Size(602, 402);
-            this.tabPageUpdater.TabIndex = 8;
-            this.tabPageUpdater.Text = "Updater";
-            this.tabPageUpdater.UseVisualStyleBackColor = true;
+            this.tabPageSystem.Controls.Add(this.pbLanguage);
+            this.tabPageSystem.Controls.Add(this.labelLanguage);
+            this.tabPageSystem.Controls.Add(this.comboLanguage);
+            this.tabPageSystem.Controls.Add(this.labelUpdateChannel);
+            this.tabPageSystem.Location = new System.Drawing.Point(4, 22);
+            this.tabPageSystem.Name = "tabPageSystem";
+            this.tabPageSystem.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageSystem.Size = new System.Drawing.Size(602, 402);
+            this.tabPageSystem.TabIndex = 8;
+            this.tabPageSystem.Text = "System";
+            this.tabPageSystem.UseVisualStyleBackColor = true;
             // 
             // labelUpdateChannel
             // 
             this.labelUpdateChannel.AutoSize = true;
-            this.labelUpdateChannel.Location = new System.Drawing.Point(6, 6);
+            this.labelUpdateChannel.Location = new System.Drawing.Point(8, 139);
             this.labelUpdateChannel.Margin = new System.Windows.Forms.Padding(3);
             this.labelUpdateChannel.Name = "labelUpdateChannel";
             this.labelUpdateChannel.Size = new System.Drawing.Size(74, 13);
@@ -2342,6 +2309,41 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // pbLanguage
+            // 
+            this.pbLanguage.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLanguage.Location = new System.Drawing.Point(11, 9);
+            this.pbLanguage.Name = "pbLanguage";
+            this.pbLanguage.Size = new System.Drawing.Size(18, 18);
+            this.pbLanguage.TabIndex = 28;
+            this.pbLanguage.TabStop = false;
+            this.pbLanguage.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbLanguage.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // labelLanguage
+            // 
+            this.labelLanguage.AutoSize = true;
+            this.labelLanguage.Location = new System.Drawing.Point(161, 9);
+            this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
+            this.labelLanguage.Name = "labelLanguage";
+            this.labelLanguage.Size = new System.Drawing.Size(130, 13);
+            this.labelLanguage.TabIndex = 27;
+            this.labelLanguage.Text = "Language                         ";
+            this.labelLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.labelLanguage.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // comboLanguage
+            // 
+            this.comboLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboLanguage.FormattingEnabled = true;
+            this.comboLanguage.Location = new System.Drawing.Point(35, 9);
+            this.comboLanguage.Name = "comboLanguage";
+            this.comboLanguage.Size = new System.Drawing.Size(121, 21);
+            this.comboLanguage.TabIndex = 26;
+            this.comboLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.comboLanguage.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2366,7 +2368,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcsScripts)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbBrakePipeChargingRate)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbGraduatedRelease)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbRetainers)).EndInit();
@@ -2404,8 +2405,8 @@
             this.panelContent.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).EndInit();
-            this.tabPageUpdater.ResumeLayout(false);
-            this.tabPageUpdater.PerformLayout();
+            this.tabPageSystem.ResumeLayout(false);
+            this.tabPageSystem.PerformLayout();
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).EndInit();
@@ -2420,6 +2421,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2496,8 +2498,6 @@
         private System.Windows.Forms.CheckBox checkDataLogTrainSpeed;
         private System.Windows.Forms.CheckBox checkUseMSTSEnv;
         private System.Windows.Forms.CheckBox checkPreferDDSTexture;
-        private System.Windows.Forms.Label labelLanguage;
-        private System.Windows.Forms.ComboBox comboLanguage;
         private System.Windows.Forms.Label labelDistantMountainsViewingDistance;
         private System.Windows.Forms.NumericUpDown numericDistantMountainsViewingDistance;
         private System.Windows.Forms.CheckBox checkDistantMountains;
@@ -2509,7 +2509,7 @@
         private System.Windows.Forms.ComboBox comboPressureUnit;
         private System.Windows.Forms.Label labelPressureUnit;
         private System.Windows.Forms.CheckBox checkSignalLightGlow;
-        private System.Windows.Forms.TabPage tabPageUpdater;
+        private System.Windows.Forms.TabPage tabPageSystem;
         private System.Windows.Forms.Label labelUpdateChannel;
         private System.Windows.Forms.Label AdhesionFactorChangeValueLabel;
         private System.Windows.Forms.Label AdhesionFactorValueLabel;
@@ -2577,7 +2577,6 @@
         private System.Windows.Forms.PictureBox pbRetainers;
         private System.Windows.Forms.PictureBox pbGraduatedRelease;
         private System.Windows.Forms.PictureBox pbBrakePipeChargingRate;
-        private System.Windows.Forms.PictureBox pbLanguage;
         private System.Windows.Forms.PictureBox pbPressureUnit;
         private System.Windows.Forms.PictureBox pbOtherUnits;
         private System.Windows.Forms.PictureBox pbDisableTcsScripts;
@@ -2585,5 +2584,8 @@
         private System.Windows.Forms.TrackBar trackAntiAliasing;
         private System.Windows.Forms.Label labelAntiAliasingValue;
         private System.Windows.Forms.Label labelAntiAliasing;
+        private System.Windows.Forms.PictureBox pbLanguage;
+        private System.Windows.Forms.Label labelLanguage;
+        private System.Windows.Forms.ComboBox comboLanguage;
     }
 }

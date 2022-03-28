@@ -146,7 +146,6 @@ namespace ORTS
             checkRetainers.Checked = Settings.RetainersOnAllCars;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
-            comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
             checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
@@ -260,7 +259,9 @@ namespace ORTS
                 catch { }
             }
 
-            // Updater tab
+            // System tab
+            comboLanguage.Text = Settings.Language;
+
             var updateChannelNames = new Dictionary<string, string> {
                 { "stable", catalog.GetString("Stable (recommended)") },
                 { "testing", catalog.GetString("Testing") },
@@ -274,7 +275,7 @@ namespace ORTS
                 { "", catalog.GetString("No updates.") },
             };
             var spacing = labelUpdateChannel.Margin.Size;
-            var indent = 20;
+            var indent = 150;
             var top = labelUpdateChannel.Bottom + spacing.Height;
             foreach (var channel in UpdateManager.GetChannels())
             {
@@ -288,20 +289,20 @@ namespace ORTS
                     AutoSize = true,
                     Tag = channel,
                 };
-                tabPageUpdater.Controls.Add(radio);
-                top += radio.Height + spacing.Height;
+                tabPageSystem.Controls.Add(radio);
                 var label = new Label()
                 {
                     Text = updateChannelDescriptions[channel.ToLowerInvariant()],
                     Margin = labelUpdateChannel.Margin,
                     Left = spacing.Width + indent,
-                    Top = top,
-                    Width = tabPageUpdater.ClientSize.Width - indent - spacing.Width * 2,
+                    Top = top + 2, // Offset to align with radio button text
+                    Width = tabPageSystem.ClientSize.Width - indent - spacing.Width * 2,
                     AutoSize = true,
                 };
-                tabPageUpdater.Controls.Add(label);
+                tabPageSystem.Controls.Add(label);
                 top += label.Height + spacing.Height;
             }
+
 
             // Experimental tab
             numericUseSuperElevation.Value = Settings.UseSuperElevation;
@@ -426,7 +427,6 @@ namespace ORTS
             Settings.RetainersOnAllCars = checkRetainers.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
-            Settings.Language = comboLanguage.SelectedValue.ToString();
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
@@ -491,8 +491,9 @@ namespace ORTS
             foreach (var folder in bindingSourceContent.DataSource as List<ContentFolder>)
                 Settings.Folders.Folders.Add(folder.Name, folder.Path);
 
-            // Updater tab
-            foreach (Control control in tabPageUpdater.Controls)
+            // System tab
+            Settings.Language = comboLanguage.SelectedValue.ToString();
+            foreach (Control control in tabPageSystem.Controls)
                 if ((control is RadioButton) && (control as RadioButton).Checked)
                     UpdateManager.SetChannel((string)control.Tag);
 
@@ -772,6 +773,11 @@ namespace ORTS
         }
 
         #region Help for General Options
+        // To add a HelpIcon for a control:
+        // - In code, extend the mapping in InitializeHelpIcons() below by adding the name of controls for checkboxes or (labels and comboboxes)
+        // - Using the Design View, in the properties of each control and of the icon, add a MouseEnter event "HelpIcon_MouseEnter" and a MouseLeave event "HelpIcon_MouseLeave"
+        // - Using the Design View, in the properties of the icon, add a Click event "HelpIcon_Click"
+
         /// <summary>
         /// Allows multiple controls to change a single help icon with their hover events.
         /// </summary>
@@ -810,16 +816,18 @@ namespace ORTS
             // static mapping of picture boxes to controls
             var helpIconControls = new (PictureBox, Control[])[]
             {
+                // General
                 (pbAlerter, new[] { checkAlerter }),
-                (pbControlConfirmations, new[] { checkControlConfirmations }),
                 (pbRetainers, new[] { checkRetainers }),
                 (pbGraduatedRelease, new[] { checkGraduatedRelease }),
                 (pbBrakePipeChargingRate, new[] { lBrakePipeChargingRate }),
-                (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
                 (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
                 (pbDisableTcsScripts, new[] { checkDisableTCSScripts }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
+
+                // System
+                (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
