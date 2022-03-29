@@ -834,6 +834,7 @@ namespace ORTS
                 (pbWindowed, new Control[] { checkWindowed, labelWindowSize, comboWindowSize }),
                 (pbWindowGlass, new[] { checkWindowGlass }),
                 (pbControlConfirmations, new[] { checkControlConfirmations }),
+                (pbWebServerPort, new Control[] { labelWebServerPort }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -906,6 +907,10 @@ namespace ORTS
                 {
                     pbControlConfirmations,
                     baseUrl + "/options.html#control-confirmations"
+                },
+                {
+                    pbWebServerPort,
+                    baseUrl + "/options.html#web-server-port"
                 },
             };
             if (urls.TryGetValue(sender, out var url))

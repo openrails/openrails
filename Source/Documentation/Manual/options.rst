@@ -117,31 +117,6 @@ Disable TCS scripts
 This option disables the train control system scripts for locomotives where
 these have been implemented.
 
-.. _options-web-server-port:
-
-Web server port
------------------
-
-The web server can be accessed from a browser on the local machine at
-``http://localhost:<port>``, where ``<port>`` is the specified port number.
-Change the default value of 2150 if it conflicts with other services.
-
-If you `open
-<https://www.howtogeek.com/394735/how-do-i-open-a-port-on-windows-firewall/>`_
-the web server port (just granting RunActivity.exe an exemption is not
-sufficient) in Windows Firewall, the server can also be accessed from a device
-on the local network, such as a smartphone, tablet or another PC, using your
-system's `IP address
-<https://support.microsoft.com/en-us/windows/find-your-ip-address-f21a9bbc-c582-55cd-35e0-73431160a1b9>`_.
-E.g.: If your Open Rails PC is at IP address 192.168.0.99, browse to
-``http://192.168.0.99:<port>``, where ``<port>`` is the specified port number.
-
-:ref:`Sample web pages <sample-web-pages>` are included in the Open Rails
-installation and the browser will show a menu of sample pages.
-
-As well as a web browser, data from the web server can also be fetched by any
-program which can make a web request, such as C# or Python, using the
-:ref:`Application Programming Interface <web-server-api>` (API).
 
 Overspeed Monitor
 -----------------
@@ -557,6 +532,33 @@ or "Replay ended" but you cannot suppress these system messages.
 
 Once the game has started, you can toggle the confirmations on and off 
 by pressing ``<Ctrl+Alt+F10>``. 
+
+
+.. _options-web-server-port:
+
+Web server port
+-----------------
+
+The web server can be accessed from a browser on the local machine at
+``http://localhost:<port>``, where ``<port>`` is the specified port number.
+Change the default value of 2150 if it conflicts with other services.
+
+If you `open
+<https://www.howtogeek.com/394735/how-do-i-open-a-port-on-windows-firewall/>`_
+the web server port (just granting RunActivity.exe an exemption is not
+sufficient) in Windows Firewall, the server can also be accessed from a device
+on the local network, such as a smartphone, tablet or another PC, using your
+system's `IP address
+<https://support.microsoft.com/en-us/windows/find-your-ip-address-f21a9bbc-c582-55cd-35e0-73431160a1b9>`_.
+E.g.: If your Open Rails PC is at IP address 192.168.0.99, browse to
+``http://192.168.0.99:2150``, where ``2150`` is the specified port number.
+
+:ref:`Sample web pages <sample-web-pages>` are included in the Open Rails
+installation and the browser will show a menu of sample pages.
+
+As well as a web browser, data from the web server can also be fetched by any
+program which can make a web request, such as C# or Python, using the
+:ref:`Application Programming Interface <web-server-api>` (API).
 
 
 

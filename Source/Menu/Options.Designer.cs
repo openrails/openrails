@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -47,8 +47,6 @@
             this.pbGraduatedRelease = new System.Windows.Forms.PictureBox();
             this.pbRetainers = new System.Windows.Forms.PictureBox();
             this.pbAlerter = new System.Windows.Forms.PictureBox();
-            this.labelPortNumber = new System.Windows.Forms.Label();
-            this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.checkOverspeedMonitor = new System.Windows.Forms.CheckBox();
             this.checkDisableTCSScripts = new System.Windows.Forms.CheckBox();
             this.labelOtherUnits = new System.Windows.Forms.Label();
@@ -139,6 +137,9 @@
             this.pathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bindingSourceContent = new System.Windows.Forms.BindingSource(this.components);
             this.tabPageSystem = new System.Windows.Forms.TabPage();
+            this.pbWebServerPort = new System.Windows.Forms.PictureBox();
+            this.labelWebServerPort = new System.Windows.Forms.Label();
+            this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
             this.checkControlConfirmations = new System.Windows.Forms.CheckBox();
             this.pbWindowGlass = new System.Windows.Forms.PictureBox();
@@ -205,7 +206,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbGraduatedRelease)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbRetainers)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
             this.tabPageAudio.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundVolumePercent)).BeginInit();
@@ -230,6 +230,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
             this.tabPageSystem.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWebServerPort)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWindowGlass)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWindowed)).BeginInit();
@@ -362,8 +364,6 @@
             this.tabPageGeneral.Controls.Add(this.pbGraduatedRelease);
             this.tabPageGeneral.Controls.Add(this.pbRetainers);
             this.tabPageGeneral.Controls.Add(this.pbAlerter);
-            this.tabPageGeneral.Controls.Add(this.labelPortNumber);
-            this.tabPageGeneral.Controls.Add(this.numericWebServerPort);
             this.tabPageGeneral.Controls.Add(this.checkOverspeedMonitor);
             this.tabPageGeneral.Controls.Add(this.checkDisableTCSScripts);
             this.tabPageGeneral.Controls.Add(this.labelOtherUnits);
@@ -479,37 +479,6 @@
             this.pbAlerter.Click += new System.EventHandler(this.HelpIcon_Click);
             this.pbAlerter.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbAlerter.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // labelPortNumber
-            // 
-            this.labelPortNumber.AutoSize = true;
-            this.labelPortNumber.Location = new System.Drawing.Point(105, 310);
-            this.labelPortNumber.Name = "labelPortNumber";
-            this.labelPortNumber.Size = new System.Drawing.Size(167, 13);
-            this.labelPortNumber.TabIndex = 17;
-            this.labelPortNumber.Text = "Web server port                            ";
-            // 
-            // numericWebServerPort
-            // 
-            this.numericWebServerPort.Location = new System.Drawing.Point(31, 308);
-            this.numericWebServerPort.Maximum = new decimal(new int[] {
-            65534,
-            0,
-            0,
-            0});
-            this.numericWebServerPort.Minimum = new decimal(new int[] {
-            1025,
-            0,
-            0,
-            0});
-            this.numericWebServerPort.Name = "numericWebServerPort";
-            this.numericWebServerPort.Size = new System.Drawing.Size(70, 20);
-            this.numericWebServerPort.TabIndex = 16;
-            this.numericWebServerPort.Value = new decimal(new int[] {
-            1025,
-            0,
-            0,
-            0});
             // 
             // checkOverspeedMonitor
             // 
@@ -1584,27 +1553,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1639,6 +1608,9 @@
             // 
             // tabPageSystem
             // 
+            this.tabPageSystem.Controls.Add(this.pbWebServerPort);
+            this.tabPageSystem.Controls.Add(this.labelWebServerPort);
+            this.tabPageSystem.Controls.Add(this.numericWebServerPort);
             this.tabPageSystem.Controls.Add(this.pbControlConfirmations);
             this.tabPageSystem.Controls.Add(this.checkControlConfirmations);
             this.tabPageSystem.Controls.Add(this.pbWindowGlass);
@@ -1659,6 +1631,51 @@
             this.tabPageSystem.TabIndex = 8;
             this.tabPageSystem.Text = "System";
             this.tabPageSystem.UseVisualStyleBackColor = true;
+            // 
+            // pbWebServerPort
+            // 
+            this.pbWebServerPort.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWebServerPort.Location = new System.Drawing.Point(11, 299);
+            this.pbWebServerPort.Name = "pbWebServerPort";
+            this.pbWebServerPort.Size = new System.Drawing.Size(18, 18);
+            this.pbWebServerPort.TabIndex = 41;
+            this.pbWebServerPort.TabStop = false;
+            this.pbWebServerPort.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbWebServerPort.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbWebServerPort.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // labelWebServerPort
+            // 
+            this.labelWebServerPort.AutoSize = true;
+            this.labelWebServerPort.Location = new System.Drawing.Point(109, 301);
+            this.labelWebServerPort.Name = "labelWebServerPort";
+            this.labelWebServerPort.Size = new System.Drawing.Size(167, 13);
+            this.labelWebServerPort.TabIndex = 40;
+            this.labelWebServerPort.Text = "Web server port                            ";
+            this.labelWebServerPort.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.labelWebServerPort.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // numericWebServerPort
+            // 
+            this.numericWebServerPort.Location = new System.Drawing.Point(35, 299);
+            this.numericWebServerPort.Maximum = new decimal(new int[] {
+            65534,
+            0,
+            0,
+            0});
+            this.numericWebServerPort.Minimum = new decimal(new int[] {
+            1025,
+            0,
+            0,
+            0});
+            this.numericWebServerPort.Name = "numericWebServerPort";
+            this.numericWebServerPort.Size = new System.Drawing.Size(70, 20);
+            this.numericWebServerPort.TabIndex = 39;
+            this.numericWebServerPort.Value = new decimal(new int[] {
+            1025,
+            0,
+            0,
+            0});
             // 
             // pbControlConfirmations
             // 
@@ -2440,7 +2457,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbGraduatedRelease)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbRetainers)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
             this.tabPageAudio.ResumeLayout(false);
             this.tabPageAudio.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).EndInit();
@@ -2474,6 +2490,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).EndInit();
             this.tabPageSystem.ResumeLayout(false);
             this.tabPageSystem.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWebServerPort)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWindowGlass)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWindowed)).EndInit();
@@ -2635,8 +2653,6 @@
         private System.Windows.Forms.NumericUpDown numericActWeatherRandomizationLevel;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox checkShadowAllShapes;
-        private System.Windows.Forms.NumericUpDown numericWebServerPort;
-        private System.Windows.Forms.Label labelPortNumber;
         private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
         private System.Windows.Forms.CheckBox checkBoxNoDieselEngineStart;
         private System.Windows.Forms.PictureBox pbAlerter;
@@ -2662,5 +2678,8 @@
         private System.Windows.Forms.CheckBox checkWindowGlass;
         private System.Windows.Forms.PictureBox pbControlConfirmations;
         private System.Windows.Forms.CheckBox checkControlConfirmations;
+        private System.Windows.Forms.PictureBox pbWebServerPort;
+        private System.Windows.Forms.Label labelWebServerPort;
+        private System.Windows.Forms.NumericUpDown numericWebServerPort;
     }
 }
