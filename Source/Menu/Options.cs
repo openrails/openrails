@@ -159,7 +159,6 @@ namespace ORTS
             // Video tab
             checkDynamicShadows.Checked = Settings.DynamicShadows;
             checkShadowAllShapes.Checked = Settings.ShadowAllShapes;
-            checkWindowGlass.Checked = Settings.WindowGlass;
             checkModelInstancing.Checked = Settings.ModelInstancing;
             checkWire.Checked = Settings.Wire;
             checkVerticalSync.Checked = Settings.VerticalSync;
@@ -304,6 +303,8 @@ namespace ORTS
 
             checkWindowed.Checked = !Settings.FullScreen;
             comboWindowSize.Text = Settings.WindowSize;
+            checkWindowGlass.Checked = Settings.WindowGlass;
+
 
 
 
@@ -443,7 +444,6 @@ namespace ORTS
             // Video tab
             Settings.DynamicShadows = checkDynamicShadows.Checked;
             Settings.ShadowAllShapes = checkShadowAllShapes.Checked;
-            Settings.WindowGlass = checkWindowGlass.Checked;
             Settings.ModelInstancing = checkModelInstancing.Checked;
             Settings.Wire = checkWire.Checked;
             Settings.VerticalSync = checkVerticalSync.Checked;
@@ -500,6 +500,7 @@ namespace ORTS
                     UpdateManager.SetChannel((string)control.Tag);
             Settings.FullScreen = !checkWindowed.Checked;
             Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
+            Settings.WindowGlass = checkWindowGlass.Checked;
 
             // Experimental tab
             Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
@@ -834,6 +835,7 @@ namespace ORTS
                 (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
                 (pbUpdateMode, new Control[] { labelUpdateMode }),
                 (pbWindowed, new Control[] { checkWindowed, labelWindowSize, comboWindowSize }),
+                (pbWindowGlass, new[] { checkWindowGlass }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -902,6 +904,10 @@ namespace ORTS
                 {
                     pbWindowed,
                     baseUrl + "/options.html#windowed"
+                },
+                {
+                    pbWindowGlass,
+                    baseUrl + "/options.html#window-glass"
                 },
             };
             if (urls.TryGetValue(sender, out var url))

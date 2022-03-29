@@ -218,12 +218,6 @@ Note: This may reduce the frame rate.
 Note: Static objects provided with shadows (in the World files) 
 will cast shadows anyway. This option adds shadows for other static objects.
 
-Glass on in-game windows
-------------------------
-
-When this option is checked, the in-game windows are displayed in a
-semitransparent mode.
-
 Model instancing
 ----------------
 
@@ -537,6 +531,8 @@ System Options
 These options control which OR version update channel is active (see also
 :ref:`here <updating-or>`). The various options available are self-explanatory.
 
+.. _options-windowed:
+
 Windowed
 --------
 If the ``Windowed`` checkbox is checked, Open Rails will run in a window 
@@ -555,6 +551,13 @@ specific width and height to be used.
 
 The format is <width>x<height>, for example 1024x768.
 
+.. _options-window-glass:
+
+Glass on in-game windows
+------------------------
+
+When this option is checked, the in-game windows are displayed in a
+semitransparent mode.
 
 
 .. _options-experimental:
