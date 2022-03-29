@@ -142,7 +142,6 @@ namespace ORTS
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
             checkOverspeedMonitor.Checked = Settings.SpeedControl;
-            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
             checkRetainers.Checked = Settings.RetainersOnAllCars;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
@@ -304,9 +303,7 @@ namespace ORTS
             checkWindowed.Checked = !Settings.FullScreen;
             comboWindowSize.Text = Settings.WindowSize;
             checkWindowGlass.Checked = Settings.WindowGlass;
-
-
-
+            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
 
             // Experimental tab
             numericUseSuperElevation.Value = Settings.UseSuperElevation;
@@ -427,7 +424,6 @@ namespace ORTS
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
             Settings.SpeedControl = checkOverspeedMonitor.Checked;
-            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
             Settings.RetainersOnAllCars = checkRetainers.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
@@ -501,6 +497,7 @@ namespace ORTS
             Settings.FullScreen = !checkWindowed.Checked;
             Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
             Settings.WindowGlass = checkWindowGlass.Checked;
+            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
 
             // Experimental tab
             Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
@@ -836,6 +833,7 @@ namespace ORTS
                 (pbUpdateMode, new Control[] { labelUpdateMode }),
                 (pbWindowed, new Control[] { checkWindowed, labelWindowSize, comboWindowSize }),
                 (pbWindowGlass, new[] { checkWindowGlass }),
+                (pbControlConfirmations, new[] { checkControlConfirmations }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -859,10 +857,6 @@ namespace ORTS
                 {
                     pbAlerter,
                     baseUrl + "/options.html#alerter-in-cab"
-                },
-                {
-                    pbControlConfirmations,
-                    baseUrl + "/options.html#control-confirmations"
                 },
                 {
                     pbRetainers,
@@ -908,6 +902,10 @@ namespace ORTS
                 {
                     pbWindowGlass,
                     baseUrl + "/options.html#window-glass"
+                },
+                {
+                    pbControlConfirmations,
+                    baseUrl + "/options.html#control-confirmations"
                 },
             };
             if (urls.TryGetValue(sender, out var url))

@@ -29,15 +29,14 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
             this.checkGraduatedRelease = new System.Windows.Forms.CheckBox();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.checkAlerter = new System.Windows.Forms.CheckBox();
-            this.checkControlConfirmations = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
             this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
@@ -48,7 +47,6 @@
             this.pbGraduatedRelease = new System.Windows.Forms.PictureBox();
             this.pbRetainers = new System.Windows.Forms.PictureBox();
             this.pbAlerter = new System.Windows.Forms.PictureBox();
-            this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
             this.labelPortNumber = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.checkOverspeedMonitor = new System.Windows.Forms.CheckBox();
@@ -141,6 +139,12 @@
             this.pathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bindingSourceContent = new System.Windows.Forms.BindingSource(this.components);
             this.tabPageSystem = new System.Windows.Forms.TabPage();
+            this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
+            this.checkControlConfirmations = new System.Windows.Forms.CheckBox();
+            this.pbWindowGlass = new System.Windows.Forms.PictureBox();
+            this.checkWindowGlass = new System.Windows.Forms.CheckBox();
+            this.comboWindowSize = new System.Windows.Forms.ComboBox();
+            this.labelWindowSize = new System.Windows.Forms.Label();
             this.pbWindowed = new System.Windows.Forms.PictureBox();
             this.checkWindowed = new System.Windows.Forms.CheckBox();
             this.pbUpdateMode = new System.Windows.Forms.PictureBox();
@@ -190,10 +194,6 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.comboWindowSize = new System.Windows.Forms.ComboBox();
-            this.labelWindowSize = new System.Windows.Forms.Label();
-            this.checkWindowGlass = new System.Windows.Forms.CheckBox();
-            this.pbWindowGlass = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -205,7 +205,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbGraduatedRelease)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbRetainers)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
             this.tabPageAudio.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).BeginInit();
@@ -231,6 +230,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
             this.tabPageSystem.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWindowGlass)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWindowed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbUpdateMode)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
@@ -247,7 +248,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbWindowGlass)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -331,18 +331,6 @@
             this.checkAlerter.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkAlerter.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // checkControlConfirmations
-            // 
-            this.checkControlConfirmations.AutoSize = true;
-            this.checkControlConfirmations.Location = new System.Drawing.Point(32, 52);
-            this.checkControlConfirmations.Name = "checkControlConfirmations";
-            this.checkControlConfirmations.Size = new System.Drawing.Size(256, 17);
-            this.checkControlConfirmations.TabIndex = 4;
-            this.checkControlConfirmations.Text = "Control confirmations                                            ";
-            this.checkControlConfirmations.UseVisualStyleBackColor = true;
-            this.checkControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.checkControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
             // tabOptions
             // 
             this.tabOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -374,7 +362,6 @@
             this.tabPageGeneral.Controls.Add(this.pbGraduatedRelease);
             this.tabPageGeneral.Controls.Add(this.pbRetainers);
             this.tabPageGeneral.Controls.Add(this.pbAlerter);
-            this.tabPageGeneral.Controls.Add(this.pbControlConfirmations);
             this.tabPageGeneral.Controls.Add(this.labelPortNumber);
             this.tabPageGeneral.Controls.Add(this.numericWebServerPort);
             this.tabPageGeneral.Controls.Add(this.checkOverspeedMonitor);
@@ -383,7 +370,6 @@
             this.tabPageGeneral.Controls.Add(this.labelPressureUnit);
             this.tabPageGeneral.Controls.Add(this.comboOtherUnits);
             this.tabPageGeneral.Controls.Add(this.comboPressureUnit);
-            this.tabPageGeneral.Controls.Add(this.checkControlConfirmations);
             this.tabPageGeneral.Controls.Add(this.checkAlerterExternal);
             this.tabPageGeneral.Controls.Add(this.numericBrakePipeChargingRate);
             this.tabPageGeneral.Controls.Add(this.checkRetainers);
@@ -493,18 +479,6 @@
             this.pbAlerter.Click += new System.EventHandler(this.HelpIcon_Click);
             this.pbAlerter.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbAlerter.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // pbControlConfirmations
-            // 
-            this.pbControlConfirmations.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbControlConfirmations.Location = new System.Drawing.Point(6, 53);
-            this.pbControlConfirmations.Name = "pbControlConfirmations";
-            this.pbControlConfirmations.Size = new System.Drawing.Size(18, 18);
-            this.pbControlConfirmations.TabIndex = 19;
-            this.pbControlConfirmations.TabStop = false;
-            this.pbControlConfirmations.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // labelPortNumber
             // 
@@ -1610,27 +1584,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1665,6 +1639,8 @@
             // 
             // tabPageSystem
             // 
+            this.tabPageSystem.Controls.Add(this.pbControlConfirmations);
+            this.tabPageSystem.Controls.Add(this.checkControlConfirmations);
             this.tabPageSystem.Controls.Add(this.pbWindowGlass);
             this.tabPageSystem.Controls.Add(this.checkWindowGlass);
             this.tabPageSystem.Controls.Add(this.comboWindowSize);
@@ -1683,6 +1659,92 @@
             this.tabPageSystem.TabIndex = 8;
             this.tabPageSystem.Text = "System";
             this.tabPageSystem.UseVisualStyleBackColor = true;
+            // 
+            // pbControlConfirmations
+            // 
+            this.pbControlConfirmations.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbControlConfirmations.Location = new System.Drawing.Point(11, 266);
+            this.pbControlConfirmations.Name = "pbControlConfirmations";
+            this.pbControlConfirmations.Size = new System.Drawing.Size(18, 18);
+            this.pbControlConfirmations.TabIndex = 38;
+            this.pbControlConfirmations.TabStop = false;
+            this.pbControlConfirmations.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseEnter);
+            // 
+            // checkControlConfirmations
+            // 
+            this.checkControlConfirmations.AutoSize = true;
+            this.checkControlConfirmations.Location = new System.Drawing.Point(35, 266);
+            this.checkControlConfirmations.Name = "checkControlConfirmations";
+            this.checkControlConfirmations.Size = new System.Drawing.Size(285, 17);
+            this.checkControlConfirmations.TabIndex = 37;
+            this.checkControlConfirmations.Text = "Show control confirmations                                            ";
+            this.checkControlConfirmations.UseVisualStyleBackColor = true;
+            this.checkControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbWindowGlass
+            // 
+            this.pbWindowGlass.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWindowGlass.Location = new System.Drawing.Point(11, 234);
+            this.pbWindowGlass.Name = "pbWindowGlass";
+            this.pbWindowGlass.Size = new System.Drawing.Size(18, 18);
+            this.pbWindowGlass.TabIndex = 36;
+            this.pbWindowGlass.TabStop = false;
+            this.pbWindowGlass.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbWindowGlass.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbWindowGlass.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // checkWindowGlass
+            // 
+            this.checkWindowGlass.AutoSize = true;
+            this.checkWindowGlass.Location = new System.Drawing.Point(35, 233);
+            this.checkWindowGlass.Name = "checkWindowGlass";
+            this.checkWindowGlass.Size = new System.Drawing.Size(171, 17);
+            this.checkWindowGlass.TabIndex = 35;
+            this.checkWindowGlass.Text = "Use glass for in-game windows";
+            this.checkWindowGlass.UseVisualStyleBackColor = true;
+            this.checkWindowGlass.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkWindowGlass.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // comboWindowSize
+            // 
+            this.comboWindowSize.FormattingEnabled = true;
+            this.comboWindowSize.Items.AddRange(new object[] {
+            "800x600",
+            "1024x768",
+            "1280x720",
+            "1280x800",
+            "1280x1024",
+            "1360x768",
+            "1366x768",
+            "1440x900",
+            "1536x864",
+            "1600x900",
+            "1680x1050",
+            "1920x1080",
+            "1920x1200",
+            "2560x1440",
+            "3840x2160"});
+            this.comboWindowSize.Location = new System.Drawing.Point(34, 192);
+            this.comboWindowSize.Name = "comboWindowSize";
+            this.comboWindowSize.Size = new System.Drawing.Size(121, 21);
+            this.comboWindowSize.TabIndex = 33;
+            this.comboWindowSize.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.comboWindowSize.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // labelWindowSize
+            // 
+            this.labelWindowSize.AutoSize = true;
+            this.labelWindowSize.Location = new System.Drawing.Point(161, 195);
+            this.labelWindowSize.Margin = new System.Windows.Forms.Padding(3);
+            this.labelWindowSize.Name = "labelWindowSize";
+            this.labelWindowSize.Size = new System.Drawing.Size(255, 13);
+            this.labelWindowSize.TabIndex = 34;
+            this.labelWindowSize.Text = "Window size (type WIDTHxHEIGHT for custom size)";
+            this.labelWindowSize.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.labelWindowSize.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbWindowed
             // 
@@ -2350,68 +2412,6 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // comboWindowSize
-            // 
-            this.comboWindowSize.FormattingEnabled = true;
-            this.comboWindowSize.Items.AddRange(new object[] {
-            "800x600",
-            "1024x768",
-            "1280x720",
-            "1280x800",
-            "1280x1024",
-            "1360x768",
-            "1366x768",
-            "1440x900",
-            "1536x864",
-            "1600x900",
-            "1680x1050",
-            "1920x1080",
-            "1920x1200",
-            "2560x1440",
-            "3840x2160"});
-            this.comboWindowSize.Location = new System.Drawing.Point(34, 192);
-            this.comboWindowSize.Name = "comboWindowSize";
-            this.comboWindowSize.Size = new System.Drawing.Size(121, 21);
-            this.comboWindowSize.TabIndex = 33;
-            this.comboWindowSize.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.comboWindowSize.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // labelWindowSize
-            // 
-            this.labelWindowSize.AutoSize = true;
-            this.labelWindowSize.Location = new System.Drawing.Point(161, 195);
-            this.labelWindowSize.Margin = new System.Windows.Forms.Padding(3);
-            this.labelWindowSize.Name = "labelWindowSize";
-            this.labelWindowSize.Size = new System.Drawing.Size(255, 13);
-            this.labelWindowSize.TabIndex = 34;
-            this.labelWindowSize.Text = "Window size (type WIDTHxHEIGHT for custom size)";
-            this.labelWindowSize.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.labelWindowSize.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // checkWindowGlass
-            // 
-            this.checkWindowGlass.AutoSize = true;
-            this.checkWindowGlass.Location = new System.Drawing.Point(35, 233);
-            this.checkWindowGlass.Name = "checkWindowGlass";
-            this.checkWindowGlass.Size = new System.Drawing.Size(151, 17);
-            this.checkWindowGlass.TabIndex = 35;
-            this.checkWindowGlass.Text = "Glass on in-game windows";
-            this.checkWindowGlass.UseVisualStyleBackColor = true;
-            this.checkWindowGlass.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.checkWindowGlass.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // pbWindowGlass
-            // 
-            this.pbWindowGlass.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbWindowGlass.Location = new System.Drawing.Point(11, 234);
-            this.pbWindowGlass.Name = "pbWindowGlass";
-            this.pbWindowGlass.Size = new System.Drawing.Size(18, 18);
-            this.pbWindowGlass.TabIndex = 36;
-            this.pbWindowGlass.TabStop = false;
-            this.pbWindowGlass.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbWindowGlass.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbWindowGlass.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2440,7 +2440,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbGraduatedRelease)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbRetainers)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
             this.tabPageAudio.ResumeLayout(false);
             this.tabPageAudio.PerformLayout();
@@ -2475,6 +2474,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).EndInit();
             this.tabPageSystem.ResumeLayout(false);
             this.tabPageSystem.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWindowGlass)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWindowed)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbUpdateMode)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
@@ -2492,7 +2493,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbWindowGlass)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2505,7 +2505,6 @@
         private System.Windows.Forms.CheckBox checkGraduatedRelease;
         private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.CheckBox checkAlerter;
-        private System.Windows.Forms.CheckBox checkControlConfirmations;
         private System.Windows.Forms.TabControl tabOptions;
         private System.Windows.Forms.TabPage tabPageGeneral;
         private System.Windows.Forms.TabPage tabPageKeyboard;
@@ -2640,7 +2639,6 @@
         private System.Windows.Forms.Label labelPortNumber;
         private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
         private System.Windows.Forms.CheckBox checkBoxNoDieselEngineStart;
-        private System.Windows.Forms.PictureBox pbControlConfirmations;
         private System.Windows.Forms.PictureBox pbAlerter;
         private System.Windows.Forms.PictureBox pbRetainers;
         private System.Windows.Forms.PictureBox pbGraduatedRelease;
@@ -2662,5 +2660,7 @@
         private System.Windows.Forms.Label labelWindowSize;
         private System.Windows.Forms.PictureBox pbWindowGlass;
         private System.Windows.Forms.CheckBox checkWindowGlass;
+        private System.Windows.Forms.PictureBox pbControlConfirmations;
+        private System.Windows.Forms.CheckBox checkControlConfirmations;
     }
 }

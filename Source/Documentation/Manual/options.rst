@@ -33,30 +33,6 @@ therefore will not see the alerter warning, selecting the related option
 *Also in external views* enables the alerter in those views as well.
 
 
-.. _options-control-confirmations:
-
-Control confirmations
----------------------
-
-Following MSTS practice, whenever you make adjustments to the train
-controls (e.g. open the throttle) OR briefly shows a message near the
-bottom of the screen.
-
-.. image:: images/options-confirmations.png
-
-This is helpful for operations that don't have visible feedback and also
-allows you to control the train without being in the cab.
-
-Uncheck this option if you prefer to monitor your cab instruments and
-don't want to see these messages.
-
-OR uses the same message scheme for system messages such as "Game saved"
-or "Replay ended" but you cannot suppress these system messages.
-
-Control confirmations can also be toggled on and off at runtime using the 
-key combination Ctrl-Alt-F10. 
-
-
 Graduated release air brakes
 ----------------------------
 
@@ -64,7 +40,6 @@ Selecting this option allows a partial release of the brakes. Generally
 speaking, operating with the option checked is equivalent to passenger
 standard and unchecked is equivalent to freight standard. A complete
 description of this option can be found :ref:`here <physics-braking>`.
-
 
 
 .. _options-retainers:
@@ -546,18 +521,43 @@ Window size
 -----------
 
 This pair of values defines the size of the OR window. There are some
-preconfigured pairs of values and you can also enter a
+pre-configured pairs of values and you can also enter a
 specific width and height to be used.
 
 The format is <width>x<height>, for example 1024x768.
+
 
 .. _options-window-glass:
 
 Glass on in-game windows
 ------------------------
 
-When this option is checked, the in-game windows are displayed in a
-semitransparent mode.
+When this option is checked, the in-game windows are shown semi-transparently.
+
+
+.. _options-control-confirmations:
+
+Control confirmations
+---------------------
+
+Whenever you make adjustments to the train
+controls (e.g. open the throttle) Open Rails briefly shows a message near the
+bottom of the screen.
+
+.. image:: images/options-confirmations.png
+
+This is helpful for operations that don't have visible feedback and also
+allows you to control the train without being in the cab.
+
+Uncheck this option if you prefer to monitor your cab instruments and
+don't want to see these messages.
+
+OR uses the same message scheme for system messages such as "Game saved"
+or "Replay ended" but you cannot suppress these system messages.
+
+Once the game has started, you can toggle the confirmations on and off 
+by pressing ``<Ctrl+Alt+F10>``. 
+
 
 
 .. _options-experimental:
