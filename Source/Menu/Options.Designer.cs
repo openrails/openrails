@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -137,6 +137,10 @@
             this.pathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bindingSourceContent = new System.Windows.Forms.BindingSource(this.components);
             this.tabPageSystem = new System.Windows.Forms.TabPage();
+            this.pbPerformanceTuner = new System.Windows.Forms.PictureBox();
+            this.labelPerformanceTunerTarget = new System.Windows.Forms.Label();
+            this.numericPerformanceTunerTarget = new System.Windows.Forms.NumericUpDown();
+            this.checkPerformanceTuner = new System.Windows.Forms.CheckBox();
             this.pbWebServerPort = new System.Windows.Forms.PictureBox();
             this.labelWebServerPort = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
@@ -182,9 +186,6 @@
             this.checkAdhesionPropToWeather = new System.Windows.Forms.CheckBox();
             this.checkSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
-            this.labelPerformanceTunerTarget = new System.Windows.Forms.Label();
-            this.numericPerformanceTunerTarget = new System.Windows.Forms.NumericUpDown();
-            this.checkPerformanceTuner = new System.Windows.Forms.CheckBox();
             this.label8 = new System.Windows.Forms.Label();
             this.numericSuperElevationGauge = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
@@ -230,6 +231,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
             this.tabPageSystem.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPerformanceTuner)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWebServerPort)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).BeginInit();
@@ -246,7 +249,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackLODBias)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
@@ -1553,27 +1555,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1608,6 +1610,10 @@
             // 
             // tabPageSystem
             // 
+            this.tabPageSystem.Controls.Add(this.pbPerformanceTuner);
+            this.tabPageSystem.Controls.Add(this.labelPerformanceTunerTarget);
+            this.tabPageSystem.Controls.Add(this.numericPerformanceTunerTarget);
+            this.tabPageSystem.Controls.Add(this.checkPerformanceTuner);
             this.tabPageSystem.Controls.Add(this.pbWebServerPort);
             this.tabPageSystem.Controls.Add(this.labelWebServerPort);
             this.tabPageSystem.Controls.Add(this.numericWebServerPort);
@@ -1632,10 +1638,76 @@
             this.tabPageSystem.Text = "System";
             this.tabPageSystem.UseVisualStyleBackColor = true;
             // 
+            // pbPerformanceTuner
+            // 
+            this.pbPerformanceTuner.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbPerformanceTuner.Location = new System.Drawing.Point(11, 330);
+            this.pbPerformanceTuner.Name = "pbPerformanceTuner";
+            this.pbPerformanceTuner.Size = new System.Drawing.Size(18, 18);
+            this.pbPerformanceTuner.TabIndex = 45;
+            this.pbPerformanceTuner.TabStop = false;
+            this.pbPerformanceTuner.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbPerformanceTuner.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbPerformanceTuner.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // labelPerformanceTunerTarget
+            // 
+            this.labelPerformanceTunerTarget.AutoSize = true;
+            this.labelPerformanceTunerTarget.Location = new System.Drawing.Point(116, 359);
+            this.labelPerformanceTunerTarget.Margin = new System.Windows.Forms.Padding(3);
+            this.labelPerformanceTunerTarget.Name = "labelPerformanceTunerTarget";
+            this.labelPerformanceTunerTarget.Size = new System.Drawing.Size(88, 13);
+            this.labelPerformanceTunerTarget.TabIndex = 44;
+            this.labelPerformanceTunerTarget.Text = "Target frame rate";
+            this.labelPerformanceTunerTarget.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.labelPerformanceTunerTarget.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // numericPerformanceTunerTarget
+            // 
+            this.numericPerformanceTunerTarget.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.numericPerformanceTunerTarget.Location = new System.Drawing.Point(56, 356);
+            this.numericPerformanceTunerTarget.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.numericPerformanceTunerTarget.Maximum = new decimal(new int[] {
+            300,
+            0,
+            0,
+            0});
+            this.numericPerformanceTunerTarget.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericPerformanceTunerTarget.Name = "numericPerformanceTunerTarget";
+            this.numericPerformanceTunerTarget.Size = new System.Drawing.Size(54, 20);
+            this.numericPerformanceTunerTarget.TabIndex = 43;
+            this.toolTip1.SetToolTip(this.numericPerformanceTunerTarget, "Distance to see mountains");
+            this.numericPerformanceTunerTarget.Value = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            // 
+            // checkPerformanceTuner
+            // 
+            this.checkPerformanceTuner.AutoSize = true;
+            this.checkPerformanceTuner.Location = new System.Drawing.Point(35, 329);
+            this.checkPerformanceTuner.Name = "checkPerformanceTuner";
+            this.checkPerformanceTuner.Size = new System.Drawing.Size(277, 17);
+            this.checkPerformanceTuner.TabIndex = 42;
+            this.checkPerformanceTuner.Text = "Automatically tune settings to keep performance level";
+            this.checkPerformanceTuner.UseVisualStyleBackColor = true;
+            this.checkPerformanceTuner.Click += new System.EventHandler(this.checkPerformanceTuner_Click);
+            this.checkPerformanceTuner.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkPerformanceTuner.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
             // pbWebServerPort
             // 
             this.pbWebServerPort.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbWebServerPort.Location = new System.Drawing.Point(11, 299);
+            this.pbWebServerPort.Location = new System.Drawing.Point(11, 298);
             this.pbWebServerPort.Name = "pbWebServerPort";
             this.pbWebServerPort.Size = new System.Drawing.Size(18, 18);
             this.pbWebServerPort.TabIndex = 41;
@@ -1657,7 +1729,7 @@
             // 
             // numericWebServerPort
             // 
-            this.numericWebServerPort.Location = new System.Drawing.Point(35, 299);
+            this.numericWebServerPort.Location = new System.Drawing.Point(35, 298);
             this.numericWebServerPort.Maximum = new decimal(new int[] {
             65534,
             0,
@@ -1692,7 +1764,7 @@
             // checkControlConfirmations
             // 
             this.checkControlConfirmations.AutoSize = true;
-            this.checkControlConfirmations.Location = new System.Drawing.Point(35, 266);
+            this.checkControlConfirmations.Location = new System.Drawing.Point(35, 265);
             this.checkControlConfirmations.Name = "checkControlConfirmations";
             this.checkControlConfirmations.Size = new System.Drawing.Size(285, 17);
             this.checkControlConfirmations.TabIndex = 37;
@@ -1744,7 +1816,7 @@
             "1920x1200",
             "2560x1440",
             "3840x2160"});
-            this.comboWindowSize.Location = new System.Drawing.Point(34, 192);
+            this.comboWindowSize.Location = new System.Drawing.Point(54, 192);
             this.comboWindowSize.Name = "comboWindowSize";
             this.comboWindowSize.Size = new System.Drawing.Size(121, 21);
             this.comboWindowSize.TabIndex = 33;
@@ -1754,7 +1826,7 @@
             // labelWindowSize
             // 
             this.labelWindowSize.AutoSize = true;
-            this.labelWindowSize.Location = new System.Drawing.Point(161, 195);
+            this.labelWindowSize.Location = new System.Drawing.Point(181, 195);
             this.labelWindowSize.Margin = new System.Windows.Forms.Padding(3);
             this.labelWindowSize.Name = "labelWindowSize";
             this.labelWindowSize.Size = new System.Drawing.Size(255, 13);
@@ -1876,9 +1948,6 @@
             this.tabPageExperimental.Controls.Add(this.checkAdhesionPropToWeather);
             this.tabPageExperimental.Controls.Add(this.checkSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
-            this.tabPageExperimental.Controls.Add(this.labelPerformanceTunerTarget);
-            this.tabPageExperimental.Controls.Add(this.numericPerformanceTunerTarget);
-            this.tabPageExperimental.Controls.Add(this.checkPerformanceTuner);
             this.tabPageExperimental.Controls.Add(this.label8);
             this.tabPageExperimental.Controls.Add(this.numericSuperElevationGauge);
             this.tabPageExperimental.Controls.Add(this.label7);
@@ -2246,56 +2315,6 @@
             this.checkUseMSTSEnv.Text = "MSTS environments";
             this.checkUseMSTSEnv.UseVisualStyleBackColor = true;
             // 
-            // labelPerformanceTunerTarget
-            // 
-            this.labelPerformanceTunerTarget.AutoSize = true;
-            this.labelPerformanceTunerTarget.Location = new System.Drawing.Point(86, 144);
-            this.labelPerformanceTunerTarget.Margin = new System.Windows.Forms.Padding(3);
-            this.labelPerformanceTunerTarget.Name = "labelPerformanceTunerTarget";
-            this.labelPerformanceTunerTarget.Size = new System.Drawing.Size(88, 13);
-            this.labelPerformanceTunerTarget.TabIndex = 10;
-            this.labelPerformanceTunerTarget.Text = "Target frame rate";
-            // 
-            // numericPerformanceTunerTarget
-            // 
-            this.numericPerformanceTunerTarget.Increment = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            this.numericPerformanceTunerTarget.Location = new System.Drawing.Point(26, 142);
-            this.numericPerformanceTunerTarget.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericPerformanceTunerTarget.Maximum = new decimal(new int[] {
-            300,
-            0,
-            0,
-            0});
-            this.numericPerformanceTunerTarget.Minimum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.numericPerformanceTunerTarget.Name = "numericPerformanceTunerTarget";
-            this.numericPerformanceTunerTarget.Size = new System.Drawing.Size(54, 20);
-            this.numericPerformanceTunerTarget.TabIndex = 9;
-            this.toolTip1.SetToolTip(this.numericPerformanceTunerTarget, "Distance to see mountains");
-            this.numericPerformanceTunerTarget.Value = new decimal(new int[] {
-            60,
-            0,
-            0,
-            0});
-            // 
-            // checkPerformanceTuner
-            // 
-            this.checkPerformanceTuner.AutoSize = true;
-            this.checkPerformanceTuner.Location = new System.Drawing.Point(6, 120);
-            this.checkPerformanceTuner.Name = "checkPerformanceTuner";
-            this.checkPerformanceTuner.Size = new System.Drawing.Size(277, 17);
-            this.checkPerformanceTuner.TabIndex = 8;
-            this.checkPerformanceTuner.Text = "Automatically tune settings to keep performance level";
-            this.checkPerformanceTuner.UseVisualStyleBackColor = true;
-            this.checkPerformanceTuner.Click += new System.EventHandler(this.checkPerformanceTuner_Click);
-            // 
             // label8
             // 
             this.label8.AutoSize = true;
@@ -2490,6 +2509,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).EndInit();
             this.tabPageSystem.ResumeLayout(false);
             this.tabPageSystem.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPerformanceTuner)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWebServerPort)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).EndInit();
@@ -2507,7 +2528,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackLODBias)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
@@ -2572,9 +2592,6 @@
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Label labelAdhesionMovingAverageFilterSize;
         private System.Windows.Forms.NumericUpDown numericAdhesionMovingAverageFilterSize;
-        private System.Windows.Forms.Label labelPerformanceTunerTarget;
-        private System.Windows.Forms.NumericUpDown numericPerformanceTunerTarget;
-        private System.Windows.Forms.CheckBox checkPerformanceTuner;
         private System.Windows.Forms.TabPage tabPageEvaluate;
         private System.Windows.Forms.CheckedListBox checkListDataLogTSContents;
         private System.Windows.Forms.Label labelDataLogTSInterval;
@@ -2681,5 +2698,9 @@
         private System.Windows.Forms.PictureBox pbWebServerPort;
         private System.Windows.Forms.Label labelWebServerPort;
         private System.Windows.Forms.NumericUpDown numericWebServerPort;
+        private System.Windows.Forms.PictureBox pbPerformanceTuner;
+        private System.Windows.Forms.Label labelPerformanceTunerTarget;
+        private System.Windows.Forms.NumericUpDown numericPerformanceTunerTarget;
+        private System.Windows.Forms.CheckBox checkPerformanceTuner;
     }
 }

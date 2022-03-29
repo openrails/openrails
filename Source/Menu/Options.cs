@@ -148,7 +148,6 @@ namespace ORTS
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
             checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
-            numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
@@ -304,15 +303,16 @@ namespace ORTS
             comboWindowSize.Text = Settings.WindowSize;
             checkWindowGlass.Checked = Settings.WindowGlass;
             checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
+            numericWebServerPort.Value = Settings.WebServerPort;
+            checkPerformanceTuner.Checked = Settings.PerformanceTuner;
+            labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
+            numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
+            numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
 
             // Experimental tab
             numericUseSuperElevation.Value = Settings.UseSuperElevation;
             numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
-            checkPerformanceTuner.Checked = Settings.PerformanceTuner;
-            labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
-            numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
-            numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
             checkSignalLightGlow.Checked = Settings.SignalLightGlow;
@@ -430,7 +430,6 @@ namespace ORTS
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
-            Settings.WebServerPort = (int)numericWebServerPort.Value;
 
             // Audio tab
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
@@ -498,13 +497,14 @@ namespace ORTS
             Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
             Settings.WindowGlass = checkWindowGlass.Checked;
             Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
+            Settings.WebServerPort = (int)numericWebServerPort.Value;
+            Settings.PerformanceTuner = checkPerformanceTuner.Checked;
+            Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
 
             // Experimental tab
             Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
             Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
-            Settings.PerformanceTuner = checkPerformanceTuner.Checked;
-            Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
             Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
@@ -835,6 +835,7 @@ namespace ORTS
                 (pbWindowGlass, new[] { checkWindowGlass }),
                 (pbControlConfirmations, new[] { checkControlConfirmations }),
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
+                (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -911,6 +912,10 @@ namespace ORTS
                 {
                     pbWebServerPort,
                     baseUrl + "/options.html#web-server-port"
+                },
+                {
+                    pbPerformanceTuner,
+                    baseUrl + "/options.html#performance-tuner"
                 },
             };
             if (urls.TryGetValue(sender, out var url))
