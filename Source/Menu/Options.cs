@@ -170,7 +170,6 @@ namespace ORTS
             numericDistantMountainsViewingDistance.Value = Settings.DistantMountainsViewingDistance / 1000;
             numericViewingFOV.Value = Settings.ViewingFOV;
             numericWorldObjectDensity.Value = Settings.WorldObjectDensity;
-            comboWindowSize.Text = Settings.WindowSize;
             trackDayAmbientLight.Value = Settings.DayAmbientLight;
             trackDayAmbientLight_ValueChanged(null, null);
             trackAntiAliasing.Value = Settings.AntiAliasing;
@@ -302,6 +301,10 @@ namespace ORTS
                 tabPageSystem.Controls.Add(label);
                 top += label.Height + spacing.Height - 3; // -3 to close them up a bit
             }
+
+            checkWindowed.Checked = !Settings.FullScreen;
+            comboWindowSize.Text = Settings.WindowSize;
+
 
 
             // Experimental tab
@@ -449,7 +452,6 @@ namespace ORTS
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
             Settings.ViewingFOV = (int)numericViewingFOV.Value;
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
-            Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
 
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
@@ -496,6 +498,8 @@ namespace ORTS
             foreach (Control control in tabPageSystem.Controls)
                 if ((control is RadioButton) && (control as RadioButton).Checked)
                     UpdateManager.SetChannel((string)control.Tag);
+            Settings.FullScreen = !checkWindowed.Checked;
+            Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
 
             // Experimental tab
             Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
@@ -829,6 +833,7 @@ namespace ORTS
                 // System
                 (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
                 (pbUpdateMode, new Control[] { labelUpdateMode }),
+                (pbWindowed, new Control[] { checkWindowed, labelWindowSize, comboWindowSize }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -893,6 +898,10 @@ namespace ORTS
                 {
                     pbUpdateMode,
                     baseUrl + "/options.html#updater-options"
+                },
+                {
+                    pbWindowed,
+                    baseUrl + "/options.html#windowed"
                 },
             };
             if (urls.TryGetValue(sender, out var url))

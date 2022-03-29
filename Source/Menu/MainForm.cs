@@ -658,7 +658,6 @@ namespace ORTS
         void LoadOptions()
         {
             checkBoxWarnings.Checked = Settings.Logging;
-            checkBoxWindowed.Checked = !Settings.FullScreen;
             //Debrief activity evaluation
             checkDebriefActivityEval.Checked = Settings.DebriefActivityEval;
             //TO DO: Debrief TTactivity evaluation
@@ -673,7 +672,6 @@ namespace ORTS
         void SaveOptions()
         {
             Settings.Logging = checkBoxWarnings.Checked;
-            Settings.FullScreen = !checkBoxWindowed.Checked;
             Settings.Multiplayer_User = textBoxMPUser.Text;
             //Debrief activity evaluation
             Settings.DebriefActivityEval = checkDebriefActivityEval.Checked;

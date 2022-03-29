@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -87,9 +87,7 @@
             this.label10 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.numericWorldObjectDensity = new System.Windows.Forms.NumericUpDown();
-            this.comboWindowSize = new System.Windows.Forms.ComboBox();
             this.checkWindowGlass = new System.Windows.Forms.CheckBox();
-            this.label3 = new System.Windows.Forms.Label();
             this.checkDynamicShadows = new System.Windows.Forms.CheckBox();
             this.checkWire = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
@@ -144,6 +142,9 @@
             this.pathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bindingSourceContent = new System.Windows.Forms.BindingSource(this.components);
             this.tabPageSystem = new System.Windows.Forms.TabPage();
+            this.pbWindowed = new System.Windows.Forms.PictureBox();
+            this.checkWindowed = new System.Windows.Forms.CheckBox();
+            this.pbUpdateMode = new System.Windows.Forms.PictureBox();
             this.pbLanguage = new System.Windows.Forms.PictureBox();
             this.labelLanguage = new System.Windows.Forms.Label();
             this.comboLanguage = new System.Windows.Forms.ComboBox();
@@ -190,7 +191,8 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.pbUpdateMode = new System.Windows.Forms.PictureBox();
+            this.comboWindowSize = new System.Windows.Forms.ComboBox();
+            this.labelWindowSize = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -228,6 +230,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
             this.tabPageSystem.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWindowed)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbUpdateMode)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
             this.tabPageExperimental.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).BeginInit();
@@ -242,7 +246,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbUpdateMode)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -742,9 +745,7 @@
             this.tabPageVideo.Controls.Add(this.label10);
             this.tabPageVideo.Controls.Add(this.label1);
             this.tabPageVideo.Controls.Add(this.numericWorldObjectDensity);
-            this.tabPageVideo.Controls.Add(this.comboWindowSize);
             this.tabPageVideo.Controls.Add(this.checkWindowGlass);
-            this.tabPageVideo.Controls.Add(this.label3);
             this.tabPageVideo.Controls.Add(this.checkDynamicShadows);
             this.tabPageVideo.Controls.Add(this.checkWire);
             this.tabPageVideo.Location = new System.Drawing.Point(4, 22);
@@ -1021,29 +1022,6 @@
             this.numericWorldObjectDensity.Size = new System.Drawing.Size(54, 20);
             this.numericWorldObjectDensity.TabIndex = 16;
             // 
-            // comboWindowSize
-            // 
-            this.comboWindowSize.FormattingEnabled = true;
-            this.comboWindowSize.Items.AddRange(new object[] {
-            "800x600",
-            "1024x768",
-            "1280x720",
-            "1280x800",
-            "1280x1024",
-            "1360x768",
-            "1366x768",
-            "1440x900",
-            "1536x864",
-            "1600x900",
-            "1680x1050",
-            "1920x1080",
-            "1920x1200",
-            "2560x1440"});
-            this.comboWindowSize.Location = new System.Drawing.Point(6, 301);
-            this.comboWindowSize.Name = "comboWindowSize";
-            this.comboWindowSize.Size = new System.Drawing.Size(121, 21);
-            this.comboWindowSize.TabIndex = 18;
-            // 
             // checkWindowGlass
             // 
             this.checkWindowGlass.AutoSize = true;
@@ -1053,16 +1031,6 @@
             this.checkWindowGlass.TabIndex = 2;
             this.checkWindowGlass.Text = "Glass on in-game windows";
             this.checkWindowGlass.UseVisualStyleBackColor = true;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(133, 304);
-            this.label3.Margin = new System.Windows.Forms.Padding(3);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(255, 13);
-            this.label3.TabIndex = 19;
-            this.label3.Text = "Window size (type WIDTHxHEIGHT for custom size)";
             // 
             // checkDynamicShadows
             // 
@@ -1651,27 +1619,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle10;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1706,6 +1674,10 @@
             // 
             // tabPageSystem
             // 
+            this.tabPageSystem.Controls.Add(this.comboWindowSize);
+            this.tabPageSystem.Controls.Add(this.labelWindowSize);
+            this.tabPageSystem.Controls.Add(this.pbWindowed);
+            this.tabPageSystem.Controls.Add(this.checkWindowed);
             this.tabPageSystem.Controls.Add(this.pbUpdateMode);
             this.tabPageSystem.Controls.Add(this.pbLanguage);
             this.tabPageSystem.Controls.Add(this.labelLanguage);
@@ -1718,6 +1690,42 @@
             this.tabPageSystem.TabIndex = 8;
             this.tabPageSystem.Text = "System";
             this.tabPageSystem.UseVisualStyleBackColor = true;
+            // 
+            // pbWindowed
+            // 
+            this.pbWindowed.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWindowed.Location = new System.Drawing.Point(11, 169);
+            this.pbWindowed.Name = "pbWindowed";
+            this.pbWindowed.Size = new System.Drawing.Size(18, 18);
+            this.pbWindowed.TabIndex = 32;
+            this.pbWindowed.TabStop = false;
+            this.pbWindowed.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbWindowed.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbWindowed.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // checkWindowed
+            // 
+            this.checkWindowed.AutoSize = true;
+            this.checkWindowed.Location = new System.Drawing.Point(35, 168);
+            this.checkWindowed.Name = "checkWindowed";
+            this.checkWindowed.Size = new System.Drawing.Size(77, 17);
+            this.checkWindowed.TabIndex = 31;
+            this.checkWindowed.Text = "Windowed";
+            this.checkWindowed.UseVisualStyleBackColor = true;
+            this.checkWindowed.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkWindowed.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbUpdateMode
+            // 
+            this.pbUpdateMode.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbUpdateMode.Location = new System.Drawing.Point(11, 52);
+            this.pbUpdateMode.Name = "pbUpdateMode";
+            this.pbUpdateMode.Size = new System.Drawing.Size(18, 18);
+            this.pbUpdateMode.TabIndex = 30;
+            this.pbUpdateMode.TabStop = false;
+            this.pbUpdateMode.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbUpdateMode.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbUpdateMode.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbLanguage
             // 
@@ -2349,17 +2357,43 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // pbUpdateMode
+            // comboWindowSize
             // 
-            this.pbUpdateMode.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbUpdateMode.Location = new System.Drawing.Point(11, 52);
-            this.pbUpdateMode.Name = "pbUpdateMode";
-            this.pbUpdateMode.Size = new System.Drawing.Size(18, 18);
-            this.pbUpdateMode.TabIndex = 30;
-            this.pbUpdateMode.TabStop = false;
-            this.pbUpdateMode.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbUpdateMode.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbUpdateMode.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            this.comboWindowSize.FormattingEnabled = true;
+            this.comboWindowSize.Items.AddRange(new object[] {
+            "800x600",
+            "1024x768",
+            "1280x720",
+            "1280x800",
+            "1280x1024",
+            "1360x768",
+            "1366x768",
+            "1440x900",
+            "1536x864",
+            "1600x900",
+            "1680x1050",
+            "1920x1080",
+            "1920x1200",
+            "2560x1440",
+            "3840x2160"});
+            this.comboWindowSize.Location = new System.Drawing.Point(34, 195);
+            this.comboWindowSize.Name = "comboWindowSize";
+            this.comboWindowSize.Size = new System.Drawing.Size(121, 21);
+            this.comboWindowSize.TabIndex = 33;
+            this.comboWindowSize.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.comboWindowSize.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // labelWindowSize
+            // 
+            this.labelWindowSize.AutoSize = true;
+            this.labelWindowSize.Location = new System.Drawing.Point(161, 198);
+            this.labelWindowSize.Margin = new System.Windows.Forms.Padding(3);
+            this.labelWindowSize.Name = "labelWindowSize";
+            this.labelWindowSize.Size = new System.Drawing.Size(255, 13);
+            this.labelWindowSize.TabIndex = 34;
+            this.labelWindowSize.Text = "Window size (type WIDTHxHEIGHT for custom size)";
+            this.labelWindowSize.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.labelWindowSize.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // OptionsForm
             // 
@@ -2424,6 +2458,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).EndInit();
             this.tabPageSystem.ResumeLayout(false);
             this.tabPageSystem.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWindowed)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbUpdateMode)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
@@ -2439,7 +2475,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbUpdateMode)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2476,9 +2511,7 @@
         private System.Windows.Forms.NumericUpDown numericSoundDetailLevel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown numericWorldObjectDensity;
-        private System.Windows.Forms.ComboBox comboWindowSize;
         private System.Windows.Forms.CheckBox checkWindowGlass;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.CheckBox checkDynamicShadows;
         private System.Windows.Forms.CheckBox checkWire;
         private System.Windows.Forms.Label label7;
@@ -2606,5 +2639,9 @@
         private System.Windows.Forms.Label labelLanguage;
         private System.Windows.Forms.ComboBox comboLanguage;
         private System.Windows.Forms.PictureBox pbUpdateMode;
+        private System.Windows.Forms.CheckBox checkWindowed;
+        private System.Windows.Forms.PictureBox pbWindowed;
+        private System.Windows.Forms.ComboBox comboWindowSize;
+        private System.Windows.Forms.Label labelWindowSize;
     }
 }

@@ -305,12 +305,6 @@ In legacy routes, all the content was assigned to categories 0-10.
 In more modern routes, content may be assigned to categories between 0 and 49.
 Content builders are advised to reserve values 50 to 99 for objects used in building the route.
 
-Window size
------------
-
-This pair of values defines the size of the OR window. There are some
-preconfigured pairs of values, however you may also manually enter a
-different size to be used.
 
 Ambient daylight brightness
 ---------------------------
@@ -535,13 +529,33 @@ access the location and make the necessary changes.
 
 .. _options-updater:
 
-Updater Options
+System Options
 ===============
 
 .. image:: images/options-updater.png
 
 These options control which OR version update channel is active (see also
 :ref:`here <updating-or>`). The various options available are self-explanatory.
+
+Windowed
+--------
+If the ``Windowed`` checkbox is checked, Open Rails will run in a window 
+instead of full screen.
+
+Once the game has started, you can toggle between windowed mode and full screen by 
+pressing ``<Alt+Enter>``.
+
+
+Window size
+-----------
+
+This pair of values defines the size of the OR window. There are some
+preconfigured pairs of values and you can also enter a
+specific width and height to be used.
+
+The format is <width>x<height>, for example 1024x768.
+
+
 
 .. _options-experimental:
 

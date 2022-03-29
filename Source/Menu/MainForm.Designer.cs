@@ -32,7 +32,6 @@ namespace ORTS
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.checkBoxWindowed = new System.Windows.Forms.CheckBox();
             this.buttonStart = new System.Windows.Forms.Button();
             this.labelLogo = new System.Windows.Forms.Label();
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -111,18 +110,6 @@ namespace ORTS
             this.panelModeTimetable.SuspendLayout();
             this.contextMenuStripTools.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // checkBoxWindowed
-            // 
-            this.checkBoxWindowed.AutoSize = true;
-            this.checkBoxWindowed.Checked = true;
-            this.checkBoxWindowed.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWindowed.Location = new System.Drawing.Point(109, 71);
-            this.checkBoxWindowed.Name = "checkBoxWindowed";
-            this.checkBoxWindowed.Size = new System.Drawing.Size(77, 17);
-            this.checkBoxWindowed.TabIndex = 2;
-            this.checkBoxWindowed.Text = "Windowed";
-            this.checkBoxWindowed.UseVisualStyleBackColor = true;
             // 
             // buttonStart
             // 
@@ -379,7 +366,6 @@ namespace ORTS
             this.panel1.Controls.Add(this.buttonDocuments);
             this.panel1.Controls.Add(this.buttonOptions);
             this.panel1.Controls.Add(this.checkBoxWarnings);
-            this.panel1.Controls.Add(this.checkBoxWindowed);
             this.panel1.Controls.Add(this.buttonTools);
             this.panel1.Location = new System.Drawing.Point(311, 416);
             this.panel1.Name = "panel1";
@@ -896,7 +882,7 @@ namespace ORTS
             // testingToolStripMenuItem
             // 
             this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
-            this.testingToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
+            this.testingToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
             this.testingToolStripMenuItem.Text = "Testing";
             this.testingToolStripMenuItem.Click += new System.EventHandler(this.testingToolStripMenuItem_Click);
             // 
@@ -906,7 +892,7 @@ namespace ORTS
             this.contextMenuStripTools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.testingToolStripMenuItem});
             this.contextMenuStripTools.Name = "contextMenuStrip1";
-            this.contextMenuStripTools.Size = new System.Drawing.Size(110, 26);
+            this.contextMenuStripTools.Size = new System.Drawing.Size(112, 26);
             // 
             // linkLabelChangeLog
             // 
@@ -973,8 +959,6 @@ namespace ORTS
         }
 
         #endregion
-
-        private System.Windows.Forms.CheckBox checkBoxWindowed;
         private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.Label labelLogo;
         private System.Windows.Forms.PictureBox pictureBoxLogo;
