@@ -394,10 +394,20 @@ namespace Orts.Viewer3D.RollingStock
                     }
             }
 
-            // Match up all the matrices with their parts.
-            for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
-                if (TrainCarShape.Hierarchy[i] == -1)
-                    MatchMatrixToPart(car, i, 0);
+            // Using only animations not parented by other animations, thus wheels part of a bogie will be enumerated in another round.
+            if (TrainCarShape.SharedShape is GltfShape gltfShape)
+            {
+                for (var i = 0; i < gltfShape.GetAnimationCount(); i++)
+                    if (gltfShape.GetParentMatrix(i) == -1)
+                        MatchMatrixToPart(car, i, 0);
+            }
+            else
+            {
+                // Match up all the matrices with their parts.
+                for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                    if (TrainCarShape.Hierarchy[i] == -1)
+                        MatchMatrixToPart(car, i, 0);
+            }
 
             car.SetUpWheels();
 
@@ -442,11 +452,14 @@ namespace Orts.Viewer3D.RollingStock
                     if (matrixName.Length == 8 || matrixName.Length == 9)
                         Int32.TryParse(matrixName.Substring(6, 1), out id);
                     if (matrixName.Length == 8 || matrixName.Length == 9 || !matrixAnimated)
-                        WheelPartIndexes.Add(matrix);
+                        WheelPartIndexes.Add((TrainCarShape.SharedShape as GltfShape)?.GetArticulationTargetNodes(matrix)?.FirstOrDefault() ?? matrix);
                     else
                         RunningGear.AddMatrix(matrix);
-                    var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
-                    car.AddWheelSet(m.M43, id, pmatrix, matrixName.ToString(), bogie1Axles, bogie2Axles);
+                    if (!(TrainCarShape.SharedShape is GltfShape))
+                    {
+                        var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
+                        car.AddWheelSet(m.M43, id, pmatrix, matrixName.ToString(), bogie1Axles, bogie2Axles);
+                    }
                 }
                 // Standard wheels are processed above, but wheels used as animated fans that are greater than 3m are processed here.
                 else
@@ -472,9 +485,18 @@ namespace Orts.Viewer3D.RollingStock
                     bogieMatrix = matrix; // Bogie matrix needs to be saved for test with axles.
                 }
                 // Bogies contain wheels!
-                for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
-                    if (TrainCarShape.Hierarchy[i] == matrix)
-                        MatchMatrixToPart(car, i, bogieMatrix);
+                if (TrainCarShape.SharedShape is GltfShape gltfShape)
+                {
+                    for (var i = 0; i < gltfShape.GetAnimationCount(); i++)
+                        if (gltfShape.GetParentMatrix(i) == matrix)
+                            MatchMatrixToPart(car, i, bogieMatrix);
+                }
+                else
+                {
+                    for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                        if (TrainCarShape.Hierarchy[i] == matrix)
+                            MatchMatrixToPart(car, i, bogieMatrix);
+                }
             }
             else if (matrixName.StartsWith("WIPER")) // wipers
             {
@@ -581,9 +603,18 @@ namespace Orts.Viewer3D.RollingStock
                 if (matrixAnimated && matrix != 0)
                     RunningGear.AddMatrix(matrix);
 
-                for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
-                    if (TrainCarShape.Hierarchy[i] == matrix)
-                        MatchMatrixToPart(car, i, 0);
+                if (TrainCarShape.SharedShape is GltfShape gltfShape)
+                {
+                    for (var i = 0; i < gltfShape.GetAnimationCount(); i++)
+                        if (gltfShape.GetParentMatrix(i) == matrix)
+                            MatchMatrixToPart(car, i, 0);
+                }
+                else
+                {
+                    for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                        if (TrainCarShape.Hierarchy[i] == matrix)
+                            MatchMatrixToPart(car, i, 0);
+                }
             }
         }
 

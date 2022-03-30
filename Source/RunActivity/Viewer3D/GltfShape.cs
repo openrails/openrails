@@ -337,6 +337,7 @@ namespace Orts.Viewer3D
                 if (gltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
                     gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString());
 
+                Dictionary<int, (string name, float radius)> articulations = null;
                 var meshes = new Dictionary<int, Node>();
                 var lights = new Dictionary<int, KHR_lights_punctual>();
                 TempStack.Clear();
@@ -392,6 +393,16 @@ namespace Orts.Viewer3D
                             if (lightId != null)
                                 lights.Add(nodeNumber, gltfLights.lights[(int)lightId]);
                         }
+
+                        if ((node.Extras?.TryGetValue("OPENRAILS_animation_name", out extension) ?? false) && extension is string name)
+                        {
+                            var radius = 0f;
+                            if ((node.Extras?.TryGetValue("OPENRAILS_animation_wheelradius", out extension) ?? false) && extension is string wheelRadius)
+                                float.TryParse(wheelRadius, out radius);
+
+                            articulations = articulations ?? new Dictionary<int, (string, float)>();
+                            articulations.Add(nodeNumber, (name, radius));
+                        }
                     }
                 }
                 Matrices = matrices;
@@ -443,9 +454,8 @@ namespace Orts.Viewer3D
                         // Use MatrixNames for storing animation and articulation names.
                         // Here the MatrixNames are not bound to nodes (and matrices), but rather to the animation number.
                         shape.MatrixNames[j] = gltfAnimation.Name;
-if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
+                        var animation = new GltfAnimation(gltfAnimation.Name);
 
-                        GltfAnimation animation = new GltfAnimation(gltfAnimation.Name);
                         for (var k = 0; k < gltfAnimation.Channels.Length; k++)
                         {
                             var gltfChannel = gltfAnimation.Channels[k];
@@ -496,6 +506,23 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
                     }
                     if (morphWarning)
                         Trace.TraceInformation($"glTF morphing animation is unsupported in file {gltfFileName}");
+
+                    if (articulations != null)
+                    {
+                        foreach (var nodeNumber in articulations.Keys)
+                        {
+                            var animation = shape.GltfAnimations.FirstOrDefault(a => a.Name == articulations[nodeNumber].name);
+                            if (animation == null)
+                            {
+                                animation = new GltfAnimation(articulations[nodeNumber].name) { ExtrasWheelRadius = articulations[nodeNumber].radius };
+                                shape.GltfAnimations.Add(animation);
+                                shape.MatrixNames[shape.GltfAnimations.Count - 1] = articulations[nodeNumber].name;
+                            }
+                            animation.Channels.Add(new GltfAnimationChannel() { TargetNode = nodeNumber });
+                        }
+                    }
+
+if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimations[0]); shape.MatrixNames[shape.GltfAnimations.Count - 1] = "ORTSITEM1CONTINUOUS"; }
                 }
             }
 
@@ -1638,9 +1665,27 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
             public MaterialNormalTextureInfo ClearcoatNormalTexture { get; set; }
         }
 
-        public bool HasAnimation(int number) => GltfAnimations.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
-        public bool AnimationIsArticulation(int number) => GltfAnimations.ElementAtOrDefault(number)?.Channels?.FirstOrDefault()?.TimeArray == null;
+        /// <summary>
+        /// This method is part of the animation handling. Gets the parent that will be animated, for finding a bogie for wheels.
+        /// </summary>
+        public override int GetParentMatrix(int animationNumber)
+        {
+            var node = GltfAnimations.ElementAtOrDefault(animationNumber)?.Channels?.FirstOrDefault()?.TargetNode ?? 0;
+            var nodeAdnimation = -1;
+            do
+            {
+                node = LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.FirstOrDefault()?.
+                    Hierarchy?.ElementAtOrDefault(node) ?? -1;
+                nodeAdnimation = GltfAnimations.FindIndex(a => a.Channels?.FirstOrDefault()?.TargetNode == node);
+            }
+            while (node > -1 && nodeAdnimation == -1);
+            return nodeAdnimation;
+        }
+
+        public bool HasAnimation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
+        public bool AnimationIsArticulation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault()?.TimeArray == null;
         public float GetAnimationLength(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TimeMax).Max() ?? 0;
+        public int GetAnimationCount() => GltfAnimations?.Count ?? 0;
         public IEnumerable<int> GetArticulationTargetNodes(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TargetNode);
 
         /// <summary>
@@ -1734,6 +1779,13 @@ if (j == 0) shape.MatrixNames[j] = "ORTSITEM1CONTINUOUS";
     {
         public string Name;
         public List<GltfAnimationChannel> Channels = new List<GltfAnimationChannel>();
+
+        /// <summary>
+        /// Used for calculating rotation-to-speed type animations,
+        /// either rotationAngle = travelDistance / wheelRadius
+        /// or numRotations = travelDistance / wheelRadius / 2𝜋
+        /// </summary>
+        public float ExtrasWheelRadius;
 
         public GltfAnimation(string name)
         {

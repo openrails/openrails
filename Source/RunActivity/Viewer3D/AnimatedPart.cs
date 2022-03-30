@@ -175,8 +175,9 @@ namespace Orts.Viewer3D
             else if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.GetAnimationLength(MatrixIndexes.FirstOrDefault()) > 0)
             {
                 // glTf shape
-                var frameRate = 1f;
-                SetFrameWrap(AnimationKey + change * frameRate);
+                // Assume the animation is 1 loop long
+                var loopLength = FrameCount;
+                SetFrameWrap(AnimationKey + change * loopLength);
             }
         }
 
