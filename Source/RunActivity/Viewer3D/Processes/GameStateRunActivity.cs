@@ -424,28 +424,28 @@ namespace Orts.Viewer3D.Processes
         }
 
         private static void SaveEvaluation(BinaryWriter outf)
-        {
-            outf.Write(ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count);
-            for (int i = 0; i < ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count; i++)
-            {
+                {
+                    outf.Write(ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count);
+                    for (int i = 0; i < ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count; i++)
+                    {
                 outf.Write((string)ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i]);
-            }
-            outf.Write(Popups.TrackMonitor.DbfEvalOverSpeed);
-            outf.Write(Popups.TrackMonitor.DbfEvalOverSpeedTimeS);
-            outf.Write(Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS);
-            outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving);
-            outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped);
-            outf.Write(Simulation.Physics.Train.NumOfCouplerBreaks);
-            outf.Write(Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh);
-            outf.Write(Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh);
-            outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned);
-            outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast);
-            outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose);
-            outf.Write(Simulator.DbfEvalOverSpeedCoupling);
-            outf.Write(Viewer.DbfEvalAutoPilotTimeS);
-            outf.Write(Viewer.DbfEvalIniAutoPilotTimeS);
-            outf.Write(Simulator.PlayerLocomotive.DistanceM + Popups.HelpWindow.DbfEvalDistanceTravelled);
-        }
+                    }
+                    outf.Write(Popups.TrackMonitor.DbfEvalOverSpeed);
+                    outf.Write(Popups.TrackMonitor.DbfEvalOverSpeedTimeS);
+                    outf.Write(Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS);
+                    outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving);
+                    outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped);
+                    outf.Write(Simulation.Physics.Train.NumOfCouplerBreaks);
+                    outf.Write(Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh);
+                    outf.Write(Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh);
+                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned);
+                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast);
+                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose);
+                    outf.Write(Simulator.DbfEvalOverSpeedCoupling);
+                    outf.Write(Viewer.DbfEvalAutoPilotTimeS);
+                    outf.Write(Viewer.DbfEvalIniAutoPilotTimeS);
+                    outf.Write(Simulator.PlayerLocomotive.DistanceM + Popups.HelpWindow.DbfEvalDistanceTravelled);
+                }
 
         /// <summary>
         /// Resume a saved game.
