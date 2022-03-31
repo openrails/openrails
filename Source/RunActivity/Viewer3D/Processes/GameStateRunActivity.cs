@@ -71,6 +71,7 @@ namespace Orts.Viewer3D.Processes
         LoadingPrimitive Loading;
         LoadingScreenPrimitive LoadingScreen;
         LoadingBarPrimitive LoadingBar;
+        TimetableLoadingBarPrimitive TimetableLoadingBar;
         Matrix LoadingMatrix = Matrix.Identity;
 
         public GameStateRunActivity(string[] args)
@@ -83,6 +84,7 @@ namespace Orts.Viewer3D.Processes
             Loading.Dispose();
             LoadingScreen.Dispose();
             LoadingBar.Dispose();
+            TimetableLoadingBar.Dispose();
             base.Dispose();
         }
 
@@ -106,6 +108,14 @@ namespace Orts.Viewer3D.Processes
                 frame.AddPrimitive(LoadingBar.Material, LoadingBar, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
             }
 
+            if (Simulator != null && Simulator.TimetableMode && TimetableLoadingBar != null 
+                && Simulator.TimetableLoadedFraction < 0.99f    // 0.99 to hide loading bar at end of timetable pre-run
+            )
+            {
+                TimetableLoadingBar.Material.Shader.LoadingPercent = Simulator.TimetableLoadedFraction;
+                frame.AddPrimitive(TimetableLoadingBar.Material, TimetableLoadingBar, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
+            }
+
             base.Update(frame, totalRealSeconds);
         }
 
@@ -116,7 +126,8 @@ namespace Orts.Viewer3D.Processes
                 Loading = new LoadingPrimitive(Game);
             if (LoadingBar == null)
                 LoadingBar = new LoadingBarPrimitive(Game);
-
+            if (TimetableLoadingBar == null)
+                TimetableLoadingBar = new TimetableLoadingBarPrimitive(Game);
             var args = Arguments;
 
             // Look for an action to perform.
@@ -1329,7 +1340,7 @@ namespace Orts.Viewer3D.Processes
 
         class LoadingBarPrimitive : LoadingPrimitive
         {
-            public LoadingBarPrimitive(Game game)
+            public LoadingBarPrimitive(Game game )
                 : base(game)
             {
             }
@@ -1341,16 +1352,41 @@ namespace Orts.Viewer3D.Processes
 
             protected override VertexPositionTexture[] GetVerticies(Game game)
             {
-                var w = game.RenderProcess.DisplaySize.X;
-                var h = 10;
-                var x = -w / 2 - 0.5f;
-                var y = game.RenderProcess.DisplaySize.Y / 2 - h - 0.5f;
+                GetLoadingBarSize(game, out int w, out int h, out float x, out float y);
+                return GetLoadingBarCoords(w, h, x, y);
+            }
+
+            protected VertexPositionTexture[] GetLoadingBarCoords(int w, int h, float x, float y)
+            {
                 return new[] {
                     new VertexPositionTexture(new Vector3(x + 0, -y - 0, -1), new Vector2(0, 0)),
                     new VertexPositionTexture(new Vector3(x + w, -y - 0, -1), new Vector2(1, 0)),
                     new VertexPositionTexture(new Vector3(x + 0, -y - h, -1), new Vector2(0, 1)),
                     new VertexPositionTexture(new Vector3(x + w, -y - h, -1), new Vector2(1, 1)),
                 };
+            }
+
+            protected static void GetLoadingBarSize(Game game, out int w, out int h, out float x, out float y)
+            {
+                w = game.RenderProcess.DisplaySize.X;
+                h = 10;
+                x = -w / 2 - 0.5f;
+                y = game.RenderProcess.DisplaySize.Y / 2 - h - 0.5f;
+            }
+        }
+
+        class TimetableLoadingBarPrimitive : LoadingBarPrimitive
+        {
+            public TimetableLoadingBarPrimitive(Game game)
+                : base(game)
+            {
+            }
+
+            protected override VertexPositionTexture[] GetVerticies(Game game)
+            {
+                GetLoadingBarSize(game, out int w, out int h, out float x, out float y);
+                y -= h + 1; // Allow for second bar and 1 pixel gap between
+                return GetLoadingBarCoords(w, h, x, y);
             }
         }
 
@@ -1470,6 +1506,20 @@ namespace Orts.Viewer3D.Processes
         class LoadingBarMaterial : LoadingMaterial
         {
             public LoadingBarMaterial(Game game)
+                : base(game)
+            {
+            }
+
+            public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+            {
+                base.SetState(graphicsDevice, previousMaterial);
+                Shader.CurrentTechnique = Shader.Techniques["LoadingBar"];
+            }
+        }
+
+        class TimetableLoadingBarMaterial : LoadingMaterial
+        {
+            public TimetableLoadingBarMaterial(Game game)
                 : base(game)
             {
             }
