@@ -159,8 +159,6 @@ namespace ORTS.Settings
         [Default(true)]
         public bool SpeedControl { get; set; }
         [Default(false)]
-        public bool ViewDispatcher { get; set; }
-        [Default(false)]
         public bool GraduatedRelease { get; set; }
         [Default(false)]
         public bool RetainersOnAllCars { get; set; }
