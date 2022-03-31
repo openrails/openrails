@@ -1099,7 +1099,7 @@ namespace Orts.Viewer3D.RollingStock
 
             #region Create Control renderers
             ControlMap = new Dictionary<int, CabViewControlRenderer>();
-            int[] count = new int[256];//enough to hold all types, count the occurence of each type
+            int[] count = new int[Enum.GetNames(typeof(CABViewControlTypes)).Length];//enough to hold all types, count the occurence of each type
             var i = 0;
             foreach (var cabView in car.CabViewList)
             {
@@ -1242,7 +1242,7 @@ namespace Orts.Viewer3D.RollingStock
 
             #region Create Control renderers
             ControlMap = new Dictionary<int, CabViewControlRenderer>();
-            int[] count = new int[256];//enough to hold all types, count the occurence of each type
+            int[] count = new int[Enum.GetNames(typeof(CABViewControlTypes)).Length];//enough to hold all types, count the occurence of each type
             var i = 0;
 
             var controlSortIndex = 1;  // Controls are drawn atop the cabview and in order they appear in the CVF file.
