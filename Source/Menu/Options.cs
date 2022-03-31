@@ -187,10 +187,10 @@ namespace ORTS
             numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
-            checkHotStart.Checked = Settings.HotStart;
+            checkBoilerPreheated.Checked = Settings.HotStart;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
-            checkDieselEngineStart.Checked = !Settings.NoDieselEngineStart; // Inverted as "EngineStart" is better UI than "NoEngineStart"
+            checkDieselEnginesStarted.Checked = !Settings.NoDieselEngineStart; // Inverted as "EngineStart" is better UI than "NoEngineStart"
 
             // Keyboard tab
             InitializeKeyboardSettings();
@@ -461,10 +461,10 @@ namespace ORTS
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
-            Settings.HotStart = checkHotStart.Checked;
+            Settings.HotStart = checkBoilerPreheated.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
-            Settings.NoDieselEngineStart = !checkDieselEngineStart.Checked; // Inverted as "EngineStart" is better UI than "NoEngineStart"
+            Settings.NoDieselEngineStart = !checkDieselEnginesStarted.Checked; // Inverted as "EngineStart" is better UI than "NoEngineStart"
 
             // Keyboard tab
             // These are edited live.

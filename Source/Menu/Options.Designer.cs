@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -96,12 +96,14 @@
             this.checkDynamicShadows = new System.Windows.Forms.CheckBox();
             this.checkWire = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
-            this.checkDieselEngineStart = new System.Windows.Forms.CheckBox();
+            this.checkElectricPowerConnected = new System.Windows.Forms.CheckBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.checkDieselEnginesStarted = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.checkUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
             this.checkDoorsAITrains = new System.Windows.Forms.CheckBox();
             this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
-            this.checkHotStart = new System.Windows.Forms.CheckBox();
+            this.checkBoilerPreheated = new System.Windows.Forms.CheckBox();
             this.checkSimpleControlsPhysics = new System.Windows.Forms.CheckBox();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
             this.labelAdhesionMovingAverageFilterSize = new System.Windows.Forms.Label();
@@ -190,8 +192,6 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.label4 = new System.Windows.Forms.Label();
-            this.checkConnectPower = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1122,11 +1122,11 @@
             // 
             // tabPageSimulation
             // 
-            this.tabPageSimulation.Controls.Add(this.checkConnectPower);
+            this.tabPageSimulation.Controls.Add(this.checkElectricPowerConnected);
             this.tabPageSimulation.Controls.Add(this.label4);
-            this.tabPageSimulation.Controls.Add(this.checkDieselEngineStart);
+            this.tabPageSimulation.Controls.Add(this.checkDieselEnginesStarted);
             this.tabPageSimulation.Controls.Add(this.groupBox1);
-            this.tabPageSimulation.Controls.Add(this.checkHotStart);
+            this.tabPageSimulation.Controls.Add(this.checkBoilerPreheated);
             this.tabPageSimulation.Controls.Add(this.checkSimpleControlsPhysics);
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
             this.tabPageSimulation.Controls.Add(this.labelAdhesionMovingAverageFilterSize);
@@ -1141,15 +1141,37 @@
             this.tabPageSimulation.Text = "Simulation";
             this.tabPageSimulation.UseVisualStyleBackColor = true;
             // 
-            // checkDieselEngineStart
+            // checkElectricPowerConnected
             // 
-            this.checkDieselEngineStart.AutoSize = true;
-            this.checkDieselEngineStart.Location = new System.Drawing.Point(26, 215);
-            this.checkDieselEngineStart.Name = "checkDieselEngineStart";
-            this.checkDieselEngineStart.Size = new System.Drawing.Size(119, 17);
-            this.checkDieselEngineStart.TabIndex = 9;
-            this.checkDieselEngineStart.Text = "Diesel - run engines";
-            this.checkDieselEngineStart.UseVisualStyleBackColor = true;
+            this.checkElectricPowerConnected.AutoSize = true;
+            this.checkElectricPowerConnected.Checked = true;
+            this.checkElectricPowerConnected.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkElectricPowerConnected.Enabled = false;
+            this.checkElectricPowerConnected.Location = new System.Drawing.Point(26, 238);
+            this.checkElectricPowerConnected.Name = "checkElectricPowerConnected";
+            this.checkElectricPowerConnected.Size = new System.Drawing.Size(153, 17);
+            this.checkElectricPowerConnected.TabIndex = 11;
+            this.checkElectricPowerConnected.Text = "Electric - power connected";
+            this.checkElectricPowerConnected.UseVisualStyleBackColor = true;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(6, 169);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(161, 13);
+            this.label4.TabIndex = 10;
+            this.label4.Text = "At game start, locomotives have:";
+            // 
+            // checkDieselEnginesStarted
+            // 
+            this.checkDieselEnginesStarted.AutoSize = true;
+            this.checkDieselEnginesStarted.Location = new System.Drawing.Point(26, 215);
+            this.checkDieselEnginesStarted.Name = "checkDieselEnginesStarted";
+            this.checkDieselEnginesStarted.Size = new System.Drawing.Size(142, 17);
+            this.checkDieselEnginesStarted.TabIndex = 9;
+            this.checkDieselEnginesStarted.Text = "Diesel - engine(s) started";
+            this.checkDieselEnginesStarted.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
@@ -1197,15 +1219,15 @@
             this.checkForcedRedAtStationStops.Text = "Forced red at station stops";
             this.checkForcedRedAtStationStops.UseVisualStyleBackColor = true;
             // 
-            // checkHotStart
+            // checkBoilerPreheated
             // 
-            this.checkHotStart.AutoSize = true;
-            this.checkHotStart.Location = new System.Drawing.Point(26, 192);
-            this.checkHotStart.Name = "checkHotStart";
-            this.checkHotStart.Size = new System.Drawing.Size(132, 17);
-            this.checkHotStart.TabIndex = 8;
-            this.checkHotStart.Text = "Steam - pre-heat boiler";
-            this.checkHotStart.UseVisualStyleBackColor = true;
+            this.checkBoilerPreheated.AutoSize = true;
+            this.checkBoilerPreheated.Location = new System.Drawing.Point(26, 192);
+            this.checkBoilerPreheated.Name = "checkBoilerPreheated";
+            this.checkBoilerPreheated.Size = new System.Drawing.Size(144, 17);
+            this.checkBoilerPreheated.TabIndex = 8;
+            this.checkBoilerPreheated.Text = "Steam - boiler pre-heated";
+            this.checkBoilerPreheated.UseVisualStyleBackColor = true;
             // 
             // checkSimpleControlsPhysics
             // 
@@ -1689,27 +1711,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -2346,28 +2368,6 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(6, 169);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(72, 13);
-            this.label4.TabIndex = 10;
-            this.label4.Text = "At game start,";
-            // 
-            // checkConnectPower
-            // 
-            this.checkConnectPower.AutoSize = true;
-            this.checkConnectPower.Checked = true;
-            this.checkConnectPower.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkConnectPower.Enabled = false;
-            this.checkConnectPower.Location = new System.Drawing.Point(26, 238);
-            this.checkConnectPower.Name = "checkConnectPower";
-            this.checkConnectPower.Size = new System.Drawing.Size(141, 17);
-            this.checkConnectPower.TabIndex = 11;
-            this.checkConnectPower.Text = "Electric - connect power";
-            this.checkConnectPower.UseVisualStyleBackColor = true;
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2529,7 +2529,7 @@
         private System.Windows.Forms.CheckBox checkDistantMountains;
         private System.Windows.Forms.CheckBox checkAlerterExternal;
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
-        private System.Windows.Forms.CheckBox checkHotStart;
+        private System.Windows.Forms.CheckBox checkBoilerPreheated;
         private System.Windows.Forms.CheckBox checkSimpleControlsPhysics;
         private System.Windows.Forms.CheckBox checkVerticalSync;
         private System.Windows.Forms.ComboBox comboPressureUnit;
@@ -2597,7 +2597,7 @@
         private System.Windows.Forms.NumericUpDown numericWebServerPort;
         private System.Windows.Forms.Label labelPortNumber;
         private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
-        private System.Windows.Forms.CheckBox checkDieselEngineStart;
+        private System.Windows.Forms.CheckBox checkDieselEnginesStarted;
         private System.Windows.Forms.PictureBox pbControlConfirmations;
         private System.Windows.Forms.PictureBox pbAlerter;
         private System.Windows.Forms.PictureBox pbRetainers;
@@ -2611,7 +2611,7 @@
         private System.Windows.Forms.TrackBar trackAntiAliasing;
         private System.Windows.Forms.Label labelAntiAliasingValue;
         private System.Windows.Forms.Label labelAntiAliasing;
-        private System.Windows.Forms.CheckBox checkConnectPower;
+        private System.Windows.Forms.CheckBox checkElectricPowerConnected;
         private System.Windows.Forms.Label label4;
     }
 }
