@@ -52,12 +52,9 @@ namespace Orts.Viewer3D.Processes
 
                 // We must create these forms on the main thread (Render) or they won't pump events correctly.
 
-                if (MPManager.IsMultiPlayer() || Game.Settings.ViewDispatcher)
-                {
-                    Program.DebugViewer = new DispatchViewer(Viewer.Simulator, Viewer);
-                    Program.DebugViewer.Hide();
-                    Viewer.DebugViewerEnabled = false;
-                }
+                Program.DebugViewer = new DispatchViewer(Viewer.Simulator, Viewer);
+                Program.DebugViewer.Hide();
+                Viewer.DebugViewerEnabled = false;
 
                 Program.SoundDebugForm = new SoundDebugForm(Viewer);
                 Program.SoundDebugForm.Hide();
