@@ -155,6 +155,8 @@ namespace Tests.Orts.Common
                     archive.CreateEntryFromFile(file2.FileName, $@"{dir1}\{dir2}\{file2Name}");
                 }
 
+                Vfs.AutoMount = true;
+
                 AssertWarnings.Expected();
                 Assert.True(Vfs.Initialize(directory, null));
 
@@ -182,37 +184,27 @@ namespace Tests.Orts.Common
             }
         }
 
+        readonly static Func<string, string, string> JsonEntry = (source, mountpoint) => $@"{{ ""vfsEntries"": [ {{ ""source"": ""{source}"", ""mountPoint"":  ""{mountpoint}"" }} ] }}";
+
         [Theory]
-        [InlineData(@"""C:\My Routes\USA85\""", "/MSTS/ROUTES/USA85/", "#comment")]
-        [InlineData(@"C:\TEMP\MSTS1.2.zip", "/MSTS/", "")]
-        [InlineData(@"C:\routes.zip\USA3\", "/msts/routes/usa3/", " \t # this is a \t comment")]
-        public static void ConfigFileParse(string path, string mountpoint, string comment)
+        [InlineData(@"C:\\My Routes\\USA85\\", "/MSTS/ROUTES/USA85/")]
+        [InlineData(@"C:\\TEMP\\MSTS1.2.zip", "/MSTS/")]
+        [InlineData(@"C:\\routes.zip\\USA3\\", "/msts/routes/usa3/")]
+        public static void ConfigFileParse(string source, string mountpoint)
         {
-            using (var file = new TestFile($"{path} {mountpoint} {comment}"))
+            using (var file = new TestFile(JsonEntry(source, mountpoint)))
             {
-                path = path.Replace(@"\", @"\\").Replace(@"""", "");
                 mountpoint = mountpoint.ToUpper();
-                AssertWarnings.Matching($"{path} => {mountpoint}", () => Assert.False(Vfs.Initialize(file.FileName, null)));
+                AssertWarnings.Matching($"{source} => {mountpoint}", () => Assert.False(Vfs.Initialize(file.FileName, null)));
             }
         }
 
         [Theory]
-        [InlineData(@"C:\My Routes\USA85\", "/MSTS/ROUTES/USA85/", "# source path with spaces must be quoted")]
-        [InlineData(@"C:\\double.zip\\USA3\\", "//msts//routes//usa2//", " double slashes")]
-        public static void ConfigFileParseReject1(string path, string mountpoint, string comment)
+        [InlineData(@"C:\\TEMP\\MSTS1.2.zip", "/MSTS/ROUTES")] // The mount point must end with a slash
+        [InlineData(@"A", "/MSTS/ROUTES")] // The mount point must end with a slash
+        public static void ConfigFileParseReject(string source, string mountpoint)
         {
-            using (var file = new TestFile($"{path} {mountpoint} {comment}"))
-            {
-                AssertWarnings.Matching($"Cannot parse", () => Assert.False(Vfs.Initialize(file.FileName, null)));
-            }
-        }
-
-        [Theory]
-        [InlineData(@"C:\TEMP\MSTS1.2.zip", "/MSTS/ROUTES", "# mount point must end with slash")]
-        [InlineData(@"A", "/MSTS/ROUTES", "# mount point must end with slash")]
-        public static void ConfigFileParseReject2(string path, string mountpoint, string comment)
-        {
-            using (var file = new TestFile($"{path} {mountpoint} {comment}"))
+            using (var file = new TestFile(JsonEntry(source, mountpoint)))
             {
                 AssertWarnings.Matching($"slash", () => Assert.False(Vfs.Initialize(file.FileName, null)));
             }

@@ -26,11 +26,12 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.IO.Compression;
+using System.ComponentModel;
 
 namespace ORTS.Common
 {
     /// <summary>
-    /// Virtual File System. Can be <see cref="Initialize(string)"/>'d from a config file with lines e.g. C:\dir\archive.zip\subdir\ /MSTS/mountpoint/,
+    /// Virtual File System. Can be <see cref="Initialize(string)"/>'d from a json config file
     /// or from a directory. Found subsequent archives are auto-mounted to their respective locations.
     /// <br><see cref="Path.Combine"/> like functions continue to work on virtual paths, as well as both the "\" and "/" separators.
     /// But <see cref="Path.GetFullPath"/> must never be used on them, because that adds an unwanted drive letter.</br>
@@ -47,27 +48,44 @@ namespace ORTS.Common
 
         ///////////////////////////////////////////////////////////////////////////////////////
         ///
-        /// The configuration file consits of lines of format:
-        /// Drive:\SystemPath\ /MountPoint/
-        ///
-        /// SystemPath - may use "/" or "\", but MountPoint may use "/" only as a directory separator.
-        ///            - with spaces in it must be quoted, e.g. "C:\My Routes\USA85\" /MSTS/ROUTES/USA85/
-        ///            - referring to a directory must end with "/" or "\" to assure that only _below_ dirs and files will be visible _below_ the mount point.
-        ///            - referring to an archive must not end with "/" or "\", e.g. C:\TEMP\MSTS1.2.zip /MSTS/
-        ///            - may refer to an archive subdirectory, e.g.: C:\routes.zip\USA3\ /MSTS/ROUTES/USA3/
-        ///            - may _not_ refer to a single non-archive file, neither a non-archive file within an archive.
+        /// The configuration file is in the following format:
+        /// 
+        /// {
+        ///     "vfsEntries": [
+        ///         {
+        ///             "source": "C:\\MSTS_Packages\\MSTS_1.1.zip\\Train Simulator\\",
+        ///             "mountPoint": "/MSTS/"
+        ///         },
+        ///         {
+        ///             "source": "C:/MSTS_Packages/DemoModel1.zip/Demo Model 1/",
+        ///             "mountPoint": "/MSTS/"
+        ///         },
+        ///         {
+        ///             "source": "C:/My Routes/USA85/",
+        ///             "mountPoint": "/MSTS/ROUTES/USA85/"
+        ///         }
+        ///     ]
+        /// }
+        /// 
+        /// Source     - may use "/" or "\", but MountPoint may use "/" only as a directory separator.
+        ///            - if using backshash as a separator, it must be doubled, e.g. "C:\\My Routes\\USA85\\"
+        ///            - directory must end with "/" or "\".
+        ///            - archive must not end with "/" or "\", e.g. "C:\\TEMP\\MSTS1.2.zip"
+        ///            - may refer to an archive subdirectory, e.g.: "C:/routes.zip/USA3/"
+        ///            - may _not_ refer to a single non-archive file, neither to a non-archive file within an archive.
         ///            - is case-insensitive.
-        /// MountPoint - must end with "/" to avoid confusion and to assure that mounting will be done _below_ the given path.
-        ///            - may not contain spaces, may not be quoted.
+        /// MountPoint - must end with "/" to avoid the confusion.
         ///            - is case-insensitive, will be converted to all-uppercase internally.
         ///
-        /// Found subsequent archives are auto-mounted to their respective VFS locations, but nested archives are unsupported.
+        /// If enabled, subsequent archives are auto-mounted to their respective VFS locations, but nested archives are unsupported.
         ///
+        /// For programmers:
+        /// 
         /// System.IO.Path.*() functions can be used on virtual paths, but make sure that
         /// NormalizeVirtualPath() is used on them _afterwards_ in the processing pipeline somewhere,
         /// so the rest of the code doesn't need to normalize before calling the public functions in this class.
-        /// The exception is the Path.GetFullPath(), because that adds an unwanted drive letter,
-        /// so must never be used on virtual paths.
+        /// The exception function that must never be used on virtual paths is the Path.GetFullPath(),
+        /// because it adds an unwanted drive letter to the beginning of the resulted path.
         ///
         ///////////////////////////////////////////////////////////////////////////////////////
         ///
@@ -112,13 +130,15 @@ namespace ORTS.Common
             Debug.Assert(VfsRoot != null, "VFS is uninitialized");
             if (File.Exists(initPath))
             {
-                var success = true;
-                foreach (var line in File.ReadAllLines(initPath))
-                    success &= Attach(line);
+                var success = false;
+                var entries = Newtonsoft.Json.JsonConvert.DeserializeObject<VfsTableFile>(File.ReadAllText(initPath))?.VfsEntries;
+                if (entries != null)
+                    foreach (var entry in entries)
+                        success &= Attach(entry.Source, entry.MountPoint);
                 return success;
             }
-            else if (Directory.Exists(initPath))
-                return Attach($"\"{initPath}/\" {basePath}");
+            if (Directory.Exists(initPath))
+                return Attach(initPath + "/", basePath);
             var message = $"VFS: Could not attach {initPath}, aborting.";
             Trace.TraceError(message);
             InitLog.Enqueue(message);
@@ -282,23 +302,9 @@ namespace ORTS.Common
         /// 
         ///////////////////////////////////////////////////////////////////////////////////////
 
-        static bool Attach(string line)
+        static bool Attach(string source, string mountpoint)
         {
-            Match match;
             string message;
-            if (string.IsNullOrWhiteSpace(line))
-                return true; // Blank lines are accepted silently.
-            if (line.Trim().StartsWith("#")) // commented out line
-                return true; // Comment lines are accepted silently.
-            if (!(match = Regex.Match(line, @"^("".+""|\S+) +(/MSTS|/OR)([\S/]+)+(\s+#.*)?", RegexOptions.IgnoreCase)).Success)
-            {
-                message = $"VFS mount: Cannot parse configuration line, skipping: {line}";
-                Trace.TraceWarning(message);
-                InitLog.Enqueue(message);
-                return false;
-            }
-            var source = match.Groups[1].Value.Trim('"');
-            var mountpoint = match.Groups[2].Value + match.Groups[3].Value;
 
             // Mountpoint validation:
             if (!mountpoint.EndsWith("/"))
@@ -582,6 +588,19 @@ namespace ORTS.Common
             }
             return names;
         }
+    }
+
+    public class VfsTableFile
+    {
+        public VfsTableEntry[] VfsEntries { get; set; }
+    }
+
+    public class VfsTableEntry
+    {
+        [DefaultValue("")]
+        public string Source { get; set; }
+        [DefaultValue("")]
+        public string MountPoint { get; set; }
     }
 
     internal class VfsNode

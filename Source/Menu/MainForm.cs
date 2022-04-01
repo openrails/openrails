@@ -362,7 +362,18 @@ namespace ORTS
         {
             Vfs.LogLevel = Settings.VfsLogLevel;
             Vfs.AutoMount = Settings.VfsAutoMount;
-            Vfs.Initialize(SelectedFolder.Path, System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath));
+            try
+            {
+                Vfs.Initialize(SelectedFolder.Path, System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath));
+            }
+            catch (Exception ex)
+            {
+                // If the init JSON deserialization fails, need to display some debug information to the user.
+                ClearDetails();
+                ShowDetail("VFS: Failed to initialize", ex.Message.Split('\n'));
+                FlowDetails();
+                return;
+            }
             LoadRouteList();
             LoadLocomotiveList();
             ShowDetails();
