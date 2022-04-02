@@ -2594,7 +2594,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 //Limit the inertia to 40000 kgm2
                 LocomotiveAxle.InertiaKgm2 = Math.Min(AxleInertiaKgm2, 40000);
 
-                LocomotiveAxle.AxleRevolutionsInt.MinStep = LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f;
+                //LocomotiveAxle.AxleRevolutionsInt.MinStep = LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f;
                 LocomotiveAxle.AxleDiameterM = 2*DriverWheelRadiusM;
 
                 //Set axle model parameters
@@ -2603,12 +2603,16 @@ public List<CabView> CabViewList = new List<CabView>();
                 LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
-                LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle model
-                LocomotiveAxle.Update(elapsedClockSeconds);             //Main updater of the axle model
-
-                // Output
-                MotiveForceN = LocomotiveAxle.CompensatedAxleForceN; //Get the Axle force and use it for the motion (use compensated value as it is independent of brake force)
-
+                LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
+                // The axle calculations must have a lower update interval to be accurate and stable
+                int integrationSteps = (int)Math.Max(elapsedClockSeconds / (LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f), 1);
+                float avgAxleOutForceN=0;
+                for (int i=0; i< integrationSteps; i++)
+                {
+                    LocomotiveAxle.Update(elapsedClockSeconds/ integrationSteps); //Main updater of the axle model
+                    avgAxleOutForceN += LocomotiveAxle.CompensatedAxleForceN; //Get the Axle force and use it for the motion (use compensated value as it is independent of brake force)
+                }
+                MotiveForceN = avgAxleOutForceN / integrationSteps;
                 if (elapsedClockSeconds > 0)
                 {
                     WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator

@@ -15,10 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ORTS.Common;
 using System;
 using System.IO;
-using System.Diagnostics;
+using ORTS.Common;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -377,7 +376,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         /// <summary>
         /// Read only wheelslip threshold value used to indicate maximal effective slip
-        /// - its value si computed as a maximum of slip function:
+        /// - its value is computed as a maximum of slip function:
         ///                 2*K*umax^2 * dV
         ///   f(dV) = u = ---------------------
         ///                umax^2*dV^2 + K^2
@@ -389,13 +388,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 if (AdhesionK == 0.0f)
                     AdhesionK = 1.0f;
-                float A = 2.0f * AdhesionK * AdhesionConditions * AdhesionConditions;
-                float B = AdhesionConditions * AdhesionConditions;
-                float C = AdhesionK * AdhesionK;
-                float a = -2.0f * A * B;
-                float b = A * B;
-                float c = A * C;
-                return ((-b - (float)Math.Sqrt(b * b - 4.0f * a * c)) / (2.0f * a));
+                float umax = (CurtiusKnifflerA / (MpS.ToKpH(TrainSpeedMpS) + CurtiusKnifflerB) + CurtiusKnifflerC); // Curtius - Kniffler equation
+                umax *= AdhesionConditions;
+                return MpS.FromKpH(AdhesionK / umax);
             }
         }
 
@@ -409,22 +404,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                if (SlipSpeedMpS > 0.0f)
-                {
-                    if ((SlipSpeedPercent > (SlipWarningTresholdPercent)))
-                        return true;
-                    else
-                        return false;
-                }
-                if (SlipSpeedMpS < 0.0f)
-                {
-                    if ((SlipSpeedPercent < ( -SlipWarningTresholdPercent)))
-                        return true;
-                    else
-                        return false;
-                }
-                else
-                    return false;
+                return Math.Abs(SlipSpeedPercent) > SlipWarningTresholdPercent;
             }
         }
 
@@ -436,14 +416,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                if (AxleForceN == 0 && BrakeRetardForceN == 0)
-                {
-                    return 0.0f; // Assume slip will not occur if no braking force or motive force are applied to the axle - To be confirmed???
-                }
-                else
-                {
-                    return (axleSpeedMpS - TrainSpeedMpS);
-                }
+                return (axleSpeedMpS - TrainSpeedMpS);
             }
         }
 
@@ -652,12 +625,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             float prevSpeedMpS = axleSpeedMpS;
             if (totalAxleForceN != 0)
             {
-                axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
-                       totalAxleForceN * axleDiameterM * axleDiameterM / 4
-                       / totalInertiaKgm2
-                   );
+                axleSpeedMpS += timeSpan *
+                    totalAxleForceN * axleDiameterM * axleDiameterM / 4
+                    / totalInertiaKgm2;
             }
-            if ((prevSpeedMpS > 0 && axleSpeedMpS < 0 && motiveAxleForceN > -frictionalForceN) || (prevSpeedMpS < 0 && axleSpeedMpS > 0 && motiveAxleForceN < frictionalForceN))
+            if ((prevSpeedMpS > 0 && axleSpeedMpS <= 0 /*&& motiveAxleForceN > -frictionalForceN*/) || (prevSpeedMpS < 0 && axleSpeedMpS >= 0/* && motiveAxleForceN < frictionalForceN*/))
             {
                 Reset();
                 axleSpeedMpS = 0;
@@ -683,18 +655,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 previousSlipPercent = SlipSpeedPercent;
             }
             //Stability Correction
-            if (StabilityCorrection)
+            /*if (StabilityCorrection)
             {
                 if (slipDerivationPercentpS > 300.0f)
                     adhesionK += 0.0001f * slipDerivationPercentpS;
                 else
-                    adhesionK = (adhesionK <= 0.7f) ? 0.7f : (adhesionK - 0.005f);
-            }
+                    adhesionK = Math.Max(adhesionK_orig, adhesionK - 0.005f);
+            }*/
 
             // Set output MotiveForce to actual value exclusive of brake force.
             CompensatedAxleForceN = CompensatedFilterMovingAverage.Update(compensateAxleForceN);
 
-            axleForceN = FilterMovingAverage.Update(axleForceN);
+            //axleForceN = FilterMovingAverage.Update(axleForceN);
         }
 
         /// <summary>
