@@ -130,7 +130,7 @@ namespace ORTS.Common
             Debug.Assert(VfsRoot != null, "VFS is uninitialized");
             if (File.Exists(initPath))
             {
-                var success = false;
+                var success = true;
                 var entries = Newtonsoft.Json.JsonConvert.DeserializeObject<VfsTableFile>(File.ReadAllText(initPath))?.VfsEntries;
                 if (entries != null)
                     foreach (var entry in entries)
@@ -605,7 +605,7 @@ namespace ORTS.Common
 
     internal class VfsNode
     {
-        readonly Dictionary<string, VfsNode> Children = new Dictionary<string, VfsNode>();
+        readonly ConcurrentDictionary<string, VfsNode> Children = new ConcurrentDictionary<string, VfsNode>();
         readonly VfsNode Parent;
 
         /// <summary>
@@ -643,7 +643,7 @@ namespace ORTS.Common
         public VfsNode CreateFile(string name, string absolutePath, string subPath, bool isDirectory)
         {
             if (!Children.TryGetValue(name, out var child))
-                Children.Add(name, child = new VfsNode(this, name, absolutePath, subPath, isDirectory));
+                Children.TryAdd(name, child = new VfsNode(this, name, absolutePath, subPath, isDirectory));
             else if (!child.IsDirectory)
             {
                 // A directory overrides a file, but a file cannot override a directory.
@@ -684,12 +684,7 @@ namespace ORTS.Common
         }
 
         public bool DeleteNode() => Parent.DeleteChild(Name);
-        public bool DeleteChild(string name)
-        {
-            var success = Children.ContainsKey(name);
-            if (success) Children.Remove(name);
-            return success;
-        }
+        public bool DeleteChild(string name) => Children.TryRemove(name, out _);
 
         public VfsNode GetNode(string path)
         {
