@@ -163,6 +163,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlBrakeHoseConnect, new Action[] { Noop, () => new BrakeHoseConnectCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlBrakeHoseDisconnect, new Action[] { Noop, () => new BrakeHoseConnectCommand(Viewer.Log, false) });
             UserInputCommands.Add(UserCommand.ControlEmergencyPushButton, new Action[] { Noop, () => new EmergencyPushButtonCommand(Viewer.Log, !Locomotive.EmergencyButtonPressed) });
+            UserInputCommands.Add(UserCommand.ControlEOTEmergencyBrake, new Action[] { Noop, () => new ToggleEOTEmergencyBrakeCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlSander, new Action[] { () => new SanderCommand(Viewer.Log, false), () => new SanderCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlSanderToggle, new Action[] { Noop, () => new SanderCommand(Viewer.Log, !Locomotive.Sander) });
             UserInputCommands.Add(UserCommand.ControlWiper, new Action[] { Noop, () => new WipersCommand(Viewer.Log, !Locomotive.Wiper) });
@@ -2118,6 +2119,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_ODOMETER_RESET:
                 case CABViewControlTypes.ORTS_GENERIC_ITEM1:
                 case CABViewControlTypes.ORTS_GENERIC_ITEM2:
+                case CABViewControlTypes.ORTS_EOT_EMERGENCY_BRAKE:
                     index = (int)data;
                     break;
                 case CABViewControlTypes.ORTS_SCREEN_SELECT:
@@ -2128,10 +2130,17 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_DP_BRAKE:
                 case CABViewControlTypes.ORTS_DP_MORE:
                 case CABViewControlTypes.ORTS_DP_LESS:
+                case CABViewControlTypes.ORTS_EOT_COMM_TEST:
+                case CABViewControlTypes.ORTS_EOT_DISARM:
+                case CABViewControlTypes.ORTS_EOT_ARM_TWO_WAY:
                     index = ButtonState ? 1 : 0;
                     break;
                 case CABViewControlTypes.ORTS_STATIC_DISPLAY:
                     index = 0;
+                    break;
+                case CABViewControlTypes.ORTS_EOT_STATE_DISPLAY:
+                    index = ControlDiscrete.Values.FindIndex(ind => ind > (int)data) - 1;
+                    if (index == -2) index = ControlDiscrete.Values.Count - 1;
                     break;
 
                 // Train Control System controls
@@ -2492,6 +2501,34 @@ namespace Orts.Viewer3D.RollingStock
                     if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
                         new DPLessCommand(Viewer.Log);
                     ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_EOT_COMM_TEST:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new EOTCommTestCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_EOT_DISARM:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new EOTDisarmCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_EOT_ARM_TWO_WAY:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new EOTArmTwoWayCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_EOT_EMERGENCY_BRAKE:
+                    var p = ChangedValue(0);
+                    if (ChangedValue(0) == 1)
+                    {
+                        if (Locomotive.Train?.EOT != null)
+                        {
+                            new ToggleEOTEmergencyBrakeCommand(Viewer.Log);
+                        }
+                    }
                     break;
             }
 

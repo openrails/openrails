@@ -35,6 +35,7 @@ using Orts.MultiPlayer;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Timetables;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -901,6 +902,11 @@ namespace Orts.Simulation.AIs
                 ;
                 if (wagon.IsEngine)
                     wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
+                else if (wagon.IsEOT)
+                {
+                    wagonFolder = Simulator.BasePath + @"\trains\orts_eot\" + wagon.Folder;
+                    wagonFilePath = wagonFolder + @"\" + wagon.Name + ".eot";
+                }
 
                 if (!File.Exists(wagonFilePath))
                 {
@@ -914,6 +920,14 @@ namespace Orts.Simulation.AIs
                     car.Flipped = wagon.Flip;
                     train.Length += car.CarLengthM;
                     car.UiD = wagon.UiD;
+                    if (car is EOT)
+                    {
+                        train.EOT = car as EOT;
+                        if (!isInitialPlayerTrain)
+                        {
+                            train.EOT.InitializeLevel();
+                        }
+                    }
 
                     if (isInitialPlayerTrain)
                     {

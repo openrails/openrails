@@ -128,6 +128,7 @@
     <Compile Include="Viewer3D\Popups\CarOperationsWindow.cs" />
     <Compile Include="Viewer3D\Popups\CompassWindow.cs" />
     <Compile Include="Viewer3D\Popups\ComposeMessage.cs" />
+    <Compile Include="Viewer3D\Popups\EOTListWindow.cs" />	
     <Compile Include="Viewer3D\Popups\LabelPrimitive.cs" />
     <Compile Include="Viewer3D\Popups\MultiPlayerWindow.cs" />
     <Compile Include="Viewer3D\Popups\NoticeWindow.cs" />
