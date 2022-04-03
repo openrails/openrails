@@ -2208,10 +2208,7 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            if (Receiver?.Train?.EOT != null)
-            {
-                Receiver.Train.EOT.ArmTwoWay();
-            }
+            Receiver?.Train?.EOT?.ArmTwoWay();
         }
     }
 
