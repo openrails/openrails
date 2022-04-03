@@ -2582,18 +2582,14 @@ public List<CabView> CabViewList = new List<CabView>();
                 //Compute axle inertia from parameters if possible
                 if (AxleInertiaKgm2 <= 0) // if no axleinertia value supplied in ENG file, calculate axleinertia value.
                 {
-                    if (WheelAxles.Count > 0 && DriverWheelRadiusM > 0)
-                    {
-                        float upperLimit = 2.0f * WheelAxles.Count * (15000.0f * DriverWheelRadiusM - 2900.0f);
-                        upperLimit = upperLimit < 100.0f ? 100.0f : upperLimit;
-
-                        float lowerLimit = WheelAxles.Count * (9000.0f * DriverWheelRadiusM - 1750.0f);
-                        lowerLimit = lowerLimit < 100.0f ? 100.0f : lowerLimit;
-
-                        AxleInertiaKgm2 = (upperLimit - lowerLimit) / (5000000.0f) * MaxPowerW + lowerLimit;
+                    if (LocoNumDrvAxles > 0 && DriverWheelRadiusM > 0)
+                {
+                        float radiusSquared = DriverWheelRadiusM * DriverWheelRadiusM;
+                        float wheelMass = 500 * radiusSquared / (0.5f * 0.5f);
+                        AxleInertiaKgm2 = LocoNumDrvAxles * wheelMass * radiusSquared + 500;
                     }
                     else
-                        AxleInertiaKgm2 = 32000.0f;
+                        AxleInertiaKgm2 = 2000.0f;
                 }
                 //Limit the inertia to 40000 kgm2
                 LocomotiveAxle.InertiaKgm2 = Math.Min(AxleInertiaKgm2, 40000);
