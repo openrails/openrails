@@ -252,6 +252,8 @@ namespace Orts.Simulation
         public event System.EventHandler<QueryCarViewerLoadedEventArgs> QueryCarViewerLoaded;
         public event System.EventHandler RequestTTDetachWindow;
 
+        public float TimetableLoadedFraction = 0.0f;    // Set by AI.PrerunAI(), Get by GameStateRunActivity.Update()
+
         public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
         {
             Catalog = new GettextResourceManager("Orts.Simulation");
