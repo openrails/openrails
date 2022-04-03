@@ -370,7 +370,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 if (AdhesionK == 0.0f)
                     AdhesionK = 1.0f;
-                float umax = (CurtiusKnifflerA / (MpS.ToKpH(TrainSpeedMpS) + CurtiusKnifflerB) + CurtiusKnifflerC); // Curtius - Kniffler equation
+                float umax = (CurtiusKnifflerA / (MpS.ToKpH(Math.Abs(TrainSpeedMpS)) + CurtiusKnifflerB) + CurtiusKnifflerC); // Curtius - Kniffler equation
                 umax *= AdhesionConditions;
                 return MpS.FromKpH(AdhesionK / umax);
             }
@@ -564,7 +564,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="timeSpan"></param>
         public virtual void Update(float timeSpan)
         {
-
             //Update axle force ( = k * loadTorqueNm)
             axleForceN = AxleWeightN * SlipCharacteristics(AxleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionConditions, Adhesion2);
 
