@@ -41,7 +41,6 @@ namespace ORTS.Common
     public static class Vfs
     {
         static VfsNode VfsRoot;
-        static readonly Stack<(string, VfsNode)> Stack = new Stack<(string, VfsNode)>();
         static readonly ConcurrentDictionary<string, object> OpenArchives = new ConcurrentDictionary<string, object>();
         static readonly List<string> SupportedArchiveExtensions = new List<string> { ".zip", ".rar" };
         internal static readonly ConcurrentQueue<string> InitLog = new ConcurrentQueue<string>();
@@ -50,27 +49,29 @@ namespace ORTS.Common
         ///
         /// The configuration file is in the following format:
         /// 
-        /// {
-        ///     "vfsEntries": [
-        ///         {
-        ///             "source": "C:\\MSTS_Packages\\MSTS_1.1.zip\\Train Simulator\\",
-        ///             "mountPoint": "/MSTS/"
-        ///         },
-        ///         {
-        ///             "source": "C:/MSTS_Packages/DemoModel1.zip/Demo Model 1/",
-        ///             "mountPoint": "/MSTS/"
-        ///         },
-        ///         {
-        ///             "source": "C:/My Routes/USA85/",
-        ///             "mountPoint": "/MSTS/ROUTES/USA85/"
-        ///         }
-        ///     ]
-        /// }
-        /// 
-        /// Source     - may use "/" or "\", but MountPoint may use "/" only as a directory separator.
+        /*
+{
+    "vfsEntries": [
+        {
+            "source": "C:\\MSTS_Packages\\MSTS_1.1.zip\\Train Simulator\\",
+            "mountPoint": "/MSTS/"
+        },
+        {
+            "source": "C:/MSTS_Packages/DemoModel1.zip/Demo Model 1/",
+            "mountPoint": "/MSTS/"
+        },
+        {
+            "source": "C:/My Routes/USA85/",
+            "mountPoint": "/MSTS/ROUTES/USA85/"
+        }
+    ]
+}
+        */
+        ///
+        /// Source     - may use "/" or "\\", but MountPoint may use "/" only as a directory separator. Recommendation: use forward slashes "/" everywhere for the sake of simplicity.
         ///            - if using backshash as a separator, it must be doubled, e.g. "C:\\My Routes\\USA85\\"
-        ///            - directory must end with "/" or "\".
-        ///            - archive must not end with "/" or "\", e.g. "C:\\TEMP\\MSTS1.2.zip"
+        ///            - directory must end with "/" or "\\".
+        ///            - archive must not end with "/" or "\\", e.g. "C:\\TEMP\\MSTS1.2.zip"
         ///            - may refer to an archive subdirectory, e.g.: "C:/routes.zip/USA3/"
         ///            - may _not_ refer to a single non-archive file, neither to a non-archive file within an archive.
         ///            - is case-insensitive.
@@ -268,14 +269,14 @@ namespace ORTS.Common
         public static void DebugDump()
         {
             Trace.TraceInformation($"VFS: Start of hierarchy dump");
-            Stack.Clear();
-            Stack.Push(("/", VfsRoot));
-            while (Stack.Count > 0)
+            var stack = new Stack<(string, VfsNode)>();
+            stack.Push(("/", VfsRoot));
+            while (stack.Count > 0)
             {
-                var (dirpath, vfsNode) = Stack.Pop();
+                var (dirpath, vfsNode) = stack.Pop();
                 Trace.TraceInformation($"VFS: {dirpath}" + (vfsNode.IsDirectoryWritable() ? $" <= {vfsNode.AbsolutePath}" : ""));
                 foreach (var subdir in vfsNode.GetEntries(SearchOption.TopDirectoryOnly, false))
-                    Stack.Push((subdir, vfsNode.ChangeDirectory(NormalizeVirtualPath(Path.GetFileName(subdir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))), false)));
+                    stack.Push((subdir, vfsNode.ChangeDirectory(NormalizeVirtualPath(Path.GetFileName(subdir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))), false)));
                 foreach (var file in vfsNode.GetEntries(SearchOption.TopDirectoryOnly, true))
                 {
                     var node = vfsNode.GetNode(Path.GetFileName(file));
@@ -397,32 +398,38 @@ namespace ORTS.Common
             var mountNode = VfsRoot.ChangeDirectory(mountpoint, true);
             mountNode.SetDirectoryWritable(directory);
 
-            Stack.Clear();
-            Stack.Push((directory, mountNode));
-            while (Stack.Count > 0)
+            var files = Directory.GetFiles(directory, "*", SearchOption.AllDirectories);
+            foreach (var file in files)
             {
-                var (dirpath, vfsNode) = Stack.Pop();
-                foreach (var subdir in Directory.GetDirectories(dirpath))
+                var relativePath = file.Substring(directory.Length);
+                var vfsNode = mountNode.ChangeDirectory(NormalizeVirtualPath(Path.GetDirectoryName(relativePath)), true);
+                if (!vfsNode.IsDirectoryWritable())
+                    vfsNode.SetDirectoryWritable(Path.GetDirectoryName(file));
+
+                if (IsArchiveSupported(file))
                 {
-                    var name = NormalizeVirtualPath(Path.GetFileName(subdir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)));
-                    Stack.Push((subdir, vfsNode.CreateDirectory(name, subdir)));
-                }
-                foreach (var file in Directory.GetFiles(dirpath))
-                {
-                    if (IsArchiveSupported(file))
+                    if (!AutoMount)
                     {
-                        if (!AutoMount)
-                        {
-                            message = $"VFS skipped auto-mounting archive by user settings: {file}";
-                            Trace.TraceInformation(message);
-                            InitLog.Enqueue(message);
-                        }
-                        else
-                            MountArchive(file, null, vfsNode.GetVfsPath());
+                        message = $"VFS skipped auto-mounting archive by user settings: {file}";
+                        Trace.TraceInformation(message);
+                        InitLog.Enqueue(message);
                     }
                     else
-                        vfsNode.CreateFile(NormalizeVirtualPath(Path.GetFileName(file)), file);
+                        MountArchive(file, null, vfsNode.GetVfsPath());
                 }
+                else
+                    vfsNode.CreateFile(NormalizeVirtualPath(Path.GetFileName(relativePath)), file);
+            }
+
+            // This is for enumerating the remaining empty directories only.
+            // May be necessary only for the *.or-binpat like writes, otherwise it could be omitted.
+            var dirs = Directory.GetDirectories(directory, "*", SearchOption.AllDirectories);
+            foreach (var dir in dirs)
+            {
+                var relativePath = dir.Substring(directory.Length);
+                var vfsNode = mountNode.ChangeDirectory(NormalizeVirtualPath(relativePath), true);
+                if (!vfsNode.IsDirectoryWritable())
+                    vfsNode.SetDirectoryWritable(dir);
             }
         }
 
