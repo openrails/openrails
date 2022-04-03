@@ -298,6 +298,21 @@ namespace ORTS.Common
             }
             OpenArchives.Clear();
         }
+
+        /// <summary>
+        /// Don't use this function, only for reading from a file by a native windows dll, that cannot use streams,
+        /// e.g. the .ini reading method called from the ScriptedTrainControlSystem.LoadParameter method.
+        /// This funciton will be removed after the migration to NET 6.
+        /// </summary>
+        public static string GetSystemPathForNativeWindowsMethodsIfRealFile_DontUse(string vfsPath)
+        {
+            switch (PrepareForRead(vfsPath))
+            {
+                case ZipArchiveEntry _: return null;
+                case string path: return path;
+                default: throw new FileNotFoundException($"VFS reading failed: {vfsPath}");
+            }
+        }
         ///
         /// End of interfaces.
         /// 
