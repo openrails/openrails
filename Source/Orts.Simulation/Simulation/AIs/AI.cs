@@ -834,8 +834,6 @@ namespace Orts.Simulation.AIs
                 StartList.InsertTrain(train);
                 Simulator.StartReference.Add(train.Number);
             }
-//            if (train.Cars[0] is MSTSLocomotive && (train.Cars[0] as MSTSLocomotive).EOTEnabled != MSTSLocomotive.EOTenabled.no)
-//                    train.EOT = new EOT((train.Cars[0] as MSTSLocomotive).EOTEnabled, true, train);
             return train;
         }
 

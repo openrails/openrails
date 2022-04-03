@@ -916,10 +916,6 @@ namespace Orts.Simulation.Physics
             InitialSpeed = inf.ReadSingle();
             IsPathless = inf.ReadBoolean();
 
- /*           var hasEOT = inf.ReadInt32();
-            if (hasEOT == 1)
-                EOT = new EOT(inf, this);*/
-
             if (TrainType != TRAINTYPE.REMOTE)
             {
                 // restore leadlocomotive
