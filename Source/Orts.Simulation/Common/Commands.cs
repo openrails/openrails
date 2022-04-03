@@ -2242,10 +2242,7 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            if (Receiver?.Train?.EOT != null)
-            {
-                Receiver.Train.EOT.EmergencyBrake(!Receiver.Train.EOT.EOTEmergencyBrakingOn);
-            }
+            Receiver.Train.EOT?.EmergencyBrake(!Receiver.Train.EOT.EOTEmergencyBrakingOn);
         }
     }
 

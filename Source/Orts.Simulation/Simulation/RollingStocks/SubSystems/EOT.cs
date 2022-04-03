@@ -91,25 +91,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             DelayTimer = new Timer(this);
         }
 
-/*        public EOT(MSTSLocomotive.EOTenabled eotEnabled, bool armed, Train train)
-        {
-            Train = train;
-            EOTState = EOTstate.Disarmed;
-            EOTType = eotEnabled;
-            ID = IDRandom.Next(0, 99999);
-            if (armed)
-                EOTState = EOTstate.Armed;
-            DelayTimer = new Timer(this);
-        }*/
-
- /*       public EOT(BinaryReader inf, Train train)
-        {
-            Train = train;
-            ID = inf.ReadInt32();
-            EOTState = (EOTstate)(inf.ReadInt32());
-            DelayTimer = new Timer(this);
-        }*/
-
         public override void Initialize()
         {
             base.Initialize();
