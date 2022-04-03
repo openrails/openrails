@@ -454,8 +454,6 @@ public List<CabView> CabViewList = new List<CabView>();
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
             LocomotiveAxle.DampingNs = MassKG / 1000.0f;
             LocomotiveAxle.FrictionN = MassKG / 100.0f;
-            LocomotiveAxle.StabilityCorrection = true;
-            LocomotiveAxle.FilterMovingAverage.Size = Simulator.Settings.AdhesionMovingAverageFilterSize;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1f), 0.001f);
 
@@ -1285,7 +1283,6 @@ public List<CabView> CabViewList = new List<CabView>();
 
             LocomotiveAxle = new Axle(inf);
             MoveParamsToAxle();
-            LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             LocomotiveAxle.Reset(Simulator.GameTime, axleSpeedMpS);
         }
 
@@ -1648,7 +1645,6 @@ public List<CabView> CabViewList = new List<CabView>();
             AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
             float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
             if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
-            LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             LocomotivePowerSupply?.InitializeMoving();
             if (Train.IsActualPlayerTrain)
             {
@@ -2601,9 +2597,10 @@ public List<CabView> CabViewList = new List<CabView>();
                 LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 // The axle calculations must have a lower update interval to be accurate and stable
-                int integrationSteps = (int)Math.Max(elapsedClockSeconds / (LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f), 1);
+                int integrationSteps = (int)Math.Max(elapsedClockSeconds / (LocomotiveAxle.InertiaKgm2 / MaxForceN / 5), 1);
+                LocomotiveAxle.NumOfSubstepsPS = integrationSteps;
                 float avgAxleOutForceN=0;
-                for (int i=0; i< integrationSteps; i++)
+                for (int i=0; i < integrationSteps; i++)
                 {
                     LocomotiveAxle.Update(elapsedClockSeconds/ integrationSteps); //Main updater of the axle model
                     avgAxleOutForceN += LocomotiveAxle.CompensatedAxleForceN; //Get the Axle force and use it for the motion (use compensated value as it is independent of brake force)

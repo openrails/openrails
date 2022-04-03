@@ -6282,7 +6282,6 @@ namespace Orts.Simulation.AIs
                     var loco = car as MSTSLocomotive;
                     loco.LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS);
                     loco.LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
-                    loco.LocomotiveAxle.FilterMovingAverage.Initialize(loco.AverageForceN);
                     loco.AntiSlip = false; // <CSComment> TODO Temporary patch until AntiSlip is re-implemented
                 }
                 if (car == Simulator.PlayerLocomotive) { leadLocomotiveIndex = j; }
