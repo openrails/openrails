@@ -53,13 +53,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     /// </summary>
     public class Axle
     {
-        /// <summary>
-        /// Integrator used for axle dynamic solving
-        /// </summary>
-        public Integrator AxleRevolutionsInt = new Integrator(0.0f, IntegratorMethods.RungeKutta4);
-
-        public MovingAverage FilterMovingAverage = new MovingAverage(10);
-        public MovingAverage CompensatedFilterMovingAverage = new MovingAverage(10);
+        public int NumOfSubstepsPS { get; set; }
 
         /// <summary>
         /// Brake force covered by BrakeForceN interface
@@ -75,11 +69,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         /// <summary>
-        /// Total force to store sum of all functions
-        /// </summary>
-        protected float totalForceN;
-
-        /// <summary>
         /// Damping force covered by DampingForceN interface
         /// </summary>
         protected float dampingNs;
@@ -91,13 +80,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         protected float frictionN;
 
         public float FrictionN { set { frictionN = Math.Abs(value); } get { return frictionN; } }
-
-        /// <summary>
-        /// Read/Write flag to enable/disable stability correction.
-        /// If enabled, AdhesionK is increased by 0.05 each time the slipSpeedDerivationPercent reaches 1000%/s
-        /// This causes the slip characteristics to be more flat what reduces oscilations.
-        /// </summary>
-        public bool StabilityCorrection { set; get; }
 
         /// <summary>
         /// Axle drive type covered by DriveType interface
@@ -388,7 +370,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 if (AdhesionK == 0.0f)
                     AdhesionK = 1.0f;
-                float umax = (CurtiusKnifflerA / (MpS.ToKpH(TrainSpeedMpS) + CurtiusKnifflerB) + CurtiusKnifflerC); // Curtius - Kniffler equation
+                float umax = (CurtiusKnifflerA / (MpS.ToKpH(Math.Abs(TrainSpeedMpS)) + CurtiusKnifflerB) + CurtiusKnifflerC); // Curtius - Kniffler equation
                 umax *= AdhesionConditions;
                 return MpS.FromKpH(AdhesionK / umax);
             }
@@ -492,7 +474,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             transmissionEfficiency = 0.99f;
             SlipWarningTresholdPercent = 70.0f;
             driveType = AxleDriveType.ForceDriven;
-            AxleRevolutionsInt.IsLimited = true;
             Adhesion2 = 0.331455f;
 
             switch (driveType)
@@ -500,13 +481,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 case AxleDriveType.NotDriven:
                     break;
                 case AxleDriveType.MotorDriven:
-                    AxleRevolutionsInt.Max = 5000.0f;
-                    AxleRevolutionsInt.Min = -5000.0f;
                     totalInertiaKgm2 = inertiaKgm2 + transmissionRatio * transmissionRatio * motor.InertiaKgm2;
                     break;
                 case AxleDriveType.ForceDriven:
-                    AxleRevolutionsInt.Max = 1000.0f;
-                    AxleRevolutionsInt.Min = -1000.0f;
                     totalInertiaKgm2 = inertiaKgm2;
                     break;
                 default:
@@ -529,7 +506,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             motor.AxleConnected = this;
             transmissionEfficiency = 0.99f;
             driveType = AxleDriveType.MotorDriven;
-            AxleRevolutionsInt.IsLimited = true;
             Adhesion2 = 0.331455f;
 
             switch (driveType)
@@ -538,13 +514,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     totalInertiaKgm2 = inertiaKgm2;
                     break;
                 case AxleDriveType.MotorDriven:
-                    AxleRevolutionsInt.Max = 5000.0f;
-                    AxleRevolutionsInt.Min = -5000.0f;
                     totalInertiaKgm2 = inertiaKgm2 + transmissionRatio * transmissionRatio * motor.InertiaKgm2;
                     break;
                 case AxleDriveType.ForceDriven:
-                    AxleRevolutionsInt.Max = 100.0f;
-                    AxleRevolutionsInt.Min = -100.0f;
                     totalInertiaKgm2 = inertiaKgm2;
                     break;
                 default:
@@ -592,15 +564,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="timeSpan"></param>
         public virtual void Update(float timeSpan)
         {
-
             //Update axle force ( = k * loadTorqueNm)
             axleForceN = AxleWeightN * SlipCharacteristics(AxleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionConditions, Adhesion2);
-
-            // The Axle module subtracts brake force from the motive force for calculation purposes. However brake force is already taken into account in the braking module.
-            // And thus there is a duplication of the braking effect in OR. To compensate for this, after the slip characteristics have been calculated, the output of the axle module
-            // has the brake force "added" back in to give the appropriate motive force output for the locomotive. Braking force is handled separately.
-            // Hence CompensatedAxleForce is the actual output force on the axle. 
-            var compensateAxleForceN = axleForceN;
 
             float motiveAxleForceN = -axleForceN;
             if (driveType == AxleDriveType.ForceDriven)
@@ -629,17 +594,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     totalAxleForceN * axleDiameterM * axleDiameterM / 4
                     / totalInertiaKgm2;
             }
-            if ((prevSpeedMpS > 0 && axleSpeedMpS <= 0 /*&& motiveAxleForceN > -frictionalForceN*/) || (prevSpeedMpS < 0 && axleSpeedMpS >= 0/* && motiveAxleForceN < frictionalForceN*/))
+            if ((prevSpeedMpS > 0 && axleSpeedMpS <= 0 && motiveAxleForceN > -frictionalForceN) || (prevSpeedMpS < 0 && axleSpeedMpS >= 0 && motiveAxleForceN < frictionalForceN))
             {
                 Reset();
-                axleSpeedMpS = 0;
             }
             // TODO: We should calculate brake force here
             // Adding and substracting the brake force is correct for normal operation,
-            // but during wheelslip this will produce wrong results
-            if (axleSpeedMpS > 0) compensateAxleForceN = axleForceN + brakeRetardForceN;
-            else if (axleSpeedMpS < 0) compensateAxleForceN = axleForceN - brakeRetardForceN;
-            else compensateAxleForceN = 0;
+            // but during wheelslip this will produce wrong results.
+            // The Axle module subtracts brake force from the motive force for calculation purposes. However brake force is already taken into account in the braking module.
+            // And thus there is a duplication of the braking effect in OR. To compensate for this, after the slip characteristics have been calculated, the output of the axle module
+            // has the brake force "added" back in to give the appropriate motive force output for the locomotive. Braking force is handled separately.
+            // Hence CompensatedAxleForce is the actual output force on the axle. 
+            if (axleSpeedMpS > 0) CompensatedAxleForceN = axleForceN + brakeRetardForceN;
+            else if (axleSpeedMpS < 0) CompensatedAxleForceN = axleForceN - brakeRetardForceN;
+            else CompensatedAxleForceN = 0;
 
             if (driveType == AxleDriveType.MotorDriven)
             {
@@ -654,19 +622,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 slipDerivationPercentpS = (SlipSpeedPercent - previousSlipPercent) / timeSpan;
                 previousSlipPercent = SlipSpeedPercent;
             }
-            //Stability Correction
-            /*if (StabilityCorrection)
-            {
-                if (slipDerivationPercentpS > 300.0f)
-                    adhesionK += 0.0001f * slipDerivationPercentpS;
-                else
-                    adhesionK = Math.Max(adhesionK_orig, adhesionK - 0.005f);
-            }*/
-
-            // Set output MotiveForce to actual value exclusive of brake force.
-            CompensatedAxleForceN = CompensatedFilterMovingAverage.Update(compensateAxleForceN);
-
-            //axleForceN = FilterMovingAverage.Update(axleForceN);
         }
 
         /// <summary>
@@ -674,7 +629,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         public void Reset()
         {
-            AxleRevolutionsInt.Reset();
+            AxleSpeedMpS = 0;
             adhesionK = adhesionK_orig;
             if (motor != null)
                 motor.Reset();
@@ -687,10 +642,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="initValue">Initial condition</param>
         public void Reset(double resetTime, float initValue)
         {
+            AxleSpeedMpS = initValue;
             ResetTime = resetTime;
-            AxleRevolutionsInt.InitialCondition = initValue;
-            AxleRevolutionsInt.Reset();
-            AxleRevolutionsInt.InitialCondition = 0.0f;
             if (motor != null)
                 motor.Reset();
         }
@@ -735,28 +688,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 return Math.Sign(slipSpeedKpH) * umax * ((sqrt3 / 2 - inftyFactor) * (float)Math.Exp((sqrt3 - x) / (2 * sqrt3 - 4 * inftyFactor)) + inftyFactor);
             }
             return 2.0f * K * umax * umax * (slipSpeedKpH / (umax * umax * slipSpeedKpH * slipSpeedKpH + K * K));
-        }
-
-        /// <summary>
-        /// Optional Friction computation function
-        /// - Computes Davis formula for given parameters:
-        ///     Fo = Weight / 9810 * (A + B * V + C * V^2)
-        /// </summary>
-        /// <param name="A">Static friction parameter [N/kN]</param>
-        /// <param name="B">Rolling friction parameter [N/kN]</param>
-        /// <param name="C">Air friction parameter [N/kN]</param>
-        /// <param name="speedMpS">Speed in MpS</param>
-        /// <param name="weight">Weight in kg</param>
-        /// <returns>Friction force in Newtons, Returns zero for zero speed, Returns negative for negative speed</returns>
-        public static float Friction(float A, float B, float C, float speedMpS, float weight)
-        {
-            speedMpS *= 3.6f;
-            if (speedMpS == 0.0f)
-                return 0.0f;
-            if (speedMpS > 0.0f)
-                return weight / 1000.0f * 9.81f * (A + B * speedMpS + C * speedMpS * speedMpS);
-            else
-                return -weight / 1000.0f * 9.81f * (A + B * -1.0f * speedMpS + C * speedMpS * speedMpS);
         }
     }
 }
