@@ -3215,6 +3215,16 @@ namespace Orts.Simulation.AIs
                                     AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
                                 }
                             }
+                            if (OtherTrain.UncoupledFrom == this)
+                            {
+                                if (distanceToTrain > 5.0f)
+                                {
+                                    UncoupledFrom = null;
+                                    OtherTrain.UncoupledFrom = null;
+                                }
+                                else
+                                    attachToTrain = false;
+                            }
                             //                            if (distanceToTrain < keepDistanceStatTrainM_P - 4.0f || (distanceToTrain - brakingDistance) <= keepDistanceTrainM) // Other possibility
                             if ((distanceToTrain - brakingDistance) <= keepDistanceTrainM)
                             {
@@ -4600,6 +4610,7 @@ namespace Orts.Simulation.AIs
                             attachTrain.Cars.Insert(0, car);
                             car.Train = attachTrain;
                             car.Flipped = !car.Flipped;
+                            if (attachTrain.IsActualPlayerTrain && attachTrain.LeadLocomotiveIndex != -1) attachTrain.LeadLocomotiveIndex++;
                         }
                         else
                         {
@@ -4635,6 +4646,7 @@ namespace Orts.Simulation.AIs
                         {
                             attachTrain.Cars.Insert(0, car);
                             car.Train = attachTrain;
+                            if (attachTrain.IsActualPlayerTrain && attachTrain.LeadLocomotiveIndex != -1) attachTrain.LeadLocomotiveIndex++;
                         }
                         passedLength += car.CarLengthM;
                         attachTrain.Length += car.CarLengthM;
@@ -4683,6 +4695,7 @@ namespace Orts.Simulation.AIs
                         Length += car.CarLengthM;
                         attachTrain.Length -= car.CarLengthM;
                         attachTrain.Cars.Remove(car);
+                        if (attachTrain.IsActualPlayerTrain && attachTrain.LeadLocomotiveIndex != -1) attachTrain.LeadLocomotiveIndex--;
                     }
                 }
                 attachTrain.Cars[0].SignalEvent(Event.Couple);
