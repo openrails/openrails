@@ -477,7 +477,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             transmissionEfficiency = 0.99f;
             SlipWarningTresholdPercent = 70.0f;
-            driveType = AxleDriveType.ForceDriven; 
+            driveType = AxleDriveType.ForceDriven;
             AxleRevolutionsInt.IsLimited = true;
             AxleRevolutionsInt.MaxSubsteps = 50;
             Adhesion2 = 0.331455f;
@@ -615,8 +615,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             times = 0;
             avgAxleForce = 0;
             axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan, GetSpeedVariation);
-            axleForceN = avgAxleForce / times;
-            if ((prevSpeedMpS > 0 && axleSpeedMpS <= 0/* && motiveAxleForceN > -frictionalForceN*/) || (prevSpeedMpS < 0 && axleSpeedMpS >= 0/* && motiveAxleForceN < frictionalForceN*/))
+            if (times > 0) axleForceN = avgAxleForce / times;
+            // TODO: around zero wheel speed calculations become unstable
+            // Near-zero regime will probably need further corrections
+            if ((prevSpeedMpS > 0 && axleSpeedMpS <= 0) || (prevSpeedMpS < 0 && axleSpeedMpS >= 0))
             {
                 Reset();
             }

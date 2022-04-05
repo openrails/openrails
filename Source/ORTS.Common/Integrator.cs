@@ -44,7 +44,7 @@ namespace ORTS.Common
         float[] previousStep = new float[100];
         float initialCondition;
 
-        public float derivation;
+        float derivation;
 
         float prevDerivation;
 
@@ -219,8 +219,6 @@ namespace ORTS.Common
                 if (--waitBeforeSpeedingUp <= 0)    //wait for a while before speeding up the integration
                 {
                     count = Math.Max(--numOfSubstepsPS, 5);
-                    /*if (count < timeSpan / MinStep)
-                        count = (int)Math.Ceiling(timeSpan / MinStep);*/
 
                     waitBeforeSpeedingUp = 10;      //not so fast ;)
                 }
