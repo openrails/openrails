@@ -2600,16 +2600,8 @@ public List<CabView> CabViewList = new List<CabView>();
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
-                // The axle calculations must have a lower update interval to be accurate and stable
-                int integrationSteps = (int)Math.Max(elapsedClockSeconds / (LocomotiveAxle.InertiaKgm2 / MaxForceN / 5), 1);
-                LocomotiveAxle.NumOfSubstepsPS = integrationSteps;
-                float avgAxleOutForceN=0;
-                for (int i=0; i < integrationSteps; i++)
-                {
-                    LocomotiveAxle.Update(elapsedClockSeconds/ integrationSteps); //Main updater of the axle model
-                    avgAxleOutForceN += LocomotiveAxle.CompensatedAxleForceN; //Get the Axle force and use it for the motion (use compensated value as it is independent of brake force)
-                }
-                MotiveForceN = avgAxleOutForceN / integrationSteps;
+                LocomotiveAxle.Update(elapsedClockSeconds);             //Main updater of the axle model
+                MotiveForceN = LocomotiveAxle.CompensatedAxleForceN;
                 if (elapsedClockSeconds > 0)
                 {
                     WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
