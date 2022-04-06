@@ -590,7 +590,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             float totalAxleForceN = motiveAxleForceN - Math.Sign(axleSpeedMpS) * frictionalForceN;
             if (Math.Abs(axleSpeedMpS) < 0.01f)
             {
-                if (Math.Abs(TrainSpeedMpS) < 0.01f) frictionalForceN += frictionN; // Set a starting friction to avoid oscillations at standstill. Maybe Davis A should go here?
+                if (Math.Abs(TrainSpeedMpS) < 0.01f) frictionalForceN += frictionN; // Set a starting friction to avoid oscillations
                 if (motiveAxleForceN > frictionalForceN) totalAxleForceN = motiveAxleForceN - frictionalForceN;
                 else if (motiveAxleForceN < -frictionalForceN) totalAxleForceN = motiveAxleForceN + frictionalForceN;
                 else
@@ -600,8 +600,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     frictionalForceN -= Math.Abs(motiveAxleForceN);
                 }
             }
-            avgAxleForce += axleForceN;
-            times++;
+            // Assuming Runge-Kutta 4 integration
+            // Average force computed weighting the four function calls for each iteration
+            int c = times % 6;
+            if (c > 0 && c < 5)
+            {
+                avgAxleForce += 2*axleForceN;
+                times += 2;
+            }
+            else
+            {
+                avgAxleForce += axleForceN;
+                times++;
+            }
             return totalAxleForceN * axleDiameterM * axleDiameterM / 4 / totalInertiaKgm2;
         }
 
@@ -617,13 +628,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             float prevSpeedMpS = axleSpeedMpS;
             times = 0;
             avgAxleForce = 0;
-            axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan, GetSpeedVariation);
+            axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan, GetSpeedVariation); //GetSpeedVariation(axleSpeedMpS) * timeSpan;
             if (times > 0) axleForceN = avgAxleForce / times;
             // TODO: around zero wheel speed calculations become unstable
             // Near-zero regime will probably need further corrections
             if ((prevSpeedMpS > 0 && axleSpeedMpS <= 0) || (prevSpeedMpS < 0 && axleSpeedMpS >= 0))
             {
-                Reset();
+                if (Math.Max(brakeRetardForceN, frictionN) > Math.Abs(driveForceN-axleForceN)) Reset();
             }
             // TODO: We should calculate brake force here
             // Adding and substracting the brake force is correct for normal operation,
@@ -632,9 +643,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // And thus there is a duplication of the braking effect in OR. To compensate for this, after the slip characteristics have been calculated, the output of the axle module
             // has the brake force "added" back in to give the appropriate motive force output for the locomotive. Braking force is handled separately.
             // Hence CompensatedAxleForce is the actual output force on the axle. 
-            if (TrainSpeedMpS > 0.01f) CompensatedAxleForceN = axleForceN + brakeRetardForceN;
-            else if (TrainSpeedMpS < -0.01f) CompensatedAxleForceN = axleForceN - brakeRetardForceN;
-            else CompensatedAxleForceN = axleForceN;
+            CompensatedAxleForceN = axleForceN + Math.Sign(TrainSpeedMpS) * brakeRetardForceN;
 
             if (driveType == AxleDriveType.MotorDriven)
             {
