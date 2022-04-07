@@ -218,7 +218,7 @@ namespace ORTS.Common
             {
                 if (--waitBeforeSpeedingUp <= 0)    //wait for a while before speeding up the integration
                 {
-                    count = Math.Max(--numOfSubstepsPS, 5);
+                    count = Math.Max(--numOfSubstepsPS, 1);
 
                     waitBeforeSpeedingUp = 10;      //not so fast ;)
                 }
