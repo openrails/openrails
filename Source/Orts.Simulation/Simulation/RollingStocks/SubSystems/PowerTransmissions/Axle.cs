@@ -541,7 +541,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Compute variation in axle dynamics. Calculates axle speed, axle angular position and rail force.
         /// </summary>
-        public (float, float, float) GetAxleMotionVariation(float axleSpeedMpS)
+        public (float, float, float) GetAxleMotionVariation(float axleSpeedMpS, float axlePositionRad)
         {
             float axleForceN = AxleWeightN * SlipCharacteristics(axleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionConditions, Adhesion2);
 
@@ -596,10 +596,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             float axleForceSumN = 0;
             for (int i=0; i<NumOfSubstepsPS; i++)
             {
-                var k1 = GetAxleMotionVariation(AxleSpeedMpS);
-                var k2 = GetAxleMotionVariation(AxleSpeedMpS + k1.Item1 * hdt);
-                var k3 = GetAxleMotionVariation(AxleSpeedMpS + k2.Item1 * hdt);
-                var k4 = GetAxleMotionVariation(AxleSpeedMpS + k3.Item1 * dt);
+                var k1 = GetAxleMotionVariation(AxleSpeedMpS, AxlePositionRad);
+                var k2 = GetAxleMotionVariation(AxleSpeedMpS + k1.Item1 * hdt, AxlePositionRad + k1.Item2 * hdt);
+                var k3 = GetAxleMotionVariation(AxleSpeedMpS + k2.Item1 * hdt, AxlePositionRad + k2.Item2 * hdt);
+                var k4 = GetAxleMotionVariation(AxleSpeedMpS + k3.Item1 * dt, AxlePositionRad + k3.Item2 * dt);
                 AxleSpeedMpS += (integratorError = (k1.Item1 + 2 * (k2.Item1 + k3.Item1) + k4.Item1) * dt / 6.0f);
                 AxlePositionRad += (k1.Item2 + 2 * (k2.Item2 + k3.Item2) + k4.Item2) * dt / 6.0f;
                 axleForceSumN += (k1.Item3 + 2 * (k2.Item3 + k3.Item3) + k4.Item3);
