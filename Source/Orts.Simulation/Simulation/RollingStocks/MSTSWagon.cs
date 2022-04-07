@@ -146,7 +146,12 @@ namespace Orts.Simulation.RollingStocks
         public float Curtius_KnifflerB = 44.0f;              // (adhesion coeficient)       umax = ---------------------  + C
         public float Curtius_KnifflerC = 0.161f;             //                                      speedMpS * 3.6 + B
         public float AdhesionK = 0.7f;   //slip characteristics slope
-        //public AntislipControl AntislipControl = AntislipControl.None;
+        public enum AntislipControlType
+        {
+            None,
+            Full
+        }
+        public AntislipControlType AntislipControl = AntislipControlType.None;
         public float AxleInertiaKgm2;    //axle inertia
         public float AdhesionDriveWheelRadiusM;
         public float WheelSpeedMpS;
@@ -1361,8 +1366,9 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsadhesion(ortsantislip":
-                    stf.MustMatch("(");
-                    //AntislipControl = stf.ReadStringBlock(null);
+                    string type = stf.ReadStringBlock("none").ToLowerInvariant();
+                    if (type == "full") AntislipControl = AntislipControlType.Full;
+                    else AntislipControl = AntislipControlType.None;
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsadhesion(wheelset(axle(ortsinertia":
@@ -1567,6 +1573,7 @@ namespace Orts.Simulation.RollingStocks
             Curtius_KnifflerC = copy.Curtius_KnifflerC;
             AdhesionK = copy.AdhesionK;
             AxleInertiaKgm2 = copy.AxleInertiaKgm2;
+            AntislipControl = copy.AntislipControl;
             AdhesionDriveWheelRadiusM = copy.AdhesionDriveWheelRadiusM;
             SlipWarningThresholdPercent = copy.SlipWarningThresholdPercent;
             Lights = copy.Lights;
