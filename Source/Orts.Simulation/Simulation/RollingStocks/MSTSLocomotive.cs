@@ -2192,6 +2192,7 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             // Method to set force and power info
             // An alternative method in the steam locomotive will override this and input force and power info for it.
+
             if (LocomotivePowerSupply.MainPowerSupplyOn && Direction != Direction.N)
             {
 
@@ -2593,6 +2594,17 @@ public List<CabView> CabViewList = new List<CabView>();
                 //LocomotiveAxle.AxleRevolutionsInt.MinStep = LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f;
                 LocomotiveAxle.AxleDiameterM = 2*DriverWheelRadiusM;
 
+                if (AntislipControl == AntislipControlType.Full)
+                {
+                    // Simple slip control
+                    // Motive force is reduced to the maximum adhesive force
+                    // In wheelslip situations, motive force is set to zero
+                    float umax = (LocomotiveAxle.CurtiusKnifflerA / (MpS.ToKpH(Math.Abs(SpeedMpS)) + LocomotiveAxle.CurtiusKnifflerB) + LocomotiveAxle.CurtiusKnifflerC); // Curtius - Kniffler equation
+                    umax *= LocomotiveAxle.AdhesionConditions;
+                    MotiveForceN = Math.Sign(MotiveForceN) * Math.Min(umax * LocomotiveAxle.AxleWeightN, Math.Abs(MotiveForceN));
+                    if (LocomotiveAxle.IsWheelSlip) MotiveForceN = 0;
+                }
+
                 //Set axle model parameters
 
                 // Inputs
@@ -2601,6 +2613,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 LocomotiveAxle.Update(elapsedClockSeconds);             //Main updater of the axle model
+
                 MotiveForceN = LocomotiveAxle.CompensatedAxleForceN;
                 if (elapsedClockSeconds > 0)
                 {

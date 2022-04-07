@@ -393,7 +393,7 @@ namespace Orts.Viewer3D.Popups
                                 }
                                 else
                                 {
-                                hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, LastCol));
+                                    hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, LastCol));
                                 }
                                 indicator.Color = Color.White; // Default color
                             }

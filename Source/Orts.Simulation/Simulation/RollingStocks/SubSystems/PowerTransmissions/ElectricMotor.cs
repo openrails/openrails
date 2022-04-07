@@ -115,7 +115,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             //revolutionsRad += timeSpan / inertiaKgm2 * (developedTorqueNm + loadTorqueNm + (revolutionsRad == 0.0 ? 0.0 : frictionTorqueNm));
             //if (revolutionsRad < 0.0)
             //    revolutionsRad = 0.0;
-            //temperatureK = tempIntegrator.Integrate(timeSpan, 1.0f/(SpecificHeatCapacityJ_kg_C * WeightKg)*((powerLossesW - CoolingPowerW) / (ThermalCoeffJ_m2sC * SurfaceM) - temperatureK));
+            temperatureK = tempIntegrator.Integrate(timeSpan, (temperatureK) => 1.0f/(SpecificHeatCapacityJ_kg_C * WeightKg)*((powerLossesW - CoolingPowerW) / (ThermalCoeffJ_m2sC * SurfaceM) - temperatureK));
 
         }
 
