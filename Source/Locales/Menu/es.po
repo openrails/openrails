@@ -304,7 +304,7 @@ msgstr "Empezar multijugador"
 
 #: ../../Menu/MainForm.Designer.cs:325
 msgid "Resume MP"
-msgstr "Resumir multijugador"
+msgstr "Reanudar multijugador"
 
 #: ../../Menu/MainForm.Designer.cs:338
 msgid "Singleplayer"
