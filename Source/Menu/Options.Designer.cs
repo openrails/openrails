@@ -284,7 +284,7 @@
             this.lBrakePipeChargingRate.Name = "lBrakePipeChargingRate";
             this.lBrakePipeChargingRate.Size = new System.Drawing.Size(198, 13);
             this.lBrakePipeChargingRate.TabIndex = 8;
-            this.lBrakePipeChargingRate.Text = "Brake pipe charging rate (PSI/s)             ";
+            this.lBrakePipeChargingRate.Text = "Brake pipe charging rate (PSI/s)";
             this.lBrakePipeChargingRate.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.lBrakePipeChargingRate.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
@@ -295,7 +295,7 @@
             this.checkGraduatedRelease.Name = "checkGraduatedRelease";
             this.checkGraduatedRelease.Size = new System.Drawing.Size(258, 17);
             this.checkGraduatedRelease.TabIndex = 6;
-            this.checkGraduatedRelease.Text = "Graduated release air brakes                                ";
+            this.checkGraduatedRelease.Text = "Graduated release air brakes";
             this.checkGraduatedRelease.UseVisualStyleBackColor = true;
             this.checkGraduatedRelease.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkGraduatedRelease.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
@@ -318,7 +318,7 @@
             this.checkAlerter.Name = "checkAlerter";
             this.checkAlerter.Size = new System.Drawing.Size(256, 17);
             this.checkAlerter.TabIndex = 0;
-            this.checkAlerter.Text = "Alerter in cab                                                        ";
+            this.checkAlerter.Text = "Alerter in cab";
             this.checkAlerter.UseVisualStyleBackColor = true;
             this.checkAlerter.CheckedChanged += new System.EventHandler(this.checkAlerter_CheckedChanged);
             this.checkAlerter.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
@@ -331,7 +331,7 @@
             this.checkControlConfirmations.Name = "checkControlConfirmations";
             this.checkControlConfirmations.Size = new System.Drawing.Size(256, 17);
             this.checkControlConfirmations.TabIndex = 4;
-            this.checkControlConfirmations.Text = "Control confirmations                                            ";
+            this.checkControlConfirmations.Text = "Control confirmations";
             this.checkControlConfirmations.UseVisualStyleBackColor = true;
             this.checkControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
@@ -552,7 +552,7 @@
             this.checkOverspeedMonitor.Name = "checkOverspeedMonitor";
             this.checkOverspeedMonitor.Size = new System.Drawing.Size(274, 17);
             this.checkOverspeedMonitor.TabIndex = 14;
-            this.checkOverspeedMonitor.Text = "Overspeed monitor                                                     ";
+            this.checkOverspeedMonitor.Text = "Overspeed monitor";
             this.checkOverspeedMonitor.UseVisualStyleBackColor = true;
             this.checkOverspeedMonitor.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkOverspeedMonitor.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
@@ -564,7 +564,7 @@
             this.checkDisableTCSScripts.Name = "checkDisableTCSScripts";
             this.checkDisableTCSScripts.Size = new System.Drawing.Size(256, 17);
             this.checkDisableTCSScripts.TabIndex = 13;
-            this.checkDisableTCSScripts.Text = "Disable TCS scripts                                              ";
+            this.checkDisableTCSScripts.Text = "Disable TCS scripts";
             this.checkDisableTCSScripts.UseVisualStyleBackColor = true;
             this.checkDisableTCSScripts.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkDisableTCSScripts.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
@@ -577,7 +577,7 @@
             this.labelOtherUnits.Name = "labelOtherUnits";
             this.labelOtherUnits.Size = new System.Drawing.Size(130, 13);
             this.labelOtherUnits.TabIndex = 9;
-            this.labelOtherUnits.Text = "Other units                        ";
+            this.labelOtherUnits.Text = "Other units";
             this.labelOtherUnits.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.labelOtherUnits.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
@@ -589,7 +589,7 @@
             this.labelPressureUnit.Name = "labelPressureUnit";
             this.labelPressureUnit.Size = new System.Drawing.Size(131, 13);
             this.labelPressureUnit.TabIndex = 12;
-            this.labelPressureUnit.Text = "Pressure unit                     ";
+            this.labelPressureUnit.Text = "Pressure unit";
             this.labelPressureUnit.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.labelPressureUnit.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
@@ -619,7 +619,7 @@
             this.labelLanguage.Name = "labelLanguage";
             this.labelLanguage.Size = new System.Drawing.Size(130, 13);
             this.labelLanguage.TabIndex = 10;
-            this.labelLanguage.Text = "Language                         ";
+            this.labelLanguage.Text = "Language";
             this.labelLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.labelLanguage.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
@@ -640,7 +640,7 @@
             this.checkAlerterExternal.Name = "checkAlerterExternal";
             this.checkAlerterExternal.Size = new System.Drawing.Size(235, 17);
             this.checkAlerterExternal.TabIndex = 1;
-            this.checkAlerterExternal.Text = "Also in external views                                    ";
+            this.checkAlerterExternal.Text = "Also in external views";
             this.checkAlerterExternal.UseVisualStyleBackColor = true;
             // 
             // checkRetainers
@@ -650,7 +650,7 @@
             this.checkRetainers.Name = "checkRetainers";
             this.checkRetainers.Size = new System.Drawing.Size(257, 17);
             this.checkRetainers.TabIndex = 5;
-            this.checkRetainers.Text = "Retainer valve on all cars                                     ";
+            this.checkRetainers.Text = "Retainer valve on all cars";
             this.checkRetainers.UseVisualStyleBackColor = true;
             this.checkRetainers.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkRetainers.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
