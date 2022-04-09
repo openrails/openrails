@@ -804,18 +804,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (!car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen)
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI = Math.Max(car.BrakeSystem.BrakeLine1PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
-                            if (car.BrakeSystem.TwoPipes)
-                            {
-                                car.BrakeSystem.BrakeLine2PressurePSI = Math.Max(car.BrakeSystem.BrakeLine2PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
-                            }
                         }
                         if ((nextCar == null || !nextCar.BrakeSystem.FrontBrakeHoseConnected) && car.BrakeSystem.AngleCockBOpen)
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI = Math.Max(car.BrakeSystem.BrakeLine1PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
-                            if (car.BrakeSystem.TwoPipes)
-                            {
-                                car.BrakeSystem.BrakeLine2PressurePSI = Math.Max(car.BrakeSystem.BrakeLine2PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
-                            }
                         }
                     }
 #if DEBUG_TRAIN_PIPE_LEAK

@@ -4773,6 +4773,11 @@ public List<CabView> CabViewList = new List<CabView>();
                         data = ConvertFromPSI(cvc, BrakeSystem.GetVacResPressurePSI());
                         break;
                     }
+                case CABViewControlTypes.ORTS_EOT_BRAKE_PIPE:
+                    {
+                        data = ConvertFromPSI(cvc, this.Train.Cars.Last().BrakeSystem.BrakeLine1PressurePSI);
+                        break;
+                    }
 
                 case CABViewControlTypes.RPM:
                     {
@@ -5364,7 +5369,8 @@ public List<CabView> CabViewList = new List<CabView>();
 
                 default:
                     {
-                        data = 0;
+                        if (Train?.EOT != null && data == 0)
+                            data = Train.EOT.GetDataOf(cvc);
                         break;
                     }
             }

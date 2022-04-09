@@ -4684,3 +4684,154 @@ UoM - Angle (deg, radians) - default is rad. Typically this value maybe between 
 - ``ORTSWheelFlangeLength`` - Wheel flange length is defined as the length of flange starting from the beginning of the maximum flange angle 
 to the point where flange angle reduces to 26.6 degrees. UoM - Distance (m, in, ft, etc) - default is m
 
+.. _physics-eot:
+
+EOT - End of train device
+=========================
+
+General
+-------
+
+See :ref:`here https://en.wikipedia.org/wiki/End-of-train_device` for basic info about EOTs.
+
+EOTs in Open Rails may be of three different levels (types)::
+
+- No communication: "dumb" EOTs, like flags or flashing lamps 
+- One way: the EOT is capable to transmit to the lead locomotive the brake pipe pressure at the end of the train
+- Two way: the EOT is also capable to receive a command to vent the air brake pipe.
+
+How to define an EOT
+--------------------
+
+EOTs must be defined within subfolders of the ``Trains\ORTS_EOT`` folder. These subfolders contain 
+the same file set present in a subfolder of the ``Trains\Trainset`` folder; the file defining an EOT 
+has the same format as a .wag file, but it must have an .eot extension. To define the level of the EOT 
+the following block must be added at the end of the .eot file (after the closing parenthesis of the 
+Wagon() block)::
+
+  ORTSEOT (
+	Level ( "level" )
+  )
+
+  
+level may assume following values: ``NoComm``, ``OneWay`` and ``TwoWay``.
+
+Usually EOTs were provided as a very short wagon for simulation with MSTS or OR. To upgrade it to 
+a functioning EOT for OR following simple steps are needed::
+
+- Create the ``Trains\ORTS_EOT`` folder
+- copy the EOT subfolder present in the ``Trains\Trainset`` folder into the ``Trains\ORTS_EOT`` folder
+- change the extension of the .wag file(s) to .eot
+- add at the end of the .eot file the ORTSEOT block.
+
+For Open Rails the EOT is a special type (a subclass) of wagon, with specific features. As 
+such it appears at the end of the train in the Train Operations window.
+
+How to attach and detach an EOT at the end of a train
+-----------------------------------------------------
+
+An EOT may be attached at the end of a train (be it player train or AI train) 
+already at game start, 
+by inserting at the end of the .con file a block like the following one::
+                  ORTSEot (
+                        EOTData ( EOT_OR TrainSimulations_EOT )
+                        UiD ( 203 )
+                )
+
+where ``ORTSEot`` and ``EOTData`` are fixed keywords, EOT_OR is the name of the .eot file 
+and TrainSimulations_EOT is the folder where EOT_OR.eot resides. TrainSimulations_EOT is 
+a subfolder of ``Trains\ORTS_EOT``.
+
+If an EOT is present at the end of the train since game start, it will be fully operating 
+from the beginning 
+(in one-way state if it is a one-way EOT, and in two-way state if it is a two-way EOT).
+
+An EOT may also be attached at the end of the actual player train using the EOT list window 
+
+
+.. image:: images/physics-eot.png
+   :scale: 80 %
+   :align: center
+
+which can be recalled by pressing ``<Ctrl+F9>``. Such window lists all .eot files present in 
+the subfolders of ``Trains\ORTS_EOT``. If the train has an EOT at the end of it, the related row 
+in the EOT list window will be red. If the train has no EOT at the end of it (no red row), it can 
+be attached at the end of the train with following sequence:
+
+- within the EOT list window click on the row showing the desired EOT; the row will become red 
+  and the EOT will physically appear at the end of the train
+- if it is an One Way or Two Way EOT type, connect its brake hose with the Car Operations 
+  Window (see :ref:`here <driving-car-operations>`)
+- using the Car Operations Window on the wagon preceding the EOT, open the rear angle cock.
+
+When an EOT is attached to the actual player train, a line indicating its presence will appear 
+in the Train Driving Window (F5). The EOT will be in Disarmed state (that is fully disabled).
+
+To detach an EOT from the end of the actual player train, recall the EOT list window and click 
+on the red row. The EOT will disappear. Always remember to detach the EOT when this 
+would occur in reality (e.g. when rear coupling other wagons, when decoupling the rear of the train 
+and in general before shunting).
+
+How to arm (enable) or disarm a one-way or two-way EOT 
+------------------------------------------------------
+
+The arm and disarm procedure must be performed from the cabview, as the controls are available only 
+through mouse. So it requires an equipped cabview. See :ref:`here <cabs-eot>` for a list of the 
+available controls. 
+
+The procedure for a two-way EOT is explained basing on the picture below, which shows a 
+sample case based on a cab of Borislav Miletic. 
+
+.. _physics-eot-display:
+
+.. image:: images/physics-eot-display.png
+   :scale: 100 %
+   :align: center
+
+.. _physics-eot-states:
+
+The possible states for a two-way EOT are following ones::
+  * Disarmed,
+  * CommTestOn,
+  * Armed,
+  * LocalTestOn,
+  * ArmNow,
+  * ArmedTwoWay
+  
+The EOT state is shown in the Train Driving window using above terminology, 
+while the latter is a bit different in the EOT setup display in the sample cab
+following a real case (but it may be modified).
+
+When the EOT is attached to the train with the EOT List window, the EOT is in 
+``Disarmed`` state. An EOT ID appears as a 5-digit random number. In the cab 
+the Comm Test field shows ``Failed``.
+
+By clicking on the key below the ``Comm Test`` soft button, the state in the 
+Train Driving window passes to the ``CommTestOn`` state. When the ``CommTestOn`` is 
+terminated, the state in the Train Driving window passes to the ``Armed`` state for 
+the one-way EOTs, and to the ``LocalTestOn`` state for the two-way EOTs.
+In the EOT setup display the Comm Test field shows  ``Passed`` and the EOT 
+Status Field shows ``One Way``. Now the ``Rear`` field shows the brake pipe 
+pressure at the end of the train.
+
+The LocalTestOn in two-way EOTs is about 25 seconds long. After such time 
+interval the state shown in the Train Driving window passes to the ``ArmNow`` state, and 
+the EOT status in the display shows ``Arm Now``.
+
+At this point the train driver must click the key below the ``Arm Two-Way`` soft button. 
+The EOT Passes to the ``ArmedTwoWay`` state, that is shown as ``Armed`` in the 
+EOT status within the EOT Status display.
+
+By clicking the key below the ``Request Disarm`` soft button, the EOT returns to 
+the ``Disarmed`` state.
+
+Emergency brake through EOT
+---------------------------
+
+Two-way EOTs, when in the ``ArmedTwoWay`` state, can be requested to vent the brake pipe 
+and therefore to cause an emergency brake. This occurs automatically when an Emergency 
+brake is triggered, and also manually when the ``ORTS_EOT_EMERGENCY_BRAKE`` 
+control is activated. The manual activation may also occur by pressing 
+``<Ctrl+Backspace>`` .
+
+
