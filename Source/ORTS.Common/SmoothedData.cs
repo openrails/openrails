@@ -59,6 +59,7 @@ namespace ORTS.Common
 
         protected void SmoothValue(ref float smoothedValue, float periodS, float newValue)
         {
+            // This formula and the calculation of `rate` are FPS-independent; see https://www.gamedeveloper.com/programming/improved-lerp-smoothing- for more details
             var ratio = (float)Math.Exp(-rate * periodS);
             if (float.IsNaN(smoothedValue) || float.IsInfinity(smoothedValue) || ratio < 0.5)
                 smoothedValue = newValue;
