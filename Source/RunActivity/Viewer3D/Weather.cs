@@ -107,7 +107,7 @@ namespace Orts.Viewer3D
                     UpdateSoundSources();
                     UpdateVolume();
                     // We have a pause in weather change, depending from randomization level
-                    dynamicWeather.stableWeatherTimer = ( 4.0f - Viewer.Settings.ActWeatherRandomizationLevel) * 600 + Simulator.Random.Next(300) - 150;
+                    dynamicWeather.stableWeatherTimer = ( 4.0f - Viewer.Settings.ActWeatherRandomizationLevel) * 600 + Viewer.Random.Next(300) - 150;
                     weatherChangeOn = true;
                 }
 
@@ -262,14 +262,14 @@ namespace Orts.Viewer3D
             CheckDesertZone();
             if (DesertZone) return false;
             // First define overcast
-            var randValue = Simulator.Random.Next(170);
+            var randValue = Viewer.Random.Next(170);
             var intermValue = randValue >= 50 ? (float)(randValue - 50f) : (float)randValue;
             Weather.OvercastFactor = intermValue >= 20 ? (float)(intermValue - 20f)/100f: (float)intermValue/100f; // give more probability to less overcast
             Viewer.Simulator.WeatherType = Orts.Formats.Msts.WeatherType.Clear;
             // Then check if we are in precipitation zone
             if (Weather.OvercastFactor > 0.5)
             {
-                randValue = Simulator.Random.Next(75);
+                randValue = Viewer.Random.Next(75);
                 if (randValue > 40)
                 {
                     Weather.PricipitationIntensityPPSPM2 = (float)(randValue - 40f) / 1000f;
@@ -288,7 +288,7 @@ namespace Orts.Viewer3D
             }
             else Weather.PricipitationIntensityPPSPM2 = 0;
             // and now define visibility
-            randValue = Simulator.Random.Next(2000);
+            randValue = Viewer.Random.Next(2000);
             if (Weather.PricipitationIntensityPPSPM2 > 0 || Weather.OvercastFactor > 0.7f )
             // use first digit to define power of ten and the other three to define the multiplying number
                 Weather.FogDistance =  Math.Max ( 100, (float)Math.Pow(10 , ((int)(randValue / 1000) + 2)) * (float)((randValue % 1000 + 1) / 100f));
@@ -772,9 +772,9 @@ namespace Orts.Viewer3D
             {
                 // define how much time transition will last
                 var weatherChangeTimer = (4 - weatherControl.Viewer.Settings.ActWeatherRandomizationLevel) * 600 +
-                    Simulator.Random.Next((4 - weatherControl.Viewer.Settings.ActWeatherRandomizationLevel) * 600);
+                    Viewer.Random.Next((4 - weatherControl.Viewer.Settings.ActWeatherRandomizationLevel) * 600);
                 // begin with overcast
-                var randValue = Simulator.Random.Next(170);
+                var randValue = Viewer.Random.Next(170);
                 var intermValue = randValue >= 50 ? (float)(randValue - 50f) : (float)randValue;
                 ORTSOvercast = intermValue >= 20 ? (float)(intermValue - 20f) / 100f : (float)intermValue / 100f; // give more probability to less overcast
                 ORTSOvercastTransitionTimeS = weatherChangeTimer;
@@ -783,7 +783,7 @@ namespace Orts.Viewer3D
                 // Then check if we are in precipitation zone
                 if (ORTSOvercast > 0.5)
                 {
-                    randValue = Simulator.Random.Next(75);
+                    randValue = Viewer.Random.Next(75);
                     if (randValue > 40)
                     {
                         ORTSPrecipitationIntensity = (float)(randValue - 40f) / 1000f;
@@ -821,7 +821,7 @@ namespace Orts.Viewer3D
                 }
 
                 // and now define visibility
-                randValue = Simulator.Random.Next(2000);
+                randValue = Viewer.Random.Next(2000);
                 if (ORTSPrecipitationIntensity > 0 || ORTSOvercast > 0.7f)
                     // use first digit to define power of ten and the other three to define the multiplying number
                     ORTSFog = Math.Max(100, (float)Math.Pow(10, ((int)(randValue / 1000) + 2)) * (float)((randValue % 1000 + 1) / 100f));
