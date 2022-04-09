@@ -824,7 +824,7 @@ msgstr "Simulación"
 
 #: ../../Menu/Options.Designer.cs:1299
 msgid "Diesel engines stopped after startup"
-msgstr "Los motores diésel se paran tras el arranque"
+msgstr "Motores diésel parados al inicio"
 
 #: ../../Menu/Options.Designer.cs:1313
 msgid "Activity Options"
