@@ -106,7 +106,6 @@ namespace Orts.MultiPlayer
 
 			while (true)
 			{
-				//System.Threading.Thread.Sleep(Program.Random.Next(50, 200));
 
 				bytesRead = 0;
 
