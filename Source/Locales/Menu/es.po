@@ -739,7 +739,7 @@ msgstr "Nivel de detalle del sonido"
 
 #: ../../Menu/Options.Designer.cs:865
 msgid "MSTS Bin compatible sound"
-msgstr "Sonido compatible con Bin MSTS"
+msgstr "Sonido compatible con MSTS Bin"
 
 #: ../../Menu/Options.Designer.cs:903
 msgid "Video"
@@ -872,7 +872,7 @@ msgstr "Anular la tensión de línea de la ruta no electrificada"
 
 #: ../../Menu/Options.Designer.cs:1426
 msgid "Adhesion moving average filter size"
-msgstr "Tamaño promedio del filtro de adhesión móvil"
+msgstr "Tamaño promedio del filtro EMA de adherencia"
 
 #: ../../Menu/Options.Designer.cs:1453
 msgid "Break couplers"
@@ -1033,7 +1033,7 @@ msgstr "Sesgo de nivel de detalle:"
 
 #: ../../Menu/Options.Designer.cs:2260
 msgid "Show shape warnings"
-msgstr "Mostrar avisos de aspectos"
+msgstr "Mostrar avisos de shapes"
 
 #: ../../Menu/Options.Designer.cs:2285
 msgid "Load day/night textures only when needed"
@@ -1100,9 +1100,7 @@ msgid ""
 "Large address aware binaries (for all 64bit and 3GB tuning on "
 "32bit)                                                               "
 msgstr ""
-"Binarios de gran tamaño con conocimiento de las direcciones (para todos los "
-"64bit y el ajuste de 3GB en "
-"32bit)                                                               "
+"Ejecutables Large Adress Aware (para 64 bits y 3GB en 32 bits)"
 
 #: ../../Menu/Options.Designer.cs:1591
 msgid ""
