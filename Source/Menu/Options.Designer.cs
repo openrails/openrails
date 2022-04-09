@@ -521,7 +521,7 @@
             this.labelPortNumber.Name = "labelPortNumber";
             this.labelPortNumber.Size = new System.Drawing.Size(167, 13);
             this.labelPortNumber.TabIndex = 17;
-            this.labelPortNumber.Text = "Web server port                            ";
+            this.labelPortNumber.Text = "Web server port";
             // 
             // numericWebServerPort
             // 
