@@ -253,10 +253,10 @@ namespace Orts.Simulation
         public event System.EventHandler<QueryCarViewerLoadedEventArgs> QueryCarViewerLoaded;
         public event System.EventHandler RequestTTDetachWindow;
 
-        public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
+        public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory, bool deterministic = false)
         {
             Catalog = new GettextResourceManager("Orts.Simulation");
-            Random = new Random();
+            Random = deterministic ? new Random(0) : new Random();
 
             MPManager.Simulator = this;
 

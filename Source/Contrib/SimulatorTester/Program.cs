@@ -70,7 +70,7 @@ namespace SimulatorTester
                 }
 
                 var startTime = DateTimeOffset.Now;
-                var simulator = new Simulator(settings, activityFile, false);
+                var simulator = new Simulator(settings, activityFile, useOpenRailsDirectory: false, deterministic: true);
                 simulator.SetActivity(activityFile);
                 simulator.Start(cts.Token);
                 simulator.SetCommandReceivers();
