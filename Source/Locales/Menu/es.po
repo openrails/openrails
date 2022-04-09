@@ -372,7 +372,7 @@ msgstr "Dificultad:"
 
 #: ../../Menu/MainForm.Designer.cs:702 ../../Menu/MainForm.Designer.cs:848
 msgid "Season:"
-msgstr "Temporada:"
+msgstr "Estación meteorológica:"
 
 #: ../../Menu/MainForm.Designer.cs:736
 msgid "Weather File:"
@@ -493,7 +493,7 @@ msgstr "Estado de señal"
 
 #: ../../Menu/Options.cs:246
 msgid "Track Elevation"
-msgstr "Elevación de vía"
+msgstr "Peralte"
 
 #: ../../Menu/Options.cs:247
 msgid "Direction"
@@ -513,7 +513,7 @@ msgstr "Aceleración %"
 
 #: ../../Menu/Options.cs:251
 msgid "Brake Cyl Press"
-msgstr "Prensa de cilindros de freno"
+msgstr "Presión de cilindros de freno"
 
 #: ../../Menu/Options.cs:252
 msgid "Dyn Brake %"
@@ -619,9 +619,9 @@ msgid ""
 "{1:F0}° horizontal FOV on 4:3\n"
 "{2:F0}° horizontal FOV on 16:9"
 msgstr ""
-"{0:F0}° vertical FOV is the same as:\n"
-"{1:F0}° horizontal FOV on 4:3\n"
-"{2:F0}° horizontal FOV on 16:9"
+"{0:F0}° FOV vertical es el mismo que:\n"
+"{1:F0}° FOV horizontal en 4:3\n"
+"{2:F0}° FOV horizontal en 16:9"
 
 #: ../../Menu/Options.cs:634
 #, csharp-format
@@ -659,7 +659,7 @@ msgstr "Aceptar"
 
 #: ../../Menu/Options.Designer.cs:308
 msgid "Brake pipe charging rate (PSI/s)             "
-msgstr "Velocidad de carga del tubo de freno (PSI/s)"
+msgstr "Velocidad de carga de la tubería de freno (PSI/s)"
 
 #: ../../Menu/Options.Designer.cs:319
 msgid "Graduated release air brakes                                "
@@ -759,7 +759,7 @@ msgstr "Sombra para todas las formas"
 
 #: ../../Menu/Options.Designer.cs:961
 msgid "Double overhead wires"
-msgstr "Cables aéreos dobles"
+msgstr "Doble hilo de catenaria"
 
 #: ../../Menu/Options.Designer.cs:972
 msgid "Ambient daylight brightness:"
@@ -816,7 +816,7 @@ msgstr "Sombras dinámicas"
 
 #: ../../Menu/Options.Designer.cs:1266
 msgid "Overhead wire"
-msgstr "Cables aéreos"
+msgstr "Hilo de catenaria"
 
 #: ../../Menu/Options.Designer.cs:1289
 msgid "Simulation"
@@ -880,7 +880,7 @@ msgstr "Romper acomplamientos"
 
 #: ../../Menu/Options.Designer.cs:1463
 msgid "Advanced adhesion model"
-msgstr "Modelo avanzado de adhesión"
+msgstr "Modelo avanzado de adherencia"
 
 #: ../../Menu/Options.Designer.cs:1479
 msgid "Keyboard"
@@ -944,7 +944,7 @@ msgstr "Intervalo (seg)"
 
 #: ../../Menu/Options.Designer.cs:1705
 msgid "Log station stops"
-msgstr "Registro de paradas de la estación"
+msgstr "Registro de paradas en estaciones"
 
 #: ../../Menu/Options.Designer.cs:1738
 msgid "Log train speed"
@@ -1045,7 +1045,7 @@ msgstr "Nivel:"
 
 #: ../../Menu/Options.Designer.cs:2343
 msgid "Adhesion proportional to rain/snow/fog"
-msgstr "Adhesión proporcional a la lluvia/nieve/niebla"
+msgstr "Adherencia proporcional a la lluvia/nieve/niebla"
 
 #: ../../Menu/Options.Designer.cs:2354
 msgid "ETCS circular speed gauge"
@@ -1074,7 +1074,7 @@ msgstr "Ampliar la distancia máxima de visión del objeto hasta el horizonte"
 
 #: ../../Menu/Options.Designer.cs:2445
 msgid "Gauge (mm)"
-msgstr "Calibre (mm)"
+msgstr "Galga (mm)"
 
 #: ../../Menu/Options.Designer.cs:2483
 msgid "Minimum length (m)"
@@ -1089,7 +1089,7 @@ msgstr ""
 
 #: ../../Menu/Options.Designer.cs:2558
 msgid "Super-elevation"
-msgstr "Superelevación"
+msgstr "Peralte"
 
 #: ../../Menu/Options.Designer.cs:2567
 msgid "Load DDS textures in preference to ACE"
@@ -1185,7 +1185,7 @@ msgstr "Por defecto es el 130%"
 
 #: ../../Menu/Options.Designer.cs:2507
 msgid "Shortest curve to have elevation"
-msgstr "La curva más corta para tener elevación"
+msgstr "Radio mínimo en curva para peralte"
 
 #: ../../Menu/Options.Designer.cs:2548
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
