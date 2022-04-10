@@ -248,7 +248,7 @@ msgstr "Composición: {0}"
 
 #: ../../Menu/MainForm.Designer.cs:124
 msgid "Windowed"
-msgstr "Modo Ventana"
+msgstr "Ventana"
 
 #: ../../Menu/MainForm.Designer.cs:134
 msgid "Start"
@@ -284,7 +284,7 @@ msgstr "Host/puerto:"
 
 #: ../../Menu/MainForm.Designer.cs:257
 msgid "User name:"
-msgstr "Nombre de usuario:"
+msgstr "Usuario:"
 
 #: ../../Menu/MainForm.Designer.cs:284
 msgid "Multiplayer"
@@ -300,11 +300,11 @@ msgstr "Cliente"
 
 #: ../../Menu/MainForm.Designer.cs:315
 msgid "Start MP"
-msgstr "Empezar multijugador"
+msgstr "Empezar MP"
 
 #: ../../Menu/MainForm.Designer.cs:325
 msgid "Resume MP"
-msgstr "Reanudar multijugador"
+msgstr "Reanudar MP"
 
 #: ../../Menu/MainForm.Designer.cs:338
 msgid "Singleplayer"
@@ -372,7 +372,7 @@ msgstr "Dificultad:"
 
 #: ../../Menu/MainForm.Designer.cs:702 ../../Menu/MainForm.Designer.cs:848
 msgid "Season:"
-msgstr "Estación meteorológica:"
+msgstr "Temporada:"
 
 #: ../../Menu/MainForm.Designer.cs:736
 msgid "Weather File:"
@@ -540,7 +540,7 @@ msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
 msgstr ""
-"Actualizaciones poco frecuentes de las versiones oficiales seleccionadas. "
+"Actualizaciones poco frecuentes. "
 "Recomendado para la mayoría de los usuarios."
 
 #: ../../Menu/Options.cs:283
@@ -658,11 +658,11 @@ msgid "OK"
 msgstr "Aceptar"
 
 #: ../../Menu/Options.Designer.cs:308
-msgid "Brake pipe charging rate (PSI/s)             "
+msgid "Brake pipe charging rate (PSI/s)"
 msgstr "Velocidad de carga de la tubería de freno (PSI/s)"
 
 #: ../../Menu/Options.Designer.cs:319
-msgid "Graduated release air brakes                                "
+msgid "Graduated release air brakes"
 msgstr "Liberación gradual de los frenos de aire"
 
 #: ../../Menu/Options.Designer.cs:332 ../../Menu/TestingForm.Designer.cs:87
@@ -670,15 +670,15 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 #: ../../Menu/Options.Designer.cs:342
-msgid "Alerter in cab                                                        "
+msgid "Alerter in cab"
 msgstr "Alerta en la cabina"
 
 #: ../../Menu/Options.Designer.cs:355
-msgid "Control confirmations                                            "
+msgid "Control confirmations"
 msgstr "Confirmaciones de control"
 
 #: ../../Menu/Options.Designer.cs:367
-msgid "Map window                                                        "
+msgid "Map window"
 msgstr "Ventana del mapa"
 
 #: ../../Menu/Options.Designer.cs:433
@@ -686,39 +686,39 @@ msgid "General"
 msgstr "General"
 
 #: ../../Menu/Options.Designer.cs:599
-msgid "Port number                                       "
+msgid "Port number"
 msgstr "Número de puerto"
 
 #: ../../Menu/Options.Designer.cs:630
-msgid "Enable webserver                                                "
+msgid "Enable webserver"
 msgstr "Habilitar el servidor web"
 
 #: ../../Menu/Options.Designer.cs:642
-msgid "Overspeed monitor                                                     "
+msgid "Overspeed monitor"
 msgstr "Monitor de exceso de velocidad"
 
 #: ../../Menu/Options.Designer.cs:654
-msgid "Disable TCS scripts                                              "
+msgid "Disable TCS scripts"
 msgstr "Desactivar los scripts de TCS"
 
 #: ../../Menu/Options.Designer.cs:667
-msgid "Other units                        "
+msgid "Other units"
 msgstr "Otras unidades"
 
 #: ../../Menu/Options.Designer.cs:679
-msgid "Pressure unit                     "
+msgid "Pressure unit"
 msgstr "Unidad de presión"
 
 #: ../../Menu/Options.Designer.cs:722
-msgid "Language                         "
+msgid "Language"
 msgstr "Idioma"
 
 #: ../../Menu/Options.Designer.cs:743
-msgid "Also in external views                                    "
+msgid "Also in external views"
 msgstr "También en vistas externas"
 
 #: ../../Menu/Options.Designer.cs:753
-msgid "Retainer valve on all cars                                     "
+msgid "Retainer valve on all cars"
 msgstr "Válvula de retención en todos los coches"
 
 #: ../../Menu/Options.Designer.cs:772
@@ -840,7 +840,7 @@ msgstr "Abrir/cerrar puertas en los trenes IA"
 
 #: ../../Menu/Options.Designer.cs:1345
 msgid "Forced red at station stops"
-msgstr "Forzar Rojo en las paradas de las estaciones"
+msgstr "Forzar rojo en las paradas de las estaciones"
 
 #: ../../Menu/Options.Designer.cs:1355
 msgid "Steam locomotive hot start"
@@ -997,7 +997,7 @@ msgstr "Nivel"
 
 #: ../../Menu/Options.Designer.cs:2039
 msgid "Activity weather randomization"
-msgstr "Aleatorización de la actividad del clima"
+msgstr "Aleatorización de actividad de clima"
 
 #: ../../Menu/Options.Designer.cs:2049
 msgid "Activity randomization"
@@ -1066,7 +1066,7 @@ msgstr "Velocidad de fotogramas objetivo"
 #: ../../Menu/Options.Designer.cs:2423
 msgid "Automatically tune settings to keep performance level"
 msgstr ""
-"Ajuste automático de la configuración para mantener el nivel de rendimiento"
+"Ajuste automático de la configuración"
 
 #: ../../Menu/Options.Designer.cs:2434
 msgid "Extend object maximum viewing distance to horizon"
@@ -1098,7 +1098,7 @@ msgstr "Carga de texturas DDS en lugar de ACE"
 #: ../../Menu/Options.Designer.cs:699
 msgid ""
 "Large address aware binaries (for all 64bit and 3GB tuning on "
-"32bit)                                                               "
+"32bit)"
 msgstr ""
 "Ejecutables Large Adress Aware (para 64 bits y 3GB en 32 bits)"
 
