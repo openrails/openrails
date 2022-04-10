@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
-"PO-Revision-Date: 2022-04-08 16:59-0300\n"
+"PO-Revision-Date: 2022-04-10 04:34-0300\n"
 "Last-Translator: Nekrodamus\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -540,8 +540,7 @@ msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
 msgstr ""
-"Actualizaciones poco frecuentes. "
-"Recomendado para la mayoría de los usuarios."
+"Actualizaciones poco frecuentes. Recomendado para la mayoría de los usuarios."
 
 #: ../../Menu/Options.cs:283
 msgid ""
@@ -1065,8 +1064,7 @@ msgstr "Velocidad de fotogramas objetivo"
 
 #: ../../Menu/Options.Designer.cs:2423
 msgid "Automatically tune settings to keep performance level"
-msgstr ""
-"Ajuste automático de la configuración"
+msgstr "Ajuste automático de la configuración"
 
 #: ../../Menu/Options.Designer.cs:2434
 msgid "Extend object maximum viewing distance to horizon"
@@ -1096,11 +1094,8 @@ msgid "Load DDS textures in preference to ACE"
 msgstr "Carga de texturas DDS en lugar de ACE"
 
 #: ../../Menu/Options.Designer.cs:699
-msgid ""
-"Large address aware binaries (for all 64bit and 3GB tuning on "
-"32bit)"
-msgstr ""
-"Ejecutables Large Adress Aware (para 64 bits y 3GB en 32 bits)"
+msgid "Large address aware binaries (for all 64bit and 3GB tuning on 32bit)"
+msgstr "Ejecutables Large Adress Aware (para 64 bits y 3GB en 32 bits)"
 
 #: ../../Menu/Options.Designer.cs:1591
 msgid ""
