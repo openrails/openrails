@@ -2086,6 +2086,9 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.OVERSPEED:
                 case CABViewControlTypes.PENALTY_APP:
                 case CABViewControlTypes.EMERGENCY_BRAKE:
+                case CABViewControlTypes.ORTS_BAILOFF:
+                case CABViewControlTypes.ORTS_QUICKRELEASE:
+                case CABViewControlTypes.ORTS_OVERCHARGE:
                 case CABViewControlTypes.DOORS_DISPLAY:
                 case CABViewControlTypes.CYL_COCKS:
                 case CABViewControlTypes.ORTS_BLOWDOWN_VALVE:
