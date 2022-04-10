@@ -1053,7 +1053,7 @@ msgstr "Medidor de velocidad circular ETCS"
 
 #: ../../Menu/Options.Designer.cs:2364
 msgid "Signal light glow"
-msgstr "Luminosidad de luz de señalización"
+msgstr "Resplandor de luces de señalización"
 
 #: ../../Menu/Options.Designer.cs:2374
 msgid "MSTS environments"
