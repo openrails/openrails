@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
-"PO-Revision-Date: 2022-04-11 14:42-0300\n"
+"PO-Revision-Date: 2022-04-11 14:46-0300\n"
 "Last-Translator: Nekrodamus\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -996,7 +996,7 @@ msgstr "Nivel"
 
 #: ../../Menu/Options.Designer.cs:2039
 msgid "Activity weather randomization"
-msgstr "Aleatorización de clima"
+msgstr "Clima aleatorio"
 
 #: ../../Menu/Options.Designer.cs:2049
 msgid "Activity randomization"
