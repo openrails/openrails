@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
-"PO-Revision-Date: 2022-04-11 14:46-0300\n"
+"PO-Revision-Date: 2022-04-11 18:40-0300\n"
 "Last-Translator: Nekrodamus\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -754,7 +754,7 @@ msgstr "Anti-aliasing:"
 
 #: ../../Menu/Options.Designer.cs:951
 msgid "Shadow for all shapes"
-msgstr "Sombra para todas las formas"
+msgstr "Sombras para todas las \"shapes\" (objetos estáticos)"
 
 #: ../../Menu/Options.Designer.cs:961
 msgid "Double overhead wires"
