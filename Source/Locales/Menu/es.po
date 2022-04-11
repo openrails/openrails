@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
-"PO-Revision-Date: 2022-04-11 18:40-0300\n"
+"PO-Revision-Date: 2022-04-11 19:47-0300\n"
 "Last-Translator: Nekrodamus\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -931,7 +931,7 @@ msgstr "Registro de datos de rendimiento del vapor"
 
 #: ../../Menu/Options.Designer.cs:1661
 msgid "Verbose ENG/WAG configuration messages"
-msgstr "Mensajes de configuración \"verbosed\" de ENG/WAG"
+msgstr "Mensajes de configuración detallados de .ENG/.WAG"
 
 #: ../../Menu/Options.Designer.cs:1676
 msgid "Evaluation"
@@ -967,7 +967,7 @@ msgstr "Cambiar..."
 
 #: ../../Menu/Options.Designer.cs:1825
 msgid "Name:"
-msgstr "Nombre:"
+msgstr "Nombre"
 
 #: ../../Menu/Options.Designer.cs:1834
 msgid "Path:"
