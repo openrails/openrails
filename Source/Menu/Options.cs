@@ -142,14 +142,14 @@ namespace ORTS
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
             checkOverspeedMonitor.Checked = Settings.SpeedControl;
-            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
+            checkControlConfirmations.Checked = !Settings.SuppressConfirmations; // Inverted as "Show confirmations" is better UI than "Suppress confirmations"
             checkRetainers.Checked = Settings.RetainersOnAllCars;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
             comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
-            checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
+            checkEnableTCSScripts.Checked = !Settings.DisableTCSScripts;    // Inverted as "Enable scripts" is better UI than "Disable scripts"
             numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
@@ -187,10 +187,10 @@ namespace ORTS
             numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
-            checkHotStart.Checked = Settings.HotStart;
+            checkBoilerPreheated.Checked = Settings.HotStart;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
-            checkBoxNoDieselEngineStart.Checked = Settings.NoDieselEngineStart;
+            checkDieselEnginesStarted.Checked = !Settings.NoDieselEngineStart; // Inverted as "EngineStart" is better UI than "NoEngineStart"
 
             // Keyboard tab
             InitializeKeyboardSettings();
@@ -321,7 +321,7 @@ namespace ORTS
             checkAdhesionPropToWeather.Checked = Settings.AdhesionProportionalToWeather;
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
-            checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
+            checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;   // Inverted as "Show warnings" is better UI than "Suppress warnings"
             precipitationBoxHeight.Value = Settings.PrecipitationBoxHeight;
             precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
             precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
@@ -429,7 +429,7 @@ namespace ORTS
             Settings.Language = comboLanguage.SelectedValue.ToString();
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
-            Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
+            Settings.DisableTCSScripts = !checkEnableTCSScripts.Checked; // Inverted as "Enable scripts" is better UI than "Disable scripts"
             Settings.WebServerPort = (int)numericWebServerPort.Value;
 
             // Audio tab
@@ -461,10 +461,10 @@ namespace ORTS
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
-            Settings.HotStart = checkHotStart.Checked;
+            Settings.HotStart = checkBoilerPreheated.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
-            Settings.NoDieselEngineStart = checkBoxNoDieselEngineStart.Checked;
+            Settings.NoDieselEngineStart = !checkDieselEnginesStarted.Checked; // Inverted as "EngineStart" is better UI than "NoEngineStart"
 
             // Keyboard tab
             // These are edited live.
@@ -818,7 +818,7 @@ namespace ORTS
                 (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
                 (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
-                (pbDisableTcsScripts, new[] { checkDisableTCSScripts }),
+                (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
@@ -873,7 +873,7 @@ namespace ORTS
                     baseUrl + "/options.html#other-units"
                 },
                 {
-                    pbDisableTcsScripts,
+                    pbEnableTcsScripts,
                     baseUrl + "/options.html#disable-tcs-scripts"
                 },
                 {
