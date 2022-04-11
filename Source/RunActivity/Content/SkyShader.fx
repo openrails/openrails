@@ -177,7 +177,15 @@ float4 PSSky(VERTEX_OUTPUT In) : COLOR
 	skyColor *= SkyColor.y;
 	
 	// Stars (power function keeps stars hidden until after sunset)
-	skyColor = lerp(starColor, skyColor, pow(SkyColor.y,0.125));
+	// if-statement handles astronomical/final stage of twilight
+	if (LightVector.y < -0.2)
+		{
+		skyColor = lerp(starColor, skyColor, LightVector.y*6.6+2.22);
+		}
+		else 
+		{
+		skyColor = lerp(starColor, skyColor, pow(abs(SkyColor.y),0.125));
+		}
 	
 	// Fogging
 	skyColor.rgb = lerp(skyColor.rgb, FogColor.rgb, saturate((1 - In.Normal.y) * Fog.x));
