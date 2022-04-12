@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2022-04-12 14:33:07-0300\n"
-"PO-Revision-Date: 2022-04-12 16:36-0300\n"
+"PO-Revision-Date: 2022-04-12 16:55-0300\n"
 "Last-Translator: Nekrodamus\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -119,7 +119,7 @@ msgstr "Fácil"
 
 #: ../../Menu/MainForm.cs:157
 msgid "Medium"
-msgstr "Normal"
+msgstr "Medio"
 
 #: ../../Menu/MainForm.cs:158 ../../Menu/Options.cs:594
 msgid "Hard"
@@ -1224,7 +1224,7 @@ msgstr "Recuperar"
 
 #: ../../Menu/ResumeForm.Designer.cs:192
 msgid "Delete all invalid saves"
-msgstr "Borrar todos los juegos guardados inválidos"
+msgstr "Borrar juegos guardados inválidos"
 
 #: ../../Menu/ResumeForm.Designer.cs:204
 msgid "Import/ export"
@@ -1236,7 +1236,7 @@ msgstr "Juegos guardados inválidos"
 
 #: ../../Menu/ResumeForm.Designer.cs:268
 msgid "Replay from previous save"
-msgstr "Repetición del juego guardado previo"
+msgstr "Repetir último guardado"
 
 #: ../../Menu/ResumeForm.Designer.cs:279
 msgid "Replay from start"
