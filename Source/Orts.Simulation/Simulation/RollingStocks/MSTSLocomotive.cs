@@ -214,6 +214,12 @@ namespace Orts.Simulation.RollingStocks
         //float DebugTimer = 0.0f;
 
         // Adhesion parameters
+        public enum SlipControlType
+        {
+            None,
+            Full
+        }
+        public SlipControlType SlipControlSystem = SlipControlType.Full;
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
         public float SteamStaticWheelForce;
         public float SteamTangentialWheelForce;
@@ -425,6 +431,13 @@ public List<CabView> CabViewList = new List<CabView>();
         public float ThrottleIntervention = -1;
         public float DynamicBrakeIntervention = -1;
         protected float PreviousDynamicBrakeIntervention = -1;
+
+        public enum ElectricMotorTypes
+        {
+            AC,
+            DC
+        }
+        public ElectricMotorTypes ElectricMotorType;
 
         public ILocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ILocomotivePowerSupply;
         public ScriptedTrainControlSystem TrainControlSystem;
@@ -862,6 +875,18 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(dieselenginespeedofmaxtractiveeffort": MSTSSpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(ortsunloadingspeed": UnloadingSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(ortsslipcontrolsystem":
+                    stf.MustMatch("(");
+                    string slipControlType = stf.ReadString().ToLowerInvariant();
+                    try
+                    {
+                        SlipControlSystem = (SlipControlType)Enum.Parse(typeof(SlipControlType), slipControlType.First().ToString().ToUpper() + slipControlType.Substring(1));
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Skipped unknown slip control system " + slipControlType);
+                    }
+                    break;
                 case "engine(type":
                     stf.MustMatch("(");
                     var engineType = stf.ReadString();
@@ -872,6 +897,18 @@ public List<CabView> CabViewList = new List<CabView>();
                     catch
                     {
                         STFException.TraceWarning(stf, "Skipped unknown engine type " + engineType);
+                    }
+                    break;
+                case "engine(ortselectricmotortype":
+                    stf.MustMatch("(");
+                    string electricMotorType = stf.ReadString().ToUpper();
+                    try
+                    {
+                        ElectricMotorType = (ElectricMotorTypes)Enum.Parse(typeof(ElectricMotorTypes), electricMotorType);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Skipped unknown electric motor type " + electricMotorType);
                     }
                     break;
 
@@ -1070,7 +1107,9 @@ public List<CabView> CabViewList = new List<CabView>();
             MaxCurrentA = locoCopy.MaxCurrentA;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
             UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
+            SlipControlSystem = locoCopy.SlipControlSystem;
             EngineType = locoCopy.EngineType;
+            ElectricMotorType = locoCopy.ElectricMotorType;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
             SpeedOfMaxContinuousForceMpS = locoCopy.SpeedOfMaxContinuousForceMpS;
@@ -1893,7 +1932,6 @@ public List<CabView> CabViewList = new List<CabView>();
                             DynamicBrakeController.CurrentValue * 100);
                     }
 
-
                     // SimpleControlPhysics and if locomotive is a control car advanced adhesion will be "disabled".
                     if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control) 
                     {
@@ -2199,13 +2237,25 @@ public List<CabView> CabViewList = new List<CabView>();
                 // More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
                 // Simple adhesion control does not have any slip control feature built into it.
                 // TODO - a full review of slip/no slip control.
-                if (WheelSlip && AdvancedAdhesionModel)
+                if (ElectricMotorType == ElectricMotorTypes.AC)
                 {
-                    AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    if (AbsWheelSpeedMpS > 1.1 * MaxSpeedMpS)
+                    {
+                        AverageForceN = TractiveForceN = 0;
+                        return;
+                    }
                 }
                 else
                 {
-                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    if (WheelSlip && AdvancedAdhesionModel)
+                    {
+                        AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    }
+                    else
+                    {
+                        AbsTractionSpeedMpS = AbsSpeedMpS;
+                    }
                 }
 
                 if (TractiveForceCurves == null)
@@ -2297,7 +2347,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 if (AdvancedAdhesionModel)
                 {
                     // Wheelslip
-                    if (LocomotiveAxle.IsWheelSlip)
+                    if (WheelSlip)
                     {
                         if (WheelslipState != Wheelslip.Occurring)
                         {
@@ -2307,7 +2357,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                     else
                     {
-                        if (LocomotiveAxle.IsWheelSlipWarning)
+                        if (WheelSlipWarning)
                         {
                             if (WheelslipState != Wheelslip.Warning)
                             {
@@ -2590,7 +2640,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 //LocomotiveAxle.AxleRevolutionsInt.MinStep = LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f;
                 LocomotiveAxle.AxleDiameterM = 2*DriverWheelRadiusM;
 
-                if (AntislipControl == AntislipControlType.Full)
+                if (SlipControlSystem == SlipControlType.Full)
                 {
                     // Simple slip control
                     // Motive force is reduced to the maximum adhesive force
@@ -2614,7 +2664,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 if (elapsedClockSeconds > 0)
                 {
                     WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
-                    WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning;
+                    WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning && SlipControlSystem != SlipControlType.Full;
                 }
                 WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
             }
@@ -5017,7 +5067,7 @@ public List<CabView> CabViewList = new List<CabView>();
                                 if (activeloco.DieselEngines[0] != null)
                                 {
                                     if (activeloco.AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                                        data = activeloco.LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
+                                        data = activeloco.WheelSlipWarning ? 1 : 0;
                                     else
                                         data = activeloco.WheelSlip ? 1 : 0;
 
@@ -5028,7 +5078,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         else
                         {
                             if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                                data = LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
+                                data = WheelSlipWarning ? 1 : 0;
                             else
                                 data = WheelSlip ? 1 : 0;
                         }
