@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
-"PO-Revision-Date: 2022-04-08 16:59-0300\n"
+"PO-Revision-Date: 2022-04-11 20:02-0300\n"
 "Last-Translator: Nekrodamus\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -55,15 +55,15 @@ msgstr "Importar y exportar juegos guardados"
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:53
 msgid "✔"
-msgstr ""
+msgstr "✔"
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:64
 msgid "✘"
-msgstr ""
+msgstr "✘"
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:86
 msgid "↺"
-msgstr ""
+msgstr "↺"
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:108
 msgid "EditKey"
@@ -248,7 +248,7 @@ msgstr "Composición: {0}"
 
 #: ../../Menu/MainForm.Designer.cs:124
 msgid "Windowed"
-msgstr "Modo Ventana"
+msgstr "Ventana"
 
 #: ../../Menu/MainForm.Designer.cs:134
 msgid "Start"
@@ -256,7 +256,7 @@ msgstr "Comenzar"
 
 #: ../../Menu/MainForm.Designer.cs:146 ../../Menu/MainForm.Designer.cs:956
 msgid "Open Rails"
-msgstr ""
+msgstr "Open Rails"
 
 #: ../../Menu/MainForm.Designer.cs:164
 msgid "Logging"
@@ -268,7 +268,7 @@ msgstr "Opciones"
 
 #: ../../Menu/MainForm.Designer.cs:183
 msgid "Resume/ Replay..."
-msgstr "Resumen/ Repetición"
+msgstr "Reanudar/ Repetición"
 
 #: ../../Menu/MainForm.Designer.cs:192
 msgid "Tools ▼"
@@ -284,7 +284,7 @@ msgstr "Host/puerto:"
 
 #: ../../Menu/MainForm.Designer.cs:257
 msgid "User name:"
-msgstr "Nombre de usuario:"
+msgstr "Usuario:"
 
 #: ../../Menu/MainForm.Designer.cs:284
 msgid "Multiplayer"
@@ -300,11 +300,11 @@ msgstr "Cliente"
 
 #: ../../Menu/MainForm.Designer.cs:315
 msgid "Start MP"
-msgstr "Empezar multijugador"
+msgstr "Empezar MP"
 
 #: ../../Menu/MainForm.Designer.cs:325
 msgid "Resume MP"
-msgstr "Reanudar multijugador"
+msgstr "Reanudar MP"
 
 #: ../../Menu/MainForm.Designer.cs:338
 msgid "Singleplayer"
@@ -372,7 +372,7 @@ msgstr "Dificultad:"
 
 #: ../../Menu/MainForm.Designer.cs:702 ../../Menu/MainForm.Designer.cs:848
 msgid "Season:"
-msgstr "Estación meteorológica:"
+msgstr "Temporada:"
 
 #: ../../Menu/MainForm.Designer.cs:736
 msgid "Weather File:"
@@ -417,11 +417,11 @@ msgstr "Métrico"
 
 #: ../../Menu/Options.cs:107
 msgid "Imperial US"
-msgstr ""
+msgstr "Imperial US"
 
 #: ../../Menu/Options.cs:108
 msgid "Imperial UK"
-msgstr ""
+msgstr "Imperial UK"
 
 #: ../../Menu/Options.cs:115
 msgid "Automatic"
@@ -429,19 +429,19 @@ msgstr "Automático"
 
 #: ../../Menu/Options.cs:116
 msgid "bar"
-msgstr ""
+msgstr "bar"
 
 #: ../../Menu/Options.cs:117
 msgid "psi"
-msgstr ""
+msgstr "psi"
 
 #: ../../Menu/Options.cs:118
 msgid "inHg"
-msgstr ""
+msgstr "inHg"
 
 #: ../../Menu/Options.cs:119
 msgid "kgf/cm²"
-msgstr ""
+msgstr "kgf/cm²"
 
 #: ../../Menu/Options.cs:211
 msgid "comma"
@@ -449,15 +449,15 @@ msgstr "coma"
 
 #: ../../Menu/Options.cs:212
 msgid "semicolon"
-msgstr ""
+msgstr "semicolon"
 
 #: ../../Menu/Options.cs:213
 msgid "tab"
-msgstr ""
+msgstr "tab"
 
 #: ../../Menu/Options.cs:214
 msgid "space"
-msgstr ""
+msgstr "space"
 
 #: ../../Menu/Options.cs:220
 msgid "route"
@@ -465,15 +465,15 @@ msgstr "ruta"
 
 #: ../../Menu/Options.cs:221
 msgid "m/s"
-msgstr ""
+msgstr "m/s"
 
 #: ../../Menu/Options.cs:222
 msgid "km/h"
-msgstr ""
+msgstr "km/h"
 
 #: ../../Menu/Options.cs:223
 msgid "mph"
-msgstr ""
+msgstr "mph"
 
 #: ../../Menu/Options.cs:242 ../../Menu/ResumeForm.Designer.cs:398
 msgid "Time"
@@ -540,8 +540,7 @@ msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
 msgstr ""
-"Actualizaciones poco frecuentes de las versiones oficiales seleccionadas. "
-"Recomendado para la mayoría de los usuarios."
+"Actualizaciones poco frecuentes. Recomendado para la mayoría de los usuarios."
 
 #: ../../Menu/Options.cs:283
 msgid ""
@@ -562,7 +561,7 @@ msgstr "No hay actualizaciones."
 
 #: ../../Menu/Options.cs:412
 msgid "Click to change this key"
-msgstr "Click para cambiar esta tecla"
+msgstr "Clic para cambiar esta tecla"
 
 #: ../../Menu/Options.cs:428
 msgid ""
@@ -626,7 +625,7 @@ msgstr ""
 #: ../../Menu/Options.cs:634
 #, csharp-format
 msgid "{0}%"
-msgstr ""
+msgstr "{0}%"
 
 #: ../../Menu/Options.cs:670
 #, csharp-format
@@ -658,11 +657,11 @@ msgid "OK"
 msgstr "Aceptar"
 
 #: ../../Menu/Options.Designer.cs:308
-msgid "Brake pipe charging rate (PSI/s)             "
+msgid "Brake pipe charging rate (PSI/s)"
 msgstr "Velocidad de carga de la tubería de freno (PSI/s)"
 
 #: ../../Menu/Options.Designer.cs:319
-msgid "Graduated release air brakes                                "
+msgid "Graduated release air brakes"
 msgstr "Liberación gradual de los frenos de aire"
 
 #: ../../Menu/Options.Designer.cs:332 ../../Menu/TestingForm.Designer.cs:87
@@ -670,15 +669,15 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 #: ../../Menu/Options.Designer.cs:342
-msgid "Alerter in cab                                                        "
-msgstr "Alerta en la cabina"
+msgid "Alerter in cab"
+msgstr "\"Hombre Muerto\" en cabina"
 
 #: ../../Menu/Options.Designer.cs:355
-msgid "Control confirmations                                            "
+msgid "Control confirmations"
 msgstr "Confirmaciones de control"
 
 #: ../../Menu/Options.Designer.cs:367
-msgid "Map window                                                        "
+msgid "Map window"
 msgstr "Ventana del mapa"
 
 #: ../../Menu/Options.Designer.cs:433
@@ -686,39 +685,39 @@ msgid "General"
 msgstr "General"
 
 #: ../../Menu/Options.Designer.cs:599
-msgid "Port number                                       "
+msgid "Port number"
 msgstr "Número de puerto"
 
 #: ../../Menu/Options.Designer.cs:630
-msgid "Enable webserver                                                "
+msgid "Enable webserver"
 msgstr "Habilitar el servidor web"
 
 #: ../../Menu/Options.Designer.cs:642
-msgid "Overspeed monitor                                                     "
+msgid "Overspeed monitor"
 msgstr "Monitor de exceso de velocidad"
 
 #: ../../Menu/Options.Designer.cs:654
-msgid "Disable TCS scripts                                              "
+msgid "Disable TCS scripts"
 msgstr "Desactivar los scripts de TCS"
 
 #: ../../Menu/Options.Designer.cs:667
-msgid "Other units                        "
+msgid "Other units"
 msgstr "Otras unidades"
 
 #: ../../Menu/Options.Designer.cs:679
-msgid "Pressure unit                     "
+msgid "Pressure unit"
 msgstr "Unidad de presión"
 
 #: ../../Menu/Options.Designer.cs:722
-msgid "Language                         "
+msgid "Language"
 msgstr "Idioma"
 
 #: ../../Menu/Options.Designer.cs:743
-msgid "Also in external views                                    "
+msgid "Also in external views"
 msgstr "También en vistas externas"
 
 #: ../../Menu/Options.Designer.cs:753
-msgid "Retainer valve on all cars                                     "
+msgid "Retainer valve on all cars"
 msgstr "Válvula de retención en todos los coches"
 
 #: ../../Menu/Options.Designer.cs:772
@@ -743,19 +742,19 @@ msgstr "Sonido compatible con MSTS Bin"
 
 #: ../../Menu/Options.Designer.cs:903
 msgid "Video"
-msgstr ""
+msgstr "Video"
 
 #: ../../Menu/Options.Designer.cs:914 ../../Menu/Options.Designer.cs:1125
 msgid "XXX"
-msgstr ""
+msgstr "XXX"
 
 #: ../../Menu/Options.Designer.cs:925
 msgid "Anti-aliasing:"
-msgstr ""
+msgstr "Anti-aliasing:"
 
 #: ../../Menu/Options.Designer.cs:951
 msgid "Shadow for all shapes"
-msgstr "Sombra para todas las formas"
+msgstr "Sombras para todas las \"shapes\" (objetos estáticos)"
 
 #: ../../Menu/Options.Designer.cs:961
 msgid "Double overhead wires"
@@ -840,7 +839,7 @@ msgstr "Abrir/cerrar puertas en los trenes IA"
 
 #: ../../Menu/Options.Designer.cs:1345
 msgid "Forced red at station stops"
-msgstr "Forzar Rojo en las paradas de las estaciones"
+msgstr "Forzar rojo en las paradas de las estaciones"
 
 #: ../../Menu/Options.Designer.cs:1355
 msgid "Steam locomotive hot start"
@@ -932,7 +931,7 @@ msgstr "Registro de datos de rendimiento del vapor"
 
 #: ../../Menu/Options.Designer.cs:1661
 msgid "Verbose ENG/WAG configuration messages"
-msgstr "Mensajes de configuración \"verbosed\" de ENG/WAG"
+msgstr "Mensajes de configuración detallados de .ENG/.WAG"
 
 #: ../../Menu/Options.Designer.cs:1676
 msgid "Evaluation"
@@ -968,7 +967,7 @@ msgstr "Cambiar..."
 
 #: ../../Menu/Options.Designer.cs:1825
 msgid "Name:"
-msgstr "Nombre:"
+msgstr "Nombre"
 
 #: ../../Menu/Options.Designer.cs:1834
 msgid "Path:"
@@ -988,7 +987,7 @@ msgstr "Modo actualización:"
 
 #: ../../Menu/Options.Designer.cs:2004
 msgid "Experimental"
-msgstr ""
+msgstr "Experimental"
 
 #: ../../Menu/Options.Designer.cs:2015 ../../Menu/Options.Designer.cs:2059
 #: ../../Menu/Options.Designer.cs:2522
@@ -997,7 +996,7 @@ msgstr "Nivel"
 
 #: ../../Menu/Options.Designer.cs:2039
 msgid "Activity weather randomization"
-msgstr "Aleatorización de la actividad del clima"
+msgstr "Clima aleatorio"
 
 #: ../../Menu/Options.Designer.cs:2049
 msgid "Activity randomization"
@@ -1033,7 +1032,7 @@ msgstr "Sesgo de nivel de detalle:"
 
 #: ../../Menu/Options.Designer.cs:2260
 msgid "Show shape warnings"
-msgstr "Mostrar avisos de shapes"
+msgstr "Mostrar advertencias de shapes"
 
 #: ../../Menu/Options.Designer.cs:2285
 msgid "Load day/night textures only when needed"
@@ -1053,7 +1052,7 @@ msgstr "Medidor de velocidad circular ETCS"
 
 #: ../../Menu/Options.Designer.cs:2364
 msgid "Signal light glow"
-msgstr "Luminosidad de luz de señalización"
+msgstr "Resplandor de luces de señalización"
 
 #: ../../Menu/Options.Designer.cs:2374
 msgid "MSTS environments"
@@ -1065,8 +1064,7 @@ msgstr "Velocidad de fotogramas objetivo"
 
 #: ../../Menu/Options.Designer.cs:2423
 msgid "Automatically tune settings to keep performance level"
-msgstr ""
-"Ajuste automático de la configuración para mantener el nivel de rendimiento"
+msgstr "Ajuste automático de la configuración"
 
 #: ../../Menu/Options.Designer.cs:2434
 msgid "Extend object maximum viewing distance to horizon"
@@ -1096,11 +1094,8 @@ msgid "Load DDS textures in preference to ACE"
 msgstr "Carga de texturas DDS en lugar de ACE"
 
 #: ../../Menu/Options.Designer.cs:699
-msgid ""
-"Large address aware binaries (for all 64bit and 3GB tuning on "
-"32bit)                                                               "
-msgstr ""
-"Ejecutables Large Adress Aware (para 64 bits y 3GB en 32 bits)"
+msgid "Large address aware binaries (for all 64bit and 3GB tuning on 32bit)"
+msgstr "Ejecutables Large Adress Aware (para 64 bits y 3GB en 32 bits)"
 
 #: ../../Menu/Options.Designer.cs:1591
 msgid ""
