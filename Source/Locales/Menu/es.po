@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2022-04-12 14:33:07-0300\n"
-"PO-Revision-Date: 2022-04-12 15:00-0300\n"
+"PO-Revision-Date: 2022-04-12 16:36-0300\n"
 "Last-Translator: Nekrodamus\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -372,7 +372,7 @@ msgstr "Dificultad:"
 
 #: ../../Menu/MainForm.Designer.cs:702 ../../Menu/MainForm.Designer.cs:848
 msgid "Season:"
-msgstr "Temporada:"
+msgstr "Estación:"
 
 #: ../../Menu/MainForm.Designer.cs:736
 msgid "Weather File:"
@@ -968,7 +968,7 @@ msgstr "Nivel"
 
 #: ../../Menu/Options.Designer.cs:1870
 msgid "Activity weather randomization"
-msgstr "Clima aleatorio"
+msgstr "Aleatorización de clima"
 
 #: ../../Menu/Options.Designer.cs:1880
 msgid "Activity randomization"
