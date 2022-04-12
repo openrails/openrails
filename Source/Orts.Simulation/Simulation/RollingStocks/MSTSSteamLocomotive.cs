@@ -1400,8 +1400,8 @@ namespace Orts.Simulation.RollingStocks
 
             if (RestoredCombinedTenderWaterVolumeUKG > 1.0)// Check to see if this is a restored game -(assumed so if Restored >0), then set water controller values based upon saved values
             {
-                CombinedTenderWaterVolumeUKG = RestoredCombinedTenderWaterVolumeUKG;
                 MaxTotalCombinedWaterVolumeUKG = RestoredMaxTotalCombinedWaterVolumeUKG;
+                CombinedTenderWaterVolumeUKG = RestoredCombinedTenderWaterVolumeUKG;
             }
 
             InitializeTenderWithWater();
