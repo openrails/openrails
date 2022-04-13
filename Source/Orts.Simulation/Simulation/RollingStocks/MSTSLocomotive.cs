@@ -432,12 +432,12 @@ public List<CabView> CabViewList = new List<CabView>();
         public float DynamicBrakeIntervention = -1;
         protected float PreviousDynamicBrakeIntervention = -1;
 
-        public enum ElectricMotorTypes
+        public enum TractionMotorTypes
         {
             AC,
             DC
         }
-        public ElectricMotorTypes ElectricMotorType;
+        public TractionMotorTypes TractionMotorType;
 
         public ILocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ILocomotivePowerSupply;
         public ScriptedTrainControlSystem TrainControlSystem;
@@ -899,16 +899,16 @@ public List<CabView> CabViewList = new List<CabView>();
                         STFException.TraceWarning(stf, "Skipped unknown engine type " + engineType);
                     }
                     break;
-                case "engine(ortselectricmotortype":
+                case "engine(ortstractionmotortype":
                     stf.MustMatch("(");
-                    string electricMotorType = stf.ReadString().ToUpper();
+                    string tractionMotorType = stf.ReadString().ToUpper();
                     try
                     {
-                        ElectricMotorType = (ElectricMotorTypes)Enum.Parse(typeof(ElectricMotorTypes), electricMotorType);
+                        TractionMotorType = (TractionMotorTypes)Enum.Parse(typeof(TractionMotorTypes), tractionMotorType);
                     }
                     catch
                     {
-                        STFException.TraceWarning(stf, "Skipped unknown electric motor type " + electricMotorType);
+                        STFException.TraceWarning(stf, "Skipped unknown traction motor type " + tractionMotorType);
                     }
                     break;
 
@@ -1109,7 +1109,7 @@ public List<CabView> CabViewList = new List<CabView>();
             UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
             SlipControlSystem = locoCopy.SlipControlSystem;
             EngineType = locoCopy.EngineType;
-            ElectricMotorType = locoCopy.ElectricMotorType;
+            TractionMotorType = locoCopy.TractionMotorType;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
             SpeedOfMaxContinuousForceMpS = locoCopy.SpeedOfMaxContinuousForceMpS;
@@ -2237,7 +2237,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 // More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
                 // Simple adhesion control does not have any slip control feature built into it.
                 // TODO - a full review of slip/no slip control.
-                if (ElectricMotorType == ElectricMotorTypes.AC)
+                if (TractionMotorType == TractionMotorTypes.AC)
                 {
                     AbsTractionSpeedMpS = AbsSpeedMpS;
                     if (AbsWheelSpeedMpS > 1.1 * MaxSpeedMpS)
