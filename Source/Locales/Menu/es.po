@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2022-04-12 14:33:07-0300\n"
-"PO-Revision-Date: 2022-04-12 17:57-0300\n"
-"Last-Translator: Nekrodamus\n"
+"PO-Revision-Date: 2022-04-14 09:35-0300\n"
+"Last-Translator: FrannDzs <paladinifranco93@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -670,7 +670,7 @@ msgstr "Cancelar"
 
 #: ../../Menu/Options.Designer.cs:323
 msgid "Alerter in cab                                                        "
-msgstr "Alerta en la cabina"
+msgstr "\"Hombre Muerto\" en cabina"
 
 #: ../../Menu/Options.Designer.cs:336
 msgid "Show control confirmations                                            "
