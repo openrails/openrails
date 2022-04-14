@@ -4635,17 +4635,19 @@ namespace Orts.Simulation.RollingStocks
                     float cos = (float)Math.Cos(crankAngleRad);
                     float tangentialCrankForceFactor = Math.Abs(sin + CrankRadiusFt / ConnectRodLengthFt * sin * cos);
                     float verticalThrustFactor = 3.0f / 4.0f * (CrankRadiusFt / ConnectRodLengthFt) * sin;
-                    float crankCylinderPosition = (float)(Math.Abs(MathHelper.WrapAngle(crankAngleRad)) / Math.PI);
-                    float crankCylinderPressure = Pressure_a_AtmPSI; // FIXME: Just for testing
+                    float crankCylinderPosition = (float)(MathHelper.WrapAngle(crankAngleRad) / Math.PI);
+                    if (crankCylinderPosition < 0) crankCylinderPosition += 1;
+                    float crankCylinderPressure;
                     // TODO: How should this be implemented?
                     if (cutoff > crankCylinderPosition)
                     {
-                        crankCylinderPressure = Math.Min(slipCutoffPressureAtmPSI / cutoff * crankCylinderPosition, Pressure_a_AtmPSI);
+                        crankCylinderPressure = slipInitialPressureAtmPSI;
+                        //crankCylinderPressure = Math.Min(slipCutoffPressureAtmPSI / cutoff * crankCylinderPosition, Pressure_a_AtmPSI);
                     }
-                    /*else if (CylinderExhaustOpenFactor > crankCylinderPosition)
+                    else if (CylinderExhaustOpenFactor > crankCylinderPosition)
                     {
                         crankCylinderPressure = (slipCutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (crankCylinderPosition + CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
-                    }*/
+                    }
                     else // Pressure will be in the expansion section of the cylinder
                     {
                         // Crank pressure = Cutoff Pressure x Cylinder Volume (at cutoff point) / cylinder volume (at release)
@@ -4653,9 +4655,9 @@ namespace Orts.Simulation.RollingStocks
                     }
                     float pistonForceLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * crankCylinderPressure;
 
-                    float reciprocatingInertiaFactor = -1.603f * cos + (CrankRadiusFt / ConnectRodLengthFt * (float)Math.Cos(2.0f * crankAngleRad));
+                    float reciprocatingInertiaFactor = -1.603f * (cos + CrankRadiusFt / ConnectRodLengthFt * (float)Math.Cos(2.0f * crankAngleRad));
                     float reciprocatingInertiaForce = reciprocatingInertiaFactor * ReciprocatingWeightLb * cylinderStrokeSpeedDiameterFactor;
-                    float connectRodInertiaFactor = -1.603f * cos + (CrankRadiusFt * RodCoGFt / (ConnectRodLengthFt * ConnectRodLengthFt) * ((float)Math.Cos(2.0f * crankAngleRad)));
+                    float connectRodInertiaFactor = -1.603f * (cos + CrankRadiusFt * RodCoGFt / ConnectRodLengthFt * ConnectRodLengthFt * (float)Math.Cos(2.0f * crankAngleRad));
                     float connectRodInertiaForce = connectRodInertiaFactor * ConnectingRodWeightLb * cylinderStrokeSpeedDiameterFactor;
 
                     float tangentialCrankWheelForceLbf = (pistonForceLbf + reciprocatingInertiaForce + connectRodInertiaForce) * tangentialCrankForceFactor;
