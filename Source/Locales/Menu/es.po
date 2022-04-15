@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2022-04-12 14:33:07-0300\n"
-"PO-Revision-Date: 2022-04-12 16:55-0300\n"
-"Last-Translator: Nekrodamus\n"
+"PO-Revision-Date: 2022-04-14 09:35-0300\n"
+"Last-Translator: FrannDzs <paladinifranco93@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -199,7 +199,7 @@ msgstr ""
 #: ../../Menu/MainForm.cs:1133
 #, csharp-format
 msgid "Route: {0}"
-msgstr "Ruta {0}"
+msgstr "Ruta: {0}"
 
 #: ../../Menu/MainForm.cs:1139 ../../Menu/MainForm.cs:1171
 #, csharp-format
@@ -229,7 +229,7 @@ msgstr "Dirigiéndose a: {0}"
 #: ../../Menu/MainForm.cs:1157
 #, csharp-format
 msgid "Timetable set: {0}"
-msgstr "Horario establecido: {0}"
+msgstr "Conjunto de horarios: {0}"
 
 #: ../../Menu/MainForm.cs:1161
 #, csharp-format
@@ -392,7 +392,7 @@ msgstr "Día:"
 
 #: ../../Menu/MainForm.Designer.cs:880
 msgid "Timetable set:"
-msgstr "Horario establecido:"
+msgstr "Conjunto de horarios:"
 
 #: ../../Menu/MainForm.Designer.cs:900 ../../Menu/Options.cs:266
 #: ../../Menu/TestingForm.Designer.cs:314
