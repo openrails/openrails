@@ -2972,7 +2972,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                     else
                     {
-                        BaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.6f), 0.8f); // If fog is less then 2km then it will impact friction, decrease adhesion to 60% (same as light rain transition)
+                        BaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.6f), 1.0f); // If fog is less then 2km then it will impact friction, decrease adhesion to 60% (same as light rain transition)
                     }                                        
                 }
                 else // if not proportional to fog use fixed friction value approximately equal to default 0.33 (will vary if adhesion parameters set), thus factor will be 1.0 x friction coefficient of 0.33
