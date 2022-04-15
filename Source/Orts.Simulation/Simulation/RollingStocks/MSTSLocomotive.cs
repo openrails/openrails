@@ -2920,18 +2920,15 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 if (Simulator.WeatherType == WeatherType.Rain) // Wet weather
                 {
-                    if (Simulator.Settings.AdhesionProportionalToWeather && AdvancedAdhesionModel && !Simulator.Paused)  // Adjust clear weather for precipitation presence - base friction value will be approximately between 0.15 and 0.2
-                    // ie base value between 0.8 and 1.0 (TODO) 
-                    // note lowest friction will be for drizzle rain; friction will increase for precipitation both higher and lower than drizzle rail
+                    if (Simulator.Settings.AdhesionProportionalToWeather && AdvancedAdhesionModel && !Simulator.Paused)  // Adjust clear weather for precipitation presence
+                    // ie base value between 60% and 80% (TODO) 
+                    // note lowest friction will be for drizzle (light) rain; friction will increase for precipitation higher than drizzle rail
                     {
                         float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
-                        // precipitation will calculate a value between 0.15 (light rain) and 0.2 (heavy rain) - this will be a factor that is used to adjust the base value - assume linear value between upper and lower precipitation values
-                        if (pric >= 0.5)
-                            BaseFrictionCoefficientFactor = Math.Min((pric * 0.0078f + 0.45f), 0.8f); // should give a minimum value between 0.8 and 1.0
-                        else
-                            BaseFrictionCoefficientFactor = Math.Min((0.4539f + 1.0922f * (0.5f - pric)), 0.8f); // should give a minimum value between 0.8 and 1.0
+                        // precipitation will calculate a base coefficient value between 60% (light rain) and 80% (heavy rain) - this will be a factor that is used to adjust the base value - assume linear value between upper and lower precipitation values
+                        BaseFrictionCoefficientFactor = Math.Min((pric * 0.0078f + 0.6f), 0.8f); // should give a minimum value between 60% and 80%
                     }
-                    else // if not proportional to precipitation use fixed friction value of 0.8 x friction coefficient of 0.33
+                    else // if not proportional to precipitation use fixed friction value of 0.8 x friction coefficient value
                     {
                         BaseFrictionCoefficientFactor = 0.8f;
                     }
@@ -2971,14 +2968,14 @@ public List<CabView> CabViewList = new List<CabView>();
                     float fog = Simulator.Weather.FogDistance;
                     if (fog > 2000)
                     {
-                        BaseFrictionCoefficientFactor = 1.0f; // if fog is not too thick don't change the friction
+                        BaseFrictionCoefficientFactor = 1.0f; // if fog is not too thick don't change the friction - minimal fog stay at clear adhesion
                     }
                     else
                     {
-                        BaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.8f), 0.8f); // If fog is less then 2km then it will impact friction, decrease adhesion by up to 20% (same as clear to wet transition)
+                        BaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.6f), 0.8f); // If fog is less then 2km then it will impact friction, decrease adhesion to 60% (same as light rain transition)
                     }                                        
                 }
-                else // if not proportional to fog use fixed friction value approximately equal to 0.33, thus factor will be 1.0 x friction coefficient of 0.33
+                else // if not proportional to fog use fixed friction value approximately equal to default 0.33 (will vary if adhesion parameters set), thus factor will be 1.0 x friction coefficient of 0.33
                 {
                     BaseFrictionCoefficientFactor = 1.0f;
                 }
