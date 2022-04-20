@@ -207,7 +207,7 @@ namespace Orts.Viewer3D.Popups
             ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             ForceGraphMotiveForce = ForceGraphs.Add(Viewer.Catalog.GetString("Motive force"), "0%", "100%", Color.Green, 75);
             ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
-            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "300", Color.Blue, 25);
+            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "50", Color.Blue, 25);
 
             DebugGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             DebugGraphMemory = DebugGraphs.Add(Viewer.Catalog.GetString("Memory"), "0GB", String.Format("{0:F0}GB", (float)ProcessVirtualAddressLimit / 1024 / 1024 / 1024), Color.Orange, 50);
@@ -296,7 +296,7 @@ namespace Orts.Viewer3D.Popups
                     ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
                 }
 
-                ForceGraphNumOfSubsteps.AddSample(loco.LocomotiveAxle.NumOfSubstepsPS);
+                ForceGraphNumOfSubsteps.AddSample(loco.LocomotiveAxle.NumOfSubstepsPS / 50.0f);
 
                 ForceGraphs.PrepareFrame(frame);
             }
@@ -1171,7 +1171,7 @@ namespace Orts.Viewer3D.Popups
                         {
                             TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model)"));
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel slip"), "{0:F0}% ({1:F0}%/{2})", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS, FormatStrings.s);
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.LocomotiveAxle.AdhesionConditions * 100.0f);
+                            TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Axle drive force"), "{0} ({1})", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.DriveForceN, mstsLocomotive.IsMetric),
                             FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeRetardForceN, mstsLocomotive.IsMetric));
