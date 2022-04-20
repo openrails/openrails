@@ -454,6 +454,7 @@ public List<CabView> CabViewList = new List<CabView>();
         public IIRFilter CurrentFilter;
         public IIRFilter AdhesionFilter;
         public float SaveAdhesionFilter;
+        public float AdhesionConditions;
 
         public float FilteredMotiveForceN;
 
@@ -473,8 +474,6 @@ public List<CabView> CabViewList = new List<CabView>();
 
             LocomotiveAxle = new Axle();
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
-            LocomotiveAxle.DampingNs = MassKG / 1000.0f;
-            LocomotiveAxle.FrictionN = MassKG / 100.0f;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1f), 0.001f);
 
@@ -1222,9 +1221,6 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 LocomotiveAxle.SlipWarningTresholdPercent = SlipWarningThresholdPercent;
                 LocomotiveAxle.AdhesionK = AdhesionK;
-                LocomotiveAxle.CurtiusKnifflerA = Curtius_KnifflerA;
-                LocomotiveAxle.CurtiusKnifflerB = Curtius_KnifflerB;
-                LocomotiveAxle.CurtiusKnifflerC = Curtius_KnifflerC;
             }
         }
 
@@ -1686,8 +1682,6 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             base.InitializeMoving();
             LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS);
-            LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
-            LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f;
             AdhesionFilter.Reset(0.5f);
             AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
             float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
@@ -2256,14 +2250,14 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 else
                 {
-                if (WheelSlip && AdvancedAdhesionModel)
-                {
-                    AbsTractionSpeedMpS = AbsWheelSpeedMpS;
-                }
-                else
-                {
-                    AbsTractionSpeedMpS = AbsSpeedMpS;
-                }
+                    if (WheelSlip && AdvancedAdhesionModel)
+                    {
+                        AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    }
+                    else
+                    {
+                        AbsTractionSpeedMpS = AbsSpeedMpS;
+                    }
                 }
 
                 if (TractiveForceCurves == null)
@@ -2634,7 +2628,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 if (AxleInertiaKgm2 <= 0) // if no axleinertia value supplied in ENG file, calculate axleinertia value.
                 {
                     if (LocoNumDrvAxles > 0 && DriverWheelRadiusM > 0)
-                {
+                    {
                         float radiusSquared = DriverWheelRadiusM * DriverWheelRadiusM;
                         float wheelMass = 500 * radiusSquared / (0.5f * 0.5f);
                         AxleInertiaKgm2 = LocoNumDrvAxles * wheelMass * radiusSquared + 500;
@@ -2646,16 +2640,16 @@ public List<CabView> CabViewList = new List<CabView>();
                 LocomotiveAxle.InertiaKgm2 = Math.Min(AxleInertiaKgm2, 40000);
 
                 //LocomotiveAxle.AxleRevolutionsInt.MinStep = LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f;
-                LocomotiveAxle.AxleDiameterM = 2*DriverWheelRadiusM;
+                LocomotiveAxle.WheelRadiusM = DriverWheelRadiusM;
+                LocomotiveAxle.DampingNs = MassKG / 1000.0f;
+                LocomotiveAxle.FrictionN = MassKG / 1000.0f;
 
                 if (SlipControlSystem == SlipControlType.Full)
                 {
                     // Simple slip control
                     // Motive force is reduced to the maximum adhesive force
                     // In wheelslip situations, motive force is set to zero
-                    float umax = (LocomotiveAxle.CurtiusKnifflerA / (MpS.ToKpH(Math.Abs(SpeedMpS)) + LocomotiveAxle.CurtiusKnifflerB) + LocomotiveAxle.CurtiusKnifflerC); // Curtius - Kniffler equation
-                    umax *= LocomotiveAxle.AdhesionConditions;
-                    MotiveForceN = Math.Sign(MotiveForceN) * Math.Min(umax * LocomotiveAxle.AxleWeightN, Math.Abs(MotiveForceN));
+                    MotiveForceN = Math.Sign(MotiveForceN) * Math.Min(LocomotiveAxle.AdhesionLimit * LocomotiveAxle.AxleWeightN, Math.Abs(MotiveForceN));
                     if (LocomotiveAxle.IsWheelSlip) MotiveForceN = 0;
                 }
 
@@ -2666,8 +2660,11 @@ public List<CabView> CabViewList = new List<CabView>();
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
-                LocomotiveAxle.Update(elapsedClockSeconds);             //Main updater of the axle model
-
+                var watch = new Stopwatch();
+                watch.Start();
+                LocomotiveAxle.Update(elapsedClockSeconds); //Main updater of the axle model
+                watch.Stop();
+                //AdhesionConditions = watch.ElapsedTicks / 1000.0f;
                 MotiveForceN = LocomotiveAxle.CompensatedAxleForceN;
                 if (elapsedClockSeconds > 0)
                 {
@@ -3132,8 +3129,8 @@ public List<CabView> CabViewList = new List<CabView>();
             if (elapsedClockSeconds > 0)
             {
                 SaveAdhesionFilter = AdhesionFilter.Filter(BaseFrictionCoefficientFactor + AdhesionRandom, elapsedClockSeconds);
-                LocomotiveAxle.AdhesionConditions = AdhesionMultiplier * SaveAdhesionFilter;
-                LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(LocomotiveAxle.AdhesionConditions, 0.05f, 2.5f); // Avoids NaNs in axle speed computing
+                AdhesionConditions = MathHelper.Clamp(AdhesionMultiplier * SaveAdhesionFilter, 0.05f, 2.5f);
+                LocomotiveAxle.AdhesionLimit = AdhesionConditions * BaseuMax;
             }
 
            // Set adhesion conditions for other steam locomotives
@@ -3143,7 +3140,7 @@ public List<CabView> CabViewList = new List<CabView>();
             }
             else
             {
-                LocomotiveCoefficientFrictionHUD = BaseuMax * LocomotiveAxle.AdhesionConditions; // Set display value for HUD - diesel
+                LocomotiveCoefficientFrictionHUD = LocomotiveAxle.AdhesionLimit; // Set display value for HUD - diesel
             }
 
             
