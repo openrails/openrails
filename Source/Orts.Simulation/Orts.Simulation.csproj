@@ -136,6 +136,7 @@
     <Compile Include="Simulation\RollingStocks\MSTSWagon.cs" />
     <Compile Include="Simulation\RollingStocks\RollingStock.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\BrakeSystem.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\EOT.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\AirSinglePipe.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\AirTwinPipe.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\EPBrakeSystem.cs" />

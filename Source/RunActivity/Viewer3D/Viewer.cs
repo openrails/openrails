@@ -101,6 +101,8 @@ namespace Orts.Viewer3D
         public ComposeMessage ComposeMessageWindow { get; private set; } // ??? window
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
         public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
+        public EOTListWindow EOTListWindow { get; private set; } // to select EOT
+
         // Route Information
         public TileManager Tiles { get; private set; }
         public TileManager LoTiles { get; private set; }
@@ -500,6 +502,7 @@ namespace Orts.Viewer3D
             ComposeMessageWindow = new ComposeMessage(WindowManager);
             TrainListWindow = new TrainListWindow(WindowManager);
             TTDetachWindow = new TTDetachWindow(WindowManager);
+            EOTListWindow = new EOTListWindow(WindowManager);
             WindowManager.Initialize();
 
             InfoDisplay = new InfoDisplay(this);
@@ -651,6 +654,14 @@ namespace Orts.Viewer3D
             DPDynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             DPMoreCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             DPLessCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+
+            //EOT
+            EOTCommTestCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EOTDisarmCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EOTArmTwoWayCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EOTEmergencyBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleEOTEmergencyBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EOTMountCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
         }
 
         public void ChangeToPreviousFreeRoamCamera()
@@ -1076,6 +1087,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.DebugTracks)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugSignalling)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayEOTListWindow)) EOTListWindow.Visible = !EOTListWindow.Visible;
 
 
             if (UserInput.IsPressed(UserCommand.GameChangeCab))

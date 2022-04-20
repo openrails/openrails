@@ -17,6 +17,7 @@
 
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using ORTS.Common;
 using ORTS.Common.Input;
@@ -44,6 +45,13 @@ namespace Orts.Viewer3D.Popups
             public string KeyPressed;
         }
         public List<ListLabel> labels = new List<ListLabel>();
+
+        List<string> tokens = new List<string>()
+        {
+            Viewer.Catalog.GetString("BP"),
+            Viewer.Catalog.GetString("EQ"),
+            Viewer.Catalog.GetString("V")
+        };
 
         /// <summary>
         /// Table of Colors to client-side color codes.
@@ -265,7 +273,7 @@ namespace Orts.Viewer3D.Popups
         {
             base.Initialize();
             // Reset window size
-            UpdateWindowSize();
+            if (Visible) UpdateWindowSize();
         }
 
         protected override ControlLayout Layout(ControlLayout layout)
@@ -275,6 +283,16 @@ namespace Orts.Viewer3D.Popups
             {
                 var colWidth = labels.Max(x => x.FirstColWidth) + (normalTextMode? 15: 20);
                 var TimeHboxPositionY = 0;
+
+                // search wider
+                var tokenOffset = 0;
+                var tokenWidth = 0;
+                foreach (var data in tokens.Where((string d) => !string.IsNullOrWhiteSpace(d)))
+                {
+                    tokenWidth = Owner.TextFontDefault.MeasureString(data);
+                    tokenOffset = tokenWidth > tokenOffset ? tokenWidth : tokenOffset;
+                }
+
                 foreach (var data in labels.ToList())
                 {
                     if (data.FirstCol.Contains("NwLn"))
@@ -367,7 +385,16 @@ namespace Orts.Viewer3D.Popups
                             }
                             else
                             {
-                                hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, LastCol));
+                                var iniLastCol = Viewer.Catalog.GetString(LastCol).IndexOf(" ");
+                                if (tokens.Any(LastCol.Contains) && iniLastCol >= 0)
+                                {
+                                    hbox.Add(indicator = new Label(tokenOffset + (normalTextMode ? 5 : 3), hbox.RemainingHeight, LastCol.Substring(0, iniLastCol)));
+                                    hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, LastCol.Substring(iniLastCol, Viewer.Catalog.GetString(LastCol).Length - iniLastCol).TrimStart()));
+                                }
+                                else
+                                {
+                                    hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, LastCol));
+                                }
                                 indicator.Color = Color.White; // Default color
                             }
                         }
@@ -838,7 +865,6 @@ namespace Orts.Viewer3D.Popups
                         index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
 
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimEnd();
-                    brakeInfoValue = brakeInfoValue.StartsWith(Viewer.Catalog.GetString("V")) ? brakeInfoValue.Replace(Viewer.Catalog.GetString("V"), Viewer.Catalog.GetString("V") + "  ") : brakeInfoValue;
                     AddLabel(new ListLabel
                     {
                         LastCol = brakeInfoValue,
@@ -1057,6 +1083,18 @@ namespace Orts.Viewer3D.Popups
             }
 
             AddSeparator();
+
+           // EOT
+
+            if (locomotive.Train.EOT != null)
+            {
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString("EOT"),
+                    LastCol = $"{locomotive.Train.EOT?.EOTState.ToString()}"
+                });
+                AddSeparator();
+            }
 
             // Distributed Power
 

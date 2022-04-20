@@ -9759,6 +9759,18 @@ namespace Orts.Simulation.Signalling
             else
             {
                 thisSection = signalRef.TrackCircuitList[thisTC];
+                if (!isSignalNormal())
+                {
+                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][reqtype];
+                    foreach (var item in thisList.TrackCircuitItem)
+                    {
+                        if (item.SignalRef.TCOffset > TCOffset)
+                        {
+                            signalFound = item.SignalRef.thisRef;
+                            break;
+                        }
+                    }
+                }
                 sectionSet = enabledTrain == null ? false : thisSection.IsSet(enabledTrain, false);
 
                 if (sectionSet)

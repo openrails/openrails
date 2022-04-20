@@ -136,10 +136,10 @@ These windows use the abbreviations *t-us* for short tons (2000 lb),
 Note: The units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
 distance) are always based on data read from the route files.
 
-Disable TCS scripts
+Enable TCS scripts
 -------------------
 
-This option disables the train control system scripts for locomotives where
+This option enables the train control system scripts for locomotives where
 these have been implemented.
 
 .. _options-web-server-port:
@@ -200,11 +200,11 @@ Video Options
 Dynamic shadows
 ---------------
 
-Check this option to cast shadows from movable objects such as trains.
+This option causes movable objects such as trains to cast shadows.
+Unchecking the option will increase the frame rate.
 
-The default setting is unchecked.
+The default setting is checked.
 
-Note: This may reduce the frame rate.
 
 Shadow for all shapes
 ---------------------
@@ -218,11 +218,13 @@ Note: This may reduce the frame rate.
 Note: Static objects provided with shadows (in the World files) 
 will cast shadows anyway. This option adds shadows for other static objects.
 
+
 Glass on in-game windows
 ------------------------
 
 When this option is checked, the in-game windows are displayed in a
 semitransparent mode.
+
 
 Model instancing
 ----------------
@@ -234,10 +236,12 @@ hardware, but this may reduce the frame rate.
 
 The default setting is checked.
 
+
 Overhead wire
 -------------
 
 This option will enable or disable display of the overhead wire.
+
 
 .. _options-double-overhead-wires:
 
@@ -247,6 +251,7 @@ Double overhead wires
 MSTS uses a single wire for electrified routes; you may check this box so
 that OR will show the two overhead wires that are more common.
 
+
 .. _options-vsync:
 
 Vertical sync
@@ -254,13 +259,17 @@ Vertical sync
 
 Vertical Sync (VSync) attempts to lock Open Rails’ output frame rate 
 to your monitor's refresh rate for the smoothest image and to resist 
-image "tearing”.
+image "tearing".
+
 VSync may help keep the frame rate more stable on complex routes, 
 reducing sudden frame rate drops and apparent control lag in some cases.
 If Open Rails' frame rate drops below your monitor's frame rate, you 
-may see stuttering or image "tearing". To prevent this, either turn off 
+may see stuttering or image "tearing". To prevent this, either uncheck 
 the VSync option or reduce the values for video options such as view 
 distance, anti-aliasing, or world object density.
+
+The default setting is checked.
+
 
 Viewing distance
 ----------------
@@ -376,10 +385,12 @@ displayed as a message. This option is described in detail
 OR does not display the damage.
 
 
-Steam locomotive hot start
---------------------------
+At game start, Steam - pre-heat boiler
+--------------------------------------
 
 With this option selected, the temperature and pressure of steam in the boiler is ready to pull the train.
+Uncheck this option for a more detailed behaviour in which the player has to raise the boiler pressure.
+
 If not, the boiler pressure will be at 2/3 of maximum, which is only adequate for light work.
 If your schedule gives you time to raise the pressure close to maximum, then 
 switch from AI Firing to Manual Firing (Ctrl+F) and increase the Blower (N) to 100% to raise a draught. 
@@ -387,6 +398,16 @@ Replenish the coal using R and Shift+R to keep the fire mass close to 100%.
 Full pressure may be reached in 5 minutes or so.
 
 The default setting is checked.
+
+
+At game start, Diesel - run engines
+-----------------------------------
+
+When this option is checked, stationary diesel locos start the simulation with their engines running.
+Uncheck this option for a more detailed behaviour in which the player has to start the loco's engine.
+
+The default setting is checked.
+
 
 .. _options-forced-red:
 
@@ -456,14 +477,6 @@ Initially this option affects only trains that use vacuum braking but other cont
 With vacuum braking, it is sometimes necessary to operate two different controls to apply and release the brakes. 
 With "Simple control and physics" checked, the player is able to operate the brakes just with the brake valve 
 and doesn't need to consider the steam ejector separately.
-
-Diesel engines stopped at simulation start
-------------------------------------------
-
-When this option is unchecked, stationary diesel locos start the simulation with their engines running.
-Check this option for a more detailed behaviour in which the player has to start the loco's engine.
-
-The default setting is unchecked.
 
 
 .. _options-keyboard:
