@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2022-04-12 14:33:07-0300\n"
-"PO-Revision-Date: 2022-04-14 09:35-0300\n"
+"PO-Revision-Date: 2022-04-21 14:23-0300\n"
 "Last-Translator: FrannDzs <paladinifranco93@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -167,7 +167,7 @@ msgstr ""
 
 #: ../../Menu/MainForm.cs:1144
 msgid "Activity Briefing"
-msgstr "Información sobre la actividad"
+msgstr "Información sobre la actividad:"
 
 #: ../../Menu/MainForm.cs:323
 #, csharp-format
@@ -209,7 +209,7 @@ msgstr "Locomotora: {0}"
 #: ../../Menu/MainForm.cs:1143
 #, csharp-format
 msgid "Activity: {0}"
-msgstr "Actividad {0}"
+msgstr "Actividad: {0}"
 
 #: ../../Menu/MainForm.cs:1148 ../../Menu/MainForm.cs:1174
 #, csharp-format
