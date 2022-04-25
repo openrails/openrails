@@ -222,10 +222,16 @@ namespace Orts.Simulation.RollingStocks
         /// True if vehicle is equipped with an additional emergency brake reservoir
         /// </summary>
         public bool EmergencyReservoirPresent;
+        public enum BrakeValveType
+        {
+            None,
+            TripleValve, // Plain triple valve
+            Distributor, // Triple valve with graduated release
+        }
         /// <summary>
-        /// True if triple valve is capable of releasing brake gradually
+        /// Type of brake valve in the car
         /// </summary>
-        public bool DistributorPresent;
+        public BrakeValveType BrakeValve;
         /// <summary>
         /// True if equipped with handbrake. (Not common for older steam locomotives.)
         /// </summary>
@@ -1151,11 +1157,15 @@ namespace Orts.Simulation.RollingStocks
                     {
                         switch (equipment)
                         {
+                            case "triple_valve": BrakeValve = BrakeValveType.TripleValve; break;
                             case "distributor":
-                            case "graduated_release_triple_valve": DistributorPresent = true; break;
+                            case "graduated_release_triple_valve": BrakeValve = BrakeValveType.Distributor; break;
                             case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
                             case "handbrake": HandBrakePresent = true; break;
-                            case "auxiliary_reservoir": AuxiliaryReservoirPresent = true; break;
+                            case "auxilary_reservoir": // MSTS legacy parameter - use is discouraged
+                            case "auxiliary_reservoir":
+                                AuxiliaryReservoirPresent = true;
+                                break;
                             case "manual_brake": ManualBrakePresent = true; break;
                             case "retainer_3_position": RetainerPositions = 3; break;
                             case "retainer_4_position": RetainerPositions = 4; break;
@@ -1550,7 +1560,7 @@ namespace Orts.Simulation.RollingStocks
             CarBrakeSystemType = copy.CarBrakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
             EmergencyReservoirPresent = copy.EmergencyReservoirPresent;
-            DistributorPresent = copy.DistributorPresent;
+            BrakeValve = copy.BrakeValve;
             HandBrakePresent = copy.HandBrakePresent;
             ManualBrakePresent = copy.ManualBrakePresent;
             AuxiliaryReservoirPresent = copy.AuxiliaryReservoirPresent;
