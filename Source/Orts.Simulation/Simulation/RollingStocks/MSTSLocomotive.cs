@@ -219,7 +219,7 @@ namespace Orts.Simulation.RollingStocks
             None,
             Full
         }
-        public SlipControlType SlipControlSystem = SlipControlType.Full;
+        public SlipControlType SlipControlSystem;
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
         float SlipFrictionCoefficientFactor;
         public float SteamStaticWheelForce;
