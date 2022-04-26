@@ -1,4 +1,4 @@
-﻿namespace ORTS
+namespace ORTS
 {
     partial class OptionsForm
     {
@@ -40,7 +40,7 @@
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
             this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
-            this.pbDisableTcsScripts = new System.Windows.Forms.PictureBox();
+            this.pbEnableTcsScripts = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
             this.pbPressureUnit = new System.Windows.Forms.PictureBox();
             this.pbBrakePipeChargingRate = new System.Windows.Forms.PictureBox();
@@ -48,7 +48,7 @@
             this.pbRetainers = new System.Windows.Forms.PictureBox();
             this.pbAlerter = new System.Windows.Forms.PictureBox();
             this.checkOverspeedMonitor = new System.Windows.Forms.CheckBox();
-            this.checkDisableTCSScripts = new System.Windows.Forms.CheckBox();
+            this.checkEnableTCSScripts = new System.Windows.Forms.CheckBox();
             this.labelOtherUnits = new System.Windows.Forms.Label();
             this.labelPressureUnit = new System.Windows.Forms.Label();
             this.comboOtherUnits = new System.Windows.Forms.ComboBox();
@@ -86,12 +86,14 @@
             this.checkDynamicShadows = new System.Windows.Forms.CheckBox();
             this.checkWire = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
-            this.checkBoxNoDieselEngineStart = new System.Windows.Forms.CheckBox();
+            this.checkElectricPowerConnected = new System.Windows.Forms.CheckBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.checkDieselEnginesStarted = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.checkUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
             this.checkDoorsAITrains = new System.Windows.Forms.CheckBox();
             this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
-            this.checkHotStart = new System.Windows.Forms.CheckBox();
+            this.checkBoilerPreheated = new System.Windows.Forms.CheckBox();
             this.checkSimpleControlsPhysics = new System.Windows.Forms.CheckBox();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
             this.labelAdhesionMovingAverageFilterSize = new System.Windows.Forms.Label();
@@ -200,7 +202,7 @@
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcsScripts)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbEnableTcsScripts)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbBrakePipeChargingRate)).BeginInit();
@@ -359,7 +361,7 @@
             // tabPageGeneral
             // 
             this.tabPageGeneral.Controls.Add(this.pbOverspeedMonitor);
-            this.tabPageGeneral.Controls.Add(this.pbDisableTcsScripts);
+            this.tabPageGeneral.Controls.Add(this.pbEnableTcsScripts);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
             this.tabPageGeneral.Controls.Add(this.pbPressureUnit);
             this.tabPageGeneral.Controls.Add(this.pbBrakePipeChargingRate);
@@ -367,7 +369,7 @@
             this.tabPageGeneral.Controls.Add(this.pbRetainers);
             this.tabPageGeneral.Controls.Add(this.pbAlerter);
             this.tabPageGeneral.Controls.Add(this.checkOverspeedMonitor);
-            this.tabPageGeneral.Controls.Add(this.checkDisableTCSScripts);
+            this.tabPageGeneral.Controls.Add(this.checkEnableTCSScripts);
             this.tabPageGeneral.Controls.Add(this.labelOtherUnits);
             this.tabPageGeneral.Controls.Add(this.labelPressureUnit);
             this.tabPageGeneral.Controls.Add(this.comboOtherUnits);
@@ -398,17 +400,17 @@
             this.pbOverspeedMonitor.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbOverspeedMonitor.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // pbDisableTcsScripts
+            // pbEnableTcsScripts
             // 
-            this.pbDisableTcsScripts.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbDisableTcsScripts.Location = new System.Drawing.Point(6, 263);
-            this.pbDisableTcsScripts.Name = "pbDisableTcsScripts";
-            this.pbDisableTcsScripts.Size = new System.Drawing.Size(18, 18);
-            this.pbDisableTcsScripts.TabIndex = 28;
-            this.pbDisableTcsScripts.TabStop = false;
-            this.pbDisableTcsScripts.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbDisableTcsScripts.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbDisableTcsScripts.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            this.pbEnableTcsScripts.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbEnableTcsScripts.Location = new System.Drawing.Point(6, 263);
+            this.pbEnableTcsScripts.Name = "pbEnableTcsScripts";
+            this.pbEnableTcsScripts.Size = new System.Drawing.Size(18, 18);
+            this.pbEnableTcsScripts.TabIndex = 28;
+            this.pbEnableTcsScripts.TabStop = false;
+            this.pbEnableTcsScripts.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbEnableTcsScripts.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbEnableTcsScripts.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbOtherUnits
             // 
@@ -494,17 +496,17 @@
             this.checkOverspeedMonitor.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkOverspeedMonitor.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // checkDisableTCSScripts
+            // checkEnableTCSScripts
             // 
-            this.checkDisableTCSScripts.AutoSize = true;
-            this.checkDisableTCSScripts.Location = new System.Drawing.Point(32, 262);
-            this.checkDisableTCSScripts.Name = "checkDisableTCSScripts";
-            this.checkDisableTCSScripts.Size = new System.Drawing.Size(256, 17);
-            this.checkDisableTCSScripts.TabIndex = 13;
-            this.checkDisableTCSScripts.Text = "Disable TCS scripts                                              ";
-            this.checkDisableTCSScripts.UseVisualStyleBackColor = true;
-            this.checkDisableTCSScripts.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.checkDisableTCSScripts.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            this.checkEnableTCSScripts.AutoSize = true;
+            this.checkEnableTCSScripts.Location = new System.Drawing.Point(32, 262);
+            this.checkEnableTCSScripts.Name = "checkEnableTCSScripts";
+            this.checkEnableTCSScripts.Size = new System.Drawing.Size(240, 17);
+            this.checkEnableTCSScripts.TabIndex = 13;
+            this.checkEnableTCSScripts.Text = "Use TCS scripts                                              ";
+            this.checkEnableTCSScripts.UseVisualStyleBackColor = true;
+            this.checkEnableTCSScripts.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkEnableTCSScripts.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // labelOtherUnits
             // 
@@ -990,9 +992,11 @@
             // 
             // tabPageSimulation
             // 
-            this.tabPageSimulation.Controls.Add(this.checkBoxNoDieselEngineStart);
+            this.tabPageSimulation.Controls.Add(this.checkElectricPowerConnected);
+            this.tabPageSimulation.Controls.Add(this.label4);
+            this.tabPageSimulation.Controls.Add(this.checkDieselEnginesStarted);
             this.tabPageSimulation.Controls.Add(this.groupBox1);
-            this.tabPageSimulation.Controls.Add(this.checkHotStart);
+            this.tabPageSimulation.Controls.Add(this.checkBoilerPreheated);
             this.tabPageSimulation.Controls.Add(this.checkSimpleControlsPhysics);
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
             this.tabPageSimulation.Controls.Add(this.labelAdhesionMovingAverageFilterSize);
@@ -1007,15 +1011,37 @@
             this.tabPageSimulation.Text = "Simulation";
             this.tabPageSimulation.UseVisualStyleBackColor = true;
             // 
-            // checkBoxNoDieselEngineStart
+            // checkElectricPowerConnected
             // 
-            this.checkBoxNoDieselEngineStart.AutoSize = true;
-            this.checkBoxNoDieselEngineStart.Location = new System.Drawing.Point(6, 238);
-            this.checkBoxNoDieselEngineStart.Name = "checkBoxNoDieselEngineStart";
-            this.checkBoxNoDieselEngineStart.Size = new System.Drawing.Size(195, 17);
-            this.checkBoxNoDieselEngineStart.TabIndex = 9;
-            this.checkBoxNoDieselEngineStart.Text = "Diesel engines stopped after startup";
-            this.checkBoxNoDieselEngineStart.UseVisualStyleBackColor = true;
+            this.checkElectricPowerConnected.AutoSize = true;
+            this.checkElectricPowerConnected.Checked = true;
+            this.checkElectricPowerConnected.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkElectricPowerConnected.Enabled = false;
+            this.checkElectricPowerConnected.Location = new System.Drawing.Point(26, 238);
+            this.checkElectricPowerConnected.Name = "checkElectricPowerConnected";
+            this.checkElectricPowerConnected.Size = new System.Drawing.Size(153, 17);
+            this.checkElectricPowerConnected.TabIndex = 11;
+            this.checkElectricPowerConnected.Text = "Electric - power connected";
+            this.checkElectricPowerConnected.UseVisualStyleBackColor = true;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(6, 169);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(161, 13);
+            this.label4.TabIndex = 10;
+            this.label4.Text = "At game start, locomotives have:";
+            // 
+            // checkDieselEnginesStarted
+            // 
+            this.checkDieselEnginesStarted.AutoSize = true;
+            this.checkDieselEnginesStarted.Location = new System.Drawing.Point(26, 215);
+            this.checkDieselEnginesStarted.Name = "checkDieselEnginesStarted";
+            this.checkDieselEnginesStarted.Size = new System.Drawing.Size(142, 17);
+            this.checkDieselEnginesStarted.TabIndex = 9;
+            this.checkDieselEnginesStarted.Text = "Diesel - engine(s) started";
+            this.checkDieselEnginesStarted.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
@@ -1063,20 +1089,20 @@
             this.checkForcedRedAtStationStops.Text = "Forced red at station stops";
             this.checkForcedRedAtStationStops.UseVisualStyleBackColor = true;
             // 
-            // checkHotStart
+            // checkBoilerPreheated
             // 
-            this.checkHotStart.AutoSize = true;
-            this.checkHotStart.Location = new System.Drawing.Point(6, 192);
-            this.checkHotStart.Name = "checkHotStart";
-            this.checkHotStart.Size = new System.Drawing.Size(151, 17);
-            this.checkHotStart.TabIndex = 8;
-            this.checkHotStart.Text = "Steam locomotive hot start";
-            this.checkHotStart.UseVisualStyleBackColor = true;
+            this.checkBoilerPreheated.AutoSize = true;
+            this.checkBoilerPreheated.Location = new System.Drawing.Point(26, 192);
+            this.checkBoilerPreheated.Name = "checkBoilerPreheated";
+            this.checkBoilerPreheated.Size = new System.Drawing.Size(144, 17);
+            this.checkBoilerPreheated.TabIndex = 8;
+            this.checkBoilerPreheated.Text = "Steam - boiler pre-heated";
+            this.checkBoilerPreheated.UseVisualStyleBackColor = true;
             // 
             // checkSimpleControlsPhysics
             // 
             this.checkSimpleControlsPhysics.AutoSize = true;
-            this.checkSimpleControlsPhysics.Location = new System.Drawing.Point(6, 215);
+            this.checkSimpleControlsPhysics.Location = new System.Drawing.Point(6, 279);
             this.checkSimpleControlsPhysics.Name = "checkSimpleControlsPhysics";
             this.checkSimpleControlsPhysics.Size = new System.Drawing.Size(156, 17);
             this.checkSimpleControlsPhysics.TabIndex = 8;
@@ -2469,7 +2495,7 @@
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcsScripts)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbEnableTcsScripts)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbBrakePipeChargingRate)).EndInit();
@@ -2605,7 +2631,7 @@
         private System.Windows.Forms.CheckBox checkDistantMountains;
         private System.Windows.Forms.CheckBox checkAlerterExternal;
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
-        private System.Windows.Forms.CheckBox checkHotStart;
+        private System.Windows.Forms.CheckBox checkBoilerPreheated;
         private System.Windows.Forms.CheckBox checkSimpleControlsPhysics;
         private System.Windows.Forms.CheckBox checkVerticalSync;
         private System.Windows.Forms.ComboBox comboPressureUnit;
@@ -2648,7 +2674,7 @@
         private System.Windows.Forms.Label labelContent;
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
-        private System.Windows.Forms.CheckBox checkDisableTCSScripts;
+        private System.Windows.Forms.CheckBox checkEnableTCSScripts;
         private System.Windows.Forms.NumericUpDown precipitationBoxHeight;
         private System.Windows.Forms.NumericUpDown precipitationBoxWidth;
         private System.Windows.Forms.Label label23;
@@ -2671,14 +2697,14 @@
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox checkShadowAllShapes;
         private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
-        private System.Windows.Forms.CheckBox checkBoxNoDieselEngineStart;
+        private System.Windows.Forms.CheckBox checkDieselEnginesStarted;
         private System.Windows.Forms.PictureBox pbAlerter;
         private System.Windows.Forms.PictureBox pbRetainers;
         private System.Windows.Forms.PictureBox pbGraduatedRelease;
         private System.Windows.Forms.PictureBox pbBrakePipeChargingRate;
         private System.Windows.Forms.PictureBox pbPressureUnit;
         private System.Windows.Forms.PictureBox pbOtherUnits;
-        private System.Windows.Forms.PictureBox pbDisableTcsScripts;
+        private System.Windows.Forms.PictureBox pbEnableTcsScripts;
         private System.Windows.Forms.PictureBox pbOverspeedMonitor;
         private System.Windows.Forms.TrackBar trackAntiAliasing;
         private System.Windows.Forms.Label labelAntiAliasingValue;
@@ -2702,5 +2728,7 @@
         private System.Windows.Forms.Label labelPerformanceTunerTarget;
         private System.Windows.Forms.NumericUpDown numericPerformanceTunerTarget;
         private System.Windows.Forms.CheckBox checkPerformanceTuner;
+        private System.Windows.Forms.CheckBox checkElectricPowerConnected;
+        private System.Windows.Forms.Label label4;
     }
 }

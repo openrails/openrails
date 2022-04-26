@@ -206,6 +206,13 @@ namespace Orts.Formats.Msts
         ORTS_GENERIC_ITEM2,
         ORTS_SCREEN_SELECT,
         ORTS_STATIC_DISPLAY,
+        ORTS_EOT_BRAKE_PIPE,
+        ORTS_EOT_STATE_DISPLAY,
+        ORTS_EOT_ID,
+        ORTS_EOT_COMM_TEST,
+        ORTS_EOT_DISARM,
+        ORTS_EOT_ARM_TWO_WAY,
+        ORTS_EOT_EMERGENCY_BRAKE,
 
         // TCS Controls
         ORTS_TCS1,

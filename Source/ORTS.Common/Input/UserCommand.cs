@@ -47,6 +47,7 @@
         [GetString("Display Next Station Window")] DisplayNextStationWindow,
         [GetString("Display Compass Window")] DisplayCompassWindow,
         [GetString("Display Train List Window")] DisplayTrainListWindow,
+        [GetString("Display EOT List Window")] DisplayEOTListWindow,
 
         [GetString("Debug Speed Up")] DebugSpeedUp,
         [GetString("Debug Speed Down")] DebugSpeedDown,
@@ -144,6 +145,7 @@
         [GetString("Control Brake Hose Disconnect")] ControlBrakeHoseDisconnect,
         [GetString("Control Alerter")] ControlAlerter,
         [GetString("Control Emergency Push Button")] ControlEmergencyPushButton,
+        [GetString("Control EOT Emergency Brake")] ControlEOTEmergencyBrake,
         [GetString("Control Sander")] ControlSander,
         [GetString("Control Sander Toggle")] ControlSanderToggle,
         [GetString("Control Wiper")] ControlWiper,

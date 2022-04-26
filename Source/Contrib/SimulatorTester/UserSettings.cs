@@ -1,31 +1,39 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
-// 
+// COPYRIGHT 2022 by the Open Rails project.
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+using ORTS.Settings;
 
-namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
+namespace SimulatorTester
 {
-    public class AirTwinPipe : AirSinglePipe
+    public class UserSettings : ORTS.Settings.UserSettings
     {
-        public AirTwinPipe(TrainCar car)
-            : base(car)
+        [Default(false)]
+        public bool Quiet { get; set; }
+
+        [Default(false)]
+        public bool Verbose { get; set; }
+
+        [Default(10)]
+        public int FPS { get; set; }
+
+        public UserSettings(IEnumerable<string> options)
+            : base(options)
         {
-            TwoPipes = true;
-            MRPAuxResCharging = true;
-            DebugType = "2P";
         }
     }
 }
