@@ -380,18 +380,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             else
             {
                 if (BrakeLine1PressurePSI < AuxResPressurePSI - 1 && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
-                TripleValveState = ValveState.Emergency;
-            else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
-                TripleValveState = ValveState.Release;
-            else if (TripleValveState == ValveState.Emergency && BrakeLine1PressurePSI > AuxResPressurePSI)
-                TripleValveState = ValveState.Release;
+                    TripleValveState = ValveState.Emergency;
+                else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
+                    TripleValveState = ValveState.Release;
+                else if (TripleValveState == ValveState.Emergency && BrakeLine1PressurePSI > AuxResPressurePSI)
+                    TripleValveState = ValveState.Release;
                 else if (ControlResPressurePSI > 70 && BrakeLine1PressurePSI > ControlResPressurePSI * 0.97f) // UIC regulation: for 5 bar systems, release if > 4.85 bar
-                TripleValveState = ValveState.Release;
-            else if (TripleValveState != ValveState.Emergency && BrakeLine1PressurePSI < AuxResPressurePSI - 1)
-                TripleValveState = ValveState.Apply;
-            else if (TripleValveState == ValveState.Apply && BrakeLine1PressurePSI >= AuxResPressurePSI)
-                TripleValveState = ValveState.Lap;
-        }
+                    TripleValveState = ValveState.Release;
+                else if (TripleValveState != ValveState.Emergency && BrakeLine1PressurePSI < AuxResPressurePSI - 1)
+                    TripleValveState = ValveState.Apply;
+                else if (TripleValveState == ValveState.Apply && BrakeLine1PressurePSI >= AuxResPressurePSI)
+                    TripleValveState = ValveState.Lap;
+            }
             prevBrakePipePressurePSI = BrakeLine1PressurePSI;
         }
 
