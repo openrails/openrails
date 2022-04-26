@@ -30,6 +30,7 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
@@ -256,10 +257,10 @@ namespace Orts.Simulation
 
         public float TimetableLoadedFraction = 0.0f;    // Set by AI.PrerunAI(), Get by GameStateRunActivity.Update()
 
-        public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory)
+        public Simulator(UserSettings settings, string activityPath, bool useOpenRailsDirectory, bool deterministic = false)
         {
             Catalog = new GettextResourceManager("Orts.Simulation");
-            Random = new Random();
+            Random = deterministic ? new Random(0) : new Random();
 
             MPManager.Simulator = this;
 
@@ -612,6 +613,109 @@ namespace Orts.Simulation
             Train playerTrain = Trains[0];    // we install the player train first
             PlayerLocomotive = SetPlayerLocomotive(playerTrain);
             return PlayerLocomotive;
+        }
+
+        public void SetCommandReceivers()
+        {
+            ReverserCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            NotchedThrottleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ContinuousThrottleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            TrainBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EngineBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BrakemanBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            InitializeBrakesCommand.Receiver = PlayerLocomotive.Train;
+            ResetOutOfControlModeCommand.Receiver = PlayerLocomotive.Train;
+            EmergencyPushButtonCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            HandbrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BailOffCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            QuickReleaseCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BrakeOverchargeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            RetainersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BrakeHoseConnectCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleWaterScoopCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            if (PlayerLocomotive is MSTSSteamLocomotive)
+            {
+                ContinuousReverserCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousSmallEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousLargeEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleBlowdownValveCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousBlowerCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousDamperCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousFiringRateCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleManualFiringCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleCylinderCocksCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleCylinderCompoundCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                FireShovelfullCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                AIFireOnCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                AIFireOffCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                AIFireResetCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+            }
+
+            PantographCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            if (PlayerLocomotive is MSTSElectricLocomotive)
+            {
+                CircuitBreakerClosingOrderCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                CircuitBreakerClosingOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                CircuitBreakerOpeningOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                CircuitBreakerClosingAuthorizationCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+            }
+
+            if (PlayerLocomotive is MSTSDieselLocomotive)
+            {
+                TractionCutOffRelayClosingOrderCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                TractionCutOffRelayClosingOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                TractionCutOffRelayOpeningOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                TractionCutOffRelayClosingAuthorizationCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                TogglePlayerEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
+                VacuumExhausterCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
+            }
+
+            ToggleOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ResetOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleOdometerDirectionCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            SanderCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            AlerterCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            HornCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BellCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleCabLightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            WipersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            HeadlightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleDoorsLeftCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleDoorsRightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleMirrorsCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            CabRadioCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleHelpersEngineCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BatterySwitchCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+            BatterySwitchCloseButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+            BatterySwitchOpenButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+            ToggleMasterKeyCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+            ServiceRetentionButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+            ServiceRetentionCancellationButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+            ElectricTrainSupplyCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+            TCSButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).TrainControlSystem;
+            TCSSwitchCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).TrainControlSystem;
+            ToggleGenericItem1Command.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleGenericItem2Command.Receiver = (MSTSLocomotive)PlayerLocomotive;
+
+            //Distributed power
+            DPMoveToFrontCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPMoveToBackCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPTractionCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPIdleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPDynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPMoreCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DPLessCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+
+            //EOT
+            EOTCommTestCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EOTDisarmCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EOTArmTwoWayCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EOTEmergencyBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleEOTEmergencyBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EOTMountCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
         }
 
         public TrainCar SetPlayerLocomotive(Train playerTrain)
