@@ -1678,11 +1678,10 @@ namespace ORTS
             // 
             // labelPerformanceTunerTarget
             // 
-            this.labelPerformanceTunerTarget.AutoSize = true;
             this.labelPerformanceTunerTarget.Location = new System.Drawing.Point(116, 359);
             this.labelPerformanceTunerTarget.Margin = new System.Windows.Forms.Padding(3);
             this.labelPerformanceTunerTarget.Name = "labelPerformanceTunerTarget";
-            this.labelPerformanceTunerTarget.Size = new System.Drawing.Size(88, 13);
+            this.labelPerformanceTunerTarget.Size = new System.Drawing.Size(200, 13);
             this.labelPerformanceTunerTarget.TabIndex = 44;
             this.labelPerformanceTunerTarget.Text = "Target frame rate";
             this.labelPerformanceTunerTarget.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
@@ -1719,10 +1718,9 @@ namespace ORTS
             // 
             // checkPerformanceTuner
             // 
-            this.checkPerformanceTuner.AutoSize = true;
             this.checkPerformanceTuner.Location = new System.Drawing.Point(35, 329);
             this.checkPerformanceTuner.Name = "checkPerformanceTuner";
-            this.checkPerformanceTuner.Size = new System.Drawing.Size(277, 17);
+            this.checkPerformanceTuner.Size = new System.Drawing.Size(285, 17);
             this.checkPerformanceTuner.TabIndex = 42;
             this.checkPerformanceTuner.Text = "Automatically tune settings to keep performance level";
             this.checkPerformanceTuner.UseVisualStyleBackColor = true;
@@ -1744,12 +1742,11 @@ namespace ORTS
             // 
             // labelWebServerPort
             // 
-            this.labelWebServerPort.AutoSize = true;
             this.labelWebServerPort.Location = new System.Drawing.Point(109, 301);
             this.labelWebServerPort.Name = "labelWebServerPort";
-            this.labelWebServerPort.Size = new System.Drawing.Size(167, 13);
+            this.labelWebServerPort.Size = new System.Drawing.Size(220, 13);
             this.labelWebServerPort.TabIndex = 40;
-            this.labelWebServerPort.Text = "Web server port                            ";
+            this.labelWebServerPort.Text = "Web server port";
             this.labelWebServerPort.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.labelWebServerPort.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
@@ -1789,12 +1786,11 @@ namespace ORTS
             // 
             // checkControlConfirmations
             // 
-            this.checkControlConfirmations.AutoSize = true;
             this.checkControlConfirmations.Location = new System.Drawing.Point(35, 265);
             this.checkControlConfirmations.Name = "checkControlConfirmations";
             this.checkControlConfirmations.Size = new System.Drawing.Size(285, 17);
             this.checkControlConfirmations.TabIndex = 37;
-            this.checkControlConfirmations.Text = "Show control confirmations                                            ";
+            this.checkControlConfirmations.Text = "Show control confirmations ";
             this.checkControlConfirmations.UseVisualStyleBackColor = true;
             this.checkControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
@@ -1813,10 +1809,9 @@ namespace ORTS
             // 
             // checkWindowGlass
             // 
-            this.checkWindowGlass.AutoSize = true;
             this.checkWindowGlass.Location = new System.Drawing.Point(35, 233);
             this.checkWindowGlass.Name = "checkWindowGlass";
-            this.checkWindowGlass.Size = new System.Drawing.Size(171, 17);
+            this.checkWindowGlass.Size = new System.Drawing.Size(285, 17);
             this.checkWindowGlass.TabIndex = 35;
             this.checkWindowGlass.Text = "Use glass for in-game windows";
             this.checkWindowGlass.UseVisualStyleBackColor = true;
@@ -1851,13 +1846,12 @@ namespace ORTS
             // 
             // labelWindowSize
             // 
-            this.labelWindowSize.AutoSize = true;
             this.labelWindowSize.Location = new System.Drawing.Point(181, 195);
             this.labelWindowSize.Margin = new System.Windows.Forms.Padding(3);
             this.labelWindowSize.Name = "labelWindowSize";
-            this.labelWindowSize.Size = new System.Drawing.Size(255, 13);
+            this.labelWindowSize.Size = new System.Drawing.Size(400, 13);
             this.labelWindowSize.TabIndex = 34;
-            this.labelWindowSize.Text = "Window size (type WIDTHxHEIGHT for custom size)";
+            this.labelWindowSize.Text = "Window size (choose or specify WIDTHxHEIGHT)";
             this.labelWindowSize.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.labelWindowSize.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
@@ -1875,10 +1869,9 @@ namespace ORTS
             // 
             // checkWindowed
             // 
-            this.checkWindowed.AutoSize = true;
             this.checkWindowed.Location = new System.Drawing.Point(35, 168);
             this.checkWindowed.Name = "checkWindowed";
-            this.checkWindowed.Size = new System.Drawing.Size(77, 17);
+            this.checkWindowed.Size = new System.Drawing.Size(285, 17);
             this.checkWindowed.TabIndex = 31;
             this.checkWindowed.Text = "Windowed";
             this.checkWindowed.UseVisualStyleBackColor = true;
@@ -1911,11 +1904,10 @@ namespace ORTS
             // 
             // labelLanguage
             // 
-            this.labelLanguage.AutoSize = true;
             this.labelLanguage.Location = new System.Drawing.Point(161, 9);
             this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
             this.labelLanguage.Name = "labelLanguage";
-            this.labelLanguage.Size = new System.Drawing.Size(130, 13);
+            this.labelLanguage.Size = new System.Drawing.Size(140, 13);
             this.labelLanguage.TabIndex = 27;
             this.labelLanguage.Text = "Language                         ";
             this.labelLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
@@ -1934,11 +1926,10 @@ namespace ORTS
             // 
             // labelUpdateMode
             // 
-            this.labelUpdateMode.AutoSize = true;
             this.labelUpdateMode.Location = new System.Drawing.Point(36, 53);
             this.labelUpdateMode.Margin = new System.Windows.Forms.Padding(3);
             this.labelUpdateMode.Name = "labelUpdateMode";
-            this.labelUpdateMode.Size = new System.Drawing.Size(74, 13);
+            this.labelUpdateMode.Size = new System.Drawing.Size(285, 13);
             this.labelUpdateMode.TabIndex = 0;
             this.labelUpdateMode.Text = "Update mode:";
             this.labelUpdateMode.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
@@ -2534,7 +2525,6 @@ namespace ORTS
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).EndInit();
             this.tabPageSystem.ResumeLayout(false);
-            this.tabPageSystem.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPerformanceTuner)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWebServerPort)).EndInit();
