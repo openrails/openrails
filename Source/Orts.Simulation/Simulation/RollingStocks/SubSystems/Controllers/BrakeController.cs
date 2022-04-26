@@ -369,7 +369,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Script.MainReservoirPressureBar = () =>
                 {
                     if (Locomotive.Train != null)
-                        return Bar.FromPSI(Locomotive.Train.BrakeLine2PressurePSI);
+                        return Bar.FromPSI(Locomotive.MainResPressurePSI);
                     else
                         return float.MaxValue;
                 };
