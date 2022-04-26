@@ -2264,24 +2264,8 @@ The operation of air single-pipe brakes is described in general below.
 
 The auxiliary reservoir needs to be charged by the brake pipe and,
 depending on the WAG file parameters setting, this can delay the brake
-release. When the *Graduated Release Air Brakes* box is not checked, the
-auxiliary reservoir is also charged by the emergency reservoir (until
-both are equal and then both are charged from the pipe). When the
-*Graduated Release Air Brakes* box is checked, the auxiliary reservoir is
-only charged from the brake pipe. The Open Rails software implements it
-this way because the emergency reservoir is used as the source of the
-reference pressure for regulating the brake cylinder pressure.
-
-The end result is that you will get a slower release when the *Graduated
-Release Air Brakes* box is checked. This should not be an issue with two
-pipe air brake systems because the second pipe can be the source of air
-for charging the auxiliary reservoirs.
-
-Open Rails software has modeled most of this graduated release car brake
-behavior based on the 26F control valve, but this valve is designed for
-use on locomotives. The valve uses a control reservoir to maintain the
-reference pressure and Open Rails software simply replaced the control
-reservoir with the emergency reservoir.
+release. The auxiliary reservoir is also charged by the emergency reservoir (until
+both are equal and then both are charged from the pipe).
 
 Increasing the :ref:`Brake Pipe Charging Rate <options-brake-pipe-charging>`
 (psi/s) value controls the charging rate. Increasing the value will reduce the
@@ -3063,6 +3047,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 
 .. index::
    single: BrakePipeVolume
+   single: ORTSEmergencyValveActuationRate
+   single: ORTSMainResPipeAuxResCharging
    single: ORTSMainResChargingRate
    single: ORTSEngineBrakeReleaseRate
    single: ORTSEngineBrakeApplicationRate
@@ -3084,6 +3070,14 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   brake servicetimefactor instead, but the Open Rails Development team
   doesn't believe this is worth the effort by the user for the added
   realism.
+- ``Wagon(ORTSEmergencyValveActuationRate`` -- Threshold rate for emergency
+  brake actuation of the triple valve. If the pressure in the brake pipe
+  decreases at a higher rate than specified, the triple valve will switch to
+  emergency mode.
+- ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
+  for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
+  reservoirs. If set to false, the main reservoir pipe will not be used
+  by the brake system.
 - ``Engine(ORTSMainResChargingRate`` -- Rate of main reservoir pressure change
   in psi per second when the compressor is on (default .4).
 - ``Engine(ORTSEngineBrakeReleaseRate`` -- Rate of engine brake pressure
