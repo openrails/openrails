@@ -310,8 +310,8 @@ namespace Orts.Viewer3D.Popups
                 LocomotiveGraphsThrottle.AddSample(loco.ThrottlePercent * 0.01f);
                 if (locoD != null)
                 {
-                    LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
-                    LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
+                        LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
+                        LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
                 }
                 if (locoE != null)
                 {
