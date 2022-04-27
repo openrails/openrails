@@ -197,7 +197,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                                 x = MaxPressureBar() - MinReductionBar() * (1 - x) - FullServReductionBar() * x;
                                 DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
                                 if (ForceControllerReleaseGraduated || notch.Type == ControllerState.EPApply)
-                                    IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
+                                    IncreasePressure(ref pressureBar, Math.Min(x, MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             }
                             break;
                         case ControllerState.GSelfLapH:
