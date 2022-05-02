@@ -3970,6 +3970,14 @@ namespace Orts.Simulation.Physics
                     Simulator.Confirmer.Warning(CabControl.InitializeBrakes, CabSetting.Warn1);
                 return;
             }
+            if (Simulator.Settings.VerboseConfigurationMessages && LeadLocomotiveIndex >= 0) // Check incompatibilities between brake control valves
+            {
+                MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
+                if (Cars.Any(x => (x as MSTSWagon).BrakeValve != lead.BrakeValve))
+                {
+                    Trace.TraceInformation("Cars along the train have incompatible brake control valves");
+                }
+            }
             UnconditionalInitializeBrakes();
             return;
         }
