@@ -33,8 +33,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -174,27 +172,27 @@ namespace Orts.Viewer3D.Processes
                     case "start":
                     case "start-profile":
                         InitLogging(settings, args);
-                        InitLoading(args);
+                        InitLoading(settings, args);
                         Start(settings, acttype, data);
                         break;
                     case "resume":
                         InitLogging(settings, args);
-                        InitLoading(args);
+                        InitLoading(settings, args);
                         Resume(settings, data);
                         break;
                     case "replay":
                         InitLogging(settings, args);
-                        InitLoading(args);
+                        InitLoading(settings, args);
                         Replay(settings, data);
                         break;
                     case "replay_from_save":
                         InitLogging(settings, args);
-                        InitLoading(args);
+                        InitLoading(settings, args);
                         ReplayFromSave(settings, data);
                         break;
                     case "test":
                         InitLogging(settings, args, true);
-                        InitLoading(args);
+                        InitLoading(settings, args);
                         Test(settings, data);
                         break;
 
@@ -816,7 +814,7 @@ namespace Orts.Viewer3D.Processes
         DateTime LoadingNextSample = DateTime.MinValue;
         float LoadedPercent = -1;
 
-        void InitLoading(string[] args)
+        void InitLoading(UserSettings settings, string[] args)
         {
             // Get the initial bytes; this is subtracted from all further uses of GetProcessBytesLoaded().
             LoadingBytesInitial = GetProcessBytesLoaded();
@@ -824,15 +822,8 @@ namespace Orts.Viewer3D.Processes
             // We hash together all the appropriate arguments to the program as the key for the loading cache file.
             // Arguments without a '.' in them and those starting '/' are ignored, since they are explore activity
             // configuration (time, season, etc.) or flags like /test which we don't want to change on.
-            LoadingDataKey = String.Join(" ", args.Where(a => a.Contains('.') && !a.StartsWith("-") && !a.StartsWith("/")).ToArray()).ToLowerInvariant();
-            var hash = new MD5CryptoServiceProvider();
-            hash.ComputeHash(Encoding.Default.GetBytes(LoadingDataKey));
-            var loadingHash = String.Join("", hash.Hash.Select(h => h.ToString("x2")).ToArray());
-            var dataPath = Path.Combine(UserSettings.UserDataFolder, "Load Cache");
-            LoadingDataFilePath = Path.Combine(dataPath, loadingHash + ".dat");
-
-            if (!Directory.Exists(dataPath))
-                Directory.CreateDirectory(dataPath);
+            LoadingDataKey = String.Join(" ", args.Where(a => a.Contains('.') && !a.StartsWith("-") && !a.StartsWith("/"))).ToLowerInvariant();
+            LoadingDataFilePath = settings.GetCacheFilePath("Load", LoadingDataKey);
 
             var loadingTime = 0;
             var bytesExpected = new long[LoadingSampleCount];
