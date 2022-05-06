@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows.Forms;
 using ORTS.Common;
 
@@ -473,6 +475,20 @@ namespace ORTS.Settings
                 return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
 
             throw new InvalidDataException(String.Format("UserSetting {0} has no default value.", property.Name));
+        }
+
+        public string GetCacheFilePath(string type, string key)
+        {
+            var hasher = new MD5CryptoServiceProvider();
+            hasher.ComputeHash(Encoding.Default.GetBytes(key));
+            var hash = String.Join("", hasher.Hash.Select(h => h.ToString("x2")));
+
+            var directory = Path.Combine(UserSettings.UserDataFolder, "Cache", type);
+
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            return Path.Combine(directory, hash + ".or-cache");
         }
 
         PropertyInfo GetProperty(string name)
