@@ -66,6 +66,7 @@
     <Compile Include="Orts.Parsers.Msts\StfReader.cs" />
     <Compile Include="Orts.Common\Conversions.cs" />
     <Compile Include="Orts.Common\SmoothedData.cs" />
+    <Compile Include="Orts.Parsers.OR\JsonReaderTests.cs" />
     <Compile Include="Orts.Parsers.OR\TimetableReaderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestFile.cs" />
