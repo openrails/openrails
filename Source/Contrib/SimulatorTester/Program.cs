@@ -23,6 +23,7 @@ using ORTS.Common;
 using System.IO;
 using System.Windows.Forms;
 using Orts.Common;
+using System.Diagnostics;
 
 namespace SimulatorTester
 {
@@ -31,8 +32,34 @@ namespace SimulatorTester
         static void Main(string[] args)
         {
             var options = args.Where(a => a.StartsWith("-") || a.StartsWith("/")).Select(a => a.Substring(1));
-            var files = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/"));
+            var files = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/")).ToList();
             var settings = new UserSettings(options);
+
+            if (files.Count != 1 || options.Contains("help", StringComparer.InvariantCultureIgnoreCase))
+            {
+                var version = FileVersionInfo.GetVersionInfo(Application.ExecutablePath);
+                Console.WriteLine("{0} {1}", version.FileDescription, VersionInfo.VersionOrBuild);
+                Console.WriteLine();
+                Console.WriteLine("Usage:");
+                Console.WriteLine("  {0} [options] <save-file>", Path.GetFileNameWithoutExtension(Application.ExecutablePath));
+                Console.WriteLine();
+                Console.WriteLine("Options:");
+                Console.WriteLine("  <save-file>  {0} save file to use", Application.ProductName);
+                Console.WriteLine("  /quiet       Do not show summary of simulation (only exit code is set)");
+                Console.WriteLine("  /verbose     Show version and settings (similar to a {0} log)", Application.ProductName);
+                Console.WriteLine("  /fps <fps>   Set the simulation frame-rate [default: 10]");
+                Console.WriteLine("  /help        Show help and usage information");
+                Console.WriteLine("  ...and any standard {0} option", Application.ProductName);
+                Console.WriteLine();
+                Console.WriteLine("The {0} takes a save file and:", version.FileDescription);
+                Console.WriteLine("  - Loads the same activity as contained in the save file");
+                Console.WriteLine("  - Runs the simulation at the specified FPS for the same duration as the save file");
+                Console.WriteLine("  - Compares the final position with that contained in the save file");
+                Console.WriteLine();
+                Console.WriteLine("The exit code is set to the distance from the target in meters");
+                Console.WriteLine();
+                return;
+            }
 
             if (settings.Verbose)
             {
@@ -53,7 +80,7 @@ namespace SimulatorTester
                 LogSeparator();
             }
 
-            var saveFile = files.First();
+            var saveFile = files[0];
             using (BinaryReader inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
             {
                 var cts = new CancellationTokenSource(() => { });
