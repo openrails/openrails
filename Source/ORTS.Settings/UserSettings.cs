@@ -488,7 +488,7 @@ namespace ORTS.Settings
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
-            return Path.Combine(directory, hash + ".or-cache");
+            return Path.Combine(directory, hash + ".cache-or");
         }
 
         PropertyInfo GetProperty(string name)
