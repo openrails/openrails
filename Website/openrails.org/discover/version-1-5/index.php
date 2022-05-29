@@ -39,18 +39,12 @@
             <li>Progress bar for timetable "pre-run"</li>
             <li>HUD extended for diesel-mechanical loco</li>
           </ul>
-        </div>
-        <div class="col-md-1"></div>
-        <div class="col-md-5">
-        <h3>What's been improved</h3>
+          <h3>What's been improved</h3>
           <ul>
             <li>64-bit compatibility lifting the 3GB RAM limit</li>
             <li>Better use of VRAM</li>
           </ul>
-        </div>
-        <div class="col-md-1"></div>
-        <div class="col-md-5">
-        <h3>Other changes</h3>
+          <h3>Other changes</h3>
           <ul>
             <li>F5 key now opens Driver Info window. For HUD, use Alt+F5</li>
             <li>Some trial options are now always active including:
@@ -61,6 +55,25 @@
               </ul>
             </li>
           </ul>
+        </div>
+        <div class="col-md-1"></div>
+        <div class="col-md-5">
+
+          <h3>Contributors to this release</h3>
+          <ul>
+            <li>cesarBLG</li>
+            <li>cjakeman</li>
+            <li>Csantucci</li>
+            <li>DR-Aeronautics</li>
+            <li>FrannDzs</li>
+            <li>mbm-OR</li>
+            <li>peternewell</li>
+            <li>pzgulyas</li>
+            <li>Sharpe49</li>
+            <li>twpol</li>
+            <li>Weter-ORTS</li>
+            <li>YoRyan</li>
+          </ul>
           <h3>Detailed changelog</h3>
           <p>
             A <a href="https://launchpad.net/or/+milestone/1.5">full list of changes</a> is available.
@@ -69,7 +82,6 @@
           <p>&nbsp;</p>
         </div>
       </div>
-	</div>
 <?php include "../../shared/tail.php" ?>
 <?php include "../../shared/banners/preload_next_banner.php" ?>
   </body>
