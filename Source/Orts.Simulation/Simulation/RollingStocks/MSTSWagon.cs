@@ -325,7 +325,8 @@ namespace Orts.Simulation.RollingStocks
             FreightLivestock = 11,  // New to OR
             FreightFuel = 12,  // New to OR
             FreightMilk = 13,   // New to OR
-            SpecialMail = 14  // New to OR
+            SpecialMail = 14,  // New to OR
+            Container = 15  // New to OR
         }
 
         public class RefillProcess
@@ -976,6 +977,8 @@ namespace Orts.Simulation.RollingStocks
                         break;
                 }
             }
+            FreightAnimations?.Load(this, FreightAnimations.LoadDataList, true);
+            InitializeLoadPhysics();
         }
 
         public override void InitializeMoving()
@@ -1850,7 +1853,7 @@ namespace Orts.Simulation.RollingStocks
                 if (TendersSteamLocomotive != null)
                 {
                     if (TendersSteamLocomotive.IsTenderRequired == 1)
-                    {                        
+                    {
                         // Combined total water found by taking the current combined water (which may have extra water added via the auxiliary tender), and subtracting the 
                         // amount of water defined in the ENG file, and adding the water defined in the WAG file.
                         float TempMaxCombinedWater = TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG;
@@ -1951,7 +1954,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             Pantographs.Update(elapsedClockSeconds);
-            
+
             MSTSBrakeSystem.Update(elapsedClockSeconds);
 
             // Updates freight load animations when defined in WAG file - Locomotive and Tender load animation are done independently in UpdateTenderLoad() & UpdateLocomotiveLoadPhysics()
@@ -1967,13 +1970,13 @@ namespace Orts.Simulation.RollingStocks
                         if (WeightLoadController.UpdateValue != 0.0)
                             Simulator.Confirmer.UpdateWithPerCent(CabControl.FreightLoad,
                                 CabSetting.Increase, WeightLoadController.CurrentValue * 100);
-                    // Update wagon parameters sensitive to wagon mass change
-                    // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
+                        // Update wagon parameters sensitive to wagon mass change
+                        // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
                         TempMassDiffRatio = WeightLoadController.CurrentValue;
-                   // Update brake parameters
+                        // Update brake parameters
                         MaxBrakeForceN = ((LoadFullMaxBrakeForceN - LoadEmptyMaxBrakeForceN) * TempMassDiffRatio) + LoadEmptyMaxBrakeForceN;
                         MaxHandbrakeForceN = ((LoadFullMaxHandbrakeForceN - LoadEmptyMaxHandbrakeForceN) * TempMassDiffRatio) + LoadEmptyMaxHandbrakeForceN;
-                  // Update friction related parameters
+                        // Update friction related parameters
                         DavisAN = ((LoadFullORTSDavis_A - LoadEmptyORTSDavis_A) * TempMassDiffRatio) + LoadEmptyORTSDavis_A;
                         DavisBNSpM = ((LoadFullORTSDavis_B - LoadEmptyORTSDavis_B) * TempMassDiffRatio) + LoadEmptyORTSDavis_B;
                         DavisCNSSpMM = ((LoadFullORTSDavis_C - LoadEmptyORTSDavis_C) * TempMassDiffRatio) + LoadEmptyORTSDavis_C;
@@ -2004,7 +2007,8 @@ namespace Orts.Simulation.RollingStocks
                 {
                     WaitForAnimationReady = false;
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Starting unload"));
-                    WeightLoadController.StartDecrease(WeightLoadController.MinimumValue);
+                    if (FreightAnimations.LoadedOne is FreightAnimationContinuous)
+                        WeightLoadController.StartDecrease(WeightLoadController.MinimumValue);
                 }
             }
         }
@@ -4069,7 +4073,8 @@ namespace Orts.Simulation.RollingStocks
             if (FreightAnimations.LoadedOne == null)
             {
                 FreightAnimations.FreightType = (MSTSWagon.PickupType)type;
-                FreightAnimations.LoadedOne = intakePoint.LinkedFreightAnim;
+                if (intakePoint.LinkedFreightAnim is FreightAnimationContinuous)
+                    FreightAnimations.LoadedOne = (FreightAnimationContinuous)intakePoint.LinkedFreightAnim;
             }
             if (!unload)
             {
@@ -4088,6 +4093,62 @@ namespace Orts.Simulation.RollingStocks
 
         }
 
+
+        /// <summary>
+        /// Starts loading or unloading of a discrete load.
+        /// </summary>
+        /// <param name="type">Pickup point</param>
+        public void StartLoadingOrUnloading(PickupObj matchPickup, IntakePoint intakePoint, bool unload)
+        {
+            var type = matchPickup.PickupType;
+ /*           var controller = WeightLoadController;
+            if (controller == null)
+            {
+                Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Incompatible data"));
+                return;
+            }
+            controller.CommandStartTime = Simulator.ClockTime;  // for Replay to use */
+
+            FreightAnimations.FreightType = (MSTSWagon.PickupType)type;
+
+            var containerStation = Simulator.ContainerManager.ContainerHandlingItems.Where(item => item.Key == matchPickup.TrItemIDList[0].dbID).Select(item => item.Value).First();
+            if (containerStation.Status != ContainerHandlingItem.ContainerStationStatus.Idle)
+            {
+                Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Container station busy with preceding mission"));
+                return;
+            }
+            if (!unload)
+            {
+                if (containerStation.Containers.Count == 0)
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("No containers to load"));
+                    return;
+                }  
+ //               var container = containerStation.Containers.Last();
+                Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Starting load"));
+                // immediate load at the moment
+//                FreightAnimations.DiscreteLoadedOne.Container = container;
+                 containerStation.PrepareForLoad((FreightAnimationDiscrete)intakePoint.LinkedFreightAnim);
+ //               FreightAnimations.DiscreteLoadedOne.Loaded = true;
+            }
+            else
+            {
+                if (containerStation.Containers.Count >= containerStation.MaxStackedContainers * containerStation.StackLocationsCount)
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Container station full, can't unload"));
+                    return;
+                }
+                WaitForAnimationReady = true;
+                UnloadingPartsOpen = true;
+                if (FreightAnimations.UnloadingStartDelay > 0)
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Preparing for unload"));
+                // immediate unload at the moment
+                // switch from freightanimation to container
+                containerStation.PrepareForUnload((FreightAnimationDiscrete)intakePoint.LinkedFreightAnim);
+            }
+
+        }
+
     }
 
 
@@ -4101,9 +4162,9 @@ namespace Orts.Simulation.RollingStocks
     {
         public float OffsetM = 0f;   // distance forward? from the centre of the vehicle as defined by LengthM/2.
         public float WidthM = 10f;   // of the filling point. Is the maximum positioning error allowed equal to this or half this value? 
-        public MSTSWagon.PickupType Type;          // 'freightgrain', 'freightcoal', 'freightgravel', 'freightsand', 'fuelcoal', 'fuelwater', 'fueldiesel', 'fuelwood', freightgeneral, freightlivestock, specialmail
+        public MSTSWagon.PickupType Type;          // 'freightgrain', 'freightcoal', 'freightgravel', 'freightsand', 'fuelcoal', 'fuelwater', 'fueldiesel', 'fuelwood', freightgeneral, freightlivestock, specialmail, container
         public float? DistanceFromFrontOfTrainM;
-        public FreightAnimationContinuous LinkedFreightAnim = null;
+        public FreightAnimation LinkedFreightAnim = null;
 
         public IntakePoint()
         {
@@ -4125,6 +4186,58 @@ namespace Orts.Simulation.RollingStocks
             WidthM = copy.WidthM;
             Type = copy.Type;
 
+        }
+
+        public bool Validity(bool onlyUnload, PickupObj pickup, ContainerManager containerManager, FreightAnimations freightAnimations, out ContainerHandlingItem containerStation)
+        {
+            var validity = false;
+            containerStation = null;
+            var load = LinkedFreightAnim as FreightAnimationDiscrete;
+            // discrete freight wagon animation
+            if (load == null)
+                return validity;
+            else
+            {
+                containerStation = containerManager.ContainerHandlingItems.Where(item => item.Key == pickup.TrItemIDList[0].dbID).Select(item => item.Value).First();
+                if (containerStation.Containers.Count == 0 && !onlyUnload)
+                    return validity;
+            }
+            if (load.Container != null && !onlyUnload)
+                return validity;
+            else if (load.Container == null && onlyUnload)
+                return validity;
+            if (freightAnimations.DoubleStacker)
+            {
+                if (onlyUnload)
+                    for (var i = freightAnimations.Animations.Count - 1; i >= 0; i--)
+                    {
+                        if (freightAnimations.Animations[i] is FreightAnimationDiscrete discreteAnimation)
+                            if (discreteAnimation.LoadPosition == LoadPosition.Above && load != discreteAnimation)
+                                return validity;
+                            else break;
+                    }
+            }
+            if (!onlyUnload)
+            {
+                if (containerStation.Containers.Count == 0)
+                    return validity;
+                foreach (var stackLocation in containerStation.StackLocations)
+                {
+                    if (stackLocation.Containers?.Count > 0)
+                    {
+                        if (freightAnimations.Validity(load.Wagon, stackLocation.Containers[stackLocation.Containers.Count - 1],
+                            load.LoadPosition, load.Offset, load.LoadingAreaLength, out Vector3 offset))
+                            return true;
+                    }
+                }
+                return validity;
+            }
+            if (onlyUnload)
+            {
+                validity = containerStation.CheckForEligibleStackPosition(load.Container);
+            }
+            else validity = true;
+            return validity;
         }
 
     }
