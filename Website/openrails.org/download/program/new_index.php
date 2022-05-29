@@ -51,7 +51,7 @@
           <p><a href="/download/versions/">Two other versions</a> are available.</p>
 
           <h2><span id="installation_questions">Installation Questions </span><small>from the FAQ</small></h2>
-          <?php include "../../learn/faq/install.php" ?>
+          <?php include "../../learn/faq/new_install.php" ?>
         </div>
       </div>
 <?php include "../../shared/tail.php" ?>
