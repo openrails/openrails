@@ -47,6 +47,20 @@
             <li>64-bit compatibility lifting the 3GB RAM limit</li>
             <li>Better use of VRAM</li>
           </ul>
+        </div>
+        <div class="col-md-1"></div>
+        <div class="col-md-5">
+        <h3>Other changes</h3>
+          <ul>
+            <li>F5 key now opens Driver Info window. For HUD, use Alt+F5</li>
+            <li>Some trial options are now always active including:
+              <ul>
+                <li>map window (Ctrl+9)</li>
+                <li>de-brief evaluation (F1)</li>
+                <li>web server</li>
+              </ul>
+            </li>
+          </ul>
           <h3>Detailed changelog</h3>
           <p>
             A <a href="https://launchpad.net/or/+milestone/1.5">full list of changes</a> is available.
