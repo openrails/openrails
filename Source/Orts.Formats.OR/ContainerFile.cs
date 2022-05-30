@@ -41,12 +41,14 @@ namespace Orts.Formats.OR
             JsonReader.ReadFile(fileName, TryParse);
         }
 
-        protected virtual bool TryParse(JsonReader item)
+        bool TryParse(JsonReader item)
         {
             switch (item.Path)
             {
                 case "":
                 case "Container":
+                    // Ignore these items.
+                    break;
                 case "Container.":
                     ContainerParameters = new ContainerParameters(item);
                     break;
@@ -63,7 +65,6 @@ namespace Orts.Formats.OR
         public string ShapeFileName;  
         public string ContainerType;  
         public Vector3 IntrinsicShapeOffset = new Vector3(0f, 1.17f, 0f);
-        private int Index;
 
 
         public ContainerParameters(JsonReader json)
@@ -71,36 +72,16 @@ namespace Orts.Formats.OR
             json.ReadBlock(TryParse);
         }
 
-        protected bool TryParse(JsonReader item)
+        bool TryParse(JsonReader item)
         {
-
-            // get values
             switch (item.Path)
             {
-                case "Container.": break;
-                case "Container.Name": Name = item.AsString(""); break;
-                case "Container.Shape": ShapeFileName = item.AsString(ShapeFileName); break;
-                case "Container.ContainerType": ContainerType = item.AsString("40ftHC"); break;
-                case "Container.IntrinsicShapeOffset[]": 
-                    switch (Index)
-                    {
-                        case 0:
-                            IntrinsicShapeOffset.X = item.AsFloat(0.0f);
-                            break;
-                        case 1:
-                            IntrinsicShapeOffset.Y = item.AsFloat(0.0f);
-                            break;
-                        case 2:
-                            IntrinsicShapeOffset.Z = item.AsFloat(0.0f);
-                            break;
-                        default:
-                            return false;
-                    }
-                    Index++;
-                    break;
+                case "Name": Name = item.AsString(""); break;
+                case "Shape": ShapeFileName = item.AsString(ShapeFileName); break;
+                case "ContainerType": ContainerType = item.AsString("40ftHC"); break;
+                case "IntrinsicShapeOffset[]": IntrinsicShapeOffset = item.AsVector3(Vector3.Zero); break;
                 default: return false;
             }
-
             return true;
         }
 

@@ -33,80 +33,78 @@ namespace Orts.Formats.OR
 
     public class LoadStationsOccupancyFile
     {
-        public List<LoadStationOccupancy> LoadStationsOccupancy = new List<LoadStationOccupancy>();
+        public List<ContainerStationOccupancy> LoadStationsOccupancy = new List<ContainerStationOccupancy>();
 
         public LoadStationsOccupancyFile(string fileName)
         {
             JsonReader.ReadFile(fileName, TryParse);
         }
 
-        protected virtual bool TryParse(JsonReader item)
+        bool TryParse(JsonReader item)
         {
             switch (item.Path)
             {
                 case "":
+                case "ContainerStationsOccupancy[]":
+                    // Ignore these items.
                     break;
                 case "ContainerStationsOccupancy[].":
-                    break;
-                case "ContainerStationsOccupancy[].LoadStationID.":
                     LoadStationsOccupancy.Add(new ContainerStationOccupancy(item));
                     break;
-                case "ContainerStationsOccupancy[].LoadData[].":
-                    break;
-                case "ContainerStationsOccupancy[].LoadData[].File":
-                    var contStationOccupancy = LoadStationsOccupancy[LoadStationsOccupancy.Count - 1] as ContainerStationOccupancy;
-                    contStationOccupancy.LoadData.Add(new LoadDataEntry(item));
-                    contStationOccupancy.LoadData[contStationOccupancy.LoadData.Count - 1].ReadBlock(item);
-                    break;
                 default: return false;
             }
             return true;
         }
     }
 
-    public class LoadStationOccupancy
-    {
-        public LoadStationID LoadStatID = new LoadStationID();
-
-        public virtual bool TryParse(JsonReader item)
-        {
-            switch (item.Path)
-            {
-                case "wfile": LoadStatID.wfile = item.AsString(""); break;
-                case "UiD": LoadStatID.UiD = item.AsInteger(0); break;
-                default: return false;
-            }
-            return true;
-        }
-    }
-
-    public struct LoadStationID
+    public class LoadStationID
     {
         public string wfile;
         public int UiD;
 
         public LoadStationID(JsonReader json)
         {
-            wfile = "";
-            UiD = 0;
+            json.ReadBlock(TryParse);
+        }
+
+        bool TryParse(JsonReader item)
+        {
+            switch (item.Path)
+            {
+                case "wfile": wfile = item.AsString(""); break;
+                case "UiD": UiD = item.AsInteger(0); break;
+                default: return false;
+            }
+            return true;
         }
     }
 
-    public class ContainerStationOccupancy : LoadStationOccupancy
+    public class ContainerStationOccupancy
     {
+        public LoadStationID LoadStatID;
         public List<LoadDataEntry> LoadData = new List<LoadDataEntry>();
 
         public ContainerStationOccupancy(JsonReader json)
         {
-
             json.ReadBlock(TryParse);
         }
 
-        public override bool TryParse(JsonReader item)
+        bool TryParse(JsonReader item)
         {
-            // get values
-            if (base.TryParse(item)) return true;
-            return false;
+            switch (item.Path)
+            {
+                case "LoadData[]":
+                    // Ignore these items.
+                    break;
+                case "LoadStationID.":
+                    LoadStatID = new LoadStationID(item);
+                    break;
+                case "LoadData[].":
+                    LoadData.Add(new LoadDataEntry(item));
+                    break;
+                default: return false;
+            }
+            return true;
         }
     }
 
@@ -118,17 +116,10 @@ namespace Orts.Formats.OR
 
         public LoadDataEntry(JsonReader json)
         {
-            FileName = FolderName = "";
-            StackLocation = 0;
-        }
-
-        public void ReadBlock(JsonReader json)
-        {
-            FileName = json.AsString("");
             json.ReadBlock(TryParse);
         }
 
-        public bool TryParse(JsonReader item)
+        bool TryParse(JsonReader item)
         {
             switch (item.Path)
             {
