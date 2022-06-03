@@ -997,7 +997,6 @@ namespace Orts.Viewer3D
         protected FuelPickupItem FuelPickupItem;
         protected SoundSource Sound;
         protected float FrameRate;
-        protected Viewer Viewer;
         protected WorldPosition Position;
 
         protected int AnimationFrames;
@@ -1007,7 +1006,6 @@ namespace Orts.Viewer3D
             : base(viewer, path, position, shapeFlags)
         {
             FuelPickupItemObj = fuelpickupitemObj;
-            Viewer = viewer;
             Position = position;
             Initialize();
         }
@@ -1162,7 +1160,6 @@ namespace Orts.Viewer3D
         protected controller controllerGrabber01;
         protected controller controllerGrabber02;
         protected float slowDownThreshold = 0.03f;
-        protected SoundSource Sound;
         // To detect transitions that trigger sounds
         protected bool OldMoveX;
         protected bool OldMoveY;
@@ -1256,7 +1253,7 @@ namespace Orts.Viewer3D
             Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixZ], out absAnimationMatrix);
             Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
             ContainerHandlingItem.PassSpanParameters(((linear_key)controllerZ[0]).Z, ((linear_key)controllerZ[1]).Z,
-                ((linear_key)controllerGrabber01[0]).Z, ((linear_key)controllerGrabber02[0]).Z);
+                ((linear_key)controllerGrabber01[0]).Z - ((linear_key)controllerGrabber01[1]).Z, ((linear_key)controllerGrabber02[0]).Z - ((linear_key)controllerGrabber02[1]).Z);
             ContainerHandlingItem.ReInitPositionOffset(absAnimationMatrix);
 
             AnimationKeyX = Math.Abs((ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.X - ((linear_key)controllerX[0]).X) / (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X)) * controllerX[1].Frame;
@@ -1400,7 +1397,7 @@ namespace Orts.Viewer3D
 
                 if (ContainerHandlingItem.MoveGrabber)
                 {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetGrabber01 - ((linear_key)controllerGrabber01[0]).Z) / (((linear_key)controllerGrabber01[1]).Z - ((linear_key)controllerGrabber01[0]).Z)) * controllerGrabber01[1].Frame;
+                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetGrabber01 - ((linear_key)controllerGrabber01[0]).Z + ((linear_key)controllerGrabber01[1]).Z) / (((linear_key)controllerGrabber01[1]).Z - ((linear_key)controllerGrabber01[0]).Z)) * controllerGrabber01[1].Frame;
                     tempFrameRate = Math.Abs(AnimationKeyGrabber01 - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
                     if (AnimationKeyGrabber01 < animationTarget)
                     {
@@ -1420,7 +1417,7 @@ namespace Orts.Viewer3D
                     }
                     if (AnimationKeyGrabber01 < 0)
                         AnimationKeyGrabber01 = 0;
-                    var animationTarget2 = Math.Abs((ContainerHandlingItem.TargetGrabber02 - ((linear_key)controllerGrabber02[0]).Z) / (((linear_key)controllerGrabber02[1]).Z - ((linear_key)controllerGrabber02[0]).Z)) * controllerGrabber02[1].Frame;
+                    var animationTarget2 = Math.Abs((ContainerHandlingItem.TargetGrabber02 - ((linear_key)controllerGrabber02[0]).Z + ((linear_key)controllerGrabber02[1]).Z) / (((linear_key)controllerGrabber02[1]).Z - ((linear_key)controllerGrabber02[0]).Z)) * controllerGrabber02[1].Frame;
                     tempFrameRate = Math.Abs(AnimationKeyGrabber01 - animationTarget2) > slowDownThreshold ? FrameRate : FrameRate / 4;
                     if (AnimationKeyGrabber02 < animationTarget2)
                     {
