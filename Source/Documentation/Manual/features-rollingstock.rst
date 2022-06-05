@@ -540,6 +540,91 @@ A typical configuration code block will be as follows::
  
 The empty values for the wagon will be read from the normal base WAG file paramaters.
 
+.. _features-containers:
+
+Container management
+====================
+
+General
+-------
+
+With this feature containers are not static objects laying on earth or on wagons, but 
+may be loaded from a container station onto a wagon, or unloaded from a wagon and laid on 
+a container station. The load/unload operations are performed through a crane, which is the 
+heart of the container station.
+
+.. image:: images/features-container.png
+
+The other component of the container station is the set of stack locations, that is the 
+locations where containers may lay. Containers of same length can be stacked one above the other. 
+
+Wagons may be empty at game start, or partially or totally pre-loaded with containers, by 
+inserting the related data either in the consist (``.con``) file or in the ``.wag`` files.
+
+Also container stations may be empty at game start, or partially or totally pre-loaded with 
+containers, inserting the related data in the activity (``.act``) file.
+
+The loading and unloading operations are started by the player, by pressing the key ``<T>`` 
+for loading, and the key  ``<Shift-T>`` . The operation is performed on the first wagon 
+(starting from the locomotive) which is within the container crane and which fulfills the 
+required conditions (e.g. loading space available for loading, container present for unloading). 
+
+Double stack wagons are managed.
+
+From a point of view of internal code structure, Open Rails handles container stations as 
+special pickups.
+
+
+How to define container data
+----------------------------
+
+Container shape files (``.s``) must be located in subfolders (or sub-subfolders) of the 
+``Trainset`` folder.
+Containers that can be managed must be provided with a Json ``.loa`` file. The ``.loa`` files 
+must be located in a subfolder of the ``Trainset`` folder. It is warmly advised to keep all 
+``.loa`` file in a single folder: ``Common.ContainerData`` is suggested. It is also advised to name 
+the ``.loa`` files in a consistent way:  ``40HCtriton.loa`` is suggested, where ``40HC`` is the
+container type and ``triton`` the brand painted on the container.
+
+Format of the .loa file
+'''''''''''''''''''''''
+
+Here below a sample of a ``.loa`` file::
+
+  {
+  	"Container": 
+  	{
+	  	"Name" : "triton",
+	  	"Shape" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.s",
+	  	"ContainerType" : "C40ftHC",
+	  	"IntrinsicShapeOffset": [0,1.175,0],
+	  }
+  }
+
+- "Container" is a fixed keyword.
+- "Name" has as value a string used by Open Rails when the container must be indentified in a message 
+  to the player.
+- "Shape" has as value the path of the container shape, having ``Trainset`` as base.
+- "ContainerType" identifies the container type, which may be one of the following ones::
+
+  * C20ft
+  * C40ft
+  * C40ftHC
+  * C45ft
+  * C45ftHC
+  * C48ft
+  * C53ft
+
+  C48ft and C53ft have a HC height (2.90m)
+- "IntrinsicShapeOffset" has as value the offset in meters of the center of the bottom rectangle of the 
+  container with respect to the container shape file coordinates. Unfortunately often such 
+  offset is not [0,0,0], which would be advisable for newly produced containers. A simple way to 
+  state such offset is to use the ``Show Bounding Info`` of ``Shape Viewer``.
+
+
+
+
+
 .. _features-passengerviewpoints:
 
 Multiple passenger viewpoints
