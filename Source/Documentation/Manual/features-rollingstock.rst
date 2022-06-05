@@ -621,6 +621,65 @@ Here below a sample of a ``.loa`` file::
   offset is not [0,0,0], which would be advisable for newly produced containers. A simple way to 
   state such offset is to use the ``Show Bounding Info`` of ``Shape Viewer``.
 
+Pre-setting a .wag file to accommodate containers
+-------------------------------------------------
+
+As a minimum following block must be present in the .wag file for a double stacker::
+
+  ORTSFreightAnims (
+		LoadingAreaLength ( 12.20 )
+		AboveLoadingAreaLength ( 12.20 )
+		DoubleStacker ()
+		Offset( 0 0.34 0 )
+		IntakePoint ( 0 6.0 Container)
+		)
+
+- LoadingAreaLength is the length in meters of the loading area available for containers
+- AboveLoadingAreaLength is the length in meters of the above loading area available 
+  for containers (parameter not needed if not double stacker)
+- DoubleStacker must be present if the wagon allows double stacking
+- Offset is the offset of the center of the rectangle of the loading area with respect to 
+  the shape file of the wagon.
+- The first and the third IntakePoint parameters have the same meanings than the ones used 
+  for generic pickups. The first parameter must be equal to the Z value of the offset. 
+  ``Container`` is mandatory.
+
+This ``ORTSFreightAnims`` block can include also static freight animations as described in 
+the related paragraph.
+
+Allocation of the containers on the wagons
+------------------------------------------
+
+A container may have following positions within the loading area of the wagon: Rear, CenterRear, 
+Center, CenterFront, Front and Above. Following picture shows where the first five positions are located 
+on the wagon, while Above is the above position in dual-stack configurations. The Above position is 
+always centered.
+
+.. image:: images/features-loading-area.png
+
+Some loading configurations are shown in following picture:
+
+.. image:: images/features-loading-configurations.png
+
+From left to right the loading configurations are present (locomotive on the left):
+
+-  CenterFront, CenterRear, Above
+-  Center
+-  Front, Rear
+-  Front, Center, Rear
+-  Front, Rear
+-  Front, CenterFront, CenterRear, Rear.
+
+The real rules to allocate double-stacked containers must be respected:
+
+- no 20ft stacked above
+- only one container above
+- at least 40ft of containers below.
+
+
+
+
+
 
 
 
