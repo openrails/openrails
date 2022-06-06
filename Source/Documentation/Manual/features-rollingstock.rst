@@ -762,10 +762,91 @@ Pickup object. A ``.ref`` file entry sample is as follows::
 )
 
 PickupType is set to ``_FUEL_COAL``, but this will be overwritten by the data inserted in the 
-extension ``.w`` file (see :ref:`here<features-route-modify-wfiles>` and later in this chapter).
+extension ``.w`` file (see :ref:`here<features-route-modify-wfiles>`) within the ``Openrails``
+sufolder of the World folder.
 
-Container Station shape file developing rules
-''''''''''''''''''''''''''''''''''''''''''''''
+Such extension ``.w`` file is formed by a general part, a container crane related part, and a 
+stack locations related part, as per following example (parts separated by blank lines)::
+
+  SIMISA@@@@@@@@@@JINX0w0t______
+
+Tr_Worldfile (
+		Pickup (
+			UiD ( 21 )
+			PickupType ( 15 1 )
+      
+ 			ORTSPickingSurfaceYOffset ( 2.25 )
+			ORTSPickingSurfaceRelativeTopStartPosition ( 0 6.75 0 )
+			ORTSGrabberArmsParts ( 2 )
+			ORTSCraneSound ( "ContainerCrane.sms" )
+
+			ORTSMaxStackedContainers ( 2 )
+			ORTSStackLocationsLength ( 12.19 )
+			ORTSStackLocations ( 12
+				StackLocation (
+					Position ( -10 0 26 )
+					Length ( 16.15 )
+					)
+				StackLocation (
+					Position ( -10 0 26 )
+					MaxStackedContainers ( 1 )
+					Flipped ( 1 )
+					)
+				StackLocation (
+					Position ( -10 0 0 )
+					MaxStackedContainers ( 2 )
+					)
+				StackLocation (
+					Position ( -10 0 0 )
+					Flipped ( 1 )
+					)
+				StackLocation (
+					Position ( -10 0 -26 )
+					)
+				StackLocation (
+					Position ( -10 0 -26 )
+					Flipped ( 1 )
+					Length ( 16.15 )					
+					)
+				StackLocation (
+					Position ( -7 0 26 )
+					Length ( 16.15 )
+					)
+				StackLocation (
+					Position ( -7 0 26 )
+					Flipped ( 1 )
+					)
+				StackLocation (
+					Position ( -7 0 0 )
+					)
+				StackLocation (
+					Position ( -7 0 0 )
+					Flipped ( 1 )
+					)
+				StackLocation (
+					Position ( -7 0 -26 )
+					)
+				StackLocation (
+					Position ( -7 0 -26 )
+					Flipped ( 1 )
+					Length ( 16.15 )
+					)							
+				)
+		)
+
+)
+
+- The UiD number must correspond to the uiD number that the pickup has in the main ``.w`` file.
+- PickupType ( 15 1 ) identifies this pickup as being a container station.
+
+More than a Pickup() block can be present in such extension file, one for every container station 
+present in the route.
+
+The container crane and stack location related data are described at a convenient point below. 
+
+
+Container Station (including container crane) shape file developing rules
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 - The shape file must have its Z Axis aligned with the track where the wagons to be loaded or 
   unloaded stay.
@@ -886,8 +967,35 @@ It can be noted that the frame count is different for different animation nodes,
 the ZAXIS has 0, 12, 24. This permits to scale down the motion speed along that axis to a 
 realistic value.
 
+Parameters of extension ``.w`` file related to the crane and its animations
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
 Stack Locations
 ''''''''''''''''
+Within the area that can be reached by the container crane (rails area apart) 
+stack locations where the containers can be laid down can be defined in the extension 
+``.w`` file.
+
+The stack locations are defined by following parameters:
+
+- ``Position``: the coordinates of the center point of one of the short sides of the stack 
+  location; if no ``Flipped ( 1 )`` line is present, the location area extends towards the 
+  increasing Z axis; if instead such line is present, the location area extends towards 
+  the decreasing Z axis. If two stack locations have the same position, and one is flipped and 
+  the other isn't, the containers will be laid back-to-back, optimizing space used.
+- ``Length``: the maximum length of the containers that can be laid down on that stack 
+  location
+- ``MaxStackedContainers``: The maximum number of containers that can be stacked one above 
+  the other on that stack location
+
+The ``Length`` and ``MaxStackedContainers`` parameters are optional and, when present, override 
+the default values present in the ``ORTSStackLocationsLength`` and ``ORTSMaxStackedContainers``.
+
+
+
+
+
+
 
 
 
