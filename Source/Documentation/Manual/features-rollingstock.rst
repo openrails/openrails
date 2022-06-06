@@ -746,6 +746,151 @@ be created for every desired pre-loaded set of containers.
 
 A single ``.con`` file can include Wagon entries for both types of allocation definition.
 
+Container Station
+-----------------
+
+The Container Station is composed by a container crane and a container stack area.
+
+To insert a Container Station in a route, its object must be present in the ``.ref`` file as a 
+Pickup object. A ``.ref`` file entry sample is as follows::
+
+  Pickup (
+    Class                   ( "Animated loader" )
+    Filename                ( RMG_45.s )
+    PickupType              ( _FUEL_COAL_ )
+    Description             ( "Animated container crane" )
+)
+
+PickupType is set to ``_FUEL_COAL``, but this will be overwritten by the data inserted in the 
+extension ``.w`` file (see :ref:`here<features-route-modify-wfiles>` and later in this chapter).
+
+Container Station shape file developing rules
+''''''''''''''''''''''''''''''''''''''''''''''
+
+- The shape file must have its Z Axis aligned with the track where the wagons to be loaded or 
+  unloaded stay.
+- The Z-zero of the shape file must be in the middle of the segment that the crane can cover in 
+  its motion (e.g. the crane Z-span could be -30 meters to 30 meters).
+- The animation of the part of the crane moving along the Z axis must be called ``ZAXIS``.
+- The animation of the part of the crane moving transversally along the X axis must be called ``XAXIS``, 
+  and must be hierarchically dependent from ``ZAXIS``.
+- The animation of the part of the crane moving vertically along the Y axis must be called ``YAXIS``, 
+  and must be hierarchically dependent from ``XAXIS``.
+- The grabbers are the extensible arms that pick the container. In the simplest case there are two 
+  sections, one extending towards positive Z for longer containers, and one extending towards negative Z. 
+  The first one must be called ``GRABBER01`` and the second one ``GRABBER02``. Both must be hierarchically 
+  dependent from ``YAXIS``. In the most complex case each of the two "arms" is composed by two parts, 
+  which move like a telescope. Such second couple of arms must be called ``GRABBER01_O2`` and 
+  ``GRABBER02_02``. They must be hierarchically dependent from ``GRABBER01`` and ``GRABBER02``. 
+  The spans of ``GRABBER01`` 
+  and ``GRABBER02`` must be symmetric, and the same applies for the other couple of spans. Moreover the 
+  spans of ``GRABBER01`` and ``GRABBER01_02`` must be equal (and symmetrically also the other couple).
+- The names of the cable parts that have a partially autonomous motion along the Y axis (to 
+  simulate cable winding and unwinding) must start with ``CABLE`` and must be hierarchically dependent 
+  from ``YAXIS``. 
+
+The following diagram, taken from Shape Viewer, sums up the above rules.
+
+.. image:: images/features-hierarchy.png
+
+Following are the significant animation entries of a crane's shape file::
+
+  animations ( 1
+		animation ( 2 30
+			anim_nodes ( 30
+				anim_node MAIN (
+					controllers ( 0 )
+				)
+                ...
+				anim_node ZAXIS (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 -139.5 )
+							linear_key ( 12 0 0 139.5 )
+							linear_key ( 24 0 0 -139.5 )
+						)
+					)
+				)
+				anim_node XAXIS (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 0 )
+							linear_key ( 3 26.4 0 0 )
+							linear_key ( 6 0 0 0 )
+						)
+					)
+				)
+                ...
+				anim_node YAXIS (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 11.7 0 )
+							linear_key ( 2 0 0 0 )
+							linear_key ( 4 0 11.7 0 )
+						)
+					)
+				)
+				anim_node GRABBER02 (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 -2.515 )
+							linear_key ( 1 0 0 0 )
+							linear_key ( 2 0 0 -2.515 )
+						)
+					)
+				)
+				anim_node GRABBER02_02 (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 -2.513 )
+							linear_key ( 1 0 0 0 )
+							linear_key ( 2 0 0 -2.513 )
+						)
+					)
+				)
+				anim_node GRABBER01 (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 2.515 )
+							linear_key ( 1 0 0 0 )
+							linear_key ( 2 0 0 2.515 )
+						)
+					)
+				)
+				anim_node GRABBER01_02 (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 2.513 )
+							linear_key ( 1 0 0 0 )
+							linear_key ( 2 0 0 2.513 )
+						)
+					)
+				)
+                ...
+				anim_node CABLE02 (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 22.32 0 )
+							linear_key ( 1 0 15.72 0 )
+							linear_key ( 2 0 22.32 0 )
+						)
+					)
+				)
+				...
+			)
+		)
+	)
+
+
+It can be noted that the frame count is different for different animation nodes, e.g. 
+the ZAXIS has 0, 12, 24. This permits to scale down the motion speed along that axis to a 
+realistic value.
+
+Stack Locations
+''''''''''''''''
+
+
+
 
 
 
