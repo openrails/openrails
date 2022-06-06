@@ -676,7 +676,75 @@ The real rules to allocate double-stacked containers must be respected:
 - only one container above
 - at least 40ft of containers below.
 
+How to allocate containers on wagons at start of game
+-----------------------------------------------------
+The containers may be allocated either by editing the ``.con`` file, 
+or by editing the ``.wag`` file, or in a mixed mode (some wagons in one mode, 
+some others in another mode).
 
+Allocation through ``.con`` file
+'''''''''''''''''''''''''''''''''
+
+This allocation mode is the recommended one, as it is more flexible and provides 
+easier visibility.
+
+A wagon entry complete with the data about the containers loaded at startup is 
+shown here::
+
+  		Wagon (
+			  WagonData ( DTTX_620040_A ATW.DTTX_620040 )
+			  LoadData ( 20cmacgm common.containerdata CenterFront)
+			  LoadData ( 20hamburgsud common.containerdata CenterRear)
+			  LoadData ( 40msc common.containerdata Above)			
+			  UiD ( 11 )
+		)
+
+
+As can be seen, for each container loaded at startup a ``LoadData`` entry must be 
+present. The meaning of the parameters is as follows:
+
+- The first parameter is the name of the ``.loa`` file 
+- The second parameter is the path (having ``Trainset`` as base path) where the ``.loa``
+  file resides 
+- The third parameter indicates where the container is allocated on the wagon.
+
+The entry for the container allocated ``Above`` must be the last one.
+
+CenterFront and CenterRear entries must be entered after Front or Rear entries.
+
+The advantage of this type of allocation is that, for a single ``.wag`` file 
+(in the example ``DTTX_620040_A.wag``) more possible container configurations are 
+possible, sparing the time of creating many ``.wag`` files that differ only on the 
+containers loaded.
+
+
+Allocation through ``.wag`` file
+'''''''''''''''''''''''''''''''''
+
+Content creators might prefer to provide packs of pre-loaded wagons. Therefore 
+it is also possible to set in ``.wag`` file the containers to be loaded at startup. 
+
+A minimum ``FreightAnimations`` entry in a ``.wag`` file to have the same pre-loaded container 
+set as in the previous paragraph is as follows::
+
+    ORTSFreightAnims (
+	  	LoadingAreaLength ( 14.6 )
+	  	AboveLoadingAreaLength ( 16.15 )
+		  DoubleStacker ()
+		  Offset( 0 0.34 0 )
+		  IntakePoint ( 0 6.0 Container)
+		  LoadData ( 20cmacgm common.containerdata CenterFront)
+		  LoadData ( 20hamburgsud common.containerdata CenterRear)
+		  LoadData ( 40msc common.containerdata Above)
+		)
+
+As can be seen, the syntax of the ``LoadData`` entries is the same as in the case of 
+the ``.con``  file.
+
+Obviously, using ``.wag`` files for this type of info, a different ``.wag`` file must 
+be created for every desired pre-loaded set of containers.
+
+A single ``.con`` file can include Wagon entries for both types of allocation definition.
 
 
 
