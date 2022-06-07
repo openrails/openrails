@@ -149,7 +149,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     stf.MustMatch(")");
                 }),
             });
-//            Load(Wagon, LoadDataList);
         }
 
         /// <summary>
@@ -244,26 +243,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     Animations.Add(new FreightAnimationStatic(freightAnim as FreightAnimationStatic));
                 }
-/*                else if (freightAnim is FreightAnimationDiscrete)
-                {
-                    Animations.Add(new FreightAnimationDiscrete(freightAnim as FreightAnimationDiscrete, this));
-                    if ((Animations.Last() as FreightAnimationDiscrete).LoadedAtStart && wagon.Simulator.Initialize && (Animations.Last() as FreightAnimationDiscrete).Container != null)
-                    {
-                        if (empty)
-                        {
-                            empty = false;
-                            FreightType = wagon.IntakePointList.Last().Type;
-                            var last = Animations.Last() as FreightAnimationDiscrete;
-                            FreightWeight += last.Container.MassKG;
-                            last.Loaded = true;
-                        }
-                        else
-                        {
-                            (Animations.Last() as FreightAnimationDiscrete).LoadedAtStart = false;
-                            Trace.TraceWarning("The wagon can't be full with two different materials, only first is retained");
-                        }
-                    }
-                }*/
             }
             FreightWeight = copyFACollection.FreightWeight;
             FreightType = copyFACollection.FreightType;
@@ -586,9 +565,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         // emptyAnim might be 40ft ; if complex, delete Empty animation
                         if (emptyAnim.LoadPosition == LoadPosition.Front || emptyAnim.LoadPosition == LoadPosition.Rear)
                         {
-                            /*                           anim.Wagon.IntakePointList.Remove(emptyAnim.LinkedIntakePoint);
-                                                       deletableEmptyAnims.Add(emptyAnim);
-                                                       continue;*/
                             var multiplier = 1;
                             if (anim.LoadPosition == LoadPosition.CenterFront) multiplier = -1;
                             emptyAnim.Offset.Z = Offset.Z + multiplier * (LoadingAreaLength / 2 - (LoadingAreaLength / 2 - anim.LoadingAreaLength) / 2);
