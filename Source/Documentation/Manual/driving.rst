@@ -1224,6 +1224,37 @@ and the wagon can be rotated or translated.
 It is suggested to read also :ref:`this paragraph <features-route-turntable-operation>` 
 to better understand what is possible with turntables and transfertables.
 
+.. _driving-containers:
+
+Loading and Unloading Containers
+================================
+
+Provided that the wagons and the container cranes in the route fulfill the rules indicated 
+:ref:`here<features-containers>`,  containers can be unloaded and loaded on wagons at 
+locations where a container crane is present.
+
+.. image:: images/driving-containers.png
+
+The loading and unloading operations are started by the player, by pressing the key ``<T>`` 
+for loading, and the key  ``<Shift-T>`` . The operation is performed on the first wagon 
+(starting from the locomotive) which is within the container crane displacement range and which 
+fulfills the required conditions (e.g. loading space available for loading, container present 
+for unloading). So, if a train has only empty wagons and the locomotive is within the container 
+crane displacement range, the first wagon is loaded first, then the second and so on up to the 
+last wagon within the crane displacement range. At that point, if there are further 
+wagons to be loaded, the train must be moved forward so that a new group of wagons is within 
+the crane displacement range, and Load operations can be resumed.
+
+Every keypress loads or unloads a single wagon. 
+
+In some cases it can occur that during a load operation the crane stops motion and the following 
+message appears on the display: ``"Wagon out of range: move wagon towards crane by {0} metres"``; 
+this occurs when the wagon is at the boundary of the crane displacement range; the player must 
+move the wagon towards the inside of the crane displacement range and stop the train. The crane 
+will then continue its loading mission up to the end.
+
+It is advised not to perform a Save (key ``<F2>``) when a loading or unloading operation is ongoing.
+
 .. _driving-autopilot:
 
 Autopilot Mode
