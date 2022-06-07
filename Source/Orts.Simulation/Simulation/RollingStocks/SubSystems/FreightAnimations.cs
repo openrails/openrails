@@ -254,7 +254,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             LoadingAreaLength = copyFACollection.LoadingAreaLength;
             AboveLoadingAreaLength = copyFACollection.AboveLoadingAreaLength;
             Offset = copyFACollection.Offset;
-            GeneralIntakePoint = new IntakePoint(copyFACollection.GeneralIntakePoint);
+            if (copyFACollection.GeneralIntakePoint != null)
+                GeneralIntakePoint = new IntakePoint(copyFACollection.GeneralIntakePoint);
             DoubleStacker = copyFACollection.DoubleStacker;
             if (copyFACollection.LoadDataList?.Count >= 0)
             {
@@ -320,6 +321,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public void Load(MSTSWagon wagon, List<LoadData> loadDataList, bool listInWagFile = false)
         {
+            if (GeneralIntakePoint == null)
+                return;
             if (loadDataList != null && loadDataList.Count != 0)
             {
                 foreach (var loadData in loadDataList)
