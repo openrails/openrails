@@ -561,12 +561,13 @@ locations where containers may lay. Containers of same length can be stacked one
 Wagons may be empty at game start, or partially or totally pre-loaded with containers, by 
 inserting the related data either in the consist (``.con``) file or in the ``.wag`` files.
 
-Also container stations may be empty at game start, or partially or totally pre-loaded with 
+Also container stations may be empty at game start, or partially or totally populated with 
 containers, inserting the related data in the activity (``.act``) file.
 
 The loading and unloading operations are started by the player, by pressing the key ``<T>`` 
 for loading, and the key  ``<Shift-T>`` . The operation is performed on the first wagon 
-(starting from the locomotive) which is within the container crane and which fulfills the 
+(starting from the locomotive) which is within the container crane displacement range and which 
+fulfills the 
 required conditions (e.g. loading space available for loading, container present for unloading). 
 
 Double stack wagons are managed.
@@ -655,7 +656,7 @@ Center, CenterFront, Front and Above. Following picture shows where the first fi
 on the wagon, while Above is the above position in dual-stack configurations. The Above position is 
 always centered.
 
-.. image:: images/features-loading-area.png
+.. image:: images/features-loading-positions.png
 
 Some loading configurations are shown in following picture:
 
@@ -717,6 +718,9 @@ The advantage of this type of allocation is that, for a single ``.wag`` file
 possible, sparing the time of creating many ``.wag`` files that differ only on the 
 containers loaded.
 
+Here below a picture with a sample entry in the ``.con`` file:
+.. image:: images/features-sample-load-entry.png
+
 
 Allocation through ``.wag`` file
 '''''''''''''''''''''''''''''''''
@@ -759,18 +763,18 @@ Pickup object. A ``.ref`` file entry sample is as follows::
     Filename                ( RMG_45.s )
     PickupType              ( _FUEL_COAL_ )
     Description             ( "Animated container crane" )
-)
+  )
 
 PickupType is set to ``_FUEL_COAL``, but this will be overwritten by the data inserted in the 
 extension ``.w`` file (see :ref:`here<features-route-modify-wfiles>`) within the ``Openrails``
 sufolder of the World folder.
 
 Such extension ``.w`` file is formed by a general part, a container crane related part, and a 
-stack locations related part, as per following example (parts separated by blank lines)::
+stack locations related part, as per following example (parts separated by blank lines) ::
 
   SIMISA@@@@@@@@@@JINX0w0t______
-
-Tr_Worldfile (
+  
+  Tr_Worldfile (
 		Pickup (
 			UiD ( 21 )
 			PickupType ( 15 1 )
@@ -833,8 +837,7 @@ Tr_Worldfile (
 					)							
 				)
 		)
-
-)
+  )
 
 - The UiD number must correspond to the uiD number that the pickup has in the main ``.w`` file.
 - PickupType ( 15 1 ) identifies this pickup as being a container station.
@@ -970,6 +973,19 @@ realistic value.
 Parameters of extension ``.w`` file related to the crane and its animations
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+- ORTSPickingSurfaceYOffset ( 0.0 ) : the Y offset of the lower face of the grabbers 
+  (the one which gets in contact with the upper face of the container) when ``YAXIS`` is 
+  equal to 0
+- ORTSPickingSurfaceRelativeTopStartPosition ( 0 11.7 0 ) : the values of ``XAXIS``, ``YAXIS`` 
+  and ZAXIS at game start (should be centered on the Z axis, above the rails and at 
+  top height)
+- ORTSGrabberArmsParts ( 4 ) : is 4 if there are all four ``GRABBER01``, ``GRABBER02``, ``GRABBER01_02`` 
+  and ``GRABBER02_02`` animations; is 2 if there is only ``GRABBER01`` and ``GRABBER02``
+- ORTSCraneSound ( "ContainerCrane.sms" ) : name and path of the crane sound file; the path is 
+  based on the ``SOUND`` folder of the route; if the file is not found there, the path becomes 
+  based on the ``SOUND`` folder of ``TRAIN SIMULATOR``. The specific discrete sound triggers 
+  available are listed :ref:`here<sound-container-cranes>` .
+
 Stack Locations
 ''''''''''''''''
 Within the area that can be reached by the container crane (rails area apart) 
@@ -991,18 +1007,83 @@ The stack locations are defined by following parameters:
 The ``Length`` and ``MaxStackedContainers`` parameters are optional and, when present, override 
 the default values present in the ``ORTSStackLocationsLength`` and ``ORTSMaxStackedContainers``.
 
+If ``ORTSStackLocationsLength`` is greater or equal to 12.20m, which is twice the length of 
+a 20ft container, Open Rails applies a space optimization strategy: for each stack location 
+(let's call it the mother stack location), another one (let's call it the child stack location) 
+is created on a position with a Z value which is 6.095m greater than the mother 
+stack location (if the latter is flipped the Z value is 6.095m smaller). This child stack location 
+can be occupied by a 20ft container only, and only if the mother stack location is empty or 
+occupied by a 20ft container too. The child stack location has an index which is equal to 
+the mother stack location index plus the total number of mother stack locations. Once both 
+the mother and the child stack locations are empty, the mother stack location is again available 
+for any type of container of suitable length.
+
+A further example of a stack locations allocation code and of its physical counterpart in the 
+container station follows. It can be noted that stack location 0 has a 20ft container on it, and so has 
+its child stack location 10. Same applies to stack location 3 and its child stack location 13.
+
+.. image:: images/features-stack-locations-code.png
+
+.. image:: images/features-stack-locations.png
 
 
+Population of container stations at game start
+''''''''''''''''''''''''''''''''''''''''''''''
 
+Container stations may be populated at game start. This occurs by inserting an ``.lsp`` 
+(load station population) in the ``Openrails`` subfolder of the "Activities" folder of the 
+route, and inserting the following line  at the bottom of the ``Tr_Activity_Header`` in 
+``.act`` files ::
 
+  		ORTSLoadStationsPopulation ( BigContainerStationPopulation )
 
+where ``BigContainerStationPopulation`` is the name of the ``.lsp`` file.  At the moment population at 
+game start is possible only in Activity mode.
 
+The ``.lsp`` file is a Json file. An example is shown here below ::
 
+  	"ContainerStationsPopulation": [ 
+		{
+			"LoadStationID" : { "wfile" : "w-005354+014849.w", "UiD" :  21, },
+			"LoadData" : [
+				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, },
+				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, },
+				{ "File" : "20cmacgm", "Folder" : "common.containerdata", "StackLocation" : 2, },
+				{ "File" : "20kline", "Folder" : "common.containerdata", "StackLocation" : 2, },
+				{ "File" : "45HCtriton", "Folder" : "common.containerdata", "StackLocation" : 5, },
+				{ "File" : "45HCtriton", "Folder" : "common.containerdata", "StackLocation" : 5, },
+				{ "File" : "48emp", "Folder" : "common.containerdata", "StackLocation" : 6, },
+				{ "File" : "20maersk", "Folder" : "common.containerdata", "StackLocation" : 14, },
+				{ "File" : "20maersk3", "Folder" : "common.containerdata", "StackLocation" : 14, },				
+			]	
+		},
+		{
+			"LoadStationID" : { "wfile" : "w-005354+014849.w", "UiD" :  210, },
+			"LoadData" : [ 
+			...
+			]	
+		},
+		...
+  	]
+  }
 
+The file can define the population at startup of many container stations. 
 
+- The ``LoadStationID`` contains the info needed to identify the container station.
+- The ``LoadData`` array contains the data to populate the container station.
+- The value of ``File`` is the name of the ``.loa`` file identifying the container.
+- The value of ``Folder`` is the path where the ``.loa`` can be found, starting from the 
+  ``TRAINSET``.
+- The value of ``StackLocation`` is the index of the Stack Location. If the index is equal 
+  or higher than the number of stack locations defined in the extension ``.w`` file, the 
+  index refers to a child stack location.
+- If more than a container is defined for a stack location, they are stacked one above the 
+  other.
 
-
-
+The container station population file must be written taking into account the constraints 
+of the stack locations (container length must be smaller than stack location lenght, 
+stacked containers can't exceed the allowed number, a stack location must contain 
+containers of same length).
 
 
 .. _features-passengerviewpoints:
