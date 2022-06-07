@@ -442,10 +442,10 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public enum TractionMotorTypes
         {
+            DC,
             AC,
-            DC
         }
-        public TractionMotorTypes TractionMotorType;
+        public TractionMotorTypes TractionMotorType = TractionMotorTypes.DC;
 
         public ILocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ILocomotivePowerSupply;
         public ScriptedTrainControlSystem TrainControlSystem;
@@ -1460,7 +1460,11 @@ public List<CabView> CabViewList = new List<CabView>();
                     Trace.TraceInformation("Number of Locomotive Drive Axles set to default value of {0}", LocoNumDrvAxles);
                 }
             }
-               
+            if (TractionMotorType == TractionMotorTypes.AC)
+            {
+                InductionMotor motor = new InductionMotor(LocomotiveAxle, this);
+            }
+
 
             // Calculate minimum speed to pickup water
             const float Aconst = 2;
@@ -1873,6 +1877,7 @@ public List<CabView> CabViewList = new List<CabView>();
             }
             else
                 DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
+                
 
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
 
@@ -2242,11 +2247,6 @@ public List<CabView> CabViewList = new List<CabView>();
                 if (TractionMotorType == TractionMotorTypes.AC)
                 {
                     AbsTractionSpeedMpS = AbsSpeedMpS;
-                    if (AbsWheelSpeedMpS > 1.1 * MaxSpeedMpS)
-                    {
-                        AverageForceN = TractiveForceN = 0;
-                        return;
-                    }
                 }
                 else
                 {
@@ -2644,13 +2644,23 @@ public List<CabView> CabViewList = new List<CabView>();
                 LocomotiveAxle.DampingNs = MassKG / 1000.0f;
                 LocomotiveAxle.FrictionN = MassKG / 1000.0f;
 
-                if (SlipControlSystem == SlipControlType.Full)
+                if (LocomotiveAxle.Motor is InductionMotor motor)
                 {
-                    // Simple slip control
-                    // Motive force is reduced to the maximum adhesive force
-                    // In wheelslip situations, motive force is set to zero
-                    MotiveForceN = Math.Sign(MotiveForceN) * Math.Min(LocomotiveAxle.AdhesionLimit * LocomotiveAxle.AxleWeightN, Math.Abs(MotiveForceN));
-                    if (LocomotiveAxle.IsWheelSlip) MotiveForceN = 0;
+                    motor.SlipControl = SlipControlSystem == SlipControlType.Full;
+                    motor.TargetForceN = MotiveForceN;
+                    motor.EngineMaxSpeedMpS = MaxSpeedMpS;
+                }
+                else
+                {
+                    if (SlipControlSystem == SlipControlType.Full)
+                    {
+                        // Simple slip control
+                        // Motive force is reduced to the maximum adhesive force
+                        // In wheelslip situations, motive force is set to zero
+                        MotiveForceN = Math.Sign(MotiveForceN) * Math.Min(LocomotiveAxle.AdhesionLimit * LocomotiveAxle.AxleWeightN, Math.Abs(MotiveForceN));
+                        if (LocomotiveAxle.IsWheelSlip) MotiveForceN = 0;
+                    }
+                    LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
                 }
 
                 //Set axle model parameters
@@ -2658,7 +2668,6 @@ public List<CabView> CabViewList = new List<CabView>();
                 // Inputs
                 LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //will be computed each time considering the tilting
-                LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 var watch = new Stopwatch();
                 watch.Start();
