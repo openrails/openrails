@@ -31,11 +31,11 @@ namespace Orts.Formats.OR
     /// class ORWeatherFile
     /// </summary>
 
-    public class LoadStationsOccupancyFile
+    public class LoadStationsPopulationFile
     {
-        public List<ContainerStationOccupancy> LoadStationsOccupancy = new List<ContainerStationOccupancy>();
+        public List<ContainerStationPopulation> LoadStationsPopulation = new List<ContainerStationPopulation>();
 
-        public LoadStationsOccupancyFile(string fileName)
+        public LoadStationsPopulationFile(string fileName)
         {
             JsonReader.ReadFile(fileName, TryParse);
         }
@@ -45,11 +45,11 @@ namespace Orts.Formats.OR
             switch (item.Path)
             {
                 case "":
-                case "ContainerStationsOccupancy[]":
+                case "ContainerStationsPopulation[]":
                     // Ignore these items.
                     break;
-                case "ContainerStationsOccupancy[].":
-                    LoadStationsOccupancy.Add(new ContainerStationOccupancy(item));
+                case "ContainerStationsPopulation[].":
+                    LoadStationsPopulation.Add(new ContainerStationPopulation(item));
                     break;
                 default: return false;
             }
@@ -79,12 +79,12 @@ namespace Orts.Formats.OR
         }
     }
 
-    public class ContainerStationOccupancy
+    public class ContainerStationPopulation
     {
         public LoadStationID LoadStatID;
         public List<LoadDataEntry> LoadData = new List<LoadDataEntry>();
 
-        public ContainerStationOccupancy(JsonReader json)
+        public ContainerStationPopulation(JsonReader json)
         {
             json.ReadBlock(TryParse);
         }

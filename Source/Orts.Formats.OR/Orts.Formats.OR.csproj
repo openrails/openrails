@@ -63,7 +63,7 @@
     <Compile Include="DrawUtility.cs" />
     <Compile Include="ExtCarSpawnerFile.cs" />
     <Compile Include="GlobalItem.cs" />
-    <Compile Include="LoadStationsOccupancyFile.cs" />
+    <Compile Include="LoadStationsPopulationFile.cs" />
     <Compile Include="MSTSCoord.cs" />
     <Compile Include="MSTSData.cs" />
     <Compile Include="ClocksFile.cs" />
