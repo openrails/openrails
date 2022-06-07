@@ -436,7 +436,7 @@ namespace Orts.Simulation
             GrabberArmsParts = thisWorldObj.GrabberArmsParts;
             DelayTimer = new Timer(this);
             // preload containers if not at restore time
-            if (Simulator.LoadStationsOccupancyFile != null)
+            if (Simulator.LoadStationsPopulationFile != null)
                 PreloadContainerStation(thisWorldObj);
         }
 
@@ -507,13 +507,13 @@ namespace Orts.Simulation
         public void PreloadContainerStation(PickupObj thisWorldObj)
         {
             // Search if ContainerStation present in file
-            foreach (var loadStationOccupancy in Simulator.LoadStationsOccupancyFile.LoadStationsOccupancy)
+            foreach (var loadStationPopulation in Simulator.LoadStationsPopulationFile.LoadStationsPopulation)
             {
-                var tileX = int.Parse(loadStationOccupancy.LoadStatID.wfile.Substring(1, 7));
-                var tileZ = int.Parse(loadStationOccupancy.LoadStatID.wfile.Substring(8, 7));
-                if (tileX == Location.TileX && tileZ == Location.TileZ  && loadStationOccupancy.LoadStatID.UiD == thisWorldObj.UID)
+                var tileX = int.Parse(loadStationPopulation.LoadStatID.wfile.Substring(1, 7));
+                var tileZ = int.Parse(loadStationPopulation.LoadStatID.wfile.Substring(8, 7));
+                if (tileX == Location.TileX && tileZ == Location.TileZ  && loadStationPopulation.LoadStatID.UiD == thisWorldObj.UID)
                 {
-                    foreach (var loadDataEntry in (loadStationOccupancy as ContainerStationOccupancy).LoadData)
+                    foreach (var loadDataEntry in (loadStationPopulation as ContainerStationPopulation).LoadData)
                     {
                         string loadDataFolder = Simulator.BasePath + @"\trains\trainset\" + loadDataEntry.FolderName;
                         string loadFilePath = loadDataFolder + @"\" + loadDataEntry.FileName + ".loa";

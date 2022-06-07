@@ -132,7 +132,7 @@ namespace Orts.Simulation
         public SuperElevation SuperElevation;
         public int SuperElevationMinLen = 50;
         public float SuperElevationGauge = 1.435f;//1.435 guage
-        public LoadStationsOccupancyFile LoadStationsOccupancyFile;
+        public LoadStationsPopulationFile LoadStationsPopulationFile;
 
         // Used in save and restore form
         public string PathName = "<unknown>";
@@ -442,10 +442,10 @@ namespace Orts.Simulation
         public void Start(CancellationToken cancellation)
         {
             ContainerManager = new ContainerManager(this);
-            if (Activity?.Tr_Activity?.Tr_Activity_Header?.LoadStationsOccupancyFile != null)
+            if (Activity?.Tr_Activity?.Tr_Activity_Header?.LoadStationsPopulationFile != null)
             {
-                var occupancyFilePath = RoutePath + @"\Activities\Openrails\" + Activity.Tr_Activity.Tr_Activity_Header.LoadStationsOccupancyFile + ".lso";
-                LoadStationsOccupancyFile = new LoadStationsOccupancyFile(occupancyFilePath);
+                var populationFilePath = RoutePath + @"\Activities\Openrails\" + Activity.Tr_Activity.Tr_Activity_Header.LoadStationsPopulationFile + ".lsp";
+                LoadStationsPopulationFile = new LoadStationsPopulationFile(populationFilePath);
             }
             Signals = new Signals(this, SIGCFG, cancellation);
             TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
