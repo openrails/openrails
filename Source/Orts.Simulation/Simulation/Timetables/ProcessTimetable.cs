@@ -1193,9 +1193,7 @@ namespace Orts.Simulation.Timetables
             {
                 // try to load binary path if required
                 bool binaryloaded = false;
-                string formedpathFilefullBinary = Path.Combine(Path.GetDirectoryName(formedpathFilefull), "OpenRails");
-                formedpathFilefullBinary = Path.Combine(formedpathFilefullBinary, Path.GetFileNameWithoutExtension(formedpathFilefull));
-                formedpathFilefullBinary = Path.ChangeExtension(formedpathFilefullBinary, "or-binpat");
+                var formedpathFilefullBinary = simulator.Settings.GetCacheFilePath("Path", formedpathFilefull);
 
                 if (BinaryPaths && File.Exists(formedpathFilefullBinary))
                 {
@@ -1210,14 +1208,22 @@ namespace Orts.Simulation.Timetables
                         try
                         {
                             var infpath = new BinaryReader(new FileStream(formedpathFilefullBinary, FileMode.Open, FileAccess.Read));
-                            outPath = new AIPath(simulator.TDB, simulator.TSectionDat, infpath);
-                            infpath.Close();
-
-                            if (outPath.Nodes != null)
+                            var cachePath = infpath.ReadString();
+                            if (cachePath != formedpathFilefull)
                             {
-                                Paths.Add(formedpathFilefull, outPath);
-                                binaryloaded = true;
+                                Trace.TraceWarning($"Expected cache file for '{formedpathFilefull}'; got '{cachePath}' in {formedpathFilefullBinary}");
                             }
+                            else
+                            {
+                                outPath = new AIPath(simulator.TDB, simulator.TSectionDat, infpath);
+
+                                if (outPath.Nodes != null)
+                                {
+                                    Paths.Add(formedpathFilefull, outPath);
+                                    binaryloaded = true;
+                                }
+                            }
+                            infpath.Close();
                         }
                         catch
                         {
@@ -1267,6 +1273,7 @@ namespace Orts.Simulation.Timetables
                             try
                             {
                                 var outfpath = new BinaryWriter(new FileStream(formedpathFilefullBinary, FileMode.Create));
+                                outfpath.Write(formedpathFilefull);
                                 outPath.Save(outfpath);
                                 outfpath.Close();
                             }
