@@ -50,8 +50,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             float linToAngFactor = AxleConnected.TransmissionRatio / AxleConnected.WheelRadiusM;
             if (SlipControl)
             {
-                if (TargetForceN > 0) DriveSpeedRadpS = (AxleConnected.TrainSpeedMpS + AxleConnected.WheelSlipThresholdMpS * 0.99f) * linToAngFactor + OptimalAsyncSpeedRadpS;
-                else if (TargetForceN < 0) DriveSpeedRadpS = (AxleConnected.TrainSpeedMpS - AxleConnected.WheelSlipThresholdMpS * 0.99f) * linToAngFactor - OptimalAsyncSpeedRadpS;
+                if (TargetForceN > 0) DriveSpeedRadpS = (AxleConnected.TrainSpeedMpS + AxleConnected.WheelSlipThresholdMpS * 0.95f) * linToAngFactor + OptimalAsyncSpeedRadpS;
+                else if (TargetForceN < 0) DriveSpeedRadpS = (AxleConnected.TrainSpeedMpS - AxleConnected.WheelSlipThresholdMpS * 0.95f) * linToAngFactor - OptimalAsyncSpeedRadpS;
             }
             else
             {
