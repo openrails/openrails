@@ -532,7 +532,7 @@ namespace Orts.Viewer3D.Processes
             Viewer.DbfEvalAutoPilotTimeS = infDbfEval.ReadDouble();
             Viewer.DbfEvalIniAutoPilotTimeS = infDbfEval.ReadDouble();
             Popups.HelpWindow.DbfEvalDistanceTravelled = infDbfEval.ReadSingle();
-            Viewer.DbfEvalAutoPilot = Viewer.PlayerLocomotive.Train.TrainType == Simulation.Physics.Train.TRAINTYPE.AI_PLAYERHOSTING;
+            Viewer.DbfEvalAutoPilot = infDbfEval.ReadBoolean();
         }
 
         /// <summary>
