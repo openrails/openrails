@@ -1401,6 +1401,14 @@ namespace Orts.Viewer3D.RollingStock
             FreightShape?.Mark();
             InteriorShape?.Mark();
             FreightAnimations?.Mark();
+            FrontCouplerShape?.Mark();
+            FrontCouplerOpenShape?.Mark();
+            RearCouplerShape?.Mark();
+            RearCouplerOpenShape?.Mark();
+            FrontAirHoseShape?.Mark();
+            FrontAirHoseDisconnectedShape?.Mark();
+            RearAirHoseShape?.Mark();
+            RearAirHoseDisconnectedShape?.Mark();
         }
     }
 }
