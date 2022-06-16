@@ -8,24 +8,30 @@ After having successfully installed Open Rails (see the Installation
 Manual), to run the game you must double-click on the Open Rails icon on 
 the desktop, or on the OpenRails.exe file.
 
-The OpenRails main window will appear. This displays your available MSTS 
-installation profiles.
+The OpenRails main window will appear. 
+If you have an MSTS installation in place, this will be displayed as your available 
+installation profile.
 
 .. _start-picture:
 
 .. image:: images/start-activity.png
 
+If not, then you must download some content and add it as an Installation Profile.
+
 Installation Profiles
 =====================
 
-In the simplest case, where you have only a basic MSTS installation (see 
+Each profile may be a folder containing one or more routes, or an optional MSTS
+installation.
+
+In the case where you already have an MSTS installation (see 
 paragraph :ref:`Does Open Rails need MSTS to run? <intro-MSTSneeded>` for a precise definition of 
 a MSTS installation) OR should already correctly point to that 
 installation. To check this, you should initially see under ``Installation 
 Profile`` the string ``- Default -``. Under ``Route`` you should see the 
 name of one of the MSTS routes in your MSTS installation.
 
-You can easily add, remove or move other MSTS installations and select 
+You can easily add, remove or move other content profiles and select 
 among them (e.g. if you have any so-called ``mini-routes`` installed.). 
 Click on the ``Options`` button and select the ``Content`` tab. See the 
 :ref:`Content Options <options-Content>` discussed below for more instructions.
