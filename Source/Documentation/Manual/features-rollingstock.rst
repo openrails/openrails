@@ -719,6 +719,7 @@ possible, sparing the time of creating many ``.wag`` files that differ only on t
 containers loaded.
 
 Here below a picture with a sample entry in the ``.con`` file:
+
 .. image:: images/features-sample-load-entry.png
 
 
