@@ -170,7 +170,7 @@ tank, then the refilling takes place as the key is held down. If the
 locomotive is further away, then the distance to the nearest pickup is 
 shown instead.
 
-Note also that the key ``<Shift+T>`` will provide immediate refill 
+Note also that the key ``<Ctrl+T>`` will provide immediate refill 
 at any time.
 
 Specific Features to Optimize Locomotive Driving
