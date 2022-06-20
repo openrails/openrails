@@ -288,24 +288,24 @@ namespace Orts.Viewer3D.RollingStock
 
             // Initialise air hose shapes
 
-            if (car.FrontAirHoseShapeFileName != null)
+            if (car.FrontAirHose.Connected.ShapeFileName != null)
             {
-                FrontAirHoseShape = new AnimatedShape(viewer, wagonFolderSlash + car.FrontAirHoseShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+                FrontAirHoseShape = new AnimatedShape(viewer, wagonFolderSlash + car.FrontAirHose.Connected.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
             }
 
-            if (car.FrontAirHoseDisconnectedShapeFileName != null)
+            if (car.FrontAirHose.Disconnected.ShapeFileName != null)
             {
-                FrontAirHoseDisconnectedShape = new AnimatedShape(viewer, wagonFolderSlash + car.FrontAirHoseDisconnectedShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+                FrontAirHoseDisconnectedShape = new AnimatedShape(viewer, wagonFolderSlash + car.FrontAirHose.Disconnected.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
             }
 
-            if (car.RearAirHoseShapeFileName != null)
+            if (car.RearAirHose.Connected.ShapeFileName != null)
             {
-                RearAirHoseShape = new AnimatedShape(viewer, wagonFolderSlash + car.RearAirHoseShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+                RearAirHoseShape = new AnimatedShape(viewer, wagonFolderSlash + car.RearAirHose.Connected.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
             }
 
-            if (car.RearAirHoseDisconnectedShapeFileName != null)
+            if (car.RearAirHose.Disconnected.ShapeFileName != null)
             {
-                RearAirHoseDisconnectedShape = new AnimatedShape(viewer, wagonFolderSlash + car.RearAirHoseDisconnectedShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+                RearAirHoseDisconnectedShape = new AnimatedShape(viewer, wagonFolderSlash + car.RearAirHose.Disconnected.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
             }
 
 
@@ -1061,8 +1061,8 @@ namespace Orts.Viewer3D.RollingStock
                     // Get the movement that would be needed to locate the air hose on the car if they were pointing in the default direction.
                     var displacement = new Vector3
                     {
-                        X = Car.FrontAirHoseAnimWidthM,
-                        Y = Car.FrontAirHoseAnimHeightM + Car.FrontAirHoseHeightAdjustmentM,
+                        X = Car.FrontAirHose.Size.X,
+                        Y = Car.FrontAirHose.Size.Y + Car.FrontAirHose.HeightAdjustmentM,
                         Z = (Car.FrontCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM)
                     };
 
@@ -1070,8 +1070,8 @@ namespace Orts.Viewer3D.RollingStock
 
                     var quaternionCar = new Quaternion(quaternion.X, quaternion.Y, quaternion.Z, quaternion.W);
 
-                    var AirHoseYAngleRadians = Car.FrontAirHoseYAngleAdjustmentRad;
-                    var AirHoseZAngleRadians = Car.FrontAirHoseZAngleAdjustmentRad;
+                    var AirHoseYAngleRadians = Car.FrontAirHose.YAngleAdjustmentRad;
+                    var AirHoseZAngleRadians = Car.FrontAirHose.ZAngleAdjustmentRad;
 
                     AlignCouplerWithCar(Car, FrontAirHoseShape);
 
@@ -1086,8 +1086,8 @@ namespace Orts.Viewer3D.RollingStock
                     // Get the movement that would be needed to locate the air hose on the car if they were pointing in the default direction.
                     var displacement = new Vector3
                     {
-                        X = Car.FrontAirHoseAnimWidthM,
-                        Y = Car.FrontAirHoseAnimHeightM,
+                        X = Car.FrontAirHose.Size.X,
+                        Y = Car.FrontAirHose.Size.Y,
                         Z = (Car.FrontCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM)
                     };
 
@@ -1103,8 +1103,8 @@ namespace Orts.Viewer3D.RollingStock
                     // Get the movement that would be needed to locate the air hose on the car if they were pointing in the default direction.
                     var displacement = new Vector3
                     {
-                        X = Car.FrontAirHoseAnimWidthM,
-                        Y = Car.FrontAirHoseAnimHeightM,
+                        X = Car.FrontAirHose.Size.X,
+                        Y = Car.FrontAirHose.Size.Y,
                         Z = (Car.FrontCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM)
                     };
                     var quaternion = PositionCoupler(Car, FrontAirHoseShape, displacement);
@@ -1126,8 +1126,8 @@ namespace Orts.Viewer3D.RollingStock
                     // Get the movement that would be needed to locate the air hose on the car if they were pointing in the default direction.
                     var displacement = new Vector3
                     {
-                        X = Car.RearAirHoseAnimWidthM,
-                        Y = Car.RearAirHoseAnimHeightM + Car.RearAirHoseHeightAdjustmentM,
+                        X = Car.RearAirHose.Size.X,
+                        Y = Car.RearAirHose.Size.Y + Car.RearAirHose.HeightAdjustmentM,
                         Z = -(Car.RearCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM)  // Reversed as this is the rear coupler of the wagon
                     };
 
@@ -1135,8 +1135,8 @@ namespace Orts.Viewer3D.RollingStock
 
                     var quaternionCar = new Quaternion(quaternion.X, quaternion.Y, quaternion.Z, quaternion.W);
 
-                    var AirHoseYAngleRadians = Car.RearAirHoseYAngleAdjustmentRad;
-                    var AirHoseZAngleRadians = -Car.RearAirHoseZAngleAdjustmentRad;
+                    var AirHoseYAngleRadians = Car.RearAirHose.YAngleAdjustmentRad;
+                    var AirHoseZAngleRadians = -Car.RearAirHose.ZAngleAdjustmentRad;
 
                     AlignCouplerWithCar(Car, RearAirHoseShape);
 
@@ -1151,8 +1151,8 @@ namespace Orts.Viewer3D.RollingStock
                     // Get the movement that would be needed to locate the air hose on the car if they were pointing in the default direction.
                     var displacement = new Vector3
                     {
-                        X = Car.RearAirHoseAnimWidthM,
-                        Y = Car.RearAirHoseAnimHeightM,
+                        X = Car.RearAirHose.Size.X,
+                        Y = Car.RearAirHose.Size.Y,
                         Z = -(Car.RearCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM)  // Reversed as this is the rear coupler of the wagon
                     };
 
@@ -1168,8 +1168,8 @@ namespace Orts.Viewer3D.RollingStock
                     // Get the movement that would be needed to locate the air hose on the car if they were pointing in the default direction.
                     var displacement = new Vector3
                     {
-                        X = Car.RearAirHoseAnimWidthM,
-                        Y = Car.RearAirHoseAnimHeightM,
+                        X = Car.RearAirHose.Size.X,
+                        Y = Car.RearAirHose.Size.Y,
                         Z = -(Car.RearCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM)  // Reversed as this is the rear coupler of the wagon
                     };
 

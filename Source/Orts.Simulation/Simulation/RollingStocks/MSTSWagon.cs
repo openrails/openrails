@@ -434,16 +434,16 @@ namespace Orts.Simulation.RollingStocks
                 RearCoupler.Closed.ShapeFileName = null;
             }
 
-            if (FrontAirHoseShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHoseShapeFileName))
+            if (FrontAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHoseShapeFileName);
-                FrontAirHoseShapeFileName = null;
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
+                FrontAirHose.Connected.ShapeFileName = null;
             }
 
-            if (RearAirHoseShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHoseShapeFileName))
+            if (RearAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHoseShapeFileName);
-                RearAirHoseShapeFileName = null;
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
+                RearAirHose.Connected.ShapeFileName = null;
             }
 
             // If trailing loco resistance constant has not been  defined in WAG/ENG file then assign default value based upon orig Davis values
@@ -1229,10 +1229,8 @@ namespace Orts.Simulation.RollingStocks
 
                 case "wagon(coupling(frontairhoseanim":
                     stf.MustMatch("(");
-                    FrontAirHoseShapeFileName = stf.ReadString();
-                    FrontAirHoseAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontAirHoseAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontAirHoseAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHose.Connected.ShapeFileName = stf.ReadString();
+                    FrontAirHose.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1245,10 +1243,8 @@ namespace Orts.Simulation.RollingStocks
 
                 case "wagon(coupling(rearairhoseanim":
                     stf.MustMatch("(");
-                    RearAirHoseShapeFileName = stf.ReadString();
-                    RearAirHoseAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearAirHoseAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearAirHoseAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHose.Connected.ShapeFileName = stf.ReadString();
+                    RearAirHose.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1274,19 +1270,15 @@ namespace Orts.Simulation.RollingStocks
 
                 case "wagon(coupling(frontairhosediconnectedanim":
                     stf.MustMatch("(");
-                    FrontAirHoseDisconnectedShapeFileName = stf.ReadString();
-                    FrontAirHoseDisconnectedAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontAirHoseDisconnectedAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontAirHoseDisconnectedAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHose.Disconnected.ShapeFileName = stf.ReadString();
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
                     
                 case "wagon(coupling(rearairhosediconnectedanim":
                     stf.MustMatch("(");
-                    RearAirHoseDisconnectedShapeFileName = stf.ReadString();
-                    RearAirHoseDisconnectedAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearAirHoseDisconnectedAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearAirHoseDisconnectedAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHose.Disconnected.ShapeFileName = stf.ReadString();
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1445,26 +1437,8 @@ namespace Orts.Simulation.RollingStocks
             FreightAnimFlag = copy.FreightAnimFlag;
             FrontCoupler = copy.FrontCoupler;
             RearCoupler = copy.RearCoupler;
-
-            FrontAirHoseShapeFileName = copy.FrontAirHoseShapeFileName;
-            FrontAirHoseAnimWidthM = copy.FrontAirHoseAnimWidthM;
-            FrontAirHoseAnimHeightM = copy.FrontAirHoseAnimHeightM;
-            FrontAirHoseAnimLengthM = copy.FrontAirHoseAnimLengthM;
-            
-            FrontAirHoseDisconnectedShapeFileName = copy.FrontAirHoseDisconnectedShapeFileName;
-            FrontAirHoseDisconnectedAnimWidthM = copy.FrontAirHoseDisconnectedAnimWidthM;
-            FrontAirHoseDisconnectedAnimHeightM = copy.FrontAirHoseDisconnectedAnimHeightM;
-            FrontAirHoseDisconnectedAnimLengthM = copy.FrontAirHoseDisconnectedAnimLengthM;
-            
-            RearAirHoseShapeFileName = copy.RearAirHoseShapeFileName;
-            RearAirHoseAnimWidthM = copy.RearAirHoseAnimWidthM;
-            RearAirHoseAnimHeightM = copy.RearAirHoseAnimHeightM;
-            RearAirHoseAnimLengthM = copy.RearAirHoseAnimLengthM;
-            
-            RearAirHoseDisconnectedShapeFileName = copy.RearAirHoseDisconnectedShapeFileName;
-            RearAirHoseDisconnectedAnimWidthM = copy.RearAirHoseDisconnectedAnimWidthM;
-            RearAirHoseDisconnectedAnimHeightM = copy.RearAirHoseDisconnectedAnimHeightM;
-            RearAirHoseDisconnectedAnimLengthM = copy.RearAirHoseDisconnectedAnimLengthM;
+            FrontAirHose = copy.FrontAirHose;
+            RearAirHose = copy.RearAirHose;
 
             CarWidthM = copy.CarWidthM;
             CarHeightM = copy.CarHeightM;
