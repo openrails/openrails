@@ -422,16 +422,16 @@ namespace Orts.Simulation.RollingStocks
                 InteriorShapeFileName = null;
             }
 
-            if (FrontCouplerShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCouplerShapeFileName))
+            if (FrontCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCouplerShapeFileName);
-                FrontCouplerShapeFileName = null;
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
+                FrontCoupler.Closed.ShapeFileName = null;
             }
 
-            if (RearCouplerShapeFileName != null && !File.Exists(wagonFolderSlash + RearCouplerShapeFileName))
+            if (RearCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCouplerShapeFileName);
-                RearCouplerShapeFileName = null;
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
+                RearCoupler.Closed.ShapeFileName = null;
             }
 
             if (FrontAirHoseShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHoseShapeFileName))
@@ -1222,10 +1222,8 @@ namespace Orts.Simulation.RollingStocks
 
                 case "wagon(coupling(frontcoupleranim":
                     stf.MustMatch("(");
-                    FrontCouplerShapeFileName = stf.ReadString();
-                    FrontCouplerAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontCouplerAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontCouplerAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontCoupler.Closed.ShapeFileName = stf.ReadString();
+                    FrontCoupler.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1240,10 +1238,8 @@ namespace Orts.Simulation.RollingStocks
 
                 case "wagon(coupling(rearcoupleranim":
                     stf.MustMatch("(");
-                    RearCouplerShapeFileName = stf.ReadString();
-                    RearCouplerAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearCouplerAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearCouplerAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearCoupler.Closed.ShapeFileName = stf.ReadString();
+                    RearCoupler.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1264,21 +1260,15 @@ namespace Orts.Simulation.RollingStocks
 
                case "wagon(coupling(frontcoupleropenanim":
                     stf.MustMatch("(");
-                    FrontCouplerOpenFitted = true;
-                    FrontCouplerOpenShapeFileName = stf.ReadString();
-                    FrontCouplerOpenAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontCouplerOpenAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontCouplerOpenAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontCoupler.Open.ShapeFileName = stf.ReadString();
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
                     
                case "wagon(coupling(rearcoupleropenanim":
                     stf.MustMatch("(");
-                    RearCouplerOpenFitted = true;
-                    RearCouplerOpenShapeFileName = stf.ReadString();
-                    RearCouplerOpenAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearCouplerOpenAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearCouplerOpenAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearCoupler.Open.ShapeFileName = stf.ReadString();
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1453,24 +1443,8 @@ namespace Orts.Simulation.RollingStocks
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
             FreightAnimFlag = copy.FreightAnimFlag;
-            FrontCouplerShapeFileName = copy.FrontCouplerShapeFileName;
-            FrontCouplerAnimWidthM = copy.FrontCouplerAnimWidthM;
-            FrontCouplerAnimHeightM = copy.FrontCouplerAnimHeightM;
-            FrontCouplerAnimLengthM = copy.FrontCouplerAnimLengthM;
-            FrontCouplerOpenShapeFileName = copy.FrontCouplerOpenShapeFileName;
-            FrontCouplerOpenAnimWidthM = copy.FrontCouplerOpenAnimWidthM;
-            FrontCouplerOpenAnimHeightM = copy.FrontCouplerOpenAnimHeightM;
-            FrontCouplerOpenAnimLengthM = copy.FrontCouplerOpenAnimLengthM;
-            FrontCouplerOpenFitted = copy.FrontCouplerOpenFitted;
-            RearCouplerShapeFileName = copy.RearCouplerShapeFileName;
-            RearCouplerAnimWidthM = copy.RearCouplerAnimWidthM;
-            RearCouplerAnimHeightM = copy.RearCouplerAnimHeightM;
-            RearCouplerAnimLengthM = copy.RearCouplerAnimLengthM;
-            RearCouplerOpenShapeFileName = copy.RearCouplerOpenShapeFileName;
-            RearCouplerOpenAnimWidthM = copy.RearCouplerOpenAnimWidthM;
-            RearCouplerOpenAnimHeightM = copy.RearCouplerOpenAnimHeightM;
-            RearCouplerOpenAnimLengthM = copy.RearCouplerOpenAnimLengthM;
-            RearCouplerOpenFitted = copy.RearCouplerOpenFitted;
+            FrontCoupler = copy.FrontCoupler;
+            RearCoupler = copy.RearCoupler;
 
             FrontAirHoseShapeFileName = copy.FrontAirHoseShapeFileName;
             FrontAirHoseAnimWidthM = copy.FrontAirHoseAnimWidthM;

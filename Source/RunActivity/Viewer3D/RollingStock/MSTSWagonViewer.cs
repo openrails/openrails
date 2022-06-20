@@ -40,10 +40,10 @@ namespace Orts.Viewer3D.RollingStock
         protected PoseableShape TrainCarShape;
         protected AnimatedShape FreightShape;
         protected AnimatedShape InteriorShape;
-        protected AnimatedShape FrontCouplerShape;
-        protected AnimatedShape FrontCouplerOpenShape;
-        protected AnimatedShape RearCouplerShape;
-        protected AnimatedShape RearCouplerOpenShape;
+        AnimatedShape FrontCouplerShape;
+        AnimatedShape FrontCouplerOpenShape;
+        AnimatedShape RearCouplerShape;
+        AnimatedShape RearCouplerOpenShape;
 
         protected AnimatedShape FrontAirHoseShape;
         protected AnimatedShape FrontAirHoseDisconnectedShape;
@@ -266,24 +266,24 @@ namespace Orts.Viewer3D.RollingStock
             }
 
             // Initialise Coupler shapes 
-            if (car.FrontCouplerShapeFileName != null)
+            if (car.FrontCoupler.Closed.ShapeFileName != null)
             {
-                FrontCouplerShape = new AnimatedShape(viewer, wagonFolderSlash + car.FrontCouplerShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+                FrontCouplerShape = new AnimatedShape(viewer, wagonFolderSlash + car.FrontCoupler.Closed.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
             }
 
-            if (car.FrontCouplerOpenShapeFileName != null)
+            if (car.FrontCoupler.Open.ShapeFileName != null)
             {
-                FrontCouplerOpenShape = new AnimatedShape(viewer, wagonFolderSlash + car.FrontCouplerOpenShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+                FrontCouplerOpenShape = new AnimatedShape(viewer, wagonFolderSlash + car.FrontCoupler.Open.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
             }
 
-            if (car.RearCouplerShapeFileName != null)
+            if (car.RearCoupler.Closed.ShapeFileName != null)
             {
-                RearCouplerShape = new AnimatedShape(viewer, wagonFolderSlash + car.RearCouplerShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+                RearCouplerShape = new AnimatedShape(viewer, wagonFolderSlash + car.RearCoupler.Closed.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
             }
 
-            if (car.RearCouplerOpenShapeFileName != null)
+            if (car.RearCoupler.Open.ShapeFileName != null)
             {
-                RearCouplerOpenShape = new AnimatedShape(viewer, wagonFolderSlash + car.RearCouplerOpenShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+                RearCouplerOpenShape = new AnimatedShape(viewer, wagonFolderSlash + car.RearCoupler.Open.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
             }
 
             // Initialise air hose shapes
@@ -947,12 +947,8 @@ namespace Orts.Viewer3D.RollingStock
             if (FrontCouplerShape != null && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
             {
                 // Get the movement that would be needed to locate the coupler on the car if they were pointing in the default direction.
-                var displacement = new Vector3
-                {
-                    X = Car.FrontCouplerAnimWidthM,
-                    Y = Car.FrontCouplerAnimHeightM,
-                    Z = (Car.FrontCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM - Car.WagonFrontCouplerCurveExtM)
-                };
+                var displacement =  Car.FrontCoupler.Size;
+                displacement.Z += (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM - Car.WagonFrontCouplerCurveExtM;
 
                 if (Car.CarAhead != null) // Display animated coupler if there is a car infront of this car
                 {
@@ -986,7 +982,7 @@ namespace Orts.Viewer3D.RollingStock
                     // Display Animation Shape                    
                     FrontCouplerShape.PrepareFrame(frame, elapsedTime);
                 }
-                else if (FrontCouplerOpenShape != null && Car.FrontCouplerOpenFitted && Car.FrontCouplerOpen) // Display open coupler if no car in front of car, and an open coupler shape is present
+                else if (FrontCouplerOpenShape != null && Car.FrontCoupler.IsOpen) // Display open coupler if no car in front of car, and an open coupler shape is present
                 {
                     var quaternion = PositionCoupler(Car, FrontCouplerOpenShape, displacement);
 
@@ -1011,12 +1007,9 @@ namespace Orts.Viewer3D.RollingStock
             if (RearCouplerShape != null && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
             {
                 // Get the movement that would be needed to locate the coupler on the car if they were pointing in the default direction.
-                var displacement = new Vector3
-                {
-                    X = Car.RearCouplerAnimWidthM,
-                    Y = Car.RearCouplerAnimHeightM,
-                    Z = -(Car.RearCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM - Car.WagonRearCouplerCurveExtM)  // Reversed as this is the rear coupler of the wagon
-                };
+                var displacement = Car.RearCoupler.Size;
+                displacement.Z += (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM - Car.WagonRearCouplerCurveExtM;
+                displacement.Z *= -1; // Reversed as this is the rear coupler of the wagon
 
                 if (Car.CarBehind != null) // Display animated coupler if there is a car behind this car
                 {
@@ -1039,7 +1032,7 @@ namespace Orts.Viewer3D.RollingStock
                     Car.RearCouplerLocationTileZ = RearCouplerShape.Location.TileZ;
 
                 }
-                else if (RearCouplerOpenShape != null && Car.RearCouplerOpenFitted && Car.RearCouplerOpen) // Display open coupler if no car is behind car, and an open coupler shape is present
+                else if (RearCouplerOpenShape != null && Car.RearCoupler.IsOpen) // Display open coupler if no car is behind car, and an open coupler shape is present
                 {
                     var quaternion = PositionCoupler(Car, RearCouplerOpenShape, displacement);
 
@@ -1070,7 +1063,7 @@ namespace Orts.Viewer3D.RollingStock
                     {
                         X = Car.FrontAirHoseAnimWidthM,
                         Y = Car.FrontAirHoseAnimHeightM + Car.FrontAirHoseHeightAdjustmentM,
-                        Z = (Car.FrontCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM)
+                        Z = (Car.FrontCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM)
                     };
 
                     var quaternion = PositionCoupler(Car, FrontAirHoseShape, displacement);
@@ -1088,14 +1081,14 @@ namespace Orts.Viewer3D.RollingStock
                     FrontAirHoseShape.PrepareFrame(frame, elapsedTime);
 
                 }
-                else if (FrontAirHoseDisconnectedShape != null && Car.RearCouplerOpenFitted && Car.RearCouplerOpen) // Display open coupler if no car is behind car, and an open coupler shape is present
+                else if (FrontAirHoseDisconnectedShape != null && Car.RearCoupler.IsOpen) // Display open coupler if no car is behind car, and an open coupler shape is present
                 {
                     // Get the movement that would be needed to locate the air hose on the car if they were pointing in the default direction.
                     var displacement = new Vector3
                     {
                         X = Car.FrontAirHoseAnimWidthM,
                         Y = Car.FrontAirHoseAnimHeightM,
-                        Z = (Car.FrontCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM)
+                        Z = (Car.FrontCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM)
                     };
 
                     var quaternion = PositionCoupler(Car, FrontAirHoseDisconnectedShape, displacement);
@@ -1112,7 +1105,7 @@ namespace Orts.Viewer3D.RollingStock
                     {
                         X = Car.FrontAirHoseAnimWidthM,
                         Y = Car.FrontAirHoseAnimHeightM,
-                        Z = (Car.FrontCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM)
+                        Z = (Car.FrontCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM)
                     };
                     var quaternion = PositionCoupler(Car, FrontAirHoseShape, displacement);
 
@@ -1135,7 +1128,7 @@ namespace Orts.Viewer3D.RollingStock
                     {
                         X = Car.RearAirHoseAnimWidthM,
                         Y = Car.RearAirHoseAnimHeightM + Car.RearAirHoseHeightAdjustmentM,
-                        Z = -(Car.RearCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM)  // Reversed as this is the rear coupler of the wagon
+                        Z = -(Car.RearCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM)  // Reversed as this is the rear coupler of the wagon
                     };
 
                     var quaternion = PositionCoupler(Car, RearAirHoseShape, displacement);
@@ -1153,14 +1146,14 @@ namespace Orts.Viewer3D.RollingStock
                     RearAirHoseShape.PrepareFrame(frame, elapsedTime);
 
                 }
-                else if (RearAirHoseDisconnectedShape != null && Car.RearCouplerOpenFitted && Car.RearCouplerOpen) // Display single air hose if no car is behind car, and an open air hose shape is present
+                else if (RearAirHoseDisconnectedShape != null && Car.RearCoupler.IsOpen) // Display single air hose if no car is behind car, and an open air hose shape is present
                 {
                     // Get the movement that would be needed to locate the air hose on the car if they were pointing in the default direction.
                     var displacement = new Vector3
                     {
                         X = Car.RearAirHoseAnimWidthM,
                         Y = Car.RearAirHoseAnimHeightM,
-                        Z = -(Car.RearCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM)  // Reversed as this is the rear coupler of the wagon
+                        Z = -(Car.RearCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM)  // Reversed as this is the rear coupler of the wagon
                     };
 
                     var quaternion = PositionCoupler(Car, RearAirHoseDisconnectedShape, displacement);
@@ -1177,7 +1170,7 @@ namespace Orts.Viewer3D.RollingStock
                     {
                         X = Car.RearAirHoseAnimWidthM,
                         Y = Car.RearAirHoseAnimHeightM,
-                        Z = -(Car.RearCouplerAnimLengthM + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM)  // Reversed as this is the rear coupler of the wagon
+                        Z = -(Car.RearCoupler.Size.Z + (Car.CarLengthM / 2.0f) + Car.RearCouplerSlackM)  // Reversed as this is the rear coupler of the wagon
                     };
 
                     var quaternion = PositionCoupler(Car, RearAirHoseShape, displacement);

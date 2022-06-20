@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2022 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -38,6 +38,7 @@ using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks.Coupling;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
@@ -211,29 +212,8 @@ namespace Orts.Simulation.RollingStocks
         public float InitialMaxBrakeForceN = 89e3f;   // Initial force when agon initialised
 
         // Coupler Animation
-        public string FrontCouplerShapeFileName;
-        public float FrontCouplerAnimLengthM;
-        public float FrontCouplerAnimWidthM;
-        public float FrontCouplerAnimHeightM;
-
-        public string FrontCouplerOpenShapeFileName;
-        public float FrontCouplerOpenAnimLengthM;
-        public float FrontCouplerOpenAnimWidthM;
-        public float FrontCouplerOpenAnimHeightM;
-        public bool FrontCouplerOpenFitted = false;
-        public bool FrontCouplerOpen = false;
-
-        public string RearCouplerShapeFileName;
-        public float RearCouplerAnimLengthM;
-        public float RearCouplerAnimWidthM;
-        public float RearCouplerAnimHeightM;
-
-        public string RearCouplerOpenShapeFileName;
-        public float RearCouplerOpenAnimLengthM;
-        public float RearCouplerOpenAnimWidthM;
-        public float RearCouplerOpenAnimHeightM;
-        public bool RearCouplerOpenFitted = false;
-        public bool RearCouplerOpen = false;
+        public AnimatedCoupler FrontCoupler = new AnimatedCoupler();
+        public AnimatedCoupler RearCoupler = new AnimatedCoupler();
 
         // Air hose animation
         public string FrontAirHoseShapeFileName;
