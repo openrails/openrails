@@ -140,10 +140,6 @@ namespace ORTS.Settings
         [Default(true)]
         public bool Logging { get; set; }
         [Default(false)]
-        public bool DebriefActivityEval { get; set; }
-        [Default(false)]
-        public bool DebriefTTActivityEval { get; set; }
-        [Default(false)]
         public bool FullScreen { get; set; }
         [Default("")]
         public string Multiplayer_User { get; set; }
@@ -339,8 +335,8 @@ namespace ORTS.Settings
         public int CarVibratingLevel { get; set; }
         [Default("OpenRailsLog.txt")]
         public string LoggingFilename { get; set; }
-        [Default("OR-DebriefEval.txt")]
-        public string DebriefEvalFilename { get; set; }//
+        [Default("OpenRailsEvaluation.txt")]
+        public string EvaluationFilename { get; set; }//
         [Default("")] // If left as "", OR will use the user's desktop folder
         public string LoggingPath { get; set; }
         [Default("")]
