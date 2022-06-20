@@ -1024,6 +1024,7 @@ container station follows. It can be noted that stack location 0 has a 20ft cont
 its child stack location 10. Same applies to stack location 3 and its child stack location 13.
 
 .. image:: images/features-stack-locations-code.png
+  :scale: 80 %
 
 .. image:: images/features-stack-locations.png
 
