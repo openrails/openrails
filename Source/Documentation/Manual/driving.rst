@@ -668,7 +668,7 @@ unchecked, but don't have any effect on activity evaluation.
 A tab named "Evaluation" is present on the F1 Help Information Monitor.
 Once the activity is running it displays dynamic information about the player 
 train performance up to that moment.
-
+   
 
 .. image:: images/dbfeval-evaluation-ini.png
    :scale: 100%
