@@ -328,7 +328,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 foreach (var loadData in loadDataList)
                 {
                     string loadDataFolder = wagon.Simulator.BasePath + @"\trains\trainset\" + loadData.Folder;
-                    string loadFilePath = loadDataFolder + @"\" + loadData.Name + ".loa";
+                    string loadFilePath = loadDataFolder + @"\" + loadData.Name + ".load-or";
                     if (!File.Exists(loadFilePath))
                     {
                         Trace.TraceWarning($"Ignored missing load {loadFilePath}");

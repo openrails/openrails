@@ -444,7 +444,7 @@ namespace Orts.Simulation
             ContainerManager = new ContainerManager(this);
             if (Activity?.Tr_Activity?.Tr_Activity_Header?.LoadStationsPopulationFile != null)
             {
-                var populationFilePath = RoutePath + @"\Activities\Openrails\" + Activity.Tr_Activity.Tr_Activity_Header.LoadStationsPopulationFile + ".lsp";
+                var populationFilePath = RoutePath + @"\Activities\Openrails\" + Activity.Tr_Activity.Tr_Activity_Header.LoadStationsPopulationFile + ".load-stations-loads-or";
                 LoadStationsPopulationFile = new LoadStationsPopulationFile(populationFilePath);
             }
             Signals = new Signals(this, SIGCFG, cancellation);
