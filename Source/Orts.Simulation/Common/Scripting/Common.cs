@@ -106,11 +106,6 @@ namespace ORTS.Scripting.Api
         {
             CurrentValue = () => (float)eot.Train.Simulator.GameTime;
         }
-
-        public Timer(ContainerHandlingItem containerStation)
-        {
-            CurrentValue = () => (float)containerStation.Simulator.GameTime;
-        }
     }
 
     public class OdoMeter : Counter

@@ -53,14 +53,6 @@ namespace Orts.Common
         Couple,
         CoupleB, // NOTE: Currently not used in Open Rails.
         CoupleC, // NOTE: Currently not used in Open Rails.
-        CraneXAxisMove,
-        CraneXAxisSlowDown,
-        CraneYAxisMove,
-        CraneYAxisSlowDown,
-        CraneZAxisMove,
-        CraneZAxisSlowDown,
-        CraneYAxisBumpsOnTarget,
-        CraneYAxisDown,
         CrossingClosing,
         CrossingOpening,
         CylinderCocksToggle,
@@ -268,8 +260,7 @@ namespace Orts.Common
             MSTSFuelTower,
             MSTSInGame,
             MSTSSignal,
-            ORTSTurntable,
-            ORTSContainerCrane
+            ORTSTurntable
         }
 
         // PLEASE DO NOT EDIT THESE FUNCTIONS without references and testing!
@@ -561,19 +552,6 @@ namespace Orts.Common
                         case 1: return Event.MovingTableMovingEmpty;
                         case 2: return Event.MovingTableMovingLoaded;
                         case 3: return Event.MovingTableStopped;
-                        default: return 0;
-                    }
-                case Source.ORTSContainerCrane:
-                    switch (eventID)
-                    {
-                        // Can be different from crane to crane
-                        case 1: return Event.CraneXAxisMove;
-                        case 2: return Event.CraneXAxisSlowDown;
-                        case 3: return Event.CraneYAxisMove;
-                        case 4: return Event.CraneYAxisSlowDown;
-                        case 5: return Event.CraneZAxisMove;
-                        case 6: return Event.CraneZAxisSlowDown;
-                        case 7: return Event.CraneYAxisDown;
                         default: return 0;
                     }
                 default: return 0;

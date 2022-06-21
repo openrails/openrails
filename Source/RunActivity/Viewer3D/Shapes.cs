@@ -993,40 +993,36 @@ namespace Orts.Viewer3D
 
     public class FuelPickupItemShape : PoseableShape
     {
-        protected PickupObj FuelPickupItemObj;
-        protected FuelPickupItem FuelPickupItem;
-        protected SoundSource Sound;
-        protected float FrameRate;
-        protected WorldPosition Position;
+        readonly PickupObj FuelPickupItemObj;
+        readonly FuelPickupItem FuelPickupItem;
+        readonly SoundSource Sound;
+        readonly float FrameRate;
 
-        protected int AnimationFrames;
+        readonly int AnimationFrames;
         protected float AnimationKey;
+
 
         public FuelPickupItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj)
             : base(viewer, path, position, shapeFlags)
         {
             FuelPickupItemObj = fuelpickupitemObj;
-            Position = position;
-            Initialize();
-        }
 
-        public virtual void Initialize()
-        {
-            if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS != null && FuelPickupItemObj.PickupType == 7) // Testing for Diesel PickupType
+
+            if (viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS != null && FuelPickupItemObj.PickupType == 7) // Testing for Diesel PickupType
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
+                var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
                 try
                 {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                    viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
                 catch
                 {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
+                    soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
                     try
                     {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                     }
                     catch (Exception error)
                     {
@@ -1034,21 +1030,21 @@ namespace Orts.Viewer3D
                     }
                 }
             }
-            if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS != null && FuelPickupItemObj.PickupType == 5) // Testing for Water PickupType
+            if (viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS != null && FuelPickupItemObj.PickupType == 5) // Testing for Water PickupType
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
+                var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
                 try
                 {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                    viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
                 catch
                 {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
+                    soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
                     try
                     {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                     }
                     catch (Exception error)
                     {
@@ -1056,21 +1052,21 @@ namespace Orts.Viewer3D
                     }
                 }
             }
-            if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS != null && (FuelPickupItemObj.PickupType == 6 || FuelPickupItemObj.PickupType == 2))
+            if (viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS != null && (FuelPickupItemObj.PickupType == 6 || FuelPickupItemObj.PickupType == 2))
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
+                var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
                 try
                 {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                    viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
                 catch
                 {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
+                    soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
                     try
                     {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                     }
                     catch (Exception error)
                     {
@@ -1078,7 +1074,7 @@ namespace Orts.Viewer3D
                     }
                 }
             }
-            FuelPickupItem = Viewer.Simulator.FuelManager.CreateFuelStation(Position, from tid in FuelPickupItemObj.TrItemIDList where tid.db == 0 select tid.dbID);
+            FuelPickupItem = viewer.Simulator.FuelManager.CreateFuelStation(position, from tid in FuelPickupItemObj.TrItemIDList where tid.db == 0 select tid.dbID);
             AnimationFrames = 1;
             FrameRate = 1;
             if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].anim_nodes != null && SharedShape.Animations[0].anim_nodes.Count > 0)
@@ -1141,359 +1137,6 @@ namespace Orts.Viewer3D
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     } // End Class FuelPickupItemShape
-
-    public class ContainerHandlingItemShape : FuelPickupItemShape
-    {
-        protected float AnimationKeyX;
-        protected float AnimationKeyY;
-        protected float AnimationKeyZ;
-        protected float AnimationKeyGrabber01;
-        protected float AnimationKeyGrabber02;
-        protected int IAnimationMatrixX;
-        protected int IAnimationMatrixY;
-        protected int IAnimationMatrixZ;
-        protected int IGrabber01;
-        protected int IGrabber02;
-        protected controller controllerX;
-        protected controller controllerY;
-        protected controller controllerZ;
-        protected controller controllerGrabber01;
-        protected controller controllerGrabber02;
-        protected float slowDownThreshold = 0.03f;
-        // To detect transitions that trigger sounds
-        protected bool OldMoveX;
-        protected bool OldMoveY;
-        protected bool OldMoveZ;
-
-
-        protected ContainerHandlingItem ContainerHandlingItem;
-        public ContainerHandlingItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj)
-                        : base(viewer, path, position, shapeFlags, fuelpickupitemObj)
-        {
-        }
-
-        public override void Initialize()
-        {
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
-            {
-                if (SharedShape.MatrixNames[imatrix].ToLower() == "zaxis")
-                    IAnimationMatrixZ = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "xaxis")
-                    IAnimationMatrixX = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "yaxis")
-                    IAnimationMatrixY = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "grabber01")
-                    IGrabber01 = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "grabber02")
-                    IGrabber02 = imatrix;
-            }
-
-            controllerX = SharedShape.Animations[0].anim_nodes[IAnimationMatrixX].controllers[0];
-            controllerY = SharedShape.Animations[0].anim_nodes[IAnimationMatrixY].controllers[0];
-            controllerZ = SharedShape.Animations[0].anim_nodes[IAnimationMatrixZ].controllers[0];
-            controllerGrabber01 = SharedShape.Animations[0].anim_nodes[IGrabber01].controllers[0];
-            controllerGrabber02 = SharedShape.Animations[0].anim_nodes[IGrabber02].controllers[0];
-            AnimationKeyX = Math.Abs((0 - ((linear_key)controllerX[0]).X) / (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X)) * controllerX[1].Frame;
-            AnimationKeyY = Math.Abs((0 - ((linear_key)controllerY[0]).Y) / (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y)) * controllerY[1].Frame;
-            AnimationKeyZ = Math.Abs((0 - ((linear_key)controllerZ[0]).Z) / (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z)) * controllerZ[1].Frame;
-            if (FuelPickupItemObj.CraneSound != null)
-            {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + FuelPickupItemObj.CraneSound;
-                try
-                {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                }
-                catch
-                {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\containercrane.sms";
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch
-                    {
-                        Trace.TraceWarning("Cannot find sound file {0}", soundPath);
-                    }
-                }
-            }
-            else
-            {
-                var soundPath = Viewer.Simulator.BasePath + @"\\sound\\containercrane.sms";
-                try
-                {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                }
-                catch
-                {
-                    Trace.TraceWarning("Cannot find sound file {0}", soundPath);
-                }
-            }
-            ContainerHandlingItem = Viewer.Simulator.ContainerManager.ContainerHandlingItems[FuelPickupItemObj.TrItemIDList[0].dbID];
-            AnimationFrames = 1;
-            FrameRate = 1;
-            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].anim_nodes != null && SharedShape.Animations[0].anim_nodes.Count > 0)
-            {
-                FrameRate = SharedShape.Animations[0].FrameCount / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
-                foreach (var anim_node in SharedShape.Animations[0].anim_nodes)
-                    if (anim_node.Name == "ANIMATED_PARTS")
-                    {
-                        AnimationFrames = SharedShape.Animations[0].FrameCount;
-                        break;
-                    }
-            }
-            AnimateOneMatrix(IAnimationMatrixX, AnimationKeyX);
-            AnimateOneMatrix(IAnimationMatrixY, AnimationKeyY);
-            AnimateOneMatrix(IAnimationMatrixZ, AnimationKeyZ);
-
-            var absAnimationMatrix = XNAMatrices[IAnimationMatrixY];
-            Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixX], out absAnimationMatrix);
-            Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixZ], out absAnimationMatrix);
-            Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
-            ContainerHandlingItem.PassSpanParameters(((linear_key)controllerZ[0]).Z, ((linear_key)controllerZ[1]).Z,
-                ((linear_key)controllerGrabber01[0]).Z - ((linear_key)controllerGrabber01[1]).Z, ((linear_key)controllerGrabber02[0]).Z - ((linear_key)controllerGrabber02[1]).Z);
-            ContainerHandlingItem.ReInitPositionOffset(absAnimationMatrix);
-
-            AnimationKeyX = Math.Abs((ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.X - ((linear_key)controllerX[0]).X) / (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X)) * controllerX[1].Frame;
-            AnimationKeyY = Math.Abs((ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.Y - ((linear_key)controllerY[0]).Y) / (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y)) * controllerY[1].Frame;
-            AnimationKeyZ = Math.Abs((ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.Z - ((linear_key)controllerZ[0]).Z) / (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z)) * controllerZ[1].Frame;
-            AnimateOneMatrix(IAnimationMatrixX, AnimationKeyX);
-            AnimateOneMatrix(IAnimationMatrixY, AnimationKeyY);
-            AnimateOneMatrix(IAnimationMatrixZ, AnimationKeyZ);
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
-            {
-                if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("cable"))
-                    AnimateOneMatrix(imatrix, AnimationKeyY);
-                if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("grabber"))
-                    AnimateOneMatrix(imatrix, 0);
-            }
-        }
-
-        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-        {
-
-            // 0 can be used as a setting for instant animation.
-            /*           if (ContainerHandlingItem.ReFill() && FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
-                       {
-                           if (AnimationKey == 0 && Sound != null) Sound.HandleEvent(Event.FuelTowerDown);
-                           if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimationKey = 1.0f;
-                           else if (AnimationKey < AnimationFrames)
-                               AnimationKey += elapsedTime.ClockSeconds * FrameRate;
-                       }
-
-                       if (!ContainerHandlingItem.ReFill() && AnimationKey > 0)
-                       {
-                           if (AnimationKey == AnimationFrames && Sound != null)
-                           {
-                               Sound.HandleEvent(Event.FuelTowerTransferEnd);
-                               Sound.HandleEvent(Event.FuelTowerUp);
-                           }
-                           AnimationKey -= elapsedTime.ClockSeconds * FrameRate;
-                       }
-
-                       if (AnimationKey < 0)
-                       {
-                           AnimationKey = 0;
-                       }
-                       if (AnimationKey > AnimationFrames)
-                       {
-                           AnimationKey = AnimationFrames;
-                           if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferStart);
-                       }
-
-                       for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-                           AnimateMatrix(i, AnimationKey);
-            */
-            if (FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
-            {
-                float tempFrameRate;
-                if (ContainerHandlingItem.MoveX)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetX - ((linear_key)controllerX[0]).X) / (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X)) * controllerX[1].Frame;
-                    //                    if (AnimationKey == 0 && Sound != null) Sound.HandleEvent(Event.FuelTowerDown);
-                    tempFrameRate = Math.Abs(AnimationKeyX - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyX < animationTarget)
-                    {
-                        AnimationKeyX += elapsedTime.ClockSeconds * tempFrameRate;
-                        // don't oscillate!
-                        if (AnimationKeyX >= animationTarget)
-                        {
-                            AnimationKeyX = animationTarget;
-                            ContainerHandlingItem.MoveX = false;
-                        }
-                    }
-                    else if (AnimationKeyX > animationTarget)
-                    {
-                        AnimationKeyX -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyX <= animationTarget)
-                        {
-                            AnimationKeyX = animationTarget;
-                            ContainerHandlingItem.MoveX = false;
-                        }
-                    }
-                    else
-                        ContainerHandlingItem.MoveX = false;
-                    if (AnimationKeyX < 0)
-                        AnimationKeyX = 0;
-                }
-
-                if (ContainerHandlingItem.MoveY)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetY - ((linear_key)controllerY[0]).Y) / (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y)) * controllerY[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyY - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyY < animationTarget)
-                    {
-                        AnimationKeyY += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyY >= animationTarget)
-                        {
-                            AnimationKeyY = animationTarget;
-                            ContainerHandlingItem.MoveY = false;
-                        }
-                    }
-                    else if (AnimationKeyY > animationTarget)
-                    {
-                        AnimationKeyY -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyY <= animationTarget)
-                        {
-                            AnimationKeyY = animationTarget;
-                            ContainerHandlingItem.MoveY = false;
-                        }
-                    }
-                    else
-                        ContainerHandlingItem.MoveY = false;
-                    if (AnimationKeyY < 0)
-                        AnimationKeyY = 0;
-                }
-
-                if (ContainerHandlingItem.MoveZ)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetZ - ((linear_key)controllerZ[0]).Z) / (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z)) * controllerZ[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyZ - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyZ < animationTarget)
-                    {
-                        AnimationKeyZ += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyZ >= animationTarget)
-                        {
-                            AnimationKeyZ = animationTarget;
-                            ContainerHandlingItem.MoveZ = false;
-                        }
-                    }
-                    else if (AnimationKeyZ > animationTarget)
-                    {
-                        AnimationKeyZ -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyZ <= animationTarget)
-                        {
-                            AnimationKeyZ = animationTarget;
-                            ContainerHandlingItem.MoveZ = false;
-                        }
-                    }
-                    else
-                        ContainerHandlingItem.MoveZ = false;
-                    if (AnimationKeyZ < 0)
-                        AnimationKeyZ = 0;
-                }
-
-                if (ContainerHandlingItem.MoveGrabber)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetGrabber01 - ((linear_key)controllerGrabber01[0]).Z + ((linear_key)controllerGrabber01[1]).Z) / (((linear_key)controllerGrabber01[1]).Z - ((linear_key)controllerGrabber01[0]).Z)) * controllerGrabber01[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyGrabber01 - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyGrabber01 < animationTarget)
-                    {
-                        AnimationKeyGrabber01 += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber01 >= animationTarget)
-                        {
-                            AnimationKeyGrabber01 = animationTarget;
-                        }
-                    }
-                    else if (AnimationKeyGrabber01 > animationTarget)
-                    {
-                        AnimationKeyGrabber01 -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber01 <= animationTarget)
-                        {
-                            AnimationKeyGrabber01 = animationTarget;
-                        }
-                    }
-                    if (AnimationKeyGrabber01 < 0)
-                        AnimationKeyGrabber01 = 0;
-                    var animationTarget2 = Math.Abs((ContainerHandlingItem.TargetGrabber02 - ((linear_key)controllerGrabber02[0]).Z + ((linear_key)controllerGrabber02[1]).Z) / (((linear_key)controllerGrabber02[1]).Z - ((linear_key)controllerGrabber02[0]).Z)) * controllerGrabber02[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyGrabber01 - animationTarget2) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyGrabber02 < animationTarget2)
-                    {
-                        AnimationKeyGrabber02 += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber02 >= animationTarget2)
-                        {
-                            AnimationKeyGrabber02 = animationTarget2;
-                        }
-                    }
-                    else if (AnimationKeyGrabber02 > animationTarget2)
-                    {
-                        AnimationKeyGrabber02 -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber02 <= animationTarget2)
-                        {
-                            AnimationKeyGrabber02 = animationTarget2;
-                        }
-                    }
-                    if (animationTarget == AnimationKeyGrabber01 && animationTarget2 == AnimationKeyGrabber02)
-                        ContainerHandlingItem.MoveGrabber = false;
-                    if (AnimationKeyGrabber02 < 0)
-                        AnimationKeyGrabber02 = 0;
-                }
-            }
-            ContainerHandlingItem.ActualX = (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X) * AnimationKeyX / controllerX[1].Frame + ((linear_key)controllerX[0]).X;
-            ContainerHandlingItem.ActualY = (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y) * AnimationKeyY / controllerY[1].Frame + ((linear_key)controllerY[0]).Y;
-            ContainerHandlingItem.ActualZ = (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z) * AnimationKeyZ / controllerZ[1].Frame + ((linear_key)controllerZ[0]).Z;
-            ContainerHandlingItem.ActualGrabber01 = (((linear_key)controllerGrabber01[1]).Z - ((linear_key)controllerGrabber01[0]).Z) * AnimationKeyGrabber01 / controllerGrabber01[1].Frame + ((linear_key)controllerGrabber01[0]).Z;
-            ContainerHandlingItem.ActualGrabber02 = (((linear_key)controllerGrabber02[1]).Z - ((linear_key)controllerGrabber02[0]).Z) * AnimationKeyGrabber02 / controllerGrabber02[1].Frame + ((linear_key)controllerGrabber02[0]).Z;
-
-            AnimateOneMatrix(IAnimationMatrixX, AnimationKeyX);
-            AnimateOneMatrix(IAnimationMatrixY, AnimationKeyY);
-            AnimateOneMatrix(IAnimationMatrixZ, AnimationKeyZ);
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
-            {
-                if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("cable"))
-                    AnimateOneMatrix(imatrix, AnimationKeyY);
-                else if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("grabber01"))
-                    AnimateOneMatrix(imatrix, AnimationKeyGrabber01);
-                else if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("grabber02"))
-                    AnimateOneMatrix(imatrix, AnimationKeyGrabber02);
-            }
-
-            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
-            if (ContainerHandlingItem.ContainerAttached)
-            {
-                var absAnimationMatrix = XNAMatrices[IAnimationMatrixY];
-                Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixX], out absAnimationMatrix);
-                Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixZ], out absAnimationMatrix);
-                Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
-                ContainerHandlingItem.TransferContainer(absAnimationMatrix);
-            }
-
-
-            // let's make some noise
-
-            if (!OldMoveX && ContainerHandlingItem.MoveX)
-                Sound?.HandleEvent(Event.CraneXAxisMove);
-            if (OldMoveX && !ContainerHandlingItem.MoveX)
-                Sound?.HandleEvent(Event.CraneXAxisSlowDown);
-            if (!OldMoveY && ContainerHandlingItem.MoveY)
-                Sound?.HandleEvent(Event.CraneYAxisMove);
-            if (OldMoveY && !ContainerHandlingItem.MoveY)
-                Sound?.HandleEvent(Event.CraneYAxisSlowDown);
-            if (!OldMoveZ && ContainerHandlingItem.MoveZ)
-                Sound?.HandleEvent(Event.CraneZAxisMove);
-            if (OldMoveZ && !ContainerHandlingItem.MoveZ)
-                Sound?.HandleEvent(Event.CraneZAxisSlowDown);
-            if (OldMoveY && !ContainerHandlingItem.MoveY && !(ContainerHandlingItem.TargetY == ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.Y))
-                Sound?.HandleEvent(Event.CraneYAxisDown);
-            OldMoveX = ContainerHandlingItem.MoveX;
-            OldMoveY = ContainerHandlingItem.MoveY;
-            OldMoveZ = ContainerHandlingItem.MoveZ;
-        }
-
-    }
-
 
     public class RoadCarShape : AnimatedShape
     {

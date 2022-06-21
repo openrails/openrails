@@ -46,7 +46,6 @@ using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using ORTS.Common;
-using Orts.Simulation.RollingStocks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -283,7 +282,7 @@ namespace Orts.Viewer3D
             if (File.Exists(WFilePath))
             {
                 // We have an OR-specific addition to world file
-                WFile.InsertORSpecificData(WFilePath, null);
+                WFile.InsertORSpecificData(WFilePath);
             }
 
 
@@ -384,7 +383,7 @@ namespace Orts.Viewer3D
                             else
                             {
                                 var found = false;
-                                foreach (var movingTable in Program.Simulator.            MovingTables)
+                                foreach (var movingTable in Program.Simulator.MovingTables)
                                 {
                                     if (worldObject.UID == movingTable.UID && WFileName == movingTable.WFile)
                                     {
@@ -499,11 +498,6 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(PickupObj))
                     {
-                        if ((worldObject as PickupObj).PickupType == (uint)(MSTSWagon.PickupType.Container))
-                        {
-                            sceneryObjects.Add(new ContainerHandlingItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
-                        }
-                        else
                         sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
                         PickupList.Add((PickupObj)worldObject);
                     }

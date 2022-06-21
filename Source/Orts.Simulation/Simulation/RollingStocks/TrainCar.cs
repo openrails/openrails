@@ -899,32 +899,6 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-
-
-        /// <summary>
-        /// update position of discrete freight animations (e.g. containers)
-        /// </summary>  
-        public void UpdateFreightAnimationDiscretePositions()
-        {
-            if (FreightAnimations?.Animations != null)
-            {
-                foreach (var freightAnim in FreightAnimations.Animations)
-                {
-                    if (freightAnim is FreightAnimationDiscrete)
-                    {
-                        var discreteFreightAnim = freightAnim as FreightAnimationDiscrete;
-                        if (discreteFreightAnim.Loaded && discreteFreightAnim.Container != null)
-                        {
-                            var container = discreteFreightAnim.Container;
-                            container.WorldPosition.XNAMatrix = Matrix.Multiply(container.RelativeContainerMatrix, discreteFreightAnim.Wagon.WorldPosition.XNAMatrix);
-                            container.WorldPosition.TileX = WorldPosition.TileX;
-                            container.WorldPosition.TileZ = WorldPosition.TileZ;
-                        }
-                    }
-                }
-            }
-        }
-
         /// <summary>
         /// Initialise Train Temperatures
         /// <\summary>           
@@ -2273,7 +2247,6 @@ namespace Orts.Simulation.RollingStocks
             CarHeatCurrentCompartmentHeatJ = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
-            FreightAnimations?.LoadDataList?.Clear();
         }
 
         //================================================================================================//
@@ -2344,22 +2317,6 @@ namespace Orts.Simulation.RollingStocks
         public virtual bool GetCabFlipped()
         {
             return false;
-        }
-
-        //<comment>
-        //Initializes the physics of the car taking into account its variable discrete loads
-        //</comment>
-        public void InitializeLoadPhysics()
-        {
-            // TODO
-        }
-
-        //<comment>
-        //Updates the physics of the car taking into account its variable discrete loads
-        //</comment>
-        public void UpdateLoadPhysics()
-        {
-            // TODO
         }
 
         public virtual float GetCouplerZeroLengthM()
