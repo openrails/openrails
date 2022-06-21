@@ -32,6 +32,7 @@ using Orts.MultiPlayer;
 using Orts.Parsers.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -470,6 +471,7 @@ namespace Orts.Simulation.Signalling
             Tokens.Add(TokenID.Signal);
             Tokens.Add(TokenID.Speedpost);
             Tokens.Add(TokenID.Platform);
+            Tokens.Add(TokenID.Pickup);
 
             // loop through files, use only extention .w, skip w+1000000+1000000.w file
 
@@ -496,7 +498,7 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // loop through all signals
-
+                var extendedWFileRead = false;
                 foreach (var worldObject in WFile.Tr_Worldfile)
                 {
                     if (worldObject.GetType() == typeof(SignalObj))
@@ -557,6 +559,37 @@ namespace Orts.Simulation.Signalling
                         var thisWorldObj = worldObject as PlatformObj;
                         if (!PlatformSidesList.ContainsKey(thisWorldObj.trItemIDList[0].dbID)) PlatformSidesList.Add(thisWorldObj.trItemIDList[0].dbID, thisWorldObj.PlatformData);
                         if (!PlatformSidesList.ContainsKey(thisWorldObj.trItemIDList[0].dbID)) PlatformSidesList.Add(thisWorldObj.trItemIDList[1].dbID, thisWorldObj.PlatformData);
+                    }
+                    else if (worldObject.GetType() == typeof(PickupObj))
+                    {
+                        var thisWorldObj = worldObject as PickupObj;
+                        if (thisWorldObj.PickupType == (uint)MSTSWagon.PickupType.Container)
+                        {
+                            if (!extendedWFileRead)
+                            {
+                                WFilePath = Simulator.RoutePath + @"\World\Openrails\" + Path.GetFileName(fileName);
+                                if (File.Exists(WFilePath))
+                                {
+                                    // We have an OR-specific addition to world file
+                                    WFile.InsertORSpecificData(WFilePath, Tokens);
+                                    extendedWFileRead = true;
+                                }
+                            }
+                            if (worldObject.QDirection != null && worldObject.Position != null)
+                            {
+                                var MSTSPosition = worldObject.Position;
+                                var MSTSQuaternion = worldObject.QDirection;
+                                var XNAQuaternion = new Quaternion((float)MSTSQuaternion.A, (float)MSTSQuaternion.B, -(float)MSTSQuaternion.C, (float)MSTSQuaternion.D);
+                                var XNAPosition = new Vector3((float)MSTSPosition.X, (float)MSTSPosition.Y, -(float)MSTSPosition.Z);
+                                var worldMatrix = new WorldPosition(WFile.TileX, WFile.TileZ, XNAPosition, XNAQuaternion);
+                                var containerStation = Simulator.ContainerManager.CreateContainerStation(worldMatrix, from tid in thisWorldObj.TrItemIDList where tid.db == 0 select tid.dbID, thisWorldObj);
+                                Simulator.ContainerManager.ContainerHandlingItems.Add(thisWorldObj.TrItemIDList[0].dbID, containerStation);
+                            }
+                            else
+                            {
+                                Trace.TraceWarning("Container station {0} within .w file {1} {2} is missing Matrix3x3 and QDirection", worldObject.UID, WFile.TileX, WFile.TileZ);
+                            }
+                        }
                     }
                 }
             }
