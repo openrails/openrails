@@ -343,6 +343,12 @@ namespace Orts.Viewer3D.Processes
         public static void Save()
         {
             if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) return; //no save for multiplayer sessions yet
+            if (ContainerManager.ActiveOperationsCounter > 0)
+                // don't save if performing a container load/unload
+            {
+                Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Game save is not allowed during container load/unload"));
+                return;
+            }
             // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
             // that are likely to match the previously chosen route and activity.
             // Append the current date and time, so that each file is unique.

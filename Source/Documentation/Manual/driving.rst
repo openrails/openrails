@@ -1253,7 +1253,8 @@ this occurs when the wagon is at the boundary of the crane displacement range; t
 move the wagon towards the inside of the crane displacement range and stop the train. The crane 
 will then continue its loading mission up to the end.
 
-It is advised not to perform a Save (key ``<F2>``) when a loading or unloading operation is ongoing.
+Saves (key ``<F2>``) are rejected and a message appears on the display when a loading 
+or unloading operation is ongoing.
 
 .. _driving-autopilot:
 

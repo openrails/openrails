@@ -273,6 +273,7 @@ namespace Orts.Simulation
         public Dictionary<int, ContainerHandlingItem> ContainerHandlingItems;
         public List<Container> Containers;
         public static Dictionary<string, Container> LoadedContainers = new Dictionary<string, Container>();
+        public static int ActiveOperationsCounter;
 
         public ContainerManager(Simulator simulator)
         {
@@ -907,6 +908,8 @@ namespace Orts.Simulation
                         MoveY = false;
                         Status = ContainerStationStatus.Idle;
                         MSTSWagon.RefillProcess.OkToRefill = false;
+                        ContainerManager.ActiveOperationsCounter--;
+                        if (ContainerManager.ActiveOperationsCounter < 0) ContainerManager.ActiveOperationsCounter = 0;
                     }
                     break;
                 default:
@@ -916,6 +919,7 @@ namespace Orts.Simulation
 
         public void PrepareForUnload(FreightAnimationDiscrete linkedFreightAnimation)
         {
+            ContainerManager.ActiveOperationsCounter++;
             LinkedFreightAnimation = linkedFreightAnimation;
             RelativeContainerPosition = new Matrix();
             LinkedFreightAnimation.Wagon.WorldPosition.NormalizeTo(ShapePosition.TileX, ShapePosition.TileZ);
@@ -934,6 +938,7 @@ namespace Orts.Simulation
 
         public void PrepareForLoad(FreightAnimationDiscrete linkedFreightAnimation)
         {
+            ContainerManager.ActiveOperationsCounter++;
             LinkedFreightAnimation = linkedFreightAnimation;
             SelectedStackLocationIndex = SelectLoadPosition();
             if (SelectedStackLocationIndex == -1) return;
