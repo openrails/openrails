@@ -502,7 +502,7 @@ namespace Orts.Simulation
                     foreach (var loadDataEntry in (loadStationPopulation as ContainerStationPopulation).LoadData)
                     {
                         string loadDataFolder = Simulator.BasePath + @"\trains\trainset\" + loadDataEntry.FolderName;
-                        string loadFilePath = loadDataFolder + @"\" + loadDataEntry.FileName + ".loa";
+                        string loadFilePath = loadDataFolder + @"\" + loadDataEntry.FileName + ".load-or";
                         if (!File.Exists(loadFilePath))
                         {
                             Trace.TraceWarning($"Ignored missing load {loadFilePath}");

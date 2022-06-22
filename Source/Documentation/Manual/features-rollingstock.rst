@@ -581,16 +581,16 @@ How to define container data
 
 Container shape files (``.s``) must be located in subfolders (or sub-subfolders) of the 
 ``Trainset`` folder.
-Containers that can be managed must be provided with a Json ``.loa`` file. The ``.loa`` files 
+Containers that can be managed must be provided with a Json ``.load-or`` file. The ``.load-or`` files 
 must be located in a subfolder of the ``Trainset`` folder. It is warmly advised to keep all 
-``.loa`` file in a single folder: ``Common.ContainerData`` is suggested. It is also advised to name 
-the ``.loa`` files in a consistent way:  ``40HCtriton.loa`` is suggested, where ``40HC`` is the
+``.load-or`` file in a single folder: ``Common.ContainerData`` is suggested. It is also advised to name 
+the ``.load-or`` files in a consistent way:  ``40HCtriton.load-or`` is suggested, where ``40HC`` is the
 container type and ``triton`` the brand painted on the container.
 
-Format of the .loa file
+Format of the .load-or file
 '''''''''''''''''''''''
 
-Here below a sample of a ``.loa`` file::
+Here below a sample of a ``.load-or`` file::
 
   {
   	"Container": 
@@ -704,8 +704,8 @@ shown here::
 As can be seen, for each container loaded at startup a ``LoadData`` entry must be 
 present. The meaning of the parameters is as follows:
 
-- The first parameter is the name of the ``.loa`` file 
-- The second parameter is the path (having ``Trainset`` as base path) where the ``.loa``
+- The first parameter is the name of the ``.load-or`` file 
+- The second parameter is the path (having ``Trainset`` as base path) where the ``.load-or``
   file resides 
 - The third parameter indicates where the container is allocated on the wagon.
 
@@ -1032,17 +1032,17 @@ its child stack location 10. Same applies to stack location 3 and its child stac
 Population of container stations at game start
 ''''''''''''''''''''''''''''''''''''''''''''''
 
-Container stations may be populated at game start. This occurs by inserting an ``.lsp`` 
-(load station population) in the ``Openrails`` subfolder of the "Activities" folder of the 
+Container stations may be populated at game start. This occurs by inserting a ``.load-stations-loads-or`` 
+file in the ``Openrails`` subfolder of the "Activities" folder of the 
 route, and inserting the following line  at the bottom of the ``Tr_Activity_Header`` in 
 ``.act`` files ::
 
   		ORTSLoadStationsPopulation ( BigContainerStationPopulation )
 
-where ``BigContainerStationPopulation`` is the name of the ``.lsp`` file.  At the moment population at 
+where ``BigContainerStationPopulation`` is the name of the ``.load-stations-loads-or`` file.  At the moment population at 
 game start is possible only in Activity mode.
 
-The ``.lsp`` file is a Json file. An example is shown here below ::
+The ``.load-stations-loads-or`` file is a Json file. An example is shown here below ::
 
   	"ContainerStationsPopulation": [ 
 		{
@@ -1073,8 +1073,8 @@ The file can define the population at startup of many container stations.
 
 - The ``LoadStationID`` contains the info needed to identify the container station.
 - The ``LoadData`` array contains the data to populate the container station.
-- The value of ``File`` is the name of the ``.loa`` file identifying the container.
-- The value of ``Folder`` is the path where the ``.loa`` can be found, starting from the 
+- The value of ``File`` is the name of the ``.load-or`` file identifying the container.
+- The value of ``Folder`` is the path where the ``.load-or`` can be found, starting from the 
   ``TRAINSET``.
 - The value of ``StackLocation`` is the index of the Stack Location. If the index is equal 
   or higher than the number of stack locations defined in the extension ``.w`` file, the 
