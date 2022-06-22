@@ -17,6 +17,7 @@
 
 using Microsoft.Xna.Framework;
 using System;
+using System.IO;
 
 namespace Orts.Common
 {
@@ -104,5 +105,47 @@ namespace Orts.Common
          }
          return dx * dx + dy * dy + dz * dz;
       }
-   }
+
+        public static void SaveMatrix(BinaryWriter outf, Matrix matrix)
+        {
+            outf.Write(matrix.M11);
+            outf.Write(matrix.M12);
+            outf.Write(matrix.M13);
+            outf.Write(matrix.M14);
+            outf.Write(matrix.M21);
+            outf.Write(matrix.M22);
+            outf.Write(matrix.M23);
+            outf.Write(matrix.M24);
+            outf.Write(matrix.M31);
+            outf.Write(matrix.M32);
+            outf.Write(matrix.M33);
+            outf.Write(matrix.M34);
+            outf.Write(matrix.M41);
+            outf.Write(matrix.M42);
+            outf.Write(matrix.M43);
+            outf.Write(matrix.M44);
+        }
+
+        public static Matrix RestoreMatrix(BinaryReader inf)
+        {
+            var matrix = Matrix.Identity;
+            matrix.M11 = inf.ReadSingle();
+            matrix.M12 = inf.ReadSingle();
+            matrix.M13 = inf.ReadSingle();
+            matrix.M14 = inf.ReadSingle();
+            matrix.M21 = inf.ReadSingle();
+            matrix.M22 = inf.ReadSingle();
+            matrix.M23 = inf.ReadSingle();
+            matrix.M24 = inf.ReadSingle();
+            matrix.M31 = inf.ReadSingle();
+            matrix.M32 = inf.ReadSingle();
+            matrix.M33 = inf.ReadSingle();
+            matrix.M34 = inf.ReadSingle();
+            matrix.M41 = inf.ReadSingle();
+            matrix.M42 = inf.ReadSingle();
+            matrix.M43 = inf.ReadSingle();
+            matrix.M44 = inf.ReadSingle();
+            return matrix;
+        }
+    }
 }

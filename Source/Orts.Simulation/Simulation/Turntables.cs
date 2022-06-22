@@ -670,6 +670,7 @@ namespace Orts.Simulation
                 foreach (TrainCar traincar in TrainsOnMovingTable[0].Train.Cars)
                 {
                     traincar.WorldPosition.XNAMatrix = Matrix.Multiply(RelativeCarPositions[iRelativeCarPositions], AnimationXNAMatrix);
+                    traincar.UpdateFreightAnimationDiscretePositions();
                     iRelativeCarPositions++;
                 }
             }
