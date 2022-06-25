@@ -125,7 +125,7 @@ namespace Orts.Simulation.RollingStocks
         // diesel performance reporting
         public float DieselPerformanceTimeS = 0.0f; // Records the time since starting movement
 
-        public DieselEngines DieselEngines;
+    public DieselEngines DieselEngines;
 
         /// <summary>
         /// Used to accumulate a quantity that is not lost because of lack of precision when added to the Fuel level
@@ -385,20 +385,22 @@ namespace Orts.Simulation.RollingStocks
 
                 if (!DieselEngines.HasGearBox)
                 {
-                // Check Adhesion values
-                var calculatedmaximumpowerw = CalculatedMaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
-                var maxforcekN = MaxForceN / 1000.0f;
-                var designadhesionzerospeed = maxforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
-                var calculatedmaxcontinuousforcekN = CalculatedMaxContinuousForceN / 1000.0f;
-                var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
-                var zerospeed = 0;
-                var configuredadhesionzerospeed = (Curtius_KnifflerA / (zerospeed + Curtius_KnifflerB) + Curtius_KnifflerC);
-                var configuredadhesionmaxcontinuousspeed = (Curtius_KnifflerA / (SpeedOfMaxContinuousForceMpS + Curtius_KnifflerB) + Curtius_KnifflerC);
-                var dropoffspeed = calculatedmaximumpowerw / (MaxForceN);
-                var configuredadhesiondropoffspeed = (Curtius_KnifflerA / (dropoffspeed + Curtius_KnifflerB) + Curtius_KnifflerC);
+                    // Check Adhesion values
+                    var calculatedmaximumpowerw = CalculatedMaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
+                    var maxforcekN = MaxForceN / 1000.0f;
+                    var designadhesionzerospeed = maxforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
+                    var calculatedmaxcontinuousforcekN = CalculatedMaxContinuousForceN / 1000.0f;
+                    var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
+                    var zerospeed = 0;
+                    var configuredadhesionzerospeed = (Curtius_KnifflerA / (zerospeed + Curtius_KnifflerB) + Curtius_KnifflerC);
+                    var configuredadhesionmaxcontinuousspeed = (Curtius_KnifflerA / (SpeedOfMaxContinuousForceMpS + Curtius_KnifflerB) + Curtius_KnifflerC);
+                    var dropoffspeed = calculatedmaximumpowerw / (MaxForceN);
+                    var configuredadhesiondropoffspeed = (Curtius_KnifflerA / (dropoffspeed + Curtius_KnifflerB) + Curtius_KnifflerC);
+
+                    Trace.TraceInformation("Slip control system: {0}, Traction motor type: {1}", SlipControlSystem.ToString(), TractionMotorType.ToString()); // Slip control
 
                     Trace.TraceInformation("Apparent (Design) Adhesion: Zero - {0:N2} @ {1}, Max Continuous Speed - {2:N2} @ {3}, Drive Wheel Weight - {4}", designadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
-                Trace.TraceInformation("OR Calculated Adhesion Setting: Zero Speed - {0:N2} @ {1}, Dropoff Speed - {2:N2} @ {3}, Max Continuous Speed - {4:N2} @ {5}", configuredadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), configuredadhesiondropoffspeed, FormatStrings.FormatSpeedDisplay(dropoffspeed, IsMetric),  configuredadhesionmaxcontinuousspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+                    Trace.TraceInformation("OR Calculated Adhesion Setting: Zero Speed - {0:N2} @ {1}, Dropoff Speed - {2:N2} @ {3}, Max Continuous Speed - {4:N2} @ {5}", configuredadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), configuredadhesiondropoffspeed, FormatStrings.FormatSpeedDisplay(dropoffspeed, IsMetric), configuredadhesionmaxcontinuousspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                 }
 
                 Trace.TraceInformation("===================================================================================================================\n\n");
@@ -669,6 +671,17 @@ namespace Orts.Simulation.RollingStocks
                 // its impact. More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
                 // Simple adhesion control does not have any slip control feature built into it.
                 // TODO - a full review of slip/no slip control.
+                if (TractionMotorType == TractionMotorTypes.AC)
+                {
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    if (AbsWheelSpeedMpS > 1.1 * MaxSpeedMpS)
+                    {
+                        AverageForceN = TractiveForceN = 0;
+                        return;
+                    }
+                }
+                else
+                {
                 if (WheelSlip && AdvancedAdhesionModel)
                 {
                     AbsTractionSpeedMpS = AbsWheelSpeedMpS;
@@ -676,6 +689,7 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     AbsTractionSpeedMpS = AbsSpeedMpS;
+                }
                 }
 
                 if (TractiveForceCurves == null)
@@ -712,14 +726,14 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
 
-                    if (DieselEngines.HasGearBox)
+                    if (DieselEngines.HasGearBox && DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
                     {
                         TractiveForceN = DieselEngines.TractiveForceN;
                     }
                     else
                     {
                         // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
-                    TractiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
+                        TractiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
                     }
 
                     if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
@@ -952,8 +966,8 @@ namespace Orts.Simulation.RollingStocks
             {
                 status.AppendFormat("\t{0} {1}-{2}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString(), DieselEngines[0].GearBox.GearBoxType);
             }
-            status.AppendFormat("\t{0} {1}\t\t{2}\n", 
-                Simulator.Catalog.GetString("Fuel"), 
+                status.AppendFormat("\t{0} {1}\t\t{2}\n",
+                Simulator.Catalog.GetString("Fuel"),
                 FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
 
 
@@ -1063,7 +1077,7 @@ namespace Orts.Simulation.RollingStocks
 
             var status = new StringBuilder();
             // ID
-            status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
+            status.AppendFormat("{0}({1})\t", CarID.Replace(" ", ""), DPUnitID);
             // Throttle
             status.AppendFormat("{0}\t", throttle);
 

@@ -3215,6 +3215,16 @@ namespace Orts.Simulation.AIs
                                     AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
                                 }
                             }
+                            if (OtherTrain.UncoupledFrom == this)
+                            {
+                                if (distanceToTrain > 5.0f)
+                                {
+                                    UncoupledFrom = null;
+                                    OtherTrain.UncoupledFrom = null;
+                                }
+                                else
+                                    attachToTrain = false;
+                            }
                             //                            if (distanceToTrain < keepDistanceStatTrainM_P - 4.0f || (distanceToTrain - brakingDistance) <= keepDistanceTrainM) // Other possibility
                             if ((distanceToTrain - brakingDistance) <= keepDistanceTrainM)
                             {
@@ -4435,6 +4445,7 @@ namespace Orts.Simulation.AIs
                 // set various items
                 attachTrain.CheckFreight();
                 attachTrain.SetDPUnitIDs();
+                attachTrain.ReinitializeEOT();
                 attachTrain.activityClearingDistanceM = attachTrain.Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
                 attachCar.SignalEvent(Event.Couple);
 
@@ -4568,6 +4579,7 @@ namespace Orts.Simulation.AIs
             UpdateOccupancies();
             AddTrackSections();
             ResetActions(true);
+            ReinitializeEOT();
             physicsUpdate(0);
 
         }
@@ -4598,6 +4610,7 @@ namespace Orts.Simulation.AIs
                             attachTrain.Cars.Insert(0, car);
                             car.Train = attachTrain;
                             car.Flipped = !car.Flipped;
+                            if (attachTrain.IsActualPlayerTrain && attachTrain.LeadLocomotiveIndex != -1) attachTrain.LeadLocomotiveIndex++;
                         }
                         else
                         {
@@ -4633,6 +4646,7 @@ namespace Orts.Simulation.AIs
                         {
                             attachTrain.Cars.Insert(0, car);
                             car.Train = attachTrain;
+                            if (attachTrain.IsActualPlayerTrain && attachTrain.LeadLocomotiveIndex != -1) attachTrain.LeadLocomotiveIndex++;
                         }
                         passedLength += car.CarLengthM;
                         attachTrain.Length += car.CarLengthM;
@@ -4681,6 +4695,7 @@ namespace Orts.Simulation.AIs
                         Length += car.CarLengthM;
                         attachTrain.Length -= car.CarLengthM;
                         attachTrain.Cars.Remove(car);
+                        if (attachTrain.IsActualPlayerTrain && attachTrain.LeadLocomotiveIndex != -1) attachTrain.LeadLocomotiveIndex--;
                     }
                 }
                 attachTrain.Cars[0].SignalEvent(Event.Couple);
@@ -4792,9 +4807,11 @@ namespace Orts.Simulation.AIs
             // set various items
             CheckFreight();
             SetDPUnitIDs();
+            ReinitializeEOT();
             activityClearingDistanceM = Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
             attachTrain.CheckFreight();
             attachTrain.SetDPUnitIDs();
+            attachTrain.ReinitializeEOT();
             attachTrain.activityClearingDistanceM = attachTrain.Cars.Count < standardTrainMinCarNo ? shortClearingDistanceM : standardClearingDistanceM;
             // anticipate reversal point and remove active action
             TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset = Math.Max(PresentPosition[0].TCOffset - 10f, 0.3f);
@@ -6281,8 +6298,6 @@ namespace Orts.Simulation.AIs
                 {
                     var loco = car as MSTSLocomotive;
                     loco.LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS);
-                    loco.LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
-                    loco.LocomotiveAxle.FilterMovingAverage.Initialize(loco.AverageForceN);
                     loco.AntiSlip = false; // <CSComment> TODO Temporary patch until AntiSlip is re-implemented
                 }
                 if (car == Simulator.PlayerLocomotive) { leadLocomotiveIndex = j; }

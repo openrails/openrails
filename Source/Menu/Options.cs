@@ -142,16 +142,14 @@ namespace ORTS
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
             checkOverspeedMonitor.Checked = Settings.SpeedControl;
-            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
-            checkViewMapWindow.Checked = Settings.ViewDispatcher;
+            checkControlConfirmations.Checked = !Settings.SuppressConfirmations; // Inverted as "Show confirmations" is better UI than "Suppress confirmations"
             checkRetainers.Checked = Settings.RetainersOnAllCars;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
             comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
-            checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
-            checkEnableWebServer.Checked = Settings.WebServer;
+            checkEnableTCSScripts.Checked = !Settings.DisableTCSScripts;    // Inverted as "Enable scripts" is better UI than "Disable scripts"
             numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
@@ -189,11 +187,10 @@ namespace ORTS
             numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
-            checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
-            checkHotStart.Checked = Settings.HotStart;
+            checkBoilerPreheated.Checked = Settings.HotStart;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
-            checkBoxNoDieselEngineStart.Checked = Settings.NoDieselEngineStart;
+            checkDieselEnginesStarted.Checked = !Settings.NoDieselEngineStart; // Inverted as "EngineStart" is better UI than "NoEngineStart"
 
             // Keyboard tab
             InitializeKeyboardSettings();
@@ -324,7 +321,7 @@ namespace ORTS
             checkAdhesionPropToWeather.Checked = Settings.AdhesionProportionalToWeather;
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
-            checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
+            checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;   // Inverted as "Show warnings" is better UI than "Suppress warnings"
             precipitationBoxHeight.Value = Settings.PrecipitationBoxHeight;
             precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
             precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
@@ -426,15 +423,14 @@ namespace ORTS
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
             Settings.SpeedControl = checkOverspeedMonitor.Checked;
             Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
-            Settings.ViewDispatcher = checkViewMapWindow.Checked;
             Settings.RetainersOnAllCars = checkRetainers.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
             Settings.Language = comboLanguage.SelectedValue.ToString();
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
-            Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
-            Settings.WebServer = checkEnableWebServer.Checked;
+            Settings.DisableTCSScripts = !checkEnableTCSScripts.Checked; // Inverted as "Enable scripts" is better UI than "Disable scripts"
+            Settings.WebServerPort = (int)numericWebServerPort.Value;
 
             // Audio tab
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
@@ -465,11 +461,10 @@ namespace ORTS
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
-            Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
-            Settings.HotStart = checkHotStart.Checked;
+            Settings.HotStart = checkBoilerPreheated.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
-            Settings.NoDieselEngineStart = checkBoxNoDieselEngineStart.Checked;
+            Settings.NoDieselEngineStart = !checkDieselEnginesStarted.Checked; // Inverted as "EngineStart" is better UI than "NoEngineStart"
 
             // Keyboard tab
             // These are edited live.
@@ -680,6 +675,11 @@ namespace ORTS
 
         private void buttonContentDelete_Click(object sender, EventArgs e)
         {
+            DeleteContent();
+        }
+
+        private void DeleteContent()
+        {
             bindingSourceContent.RemoveCurrent();
             // ResetBindings() is to work around a bug in the binding and/or data grid where by deleting the bottom item doesn't show the selection moving to the new bottom item.
             bindingSourceContent.ResetBindings(false);
@@ -718,7 +718,19 @@ namespace ORTS
             var current = bindingSourceContent.Current as ContentFolder;
             if (current != null && current.Name != textBoxContentName.Text)
             {
-                // Duplicate names lead to an exception, so append " copy" if not unique
+                if (current.Path.ToLower().Contains(Application.StartupPath.ToLower()))
+                {
+                    // Block added because a succesful Update operation will empty the Open Rails folder and lose any content stored within it.
+                    MessageBox.Show(catalog.GetString
+                        ($"Cannot use content from any folder which lies inside the Open Rails folder {Application.StartupPath}\n\n")
+                        , "Invalid content location"
+                        , MessageBoxButtons.OK
+                        , MessageBoxIcon.Error);
+                    DeleteContent();
+                    return;
+                }
+
+                // Duplicate names lead to an exception, so append " copy" repeatedly until no longer unique
                 var suffix = "";
                 var isNameUnique = true;
                 while (isNameUnique)
@@ -817,15 +829,13 @@ namespace ORTS
             {
                 (pbAlerter, new[] { checkAlerter }),
                 (pbControlConfirmations, new[] { checkControlConfirmations }),
-                (pbMapWindow, new[] { checkViewMapWindow }),
                 (pbRetainers, new[] { checkRetainers }),
                 (pbGraduatedRelease, new[] { checkGraduatedRelease }),
                 (pbBrakePipeChargingRate, new[] { lBrakePipeChargingRate }),
                 (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
                 (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
-                (pbDisableTcsScripts, new[] { checkDisableTCSScripts }),
-                (pbEnableWebServer, new[] { checkEnableWebServer }),
+                (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
@@ -856,11 +866,6 @@ namespace ORTS
                     baseUrl + "/options.html#control-confirmations"
                 },
                 {
-                    pbMapWindow,
-                    // This URL is temporary, waiting for https://open-rails.readthedocs.io to be updated to match the Manual in PDF format.
-                    baseUrl + "/options.html#dispatcher-window"
-                },
-                {
                     pbRetainers,
                     baseUrl + "/options.html#retainer-valve-on-all-cars"
                 },
@@ -885,12 +890,8 @@ namespace ORTS
                     baseUrl + "/options.html#other-units"
                 },
                 {
-                    pbDisableTcsScripts,
+                    pbEnableTcsScripts,
                     baseUrl + "/options.html#disable-tcs-scripts"
-                },
-                {
-                    pbEnableWebServer,
-                    baseUrl + "/options.html#enable-web-server"
                 },
                 {
                     pbOverspeedMonitor,

@@ -31,6 +31,7 @@ using Orts.Parsers.OR;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
 using System;
@@ -79,6 +80,8 @@ namespace Orts.Simulation.Timetables
         Dictionary<int, string> TrainRouteXRef = new Dictionary<int, string>();                               // path name referenced from train index    
 
         public bool BinaryPaths = false;
+
+        public static int? PlayerTrainOriginalStartTime; // Set by TimetableInfo.ProcessTimetable() and read by AI.PrerunAI()
 
         //================================================================================================//
         /// <summary>
@@ -171,7 +174,7 @@ namespace Orts.Simulation.Timetables
                     addPathNoLoadFailure = playerTrain.ProcessDisposeInfo(ref trainList, null, simulator);
                     if (!addPathNoLoadFailure) loadPathNoFailure = false;
                 }
-
+                PlayerTrainOriginalStartTime = playerTrain.StartTime; // Saved here for use after playerTrain.StartTime gets changed.
                 reqPlayerTrain = InitializePlayerTrain(playerTrain, ref Paths, ref trainList);
                 simulator.TrainDictionary.Add(reqPlayerTrain.Number, reqPlayerTrain);
                 simulator.NameDictionary.Add(reqPlayerTrain.Name.ToLower(), reqPlayerTrain);
@@ -1190,9 +1193,7 @@ namespace Orts.Simulation.Timetables
             {
                 // try to load binary path if required
                 bool binaryloaded = false;
-                string formedpathFilefullBinary = Path.Combine(Path.GetDirectoryName(formedpathFilefull), "OpenRails");
-                formedpathFilefullBinary = Path.Combine(formedpathFilefullBinary, Path.GetFileNameWithoutExtension(formedpathFilefull));
-                formedpathFilefullBinary = Path.ChangeExtension(formedpathFilefullBinary, "or-binpat");
+                var formedpathFilefullBinary = simulator.Settings.GetCacheFilePath("Path", formedpathFilefull);
 
                 if (BinaryPaths && File.Exists(formedpathFilefullBinary))
                 {
@@ -1207,14 +1208,22 @@ namespace Orts.Simulation.Timetables
                         try
                         {
                             var infpath = new BinaryReader(new FileStream(formedpathFilefullBinary, FileMode.Open, FileAccess.Read));
-                            outPath = new AIPath(simulator.TDB, simulator.TSectionDat, infpath);
-                            infpath.Close();
-
-                            if (outPath.Nodes != null)
+                            var cachePath = infpath.ReadString();
+                            if (cachePath != formedpathFilefull)
                             {
-                                Paths.Add(formedpathFilefull, outPath);
-                                binaryloaded = true;
+                                Trace.TraceWarning($"Expected cache file for '{formedpathFilefull}'; got '{cachePath}' in {formedpathFilefullBinary}");
                             }
+                            else
+                            {
+                                outPath = new AIPath(simulator.TDB, simulator.TSectionDat, infpath);
+
+                                if (outPath.Nodes != null)
+                                {
+                                    Paths.Add(formedpathFilefull, outPath);
+                                    binaryloaded = true;
+                                }
+                            }
+                            infpath.Close();
                         }
                         catch
                         {
@@ -1264,6 +1273,7 @@ namespace Orts.Simulation.Timetables
                             try
                             {
                                 var outfpath = new BinaryWriter(new FileStream(formedpathFilefullBinary, FileMode.Create));
+                                outfpath.Write(formedpathFilefull);
                                 outPath.Save(outfpath);
                                 outfpath.Close();
                             }
@@ -2389,6 +2399,7 @@ namespace Orts.Simulation.Timetables
                 // set train details
                 TTTrain.CheckFreight();
                 TTTrain.SetDPUnitIDs();
+                TTTrain.ReinitializeEOT();
                 TTTrain.SpeedSettings.routeSpeedMpS = (float)simulator.TRK.Tr_RouteFile.SpeedLimit;
 
                 if (!confMaxSpeed.HasValue || confMaxSpeed.Value <= 0f)
@@ -2447,6 +2458,11 @@ namespace Orts.Simulation.Timetables
 
                     if (wagon.IsEngine)
                         wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
+                    else if (wagon.IsEOT)
+                    {
+                        wagonFolder =  simulator.BasePath + @"\trains\orts_eot\" + wagon.Folder;
+                        wagonFilePath = wagonFolder + @"\" + wagon.Name + ".eot";
+                    }
 
                     if (!File.Exists(wagonFilePath))
                     {
@@ -2464,6 +2480,8 @@ namespace Orts.Simulation.Timetables
                     car.SignalEvent(Event.Pantograph1Up);
 
                     TTTrain.Length += car.CarLengthM;
+                    if (car is EOT)
+                        TTTrain.EOT = car as EOT;
                 }
             }
 

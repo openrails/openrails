@@ -696,6 +696,7 @@ namespace Orts.Simulation.RollingStocks
             Tender,
             Passenger,
             Freight,
+            EOT,
         }
         public WagonTypes WagonType;
 
@@ -895,6 +896,32 @@ namespace Orts.Simulation.RollingStocks
                     _AccelerationMpSS = AccelerationFilter.Filter(_AccelerationMpSS, elapsedClockSeconds);
 
                 _PrevSpeedMpS = _SpeedMpS;
+            }
+        }
+
+
+
+        /// <summary>
+        /// update position of discrete freight animations (e.g. containers)
+        /// </summary>  
+        public void UpdateFreightAnimationDiscretePositions()
+        {
+            if (FreightAnimations?.Animations != null)
+            {
+                foreach (var freightAnim in FreightAnimations.Animations)
+                {
+                    if (freightAnim is FreightAnimationDiscrete)
+                    {
+                        var discreteFreightAnim = freightAnim as FreightAnimationDiscrete;
+                        if (discreteFreightAnim.Loaded && discreteFreightAnim.Container != null)
+                        {
+                            var container = discreteFreightAnim.Container;
+                            container.WorldPosition.XNAMatrix = Matrix.Multiply(container.RelativeContainerMatrix, discreteFreightAnim.Wagon.WorldPosition.XNAMatrix);
+                            container.WorldPosition.TileX = WorldPosition.TileX;
+                            container.WorldPosition.TileZ = WorldPosition.TileZ;
+                        }
+                    }
+                }
             }
         }
 
@@ -1786,208 +1813,208 @@ namespace Orts.Simulation.RollingStocks
 
             // get curve radius
 
-                if (CurrentCurveRadius > 0)  // only check curve speed if it is a curve
-                {
+            if (CurrentCurveRadius > 0)  // only check curve speed if it is a curve
+            {
                 float SpeedToleranceMpS = Me.FromMi(pS.FrompH(2.5f));  // Set bandwidth tolerance for resetting notifications
-                    
-                    // If super elevation set in Route (TRK) file
-                    if (Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
+
+                // If super elevation set in Route (TRK) file
+                if (Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
+                {
+                    SuperelevationM = Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[CurrentCurveRadius];
+
+                }
+                else
+                {
+                    // Set to OR default values
+                    if (CurrentCurveRadius > 2000)
                     {
-                        SuperelevationM = Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[CurrentCurveRadius];
+                        if (RouteSpeedMpS > 55.0)   // If route speed limit is greater then 200km/h, assume high speed passenger route
+                        {
+                            // Calculate superelevation based upon the route speed limit and the curve radius
+                            // SE = ((TrackGauge x Velocity^2 ) / Gravity x curve radius)
+
+                            SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadius);
+
+                        }
+                        else
+                        {
+                            SuperelevationM = 0.0254f;  // Assume minimal superelevation if conventional mixed route
+                        }
 
                     }
-                    else
+                    // Set Superelevation value - based upon standard figures
+                    else if (CurrentCurveRadius <= 2000 & CurrentCurveRadius > 1600)
                     {
-                        // Set to OR default values
-                        if (CurrentCurveRadius > 2000)
-                        {
-                            if (RouteSpeedMpS > 55.0)   // If route speed limit is greater then 200km/h, assume high speed passenger route
-                            {
-                                // Calculate superelevation based upon the route speed limit and the curve radius
-                                // SE = ((TrackGauge x Velocity^2 ) / Gravity x curve radius)
-
-                                SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadius);
-
-                            }
-                            else
-                            {
-                                SuperelevationM = 0.0254f;  // Assume minimal superelevation if conventional mixed route
-                            }
-
-                        }
-                        // Set Superelevation value - based upon standard figures
-                        else if (CurrentCurveRadius <= 2000 & CurrentCurveRadius > 1600)
-                        {
-                            SuperelevationM = 0.0254f;  // Assume 1" (or 0.0254m)
-                        }
-                        else if (CurrentCurveRadius <= 1600 & CurrentCurveRadius > 1200)
-                        {
-                            SuperelevationM = 0.038100f;  // Assume 1.5" (or 0.038100m)
-                        }
-                        else if (CurrentCurveRadius <= 1200 & CurrentCurveRadius > 1000)
-                        {
-                            SuperelevationM = 0.050800f;  // Assume 2" (or 0.050800m)
-                        }
-                        else if (CurrentCurveRadius <= 1000 & CurrentCurveRadius > 800)
-                        {
-                            SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
-                        }
-                        else if (CurrentCurveRadius <= 800 & CurrentCurveRadius > 600)
-                        {
-                            SuperelevationM = 0.0889f;  // Assume 3.5" (or 0.0889m)
-                        }
-                        else if (CurrentCurveRadius <= 600 & CurrentCurveRadius > 500)
-                        {
-                            SuperelevationM = 0.1016f;  // Assume 4" (or 0.1016m)
-                        }
-                        // for tighter radius curves assume on branch lines and less superelevation
-                        else if (CurrentCurveRadius <= 500 & CurrentCurveRadius > 280)
-                        {
-                            SuperelevationM = 0.0889f;  // Assume 3" (or 0.0762m)
-                        }
-                        else if (CurrentCurveRadius <= 280 & CurrentCurveRadius > 0)
-                        {
-                            SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
-                        }
+                        SuperelevationM = 0.0254f;  // Assume 1" (or 0.0254m)
                     }
+                    else if (CurrentCurveRadius <= 1600 & CurrentCurveRadius > 1200)
+                    {
+                        SuperelevationM = 0.038100f;  // Assume 1.5" (or 0.038100m)
+                    }
+                    else if (CurrentCurveRadius <= 1200 & CurrentCurveRadius > 1000)
+                    {
+                        SuperelevationM = 0.050800f;  // Assume 2" (or 0.050800m)
+                    }
+                    else if (CurrentCurveRadius <= 1000 & CurrentCurveRadius > 800)
+                    {
+                        SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
+                    }
+                    else if (CurrentCurveRadius <= 800 & CurrentCurveRadius > 600)
+                    {
+                        SuperelevationM = 0.0889f;  // Assume 3.5" (or 0.0889m)
+                    }
+                    else if (CurrentCurveRadius <= 600 & CurrentCurveRadius > 500)
+                    {
+                        SuperelevationM = 0.1016f;  // Assume 4" (or 0.1016m)
+                    }
+                    // for tighter radius curves assume on branch lines and less superelevation
+                    else if (CurrentCurveRadius <= 500 & CurrentCurveRadius > 280)
+                    {
+                        SuperelevationM = 0.0889f;  // Assume 3" (or 0.0762m)
+                    }
+                    else if (CurrentCurveRadius <= 280 & CurrentCurveRadius > 0)
+                    {
+                        SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
+                    }
+                }
 
 #if DEBUG_USER_SUPERELEVATION
                        Trace.TraceInformation(" ============================================= User SuperElevation (TrainCar.cs) ========================================");
                         Trace.TraceInformation("CarID {0} TrackSuperElevation {1} Curve Radius {2}",  CarID, SuperelevationM, CurrentCurveRadius);
 #endif
 
-                    // Calulate equal wheel loading speed for current curve and superelevation - this was considered the "safe" speed to travel around a curve . In this instance the load on the both railes is evenly distributed.
-                    // max equal load speed = SQRT ( (superelevation x gravity x curve radius) / track gauge)
-                    // SuperElevation is made up of two components = rail superelevation + the amount of sideways force that a passenger will be comfortable with. This is expressed as a figure similar to superelevation.
+                // Calulate equal wheel loading speed for current curve and superelevation - this was considered the "safe" speed to travel around a curve . In this instance the load on the both railes is evenly distributed.
+                // max equal load speed = SQRT ( (superelevation x gravity x curve radius) / track gauge)
+                // SuperElevation is made up of two components = rail superelevation + the amount of sideways force that a passenger will be comfortable with. This is expressed as a figure similar to superelevation.
 
-                    SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.0001f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value, having a value of zero causes problems with calculations
+                SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.0001f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value, having a value of zero causes problems with calculations
 
-                    SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Balanced superelevation only angle
+                SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Balanced superelevation only angle
 
-                    MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM); // Used for calculating curve resistance
+                MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM); // Used for calculating curve resistance
 
-                    // Railway companies often allow the vehicle to exceed the equal loading speed, provided that the passengers didn't feel uncomfortable, and that the car was not likely to excced the maximum critical speed
-                    SuperElevationTotalM = SuperelevationM + UnbalancedSuperElevationM;
+                // Railway companies often allow the vehicle to exceed the equal loading speed, provided that the passengers didn't feel uncomfortable, and that the car was not likely to excced the maximum critical speed
+                SuperElevationTotalM = SuperelevationM + UnbalancedSuperElevationM;
 
-                    float SuperElevationTotalAngleRad = (float)Math.Sinh(SuperElevationTotalM); // Total superelevation includes both balanced and unbalanced superelevation
+                float SuperElevationTotalAngleRad = (float)Math.Sinh(SuperElevationTotalM); // Total superelevation includes both balanced and unbalanced superelevation
 
-                    float MaxSafeCurveSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
+                float MaxSafeCurveSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
 
-                    // Calculate critical speed - indicates the speed above which stock will overturn - sum of the moments of centrifrugal force and the vertical weight of the vehicle around the CoG
-                    // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
-                    // centrifrugal force = Stock Weight x factor for movement of resultant force due to superelevation.
+                // Calculate critical speed - indicates the speed above which stock will overturn - sum of the moments of centrifrugal force and the vertical weight of the vehicle around the CoG
+                // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
+                // centrifrugal force = Stock Weight x factor for movement of resultant force due to superelevation.
 
-                    float SinTheta = (float)Math.Sin(SuperElevationAngleRad);
-                    float CosTheta = (float)Math.Cos(SuperElevationAngleRad);
-                    float HalfTrackGaugeM = TrackGaugeM / 2.0f;
+                float SinTheta = (float)Math.Sin(SuperElevationAngleRad);
+                float CosTheta = (float)Math.Cos(SuperElevationAngleRad);
+                float HalfTrackGaugeM = TrackGaugeM / 2.0f;
 
-                    float CriticalMaxSpeedMpS = (float)Math.Sqrt((CurrentCurveRadius * GravitationalAccelerationMpS2 * (CentreOfGravityM.Y * SinTheta + HalfTrackGaugeM * CosTheta)) / (CentreOfGravityM.Y * CosTheta - HalfTrackGaugeM * SinTheta));
+                float CriticalMaxSpeedMpS = (float)Math.Sqrt((CurrentCurveRadius * GravitationalAccelerationMpS2 * (CentreOfGravityM.Y * SinTheta + HalfTrackGaugeM * CosTheta)) / (CentreOfGravityM.Y * CosTheta - HalfTrackGaugeM * SinTheta));
 
-                    float Sin2Theta = 0.5f * (1 - (float)Math.Cos(2.0 * SuperElevationAngleRad));
-                    float CriticalMinSpeedMpS = (float)Math.Sqrt((GravitationalAccelerationMpS2 * CurrentCurveRadius * HalfTrackGaugeM * Sin2Theta) / (CosTheta * (CentreOfGravityM.Y * CosTheta + HalfTrackGaugeM * SinTheta)));
+                float Sin2Theta = 0.5f * (1 - (float)Math.Cos(2.0 * SuperElevationAngleRad));
+                float CriticalMinSpeedMpS = (float)Math.Sqrt((GravitationalAccelerationMpS2 * CurrentCurveRadius * HalfTrackGaugeM * Sin2Theta) / (CosTheta * (CentreOfGravityM.Y * CosTheta + HalfTrackGaugeM * SinTheta)));
 
                 if (CurveSpeedDependent) // Function enabled by menu selection for curve speed limit
+                {
+
+                    // This section not required any more???????????
+                    // This section tests for the durability value of the consist. Durability value will non-zero if read from consist files. 
+                    // Timetable mode does not read consistent durability values for consists, and therefore value will be zero at this time. 
+                    // Hence a large value of durability (10.0) is assumed, thus effectively disabling it in TT mode
+                    //                        if (Simulator.CurveDurability != 0.0)
+                    //                        {
+                    //                            MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * Simulator.CurveDurability;  // Finds user setting for durability
+                    //                        }
+                    //                        else
+                    //                        {
+                    //                            MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * 10.0f;  // Value of durability has not been set, so set to a large value
+                    //                        }
+
+                    // Test current speed to see if greater then equal loading speed around the curve
+                    if (s > MaxSafeCurveSpeedMps)
                     {
-                        
-                        // This section not required any more???????????
-                        // This section tests for the durability value of the consist. Durability value will non-zero if read from consist files. 
-                        // Timetable mode does not read consistent durability values for consists, and therefore value will be zero at this time. 
-                        // Hence a large value of durability (10.0) is assumed, thus effectively disabling it in TT mode
-                        //                        if (Simulator.CurveDurability != 0.0)
-                        //                        {
-                        //                            MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * Simulator.CurveDurability;  // Finds user setting for durability
-                        //                        }
-                        //                        else
-                        //                        {
-                        //                            MaxDurableSafeCurveSpeedMpS = MaxSafeCurveSpeedMps * 10.0f;  // Value of durability has not been set, so set to a large value
-                        //                        }
-
-                        // Test current speed to see if greater then equal loading speed around the curve
-                        if (s > MaxSafeCurveSpeedMps)
+                        if (!IsMaxSafeCurveSpeed)
                         {
-                            if (!IsMaxSafeCurveSpeed)
-                            {
-                                IsMaxSafeCurveSpeed = true; // set flag for IsMaxSafeCurveSpeed reached
+                            IsMaxSafeCurveSpeed = true; // set flag for IsMaxSafeCurveSpeed reached
 
-                                if (Train.IsPlayerDriven && !Simulator.TimetableMode)    // Warning messages will only apply if this is player train and not running in TT mode
+                            if (Train.IsPlayerDriven && !Simulator.TimetableMode)    // Warning messages will only apply if this is player train and not running in TT mode
+                            {
+                                if (Train.IsFreight)
                                 {
-                                    if (Train.IsFreight)
-                                    {
                                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your freight car {0} may be damaged. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric)));
-                                    }
-                                    else
-                                    {
-                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your passengers in car {0} are feeling uncomfortable. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric))); 
-                                    }
-
-                                    if (dbfmaxsafecurvespeedmps != MaxSafeCurveSpeedMps)//Debrief eval
-                                    {
-                                        dbfmaxsafecurvespeedmps = MaxSafeCurveSpeedMps;
-                                        //ldbfevalcurvespeed = true;
-                                        DbfEvalTravellingTooFast++;
-                                        train.DbfEvalValueChanged = true;//Debrief eval
-                                    }
+                                }
+                                else
+                                {
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your passengers in car {0} are feeling uncomfortable. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric)));
                                 }
 
-                            }
-                        }
-                    else if (s < MaxSafeCurveSpeedMps - SpeedToleranceMpS)  // Reset notification once spped drops
-                        {
-                            if (IsMaxSafeCurveSpeed)
-                            {
-                                IsMaxSafeCurveSpeed = false; // reset flag for IsMaxSafeCurveSpeed reached - if speed on curve decreases
-
-
-                            }
-                        }
-
-                        // If speed exceeds the overturning speed, then indicated that an error condition has been reached.
-                        if (s > CriticalMaxSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain)) // Breaking of brake hose will not apply to TT mode or AI trains)
-                        {
-                            if (!IsCriticalMaxSpeed)
-                            {
-                                IsCriticalMaxSpeed = true; // set flag for IsCriticalSpeed reached
-
-                                if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
+                                if (dbfmaxsafecurvespeedmps != MaxSafeCurveSpeedMps)//Debrief eval
                                 {
-                                    BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
-                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose on Car " + CarID + ". You will need to repair the hose and restart."));
-
-                                    dbfEvalsnappedbrakehose = true;//Debrief eval
-
-                                    if (!ldbfevaltrainoverturned)
-                                    {
-                                        ldbfevaltrainoverturned = true;
-                                        DbfEvalTrainOverturned++;
-                                        train.DbfEvalValueChanged = true;//Debrief eval
-                                    }
-                                }
-                            }
-
-                        }
-                    else if (s < CriticalMaxSpeedMpS - SpeedToleranceMpS) // Reset notification once speed drops
-                        {
-                            if (IsCriticalMaxSpeed)
-                            {
-                                IsCriticalMaxSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
-                                ldbfevaltrainoverturned = false;
-
-                                if (dbfEvalsnappedbrakehose)
-                                {
-                                    DbfEvalTravellingTooFastSnappedBrakeHose++;//Debrief eval
-                                    dbfEvalsnappedbrakehose = false;
+                                    dbfmaxsafecurvespeedmps = MaxSafeCurveSpeedMps;
+                                    //ldbfevalcurvespeed = true;
+                                    DbfEvalTravellingTooFast++;
                                     train.DbfEvalValueChanged = true;//Debrief eval
                                 }
+                            }
 
+                        }
+                    }
+                    else if (s < MaxSafeCurveSpeedMps - SpeedToleranceMpS)  // Reset notification once spped drops
+                    {
+                        if (IsMaxSafeCurveSpeed)
+                        {
+                            IsMaxSafeCurveSpeed = false; // reset flag for IsMaxSafeCurveSpeed reached - if speed on curve decreases
+
+
+                        }
+                    }
+
+                    // If speed exceeds the overturning speed, then indicated that an error condition has been reached.
+                    if (s > CriticalMaxSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain)) // Breaking of brake hose will not apply to TT mode or AI trains)
+                    {
+                        if (!IsCriticalMaxSpeed)
+                        {
+                            IsCriticalMaxSpeed = true; // set flag for IsCriticalSpeed reached
+
+                            if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
+                            {
+                                BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose on Car " + CarID + ". You will need to repair the hose and restart."));
+
+                                dbfEvalsnappedbrakehose = true;//Debrief eval
+
+                                if (!ldbfevaltrainoverturned)
+                                {
+                                    ldbfevaltrainoverturned = true;
+                                    DbfEvalTrainOverturned++;
+                                    train.DbfEvalValueChanged = true;//Debrief eval
+                                }
                             }
                         }
 
+                    }
+                    else if (s < CriticalMaxSpeedMpS - SpeedToleranceMpS) // Reset notification once speed drops
+                    {
+                        if (IsCriticalMaxSpeed)
+                        {
+                            IsCriticalMaxSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
+                            ldbfevaltrainoverturned = false;
 
-                        // This alarm indication comes up even in shunting yard situations where typically no superelevation would be present.
-                        // Code is disabled until a bteer way is determined to work out whether track piees are superelevated or not.
+                            if (dbfEvalsnappedbrakehose)
+                            {
+                                DbfEvalTravellingTooFastSnappedBrakeHose++;//Debrief eval
+                                dbfEvalsnappedbrakehose = false;
+                                train.DbfEvalValueChanged = true;//Debrief eval
+                            }
 
-                        // if speed doesn't reach minimum speed required around the curve then set notification
-                       // Breaking of brake hose will not apply to TT mode or AI trains or if on a curve less then 150m to cover operation in shunting yards, where track would mostly have no superelevation
+                        }
+                    }
+
+
+                    // This alarm indication comes up even in shunting yard situations where typically no superelevation would be present.
+                    // Code is disabled until a bteer way is determined to work out whether track piees are superelevated or not.
+
+                    // if speed doesn't reach minimum speed required around the curve then set notification
+                    // Breaking of brake hose will not apply to TT mode or AI trains or if on a curve less then 150m to cover operation in shunting yards, where track would mostly have no superelevation
                     //                        if (s < CriticalMinSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain) && CurrentCurveRadius > 150 ) 
                     //                       {
                     //                            if (!IsCriticalMinSpeed)
@@ -2016,16 +2043,16 @@ namespace Orts.Simulation.RollingStocks
                    Trace.TraceInformation("Current Speed {0} Equal Load Speed {1} Max Safe Speed {2} Critical Max Speed {3} Critical Min Speed {4}", MpS.ToMpH(s), MpS.ToMpH(MaxCurveEqualLoadSpeedMps), MpS.ToMpH(MaxSafeCurveSpeedMps), MpS.ToMpH(CriticalMaxSpeedMpS), MpS.ToMpH(CriticalMinSpeedMpS));
                    Trace.TraceInformation("IsMaxSafeSpeed {0} IsCriticalSpeed {1}", IsMaxSafeCurveSpeed, IsCriticalSpeed);
 #endif
-                    }
+                }
 
-                }
-                else
-                {
-                    // reset flags if train is on a straight - in preparation for next curve
-                    IsCriticalMaxSpeed = false;   // reset flag for IsCriticalMaxSpeed reached
-                    IsCriticalMinSpeed = false;   // reset flag for IsCriticalMinSpeed reached
-                    IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
-                }
+            }
+            else
+            {
+                // reset flags if train is on a straight - in preparation for next curve
+                IsCriticalMaxSpeed = false;   // reset flag for IsCriticalMaxSpeed reached
+                IsCriticalMinSpeed = false;   // reset flag for IsCriticalMinSpeed reached
+                IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
+            }
 
         }
 
@@ -2149,7 +2176,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 locomotivetypetext = "Unpowered Control Trailer Car";
             }
-            
+
             var loco = this as MSTSDieselLocomotive;
             if (loco != null && loco.DieselEngines.HasGearBox && loco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
@@ -2169,7 +2196,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-            return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t{8}\t",
+                return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t{8}\t",
                 CarID,
                 Flipped ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
@@ -2181,7 +2208,7 @@ namespace Orts.Simulation.RollingStocks
                 String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
                 Simulator.Catalog.GetString(locomotivetypetext)
                 );
-        }
+            }
         }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }
@@ -2246,6 +2273,7 @@ namespace Orts.Simulation.RollingStocks
             CarHeatCurrentCompartmentHeatJ = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
+            FreightAnimations?.LoadDataList?.Clear();
         }
 
         //================================================================================================//
@@ -2316,6 +2344,22 @@ namespace Orts.Simulation.RollingStocks
         public virtual bool GetCabFlipped()
         {
             return false;
+        }
+
+        //<comment>
+        //Initializes the physics of the car taking into account its variable discrete loads
+        //</comment>
+        public void InitializeLoadPhysics()
+        {
+            // TODO
+        }
+
+        //<comment>
+        //Updates the physics of the car taking into account its variable discrete loads
+        //</comment>
+        public void UpdateLoadPhysics()
+        {
+            // TODO
         }
 
         public virtual float GetCouplerZeroLengthM()
@@ -2979,7 +3023,8 @@ namespace Orts.Simulation.RollingStocks
             // NOTE: Traveller is at the FRONT of the TrainCar!
 
             // Don't add vibrations to train cars less than 2.5 meter in length; they're unsuitable for these calculations.
-            if (CarLengthM < 2.5f) return;
+            // Don't let vibrate car before EOT to avoid EOT not moving together with that car
+            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars[Train.Cars.Count - 2] == this) return;
             if (Simulator.Settings.CarVibratingLevel != 0)
             {
 

@@ -29,6 +29,7 @@ using Orts.Formats.Msts;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
@@ -163,6 +164,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlBrakeHoseConnect, new Action[] { Noop, () => new BrakeHoseConnectCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlBrakeHoseDisconnect, new Action[] { Noop, () => new BrakeHoseConnectCommand(Viewer.Log, false) });
             UserInputCommands.Add(UserCommand.ControlEmergencyPushButton, new Action[] { Noop, () => new EmergencyPushButtonCommand(Viewer.Log, !Locomotive.EmergencyButtonPressed) });
+            UserInputCommands.Add(UserCommand.ControlEOTEmergencyBrake, new Action[] { Noop, () => new ToggleEOTEmergencyBrakeCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlSander, new Action[] { () => new SanderCommand(Viewer.Log, false), () => new SanderCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlSanderToggle, new Action[] { Noop, () => new SanderCommand(Viewer.Log, !Locomotive.Sander) });
             UserInputCommands.Add(UserCommand.ControlWiper, new Action[] { Noop, () => new WipersCommand(Viewer.Log, !Locomotive.Wiper) });
@@ -174,6 +176,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlHeadlightDecrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, false) });
             UserInputCommands.Add(UserCommand.ControlLight, new Action[] { Noop, () => new ToggleCabLightCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlRefill, new Action[] { () => StopRefillingOrUnloading(Viewer.Log), () => AttemptToRefillOrUnload() });
+            UserInputCommands.Add(UserCommand.ControlDiscreteUnload, new Action[] { () => StopRefillingOrUnloading(Viewer.Log, true), () => AttemptToRefillOrUnload(true) });
             UserInputCommands.Add(UserCommand.ControlImmediateRefill, new Action[] { () => StopImmediateRefilling(Viewer.Log), () => ImmediateRefill() });
             UserInputCommands.Add(UserCommand.ControlWaterScoop, new Action[] { Noop, () => new ToggleWaterScoopCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlOdoMeterShowHide, new Action[] { Noop, () => new ToggleOdometerCommand(Viewer.Log) });
@@ -413,7 +416,8 @@ namespace Orts.Viewer3D.RollingStock
             {(uint)MSTSWagon.PickupType.FreightLivestock, Viewer.Catalog.GetString("freight-livestock")},
             {(uint)MSTSWagon.PickupType.FreightFuel, Viewer.Catalog.GetString("freight-fuel")},
             {(uint)MSTSWagon.PickupType.FreightMilk, Viewer.Catalog.GetString("freight-milk")},
-            {(uint)MSTSWagon.PickupType.SpecialMail, Viewer.Catalog.GetString("mail")}
+            {(uint)MSTSWagon.PickupType.SpecialMail, Viewer.Catalog.GetString("mail")},
+            {(uint)MSTSWagon.PickupType.Container, Viewer.Catalog.GetString("container")}
         };
 
         /// <summary>
@@ -436,13 +440,14 @@ namespace Orts.Viewer3D.RollingStock
         /// <param name="train"></param>
         /// <returns>a combination of intake point and pickup that are closest</returns>
         // <CJComment> Might be better in the MSTSLocomotive class, but can't see the World objects from there. </CJComment>
-        WagonAndMatchingPickup GetMatchingPickup(Train train)
+        WagonAndMatchingPickup GetMatchingPickup(Train train, bool onlyUnload = false)
         {
             var worldFiles = Viewer.World.Scenery.WorldFiles;
             var shortestD2 = float.MaxValue;
             WagonAndMatchingPickup nearestPickup = null;
             float distanceFromFrontOfTrainM = 0f;
             int index = 0;
+            ContainerHandlingItem containerStation = null;
             foreach (var car in train.Cars)
             {
                 if (car is MSTSWagon)
@@ -463,10 +468,15 @@ namespace Orts.Viewer3D.RollingStock
                                     pickup.Location = new WorldLocation(
                                         worldFile.TileX, worldFile.TileZ,
                                         pickup.Position.X, pickup.Position.Y, pickup.Position.Z);
-                                if ((wagon.FreightAnimations != null && ((uint)wagon.FreightAnimations.FreightType == pickup.PickupType || wagon.FreightAnimations.FreightType == MSTSWagon.PickupType.None) &&
+                                  if ((wagon.FreightAnimations != null && ((uint)wagon.FreightAnimations.FreightType == pickup.PickupType || wagon.FreightAnimations.FreightType == MSTSWagon.PickupType.None) &&
                                     (uint)intake.Type == pickup.PickupType)
                                  || ((uint)intake.Type == pickup.PickupType && (uint)intake.Type > (uint)MSTSWagon.PickupType.FreightSand && (wagon.WagonType == TrainCar.WagonTypes.Tender || wagon is MSTSLocomotive)))
                                 {
+                                    if (intake.Type == MSTSWagon.PickupType.Container)
+                                    {
+                                        if (!intake.Validity(onlyUnload, pickup, Viewer.Simulator.ContainerManager, wagon.FreightAnimations, out containerStation))
+                                            continue;
+                                    }
                                     var intakePosition = new Vector3(0, 0, -intake.OffsetM);
                                     Vector3.Transform(ref intakePosition, ref car.WorldPosition.XNAMatrix, out intakePosition);
 
@@ -475,6 +485,19 @@ namespace Orts.Viewer3D.RollingStock
                                         intakePosition.X, intakePosition.Y, -intakePosition.Z);
 
                                     var d2 = WorldLocation.GetDistanceSquared(intakeLocation, pickup.Location);
+                                    if (intake.Type == MSTSWagon.PickupType.Container && containerStation != null && 
+                                        (wagon.Train.FrontTDBTraveller.TN.Index == containerStation.TrackNode.Index ||
+                                        wagon.Train.RearTDBTraveller.TN.Index == containerStation.TrackNode.Index) &&
+                                        d2 < containerStation.MinZSpan * containerStation.MinZSpan)
+                                    // for container it's enough if the intake is within the reachable range of the container crane
+                                    {
+                                        nearestPickup = new WagonAndMatchingPickup();
+                                        nearestPickup.Pickup = pickup;
+                                        nearestPickup.Wagon = wagon;
+                                        nearestPickup.IntakePoint = intake;
+                                        return nearestPickup;
+                                    }
+
                                     if (d2 < shortestD2)
                                     {
                                         shortestD2 = d2;
@@ -552,13 +575,13 @@ namespace Orts.Viewer3D.RollingStock
         /// Prompts if cannot refill yet, else starts continuous refilling.
         /// Tries to find the nearest supply (pickup point) which can refill the locos and tenders in the train.  
         /// </summary>
-        public void AttemptToRefillOrUnload()
+        public void AttemptToRefillOrUnload(bool onlyUnload = false)
         {
             MatchedWagonAndPickup = null;   // Ensures that releasing the T key doesn't do anything unless there is something to do.
 
             var loco = this.Locomotive;
 
-            var match = GetMatchingPickup(loco.Train);
+            var match = GetMatchingPickup(loco.Train, onlyUnload);
             if (match == null && !(loco is MSTSElectricLocomotive && loco.IsSteamHeatFitted))
                 return;
             if (match == null)
@@ -566,16 +589,32 @@ namespace Orts.Viewer3D.RollingStock
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Electric loco and no pickup. Command rejected"));
                 return;
             }
-
-            float distanceToPickupM = GetDistanceToM(match) - 2.5f; // Deduct an extra 2.5 so that the tedious placement is less of an issue.
-            if (distanceToPickupM > match.IntakePoint.WidthM / 2)
+            float distanceToPickupM = GetDistanceToM(match);
+            if (match.IntakePoint.LinkedFreightAnim != null && match.IntakePoint.LinkedFreightAnim is FreightAnimationDiscrete)
+                // for container cranes handle distance management using Z span of crane
             {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Distance to {0} supply is {1}.",
-                    PickupTypeDictionary[(uint)match.Pickup.PickupType], Viewer.Catalog.GetPluralStringFmt("{0} meter", "{0} meters", (long)(distanceToPickupM+1f))));
-                return;
-            }
-            if (distanceToPickupM <= match.IntakePoint.WidthM / 2)
+                var containerStation = Viewer.Simulator.ContainerManager.ContainerHandlingItems.Where(item => item.Key == match.Pickup.TrItemIDList[0].dbID).Select(item => item.Value).First();
+                if (distanceToPickupM > containerStation.MinZSpan)
+                {
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Container crane: Distance to {0} supply is {1}.",
+                        PickupTypeDictionary[(uint)match.Pickup.PickupType], Viewer.Catalog.GetPluralStringFmt("{0} meter", "{0} meters", (long)(distanceToPickupM + 0.5f))));
+                    return;
+                }
                 MSTSWagon.RefillProcess.ActivePickupObjectUID = (int)match.Pickup.UID;
+            }
+            else
+            {
+                distanceToPickupM -= 2.5f; // Deduct an extra 2.5 so that the tedious placement is less of an issue.
+                if (distanceToPickupM > match.IntakePoint.WidthM / 2)
+                {
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Distance to {0} supply is {1}.",
+                        PickupTypeDictionary[(uint)match.Pickup.PickupType], Viewer.Catalog.GetPluralStringFmt("{0} meter", "{0} meters", (long)(distanceToPickupM + 1f))));
+                    return;
+                }
+                if (distanceToPickupM <= match.IntakePoint.WidthM / 2)
+                    MSTSWagon.RefillProcess.ActivePickupObjectUID = (int)match.Pickup.UID;
+            }
+
             if (loco.SpeedMpS != 0 && match.Pickup.SpeedRange.MaxMpS == 0f)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco must be stationary to refill {0}.",
@@ -595,18 +634,18 @@ namespace Orts.Viewer3D.RollingStock
                     FormatStrings.FormatSpeedLimit(match.Pickup.SpeedRange.MaxMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || match.Wagon is MSTSElectricLocomotive ||  (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && match.SteamLocomotiveWithTender != null))
+            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || match.Wagon is MSTSElectricLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && match.SteamLocomotiveWithTender != null))
             {
                 // Note: The tender contains the intake information, but the steam locomotive includes the controller information that is needed for the refueling process.
 
                 float fraction = 0;
 
                 // classical MSTS Freightanim, handled as usual
-                if(match.SteamLocomotiveWithTender != null)
+                if (match.SteamLocomotiveWithTender != null)
                     fraction = match.SteamLocomotiveWithTender.GetFilledFraction(match.Pickup.PickupType);
                 else
                     fraction = match.Wagon.GetFilledFraction(match.Pickup.PickupType);
-                                
+
                 if (fraction > 0.99)
                 {
                     Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: {0} supply now replenished.",
@@ -624,7 +663,7 @@ namespace Orts.Viewer3D.RollingStock
                     MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
                 }
             }
-            else if (match.Wagon.FreightAnimations != null)
+            else if (match.Wagon.FreightAnimations?.Animations?.Count > 0 && match.Wagon.FreightAnimations.Animations[0] is FreightAnimationContinuous)
             {
                 // freight wagon animation
                 var fraction = match.Wagon.GetFilledFraction(match.Pickup.PickupType);
@@ -647,6 +686,34 @@ namespace Orts.Viewer3D.RollingStock
                     match.Wagon.StartRefillingOrUnloading(match.Pickup, match.IntakePoint, fraction, MSTSWagon.RefillProcess.Unload);
                     MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
                 }
+            }
+            else if (match.IntakePoint.LinkedFreightAnim is FreightAnimationDiscrete)
+            {
+                var load = match.IntakePoint.LinkedFreightAnim as FreightAnimationDiscrete;
+                // discrete freight wagon animation
+                if (load == null)
+                {
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("wag file not equipped for containers"));
+                    return;
+                }
+                else if (load.Loaded && !onlyUnload)
+                {
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("{0} now loaded.",
+                        PickupTypeDictionary[match.Pickup.PickupType]));
+                    return;
+                }
+                else if (!load.Loaded && onlyUnload)
+                {
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("{0} now unloaded.",
+                        PickupTypeDictionary[match.Pickup.PickupType]));
+                    return;
+                }
+
+                MSTSWagon.RefillProcess.OkToRefill = true;
+                MSTSWagon.RefillProcess.Unload = onlyUnload;
+                match.Wagon.StartLoadingOrUnloading(match.Pickup, match.IntakePoint, MSTSWagon.RefillProcess.Unload);
+                MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
+
             }
         }
 
@@ -718,13 +785,20 @@ namespace Orts.Viewer3D.RollingStock
         /// <summary>
         /// Ends a continuous increase in controlled value.
         /// </summary>
-        public void StopRefillingOrUnloading(CommandLog log)
+        public void StopRefillingOrUnloading(CommandLog log, bool onlyUnload = true)
         {
             if (MatchedWagonAndPickup == null)
+                return;
+            if (MatchedWagonAndPickup.Pickup.PickupType == (uint)MSTSWagon.PickupType.Container)
                 return;
             MSTSWagon.RefillProcess.OkToRefill = false;
             MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
             var match = MatchedWagonAndPickup;
+            if (MatchedWagonAndPickup.Pickup.PickupType == (uint)MSTSWagon.PickupType.Container)
+            {
+                match.Wagon.UnloadingPartsOpen = false;
+                return;
+            }
             var controller = new MSTSNotchController();
             if (match.Wagon is MSTSElectricLocomotive || match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && match.SteamLocomotiveWithTender != null))
             {
@@ -1098,7 +1172,7 @@ namespace Orts.Viewer3D.RollingStock
 
             #region Create Control renderers
             ControlMap = new Dictionary<int, CabViewControlRenderer>();
-            int[] count = new int[256];//enough to hold all types, count the occurence of each type
+            int[] count = new int[Enum.GetNames(typeof(CABViewControlTypes)).Length];//enough to hold all types, count the occurence of each type
             var i = 0;
             foreach (var cabView in car.CabViewList)
             {
@@ -1241,7 +1315,7 @@ namespace Orts.Viewer3D.RollingStock
 
             #region Create Control renderers
             ControlMap = new Dictionary<int, CabViewControlRenderer>();
-            int[] count = new int[256];//enough to hold all types, count the occurence of each type
+            int[] count = new int[Enum.GetNames(typeof(CABViewControlTypes)).Length];//enough to hold all types, count the occurence of each type
             var i = 0;
 
             var controlSortIndex = 1;  // Controls are drawn atop the cabview and in order they appear in the CVF file.
@@ -2086,6 +2160,9 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.OVERSPEED:
                 case CABViewControlTypes.PENALTY_APP:
                 case CABViewControlTypes.EMERGENCY_BRAKE:
+                case CABViewControlTypes.ORTS_BAILOFF:
+                case CABViewControlTypes.ORTS_QUICKRELEASE:
+                case CABViewControlTypes.ORTS_OVERCHARGE:
                 case CABViewControlTypes.DOORS_DISPLAY:
                 case CABViewControlTypes.CYL_COCKS:
                 case CABViewControlTypes.ORTS_BLOWDOWN_VALVE:
@@ -2118,6 +2195,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_ODOMETER_RESET:
                 case CABViewControlTypes.ORTS_GENERIC_ITEM1:
                 case CABViewControlTypes.ORTS_GENERIC_ITEM2:
+                case CABViewControlTypes.ORTS_EOT_EMERGENCY_BRAKE:
                     index = (int)data;
                     break;
                 case CABViewControlTypes.ORTS_SCREEN_SELECT:
@@ -2128,10 +2206,17 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_DP_BRAKE:
                 case CABViewControlTypes.ORTS_DP_MORE:
                 case CABViewControlTypes.ORTS_DP_LESS:
+                case CABViewControlTypes.ORTS_EOT_COMM_TEST:
+                case CABViewControlTypes.ORTS_EOT_DISARM:
+                case CABViewControlTypes.ORTS_EOT_ARM_TWO_WAY:
                     index = ButtonState ? 1 : 0;
                     break;
                 case CABViewControlTypes.ORTS_STATIC_DISPLAY:
                     index = 0;
+                    break;
+                case CABViewControlTypes.ORTS_EOT_STATE_DISPLAY:
+                    index = ControlDiscrete.Values.FindIndex(ind => ind > (int)data) - 1;
+                    if (index == -2) index = ControlDiscrete.Values.Count - 1;
                     break;
 
                 // Train Control System controls
@@ -2492,6 +2577,34 @@ namespace Orts.Viewer3D.RollingStock
                     if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
                         new DPLessCommand(Viewer.Log);
                     ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_EOT_COMM_TEST:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new EOTCommTestCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_EOT_DISARM:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new EOTDisarmCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_EOT_ARM_TWO_WAY:
+                    buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
+                    if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
+                        new EOTArmTwoWayCommand(Viewer.Log);
+                    ButtonState = buttonState;
+                    break;
+                case CABViewControlTypes.ORTS_EOT_EMERGENCY_BRAKE:
+                    var p = ChangedValue(0);
+                    if (ChangedValue(0) == 1)
+                    {
+                        if (Locomotive.Train?.EOT != null)
+                        {
+                            new ToggleEOTEmergencyBrakeCommand(Viewer.Log);
+                        }
+                    }
                     break;
             }
 
@@ -2863,6 +2976,7 @@ namespace Orts.Viewer3D.RollingStock
         Dictionary<int, AnimatedPart> OnDemandAnimateParts = null; //like external wipers, and other parts that will be switched on by mouse in the future
         //Dictionary<int, DigitalDisplay> DigitParts = null;
         Dictionary<int, ThreeDimCabDigit> DigitParts3D = null;
+        Dictionary<int, ThreeDimCabDPI> DPIDisplays3D = null;
         AnimatedPart ExternalWipers = null; // setting to zero to prevent a warning. Probably this will be used later. TODO
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
         MSTSLocomotiveViewer LocoViewer;
@@ -2883,9 +2997,9 @@ namespace Orts.Viewer3D.RollingStock
             else locoViewer.ThreeDimentionCabRenderer = locoViewer._CabRenderer;
 
             AnimateParts = new Dictionary<int, AnimatedPartMultiState>();
-            //DigitParts = new Dictionary<int, DigitalDisplay>();
             DigitParts3D = new Dictionary<int, ThreeDimCabDigit>();
             Gauges = new Dictionary<int, ThreeDimCabGaugeNative>();
+            DPIDisplays3D = new Dictionary<int, ThreeDimCabDPI>();
             OnDemandAnimateParts = new Dictionary<int, AnimatedPart>();
 
             // Find the animated parts
@@ -2976,6 +3090,10 @@ namespace Orts.Viewer3D.RollingStock
                             else tmpPart = AnimateParts[key];
                             tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
                         }
+                    }
+                    else if (style != null && style is DistributedPowerInterfaceRenderer)
+                    {
+                        DPIDisplays3D.Add(key, new ThreeDimCabDPI(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                     }
                     else
                     {
@@ -3100,6 +3218,23 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 p.Value.PrepareFrame(frame, elapsedTime);
             }
+            foreach (var p in DPIDisplays3D)
+            {
+                var dpdisplay = p.Value.CVFR.Control;
+                if (dpdisplay.Screens != null && dpdisplay.Screens[0] != "all")
+                {
+                    foreach (var screen in dpdisplay.Screens)
+                    {
+                        if (LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[dpdisplay.Display] == screen)
+                        {
+                            p.Value.PrepareFrame(frame, elapsedTime);
+                            break;
+                        }
+                    }
+                    continue;
+                }
+                p.Value.PrepareFrame(frame, elapsedTime);
+            }
             foreach (var p in Gauges)
             {
                 var gauge = p.Value.CVFR.Control;
@@ -3136,12 +3271,16 @@ namespace Orts.Viewer3D.RollingStock
             {
                 threeDimCabDigit.Mark();
             }
+            foreach (ThreeDimCabDPI threeDimCabDPI in DPIDisplays3D.Values)
+            {
+                threeDimCabDPI.Mark();
+            }
         }
     }
 
     public class ThreeDimCabDigit
     {
-        const int MaxDigits = 6;
+        int MaxDigits = 6;
         PoseableShape TrainCarShape;
         VertexPositionNormalTexture[] VertexList;
         int NumVertices;
@@ -3167,10 +3306,12 @@ namespace Orts.Viewer3D.RollingStock
             else { AceFile = ""; }
 
             CVFR = (CabViewDigitalRenderer)c;
+            var digital = CVFR.Control as CVCDigital;
+            if (digital.ControlType == CABViewControlTypes.CLOCK && digital.Accuracy > 0) MaxDigits = 8;
             Viewer = viewer;
             TrainCarShape = trainCarShape;
             XNAMatrix = TrainCarShape.SharedShape.Matrices[iMatrix];
-            var maxVertex = 32;// every face has max 5 digits, each has 2 triangles
+            var maxVertex = (MaxDigits + 2) * 4;// every face has max 8 digits, each has 2 triangles
             //Material = viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, texture), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
             Material = FindMaterial(false);//determine normal material
             // Create and populate a new ShapePrimitive

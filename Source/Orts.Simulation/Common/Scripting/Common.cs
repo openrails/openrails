@@ -18,6 +18,7 @@
 using Orts.Common;
 using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using System;
 
 namespace ORTS.Scripting.Api
@@ -99,6 +100,16 @@ namespace ORTS.Scripting.Api
         public Timer(TrainCar car)
         {
             CurrentValue = () => (float)car.Simulator.GameTime;
+        }
+
+        public Timer(EOT eot)
+        {
+            CurrentValue = () => (float)eot.Train.Simulator.GameTime;
+        }
+
+        public Timer(ContainerHandlingItem containerStation)
+        {
+            CurrentValue = () => (float)containerStation.Simulator.GameTime;
         }
     }
 

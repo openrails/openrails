@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows.Forms;
 using ORTS.Common;
 
@@ -138,10 +140,6 @@ namespace ORTS.Settings
         [Default(true)]
         public bool Logging { get; set; }
         [Default(false)]
-        public bool DebriefActivityEval { get; set; }
-        [Default(false)]
-        public bool DebriefTTActivityEval { get; set; }
-        [Default(false)]
         public bool FullScreen { get; set; }
         [Default("")]
         public string Multiplayer_User { get; set; }
@@ -153,9 +151,6 @@ namespace ORTS.Settings
         public bool IsModeActivity { get; set; } // false indicates Timetable mode
 
         // General settings:
-
-        [Default(false)]
-        public bool WebServer { get; set; }
         [Default(2150)]
         public int WebServerPort { get; set; }
 
@@ -165,8 +160,6 @@ namespace ORTS.Settings
         public bool AlerterDisableExternal { get; set; }
         [Default(true)]
         public bool SpeedControl { get; set; }
-        [Default(false)]
-        public bool ViewDispatcher { get; set; }
         [Default(false)]
         public bool GraduatedRelease { get; set; }
         [Default(false)]
@@ -195,17 +188,17 @@ namespace ORTS.Settings
         public int ExternalSoundPassThruPercent { get; set; } // higher = louder sound
 
         // Video settings:
-        [Default(false)]
+        [Default(true)]
         public bool DynamicShadows { get; set; }
         [Default(false)]
         public bool ShadowAllShapes { get; set; }
         [Default(false)]
         public bool WindowGlass { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool ModelInstancing { get; set; }
         [Default(true)]
         public bool Wire { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool VerticalSync { get; set; }
         [Default(2000)]
         public int ViewingDistance { get; set; }
@@ -240,8 +233,6 @@ namespace ORTS.Settings
         public bool TunnelResistanceDependent { get; set; }
         [Default(false)]
         public bool WindResistanceDependent { get; set; }
-        [Default(false)]
-        public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]
         public bool HotStart { get; set; }
         [Default(false)]
@@ -316,7 +307,7 @@ namespace ORTS.Settings
         public bool UseMSTSEnv { get; set; }
         [Default(false)]
         public bool SignalLightGlow { get; set; }
-        [Default(130)]
+        [Default(100)]
         public int AdhesionFactor { get; set; }
         [Default(10)]
         public int AdhesionFactorChange { get; set; }
@@ -344,8 +335,8 @@ namespace ORTS.Settings
         public int CarVibratingLevel { get; set; }
         [Default("OpenRailsLog.txt")]
         public string LoggingFilename { get; set; }
-        [Default("OR-DebriefEval.txt")]
-        public string DebriefEvalFilename { get; set; }//
+        [Default("OpenRailsEvaluation.txt")]
+        public string EvaluationFilename { get; set; }//
         [Default("")] // If left as "", OR will use the user's desktop folder
         public string LoggingPath { get; set; }
         [Default("")]
@@ -484,6 +475,20 @@ namespace ORTS.Settings
                 return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
 
             throw new InvalidDataException(String.Format("UserSetting {0} has no default value.", property.Name));
+        }
+
+        public string GetCacheFilePath(string type, string key)
+        {
+            var hasher = new MD5CryptoServiceProvider();
+            hasher.ComputeHash(Encoding.Default.GetBytes(key));
+            var hash = String.Join("", hasher.Hash.Select(h => h.ToString("x2")));
+
+            var directory = Path.Combine(UserSettings.UserDataFolder, "Cache", type);
+
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            return Path.Combine(directory, hash + ".cache-or");
         }
 
         PropertyInfo GetProperty(string name)

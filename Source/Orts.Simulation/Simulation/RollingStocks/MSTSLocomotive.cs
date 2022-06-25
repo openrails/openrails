@@ -42,7 +42,7 @@
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 
 // Debug for Advanced Adhesion Model
-//#define DEBUG_ADHESION
+// #define DEBUG_ADHESION
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -173,8 +173,8 @@ namespace Orts.Simulation.RollingStocks
         public float MaxTotalCombinedWaterVolumeUKG;
         public MSTSNotchController WaterController = new MSTSNotchController(0, 1, 0.01f);
         public float CombinedTenderWaterVolumeUKG          // Decreased by running injectors and increased by refilling
-        {
-            get { return WaterController.CurrentValue* MaxTotalCombinedWaterVolumeUKG; }
+        {          
+            get { return WaterController.CurrentValue * MaxTotalCombinedWaterVolumeUKG; }
             set { WaterController.CurrentValue = value / MaxTotalCombinedWaterVolumeUKG; }
         }
 
@@ -214,11 +214,25 @@ namespace Orts.Simulation.RollingStocks
         //float DebugTimer = 0.0f;
 
         // Adhesion parameters
+        public enum SlipControlType
+        {
+            None,
+            Full
+        }
+        public SlipControlType SlipControlSystem;
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
+        float SlipFrictionCoefficientFactor;
         public float SteamStaticWheelForce;
         public float SteamTangentialWheelForce;
         public float SteamDrvWheelWeightLbs;  // Weight on each drive axle
         public float PreviousThrottleSetting = 0.0f;  // Holds the value of the previous throttle setting for calculating the correct antislip speed
+        float WheelSlipTimeS;
+        float WheelStopSlipTimeS;
+        float CurrentWheelSlipAdhesionMultiplier;
+        float DebugTimer; // Used for debugging adhesion coefficient
+        bool DebugSpeedReached = false; // Used for debugging adhesion coefficient
+        float DebugSpeedIncrement = 1; // Used for debugging adhesion coefficient
+        float DebugSpeed = 1; // Used for debugging adhesion coefficient
 
         // parameters for Track Sander based upon compressor air and abrasive table for 1/2" sand blasting nozzle @ 50psi
         public float MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
@@ -426,6 +440,13 @@ public List<CabView> CabViewList = new List<CabView>();
         public float DynamicBrakeIntervention = -1;
         protected float PreviousDynamicBrakeIntervention = -1;
 
+        public enum TractionMotorTypes
+        {
+            DC,
+            AC,
+        }
+        public TractionMotorTypes TractionMotorType = TractionMotorTypes.DC;
+
         public ILocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ILocomotivePowerSupply;
         public ScriptedTrainControlSystem TrainControlSystem;
 
@@ -433,6 +454,7 @@ public List<CabView> CabViewList = new List<CabView>();
         public IIRFilter CurrentFilter;
         public IIRFilter AdhesionFilter;
         public float SaveAdhesionFilter;
+        public float AdhesionConditions;
 
         public float FilteredMotiveForceN;
 
@@ -452,10 +474,6 @@ public List<CabView> CabViewList = new List<CabView>();
 
             LocomotiveAxle = new Axle();
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
-            LocomotiveAxle.DampingNs = MassKG / 1000.0f;
-            LocomotiveAxle.FrictionN = MassKG / 100.0f;
-            LocomotiveAxle.StabilityCorrection = true;
-            LocomotiveAxle.FilterMovingAverage.Size = Simulator.Settings.AdhesionMovingAverageFilterSize;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1f), 0.001f);
 
@@ -864,6 +882,18 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(dieselenginespeedofmaxtractiveeffort": MSTSSpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(ortsunloadingspeed": UnloadingSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(ortsslipcontrolsystem":
+                    stf.MustMatch("(");
+                    string slipControlType = stf.ReadString().ToLowerInvariant();
+                    try
+                    {
+                        SlipControlSystem = (SlipControlType)Enum.Parse(typeof(SlipControlType), slipControlType.First().ToString().ToUpper() + slipControlType.Substring(1));
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Skipped unknown slip control system " + slipControlType);
+                    }
+                    break;
                 case "engine(type":
                     stf.MustMatch("(");
                     var engineType = stf.ReadString();
@@ -874,6 +904,18 @@ public List<CabView> CabViewList = new List<CabView>();
                     catch
                     {
                         STFException.TraceWarning(stf, "Skipped unknown engine type " + engineType);
+                    }
+                    break;
+                case "engine(ortstractionmotortype":
+                    stf.MustMatch("(");
+                    string tractionMotorType = stf.ReadString().ToUpper();
+                    try
+                    {
+                        TractionMotorType = (TractionMotorTypes)Enum.Parse(typeof(TractionMotorTypes), tractionMotorType);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Skipped unknown traction motor type " + tractionMotorType);
                     }
                     break;
 
@@ -1072,7 +1114,9 @@ public List<CabView> CabViewList = new List<CabView>();
             MaxCurrentA = locoCopy.MaxCurrentA;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
             UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
+            SlipControlSystem = locoCopy.SlipControlSystem;
             EngineType = locoCopy.EngineType;
+            TractionMotorType = locoCopy.TractionMotorType;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
             SpeedOfMaxContinuousForceMpS = locoCopy.SpeedOfMaxContinuousForceMpS;
@@ -1177,9 +1221,6 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 LocomotiveAxle.SlipWarningTresholdPercent = SlipWarningThresholdPercent;
                 LocomotiveAxle.AdhesionK = AdhesionK;
-                LocomotiveAxle.CurtiusKnifflerA = Curtius_KnifflerA;
-                LocomotiveAxle.CurtiusKnifflerB = Curtius_KnifflerB;
-                LocomotiveAxle.CurtiusKnifflerC = Curtius_KnifflerC;
             }
         }
 
@@ -1285,7 +1326,6 @@ public List<CabView> CabViewList = new List<CabView>();
 
             LocomotiveAxle = new Axle(inf);
             MoveParamsToAxle();
-            LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             LocomotiveAxle.Reset(Simulator.GameTime, axleSpeedMpS);
         }
 
@@ -1420,7 +1460,11 @@ public List<CabView> CabViewList = new List<CabView>();
                     Trace.TraceInformation("Number of Locomotive Drive Axles set to default value of {0}", LocoNumDrvAxles);
                 }
             }
-               
+            if (TractionMotorType == TractionMotorTypes.AC)
+            {
+                InductionMotor motor = new InductionMotor(LocomotiveAxle, this);
+            }
+
 
             // Calculate minimum speed to pickup water
             const float Aconst = 2;
@@ -1642,13 +1686,10 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             base.InitializeMoving();
             LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS);
-            LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
-            LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f;
             AdhesionFilter.Reset(0.5f);
             AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
             float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
             if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
-            LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             LocomotivePowerSupply?.InitializeMoving();
             if (Train.IsActualPlayerTrain)
             {
@@ -1836,6 +1877,7 @@ public List<CabView> CabViewList = new List<CabView>();
             }
             else
                 DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
+                
 
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
 
@@ -1896,7 +1938,6 @@ public List<CabView> CabViewList = new List<CabView>();
                             DynamicBrakeController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
                             DynamicBrakeController.CurrentValue * 100);
                     }
-
 
                     // SimpleControlPhysics and if locomotive is a control car advanced adhesion will be "disabled".
                     if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control) 
@@ -2192,6 +2233,7 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             // Method to set force and power info
             // An alternative method in the steam locomotive will override this and input force and power info for it.
+
             if (LocomotivePowerSupply.MainPowerSupplyOn && Direction != Direction.N)
             {
 
@@ -2202,13 +2244,20 @@ public List<CabView> CabViewList = new List<CabView>();
                 // More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
                 // Simple adhesion control does not have any slip control feature built into it.
                 // TODO - a full review of slip/no slip control.
-                if (WheelSlip && AdvancedAdhesionModel)
+                if (TractionMotorType == TractionMotorTypes.AC)
                 {
-                    AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
                 }
                 else
                 {
-                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    if (WheelSlip && AdvancedAdhesionModel)
+                    {
+                        AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    }
+                    else
+                    {
+                        AbsTractionSpeedMpS = AbsSpeedMpS;
+                    }
                 }
 
                 if (TractiveForceCurves == null)
@@ -2300,7 +2349,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 if (AdvancedAdhesionModel)
                 {
                     // Wheelslip
-                    if (LocomotiveAxle.IsWheelSlip)
+                    if (WheelSlip)
                     {
                         if (WheelslipState != Wheelslip.Occurring)
                         {
@@ -2310,7 +2359,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                     else
                     {
-                        if (LocomotiveAxle.IsWheelSlipWarning)
+                        if (WheelSlipWarning)
                         {
                             if (WheelslipState != Wheelslip.Warning)
                             {
@@ -2576,47 +2625,60 @@ public List<CabView> CabViewList = new List<CabView>();
             {
 
                 //Compute axle inertia from parameters if possible
-                if (AxleInertiaKgm2 > 10000.0f) // if axleinertia value supplied in ENG file, then use in calculations
+                if (AxleInertiaKgm2 <= 0) // if no axleinertia value supplied in ENG file, calculate axleinertia value.
                 {
-                    LocomotiveAxle.InertiaKgm2 = AxleInertiaKgm2;
-                }
-                else // if no value in ENG file, calculate axleinertia value.
-                {
-                    if (WheelAxles.Count > 0 && DriverWheelRadiusM > 0)
+                    if (LocoNumDrvAxles > 0 && DriverWheelRadiusM > 0)
                     {
-                        float upperLimit = 2.0f * WheelAxles.Count * (15000.0f * DriverWheelRadiusM - 2900.0f);
-                        upperLimit = upperLimit < 100.0f ? 100.0f : upperLimit;
-
-                        float lowerLimit = WheelAxles.Count * (9000.0f * DriverWheelRadiusM - 1750.0f);
-                        lowerLimit = lowerLimit < 100.0f ? 100.0f : lowerLimit;
-
-                        LocomotiveAxle.InertiaKgm2 = (upperLimit - lowerLimit) / (5000000.0f) * MaxPowerW + lowerLimit;
+                        float radiusSquared = DriverWheelRadiusM * DriverWheelRadiusM;
+                        float wheelMass = 500 * radiusSquared / (0.5f * 0.5f);
+                        AxleInertiaKgm2 = LocoNumDrvAxles * wheelMass * radiusSquared + 500;
                     }
                     else
-                        LocomotiveAxle.InertiaKgm2 = 32000.0f;
+                        AxleInertiaKgm2 = 2000.0f;
                 }
                 //Limit the inertia to 40000 kgm2
-                LocomotiveAxle.InertiaKgm2 = LocomotiveAxle.InertiaKgm2 > 40000.0f ? 40000.0f : LocomotiveAxle.InertiaKgm2;
+                LocomotiveAxle.InertiaKgm2 = Math.Min(AxleInertiaKgm2, 40000);
 
-                LocomotiveAxle.AxleRevolutionsInt.MinStep = LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f;
+                //LocomotiveAxle.AxleRevolutionsInt.MinStep = LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f;
+                LocomotiveAxle.WheelRadiusM = DriverWheelRadiusM;
+                LocomotiveAxle.DampingNs = MassKG / 1000.0f;
+                LocomotiveAxle.FrictionN = MassKG / 1000.0f;
 
+                if (LocomotiveAxle.Motor is InductionMotor motor)
+                {
+                    motor.SlipControl = SlipControlSystem == SlipControlType.Full;
+                    motor.TargetForceN = MotiveForceN;
+                    motor.EngineMaxSpeedMpS = MaxSpeedMpS;
+                }
+                else
+                {
+                    if (SlipControlSystem == SlipControlType.Full)
+                    {
+                        // Simple slip control
+                        // Motive force is reduced to the maximum adhesive force
+                        // In wheelslip situations, motive force is set to zero
+                        MotiveForceN = Math.Sign(MotiveForceN) * Math.Min(LocomotiveAxle.AdhesionLimit * LocomotiveAxle.AxleWeightN, Math.Abs(MotiveForceN));
+                        if (LocomotiveAxle.IsWheelSlip) MotiveForceN = 0;
+                    }
+                    LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
+                }
 
                 //Set axle model parameters
 
                 // Inputs
                 LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //will be computed each time considering the tilting
-                LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
-                LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle model
-                LocomotiveAxle.Update(elapsedClockSeconds);             //Main updater of the axle model
-
-                // Output
-                MotiveForceN = LocomotiveAxle.CompensatedAxleForceN; //Get the Axle force and use it for the motion (use compensated value as it is independent of brake force)
-
+                LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
+                var watch = new Stopwatch();
+                watch.Start();
+                LocomotiveAxle.Update(elapsedClockSeconds); //Main updater of the axle model
+                watch.Stop();
+                //AdhesionConditions = watch.ElapsedTicks / 1000.0f;
+                MotiveForceN = LocomotiveAxle.CompensatedAxleForceN;
                 if (elapsedClockSeconds > 0)
                 {
                     WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
-                    WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning;
+                    WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning && SlipControlSystem != SlipControlType.Full;
                 }
                 WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
             }
@@ -2901,43 +2963,60 @@ public List<CabView> CabViewList = new List<CabView>();
         public virtual void UpdateFrictionCoefficient(float elapsedClockSeconds)
         {
             float BaseuMax = (Curtius_KnifflerA / (MpS.ToKpH(AbsSpeedMpS) + Curtius_KnifflerB) + Curtius_KnifflerC); // Base Curtius - Kniffler equation - u = 0.33, all other values are scaled off this formula
-            float SandingFrictionCoefficientFactor = 0.0f;
-            //Set the friction coeff due to weather
-            if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
+            float SandingFrictionCoefficientFactor = 1.0f;
+
+            //Set the friction coeff due to weather - uses the vlaues set in the precipitation module to determine whether clear, rain or snow.
+
+            // Adjust clear weather for precipitation presence, ie base value between 60% and 80% 
+            // note lowest friction will be for drizzle (light) rain; friction will increase for precipitation higher than drizzle rail
+            if (!Simulator.Paused)
             {
-                if (Train.SlipperySpotDistanceM < 0)
+                var fogBaseFrictionCoefficientFactor = 0.0f;
+                var pricBaseFrictionCoefficientFactor = 0.0f;
+                float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
+                // precipitation will calculate a base coefficient value between 60% (light rain) and 80% (heavy rain) - this will be a factor that is used to adjust the base value - assume linear value between upper and lower precipitation values
+                if (pric >= 0.5)
+                    pricBaseFrictionCoefficientFactor = Math.Min((pric - 0.5f) * 0.0078f + 0.6f, 0.8f); // should give a value between 0.6 and 0.8
+                else
+                    pricBaseFrictionCoefficientFactor = 0.6f + 0.8f * (0.5f - pric); // should give a transition value between 1.0 and 0.6 as rain starts
+
+                // Adjust adhesion for impact of fog - default = 20000m = 20km
+                float fog = Simulator.Weather.FogDistance;
+                if (fog < 20000) // as fog thickens then decrease adhesion
                 {
-                    Train.SlipperySpotLengthM = 10 + 40 * (float)Simulator.Random.NextDouble();
-                    Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Simulator.Random.NextDouble();
+                    fogBaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.6f), 1.0f); // If fog is less then 2km then it will impact friction, decrease adhesion to 60% (same as light rain transition)
                 }
-                if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
+                else
                 {
-                    BaseFrictionCoefficientFactor = 0.8f;
+                    fogBaseFrictionCoefficientFactor = 1;
                 }
-                if (Simulator.WeatherType == WeatherType.Rain) // Wet weather
-                {
-                    if (Simulator.Settings.AdhesionProportionalToWeather && AdvancedAdhesionModel && !Simulator.Paused)  // Adjust clear weather for precipitation presence - base friction value will be approximately between 0.15 and 0.2
-                    // ie base value between 0.8 and 1.0 (TODO) 
-                    // note lowest friction will be for drizzle rain; friction will increase for precipitation both higher and lower than drizzle rail
-                    {
-                        float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
-                        // precipitation will calculate a value between 0.15 (light rain) and 0.2 (heavy rain) - this will be a factor that is used to adjust the base value - assume linear value between upper and lower precipitation values
-                        if (pric >= 0.5)
-                            BaseFrictionCoefficientFactor = Math.Min((pric * 0.0078f + 0.45f), 0.8f); // should give a minimum value between 0.8 and 1.0
-                        else
-                            BaseFrictionCoefficientFactor = Math.Min((0.4539f + 1.0922f * (0.5f - pric)), 0.8f); // should give a minimum value between 0.8 and 1.0
-                    }
-                    else // if not proportional to precipitation use fixed friction value of 0.8 x friction coefficient of 0.33
-                    {
-                        BaseFrictionCoefficientFactor = 0.8f;
-                    }
-                }
-                else     // Snow weather
+
+                BaseFrictionCoefficientFactor = Math.Min(fogBaseFrictionCoefficientFactor, pricBaseFrictionCoefficientFactor);
+            }
+
+            // Random slippery track
+            if (Train.SlipperySpotDistanceM < 0)
+            {
+                Train.SlipperySpotLengthM = 10 + 40 * (float)Simulator.Random.NextDouble();
+                Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Simulator.Random.NextDouble();
+            }
+            if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
+            {
+                if (BaseFrictionCoefficientFactor > 0.6 && BaseFrictionCoefficientFactor < 0.8)
                 {
                     BaseFrictionCoefficientFactor = 0.6f;
                 }
+                else
+                {
+                    BaseFrictionCoefficientFactor = 0.8f;
+                }
+            }
 
-                //add sander - more effective in wet weather, so increases adhesion by more
+            BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f); 
+
+            if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
+            {
+                //sander - more effective in wet weather, so increases adhesion by more
                 if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
                 {
                     if (SanderSpeedEffectUpToMpS > 0.0f)
@@ -2946,7 +3025,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         {
                             SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.75f;
                             BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
-                            
+
                         }
                     }
                     else
@@ -2959,27 +3038,9 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                 }
             }
-            else // Default to Dry (Clear) weather
+            else // dry weather
             {
-
-                if (Simulator.Settings.AdhesionProportionalToWeather && AdvancedAdhesionModel && !Simulator.Paused)  // Adjust clear weather for fog presence
-                {
-                    float fog = Simulator.Weather.FogDistance;
-                    if (fog > 2000)
-                    {
-                        BaseFrictionCoefficientFactor = 1.0f; // if fog is not too thick don't change the friction
-                    }
-                    else
-                    {
-                        BaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.8f), 0.8f); // If fog is less then 2km then it will impact friction, decrease adhesion by up to 20% (same as clear to wet transition)
-                    }                                        
-                }
-                else // if not proportional to fog use fixed friction value approximately equal to 0.33, thus factor will be 1.0 x friction coefficient of 0.33
-                {
-                    BaseFrictionCoefficientFactor = 1.0f;
-                }
-
-                //add sander - not as effective in dry weather
+                //sander - not as effective in dry weather
                 if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
                 {
                     if (SanderSpeedEffectUpToMpS > 0.0f)
@@ -2999,6 +3060,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         }
                     }
                 }
+
             }
 
             // For wagons use base Curtius-Kniffler adhesion factor - u = 0.33
@@ -3016,13 +3078,54 @@ public List<CabView> CabViewList = new List<CabView>();
 
             }
 
-            if (WheelSlip && ThrottlePercent > 0.2f && !BrakeSkid)   // Test to see if loco wheel is slipping, then coeff of friction will be decreased below static value. Sanding will override this somewhat
+            // When wheel slips or skids, then dynamic (kinetic) coeff of friction will be decreased below static value. Sanding will override this somewhat.
+            // The transition between static and dynamic friction appears to decrease at an exponential rate until it reaches a steady state dynamic value.
+            // 
+
+
+            // Test to see if loco wheel is slipping or skidding due to brake application
+            if ((EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared) && WheelSlip && ((ThrottlePercent > 0.2f && !BrakeSkid) || (ThrottlePercent < 0.1f && BrakeSkid)))   
             {
-                BaseFrictionCoefficientFactor = 0.15f * SandingFrictionCoefficientFactor;  // Descrease friction to take into account dynamic (kinetic) friction U = 0.0525
+
+                WheelStopSlipTimeS = 0; // Reset stop slip time if wheel slip starts
+
+                // Exponential curve is used to transition between static friction and dynamic friction when wheel slips
+                // Exponential constant calculated between two points, using this tool - https://mathcracker.com/exponential-function-calculator#results
+                // Google search suggests that Steel on steel has a static coeff = 0.74, and a dynamic coeff = 0.57. Hence reduction = 0.77.
+                // Constant points facilitate a decrease from 1 to 0.7 in 3 seconds - P1 = (0, 1), P2 = (5, 0.77). Hence exp constant = −0.0523
+                var expAdhesion = -0.0523;
+                WheelSlipTimeS += elapsedClockSeconds;
+                WheelSlipTimeS = MathHelper.Clamp(WheelSlipTimeS, 0.0f, 5.0f); // Ensure that time to transition between the two friction cases is maintained - currently set to 3 secs
+
+                float adhesionMultiplier = (float) Math.Exp(expAdhesion * WheelSlipTimeS);
+                CurrentWheelSlipAdhesionMultiplier = adhesionMultiplier;
+
+                BaseFrictionCoefficientFactor *= adhesionMultiplier;  // Descrease friction to take into account dynamic (kinetic) friction, typically kinetic friction is approximately 50% of static friction.
+                SlipFrictionCoefficientFactor = BaseFrictionCoefficientFactor;
+
+                BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.05f, 1.0f); // Ensure friction coefficient never exceeds a "reasonable" value
             }
-            else if (WheelSlip && ThrottlePercent < 0.1f && BrakeSkid) // Test to see if loco wheel is skidding due to brake application
+            else
             {
-                BaseFrictionCoefficientFactor = 0.15f * SandingFrictionCoefficientFactor;  // Descrease friction to take into account dynamic (kinetic) friction U = 0.0525
+                WheelSlipTimeS = 0; // Reset slip time if wheel slip stops
+
+                if ((EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared) && SlipFrictionCoefficientFactor < BaseFrictionCoefficientFactor && SlipFrictionCoefficientFactor != 0) // Once these two are equal then assume that wheels have stopped slipping.
+                {
+                    //                    Trace.TraceInformation("SlipFriction {0} Base {1}", SlipFrictionCoefficientFactor, BaseFrictionCoefficientFactor);
+                    // Exponential curve is used to transition between dynamic friction and static friction when wheel stops slipping
+                    // Constant points facilitate an increase from 0.7 to 1 in 3 seconds - P1 = (5, 0.77), P2 = (0, 1). Hence exp constant = 0.0523
+                    var expAdhesion = 0.0523;
+                    WheelStopSlipTimeS += elapsedClockSeconds;
+                    WheelStopSlipTimeS = MathHelper.Clamp(WheelStopSlipTimeS, 0.0f, 5.0f); // Ensure that time to transition between the two friction cases is maintained - currently set to 3 secs
+
+                    float adhesionMultiplier = CurrentWheelSlipAdhesionMultiplier * (float)Math.Exp(expAdhesion * WheelStopSlipTimeS);
+
+//                    Trace.TraceInformation("adhesion {0} StopTime {1} Base {2} Current {3}", adhesionMultiplier, WheelStopSlipTimeS, BaseFrictionCoefficientFactor, CurrentWheelSlipAdhesionMultiplier);
+
+                    BaseFrictionCoefficientFactor *= adhesionMultiplier;  // Descrease friction to take into account dynamic (kinetic) friction, typically kinetic friction is approximately 50% of static friction.
+                    SlipFrictionCoefficientFactor = BaseFrictionCoefficientFactor;
+                    BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.05f, 1.0f); // Ensure friction coefficient never exceeds a "reasonable" value
+                }
             }
 
             var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
@@ -3035,8 +3138,8 @@ public List<CabView> CabViewList = new List<CabView>();
             if (elapsedClockSeconds > 0)
             {
                 SaveAdhesionFilter = AdhesionFilter.Filter(BaseFrictionCoefficientFactor + AdhesionRandom, elapsedClockSeconds);
-                LocomotiveAxle.AdhesionConditions = AdhesionMultiplier * SaveAdhesionFilter;
-                LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(LocomotiveAxle.AdhesionConditions, 0.05f, 2.5f); // Avoids NaNs in axle speed computing
+                AdhesionConditions = MathHelper.Clamp(AdhesionMultiplier * SaveAdhesionFilter, 0.05f, 2.5f);
+                LocomotiveAxle.AdhesionLimit = AdhesionConditions * BaseuMax;
             }
 
            // Set adhesion conditions for other steam locomotives
@@ -3046,7 +3149,7 @@ public List<CabView> CabViewList = new List<CabView>();
             }
             else
             {
-                LocomotiveCoefficientFrictionHUD = BaseuMax * LocomotiveAxle.AdhesionConditions; // Set display value for HUD - diesel
+                LocomotiveCoefficientFrictionHUD = LocomotiveAxle.AdhesionLimit; // Set display value for HUD - diesel
             }
 
             
@@ -3485,10 +3588,10 @@ public List<CabView> CabViewList = new List<CabView>();
 
                         if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
                         {
-                GearBoxController.StartIncrease();
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
-                AlerterReset(TCSEvent.GearBoxChanged);
-                SignalGearBoxChangeEvents();
+                            GearBoxController.StartIncrease();
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                            AlerterReset(TCSEvent.GearBoxChanged);
+                            SignalGearBoxChangeEvents();
                             dieselloco.DieselEngines[0].GearBox.clutchOn = false;
                             dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
 
@@ -3548,10 +3651,10 @@ public List<CabView> CabViewList = new List<CabView>();
 
                         if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
                         {
-                GearBoxController.StartDecrease();
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
-                AlerterReset(TCSEvent.GearBoxChanged);
-                SignalGearBoxChangeEvents();
+                            GearBoxController.StartDecrease();
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                            AlerterReset(TCSEvent.GearBoxChanged);
+                            SignalGearBoxChangeEvents();
                             dieselloco.DieselEngines[0].GearBox.clutchOn = false;
                             dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
                         }
@@ -4773,6 +4876,11 @@ public List<CabView> CabViewList = new List<CabView>();
                         data = ConvertFromPSI(cvc, BrakeSystem.GetVacResPressurePSI());
                         break;
                     }
+                case CABViewControlTypes.ORTS_EOT_BRAKE_PIPE:
+                    {
+                        data = ConvertFromPSI(cvc, this.Train.Cars.Last().BrakeSystem.BrakeLine1PressurePSI);
+                        break;
+                    }
 
                 case CABViewControlTypes.RPM:
                     {
@@ -5019,7 +5127,7 @@ public List<CabView> CabViewList = new List<CabView>();
                                 if (activeloco.DieselEngines[0] != null)
                                 {
                                     if (activeloco.AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                                        data = activeloco.LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
+                                        data = activeloco.WheelSlipWarning ? 1 : 0;
                                     else
                                         data = activeloco.WheelSlip ? 1 : 0;
 
@@ -5030,7 +5138,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         else
                         {
                             if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                                data = LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
+                                data = WheelSlipWarning ? 1 : 0;
                             else
                                 data = WheelSlip ? 1 : 0;
                         }
@@ -5364,7 +5472,8 @@ public List<CabView> CabViewList = new List<CabView>();
 
                 default:
                     {
-                        data = 0;
+                        if (Train?.EOT != null && data == 0)
+                            data = Train.EOT.GetDataOf(cvc);
                         break;
                     }
             }

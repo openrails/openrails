@@ -34,6 +34,7 @@ therefore will not see the alerter warning, selecting the related option
 
 
 .. _options-control-confirmations:
+
 Control confirmations
 ---------------------
 
@@ -55,23 +56,6 @@ or "Replay ended" but you cannot suppress these system messages.
 Control confirmations can also be toggled on and off at runtime using the 
 key combination Ctrl-Alt-F10. 
 
-
-.. _options-map-window:
-
-Map window
------------------
-
-It is suggested to always select this option. When this option is selected,
-pressing ``<Ctrl+9>`` at runtime creates an additional window like the
-following. This window coexists with the main Open Rails window, and
-``<Alt+Tab>`` switches between it and the Open Rails window. See the related
-option :ref:`Fast fullscreen Alt+Tab <options-fullscreen>`.
-
-Through this window you can monitor train movements and also influence
-them, by setting signals and switches. A complete description of the
-dispatcher tab can be found :ref:`here <driving-dispatcher>`.
-
-.. image:: images/options-dispatcher.png
 
 Graduated release air brakes
 ----------------------------
@@ -152,20 +136,20 @@ These windows use the abbreviations *t-us* for short tons (2000 lb),
 Note: The units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
 distance) are always based on data read from the route files.
 
-Disable TCS scripts
+Enable TCS scripts
 -------------------
 
-This option disables the train control system scripts for locomotives where
+This option enables the train control system scripts for locomotives where
 these have been implemented.
 
-Enable web server
+.. _options-web-server-port:
+
+Web server port
 -----------------
 
-This option enables an internal web server that can be used to display game and
-train status information in a web browser, intended for use on secondary screens.
-
-When activated, the server can be accessed from a browser on the local machine at
+The web server can be accessed from a browser on the local machine at
 ``http://localhost:<port>``, where ``<port>`` is the specified port number.
+Change the default value of 2150 if it conflicts with other services.
 
 If you `open
 <https://www.howtogeek.com/394735/how-do-i-open-a-port-on-windows-firewall/>`_
@@ -216,11 +200,11 @@ Video Options
 Dynamic shadows
 ---------------
 
-Check this option to cast shadows from movable objects such as trains.
+This option causes movable objects such as trains to cast shadows.
+Unchecking the option will increase the frame rate.
 
-The default setting is unchecked.
+The default setting is checked.
 
-Note: This may reduce the frame rate.
 
 Shadow for all shapes
 ---------------------
@@ -234,11 +218,13 @@ Note: This may reduce the frame rate.
 Note: Static objects provided with shadows (in the World files) 
 will cast shadows anyway. This option adds shadows for other static objects.
 
+
 Glass on in-game windows
 ------------------------
 
 When this option is checked, the in-game windows are displayed in a
 semitransparent mode.
+
 
 Model instancing
 ----------------
@@ -250,10 +236,12 @@ hardware, but this may reduce the frame rate.
 
 The default setting is checked.
 
+
 Overhead wire
 -------------
 
 This option will enable or disable display of the overhead wire.
+
 
 .. _options-double-overhead-wires:
 
@@ -263,6 +251,7 @@ Double overhead wires
 MSTS uses a single wire for electrified routes; you may check this box so
 that OR will show the two overhead wires that are more common.
 
+
 .. _options-vsync:
 
 Vertical sync
@@ -270,13 +259,17 @@ Vertical sync
 
 Vertical Sync (VSync) attempts to lock Open Rails’ output frame rate 
 to your monitor's refresh rate for the smoothest image and to resist 
-image "tearing”.
+image "tearing".
+
 VSync may help keep the frame rate more stable on complex routes, 
 reducing sudden frame rate drops and apparent control lag in some cases.
 If Open Rails' frame rate drops below your monitor's frame rate, you 
-may see stuttering or image "tearing". To prevent this, either turn off 
+may see stuttering or image "tearing". To prevent this, either uncheck 
 the VSync option or reduce the values for video options such as view 
 distance, anti-aliasing, or world object density.
+
+The default setting is checked.
+
 
 Viewing distance
 ----------------
@@ -391,15 +384,13 @@ displayed as a message. This option is described in detail
 :ref:`here <physics-curve-speed-limit-application>` (OR application).
 OR does not display the damage.
 
-Run electric locos on non-electrified routes
---------------------------------------------
 
-This option allows the running of electric locomotives on non-electrified routes.
-
-Steam locomotive hot start
---------------------------
+At game start, Steam - pre-heat boiler
+--------------------------------------
 
 With this option selected, the temperature and pressure of steam in the boiler is ready to pull the train.
+Uncheck this option for a more detailed behaviour in which the player has to raise the boiler pressure.
+
 If not, the boiler pressure will be at 2/3 of maximum, which is only adequate for light work.
 If your schedule gives you time to raise the pressure close to maximum, then 
 switch from AI Firing to Manual Firing (Ctrl+F) and increase the Blower (N) to 100% to raise a draught. 
@@ -407,6 +398,16 @@ Replenish the coal using R and Shift+R to keep the fire mass close to 100%.
 Full pressure may be reached in 5 minutes or so.
 
 The default setting is checked.
+
+
+At game start, Diesel - run engines
+-----------------------------------
+
+When this option is checked, stationary diesel locos start the simulation with their engines running.
+Uncheck this option for a more detailed behaviour in which the player has to start the loco's engine.
+
+The default setting is checked.
+
 
 .. _options-forced-red:
 
@@ -477,14 +478,6 @@ With vacuum braking, it is sometimes necessary to operate two different controls
 With "Simple control and physics" checked, the player is able to operate the brakes just with the brake valve 
 and doesn't need to consider the steam ejector separately.
 
-Diesel engines stopped at simulation start
-------------------------------------------
-
-When this option is unchecked, stationary diesel locos start the simulation with their engines running.
-Check this option for a more detailed behaviour in which the player has to start the loco's engine.
-
-The default setting is unchecked.
-
 
 .. _options-keyboard:
 
@@ -521,15 +514,6 @@ pressing ``<F12>`` a file with the name dump.csv is generated in the
 configured Open Rails logging folder (placed on the Desktop by default).
 This file can be used for later analysis.
 
-Evaluation Options
-==================
-
-.. image:: images/options-evaluation.png
-
-When data logging is started (see preceding paragraph), data selected in
-this panel are logged, allowing a later evaluation on how the activity was
-executed by the player.
-
 .. _options-Content:
 
 Content Options
@@ -537,9 +521,10 @@ Content Options
 
 .. image:: images/options-content.png
 
-This window allows you to add, remove or modify access to additional MSTS
-installations or miniroute installations for Open Rails. Installations
-located on other drives, or on a USB key, can be added even if they are
+This window allows you to add, remove or modify access to content.
+Each profile may be a folder containing one or more routes, or an MSTS
+installation. 
+Profiles located on other drives, or on a USB key, can be added even if they are
 not always available.
 
 Click on the *Add* button, and locate the desired installation. OR will
@@ -547,6 +532,12 @@ automatically enter a proposed name in the *Name:* window that will
 appear in the *Installation set:* window on the main menu form. Modify
 the name if desired, then click *OK* to add the new path and name to
 Open Rails.
+
+Please do not store content or any files within the folder containing the Open Rails software.
+This is because the Updater operates by wiping out the contents of that folder before replacing it
+with a new updated version. 
+It would be unfriendly for users to lose content that they have stored there, so
+attempts to add a profile folder stored there are blocked and lead to an error message. 
 
 To remove an entry (note that this does not remove the installation
 itself!) select the entry in the window, and click *Delete*, then *OK*

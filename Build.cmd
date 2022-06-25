@@ -32,7 +32,6 @@ CALL :list-or-check-tool "MSBuild.exe" "[UTS] Microsoft Visual Studio build tool
 CALL :list-or-check-tool "lazbuild.exe" "[UTS] Lazarus compiler"
 CALL :list-or-check-tool "strip.exe" "[UTS] Lazarus tool"
 CALL :list-or-check-tool "xunit.console.x86.exe" "[UTS] XUnit tool"
-CALL :list-or-check-tool "editbin.exe" "[UTS] Microsoft Visual Studio editbin tool"
 CALL :list-or-check-tool "rcedit-x86.exe" "[UTS] Electron rcedit tool"
 CALL :list-or-check-tool "7za.exe" "[UTS] 7-zip tool"
 CALL :list-or-check-tool "OfficeToPDF.exe" "[TS] Office-to-PDF conversion tool"
