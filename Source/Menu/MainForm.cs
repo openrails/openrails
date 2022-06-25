@@ -651,7 +651,6 @@ namespace ORTS
         void LoadOptions()
         {
             checkBoxWarnings.Checked = Settings.Logging;
-            checkBoxWindowed.Checked = !Settings.FullScreen;
             radioButtonModeActivity.Checked = Settings.IsModeActivity;
             radioButtonModeTimetable.Checked = !Settings.IsModeActivity;
 
