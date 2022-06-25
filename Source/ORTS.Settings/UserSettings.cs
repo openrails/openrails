@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows.Forms;
 using ORTS.Common;
 
@@ -138,9 +140,7 @@ namespace ORTS.Settings
         [Default(true)]
         public bool Logging { get; set; }
         [Default(false)]
-        public bool DebriefActivityEval { get; set; }
-        [Default(false)]
-        public bool DebriefTTActivityEval { get; set; }
+        public bool FullScreen { get; set; }
         [Default("")]
         public string Multiplayer_User { get; set; }
         [Default("127.0.0.1")]
@@ -309,7 +309,7 @@ namespace ORTS.Settings
         public bool UseMSTSEnv { get; set; }
         [Default(false)]
         public bool SignalLightGlow { get; set; }
-        [Default(130)]
+        [Default(100)]
         public int AdhesionFactor { get; set; }
         [Default(10)]
         public int AdhesionFactorChange { get; set; }
@@ -337,8 +337,8 @@ namespace ORTS.Settings
         public int CarVibratingLevel { get; set; }
         [Default("OpenRailsLog.txt")]
         public string LoggingFilename { get; set; }
-        [Default("OR-DebriefEval.txt")]
-        public string DebriefEvalFilename { get; set; }//
+        [Default("OpenRailsEvaluation.txt")]
+        public string EvaluationFilename { get; set; }//
         [Default("")] // If left as "", OR will use the user's desktop folder
         public string LoggingPath { get; set; }
         [Default("")]
@@ -477,6 +477,20 @@ namespace ORTS.Settings
                 return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
 
             throw new InvalidDataException(String.Format("UserSetting {0} has no default value.", property.Name));
+        }
+
+        public string GetCacheFilePath(string type, string key)
+        {
+            var hasher = new MD5CryptoServiceProvider();
+            hasher.ComputeHash(Encoding.Default.GetBytes(key));
+            var hash = String.Join("", hasher.Hash.Select(h => h.ToString("x2")));
+
+            var directory = Path.Combine(UserSettings.UserDataFolder, "Cache", type);
+
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            return Path.Combine(directory, hash + ".cache-or");
         }
 
         PropertyInfo GetProperty(string name)

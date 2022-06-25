@@ -257,7 +257,7 @@ namespace Orts.Viewer3D
 
         public static double DbfEvalAutoPilotTimeS = 0;//Debrief eval
         public static double DbfEvalIniAutoPilotTimeS = 0;//Debrief eval  
-        public bool DbfEvalAutoPilot = false;//DebriefEval
+        public static bool DbfEvalAutoPilot = false;//DebriefEval
 
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.

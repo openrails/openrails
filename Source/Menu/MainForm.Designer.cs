@@ -61,7 +61,6 @@ namespace ORTS
             this.radioButtonModeActivity = new System.Windows.Forms.RadioButton();
             this.radioButtonModeTimetable = new System.Windows.Forms.RadioButton();
             this.panelModeActivity = new System.Windows.Forms.Panel();
-            this.checkDebriefActivityEval = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.comboBoxActivity = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -417,7 +416,6 @@ namespace ORTS
             // 
             // panelModeActivity
             // 
-            this.panelModeActivity.Controls.Add(this.checkDebriefActivityEval);
             this.panelModeActivity.Controls.Add(this.label3);
             this.panelModeActivity.Controls.Add(this.comboBoxActivity);
             this.panelModeActivity.Controls.Add(this.label4);
@@ -443,18 +441,6 @@ namespace ORTS
             this.panelModeActivity.Name = "panelModeActivity";
             this.panelModeActivity.Size = new System.Drawing.Size(287, 311);
             this.panelModeActivity.TabIndex = 9;
-            // 
-            // checkDebriefActivityEval
-            // 
-            this.checkDebriefActivityEval.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkDebriefActivityEval.Location = new System.Drawing.Point(134, 3);
-            this.checkDebriefActivityEval.Margin = new System.Windows.Forms.Padding(2);
-            this.checkDebriefActivityEval.Name = "checkDebriefActivityEval";
-            this.checkDebriefActivityEval.Size = new System.Drawing.Size(149, 17);
-            this.checkDebriefActivityEval.TabIndex = 20;
-            this.checkDebriefActivityEval.Text = "Debrief evaluation:";
-            this.checkDebriefActivityEval.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkDebriefActivityEval.UseVisualStyleBackColor = true;
             // 
             // label3
             // 
@@ -1026,7 +1012,6 @@ namespace ORTS
         private System.Windows.Forms.RadioButton radioButtonMPServer;
         private System.Windows.Forms.RadioButton radioButtonMPClient;
         private System.Windows.Forms.Button buttonStartMP;
-        private System.Windows.Forms.CheckBox checkDebriefActivityEval;
         private System.Windows.Forms.Label labelTimetableWeatherFile;
         private System.Windows.Forms.ComboBox comboBoxTimetableWeatherFile;
     }

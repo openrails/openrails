@@ -766,9 +766,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             // reduce pressure in lead brake line if brake pipe pressure is above equalising pressure - apply brakes
                             else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.EqualReservoirPressurePSIorInHg)
                             {
-                                float ServiceVariationFactor = (1 - trainPipeTimeVariationS / serviceTimeFactor);
-                                ServiceVariationFactor = MathHelper.Clamp(ServiceVariationFactor, 0.05f, 1.0f); // Keep factor within acceptable limits - prevent value from going negative
-                                lead.BrakeSystem.BrakeLine1PressurePSI *= ServiceVariationFactor;
+                                float serviceVariationFactor = Math.Min(trainPipeTimeVariationS / serviceTimeFactor, 0.95f);
+                                float pressureDiffPSI = serviceTimeFactor * lead.BrakeSystem.BrakeLine1PressurePSI;
+                                if (lead.BrakeSystem.BrakeLine1PressurePSI > train.EqualReservoirPressurePSIorInHg)
+                                    pressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI - train.EqualReservoirPressurePSIorInHg;
+                                lead.BrakeSystem.BrakeLine1PressurePSI -= pressureDiffPSI;
                             }
                         }
 
