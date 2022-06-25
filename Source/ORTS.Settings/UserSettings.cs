@@ -139,8 +139,6 @@ namespace ORTS.Settings
         // Main menu settings:
         [Default(true)]
         public bool Logging { get; set; }
-        [Default(false)]
-        public bool FullScreen { get; set; }
         [Default("")]
         public string Multiplayer_User { get; set; }
         [Default("127.0.0.1")]

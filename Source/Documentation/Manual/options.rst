@@ -101,10 +101,10 @@ These windows use the abbreviations *t-us* for short tons (2000 lb),
 Note: The units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
 distance) are always based on data read from the route files.
 
-Enable TCS scripts
+Use TCS scripts
 -------------------
 
-This option enables the train control system scripts for locomotives where
+This option uses the train control system scripts for locomotives where
 these have been implemented.
 
 
