@@ -662,7 +662,6 @@ namespace ORTS
         void SaveOptions()
         {
             Settings.Logging = checkBoxWarnings.Checked;
-            Settings.FullScreen = !checkBoxWindowed.Checked;
             Settings.Multiplayer_User = textBoxMPUser.Text;
             Settings.IsModeActivity = radioButtonModeActivity.Checked;
 

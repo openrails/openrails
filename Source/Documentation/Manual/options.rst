@@ -33,30 +33,6 @@ therefore will not see the alerter warning, selecting the related option
 *Also in external views* enables the alerter in those views as well.
 
 
-.. _options-control-confirmations:
-
-Control confirmations
----------------------
-
-Following MSTS practice, whenever you make adjustments to the train
-controls (e.g. open the throttle) OR briefly shows a message near the
-bottom of the screen.
-
-.. image:: images/options-confirmations.png
-
-This is helpful for operations that don't have visible feedback and also
-allows you to control the train without being in the cab.
-
-Uncheck this option if you prefer to monitor your cab instruments and
-don't want to see these messages.
-
-OR uses the same message scheme for system messages such as "Game saved"
-or "Replay ended" but you cannot suppress these system messages.
-
-Control confirmations can also be toggled on and off at runtime using the 
-key combination Ctrl-Alt-F10. 
-
-
 Graduated release air brakes
 ----------------------------
 
@@ -64,7 +40,6 @@ Selecting this option allows a partial release of the brakes. Generally
 speaking, operating with the option checked is equivalent to passenger
 standard and unchecked is equivalent to freight standard. A complete
 description of this option can be found :ref:`here <physics-braking>`.
-
 
 
 .. _options-retainers:
@@ -89,23 +64,13 @@ The Brake Pipe Charging Rate (psi/s) value controls the charging rate of
 the main air brake pipe. Increasing the value will reduce the time
 required to recharge the train (i.e. when releasing the brakes after a
 brake application), while decreasing the value will slow the charging
-rate. See also the :ref:`paragraphs <physics-hud-brake>` on the OR implementation of the braking
+rate. See also the :ref:`paragraphs <physics-hud-brake>` on the ORTS implementation of the braking
 system.
 
 If this parameter is set at 1000, a simplified, MSTS-like braking model is
 implemented, providing for faster brake release and being less influenced
 by incoherent braking parameters within .eng file.
 
-Language
---------
-
-OR is an internationalized package. It supports many languages, and others
-can be added by following the instructions contained in the *Localization
-Manual* which can be found in the Open Rails ``Documentation``
-folder.
-
-When *System* is selected, OR automatically selects the language of the
-hosting OS, if the language is available.
 
 .. _options-pressure:
 
@@ -142,31 +107,6 @@ Enable TCS scripts
 This option enables the train control system scripts for locomotives where
 these have been implemented.
 
-.. _options-web-server-port:
-
-Web server port
------------------
-
-The web server can be accessed from a browser on the local machine at
-``http://localhost:<port>``, where ``<port>`` is the specified port number.
-Change the default value of 2150 if it conflicts with other services.
-
-If you `open
-<https://www.howtogeek.com/394735/how-do-i-open-a-port-on-windows-firewall/>`_
-the web server port (just granting RunActivity.exe an exemption is not
-sufficient) in Windows Firewall, the server can also be accessed from a device
-on the local network, such as a smartphone, tablet or another PC, using your
-system's `IP address
-<https://support.microsoft.com/en-us/windows/find-your-ip-address-f21a9bbc-c582-55cd-35e0-73431160a1b9>`_.
-E.g.: If your Open Rails PC is at IP address 192.168.0.99, browse to
-``http://192.168.0.99:<port>``, where ``<port>`` is the specified port number.
-
-:ref:`Sample web pages <sample-web-pages>` are included in the Open Rails
-installation and the browser will show a menu of sample pages.
-
-As well as a web browser, data from the web server can also be fetched by any
-program which can make a web request, such as C# or Python, using the
-:ref:`Application Programming Interface <web-server-api>` (API).
 
 Overspeed Monitor
 -----------------
@@ -218,14 +158,6 @@ Note: This may reduce the frame rate.
 Note: Static objects provided with shadows (in the World files) 
 will cast shadows anyway. This option adds shadows for other static objects.
 
-
-Glass on in-game windows
-------------------------
-
-When this option is checked, the in-game windows are displayed in a
-semitransparent mode.
-
-
 Model instancing
 ----------------
 
@@ -249,7 +181,7 @@ Double overhead wires
 ---------------------
 
 MSTS uses a single wire for electrified routes; you may check this box so
-that OR will show the two overhead wires that are more common.
+that ORTS will show the two overhead wires that are more common.
 
 
 .. _options-vsync:
@@ -314,12 +246,6 @@ In legacy routes, all the content was assigned to categories 0-10.
 In more modern routes, content may be assigned to categories between 0 and 49.
 Content builders are advised to reserve values 50 to 99 for objects used in building the route.
 
-Window size
------------
-
-This pair of values defines the size of the OR window. There are some
-preconfigured pairs of values, however you may also manually enter a
-different size to be used.
 
 Ambient daylight brightness
 ---------------------------
@@ -369,14 +295,14 @@ Break couplers
 
 When this option is selected, if the force on a coupler is higher than the
 threshold set in the .eng file, the coupler breaks and the train is
-divided into two parts. OR will display a message to report this.
+divided into two parts. ORTS will display a message to report this.
 
 .. _options-curve-resistance:
 
 Curve dependent speed limit
 ---------------------------
 
-When this option is selected, OR computes whether the train is running too
+When this option is selected, ORTS computes whether the train is running too
 fast on curves, and if so, a warning message is logged and displayed on
 the monitor. Excessive speed may lead to overturn of cars, this is also
 displayed as a message. This option is described in detail
@@ -415,7 +341,7 @@ Forced red at station stops
 ---------------------------
 
 In case a signal is present beyond a station platform and in the same
-track section (no switches in between), OR will set the signal to red
+track section (no switches in between), ORTS will set the signal to red
 until the train has stopped and then hold it as red from that time up to
 two minutes before starting time. This is useful in organizing train meets
 and takeovers, however it does not always correspond to reality nor to
@@ -487,14 +413,14 @@ Keyboard Options
 .. image:: images/options-keyboard.png
 
 In this panel you will find listed the keyboard keys that are associated
-with all OR commands.
+with all ORTS commands.
 
 You can modify them by clicking on a field and pressing the new desired
 key. Three symbols will appear at the right of the field: with the first
 one you validate the change, with the second one you cancel it, with the
 third one you return to the default value.
 
-By clicking on *Check* OR verifies that the changes made are compatible,
+By clicking on *Check* ORTS verifies that the changes made are compatible,
 that is, that there is no key that is used for more than one command.
 
 By clicking on *Defaults* all changes that were made are reset, and the
@@ -527,7 +453,7 @@ installation.
 Profiles located on other drives, or on a USB key, can be added even if they are
 not always available.
 
-Click on the *Add* button, and locate the desired installation. OR will
+Click on the *Add* button, and locate the desired installation. ORTS will
 automatically enter a proposed name in the *Name:* window that will
 appear in the *Installation set:* window on the main menu form. Modify
 the name if desired, then click *OK* to add the new path and name to
@@ -544,15 +470,131 @@ itself!) select the entry in the window, and click *Delete*, then *OK*
 to close the window. To modify an entry, use the *Change...* button to
 access the location and make the necessary changes.
 
-.. _options-updater:
+.. _options-system:
 
-Updater Options
+System Options
 ===============
 
-.. image:: images/options-updater.png
+.. image:: images/options-system.png
 
-These options control which OR version update channel is active (see also
-:ref:`here <updating-or>`). The various options available are self-explanatory.
+
+Language
+--------
+ORTS is an internationalized package. It supports many languages, and others
+can be added by following the instructions contained in the *Localization
+Manual* which can be found in the Open Rails ``Documentation``
+folder.
+
+When *System* is selected, ORTS automatically selects the language of the
+hosting OS, if that language is available.
+
+
+.. _options-updater-options:
+
+Update mode
+-----------
+These options set which channel is active to update the ORTS version. 
+More details are given
+:ref:`here <updating-or>`.
+
+
+.. _options-windowed:
+
+Windowed
+--------
+If the ``Windowed`` checkbox is checked, Open Rails will run in a window 
+instead of full screen.
+
+Once the game has started, you can toggle between windowed mode and full screen by 
+pressing ``Alt+Enter``.
+
+The default setting is unchecked.
+
+
+Window size
+-----------
+
+This pair of values defines the size of the ORTS window. There are some
+pre-configured pairs of values and you can also enter a
+specific width and height to be used.
+
+The format is <width>x<height>, for example 1024x768.
+
+
+.. _options-window-glass:
+
+Glass on in-game windows
+------------------------
+
+When this option is checked, the in-game windows are shown semi-transparently.
+
+The default setting is checked.
+
+
+.. _options-control-confirmations:
+
+Control confirmations
+---------------------
+
+Whenever you make adjustments to the train
+controls (e.g. open the throttle) Open Rails briefly shows a message near the
+bottom of the screen.
+
+.. image:: images/options-confirmations.png
+
+This is helpful for operations that don't have visible feedback and also
+allows you to control the train without being in the cab.
+
+The default setting is checked. 
+Uncheck this option if you prefer to monitor your cab instruments and
+don't want to see these messages.
+
+OR uses the same message scheme for system messages such as "Game saved"
+or "Replay ended" but you cannot suppress these system messages.
+
+Once the game has started, you can toggle the confirmations on and off 
+by pressing ``Ctrl+Alt+F10``. 
+
+
+.. _options-web-server-port:
+
+Web server port
+-----------------
+
+The web server can be accessed from a browser on the local machine at
+``http://localhost:<port>``, where ``<port>`` is the specified port number.
+Change the default value of 2150 if it conflicts with other services.
+
+If you `open
+<https://www.howtogeek.com/394735/how-do-i-open-a-port-on-windows-firewall/>`_
+the web server port (just granting RunActivity.exe an exemption is not
+sufficient) in Windows Firewall, the server can also be accessed from a device
+on the local network, such as a smartphone, tablet or another PC, using your
+system's `IP address
+<https://support.microsoft.com/en-us/windows/find-your-ip-address-f21a9bbc-c582-55cd-35e0-73431160a1b9>`_.
+E.g.: If your Open Rails PC is at IP address 192.168.0.99, browse to
+``http://192.168.0.99:2150``, where ``2150`` is the specified port number.
+
+:ref:`Sample web pages <sample-web-pages>` are included in the Open Rails
+installation and the browser will show a menu of sample pages.
+
+As well as a web browser, data from the web server can also be fetched by any
+program which can make a web request, such as C# or Python, using the
+:ref:`Application Programming Interface <web-server-api>` (API).
+
+
+.. _options-performance-tuner:
+
+Automatically tune settings to keep performance level
+-----------------------------------------------------
+
+When this option is selected ORTS attempts to maintain the selected Target
+frame rate FPS ( Frames per second). To do this it decreases or increases
+the viewing distance of the standard terrain. If the option is selected,
+also select the desired FPS in the *Target frame rate* field.
+
+The default setting is unchecked.
+
 
 .. _options-experimental:
 
@@ -568,7 +610,7 @@ described below.
 Super-elevation
 ---------------
 
-If the value set for *Level* is greater than zero, OR supports super-elevation 
+If the value set for *Level* is greater than zero, ORTS supports super-elevation 
 for long curved tracks. The value *Minimum Length* determines
 the length of the shortest curve to have super-elevation. You need to
 choose the correct gauge for your route, otherwise some tracks may not be
@@ -594,20 +636,13 @@ discussions about track profiles can also be found on `Elvas Tower
 <http://www.elvastower.com/forums/index.php?/topic/21119-superelevation/
 page__view__findpost__p__115247>`_.
 
-Automatically tune settings to keep performance level
------------------------------------------------------
-
-When this option is selected OR attempts to maintain the selected Target
-frame rate FPS ( Frames per second). To do this it decreases or increases
-the viewing distance of the standard terrain. If the option is selected,
-also select the desired FPS in the *Target frame rate* window.
 
 .. _options-shape-warnings:
 
 Show shape warnings
 -------------------
 
-When this option is selected, when OR is loading the shape (.s) files it
+When this option is selected, when ORTS is loading the shape (.s) files it
 will report errors in syntax and structure (even if these don't cause
 runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop.
 
@@ -646,7 +681,7 @@ checked (only for single-pipe brake system):
   ``AirBrakesAirCompressorPowerRating`` (if this generates a value greater
   than 0.5 psi/s) instead of using a default value.
 
-For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+For a full list of parameters, see :ref:`Developing ORTS Content - Parameters and Tokens<parameters_and_tokens>`
 
 .. _options-act-randomization:
 
