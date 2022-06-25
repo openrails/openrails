@@ -842,17 +842,14 @@ Map Window
 ==========
 
 Use the map window to monitor and control train operation. 
-The :ref:`Map window <options-map-window>` option must be selected prior to starting the simulation.
 
-The map window is opened and closed by pressing ``<Ctrl+9>``. 
-After the map window  has been selected with ``<Alt+Tab>``, successive 
-Alt+Tabs will toggle between the OR window and the dispatcher window.
+The map window is opened and closed from the graphics window by pressing ``<Ctrl+9>``. 
+You can toggle between the graphics window and an opened map window by pressing ``<Alt+Tab>``.
  
 The map window contains 2 tabs: Dispatcher and Timetable. Both provide maps of
 the route with each train following its own path.
 
-The map window is resizable and can also be maximized, e.g. on a 
-second display. 
+The map window is resizable and can also be maximized, e.g. on a second display. 
 
 To pan, use the left mouse button to drag the map around.
 
@@ -1496,13 +1493,12 @@ The commands for each of the views are described below.
     The cab itself can be hidden with the ``<Shift+1>`` key. (The 2D view is 
     constructed from three 2D images, so the actual camera position can only be 
     modified by editing the contents of the .cvf file.) If there is a mismatch 
-    between the aspect ratio of the (optionally stretched) cab and the aspect 
+    between the aspect ratio of the cab and the aspect 
     ratio of the monitor, OR will clip the cab and show only the portion that fits 
-    within the display, as described in 
-    :ref:`2D cab stretching <options-cab-stretch>`. This clip can be panned around 
+    within the display. This clip can be panned around 
     to reveal the rest of the cab with the ``<Up>``, ``<Down>``, ``<Alt+Left>``, 
     and ``<Alt+Right>`` keys. Alternatively, if placed into letterboxing mode, 
-    which activates with the ``<Ctrl+1>`` key, OR will render the full cab 
+    by using the ``<Ctrl+1>`` key, OR will render the full cab 
     without a clip and cover the remaining space with black bars.
   - In case the 3D view is selected, the camera position and view direction are fully player 
     controllable.
