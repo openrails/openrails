@@ -192,6 +192,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkLODViewingExtension = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -758,6 +759,7 @@
             // 
             // tabPageVideo
             // 
+            this.tabPageVideo.Controls.Add(this.checkLODViewingExtension);
             this.tabPageVideo.Controls.Add(this.labelAntiAliasingValue);
             this.tabPageVideo.Controls.Add(this.labelAntiAliasing);
             this.tabPageVideo.Controls.Add(this.trackAntiAliasing);
@@ -908,7 +910,7 @@
             // labelDistantMountainsViewingDistance
             // 
             this.labelDistantMountainsViewingDistance.AutoSize = true;
-            this.labelDistantMountainsViewingDistance.Location = new System.Drawing.Point(86, 225);
+            this.labelDistantMountainsViewingDistance.Location = new System.Drawing.Point(86, 189);
             this.labelDistantMountainsViewingDistance.Margin = new System.Windows.Forms.Padding(3);
             this.labelDistantMountainsViewingDistance.Name = "labelDistantMountainsViewingDistance";
             this.labelDistantMountainsViewingDistance.Size = new System.Drawing.Size(110, 13);
@@ -922,7 +924,7 @@
             0,
             0,
             0});
-            this.numericDistantMountainsViewingDistance.Location = new System.Drawing.Point(26, 223);
+            this.numericDistantMountainsViewingDistance.Location = new System.Drawing.Point(26, 187);
             this.numericDistantMountainsViewingDistance.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericDistantMountainsViewingDistance.Maximum = new decimal(new int[] {
             1000,
@@ -947,7 +949,7 @@
             // checkDistantMountains
             // 
             this.checkDistantMountains.AutoSize = true;
-            this.checkDistantMountains.Location = new System.Drawing.Point(6, 200);
+            this.checkDistantMountains.Location = new System.Drawing.Point(6, 164);
             this.checkDistantMountains.Name = "checkDistantMountains";
             this.checkDistantMountains.Size = new System.Drawing.Size(110, 17);
             this.checkDistantMountains.TabIndex = 10;
@@ -958,7 +960,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(66, 176);
+            this.label14.Location = new System.Drawing.Point(66, 140);
             this.label14.Margin = new System.Windows.Forms.Padding(3);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(104, 13);
@@ -972,7 +974,7 @@
             0,
             0,
             0});
-            this.numericViewingDistance.Location = new System.Drawing.Point(6, 174);
+            this.numericViewingDistance.Location = new System.Drawing.Point(6, 138);
             this.numericViewingDistance.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -2368,6 +2370,16 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // checkLODViewingExtension
+            // 
+            this.checkLODViewingExtension.AutoSize = true;
+            this.checkLODViewingExtension.Location = new System.Drawing.Point(6, 216);
+            this.checkLODViewingExtension.Name = "checkLODViewingExtension";
+            this.checkLODViewingExtension.Size = new System.Drawing.Size(268, 17);
+            this.checkLODViewingExtension.TabIndex = 25;
+            this.checkLODViewingExtension.Text = "Extend object maximum viewing distance to horizon";
+            this.checkLODViewingExtension.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2613,5 +2625,6 @@
         private System.Windows.Forms.Label labelAntiAliasing;
         private System.Windows.Forms.CheckBox checkElectricPowerConnected;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.CheckBox checkLODViewingExtension;
     }
 }
