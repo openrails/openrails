@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -64,10 +64,10 @@
             this.checkRetainers = new System.Windows.Forms.CheckBox();
             this.tabPageAudio = new System.Windows.Forms.TabPage();
             this.numericExternalSoundPassThruPercent = new System.Windows.Forms.NumericUpDown();
-            this.label11 = new System.Windows.Forms.Label();
+            this.labelExternalSound = new System.Windows.Forms.Label();
             this.numericSoundVolumePercent = new System.Windows.Forms.NumericUpDown();
-            this.soundVolumeLabel = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
+            this.labelSoundVolume = new System.Windows.Forms.Label();
+            this.labelSoundDetailLevel = new System.Windows.Forms.Label();
             this.numericSoundDetailLevel = new System.Windows.Forms.NumericUpDown();
             this.tabPageVideo = new System.Windows.Forms.TabPage();
             this.labelAntiAliasingValue = new System.Windows.Forms.Label();
@@ -192,6 +192,9 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.pbSoundVolumePercent = new System.Windows.Forms.PictureBox();
+            this.pbSoundDetailLevel = new System.Windows.Forms.PictureBox();
+            this.pbExternalSoundPassThruPercent = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -243,6 +246,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundVolumePercent)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundDetailLevel)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbExternalSoundPassThruPercent)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -277,6 +283,8 @@
             0,
             0,
             0});
+            this.numericBrakePipeChargingRate.Enter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.numericBrakePipeChargingRate.Leave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // lBrakePipeChargingRate
             // 
@@ -659,11 +667,14 @@
             // 
             // tabPageAudio
             // 
+            this.tabPageAudio.Controls.Add(this.pbExternalSoundPassThruPercent);
+            this.tabPageAudio.Controls.Add(this.pbSoundDetailLevel);
+            this.tabPageAudio.Controls.Add(this.pbSoundVolumePercent);
             this.tabPageAudio.Controls.Add(this.numericExternalSoundPassThruPercent);
-            this.tabPageAudio.Controls.Add(this.label11);
+            this.tabPageAudio.Controls.Add(this.labelExternalSound);
             this.tabPageAudio.Controls.Add(this.numericSoundVolumePercent);
-            this.tabPageAudio.Controls.Add(this.soundVolumeLabel);
-            this.tabPageAudio.Controls.Add(this.label2);
+            this.tabPageAudio.Controls.Add(this.labelSoundVolume);
+            this.tabPageAudio.Controls.Add(this.labelSoundDetailLevel);
             this.tabPageAudio.Controls.Add(this.numericSoundDetailLevel);
             this.tabPageAudio.Location = new System.Drawing.Point(4, 22);
             this.tabPageAudio.Name = "tabPageAudio";
@@ -680,7 +691,7 @@
             0,
             0,
             0});
-            this.numericExternalSoundPassThruPercent.Location = new System.Drawing.Point(16, 72);
+            this.numericExternalSoundPassThruPercent.Location = new System.Drawing.Point(31, 53);
             this.numericExternalSoundPassThruPercent.Name = "numericExternalSoundPassThruPercent";
             this.numericExternalSoundPassThruPercent.Size = new System.Drawing.Size(54, 20);
             this.numericExternalSoundPassThruPercent.TabIndex = 5;
@@ -690,16 +701,20 @@
             0,
             0,
             0});
+            this.numericExternalSoundPassThruPercent.Enter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.numericExternalSoundPassThruPercent.Leave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // label11
+            // labelExternalSound
             // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(76, 74);
-            this.label11.Margin = new System.Windows.Forms.Padding(3);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(161, 13);
-            this.label11.TabIndex = 6;
-            this.label11.Text = "% external sound heard internally";
+            this.labelExternalSound.AutoSize = true;
+            this.labelExternalSound.Location = new System.Drawing.Point(91, 55);
+            this.labelExternalSound.Margin = new System.Windows.Forms.Padding(3);
+            this.labelExternalSound.Name = "labelExternalSound";
+            this.labelExternalSound.Size = new System.Drawing.Size(161, 13);
+            this.labelExternalSound.TabIndex = 6;
+            this.labelExternalSound.Text = "% external sound heard internally";
+            this.labelExternalSound.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.labelExternalSound.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // numericSoundVolumePercent
             // 
@@ -708,7 +723,7 @@
             0,
             0,
             0});
-            this.numericSoundVolumePercent.Location = new System.Drawing.Point(16, 20);
+            this.numericSoundVolumePercent.Location = new System.Drawing.Point(31, 6);
             this.numericSoundVolumePercent.Minimum = new decimal(new int[] {
             10,
             0,
@@ -723,30 +738,36 @@
             0,
             0,
             0});
+            this.numericSoundVolumePercent.Enter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.numericSoundVolumePercent.Leave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // soundVolumeLabel
+            // labelSoundVolume
             // 
-            this.soundVolumeLabel.AutoSize = true;
-            this.soundVolumeLabel.Location = new System.Drawing.Point(76, 22);
-            this.soundVolumeLabel.Margin = new System.Windows.Forms.Padding(3);
-            this.soundVolumeLabel.Name = "soundVolumeLabel";
-            this.soundVolumeLabel.Size = new System.Drawing.Size(84, 13);
-            this.soundVolumeLabel.TabIndex = 2;
-            this.soundVolumeLabel.Text = "% sound volume";
+            this.labelSoundVolume.AutoSize = true;
+            this.labelSoundVolume.Location = new System.Drawing.Point(91, 8);
+            this.labelSoundVolume.Margin = new System.Windows.Forms.Padding(3);
+            this.labelSoundVolume.Name = "labelSoundVolume";
+            this.labelSoundVolume.Size = new System.Drawing.Size(84, 13);
+            this.labelSoundVolume.TabIndex = 2;
+            this.labelSoundVolume.Text = "% sound volume";
+            this.labelSoundVolume.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.labelSoundVolume.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // label2
+            // labelSoundDetailLevel
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(76, 48);
-            this.label2.Margin = new System.Windows.Forms.Padding(3);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(91, 13);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "Sound detail level";
+            this.labelSoundDetailLevel.AutoSize = true;
+            this.labelSoundDetailLevel.Location = new System.Drawing.Point(91, 32);
+            this.labelSoundDetailLevel.Margin = new System.Windows.Forms.Padding(3);
+            this.labelSoundDetailLevel.Name = "labelSoundDetailLevel";
+            this.labelSoundDetailLevel.Size = new System.Drawing.Size(91, 13);
+            this.labelSoundDetailLevel.TabIndex = 4;
+            this.labelSoundDetailLevel.Text = "Sound detail level";
+            this.labelSoundDetailLevel.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.labelSoundDetailLevel.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // numericSoundDetailLevel
             // 
-            this.numericSoundDetailLevel.Location = new System.Drawing.Point(16, 46);
+            this.numericSoundDetailLevel.Location = new System.Drawing.Point(31, 30);
             this.numericSoundDetailLevel.Maximum = new decimal(new int[] {
             5,
             0,
@@ -755,6 +776,8 @@
             this.numericSoundDetailLevel.Name = "numericSoundDetailLevel";
             this.numericSoundDetailLevel.Size = new System.Drawing.Size(54, 20);
             this.numericSoundDetailLevel.TabIndex = 3;
+            this.numericSoundDetailLevel.Enter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.numericSoundDetailLevel.Leave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // tabPageVideo
             // 
@@ -1711,27 +1734,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle8;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -2368,6 +2391,42 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // pbSoundVolumePercent
+            // 
+            this.pbSoundVolumePercent.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSoundVolumePercent.Location = new System.Drawing.Point(6, 7);
+            this.pbSoundVolumePercent.Name = "pbSoundVolumePercent";
+            this.pbSoundVolumePercent.Size = new System.Drawing.Size(18, 18);
+            this.pbSoundVolumePercent.TabIndex = 21;
+            this.pbSoundVolumePercent.TabStop = false;
+            this.pbSoundVolumePercent.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbSoundVolumePercent.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbSoundVolumePercent.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbSoundDetailLevel
+            // 
+            this.pbSoundDetailLevel.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSoundDetailLevel.Location = new System.Drawing.Point(6, 30);
+            this.pbSoundDetailLevel.Name = "pbSoundDetailLevel";
+            this.pbSoundDetailLevel.Size = new System.Drawing.Size(18, 18);
+            this.pbSoundDetailLevel.TabIndex = 22;
+            this.pbSoundDetailLevel.TabStop = false;
+            this.pbSoundDetailLevel.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbSoundDetailLevel.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbSoundDetailLevel.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbExternalSoundPassThruPercent
+            // 
+            this.pbExternalSoundPassThruPercent.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbExternalSoundPassThruPercent.Location = new System.Drawing.Point(6, 53);
+            this.pbExternalSoundPassThruPercent.Name = "pbExternalSoundPassThruPercent";
+            this.pbExternalSoundPassThruPercent.Size = new System.Drawing.Size(18, 18);
+            this.pbExternalSoundPassThruPercent.TabIndex = 23;
+            this.pbExternalSoundPassThruPercent.TabStop = false;
+            this.pbExternalSoundPassThruPercent.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbExternalSoundPassThruPercent.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbExternalSoundPassThruPercent.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2446,6 +2505,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundVolumePercent)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundDetailLevel)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbExternalSoundPassThruPercent)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2477,8 +2539,8 @@
         private System.Windows.Forms.TabPage tabPageAudio;
         private System.Windows.Forms.TabPage tabPageVideo;
         private System.Windows.Forms.NumericUpDown numericSoundVolumePercent;
-        private System.Windows.Forms.Label soundVolumeLabel;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label labelSoundVolume;
+        private System.Windows.Forms.Label labelSoundDetailLevel;
         private System.Windows.Forms.NumericUpDown numericSoundDetailLevel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown numericWorldObjectDensity;
@@ -2582,7 +2644,7 @@
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
         private System.Windows.Forms.CheckBox checkOverspeedMonitor;
         private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;
-        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label labelExternalSound;
         private System.Windows.Forms.CheckBox checkDoubleWire;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox checkDoorsAITrains;
@@ -2613,5 +2675,8 @@
         private System.Windows.Forms.Label labelAntiAliasing;
         private System.Windows.Forms.CheckBox checkElectricPowerConnected;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.PictureBox pbExternalSoundPassThruPercent;
+        private System.Windows.Forms.PictureBox pbSoundDetailLevel;
+        private System.Windows.Forms.PictureBox pbSoundVolumePercent;
     }
 }

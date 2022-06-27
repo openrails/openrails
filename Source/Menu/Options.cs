@@ -179,7 +179,6 @@ namespace ORTS
             checkDoubleWire.Checked = Settings.DoubleWire;
 
             // Simulation tab
-
             checkSimpleControlsPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
@@ -772,6 +771,20 @@ namespace ORTS
         }
 
         #region Help for General Options
+        // The icons all share the same code which assumes they are named according to a simple scheme.
+        // To add a new Help Icon, copy an existing one and paste it onto the tab.
+        // Give it the same name as the associated control but change the prefix to "pb" for Picture Box.
+        // Add a Click event to each HelpIcon
+        // - Click event named HelpIcon_Click
+        // Add MouseEnter/Leave events to each HelpIcon, label and checkbox
+        // - MouseEnter event named HelpIcon_MouseEnter
+        // - MouseLeave event named HelpIcon_MouseLeave
+        // Numeric controls do not have MouseEnter/Leave events, so use the same names but for Enter/Leave events.
+        // Add an entry to InitializeHelpIcons() which links the icon to the control and, if there is one, the label.
+        // This link will highlight the icon when the user hovers (mouses over) the control or the label.
+        // Add an entry to HelpIcon_Click() which opens the user's browser with the correct help page.
+        // The URL can be found from visiting the page and hovering over the title of the section.
+
         /// <summary>
         /// Allows multiple controls to change a single help icon with their hover events.
         /// </summary>
@@ -810,6 +823,7 @@ namespace ORTS
             // static mapping of picture boxes to controls
             var helpIconControls = new (PictureBox, Control[])[]
             {
+                // General tab
                 (pbAlerter, new[] { checkAlerter }),
                 (pbControlConfirmations, new[] { checkControlConfirmations }),
                 (pbRetainers, new[] { checkRetainers }),
@@ -820,6 +834,11 @@ namespace ORTS
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
                 (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
+
+                // Audio tab
+                (pbSoundVolumePercent, new Control[] { labelSoundVolume, numericSoundVolumePercent }),
+                (pbSoundDetailLevel, new Control[]  { labelSoundDetailLevel, numericSoundDetailLevel }),
+                (pbExternalSoundPassThruPercent, new Control[]  { labelExternalSound, numericExternalSoundPassThruPercent }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -840,6 +859,7 @@ namespace ORTS
             const string baseUrl = "https://open-rails.readthedocs.io/en/latest";
             var urls = new Dictionary<object, string>
             {
+                // General tab
                 {
                     pbAlerter,
                     baseUrl + "/options.html#alerter-in-cab"
@@ -879,6 +899,20 @@ namespace ORTS
                 {
                     pbOverspeedMonitor,
                     baseUrl + "/options.html#overspeed-monitor"
+                },
+
+                // Audio
+                {
+                    pbSoundVolumePercent,
+                    baseUrl + "/options.html#sound-volume"
+                },
+                {
+                    pbSoundDetailLevel,
+                    baseUrl + "/options.html#sound-detail-level"
+                },
+                {
+                    pbExternalSoundPassThruPercent,
+                    baseUrl + "/options.html#external-sound"
                 },
             };
             if (urls.TryGetValue(sender, out var url))
