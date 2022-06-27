@@ -1509,7 +1509,7 @@ namespace Orts.Viewer3D.Processes
                 {
                     var alternativeTexture = Path.ChangeExtension(path, ".dds");
 
-                    if (File.Exists(alternativeTexture) && game.Settings.PreferDDSTexture)
+                    if (File.Exists(alternativeTexture))
                     {
                         DDSLib.DDSFromFile(alternativeTexture, gd, true, out texture);
                     }

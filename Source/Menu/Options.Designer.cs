@@ -176,7 +176,6 @@
             this.AdhesionLevelLabel = new System.Windows.Forms.Label();
             this.trackAdhesionFactorChange = new System.Windows.Forms.TrackBar();
             this.trackAdhesionFactor = new System.Windows.Forms.TrackBar();
-            this.checkAdhesionPropToWeather = new System.Windows.Forms.CheckBox();
             this.checkSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
             this.labelPerformanceTunerTarget = new System.Windows.Forms.Label();
@@ -190,7 +189,6 @@
             this.label5 = new System.Windows.Forms.Label();
             this.numericUseSuperElevation = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
-            this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
@@ -1812,7 +1810,6 @@
             this.tabPageExperimental.Controls.Add(this.AdhesionLevelLabel);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactorChange);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactor);
-            this.tabPageExperimental.Controls.Add(this.checkAdhesionPropToWeather);
             this.tabPageExperimental.Controls.Add(this.checkSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
             this.tabPageExperimental.Controls.Add(this.labelPerformanceTunerTarget);
@@ -1826,7 +1823,6 @@
             this.tabPageExperimental.Controls.Add(this.label5);
             this.tabPageExperimental.Controls.Add(this.numericUseSuperElevation);
             this.tabPageExperimental.Controls.Add(this.ElevationText);
-            this.tabPageExperimental.Controls.Add(this.checkPreferDDSTexture);
             this.tabPageExperimental.Location = new System.Drawing.Point(4, 22);
             this.tabPageExperimental.Name = "tabPageExperimental";
             this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3);
@@ -1922,6 +1918,7 @@
             this.label25.Size = new System.Drawing.Size(134, 13);
             this.label25.TabIndex = 42;
             this.label25.Text = "Precipitation box length (m)";
+            this.label25.Visible = false;
             // 
             // precipitationBoxLength
             // 
@@ -1949,6 +1946,7 @@
             0,
             0,
             0});
+            this.precipitationBoxLength.Visible = false;
             // 
             // label24
             // 
@@ -1959,6 +1957,7 @@
             this.label24.Size = new System.Drawing.Size(130, 13);
             this.label24.TabIndex = 40;
             this.label24.Text = "Precipitation box width (m)";
+            this.label24.Visible = false;
             // 
             // precipitationBoxWidth
             // 
@@ -1986,6 +1985,7 @@
             0,
             0,
             0});
+            this.precipitationBoxWidth.Visible = false;
             // 
             // label23
             // 
@@ -1996,6 +1996,7 @@
             this.label23.Size = new System.Drawing.Size(134, 13);
             this.label23.TabIndex = 38;
             this.label23.Text = "Precipitation box height (m)";
+            this.label23.Visible = false;
             // 
             // precipitationBoxHeight
             // 
@@ -2023,6 +2024,7 @@
             0,
             0,
             0});
+            this.precipitationBoxHeight.Visible = false;
             // 
             // label16
             // 
@@ -2153,17 +2155,6 @@
             this.toolTip1.SetToolTip(this.trackAdhesionFactor, "Default is 130%");
             this.trackAdhesionFactor.Value = 130;
             this.trackAdhesionFactor.ValueChanged += new System.EventHandler(this.trackAdhesionFactor_ValueChanged);
-            // 
-            // checkAdhesionPropToWeather
-            // 
-            this.checkAdhesionPropToWeather.AutoSize = true;
-            this.checkAdhesionPropToWeather.Location = new System.Drawing.Point(304, 235);
-            this.checkAdhesionPropToWeather.Name = "checkAdhesionPropToWeather";
-            this.checkAdhesionPropToWeather.Size = new System.Drawing.Size(210, 17);
-            this.checkAdhesionPropToWeather.TabIndex = 29;
-            this.checkAdhesionPropToWeather.Text = "Adhesion proportional to rain/snow/fog";
-            this.checkAdhesionPropToWeather.UseVisualStyleBackColor = true;
-            this.checkAdhesionPropToWeather.CheckedChanged += new System.EventHandler(this.AdhesionPropToWeatherCheckBox_CheckedChanged);
             // 
             // checkSignalLightGlow
             // 
@@ -2358,16 +2349,6 @@
             this.ElevationText.TabIndex = 1;
             this.ElevationText.Text = "Super-elevation";
             // 
-            // checkPreferDDSTexture
-            // 
-            this.checkPreferDDSTexture.AutoSize = true;
-            this.checkPreferDDSTexture.Location = new System.Drawing.Point(304, 189);
-            this.checkPreferDDSTexture.Name = "checkPreferDDSTexture";
-            this.checkPreferDDSTexture.Size = new System.Drawing.Size(217, 17);
-            this.checkPreferDDSTexture.TabIndex = 23;
-            this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
-            this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2521,7 +2502,6 @@
         private System.Windows.Forms.NumericUpDown numericDataLogTSInterval;
         private System.Windows.Forms.CheckBox checkDataLogTrainSpeed;
         private System.Windows.Forms.CheckBox checkUseMSTSEnv;
-        private System.Windows.Forms.CheckBox checkPreferDDSTexture;
         private System.Windows.Forms.Label labelLanguage;
         private System.Windows.Forms.ComboBox comboLanguage;
         private System.Windows.Forms.Label labelDistantMountainsViewingDistance;
@@ -2545,7 +2525,6 @@
         private System.Windows.Forms.TrackBar trackAdhesionFactorChange;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TrackBar trackAdhesionFactor;
-        private System.Windows.Forms.CheckBox checkAdhesionPropToWeather;
         private System.Windows.Forms.CheckBox checkModelInstancing;
         private System.Windows.Forms.TrackBar trackDayAmbientLight;
         private System.Windows.Forms.Label label15;

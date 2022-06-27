@@ -668,15 +668,6 @@ lat/lon rectangle corresponding to the arid zone of North America (lat from
 The randomization is not performed either if the activity contains weather
 change events.
 
-.. _options-dds-textures:
-
-Load DDS textures in preference to ACE
---------------------------------------
-
-Open Rails is capable of loading both ACE and DDS textures. If only one of
-the two is present, it is loaded. If both are present, the ACE texture is
-loaded unless this option has been selected.
-
 
 MSTS Environments
 -----------------
@@ -688,12 +679,6 @@ With this option selected, ORTS applies the MSTS environment files. This
 includes support of Kosmos environments, even if the final effect may be
 different from the current MSTS one.
 
-Adhesion factor correction
---------------------------
-
-The adhesion is multiplied by this percentage factor. Therefore lower
-values of the slider reduce adhesion and cause more frequent wheel slips
-and therefore a more difficult, but more challenging driving experience.
 
 Level of detail bias
 --------------------
@@ -720,37 +705,21 @@ Note: If your content does not use multiple LODs, then this option will have no 
 Adhesion proportional to rain/snow/fog
 --------------------------------------
 
-When this option is selected, adhesion becomes dependent on the intensity
+Adhesion is dependent on the intensity
 of rain and snow and the density of fog. Intensities and density can be
 modified at runtime by the player.
+
+
+Adhesion factor correction
+--------------------------
+
+The adhesion is multiplied by this percentage factor. Therefore lower
+values of the slider reduce adhesion and cause more frequent wheel slips
+and therefore a more difficult, but more challenging driving experience.
+
 
 Adhesion factor random change
 -----------------------------
 
 This factor randomizes the adhesion factor corrector by the entered
 percentage. The higher the value, the higher the adhesion variations.
-
-Precipitation Box Size
-----------------------
-
-Open Rails will simulate precipitation -- i.e. rain or snow, as falling
-individual particles. This represents a significant computing and display
-system load, especially for systems with limited resources. Therefore, the
-region in which the precipitation particles are visible, the
-*Precipitation Box*, is limited in size and moves with the camera. The
-size of the box can be set by the entries in the height, width and length
-boxes. The X and Z values are centered on the camera location, and falling
-particles *spawn* and fall from the top of the box.
-
-The max size for both length and width is 3000 meters or 9,842ft. Due to possibe
-resource issues, the ability to use max length and width may not be possible.  The
-best way to use the precipitation box is to define a square around your entire train
-if small enough or around most of your train.  Keep track on how your resources are 
-being used since snow will take up the most resources so you will have to adjust the
-size until you are satisified with the results.
-
-The reason for defining a square around your train is to minimize the moments when your train
-is approaching the edge of the precipitation box.  Worst case is to save the activity,
-exit and re-enter the activity since doing this will set your train back in the middle of the
-precipitation box.
-

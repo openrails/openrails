@@ -314,11 +314,9 @@ namespace ORTS
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
             checkSignalLightGlow.Checked = Settings.SignalLightGlow;
-            checkPreferDDSTexture.Checked = Settings.PreferDDSTexture;
             checkUseLocationPassingPaths.Checked = Settings.UseLocationPassingPaths;
             checkUseMSTSEnv.Checked = Settings.UseMSTSEnv;
             trackAdhesionFactor.Value = Settings.AdhesionFactor;
-            checkAdhesionPropToWeather.Checked = Settings.AdhesionProportionalToWeather;
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;   // Inverted as "Show warnings" is better UI than "Suppress warnings"
@@ -504,11 +502,9 @@ namespace ORTS
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
-            Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
             Settings.UseLocationPassingPaths = checkUseLocationPassingPaths.Checked;
             Settings.UseMSTSEnv = checkUseMSTSEnv.Checked;
             Settings.AdhesionFactor = (int)trackAdhesionFactor.Value;
-            Settings.AdhesionProportionalToWeather = checkAdhesionPropToWeather.Checked;
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
             Settings.PrecipitationBoxHeight = (int)precipitationBoxHeight.Value;
@@ -579,8 +575,9 @@ namespace ORTS
         private void SetAdhesionLevelValue()
         {
             int level = trackAdhesionFactor.Value - trackAdhesionFactorChange.Value;
-            if (checkAdhesionPropToWeather.Checked)
-                level -= 40;
+
+            // Allowance to make adhesion proportional to rain/snow/fog
+            level -= 40;
 
             if (level > 159)
                 AdhesionLevelValue.Text = catalog.GetString("Very easy");

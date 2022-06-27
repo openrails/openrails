@@ -88,7 +88,7 @@ namespace Orts.Viewer3D
                     {
                         var alternativeTexture = Path.ChangeExtension(path, ".dds");
                         
-                        if (Viewer.Settings.PreferDDSTexture && File.Exists(alternativeTexture))
+                        if (File.Exists(alternativeTexture))
                         {
                             DDSLib.DDSFromFile(alternativeTexture, GraphicsDevice, true, out texture);
                         }
