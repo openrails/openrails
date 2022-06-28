@@ -91,9 +91,9 @@
           <p>
             To support development, the latest unstable version is also available. 
             This is updated whenever developers submit a change for consideration.
-            This and previous unstable versions are available - 
-            <a href="https://james-ross.co.uk/projects/or/log?utm_campaign=unstable-version&utm_source=openrails.org">details</a> 
-            and <a href="https://james-ross.co.uk/projects/or/builds">downloads</a>. 
+            This and previous unstable versions are available as 
+            <a href="https://james-ross.co.uk/projects/or/log?utm_campaign=unstable-version&utm_source=openrails.org" target="_blank">a change log</a> 
+            and <a href="https://james-ross.co.uk/projects/or/builds" target="_blank">individual downloads</a>. 
             The unstable versions are more <strong>likely to contain serious bugs</strong> 
             and are only recommended for users wishing to help with Open Rails development.
           </p>
