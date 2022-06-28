@@ -79,9 +79,6 @@ useful to document and investigate malfunctions.
 At every restart of the game (that is, after clicking ``Start`` or ``Server`` 
 or ``Client``) the log file is cleared and a new one is generated.
 
-If the ``Windowed`` checkbox is checked, Open Rails will run in a window 
-instead of full screen.
-
 If you wish to fine-tune Open Rails for your system, click on the 
 ``Options`` button. See the Chapter: :ref:`Open Rails Options <options>` which describes 
 the extensive set of OR options. It is recommended that you read this 
