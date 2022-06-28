@@ -678,6 +678,11 @@ namespace ORTS
 
         private void buttonContentDelete_Click(object sender, EventArgs e)
         {
+            DeleteContent();
+        }
+
+        private void DeleteContent()
+        {
             bindingSourceContent.RemoveCurrent();
             // ResetBindings() is to work around a bug in the binding and/or data grid where by deleting the bottom item doesn't show the selection moving to the new bottom item.
             bindingSourceContent.ResetBindings(false);
@@ -716,7 +721,19 @@ namespace ORTS
             var current = bindingSourceContent.Current as ContentFolder;
             if (current != null && current.Name != textBoxContentName.Text)
             {
-                // Duplicate names lead to an exception, so append " copy" if not unique
+                if (current.Path.ToLower().Contains(Application.StartupPath.ToLower()))
+                {
+                    // Block added because a succesful Update operation will empty the Open Rails folder and lose any content stored within it.
+                    MessageBox.Show(catalog.GetString
+                        ($"Cannot use content from any folder which lies inside the Open Rails folder {Application.StartupPath}\n\n")
+                        , "Invalid content location"
+                        , MessageBoxButtons.OK
+                        , MessageBoxIcon.Error);
+                    DeleteContent();
+                    return;
+                }
+
+                // Duplicate names lead to an exception, so append " copy" repeatedly until no longer unique
                 var suffix = "";
                 var isNameUnique = true;
                 while (isNameUnique)
