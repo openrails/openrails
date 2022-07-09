@@ -66,7 +66,7 @@
         <div class="col-md-4">
           <!-- Button to trigger modal -->
           <a href="#modal2" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
-            <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the executables</h2>
+            <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download executables for the Testing Version</h2>
             <p>
               See the installation guides below for the pre-requisites you'll need.
             </p>
@@ -89,10 +89,11 @@
 
           <h2>Unstable Version</h2>
           <p>
-            To support development, the 
-            <a href='http://james-ross.co.uk/projects/or?utm_campaign=unstable-version&utm_source=openrails.org&utm_medium=referral'>latest unstable version</a>
-            is also available, which is updated as and when we make changes to it.
-            Previous unstable versions <a href='http://james-ross.co.uk/projects/or/log?utm_campaign=unstable-version&utm_source=openrails.org&utm_medium=referral'>are available</a>. 
+            To support development, the latest unstable version is also available. 
+            This is updated whenever developers submit a change for consideration.
+            This and previous unstable versions are available as 
+            <a href="https://james-ross.co.uk/projects/or/log?utm_campaign=unstable-version&utm_source=openrails.org" target="_blank">a change log</a> 
+            and <a href="https://james-ross.co.uk/projects/or/builds" target="_blank">individual downloads</a>. 
             The unstable versions are more <strong>likely to contain serious bugs</strong> 
             and are only recommended for users wishing to help with Open Rails development.
           </p>

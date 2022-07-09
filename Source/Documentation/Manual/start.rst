@@ -8,24 +8,30 @@ After having successfully installed Open Rails (see the Installation
 Manual), to run the game you must double-click on the Open Rails icon on 
 the desktop, or on the OpenRails.exe file.
 
-The OpenRails main window will appear. This displays your available MSTS 
-installation profiles.
+The OpenRails main window will appear. 
+If you have an MSTS installation in place, this will be displayed as your available 
+installation profile.
 
 .. _start-picture:
 
 .. image:: images/start-activity.png
 
+If not, then you must download some content and add it as an Installation Profile.
+
 Installation Profiles
 =====================
 
-In the simplest case, where you have only a basic MSTS installation (see 
+Each profile may be a folder containing one or more routes, or an optional MSTS
+installation.
+
+In the case where you already have an MSTS installation (see 
 paragraph :ref:`Does Open Rails need MSTS to run? <intro-MSTSneeded>` for a precise definition of 
 a MSTS installation) OR should already correctly point to that 
 installation. To check this, you should initially see under ``Installation 
 Profile`` the string ``- Default -``. Under ``Route`` you should see the 
 name of one of the MSTS routes in your MSTS installation.
 
-You can easily add, remove or move other MSTS installations and select 
+You can easily add, remove or move other content profiles and select 
 among them (e.g. if you have any so-called ``mini-routes`` installed.). 
 Click on the ``Options`` button and select the ``Content`` tab. See the 
 :ref:`Content Options <options-Content>` discussed below for more instructions.
@@ -79,9 +85,6 @@ useful to document and investigate malfunctions.
 At every restart of the game (that is, after clicking ``Start`` or ``Server`` 
 or ``Client``) the log file is cleared and a new one is generated.
 
-If the ``Windowed`` checkbox is checked, Open Rails will run in a window 
-instead of full screen.
-
 If you wish to fine-tune Open Rails for your system, click on the 
 ``Options`` button. See the Chapter: :ref:`Open Rails Options <options>` which describes 
 the extensive set of OR options. It is recommended that you read this 
@@ -122,18 +125,20 @@ by that locomotive will appear.
 If you instead select a specific activity, you won't have to perform any 
 further selections.
 
-If you have selected an activity, the "Debrief evaluation" checkbox becomes 
-checkable. If it is checked, during the activity run 
-data about the activity run are stored and may be displayed in real time, and at 
-the end of the activity a report file provides a complete compendium of information about 
-the player skills as a train driver.
-Debrief evaluation is described :ref:`here <debriefeval>`.
+Activity Evaluation
+''''''''''''''''''
+
+During the activity session, data about performance is stored and may be viewed as the activity progresses.
+At the end of the activity a report file is generated which provides a summary of 
+the player's skills as a train driver.
+
+Activity evaluation is described :ref:`here <debriefeval>`.
 
 If you have selected the related Experimental Option, at runtime you can 
 switch :ref:`Autopilot mode <driving-autopilot>` on or off, which allows you
 to watch OR driving your 
 train, as if you were a trainspotter or a visitor in the cab. 
-Autopilot mode is not operating in Explore mode.
+Autopilot mode is not available in Explore mode.
 
 .. _start-timetable:
 

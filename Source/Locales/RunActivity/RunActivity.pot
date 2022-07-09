@@ -1,8 +1,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
+
 "POT-Creation-Date: 2022-05-28 07:48:00+0300\n"
 "PO-Revision-Date: 2022-05-28 07:48:05+0300\n"
+
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -145,6 +147,7 @@ msgid "Switched to autopilot"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1896
+
 msgid "Game saved"
 msgstr ""
 
@@ -154,21 +157,26 @@ msgid "Allowed speed raised to {0}"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1050
+
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr ""
 
+
 #: ../../RunActivity/Viewer3D/Viewer.cs:1241
+
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1245
+
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1097
+
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
@@ -1853,12 +1861,14 @@ msgstr ""
 msgid ""
 "{0:F0} MB private, {1:F0} MB working set, {2:F0} MB private working set, "
 "{3:F0} MB managed, {4:F0} MB virtual"
+
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1446
 #, csharp-format
 msgid "{0:F0} MB committed, {1:F0} MB dedicated, {2:F0} MB shared"
 msgstr ""
+
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1447
 #, csharp-format
