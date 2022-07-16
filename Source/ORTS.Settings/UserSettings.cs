@@ -183,7 +183,7 @@ namespace ORTS.Settings
         public bool DynamicShadows { get; set; }
         [Default(false)]
         public bool ShadowAllShapes { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool ModelInstancing { get; set; }
         [Default(true)]
         public bool Wire { get; set; }
@@ -275,7 +275,7 @@ namespace ORTS.Settings
         public bool FullScreen { get; set; }
         [Default("1024x768")]
         public string WindowSize { get; set; }
-        [Default(true)]
+        [Default(false)]
         public bool WindowGlass { get; set; }
         [Default(false)]
         public bool SuppressConfirmations { get; set; }
