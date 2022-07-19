@@ -790,7 +790,7 @@ namespace ORTS
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
 
-        #region Help for General Options
+        #region Help for Option Controls
         // The icons all share the same code which assumes they are named according to a simple scheme.
         // To add a new Help Icon, copy an existing one and paste it onto the tab.
         // Give it the same name as the associated control but change the prefix to "pb" for Picture Box.
