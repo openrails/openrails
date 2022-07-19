@@ -206,15 +206,16 @@ The default setting is checked.
 Viewing distance
 ----------------
 
-This option defines the maximum distance at which terrain is displayed. 
+This option defines the maximum distance at which terrain and objects are displayed. 
 Where the content provides "Distant Mountains", these are displayed independently (see below).
-
-Note: Some routes are optimized for the standard MSTS maximum viewing distance (2km).
 
 Note: When the option to tune settings automatically is applied, then this 
 value will be overridden and dynamically changed to maintain a target frame rate.
 
+Note: Some routes are optimized for a viewing distance of 2km as this is the maximum provided by MSTS.
+
 The default distance is 2km.
+
 
 Distant mountains
 -----------------
@@ -225,9 +226,32 @@ Note: "Distant Mountains" are present in the route if it has a folder called LO_
 
 The default setting is checked.
 
-The default distance is 40km
+The default distance is 40km.
 
 .. image:: images/options-mountains.png
+
+
+Extend object maximum viewing distance to horizon
+-------------------------------------------------
+
+With this option selected, all objects viewable up to the viewing distance
+(as defined above) are displayed, even if they have a level of detail (LOD) that is less distant. 
+
+Without this option, ORTS only displays objects up to their peak distance set by their level of detail (LOD) 
+or the viewing distance, whichever is less. 
+
+Selecting this option shows all the objects that should be in view but it may reduce the frame rate.
+MSTS limits the viewing distance to just 2km and the peak LOD distances are usually 2km, so this option
+is especially useful for viewing routes created for MSTS at distances above 2km.
+
+However, for routes that make good use of LOD settings, showing the objects that should be in view can be 
+achieved at higher frame rates by unchecking this option.
+For example, if the viewing distance is 10km and the content has been created with some large objects having 
+peak distance LODs set at 5km and smaller objects having LODs which are much shorter, then this strategy
+will show all the objects that should be in view without reducing the frame rate.
+
+The default setting is checked.
+
 
 Viewing vertical FOV
 --------------------
