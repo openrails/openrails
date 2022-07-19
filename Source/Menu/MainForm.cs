@@ -651,6 +651,7 @@ namespace ORTS
         void LoadOptions()
         {
             checkBoxWarnings.Checked = Settings.Logging;
+            checkBoxWindowed.Checked = !Settings.FullScreen;
             radioButtonModeActivity.Checked = Settings.IsModeActivity;
             radioButtonModeTimetable.Checked = !Settings.IsModeActivity;
 
@@ -661,6 +662,7 @@ namespace ORTS
         void SaveOptions()
         {
             Settings.Logging = checkBoxWarnings.Checked;
+            Settings.FullScreen = !checkBoxWindowed.Checked;
             Settings.Multiplayer_User = textBoxMPUser.Text;
             Settings.IsModeActivity = radioButtonModeActivity.Checked;
 

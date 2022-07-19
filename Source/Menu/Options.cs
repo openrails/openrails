@@ -142,12 +142,15 @@ namespace ORTS
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
             checkOverspeedMonitor.Checked = Settings.SpeedControl;
+            checkControlConfirmations.Checked = !Settings.SuppressConfirmations; // Inverted as "Show confirmations" is better UI than "Suppress confirmations"
             checkRetainers.Checked = Settings.RetainersOnAllCars;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
+            comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
             checkEnableTCSScripts.Checked = !Settings.DisableTCSScripts;    // Inverted as "Enable scripts" is better UI than "Disable scripts"
+            numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
@@ -157,6 +160,7 @@ namespace ORTS
             // Video tab
             checkDynamicShadows.Checked = Settings.DynamicShadows;
             checkShadowAllShapes.Checked = Settings.ShadowAllShapes;
+            checkWindowGlass.Checked = Settings.WindowGlass;
             checkModelInstancing.Checked = Settings.ModelInstancing;
             checkWire.Checked = Settings.Wire;
             checkVerticalSync.Checked = Settings.VerticalSync;
@@ -167,6 +171,7 @@ namespace ORTS
             numericDistantMountainsViewingDistance.Value = Settings.DistantMountainsViewingDistance / 1000;
             numericViewingFOV.Value = Settings.ViewingFOV;
             numericWorldObjectDensity.Value = Settings.WorldObjectDensity;
+            comboWindowSize.Text = Settings.WindowSize;
             trackDayAmbientLight.Value = Settings.DayAmbientLight;
             trackDayAmbientLight_ValueChanged(null, null);
             trackAntiAliasing.Value = Settings.AntiAliasing;
@@ -254,9 +259,7 @@ namespace ORTS
                 catch { }
             }
 
-            // System tab
-            comboLanguage.Text = Settings.Language;
-
+            // Updater tab
             var updateChannelNames = new Dictionary<string, string> {
                 { "stable", catalog.GetString("Stable (recommended)") },
                 { "testing", catalog.GetString("Testing") },
@@ -269,49 +272,44 @@ namespace ORTS
                 { "unstable", catalog.GetString("Daily updates which may contain serious defects. For developers only.") },
                 { "", catalog.GetString("No updates.") },
             };
-            var spacing = labelUpdateMode.Margin.Size;
-            var indent = 180;
-            var top = labelUpdateMode.Bottom + spacing.Height;
+            var spacing = labelUpdateChannel.Margin.Size;
+            var indent = 20;
+            var top = labelUpdateChannel.Bottom + spacing.Height;
             foreach (var channel in UpdateManager.GetChannels())
             {
                 var radio = new RadioButton()
                 {
                     Text = updateChannelNames[channel.ToLowerInvariant()],
-                    Margin = labelUpdateMode.Margin,
-                    Left = spacing.Width + 32, // to leave room for HelpIcon
+                    Margin = labelUpdateChannel.Margin,
+                    Left = spacing.Width,
                     Top = top,
                     Checked = updateManager.ChannelName.Equals(channel, StringComparison.InvariantCultureIgnoreCase),
                     AutoSize = true,
                     Tag = channel,
                 };
-                tabPageSystem.Controls.Add(radio);
+                tabPageUpdater.Controls.Add(radio);
+                top += radio.Height + spacing.Height;
                 var label = new Label()
                 {
                     Text = updateChannelDescriptions[channel.ToLowerInvariant()],
-                    Margin = labelUpdateMode.Margin,
+                    Margin = labelUpdateChannel.Margin,
                     Left = spacing.Width + indent,
-                    Top = top + 2, // Offset to align with radio button text
-                    Width = tabPageSystem.ClientSize.Width - indent - spacing.Width * 2,
+                    Top = top,
+                    Width = tabPageUpdater.ClientSize.Width - indent - spacing.Width * 2,
                     AutoSize = true,
                 };
-                tabPageSystem.Controls.Add(label);
-                top += label.Height + spacing.Height - 3; // -3 to close them up a bit
+                tabPageUpdater.Controls.Add(label);
+                top += label.Height + spacing.Height;
             }
-
-            checkWindowed.Checked = !Settings.FullScreen;
-            comboWindowSize.Text = Settings.WindowSize;
-            checkWindowGlass.Checked = Settings.WindowGlass;
-            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
-            numericWebServerPort.Value = Settings.WebServerPort;
-            checkPerformanceTuner.Checked = Settings.PerformanceTuner;
-            labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
-            numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
-            numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
 
             // Experimental tab
             numericUseSuperElevation.Value = Settings.UseSuperElevation;
             numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
+            checkPerformanceTuner.Checked = Settings.PerformanceTuner;
+            labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
+            numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
+            numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
             checkSignalLightGlow.Checked = Settings.SignalLightGlow;
@@ -423,12 +421,15 @@ namespace ORTS
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
             Settings.SpeedControl = checkOverspeedMonitor.Checked;
+            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
             Settings.RetainersOnAllCars = checkRetainers.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
+            Settings.Language = comboLanguage.SelectedValue.ToString();
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = !checkEnableTCSScripts.Checked; // Inverted as "Enable scripts" is better UI than "Disable scripts"
+            Settings.WebServerPort = (int)numericWebServerPort.Value;
 
             // Audio tab
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
@@ -438,6 +439,7 @@ namespace ORTS
             // Video tab
             Settings.DynamicShadows = checkDynamicShadows.Checked;
             Settings.ShadowAllShapes = checkShadowAllShapes.Checked;
+            Settings.WindowGlass = checkWindowGlass.Checked;
             Settings.ModelInstancing = checkModelInstancing.Checked;
             Settings.Wire = checkWire.Checked;
             Settings.VerticalSync = checkVerticalSync.Checked;
@@ -446,6 +448,7 @@ namespace ORTS
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
             Settings.ViewingFOV = (int)numericViewingFOV.Value;
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
+            Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
 
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
@@ -487,23 +490,17 @@ namespace ORTS
             foreach (var folder in bindingSourceContent.DataSource as List<ContentFolder>)
                 Settings.Folders.Folders.Add(folder.Name, folder.Path);
 
-            // System tab
-            Settings.Language = comboLanguage.SelectedValue.ToString();
-            foreach (Control control in tabPageSystem.Controls)
+            // Updater tab
+            foreach (Control control in tabPageUpdater.Controls)
                 if ((control is RadioButton) && (control as RadioButton).Checked)
                     UpdateManager.SetChannel((string)control.Tag);
-            Settings.FullScreen = !checkWindowed.Checked;
-            Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
-            Settings.WindowGlass = checkWindowGlass.Checked;
-            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
-            Settings.WebServerPort = (int)numericWebServerPort.Value;
-            Settings.PerformanceTuner = checkPerformanceTuner.Checked;
-            Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
 
             // Experimental tab
             Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
             Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
+            Settings.PerformanceTuner = checkPerformanceTuner.Checked;
+            Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
             Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
@@ -677,11 +674,6 @@ namespace ORTS
 
         private void buttonContentDelete_Click(object sender, EventArgs e)
         {
-            DeleteContent();
-        }
-
-        private void DeleteContent()
-        {
             bindingSourceContent.RemoveCurrent();
             // ResetBindings() is to work around a bug in the binding and/or data grid where by deleting the bottom item doesn't show the selection moving to the new bottom item.
             bindingSourceContent.ResetBindings(false);
@@ -720,19 +712,7 @@ namespace ORTS
             var current = bindingSourceContent.Current as ContentFolder;
             if (current != null && current.Name != textBoxContentName.Text)
             {
-                if (current.Path.ToLower().Contains(Application.StartupPath.ToLower()))
-                {
-                    // Block added because a succesful Update operation will empty the Open Rails folder and lose any content stored within it.
-                    MessageBox.Show(catalog.GetString
-                        ($"Cannot use content from any folder which lies inside the Open Rails folder {Application.StartupPath}\n\n")
-                        , "Invalid content location"
-                        , MessageBoxButtons.OK
-                        , MessageBoxIcon.Error);
-                    DeleteContent();
-                    return;
-                }
-
-                // Duplicate names lead to an exception, so append " copy" repeatedly until no longer unique
+                // Duplicate names lead to an exception, so append " copy" if not unique
                 var suffix = "";
                 var isNameUnique = true;
                 while (isNameUnique)
@@ -845,9 +825,11 @@ namespace ORTS
             {
                 // General tab
                 (pbAlerter, new[] { checkAlerter }),
+                (pbControlConfirmations, new[] { checkControlConfirmations }),
                 (pbRetainers, new[] { checkRetainers }),
                 (pbGraduatedRelease, new[] { checkGraduatedRelease }),
                 (pbBrakePipeChargingRate, new[] { lBrakePipeChargingRate }),
+                (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
                 (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
                 (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
@@ -883,6 +865,10 @@ namespace ORTS
                     baseUrl + "/options.html#alerter-in-cab"
                 },
                 {
+                    pbControlConfirmations,
+                    baseUrl + "/options.html#control-confirmations"
+                },
+                {
                     pbRetainers,
                     baseUrl + "/options.html#retainer-valve-on-all-cars"
                 },
@@ -893,6 +879,10 @@ namespace ORTS
                 {
                     pbBrakePipeChargingRate,
                     baseUrl + "/options.html#brake-pipe-charging-rate"
+                },
+                {
+                    pbLanguage,
+                    baseUrl + "/options.html#language"
                 },
                 {
                     pbPressureUnit,
@@ -911,7 +901,7 @@ namespace ORTS
                     baseUrl + "/options.html#overspeed-monitor"
                 },
 
-                // Audio tab
+                // Audio
                 {
                     pbSoundVolumePercent,
                     baseUrl + "/options.html#sound-volume"
