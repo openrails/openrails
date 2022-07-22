@@ -159,6 +159,7 @@
     <Compile Include="Viewer3D\Processes\GameState.cs" />
     <Compile Include="Viewer3D\Processes\GameStateRunActivity.cs" />
     <Compile Include="Viewer3D\Processes\GameStateViewer3D.cs" />
+    <Compile Include="Viewer3D\Processes\HostProcess.cs" />
     <Compile Include="Viewer3D\Processes\LoaderProcess.cs" />
     <Compile Include="Viewer3D\Processes\RenderProcess.cs" />
     <Compile Include="Viewer3D\Processes\SoundProcess.cs" />
