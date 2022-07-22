@@ -383,7 +383,7 @@ namespace Orts.Viewer3D
                 {
                     count = 0;
                     // retest if there is enough free memory left;
-                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.Game.HostProcess.CPUMemoryWorkingSet;
                     if (remainingMemorySpace < 0)
                     {
                         return false; // too bad, no more space, other night textures won't be loaded
@@ -406,7 +406,7 @@ namespace Orts.Viewer3D
                 {
                     count = 0;
                     // retest if there is enough free memory left;
-                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.Game.HostProcess.CPUMemoryWorkingSet;
                     if (remainingMemorySpace < 0)
                     {
                         return false; // too bad, no more space, other night textures won't be loaded
