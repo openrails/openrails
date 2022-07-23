@@ -397,6 +397,8 @@ namespace Orts.Simulation.RollingStocks
                     var dropoffspeed = calculatedmaximumpowerw / (MaxForceN);
                     var configuredadhesiondropoffspeed = (Curtius_KnifflerA / (dropoffspeed + Curtius_KnifflerB) + Curtius_KnifflerC);
 
+                    Trace.TraceInformation("Slip control system: {0}, Traction motor type: {1}", SlipControlSystem.ToString(), TractionMotorType.ToString()); // Slip control
+
                     Trace.TraceInformation("Apparent (Design) Adhesion: Zero - {0:N2} @ {1}, Max Continuous Speed - {2:N2} @ {3}, Drive Wheel Weight - {4}", designadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
                     Trace.TraceInformation("OR Calculated Adhesion Setting: Zero Speed - {0:N2} @ {1}, Dropoff Speed - {2:N2} @ {3}, Max Continuous Speed - {4:N2} @ {5}", configuredadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), configuredadhesiondropoffspeed, FormatStrings.FormatSpeedDisplay(dropoffspeed, IsMetric), configuredadhesionmaxcontinuousspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                 }
@@ -669,13 +671,25 @@ namespace Orts.Simulation.RollingStocks
                 // its impact. More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
                 // Simple adhesion control does not have any slip control feature built into it.
                 // TODO - a full review of slip/no slip control.
-                if (WheelSlip && AdvancedAdhesionModel)
+                if (TractionMotorType == TractionMotorTypes.AC)
                 {
-                    AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    if (AbsWheelSpeedMpS > 1.1 * MaxSpeedMpS)
+                    {
+                        AverageForceN = TractiveForceN = 0;
+                        return;
+                    }
                 }
                 else
                 {
-                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    if (WheelSlip && AdvancedAdhesionModel)
+                    {
+                        AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    }
+                    else
+                    {
+                        AbsTractionSpeedMpS = AbsSpeedMpS;
+                    }
                 }
 
                 if (TractiveForceCurves == null)

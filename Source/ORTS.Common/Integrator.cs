@@ -194,7 +194,7 @@ namespace ORTS.Common
         /// <param name="timeSpan">Integration step or timespan in seconds</param>
         /// <param name="value">Value to integrate</param>
         /// <returns>Value of integration in the next step (t + timeSpan)</returns>
-        public float Integrate(float timeSpan, float value)
+        public float Integrate(float timeSpan, Func<float, float> value)
         {
             float step = 0.0f;
             float end = timeSpan;
@@ -207,43 +207,28 @@ namespace ORTS.Common
             {
                 return integralValue;
             }
-
-            //if (timeSpan > MinStep)
             if (Math.Abs(prevDerivation) > Error)
             {
-                //count = 2 * Convert.ToInt32(Math.Round((timeSpan) / MinStep, 0));
                 count = ++numOfSubstepsPS;
                 if (count > MaxSubsteps)
                     count = MaxSubsteps;
                 waitBeforeSpeedingUp = 100;
-                //if (numOfSubstepsPS > (MaxSubsteps / 2))
-                //    Method = IntegratorMethods.EulerBackMod;
-                //else
-                //    Method = IntegratorMethods.RungeKutta4;
             }
             else
             {
                 if (--waitBeforeSpeedingUp <= 0)    //wait for a while before speeding up the integration
                 {
-                    count = --numOfSubstepsPS;
-                    if (count < 1)
-                        count = 1;
+                    count = Math.Max(--numOfSubstepsPS, 1);
 
                     waitBeforeSpeedingUp = 10;      //not so fast ;)
                 }
                 else
                     count = numOfSubstepsPS;
-                //IsStepDividing = false;
             }
 
             timeSpan = timeSpan / (float)count;
-            IsStepDividing = true;
             numOfSubstepsPS = count;
-
-            if (count > 1)
-                IsStepDividing = true;
-            else
-                IsStepDividing = false;
+            IsStepDividing = count > 1;
 
 
             #region SOLVERS
@@ -253,28 +238,26 @@ namespace ORTS.Common
                 switch (Method)
                 {
                     case IntegratorMethods.EulerBackward:
-                        integralValue += (derivation = timeSpan * value);
+                        integralValue += (derivation = timeSpan * value(integralValue));
                         break;
                     case IntegratorMethods.EulerBackMod:
-                        integralValue += (derivation = timeSpan / 2.0f * (previousValues[0] + value));
-                        previousValues[0] = value;
+                        integralValue += (derivation = timeSpan / 2.0f * (previousValues[0] + value(integralValue)));
+                        previousValues[0] = value(integralValue);
                         break;
                     case IntegratorMethods.EulerForward:
                         throw new NotImplementedException("Not implemented yet!");
 
                     case IntegratorMethods.RungeKutta2:
-                        //throw new NotImplementedException("Not implemented yet!");
-                        k1 = integralValue + timeSpan / 2 * value;
+                        k1 = integralValue + timeSpan / 2 * value(integralValue);
                         k2 = 2 * (k1 - integralValue) / timeSpan;
                         integralValue += (derivation = timeSpan * k2);
                         break;
                     case IntegratorMethods.RungeKutta4:
-                        //throw new NotImplementedException("Not implemented yet!");
-                        k1 = timeSpan * value;
-                        k2 = k1 + timeSpan / 2.0f * value;
-                        k3 = k1 + timeSpan / 2.0f * k2;
-                        k4 = timeSpan * k3;
-                        integralValue += (derivation = (k1 + 2.0f * k2 + 2.0f * k3 + k4) / 6.0f);
+                        k1 = value(integralValue);
+                        k2 = value(integralValue + k1 * timeSpan / 2.0f);
+                        k3 = value(integralValue + k2 * timeSpan / 2.0f);
+                        k4 = value(integralValue + k3 * timeSpan);
+                        integralValue += (derivation = (k1 + 2.0f * k2 + 2.0f * k3 + k4) * timeSpan / 6.0f);
                         break;
                     case IntegratorMethods.NewtonRhapson:
                         throw new NotImplementedException("Not implemented yet!");
@@ -289,7 +272,7 @@ namespace ORTS.Common
                             previousStep[i] = previousStep[i - 1];
                             previousValues[i] = previousValues[i - 1];
                         }
-                        previousValues[0] = value;
+                        previousValues[0] = value(integralValue);
                         previousStep[0] = timeSpan;
                         break;
                     default:
@@ -309,24 +292,6 @@ namespace ORTS.Common
             if (isLimited)
             {
                 return (integralValue <= min) ? (integralValue = min) : ((integralValue >= max) ? (integralValue = max) : integralValue);
-            }
-            else
-                return integralValue;
-        }
-        /// <summary>
-        /// Integrates given value in time. TimeSpan (integration step) is computed internally.
-        /// </summary>
-        /// <param name="clockSeconds">Time value in seconds</param>
-        /// <param name="value">Value to integrate</param>
-        /// <returns>Value of integration in elapsedClockSeconds time</returns>
-        public float TimeIntegrate(float clockSeconds, float value)
-        {
-            float timeSpan = clockSeconds - oldTime;
-            oldTime = clockSeconds;
-            integralValue += timeSpan * value;
-            if (isLimited)
-            {
-                return (integralValue <= min) ? min : ((integralValue >= max) ? max : integralValue);
             }
             else
                 return integralValue;
