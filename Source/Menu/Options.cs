@@ -794,10 +794,22 @@ namespace ORTS
         }
 
         #region Help for General Options
-        // To add a HelpIcon for a control:
-        // - In code, extend the mapping in InitializeHelpIcons() below by adding the name of controls for checkboxes or (labels and comboboxes)
-        // - Using the Design View, in the properties of each control and of the icon, add a MouseEnter event "HelpIcon_MouseEnter" and a MouseLeave event "HelpIcon_MouseLeave"
-        // - Using the Design View, in the properties of the icon, add a Click event "HelpIcon_Click"
+        // The icons all share the same code which assumes they are named according to a simple scheme as follows:
+        //   1. To add a new Help Icon, copy an existing one and paste it onto the tab.
+        //   2. Give it the same name as the associated control but change the prefix to "pb" for Picture Box.
+        //   3. Add a Click event named HelpIcon_Click to each HelpIcon
+        //      Do not add code for this event (or press Return/double click in the Properties field which creates a code stub for you). 
+        //   4. Add MouseEnter/Leave events to each HelpIcon, label and checkbox:
+        //     - MouseEnter event named HelpIcon_MouseEnter
+        //     - MouseLeave event named HelpIcon_MouseLeave
+        //     Numeric controls do not have MouseEnter/Leave events so, for them, use:
+        //     - Enter event named HelpIcon_MouseEnter
+        //     - Leave event named HelpIcon_MouseLeave
+        //      Do not add code for these events (or press Return/double click in the Properties field which creates a code stub for you). 
+        //   5. Add an entry to InitializeHelpIcons() which links the icon to the control and, if there is one, the label.
+        //      This link will highlight the icon when the user hovers (mouses over) the control or the label.
+        //   6. Add an entry to HelpIcon_Click() which opens the user's browser with the correct help page.
+        //      The URL can be found from visiting the page and hovering over the title of the section.
 
         /// <summary>
         /// Allows multiple controls to change a single help icon with their hover events.
@@ -846,6 +858,11 @@ namespace ORTS
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
                 (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
+
+                // Audio tab
+                (pbSoundVolumePercent, new Control[] { labelSoundVolume, numericSoundVolumePercent }),
+                (pbSoundDetailLevel, new Control[]  { labelSoundDetailLevel, numericSoundDetailLevel }),
+                (pbExternalSoundPassThruPercent, new Control[]  { labelExternalSound, numericExternalSoundPassThruPercent }),
 
                 // System
                 (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
@@ -907,6 +924,21 @@ namespace ORTS
                     pbOverspeedMonitor,
                     baseUrl + "/options.html#overspeed-monitor"
                 },
+
+                // Audio tab
+                {
+                    pbSoundVolumePercent,
+                    baseUrl + "/options.html#audio-options"
+                },
+                {
+                    pbSoundDetailLevel,
+                    baseUrl + "/options.html#audio-options"
+                },
+                {
+                    pbExternalSoundPassThruPercent,
+                    baseUrl + "/options.html#audio-options"
+                },
+
                 // System tab
                 {
                     pbLanguage,
