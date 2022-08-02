@@ -16,12 +16,22 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Simulation;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using System;
+using System.Linq;
 
 namespace ORTS.Scripting.Api
 {
     public abstract class LocomotivePowerSupply : PowerSupply
     {
+        // Internal members and methods (inaccessible from script)
+        internal ScriptedLocomotivePowerSupply LpsHost => Host as ScriptedLocomotivePowerSupply;
+        internal MSTSLocomotive Locomotive => LpsHost.Locomotive;
+        internal Train Train => Locomotive.Train;
+        internal Simulator Simulator => Locomotive.Simulator;
+
         /// <summary>
         /// Current state of the main power supply
         /// Main power comes from the pantograph or the diesel generator
@@ -92,42 +102,147 @@ namespace ORTS.Scripting.Api
         /// Sets the current availability of the dynamic brake
         /// </summary>
         public Action<bool> SetCurrentDynamicBrakeAvailability;
+
         /// <summary>
         /// Sends an event to the master switch
         /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToMasterKey;
+        public void SignalEventToMasterKey(PowerSupplyEvent evt) => LpsHost.MasterKey.HandleEvent(evt);
+
         /// <summary>
         /// Sends an event to the electric train supply switch
         /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToElectricTrainSupplySwitch;
+        public void SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent evt) => LpsHost.ElectricTrainSupplySwitch.HandleEvent(evt);
+
         /// <summary>
         /// Sends an event to the train control system
         /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToTcs;
+        public void SignalEventToTcs(PowerSupplyEvent evt) => LpsHost.Locomotive.TrainControlSystem.HandleEvent(evt);
+
         /// <summary>
         /// Sends an event to the train control system with a message
         /// </summary>
-        public Action<PowerSupplyEvent, string> SignalEventToTcsWithMessage;
+        public void SignalEventToTcsWithMessage(PowerSupplyEvent evt, string message) => LpsHost.Locomotive.TrainControlSystem.HandleEvent(evt, message);
+
         /// <summary>
         /// Sends an event to the power supplies of other locomotives
         /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToOtherLocomotives;
+        public void SignalEventToOtherLocomotives(PowerSupplyEvent evt)
+        {
+            if (Locomotive == Train.LeadLocomotive)
+            {
+                foreach (MSTSLocomotive locomotive in Locomotive.Train.Cars.OfType<MSTSLocomotive>())
+                {
+                    if (locomotive != Locomotive && locomotive.RemoteControlGroup != -1)
+                    {
+                        locomotive.LocomotivePowerSupply.HandleEventFromLeadLocomotive(evt);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Sends an event to the power supplies of other locomotives
         /// </summary>
-        public Action<PowerSupplyEvent, int> SignalEventToOtherLocomotivesWithId;
+        public void SignalEventToOtherLocomotivesWithId(PowerSupplyEvent evt, int id)
+        {
+            if (Locomotive == Train.LeadLocomotive)
+            {
+                foreach (MSTSLocomotive locomotive in Locomotive.Train.Cars.OfType<MSTSLocomotive>())
+                {
+                    if (locomotive != Locomotive && locomotive.RemoteControlGroup != -1)
+                    {
+                        locomotive.LocomotivePowerSupply.HandleEventFromLeadLocomotive(evt, id);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Sends an event to the power supplies of other train vehicles
         /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToOtherTrainVehicles;
+        public void SignalEventToOtherTrainVehicles(PowerSupplyEvent evt)
+        {
+            if (Locomotive == Train.LeadLocomotive)
+            {
+                foreach (TrainCar car in Locomotive.Train.Cars)
+                {
+                    if (car != Locomotive && car.RemoteControlGroup != -1)
+                    {
+                        if (car.PowerSupply != null)
+                        {
+                            car.PowerSupply.HandleEventFromLeadLocomotive(evt);
+                        }
+                        else if (car is MSTSWagon wagon)
+                        {
+                            wagon.Pantographs.HandleEvent(evt);
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Sends an event to the power supplies of other train vehicles
         /// </summary>
-        public Action<PowerSupplyEvent, int> SignalEventToOtherTrainVehiclesWithId;
+        public void SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent evt, int id)
+        {
+            if (Locomotive == Train.LeadLocomotive)
+            {
+                foreach (TrainCar car in Locomotive.Train.Cars)
+                {
+                    if (car != Locomotive && car.RemoteControlGroup != -1)
+                    {
+                        if (car.PowerSupply != null)
+                        {
+                            car.PowerSupply.HandleEventFromLeadLocomotive(evt, id);
+                        }
+                        else if (car is MSTSWagon wagon)
+                        {
+                            wagon.Pantographs.HandleEvent(evt, id);
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Sends an event to all helper engines
         /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToHelperEngines;
+        public void SignalEventToHelperEngines(PowerSupplyEvent evt)
+        {
+            bool helperFound = false; //this avoids that locomotive engines toggle in opposite directions
+
+            foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where((locomotive) => locomotive.RemoteControlGroup != -1))
+            {
+                if (locomotive == Train.LeadLocomotive)
+                {
+                    // Engine number 1 or above are helper engines
+                    for (int i = 1; i < locomotive.DieselEngines.Count; i++)
+                    {
+                        if (!helperFound)
+                        {
+                            helperFound = true;
+                        }
+
+                        locomotive.DieselEngines.HandleEvent(evt, i);
+                    }
+                }
+                else
+                {
+                    if (!helperFound)
+                    {
+                        helperFound = true;
+                    }
+
+                    locomotive.DieselEngines.HandleEvent(evt);
+                }
+            }
+
+            if (helperFound && (evt == PowerSupplyEvent.StartEngine || evt == PowerSupplyEvent.StopEngine))
+            {
+                Simulator.Confirmer.Confirm(CabControl.HelperDiesel, evt == PowerSupplyEvent.StartEngine ? CabSetting.On : CabSetting.Off);
+            }
+        }
 
         /// <summary>
         /// Called when the driver (or the train's systems) want something to happen on the power supply system
