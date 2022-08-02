@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using System;
 
 namespace ORTS.Scripting.Api
@@ -24,6 +25,9 @@ namespace ORTS.Scripting.Api
     /// </summary>
     public abstract class DieselPowerSupply : LocomotivePowerSupply
     {
+        // Internal members and methods (inaccessible from script)
+        internal ScriptedDieselPowerSupply DpsHost => LpsHost as ScriptedDieselPowerSupply;
+
         /// <summary>
         /// Current state of the diesel engines
         /// </summary>

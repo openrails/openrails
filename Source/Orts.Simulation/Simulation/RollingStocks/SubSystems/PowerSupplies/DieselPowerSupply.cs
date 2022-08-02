@@ -89,6 +89,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 AssignScriptFunctions();
 
+                Script.AttachToHost(this);
                 Script.Initialize();
                 Activated = true;
             }
@@ -96,11 +97,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             TractionCutOffRelay.Initialize();
         }
 
-
-        //================================================================================================//
         /// <summary>
         /// Initialization when simulation starts with moving train
-        /// <\summary>
+        /// </summary>
         public override void InitializeMoving()
         {
             base.InitializeMoving();

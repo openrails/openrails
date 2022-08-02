@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using System;
 
 namespace ORTS.Scripting.Api
@@ -24,6 +26,23 @@ namespace ORTS.Scripting.Api
     /// </summary>
     public abstract class ElectricPowerSupply : LocomotivePowerSupply
     {
+        // Internal members and methods (inaccessible from script)
+        internal ScriptedElectricPowerSupply EpsHost => LpsHost as ScriptedElectricPowerSupply;
+
+        protected bool IsLocomotiveLeading => EpsHost.Locomotive.IsLeadLocomotive();
+        /// <summary>
+        /// Current position of the voltage selector
+        /// </summary>
+        protected VoltageSelectorPosition VoltageSelectorPosition => EpsHost.VoltageSelector.Position;
+        /// <summary>
+        /// Current position of the pantograph selector
+        /// </summary>
+        protected PantographSelectorPosition PantographSelectorPosition => EpsHost.PantographSelector.Position;
+        /// <summary>
+        /// Current position of the power limitation selector
+        /// </summary>
+        protected PowerLimitationSelectorPosition PowerLimitationSelectorPosition => EpsHost.PowerLimitationSelector.Position;
+
         /// <summary>
         /// Current state of the pantograph
         /// </summary>
@@ -65,10 +84,50 @@ namespace ORTS.Scripting.Api
         /// Sets the voltage of the filter
         /// </summary>
         public Action<float> SetFilterVoltageV;
+
+        /// <summary>
+        /// Maximum power of the locomotive
+        /// </summary>
+        public float MaximumPowerW
+        {
+            get => EpsHost.MaximumPowerW;
+            set => EpsHost.MaximumPowerW = value;
+        }
+
         /// <summary>
         /// Sends an event to the circuit breaker
         /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToCircuitBreaker;
+        public void SignalEventToCircuitBreaker(PowerSupplyEvent evt) => EpsHost.CircuitBreaker.HandleEvent(evt);
+
+        /// <summary>
+        /// Sends an event to the voltage selector
+        /// </summary>
+        public void SignalEventToVoltageSelector(PowerSupplyEvent evt) => EpsHost.VoltageSelector.HandleEvent(evt);
+
+        /// <summary>
+        /// Sends an event to the voltage selector
+        /// </summary>
+        public void SignalEventToVoltageSelector(PowerSupplyEvent evt, int id) => EpsHost.VoltageSelector.HandleEvent(evt, id);
+
+        /// <summary>
+        /// Sends an event to the pantograph selector
+        /// </summary>
+        public void SignalEventToPantographSelector(PowerSupplyEvent evt) => EpsHost.PantographSelector.HandleEvent(evt);
+        
+        /// <summary>
+        /// Sends an event to the pantograph selector
+        /// </summary>
+        public void SignalEventToPantographSelector(PowerSupplyEvent evt, int id) => EpsHost.PantographSelector.HandleEvent(evt, id);
+
+        /// <summary>
+        /// Sends an event to the power limitation selector
+        /// </summary>
+        public void SignalEventToPowerLimitationSelector(PowerSupplyEvent evt) => EpsHost.PowerLimitationSelector.HandleEvent(evt);
+
+        /// <summary>
+        /// Sends an event to the power limitation selector
+        /// </summary>
+        public void SignalEventToPowerLimitationSelector(PowerSupplyEvent evt, int id) => EpsHost.PowerLimitationSelector.HandleEvent(evt, id);
 
         public override void HandleEvent(PowerSupplyEvent evt)
         {
@@ -76,6 +135,19 @@ namespace ORTS.Scripting.Api
 
             // By default, send the event to every component
             SignalEventToCircuitBreaker(evt);
+            SignalEventToVoltageSelector(evt);
+            SignalEventToPantographSelector(evt);
+            SignalEventToPowerLimitationSelector(evt);
+        }
+
+        public override void HandleEvent(PowerSupplyEvent evt, int id)
+        {
+            base.HandleEvent(evt, id);
+
+            // By default, send the event to every component
+            SignalEventToVoltageSelector(evt, id);
+            SignalEventToPantographSelector(evt, id);
+            SignalEventToPowerLimitationSelector(evt, id);
         }
 
         public override void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
