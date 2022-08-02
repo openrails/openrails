@@ -17,11 +17,23 @@
 
 using ORTS.Common;
 using System;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 
 namespace ORTS.Scripting.Api
 {
     public abstract class PowerSupply : AbstractTrainScriptClass
     {
+        internal IPowerSupply Host;
+
+        /// <summary>
+        /// Attaches the script to its host
+        /// </summary>
+        /// <param name="host">The hosting IPowerSupply object</param>
+        internal void AttachToHost(IPowerSupply host)
+        {
+            Host = host;
+        }
+
         /// <summary>
         /// Current state of the electric train supply
         /// ETS is used by the systems of the cars (such as air conditionning)
@@ -50,18 +62,21 @@ namespace ORTS.Scripting.Api
         /// Sets the current state of the battery
         /// </summary>
         public Action<PowerSupplyState> SetCurrentBatteryState;
+
         /// <summary>
         /// Sends an event to the battery switch
         /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToBatterySwitch;
+        public void SignalEventToBatterySwitch(PowerSupplyEvent evt) => Host.BatterySwitch.HandleEvent(evt);
+
         /// <summary>
         /// Sends an event to all pantographs
         /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToPantographs;
+        public void SignalEventToPantographs(PowerSupplyEvent evt) => Host.Pantographs.HandleEvent(evt);
+
         /// <summary>
         /// Sends an event to one pantograph
         /// </summary>
-        public Action<PowerSupplyEvent, int> SignalEventToPantograph;
+        public void SignalEventToPantograph(PowerSupplyEvent evt, int id) => Host.Pantographs.HandleEvent(evt, id);
 
         /// <summary>
         /// Called once at initialization time.
@@ -91,6 +106,13 @@ namespace ORTS.Scripting.Api
             // By default, send the event to every component
             SignalEventToPantograph(evt, id);
         }
+
+        /// <summary>
+        /// Called when the TCS wants to transmit an event and/or a message to power supply
+        /// </summary>
+        /// <param name="evt"></param>
+        /// <param name="message"></param>
+        public virtual void HandleEventFromTcs(PowerSupplyEvent evt, string message) {}
 
         public virtual void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
         {
@@ -122,6 +144,12 @@ namespace ORTS.Scripting.Api
         TurnOffMasterKey,
         RaisePantograph,
         LowerPantograph,
+        IncreaseVoltageSelectorPosition,
+        DecreaseVoltageSelectorPosition,
+        IncreasePantographSelectorPosition,
+        DecreasePantographSelectorPosition,
+        IncreasePowerLimitationSelectorPosition,
+        DecreasePowerLimitationSelectorPosition,
         CloseCircuitBreaker,
         OpenCircuitBreaker,
         CloseCircuitBreakerButtonPressed,
@@ -147,6 +175,7 @@ namespace ORTS.Scripting.Api
         SwitchOnElectricTrainSupply,
         SwitchOffElectricTrainSupply,
         StallEngine,
+        MessageFromTcs,
     }
 
     public enum PowerSupplyType

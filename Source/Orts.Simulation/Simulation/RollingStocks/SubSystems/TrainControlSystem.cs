@@ -114,8 +114,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool Activated = false;
         public bool CustomTCSScript = false;
 
-        readonly MSTSLocomotive Locomotive;
-        readonly Simulator Simulator;
+        public readonly MSTSLocomotive Locomotive;
+        public readonly Simulator Simulator;
 
         float ItemSpeedLimit;
         Aspect ItemAspect;
@@ -552,6 +552,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.GetFloatParameter = (arg1, arg2, arg3) => LoadParameter<float>(arg1, arg2, arg3);
                 Script.GetStringParameter = (arg1, arg2, arg3) => LoadParameter<string>(arg1, arg2, arg3);
 
+                Script.AttachToHost(this);
                 Script.Initialize();
                 Activated = true;
             }

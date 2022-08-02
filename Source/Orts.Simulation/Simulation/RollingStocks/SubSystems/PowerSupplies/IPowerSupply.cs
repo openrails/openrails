@@ -26,6 +26,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     {
         TrainCar Car { get; }
         BatterySwitch BatterySwitch { get; }
+        Pantographs Pantographs { get; }
 
         PowerSupplyState ElectricTrainSupplyState { get; }
         bool ElectricTrainSupplyOn { get; }

@@ -2206,6 +2206,9 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.PANTOGRAPHS_4C:
                 case CABViewControlTypes.PANTOGRAPHS_5:
                 case CABViewControlTypes.PANTO_DISPLAY:
+                case CABViewControlTypes.ORTS_VOLTAGE_SELECTOR:
+                case CABViewControlTypes.ORTS_PANTOGRAPH_SELECTOR:
+                case CABViewControlTypes.ORTS_POWER_LIMITATION_SELECTOR:
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
@@ -2426,6 +2429,51 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.STEAM_HEAT: Locomotive.SetSteamHeatValue(ChangedValue(Locomotive.SteamHeatController.IntermediateValue)); break;
                 case CABViewControlTypes.ORTS_WATER_SCOOP: if (((Locomotive as MSTSSteamLocomotive).WaterScoopDown ? 1 : 0) != ChangedValue(Locomotive.WaterScoopDown ? 1 : 0)) new ToggleWaterScoopCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_VOLTAGE_SELECTOR:
+                {
+                    if (Locomotive is MSTSElectricLocomotive electricLocomotive)
+                    {
+                        if (ChangedValue(electricLocomotive.ElectricPowerSupply.VoltageSelector.PositionId) > 0)
+                        {
+                            new VoltageSelectorCommand(Viewer.Log, true);
+                        }
+                        else if (ChangedValue(electricLocomotive.ElectricPowerSupply.VoltageSelector.PositionId) < 0)
+                        {
+                            new VoltageSelectorCommand(Viewer.Log, false);
+                        }
+                    }
+                    break;
+                }
+                case CABViewControlTypes.ORTS_PANTOGRAPH_SELECTOR:
+                {
+                    if (Locomotive is MSTSElectricLocomotive electricLocomotive)
+                    {
+                        if (ChangedValue(electricLocomotive.ElectricPowerSupply.PantographSelector.PositionId) > 0)
+                        {
+                            new PantographSelectorCommand(Viewer.Log, true);
+                        }
+                        else if (ChangedValue(electricLocomotive.ElectricPowerSupply.PantographSelector.PositionId) < 0)
+                        {
+                            new PantographSelectorCommand(Viewer.Log, false);
+                        }
+                    }
+                    break;
+                }
+                case CABViewControlTypes.ORTS_POWER_LIMITATION_SELECTOR:
+                {
+                    if (Locomotive is MSTSElectricLocomotive electricLocomotive)
+                    {
+                        if (ChangedValue(electricLocomotive.ElectricPowerSupply.PowerLimitationSelector.PositionId) > 0)
+                        {
+                            new PowerLimitationSelectorCommand(Viewer.Log, true);
+                        }
+                        else if (ChangedValue(electricLocomotive.ElectricPowerSupply.PowerLimitationSelector.PositionId) < 0)
+                        {
+                            new PowerLimitationSelectorCommand(Viewer.Log, false);
+                        }
+                    }
+                    break;
+                }
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
                     new CircuitBreakerClosingOrderCommand(Viewer.Log, ChangedValue((Locomotive as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0) > 0);
                     new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0);

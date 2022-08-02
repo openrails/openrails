@@ -123,8 +123,12 @@ namespace Orts.Common
         PermissionDenied,
         PermissionGranted,
         PermissionToDepart,
-        PowerKeyOff,
-        PowerKeyOn,
+        VoltageSelectorDecrease,
+        VoltageSelectorIncrease,
+        PantographSelectorDecrease,
+        PantographSelectorIncrease,
+        PowerLimitationSelectorDecrease,
+        PowerLimitationSelectorIncrease,
         ReverserChange,
         ReverserToForwardBackward,
         ReverserToNeutral,
@@ -546,6 +550,13 @@ namespace Orts.Common
                         case 261: return Event.WindowOpening;
                         case 262: return Event.WindowsClosed;
                         case 263: return Event.WindowsOpen;
+
+                        case 252: return Event.VoltageSelectorDecrease;
+                        case 253: return Event.VoltageSelectorIncrease;
+                        case 254: return Event.PantographSelectorDecrease;
+                        case 255: return Event.PantographSelectorIncrease;
+                        case 256: return Event.PowerLimitationSelectorDecrease;
+                        case 257: return Event.PowerLimitationSelectorIncrease;
 
                         // Cruise Control
                         case 298: return Event.LeverFromZero;
