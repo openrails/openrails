@@ -31,6 +31,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public MSTSSteamLocomotive Locomotive => Car as MSTSSteamLocomotive;
         public PowerSupplyType Type => PowerSupplyType.Steam;
 
+        public Pantographs Pantographs => Locomotive.Pantographs;
         public BatterySwitch BatterySwitch { get; protected set; }
         public MasterKey MasterKey { get; protected set; }
         public ElectricTrainSupplySwitch ElectricTrainSupplySwitch => null;
@@ -128,6 +129,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         public void HandleEvent(PowerSupplyEvent evt, int id)
+        {
+        }
+
+        public void HandleEventFromTcs(PowerSupplyEvent evt, string message)
         {
         }
 
