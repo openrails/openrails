@@ -152,6 +152,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool CircuitBreakerClosingOrder { get; private set; }
         public bool CircuitBreakerOpeningOrder { get; private set; }
         public bool TractionAuthorization { get; private set; }
+        public float MaxThrottlePercent { get; private set; } = 100f;
         public bool FullDynamicBrakingOrder { get; private set; }
 
         public float[] CabDisplayControls = new float[TCSCabviewControlCount];
@@ -348,7 +349,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.PantographCount = () => Locomotive.Pantographs.Count;
                 Script.GetPantographState = (pantoID) =>
                 {
-                   if (pantoID >= Pantographs.MinPantoID && pantoID <= Pantographs.MaxPantoID)
+                    if (pantoID >= Pantographs.MinPantoID && pantoID <= Pantographs.MaxPantoID)
                     {
                         return Locomotive.Pantographs[pantoID].State;
                     }
@@ -360,6 +361,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 };
                 Script.ArePantographsDown = () => Locomotive.Pantographs.State == PantographState.Down;
                 Script.ThrottlePercent = () => Locomotive.ThrottleController.CurrentValue * 100;
+                Script.MaxThrottlePercent = () => MaxThrottlePercent;
                 Script.DynamicBrakePercent = () => Locomotive.DynamicBrakeController == null ? 0 : Locomotive.DynamicBrakeController.CurrentValue * 100;
                 Script.TractionAuthorization = () => TractionAuthorization;
                 Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
@@ -456,6 +458,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.SetCircuitBreakerClosingOrder = (value) => CircuitBreakerClosingOrder = value;
                 Script.SetCircuitBreakerOpeningOrder = (value) => CircuitBreakerOpeningOrder = value;
                 Script.SetTractionAuthorization = (value) => TractionAuthorization = value;
+                Script.SetMaxThrottlePercent = (value) =>
+                {
+                    if (value >= 0 && value <= 100f)
+                    {
+                        MaxThrottlePercent = value;
+                    }
+                };
                 Script.SetVigilanceAlarm = (value) => Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
                 Script.SetHorn = (value) => Locomotive.TCSHorn = value;
                 Script.TriggerSoundAlert1 = () => this.SignalEvent(Event.TrainControlSystemAlert1, Script);
@@ -599,10 +608,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             return retval;
         }
 
-        SignalFeatures NextGenericSignalFeatures(string signalTypeName, int itemSequenceIndex, float maxDistanceM, Train.TrainObjectItem.TRAINOBJECTTYPE type)
+        SignalFeatures NextGenericSignalFeatures(string signalFunctionTypeName, int itemSequenceIndex, float maxDistanceM, Train.TrainObjectItem.TRAINOBJECTTYPE type)
         {
             var mainHeadSignalTypeName = "";
+            var signalTypeName = "";
             var aspect = Aspect.None;
+            var drawStateName = "";
             var distanceM = float.MaxValue;
             var speedLimitMpS = -1f;
             var altitudeM = float.MinValue;
@@ -615,7 +626,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
             int index = dir == 0 ? Locomotive.Train.PresentPosition[dir].RouteListIndex :
                 Locomotive.Train.ValidRoute[dir].GetRouteIndex(Locomotive.Train.PresentPosition[dir].TCSectionIndex, 0);
-            int fn_type = Locomotive.Train.signalRef.ORTSSignalTypes.IndexOf(signalTypeName);
+            int fn_type = Locomotive.Train.signalRef.ORTSSignalTypes.IndexOf(signalFunctionTypeName);
             if (index < 0)
                 goto Exit;
             if (type == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL)
@@ -635,7 +646,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 // All OK, we can retrieve the data for the required signal;
                 distanceM = trainSignal.DistanceToTrainM;
                 mainHeadSignalTypeName = trainSignal.SignalObject.SignalHeads[0].SignalTypeName;
-                if (signalTypeName == "NORMAL")
+                if (signalFunctionTypeName == "NORMAL")
                 {
                     aspect = (Aspect)trainSignal.SignalState;
                     speedLimitMpS = trainSignal.AllowedSpeedMpS;
@@ -645,7 +656,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     aspect = (Aspect)Locomotive.Train.signalRef.TranslateToTCSAspect(trainSignal.SignalObject.this_sig_lr(fn_type));
                 }
+
                 var functionHead = trainSignal.SignalObject.SignalHeads.Find(head => head.ORTSsigFunctionIndex == fn_type);
+                signalTypeName = functionHead.SignalTypeName;
+                if (functionHead.draw_state >= 0)
+                {
+                    drawStateName = functionHead.signalType.DrawStates.First(d => d.Value.Index == functionHead.draw_state).Value.Name;
+                }
                 textAspect = functionHead?.TextSignalAspect ?? "";
             }
             else if (type == Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST)
@@ -663,7 +680,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
 
         Exit:
-            return new SignalFeatures(mainHeadSignalTypeName: mainHeadSignalTypeName, aspect: aspect, distanceM: distanceM, speedLimitMpS: speedLimitMpS,
+            return new SignalFeatures(mainHeadSignalTypeName: mainHeadSignalTypeName, signalTypeName: signalTypeName, aspect: aspect, drawStateName: drawStateName, distanceM: distanceM, speedLimitMpS: speedLimitMpS,
                 altitudeM: altitudeM, textAspect: textAspect);
         }
 
