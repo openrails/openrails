@@ -349,7 +349,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.PantographCount = () => Locomotive.Pantographs.Count;
                 Script.GetPantographState = (pantoID) =>
                 {
-                   if (pantoID >= Pantographs.MinPantoID && pantoID <= Pantographs.MaxPantoID)
+                    if (pantoID >= Pantographs.MinPantoID && pantoID <= Pantographs.MaxPantoID)
                     {
                         return Locomotive.Pantographs[pantoID].State;
                     }
