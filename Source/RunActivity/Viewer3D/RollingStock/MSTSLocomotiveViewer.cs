@@ -355,10 +355,6 @@ namespace Orts.Viewer3D.RollingStock
 
         internal override void Mark()
         {
-            foreach (var pdl in ParticleDrawers.Values)
-                foreach (var pd in pdl)
-                    pd.Mark();
-
             _CabRenderer?.Mark();
             ThreeDimentionCabViewer?.Mark();
 
