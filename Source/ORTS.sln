@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Updater", "ORTS.Update
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivityEditor", "Contrib\ActivityEditor\ActivityEditor\ActivityEditor.csproj", "{306C904F-BE41-4B39-A0C4-51068B7F205E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AEWizard", "Contrib\ActivityEditor\AEWizard\AEWizard.csproj", "{79EFFB38-252C-4B06-BD4E-7C7FDE0A20DC}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentManager", "Contrib\ContentManager\ContentManager.csproj", "{E3E04859-2734-46EA-99B6-8A9721E85D3F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibAE", "Contrib\ActivityEditor\LibAE\LibAE.csproj", "{B79691A7-BF8C-40B4-ADE0-5F30F2730414}"
@@ -111,6 +113,10 @@ Global
 		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79EFFB38-252C-4B06-BD4E-7C7FDE0A20DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79EFFB38-252C-4B06-BD4E-7C7FDE0A20DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79EFFB38-252C-4B06-BD4E-7C7FDE0A20DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79EFFB38-252C-4B06-BD4E-7C7FDE0A20DC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E3E04859-2734-46EA-99B6-8A9721E85D3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E3E04859-2734-46EA-99B6-8A9721E85D3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3E04859-2734-46EA-99B6-8A9721E85D3F}.Release|Any CPU.ActiveCfg = Release|Any CPU

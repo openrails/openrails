@@ -33,6 +33,7 @@ namespace ActivityEditor
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ActEditor));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -401,6 +402,7 @@ namespace ActivityEditor
             // metaSegmentBtn
             // 
             this.metaSegmentBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.metaSegmentBtn.Image = ((System.Drawing.Image)(resources.GetObject("metaSegmentBtn.Image")));
             this.metaSegmentBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.metaSegmentBtn.Name = "metaSegmentBtn";
             this.metaSegmentBtn.Size = new System.Drawing.Size(23, 22);
@@ -545,6 +547,7 @@ namespace ActivityEditor
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.toolStripPanel1);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "ActEditor";
