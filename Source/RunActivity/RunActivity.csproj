@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <PlatformTarget>x86</PlatformTarget>
     <RootNamespace>Orts</RootNamespace>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
     <UseWindowsForms>true</UseWindowsForms>
