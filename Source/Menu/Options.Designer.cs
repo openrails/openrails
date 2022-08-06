@@ -56,6 +56,9 @@ namespace ORTS
             this.checkAlerterExternal = new System.Windows.Forms.CheckBox();
             this.checkRetainers = new System.Windows.Forms.CheckBox();
             this.tabPageAudio = new System.Windows.Forms.TabPage();
+            this.pbExternalSoundPassThruPercent = new System.Windows.Forms.PictureBox();
+            this.pbSoundDetailLevel = new System.Windows.Forms.PictureBox();
+            this.pbSoundVolumePercent = new System.Windows.Forms.PictureBox();
             this.numericExternalSoundPassThruPercent = new System.Windows.Forms.NumericUpDown();
             this.labelExternalSound = new System.Windows.Forms.Label();
             this.numericSoundVolumePercent = new System.Windows.Forms.NumericUpDown();
@@ -168,12 +171,6 @@ namespace ORTS
             this.label12 = new System.Windows.Forms.Label();
             this.numericActRandomizationLevel = new System.Windows.Forms.NumericUpDown();
             this.checkCorrectQuestionableBrakingParams = new System.Windows.Forms.CheckBox();
-            this.label25 = new System.Windows.Forms.Label();
-            this.precipitationBoxLength = new System.Windows.Forms.NumericUpDown();
-            this.label24 = new System.Windows.Forms.Label();
-            this.precipitationBoxWidth = new System.Windows.Forms.NumericUpDown();
-            this.label23 = new System.Windows.Forms.Label();
-            this.precipitationBoxHeight = new System.Windows.Forms.NumericUpDown();
             this.label16 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
@@ -186,7 +183,6 @@ namespace ORTS
             this.AdhesionLevelLabel = new System.Windows.Forms.Label();
             this.trackAdhesionFactorChange = new System.Windows.Forms.TrackBar();
             this.trackAdhesionFactor = new System.Windows.Forms.TrackBar();
-            this.checkAdhesionPropToWeather = new System.Windows.Forms.CheckBox();
             this.checkSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
             this.label8 = new System.Windows.Forms.Label();
@@ -197,7 +193,6 @@ namespace ORTS
             this.label5 = new System.Windows.Forms.Label();
             this.numericUseSuperElevation = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
-            this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.pbSoundVolumePercent = new System.Windows.Forms.PictureBox();
             this.pbSoundDetailLevel = new System.Windows.Forms.PictureBox();
@@ -214,6 +209,9 @@ namespace ORTS
             ((System.ComponentModel.ISupportInitialize)(this.pbRetainers)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).BeginInit();
             this.tabPageAudio.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbExternalSoundPassThruPercent)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundDetailLevel)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundVolumePercent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundVolumePercent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
@@ -249,9 +247,6 @@ namespace ORTS
             this.tabPageExperimental.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxLength)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxWidth)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxHeight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackLODBias)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
@@ -598,6 +593,42 @@ namespace ORTS
             this.tabPageAudio.TabIndex = 5;
             this.tabPageAudio.Text = "Audio";
             this.tabPageAudio.UseVisualStyleBackColor = true;
+            // 
+            // pbExternalSoundPassThruPercent
+            // 
+            this.pbExternalSoundPassThruPercent.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbExternalSoundPassThruPercent.Location = new System.Drawing.Point(11, 73);
+            this.pbExternalSoundPassThruPercent.Name = "pbExternalSoundPassThruPercent";
+            this.pbExternalSoundPassThruPercent.Size = new System.Drawing.Size(18, 18);
+            this.pbExternalSoundPassThruPercent.TabIndex = 31;
+            this.pbExternalSoundPassThruPercent.TabStop = false;
+            this.pbExternalSoundPassThruPercent.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbExternalSoundPassThruPercent.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbExternalSoundPassThruPercent.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbSoundDetailLevel
+            // 
+            this.pbSoundDetailLevel.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSoundDetailLevel.Location = new System.Drawing.Point(11, 41);
+            this.pbSoundDetailLevel.Name = "pbSoundDetailLevel";
+            this.pbSoundDetailLevel.Size = new System.Drawing.Size(18, 18);
+            this.pbSoundDetailLevel.TabIndex = 30;
+            this.pbSoundDetailLevel.TabStop = false;
+            this.pbSoundDetailLevel.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbSoundDetailLevel.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbSoundDetailLevel.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbSoundVolumePercent
+            // 
+            this.pbSoundVolumePercent.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSoundVolumePercent.Location = new System.Drawing.Point(11, 9);
+            this.pbSoundVolumePercent.Name = "pbSoundVolumePercent";
+            this.pbSoundVolumePercent.Size = new System.Drawing.Size(18, 18);
+            this.pbSoundVolumePercent.TabIndex = 29;
+            this.pbSoundVolumePercent.TabStop = false;
+            this.pbSoundVolumePercent.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbSoundVolumePercent.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbSoundVolumePercent.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // numericExternalSoundPassThruPercent
             // 
@@ -1974,12 +2005,6 @@ namespace ORTS
             this.tabPageExperimental.Controls.Add(this.label12);
             this.tabPageExperimental.Controls.Add(this.numericActRandomizationLevel);
             this.tabPageExperimental.Controls.Add(this.checkCorrectQuestionableBrakingParams);
-            this.tabPageExperimental.Controls.Add(this.label25);
-            this.tabPageExperimental.Controls.Add(this.precipitationBoxLength);
-            this.tabPageExperimental.Controls.Add(this.label24);
-            this.tabPageExperimental.Controls.Add(this.precipitationBoxWidth);
-            this.tabPageExperimental.Controls.Add(this.label23);
-            this.tabPageExperimental.Controls.Add(this.precipitationBoxHeight);
             this.tabPageExperimental.Controls.Add(this.label16);
             this.tabPageExperimental.Controls.Add(this.label9);
             this.tabPageExperimental.Controls.Add(this.label21);
@@ -1992,7 +2017,6 @@ namespace ORTS
             this.tabPageExperimental.Controls.Add(this.AdhesionLevelLabel);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactorChange);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactor);
-            this.tabPageExperimental.Controls.Add(this.checkAdhesionPropToWeather);
             this.tabPageExperimental.Controls.Add(this.checkSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
             this.tabPageExperimental.Controls.Add(this.label8);
@@ -2003,7 +2027,6 @@ namespace ORTS
             this.tabPageExperimental.Controls.Add(this.label5);
             this.tabPageExperimental.Controls.Add(this.numericUseSuperElevation);
             this.tabPageExperimental.Controls.Add(this.ElevationText);
-            this.tabPageExperimental.Controls.Add(this.checkPreferDDSTexture);
             this.tabPageExperimental.Location = new System.Drawing.Point(4, 22);
             this.tabPageExperimental.Name = "tabPageExperimental";
             this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3);
@@ -2089,117 +2112,6 @@ namespace ORTS
             this.checkCorrectQuestionableBrakingParams.TabIndex = 43;
             this.checkCorrectQuestionableBrakingParams.Text = "Correct questionable braking parameters";
             this.checkCorrectQuestionableBrakingParams.UseVisualStyleBackColor = true;
-            // 
-            // label25
-            // 
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(70, 363);
-            this.label25.Margin = new System.Windows.Forms.Padding(3);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(134, 13);
-            this.label25.TabIndex = 42;
-            this.label25.Text = "Precipitation box length (m)";
-            // 
-            // precipitationBoxLength
-            // 
-            this.precipitationBoxLength.Increment = new decimal(new int[] {
-            25,
-            0,
-            0,
-            0});
-            this.precipitationBoxLength.Location = new System.Drawing.Point(10, 361);
-            this.precipitationBoxLength.Maximum = new decimal(new int[] {
-            3000,
-            0,
-            0,
-            0});
-            this.precipitationBoxLength.Minimum = new decimal(new int[] {
-            500,
-            0,
-            0,
-            0});
-            this.precipitationBoxLength.Name = "precipitationBoxLength";
-            this.precipitationBoxLength.Size = new System.Drawing.Size(54, 20);
-            this.precipitationBoxLength.TabIndex = 41;
-            this.precipitationBoxLength.Value = new decimal(new int[] {
-            500,
-            0,
-            0,
-            0});
-            // 
-            // label24
-            // 
-            this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(70, 337);
-            this.label24.Margin = new System.Windows.Forms.Padding(3);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(130, 13);
-            this.label24.TabIndex = 40;
-            this.label24.Text = "Precipitation box width (m)";
-            // 
-            // precipitationBoxWidth
-            // 
-            this.precipitationBoxWidth.Increment = new decimal(new int[] {
-            25,
-            0,
-            0,
-            0});
-            this.precipitationBoxWidth.Location = new System.Drawing.Point(10, 335);
-            this.precipitationBoxWidth.Maximum = new decimal(new int[] {
-            3000,
-            0,
-            0,
-            0});
-            this.precipitationBoxWidth.Minimum = new decimal(new int[] {
-            500,
-            0,
-            0,
-            0});
-            this.precipitationBoxWidth.Name = "precipitationBoxWidth";
-            this.precipitationBoxWidth.Size = new System.Drawing.Size(54, 20);
-            this.precipitationBoxWidth.TabIndex = 39;
-            this.precipitationBoxWidth.Value = new decimal(new int[] {
-            500,
-            0,
-            0,
-            0});
-            // 
-            // label23
-            // 
-            this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(70, 311);
-            this.label23.Margin = new System.Windows.Forms.Padding(3);
-            this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(134, 13);
-            this.label23.TabIndex = 38;
-            this.label23.Text = "Precipitation box height (m)";
-            // 
-            // precipitationBoxHeight
-            // 
-            this.precipitationBoxHeight.Increment = new decimal(new int[] {
-            25,
-            0,
-            0,
-            0});
-            this.precipitationBoxHeight.Location = new System.Drawing.Point(10, 309);
-            this.precipitationBoxHeight.Maximum = new decimal(new int[] {
-            300,
-            0,
-            0,
-            0});
-            this.precipitationBoxHeight.Minimum = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.precipitationBoxHeight.Name = "precipitationBoxHeight";
-            this.precipitationBoxHeight.Size = new System.Drawing.Size(54, 20);
-            this.precipitationBoxHeight.TabIndex = 37;
-            this.precipitationBoxHeight.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
             // 
             // label16
             // 
@@ -2330,17 +2242,6 @@ namespace ORTS
             this.toolTip1.SetToolTip(this.trackAdhesionFactor, "Default is 130%");
             this.trackAdhesionFactor.Value = 130;
             this.trackAdhesionFactor.ValueChanged += new System.EventHandler(this.trackAdhesionFactor_ValueChanged);
-            // 
-            // checkAdhesionPropToWeather
-            // 
-            this.checkAdhesionPropToWeather.AutoSize = true;
-            this.checkAdhesionPropToWeather.Location = new System.Drawing.Point(304, 235);
-            this.checkAdhesionPropToWeather.Name = "checkAdhesionPropToWeather";
-            this.checkAdhesionPropToWeather.Size = new System.Drawing.Size(210, 17);
-            this.checkAdhesionPropToWeather.TabIndex = 29;
-            this.checkAdhesionPropToWeather.Text = "Adhesion proportional to rain/snow/fog";
-            this.checkAdhesionPropToWeather.UseVisualStyleBackColor = true;
-            this.checkAdhesionPropToWeather.CheckedChanged += new System.EventHandler(this.AdhesionPropToWeatherCheckBox_CheckedChanged);
             // 
             // checkSignalLightGlow
             // 
@@ -2485,16 +2386,6 @@ namespace ORTS
             this.ElevationText.TabIndex = 1;
             this.ElevationText.Text = "Super-elevation";
             // 
-            // checkPreferDDSTexture
-            // 
-            this.checkPreferDDSTexture.AutoSize = true;
-            this.checkPreferDDSTexture.Location = new System.Drawing.Point(304, 189);
-            this.checkPreferDDSTexture.Name = "checkPreferDDSTexture";
-            this.checkPreferDDSTexture.Size = new System.Drawing.Size(217, 17);
-            this.checkPreferDDSTexture.TabIndex = 23;
-            this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
-            this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
-            // 
             // pbSoundVolumePercent
             // 
             this.pbSoundVolumePercent.Image = global::ORTS.Properties.Resources.info_18;
@@ -2560,6 +2451,9 @@ namespace ORTS
             ((System.ComponentModel.ISupportInitialize)(this.pbRetainers)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).EndInit();
             this.tabPageAudio.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbExternalSoundPassThruPercent)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundDetailLevel)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundVolumePercent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundVolumePercent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).EndInit();
@@ -2603,9 +2497,6 @@ namespace ORTS
             this.tabPageExperimental.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxLength)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxWidth)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxHeight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackLODBias)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
@@ -2683,7 +2574,6 @@ namespace ORTS
         private System.Windows.Forms.NumericUpDown numericDataLogTSInterval;
         private System.Windows.Forms.CheckBox checkDataLogTrainSpeed;
         private System.Windows.Forms.CheckBox checkUseMSTSEnv;
-        private System.Windows.Forms.CheckBox checkPreferDDSTexture;
         private System.Windows.Forms.Label labelDistantMountainsViewingDistance;
         private System.Windows.Forms.NumericUpDown numericDistantMountainsViewingDistance;
         private System.Windows.Forms.CheckBox checkDistantMountains;
@@ -2705,7 +2595,6 @@ namespace ORTS
         private System.Windows.Forms.TrackBar trackAdhesionFactorChange;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TrackBar trackAdhesionFactor;
-        private System.Windows.Forms.CheckBox checkAdhesionPropToWeather;
         private System.Windows.Forms.CheckBox checkModelInstancing;
         private System.Windows.Forms.TrackBar trackDayAmbientLight;
         private System.Windows.Forms.Label label15;
@@ -2733,12 +2622,6 @@ namespace ORTS
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
         private System.Windows.Forms.CheckBox checkEnableTCSScripts;
-        private System.Windows.Forms.NumericUpDown precipitationBoxHeight;
-        private System.Windows.Forms.NumericUpDown precipitationBoxWidth;
-        private System.Windows.Forms.Label label23;
-        private System.Windows.Forms.Label label24;
-        private System.Windows.Forms.Label label25;
-        private System.Windows.Forms.NumericUpDown precipitationBoxLength;
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
         private System.Windows.Forms.CheckBox checkOverspeedMonitor;
         private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;
