@@ -29,8 +29,8 @@ namespace ORTS
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -194,6 +194,9 @@ namespace ORTS
             this.numericUseSuperElevation = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.pbSoundVolumePercent = new System.Windows.Forms.PictureBox();
+            this.pbSoundDetailLevel = new System.Windows.Forms.PictureBox();
+            this.pbExternalSoundPassThruPercent = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -250,6 +253,9 @@ namespace ORTS
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundVolumePercent)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundDetailLevel)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbExternalSoundPassThruPercent)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -1636,27 +1642,27 @@ namespace ORTS
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle12.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle12.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle12.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle12.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle12.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle12;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -2380,6 +2386,42 @@ namespace ORTS
             this.ElevationText.TabIndex = 1;
             this.ElevationText.Text = "Super-elevation";
             // 
+            // pbSoundVolumePercent
+            // 
+            this.pbSoundVolumePercent.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSoundVolumePercent.Location = new System.Drawing.Point(11, 9);
+            this.pbSoundVolumePercent.Name = "pbSoundVolumePercent";
+            this.pbSoundVolumePercent.Size = new System.Drawing.Size(18, 18);
+            this.pbSoundVolumePercent.TabIndex = 29;
+            this.pbSoundVolumePercent.TabStop = false;
+            this.pbSoundVolumePercent.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbSoundVolumePercent.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbSoundVolumePercent.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbSoundDetailLevel
+            // 
+            this.pbSoundDetailLevel.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSoundDetailLevel.Location = new System.Drawing.Point(11, 41);
+            this.pbSoundDetailLevel.Name = "pbSoundDetailLevel";
+            this.pbSoundDetailLevel.Size = new System.Drawing.Size(18, 18);
+            this.pbSoundDetailLevel.TabIndex = 30;
+            this.pbSoundDetailLevel.TabStop = false;
+            this.pbSoundDetailLevel.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbSoundDetailLevel.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbSoundDetailLevel.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbExternalSoundPassThruPercent
+            // 
+            this.pbExternalSoundPassThruPercent.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbExternalSoundPassThruPercent.Location = new System.Drawing.Point(11, 73);
+            this.pbExternalSoundPassThruPercent.Name = "pbExternalSoundPassThruPercent";
+            this.pbExternalSoundPassThruPercent.Size = new System.Drawing.Size(18, 18);
+            this.pbExternalSoundPassThruPercent.TabIndex = 31;
+            this.pbExternalSoundPassThruPercent.TabStop = false;
+            this.pbExternalSoundPassThruPercent.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbExternalSoundPassThruPercent.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbExternalSoundPassThruPercent.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2461,6 +2503,9 @@ namespace ORTS
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundVolumePercent)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSoundDetailLevel)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbExternalSoundPassThruPercent)).EndInit();
             this.ResumeLayout(false);
 
         }
