@@ -863,6 +863,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             return false;
         }
+
+        /// <summary>
+        /// Removes discrete freight animations and containers when AI train is deleted
+        /// </summary>
+
+        public void RemoveDiscreteFreightAnimations(MSTSWagon wagon)
+        {
+            foreach (var animation in Animations)
+            {
+                if (animation is FreightAnimationDiscrete discreteAnimation && discreteAnimation.Container != null)
+                {
+                    wagon.Simulator.ContainerManager.Containers.Remove(discreteAnimation.Container);
+                }
+            }
+
+        }
     }
 
 
