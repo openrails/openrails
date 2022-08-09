@@ -191,6 +191,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             GearBoxNumberOfGears = copy.GearBoxNumberOfGears;
             GearBoxDirectDriveGear = copy.GearBoxDirectDriveGear;
             GearBoxType = copy.GearBoxType;
+            MaxTEFound = copy.MaxTEFound;
             ClutchType = copy.ClutchType;
             GearBoxOperation = copy.GearBoxOperation;
             GearBoxEngineBraking = copy.GearBoxEngineBraking;
