@@ -660,7 +660,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
                 var functionHead = trainSignal.SignalObject.SignalHeads.Find(head => head.ORTSsigFunctionIndex == fn_type);
                 signalTypeName = functionHead.SignalTypeName;
-                if (functionHead.draw_state >= 0)
+                if (functionHead.signalType.DrawStates.Any(d => d.Value.Index == functionHead.draw_state).Value.Name)
                 {
                     drawStateName = functionHead.signalType.DrawStates.First(d => d.Value.Index == functionHead.draw_state).Value.Name;
                 }
