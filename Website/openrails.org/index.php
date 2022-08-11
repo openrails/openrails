@@ -72,26 +72,26 @@
           </div>
           <div style="background-color: #ffffcc; margin: 0 -5px; padding: 0 5px;">
             <p>
-              <strong>Oct 2021</strong>
-              <a href="http://openrails.org/discover/version-1-4/">Version 1.4</a> is now available for immediate download <a href="http://openrails.org/download/program/">here</a>.
+              <strong>Summer 2022</strong>
+              Three new UK routes are now available for immediate download <a href="http://openrails.org/download/content/">here</a>.
             </p>
           </div>
           <div style="background-color: #ffffee; margin: 0 -5px; padding: 0 5px;">
             <p>
-              <strong>Nov 2020</strong>
-              Wagons can now be braked individually as on the oldest railways. This can be experienced in 2 scenarios - <a href="https://www.coalstonewcastle.com.au/physics/stock/#rainhill">Stephenson's Rocket at Rainhill Trials</a> and <a href="https://www.coalstonewcastle.com.au/physics/stock/#select">Langley Vale Timber Tramway</a>. 
+              <strong>Oct 2021</strong>
+              <a href="http://openrails.org/discover/version-1-4/">Version 1.4</a> is now available for immediate download <a href="http://openrails.org/download/program/">here</a>.
+            </p>
+            <p>
+              <strong>Oct 2021</strong>
+              Support for <a href="https://reshade.me/">ReShade</a>
             </p>          
             <p>
-              <strong>Apr 2020</strong>
-              After more than a year of work <a href="http://www.siskurail.org/" title="Oregon to California, created by Dale Rickert">the free, restored and improved Siskiyou Route</a> is once more available.
+              <strong>Oct 2021</strong>
+              Map window for timetabled trains
             </p>
             <p>
-              <strong>Apr 2019</strong>
-              <a href="https://www.trainsim.com/vbts/tslib.php?searchid=13577139">ENG files published</a> with accurate physics for 176 USA diesel locos.
-            </p>
-            <p>
-              <strong>Mar 2018</strong>
-              Geoff Rowlands found a way to model 3D controls so they can be grabbed by the handle <a href="https://www.youtube.com/watch?v=UO9XrBz3iD0&feature=youtu.be">as in this video</a>.
+              <strong>Nov 2020</strong>
+              Wagons can now be braked individually as on the oldest railways. This can be experienced in 2 scenarios - <a href="https://www.coalstonewcastle.com.au/physics/stock/#rainhill">Stephenson's Rocket at Rainhill Trials</a> and <a href="https://www.coalstonewcastle.com.au/physics/stock/#select">Langley Vale Timber Tramway</a>. 
             </p>
           </div>
         </div>
