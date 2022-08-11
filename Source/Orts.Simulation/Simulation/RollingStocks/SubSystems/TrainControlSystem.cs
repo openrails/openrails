@@ -373,7 +373,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.AltitudeM = () => Locomotive.WorldPosition.Location.Y;
                 Script.CurrentGradientPercent = () => -Locomotive.CurrentElevationPercent;
                 Script.LineSpeedMpS = () => (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
-                Script.SignedDistanceM = () => Locomotive.Train.DistanceTravelledM;
                 Script.DoesStartFromTerminalStation = () => DoesStartFromTerminalStation();
                 Script.IsColdStart = () => Locomotive.Train.ColdStart;
                 Script.GetTrackNodeOffset = () => Locomotive.Train.FrontTDBTraveller.TrackNodeLength - Locomotive.Train.FrontTDBTraveller.TrackNodeOffset;
@@ -660,7 +659,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
                 var functionHead = trainSignal.SignalObject.SignalHeads.Find(head => head.ORTSsigFunctionIndex == fn_type);
                 signalTypeName = functionHead.SignalTypeName;
-                if (functionHead.signalType.DrawStates.Any(d => d.Value.Index == functionHead.draw_state).Value.Name)
+                if (functionHead.draw_state >= 0)
                 {
                     drawStateName = functionHead.signalType.DrawStates.First(d => d.Value.Index == functionHead.draw_state).Value.Name;
                 }
