@@ -302,8 +302,6 @@ namespace ORTS.Settings
         [Default(false)]
         public bool AuxActionEnabled { get; set; }
         [Default(false)]
-        public bool PreferDDSTexture { get; set; }
-        [Default(false)]
         public bool UseLocationPassingPaths { get; set; }
         [Default(false)]
         public bool UseMSTSEnv { get; set; }
