@@ -257,7 +257,7 @@ namespace Orts.Viewer3D
 
         public static double DbfEvalAutoPilotTimeS = 0;//Debrief eval
         public static double DbfEvalIniAutoPilotTimeS = 0;//Debrief eval  
-        public bool DbfEvalAutoPilot = false;//DebriefEval
+        public static bool DbfEvalAutoPilot = false;//DebriefEval
 
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
@@ -434,7 +434,7 @@ namespace Orts.Viewer3D
             CabXOffsetPixels = inf.ReadInt32();
             NightTexturesNotLoaded = inf.ReadBoolean();
             DayTexturesNotLoaded = inf.ReadBoolean();
-            LoadMemoryThreshold = (ulong)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+            LoadMemoryThreshold = Game.HostProcess.CPUMemoryVirtualLimit - 512 * 1024 * 1024;
             tryLoadingNightTextures = true;
             tryLoadingDayTextures = true;
 
@@ -534,7 +534,7 @@ namespace Orts.Viewer3D
             // all loading is performed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
             MaterialManager.LoadPrep();
-            LoadMemoryThreshold = (ulong)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+            LoadMemoryThreshold = Game.HostProcess.CPUMemoryVirtualLimit - 512 * 1024 * 1024;
             Load();
 
             // MUST be after loading is done! (Or we try and load shapes on the main thread.)

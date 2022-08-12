@@ -423,19 +423,29 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (RemoteControlGroup == 0 && Train != null)
                 {
-                    if (Train.LeadLocomotive != null && !((MSTSLocomotive)Train.LeadLocomotive).TrainControlSystem.TractionAuthorization && Train.MUThrottlePercent > 0)
+                    if (Train.LeadLocomotive is MSTSLocomotive locomotive)
                     {
-                        return 0;
+                        if (!locomotive.TrainControlSystem.TractionAuthorization
+                            || Train.MUThrottlePercent <= 0)
+                        {
+                            return 0;
+                        }
+                        else if (Train.MUThrottlePercent > locomotive.TrainControlSystem.MaxThrottlePercent)
+                        {
+                            return Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
+                        }
                     }
-                    else
-                    {
-                        return Train.MUThrottlePercent;
-                    }
+
+                    return Train.MUThrottlePercent;
                 }
                 else if (RemoteControlGroup == 1 && Train != null)
+                {
                     return Train.DPThrottlePercent;
+                }
                 else
+                {
                     return LocalThrottlePercent;
+                }
             }
             set
             {
@@ -470,21 +480,26 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
-                if (RemoteControlGroup >= 0 && Train != null)
+                if (RemoteControlGroup == 0 && Train != null)
                 {
-                    if (Train.LeadLocomotive != null && ((MSTSLocomotive) Train.LeadLocomotive).TrainControlSystem.FullDynamicBrakingOrder)
+                    if (Train.LeadLocomotive is MSTSLocomotive locomotive)
                     {
-                        return 100;
+                        if (locomotive.TrainControlSystem.FullDynamicBrakingOrder)
+                        {
+                            return 100;
+                        }
                     }
-                    else if (RemoteControlGroup == 1 && Train != null)
-                        return Train.DPDynamicBrakePercent;
-                    else
-                    {
-                        return Train.MUDynamicBrakePercent;
-                    }
-}
+
+                    return Train.MUDynamicBrakePercent;
+                }
+                else if (RemoteControlGroup == 1 && Train != null)
+                {
+                    return Train.DPDynamicBrakePercent;
+                }
                 else
+                {
                     return LocalDynamicBrakePercent;
+                }
             }
             set
             {
@@ -837,6 +852,32 @@ namespace Orts.Simulation.RollingStocks
                     _AccelerationMpSS = AccelerationFilter.Filter(_AccelerationMpSS, elapsedClockSeconds);
 
                 _PrevSpeedMpS = _SpeedMpS;
+            }
+        }
+
+
+
+        /// <summary>
+        /// update position of discrete freight animations (e.g. containers)
+        /// </summary>  
+        public void UpdateFreightAnimationDiscretePositions()
+        {
+            if (FreightAnimations?.Animations != null)
+            {
+                foreach (var freightAnim in FreightAnimations.Animations)
+                {
+                    if (freightAnim is FreightAnimationDiscrete)
+                    {
+                        var discreteFreightAnim = freightAnim as FreightAnimationDiscrete;
+                        if (discreteFreightAnim.Loaded && discreteFreightAnim.Container != null)
+                        {
+                            var container = discreteFreightAnim.Container;
+                            container.WorldPosition.XNAMatrix = Matrix.Multiply(container.RelativeContainerMatrix, discreteFreightAnim.Wagon.WorldPosition.XNAMatrix);
+                            container.WorldPosition.TileX = WorldPosition.TileX;
+                            container.WorldPosition.TileZ = WorldPosition.TileZ;
+                        }
+                    }
+                }
             }
         }
 
@@ -2188,6 +2229,7 @@ namespace Orts.Simulation.RollingStocks
             CarHeatCurrentCompartmentHeatJ = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
+            FreightAnimations?.LoadDataList?.Clear();
         }
 
         //================================================================================================//
@@ -2258,6 +2300,22 @@ namespace Orts.Simulation.RollingStocks
         public virtual bool GetCabFlipped()
         {
             return false;
+        }
+
+        //<comment>
+        //Initializes the physics of the car taking into account its variable discrete loads
+        //</comment>
+        public void InitializeLoadPhysics()
+        {
+            // TODO
+        }
+
+        //<comment>
+        //Updates the physics of the car taking into account its variable discrete loads
+        //</comment>
+        public void UpdateLoadPhysics()
+        {
+            // TODO
         }
 
         public virtual float GetCouplerZeroLengthM()
