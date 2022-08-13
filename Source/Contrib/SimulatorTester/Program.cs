@@ -41,13 +41,15 @@ namespace SimulatorTester
                 Console.WriteLine("{0} {1}", version.FileDescription, VersionInfo.VersionOrBuild);
                 Console.WriteLine();
                 Console.WriteLine("Usage:");
-                Console.WriteLine("  {0} [options] <save-file>", Path.GetFileNameWithoutExtension(Application.ExecutablePath));
+                Console.WriteLine("  {0} [options] <SAVE_FILE>", Path.GetFileNameWithoutExtension(Application.ExecutablePath));
+                Console.WriteLine();
+                Console.WriteLine("Arguments:");
+                Console.WriteLine("  <SAVE_FILE>  {0} save file to use", Application.ProductName);
                 Console.WriteLine();
                 Console.WriteLine("Options:");
-                Console.WriteLine("  <save-file>  {0} save file to use", Application.ProductName);
                 Console.WriteLine("  /quiet       Do not show summary of simulation (only exit code is set)");
                 Console.WriteLine("  /verbose     Show version and settings (similar to a {0} log)", Application.ProductName);
-                Console.WriteLine("  /fps <fps>   Set the simulation frame-rate [default: 10]");
+                Console.WriteLine("  /fps <FPS>   Set the simulation frame-rate [default: 10]");
                 Console.WriteLine("  /help        Show help and usage information");
                 Console.WriteLine("  ...and any standard {0} option", Application.ProductName);
                 Console.WriteLine();
