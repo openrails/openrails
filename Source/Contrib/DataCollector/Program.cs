@@ -46,7 +46,7 @@ namespace DataCollector
             Console.WriteLine("  {0} [options] [<PATH> [...]]", Path.GetFileNameWithoutExtension(version.FileName));
             Console.WriteLine();
             Console.WriteLine("Arguments:");
-            Console.WriteLine("  <PATH>  Directories to scan for specific options");
+            Console.WriteLine("  <PATH>         Directories to scan for specific options");
             Console.WriteLine();
             Console.WriteLine("Options:");
             Console.WriteLine("  /system        Collects and reports on various system information");
