@@ -8,9 +8,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <IsPublishable>False</IsPublishable>
-    <Copyright>© Open Rails project</Copyright>
-    <Authors>Open Rails project</Authors>
-    <Description>Open Rails content manager (contributed)</Description>
+    <AssemblyTitle>Open Rails Content Manager (Contributed)</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>

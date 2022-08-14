@@ -4,9 +4,11 @@
     <OutputType>Library</OutputType>
     <AssemblyName>Contrib.LibAE</AssemblyName>
     <IsPublishable>False</IsPublishable>
-    <Copyright>© Open Rails project</Copyright>
-    <Authors>Open Rails project</Authors>
-    <Description>Open Rails activity editor library (contributed)</Description>
+    <AssemblyTitle>Open Rails LibAE Library (Contributed)</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <DefineConstants>TRACE;WINDOWS;ACTIVITY_EDITOR;JSON_OR_XML</DefineConstants>
   </PropertyGroup>
