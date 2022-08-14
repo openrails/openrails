@@ -57,7 +57,7 @@ players to Open Rails.
 <p>
 The Spanish websites <a href="http://viajerosaltren.es">Viajeros al Tren</a> and <a href="http://www.spaintrainzrutas.com/">Spain Trainz Rutas</a> are some of the first to offer Open Rails-specific products.
 </p><p>
-<a href="http://www.dekosoft.com">Dekosoft Trains</a> offer GP30 locos with 3D cabs exclusively for Open Rails.
+<a href="https://dekogames.com/wordpress/csx-mainline-power/">Deko Games</a> offer SD60M and SD40-2 locos with 3D cabs exclusively for Open Rails.
 </p><p>
 Some Australian routes (New South Wales) have been packaged by Peter Newell to work just with Open Rails:
 </p>
