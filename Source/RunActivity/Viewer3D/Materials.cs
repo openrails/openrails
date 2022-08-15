@@ -95,7 +95,7 @@ namespace Orts.Viewer3D
                     {
                         var alternativeTexture = Path.ChangeExtension(path, ".dds");
                         
-                        if (Viewer.Settings.PreferDDSTexture && File.Exists(alternativeTexture))
+                        if (File.Exists(alternativeTexture))
                         {
                             DDSLib.DDSFromFile(alternativeTexture, GraphicsDevice, true, out texture);
                         }
@@ -510,7 +510,7 @@ namespace Orts.Viewer3D
                 {
                     count = 0;
                     // retest if there is enough free memory left;
-                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.Game.HostProcess.CPUMemoryWorkingSet;
                     if (remainingMemorySpace < 0)
                     {
                         return false; // too bad, no more space, other night textures won't be loaded
@@ -533,7 +533,7 @@ namespace Orts.Viewer3D
                 {
                     count = 0;
                     // retest if there is enough free memory left;
-                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.Game.HostProcess.CPUMemoryWorkingSet;
                     if (remainingMemorySpace < 0)
                     {
                         return false; // too bad, no more space, other night textures won't be loaded
@@ -818,7 +818,7 @@ namespace Orts.Viewer3D
             Texture = SharedMaterialManager.MissingTexture;
             NightTexture = SharedMaterialManager.MissingTexture;
             // <CSComment> if "trainset" is in the path (true for night textures for 3DCabs) deferred load of night textures is disabled 
-            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && ((!viewer.DontLoadNightTextures && !viewer.DontLoadDayTextures) 
+            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && ((!viewer.IsDaytime && !viewer.IsNighttime) 
                 || TexturePath.Contains(@"\trainset\")))
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
@@ -826,13 +826,13 @@ namespace Orts.Viewer3D
                     NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
                Texture = Viewer.TextureManager.Get(texturePath, true);
             }
-            else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.DontLoadNightTextures)
+            else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.IsDaytime)
             {
                 viewer.NightTexturesNotLoaded = true;
                 Texture = Viewer.TextureManager.Get(texturePath, true);
             }
 
-            else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.DontLoadDayTextures)
+            else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.IsNighttime)
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))

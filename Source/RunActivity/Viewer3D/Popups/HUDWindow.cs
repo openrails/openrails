@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
+// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -46,33 +46,6 @@ namespace Orts.Viewer3D.Popups
         // Set to distance from top-left corner to place text.
         const int TextOffset = 10;
 
-        readonly int ProcessorCount = System.Environment.ProcessorCount;
-
-        readonly Version Windows10 = new Version(10, 0);
-        const int PerformanceCounterUpdateTimeS = 10;
-        float PerformanceCounterElapsedTimeS = PerformanceCounterUpdateTimeS;
-
-        readonly PerformanceCounter CLRMemoryAllocatedBytesPerSecCounter; // \.NET CLR Memory(*)\Allocated Bytes/sec
-        float CLRMemoryAllocatedBytesPerSec;
-
-        readonly PerformanceCounter CPUMemoryPrivateCounter; // \Process(*)\Private Bytes
-        readonly PerformanceCounter CPUMemoryWorkingSetCounter; // \Process(*)\Working Set
-        readonly PerformanceCounter CPUMemoryWorkingSetPrivateCounter; // \Process(*)\Working Set - Private
-        readonly PerformanceCounter CPUMemoryVirtualCounter; // \Process(*)\Virtual Bytes
-
-        float CPUMemoryPrivate;
-        float CPUMemoryWorkingSet;
-        float CPUMemoryWorkingSetPrivate;
-        float CPUMemoryVirtual;
-
-        readonly List<PerformanceCounter> GPUMemoryCommittedCounters = new List<PerformanceCounter>(); // \GPU Process Memory(*)\Total Committed
-        readonly List<PerformanceCounter> GPUMemoryDedicatedCounters = new List<PerformanceCounter>(); // \GPU Process Memory(*)\Dedicated Usage
-        readonly List<PerformanceCounter> GPUMemorySharedCounters = new List<PerformanceCounter>(); // \GPU Process Memory(*)\Shared Usage
-
-        float GPUMemoryCommitted;
-        float GPUMemoryDedicated;
-        float GPUMemoryShared;
-
         readonly Viewer Viewer;
         readonly Action<TableData>[] TextPages;
         readonly WindowTextFont TextFont;
@@ -102,84 +75,13 @@ namespace Orts.Viewer3D.Popups
         HUDGraphMesh DebugGraphProcessLoader;
         HUDGraphMesh DebugGraphProcessSound;
 
+        HostProcess Host => Viewer.Game.HostProcess;
+
         public HUDWindow(WindowManager owner)
             : base(owner, TextOffset, TextOffset, "HUD")
         {
             Viewer = owner.Viewer;
             LastTextPage = LocomotivePage;
-
-            ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
-            ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { Size = 40 };
-            ProcessVirtualAddressLimit = GetVirtualAddressLimit();
-
-            try
-            {
-                var counterDotNetClrMemory = new PerformanceCounterCategory(".NET CLR Memory");
-                foreach (var process in counterDotNetClrMemory.GetInstanceNames())
-                {
-                    var processId = new PerformanceCounter(".NET CLR Memory", "Process ID", process);
-                    if (processId.NextValue() == Process.GetCurrentProcess().Id)
-                    {
-                        CLRMemoryAllocatedBytesPerSecCounter = new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", process);
-                        Trace.TraceInformation($"Found Microsoft .NET Framework performance counter {process}");
-                        break;
-                    }
-                }
-            }
-            catch (Exception error)
-            {
-                Trace.WriteLine(error);
-                Trace.TraceWarning("Unable to access Microsoft .NET Framework performance counters. This may be resolved by following the instructions at http://support.microsoft.com/kb/300956");
-            }
-
-            try
-            {
-                var counterProcess = new PerformanceCounterCategory("Process");
-                foreach (var process in counterProcess.GetInstanceNames())
-                {
-                    var processId = new PerformanceCounter("Process", "ID Process", process);
-                    if (processId.NextValue() == Process.GetCurrentProcess().Id)
-                    {
-                        CPUMemoryPrivateCounter = new PerformanceCounter("Process", "Private Bytes", process);
-                        CPUMemoryWorkingSetCounter = new PerformanceCounter("Process", "Working Set", process);
-                        CPUMemoryWorkingSetPrivateCounter = new PerformanceCounter("Process", "Working Set - Private", process);
-                        CPUMemoryVirtualCounter = new PerformanceCounter("Process", "Virtual Bytes", process);
-                        Trace.TraceInformation($"Found Windows Process performance counter {process}");
-                        break;
-                    }
-                }
-            }
-            catch (Exception error)
-            {
-                Trace.WriteLine(error);
-                Trace.TraceWarning("Unable to access Windows Process performance counters. This may be resolved by following the instructions at http://support.microsoft.com/kb/300956");
-            }
-
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version >= Windows10)
-            {
-                try
-                {
-                    var instancePrefix = $"pid_{Process.GetCurrentProcess().Id}_";
-                    var counterProcess = new PerformanceCounterCategory("GPU Process Memory");
-                    foreach (var process in counterProcess.GetInstanceNames())
-                    {
-                        if (process.StartsWith(instancePrefix))
-                        {
-                            GPUMemoryCommittedCounters.Add(new PerformanceCounter("GPU Process Memory", "Total Committed", process));
-                            GPUMemoryDedicatedCounters.Add(new PerformanceCounter("GPU Process Memory", "Dedicated Usage", process));
-                            GPUMemorySharedCounters.Add(new PerformanceCounter("GPU Process Memory", "Shared Usage", process));
-                            Trace.TraceInformation($"Found Windows GPU Process Memory performance counter {process}");
-                        }
-                    }
-                }
-                catch (Exception error)
-                {
-                    Trace.WriteLine(error);
-                    Trace.TraceWarning("Unable to access Windows GPU Process Memory performance counters. This may be resolved by following the instructions at http://support.microsoft.com/kb/300956");
-                }
-            }
-
-            Debug.Assert(GC.MaxGeneration == 2, "Runtime is expected to have a MaxGeneration of 2.");
 
             var textPages = new List<Action<TableData>>();
             textPages.Add(TextPageCommon);
@@ -207,10 +109,10 @@ namespace Orts.Viewer3D.Popups
             ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             ForceGraphMotiveForce = ForceGraphs.Add(Viewer.Catalog.GetString("Motive force"), "0%", "100%", Color.Green, 75);
             ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
-            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "300", Color.Blue, 25);
+            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "50", Color.Blue, 25);
 
             DebugGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
-            DebugGraphMemory = DebugGraphs.Add(Viewer.Catalog.GetString("Memory"), "0GB", String.Format("{0:F0}GB", (float)ProcessVirtualAddressLimit / 1024 / 1024 / 1024), Color.Orange, 50);
+            DebugGraphMemory = DebugGraphs.Add(Viewer.Catalog.GetString("Memory"), "0GB", String.Format("{0:F0}GB", (float)Host.CPUMemoryVirtualLimit / 1024 / 1024 / 1024), Color.Orange, 50);
             DebugGraphGCs = DebugGraphs.Add(Viewer.Catalog.GetString("GCs"), "0", "2", Color.Magenta, 20); // Multiple of 4
             DebugGraphFrameTime = DebugGraphs.Add(Viewer.Catalog.GetString("Frame time"), "0.0s", "0.1s", Color.LightGreen, 50);
             DebugGraphProcessRender = DebugGraphs.Add(Viewer.Catalog.GetString("Render process"), "0%", "100%", Color.Red, 20);
@@ -275,9 +177,28 @@ namespace Orts.Viewer3D.Popups
             if (Visible && TextPages[TextPage] == TextPageForceInfo)
             {
                 var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
-                ForceGraphMotiveForce.AddSample(loco.MotiveForceN / loco.MaxForceN);
-                ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
-                ForceGraphNumOfSubsteps.AddSample((float)loco.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS / (float)loco.LocomotiveAxle.AxleRevolutionsInt.MaxSubsteps);
+                var locoD = Viewer.PlayerLocomotive as MSTSDieselLocomotive;
+
+                // For geared locomotives the Max Force base value needs to change for each gear.
+                if (locoD != null && locoD.DieselEngines.HasGearBox && locoD.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                {
+                    ForceGraphMotiveForce.AddSample(loco.MotiveForceN / loco.HuDGearMaximumTractiveForce);
+                }
+                else
+                {
+                    ForceGraphMotiveForce.AddSample(loco.MotiveForceN / loco.MaxForceN);
+                }
+
+                if (locoD != null && locoD.DieselEngines.HasGearBox && locoD.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                {
+                    ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.HuDGearMaximumTractiveForce);
+                }
+                else
+                {
+                    ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
+                }
+
+                ForceGraphNumOfSubsteps.AddSample(loco.LocomotiveAxle.NumOfSubstepsPS / 50.0f);
 
                 ForceGraphs.PrepareFrame(frame);
             }
@@ -291,8 +212,8 @@ namespace Orts.Viewer3D.Popups
                 LocomotiveGraphsThrottle.AddSample(loco.ThrottlePercent * 0.01f);
                 if (locoD != null)
                 {
-                    LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
-                    LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
+                        LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
+                        LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
                 }
                 if (locoE != null)
                 {
@@ -312,7 +233,7 @@ namespace Orts.Viewer3D.Popups
             if (Visible && TextPages[TextPage] == TextPageDebugInfo)
             {
                 var gcCounts = new[] { GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2) };
-                DebugGraphMemory.AddSample((float)GetWorkingSetSize() / ProcessVirtualAddressLimit);
+                DebugGraphMemory.AddSample((float)Host.CPUMemoryWorkingSet / Host.CPUMemoryVirtualLimit);
                 DebugGraphGCs.AddSample(gcCounts[2] > lastGCCounts[2] ? 1.0f : gcCounts[1] > lastGCCounts[1] ? 0.5f : gcCounts[0] > lastGCCounts[0] ? 0.25f : 0);
                 DebugGraphFrameTime.AddSample(Viewer.RenderProcess.FrameTime.Value * 10);
                 DebugGraphProcessRender.AddSample(Viewer.RenderProcess.Profiler.Wall.Value / 100);
@@ -327,13 +248,6 @@ namespace Orts.Viewer3D.Popups
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
             base.PrepareFrame(elapsedTime, updateFull);
-
-            PerformanceCounterElapsedTimeS += elapsedTime.RealSeconds;
-            if (PerformanceCounterElapsedTimeS >= PerformanceCounterUpdateTimeS)
-            {
-                UpdatePerformanceCounters();
-                PerformanceCounterElapsedTimeS = 0;
-            }
 
             if (updateFull)
             {
@@ -718,19 +632,17 @@ namespace Orts.Viewer3D.Popups
             var train = locomotive.Train;
 
             int numberOfDieselLocomotives = 0;
-            int maxNumberOfEngines = 0;
             for (var i = 0; i<train.Cars.Count; i++)
             {
                 if (train.Cars[i] is MSTSDieselLocomotive)
                 {
                     numberOfDieselLocomotives++;
-                    maxNumberOfEngines = Math.Max(maxNumberOfEngines, (train.Cars[i] as MSTSDieselLocomotive).DieselEngines.Count);
                 }
             }
             if (numberOfDieselLocomotives > 0)
             {
                 var row = table.CurrentRow;
-                TableAddLines(table, MSTSDieselLocomotive.GetDebugTableBase(numberOfDieselLocomotives, maxNumberOfEngines));
+                TableAddLines(table, MSTSDieselLocomotive.GetDebugTableBase(numberOfDieselLocomotives));
                 var k = 0;
                 var dpUnitId = 0;
                 for (var i = 0; i<train.Cars.Count; i++)
@@ -1154,14 +1066,11 @@ namespace Orts.Viewer3D.Popups
                         {
                             TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model)"));
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel slip"), "{0:F0}% ({1:F0}%/{2})", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS, FormatStrings.s);
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.LocomotiveAxle.AdhesionConditions * 100.0f);
+                            TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Axle drive force"), "{0} ({1})", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.DriveForceN, mstsLocomotive.IsMetric),
                             FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeRetardForceN, mstsLocomotive.IsMetric));
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Number of substeps"), "{0:F0} ({1})", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS,
-                            Viewer.Catalog.GetStringFmt("filtered by {0:F0}", mstsLocomotive.LocomotiveAxle.FilterMovingAverage.Size));
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Solver"), "{0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.Method.ToString());
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Stability correction"), "{0:F0}", mstsLocomotive.LocomotiveAxle.AdhesionK);
+                            TableAddLabelValue(table, Viewer.Catalog.GetString("Number of substeps"), "{0:F0}", mstsLocomotive.LocomotiveAxle.NumOfSubstepsPS);
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0} ({1})",
                                 FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.AxleForceN, mstsLocomotive.IsMetric),
                                 FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.AxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
@@ -1422,11 +1331,11 @@ namespace Orts.Viewer3D.Popups
 
             TableAddLabelValue(table, Viewer.Catalog.GetString("Logging enabled"), Viewer.Settings.DataLogger ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Build"), VersionInfo.Build);
-            TableAddLabelValue(table, Viewer.Catalog.GetString("CPU"), Viewer.Catalog.GetStringFmt("{0:F0}% ({1})", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, Viewer.Catalog.GetPluralStringFmt("{0} logical processor", "{0} logical processors", ProcessorCount)));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("CPU"), Viewer.Catalog.GetStringFmt("{0:F0}% ({1})", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / Host.ProcessorCount, Viewer.Catalog.GetPluralStringFmt("{0} logical processor", "{0} logical processors", Host.ProcessorCount)));
             TableAddLabelValue(table, Viewer.Catalog.GetString("GPU"), Viewer.Catalog.GetStringFmt("{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, DirectX feature level >= {4})", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedP50 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP95 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP99 * 1000, Viewer.Settings.DirectXFeatureLevel));
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Memory"), Viewer.Catalog.GetStringFmt("{3}, {4}, {5}, {6} ({7:F0} kB/frame allocated, {0:F0}/{1:F0}/{2:F0} GCs)", GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus(), CLRMemoryAllocatedBytesPerSec / Viewer.RenderProcess.FrameRate.SmoothedValue / 1024));
-            if (CPUMemoryPrivate > 0) TableAddLabelValue(table, Viewer.Catalog.GetString("CPU Memory"), Viewer.Catalog.GetStringFmt("{0:F0} MB private, {1:F0} MB working set, {2:F0} MB private working set, {3:F0} MB managed, {4:F0} MB virtual", CPUMemoryPrivate / 1024 / 1024, CPUMemoryWorkingSet / 1024 / 1024, CPUMemoryWorkingSetPrivate / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, CPUMemoryVirtual / 1024 / 1024));
-            if (GPUMemoryCommitted > 0) TableAddLabelValue(table, Viewer.Catalog.GetString("GPU Memory"), Viewer.Catalog.GetStringFmt("{0:F0} MB committed, {1:F0} MB dedicated, {2:F0} MB shared", GPUMemoryCommitted / 1024 / 1024, GPUMemoryDedicated / 1024 / 1024, GPUMemoryShared / 1024 / 1024));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Memory"), Viewer.Catalog.GetStringFmt("{3}, {4}, {5}, {6} ({7:F0} kB/frame allocated, {0:F0}/{1:F0}/{2:F0} GCs)", GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus(), Host.CLRMemoryAllocatedBytesPerSec / Viewer.RenderProcess.FrameRate.SmoothedValue / 1024));
+            if (Host.CPUMemoryPrivate > 0) TableAddLabelValue(table, Viewer.Catalog.GetString("CPU Memory"), Viewer.Catalog.GetStringFmt("{0:F0} MB private, {1:F0} MB working set, {2:F0} MB private working set, {3:F0} MB managed, {4:F0} MB virtual", Host.CPUMemoryPrivate / 1024 / 1024, Host.CPUMemoryWorkingSet / 1024 / 1024, Host.CPUMemoryWorkingSetPrivate / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, Host.CPUMemoryVirtual / 1024 / 1024));
+            if (Host.GPUMemoryCommitted > 0) TableAddLabelValue(table, Viewer.Catalog.GetString("GPU Memory"), Viewer.Catalog.GetStringFmt("{0:F0} MB committed, {1:F0} MB dedicated, {2:F0} MB shared", Host.GPUMemoryCommitted / 1024 / 1024, Host.GPUMemoryDedicated / 1024 / 1024, Host.GPUMemoryShared / 1024 / 1024));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Adapter"), Viewer.Catalog.GetStringFmt("{0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024));
             if (Viewer.Settings.DynamicShadows)
             {
@@ -1451,78 +1360,6 @@ namespace Orts.Viewer3D.Popups
         {
             TableAddLine(table);
             TableAddLine(table, name);
-        }
-
-        #region Native code
-        [StructLayout(LayoutKind.Sequential, Size = 64)]
-        public class MEMORYSTATUSEX
-        {
-            public uint Size;
-            public uint MemoryLoad;
-            public ulong TotalPhysical;
-            public ulong AvailablePhysical;
-            public ulong TotalPageFile;
-            public ulong AvailablePageFile;
-            public ulong TotalVirtual;
-            public ulong AvailableVirtual;
-            public ulong AvailableExtendedVirtual;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Size = 40)]
-        struct PROCESS_MEMORY_COUNTERS
-        {
-            public int Size;
-            public int PageFaultCount;
-            public int PeakWorkingSetSize;
-            public int WorkingSetSize;
-            public int QuotaPeakPagedPoolUsage;
-            public int QuotaPagedPoolUsage;
-            public int QuotaPeakNonPagedPoolUsage;
-            public int QuotaNonPagedPoolUsage;
-            public int PagefileUsage;
-            public int PeakPagefileUsage;
-        }
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX buffer);
-
-        [DllImport("psapi.dll", SetLastError = true)]
-        static extern bool GetProcessMemoryInfo(IntPtr hProcess, out PROCESS_MEMORY_COUNTERS counters, int size);
-
-        [DllImport("kernel32.dll")]
-        static extern IntPtr OpenProcess(int dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
-
-        readonly IntPtr ProcessHandle;
-        PROCESS_MEMORY_COUNTERS ProcessMemoryCounters;
-        readonly ulong ProcessVirtualAddressLimit;
-        #endregion
-
-        public ulong GetWorkingSetSize()
-        {
-            // Get memory usage (working set).
-            GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.Size);
-            return (ulong)ProcessMemoryCounters.WorkingSetSize;
-        }
-
-        public ulong GetVirtualAddressLimit()
-        {
-            var buffer = new MEMORYSTATUSEX { Size = 64 };
-            GlobalMemoryStatusEx(buffer);
-            return Math.Min(buffer.TotalVirtual, buffer.TotalPhysical);
-        }
-
-        void UpdatePerformanceCounters()
-        {
-            // Only update CLRMemoryAllocatedBytesPerSec with non-zero values
-            var clrMemoryAllocatedBytesPerSec = CLRMemoryAllocatedBytesPerSecCounter?.NextValue() ?? 0;
-            if (clrMemoryAllocatedBytesPerSec >= 1) CLRMemoryAllocatedBytesPerSec = clrMemoryAllocatedBytesPerSec;
-            CPUMemoryPrivate = CPUMemoryPrivateCounter?.NextValue() ?? 0;
-            CPUMemoryWorkingSet = CPUMemoryWorkingSetCounter?.NextValue() ?? 0;
-            CPUMemoryWorkingSetPrivate = CPUMemoryWorkingSetPrivateCounter?.NextValue() ?? 0;
-            CPUMemoryVirtual = CPUMemoryVirtualCounter?.NextValue() ?? 0;
-            GPUMemoryCommitted = GPUMemoryCommittedCounters.Sum(counter => counter.NextValue());
-            GPUMemoryDedicated = GPUMemoryDedicatedCounters.Sum(counter => counter.NextValue());
-            GPUMemoryShared = GPUMemorySharedCounters.Sum(counter => counter.NextValue());
         }
     }
 

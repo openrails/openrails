@@ -46,6 +46,7 @@ using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using ORTS.Common;
+using Orts.Simulation.RollingStocks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -77,12 +78,7 @@ namespace Orts.Viewer3D
         public void Load()
         {
             var cancellation = Viewer.LoaderProcess.CancellationToken;
-            Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfDayOrNightTextures &&
-            ((Viewer.MaterialManager.sunDirection.Y > 0.05f && Program.Simulator.ClockTime % 86400 < 43200) ||
-            (Viewer.MaterialManager.sunDirection.Y > 0.15f && Program.Simulator.ClockTime % 86400 >= 43200))) ? true : false;
-            Viewer.DontLoadDayTextures = (Program.Simulator.Settings.ConditionalLoadOfDayOrNightTextures &&
-            ((Viewer.MaterialManager.sunDirection.Y < -0.05f && Program.Simulator.ClockTime % 86400 >= 43200) ||
-            (Viewer.MaterialManager.sunDirection.Y < -0.15f && Program.Simulator.ClockTime % 86400 < 43200))) ? true : false;
+
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
                 TileX = VisibleTileX;
@@ -113,12 +109,12 @@ namespace Orts.Viewer3D
                 Viewer.tryLoadingNightTextures = true; // when Tiles loaded change you can try
                 Viewer.tryLoadingDayTextures = true; // when Tiles loaded change you can try
             }
-            else if (Viewer.NightTexturesNotLoaded && Program.Simulator.ClockTime % 86400 >= 43200 && Viewer.tryLoadingNightTextures)
+            else if (Viewer.NightTexturesNotLoaded && !Viewer.IsBeforeNoon && Viewer.tryLoadingNightTextures)
             {
                 var sunHeight = Viewer.MaterialManager.sunDirection.Y;
                 if (sunHeight < 0.10f && sunHeight > 0.01)
                 {
-                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.Game.HostProcess.CPUMemoryWorkingSet;
                     if (remainingMemorySpace >= 0) // if not we'll try again
                     {
                         // Night is coming, it's time to load the night textures
@@ -133,12 +129,12 @@ namespace Orts.Viewer3D
                 else if (sunHeight <= 0.01)
                     Viewer.NightTexturesNotLoaded = false; // too late to try, we must give up and we don't load the night textures
             }
-            else if (Viewer.DayTexturesNotLoaded && Program.Simulator.ClockTime % 86400 < 43200 && Viewer.tryLoadingDayTextures)
+            else if (Viewer.DayTexturesNotLoaded && Viewer.IsBeforeNoon && Viewer.tryLoadingDayTextures)
             {
                 var sunHeight = Viewer.MaterialManager.sunDirection.Y;
                 if (sunHeight > -0.10f && sunHeight < -0.01)
                 {
-                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.Game.HostProcess.CPUMemoryWorkingSet;
                     if (remainingMemorySpace >= 0) // if not we'll try again
                     {
                         // Day is coming, it's time to load the day textures
@@ -287,7 +283,7 @@ namespace Orts.Viewer3D
             if (File.Exists(WFilePath))
             {
                 // We have an OR-specific addition to world file
-                WFile.InsertORSpecificData(WFilePath);
+                WFile.InsertORSpecificData(WFilePath, null);
             }
 
 
@@ -388,7 +384,7 @@ namespace Orts.Viewer3D
                             else
                             {
                                 var found = false;
-                                foreach (var movingTable in Program.Simulator.MovingTables)
+                                foreach (var movingTable in Program.Simulator.            MovingTables)
                                 {
                                     if (worldObject.UID == movingTable.UID && WFileName == movingTable.WFile)
                                     {
@@ -503,6 +499,11 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(PickupObj))
                     {
+                        if ((worldObject as PickupObj).PickupType == (uint)(MSTSWagon.PickupType.Container))
+                        {
+                            sceneryObjects.Add(new ContainerHandlingItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
+                        }
+                        else
                         sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
                         PickupList.Add((PickupObj)worldObject);
                     }

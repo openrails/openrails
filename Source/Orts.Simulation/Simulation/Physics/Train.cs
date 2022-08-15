@@ -54,6 +54,7 @@ using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation.AIs;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
@@ -277,6 +278,8 @@ namespace Orts.Simulation.Physics
         public int IncorporatedTrainNo = -1;                        // number of train incorporated in actual train
         public Train IncorporatingTrain;                      // train incorporating another train
         public int IncorporatingTrainNo = -1;                   // number of train incorporating the actual train
+
+        public EOT EOT;
 
         public Traffic_Service_Definition TrafficService;
         public int[,] MisalignedSwitch = new int[2, 2] { { -1, -1 }, { -1, -1 } };  // misaligned switch indication per direction:
@@ -1192,6 +1195,13 @@ namespace Orts.Simulation.Physics
             // Save initial speed
             outf.Write(InitialSpeed);
             outf.Write(IsPathless);
+ /*           if (EOT != null)
+            {
+                outf.Write(1);
+                EOT.Save(outf);
+            }
+            else
+                outf.Write(-1);*/
         }
 
         private void SaveCars(BinaryWriter outf)
@@ -1932,7 +1942,6 @@ namespace Orts.Simulation.Physics
                 return;
             }
             // Update train physics, position and movement
-
             PropagateBrakePressure(elapsedClockSeconds);
 
             bool whlslp = false;
@@ -3961,6 +3970,14 @@ namespace Orts.Simulation.Physics
                     Simulator.Confirmer.Warning(CabControl.InitializeBrakes, CabSetting.Warn1);
                 return;
             }
+            if (Simulator.Settings.VerboseConfigurationMessages && LeadLocomotiveIndex >= 0) // Check incompatibilities between brake control valves
+            {
+                MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
+                if (Cars.Any(x => (x as MSTSWagon).BrakeValve != lead.BrakeValve))
+                {
+                    Trace.TraceInformation("Cars along the train have incompatible brake control valves");
+                }
+            }
             UnconditionalInitializeBrakes();
             return;
         }
@@ -4102,9 +4119,7 @@ namespace Orts.Simulation.Physics
         {
             if (SpeedMpS < -.1 || SpeedMpS > .1)
                 return;
-            int first = -1;
-            int last = -1;
-            FindLeadLocomotives(ref first, ref last);
+            FindLeadLocomotives(out int first, out int last);
             for (int i = 0; i < Cars.Count; i++)
             {
                 Cars[i].BrakeSystem.FrontBrakeHoseConnected = first < i && i <= last;
@@ -4145,9 +4160,7 @@ namespace Orts.Simulation.Physics
                         break;
                 }
             }
-            int first = -1;
-            int last = -1;
-            FindLeadLocomotives(ref first, ref last);
+            FindLeadLocomotives(out int first, out int last);
             int step = 100 / RetainerPercent;
             for (int i = 0; i < Cars.Count; i++)
             {
@@ -4170,7 +4183,7 @@ namespace Orts.Simulation.Physics
         // for example a double headed steam locomotive will most often have a tender separating the two locomotives, 
         // so the second locomotive will not be identified, nor will a locomotive added at the rear of the train. 
 
-        public void FindLeadLocomotives(ref int first, ref int last)
+        public void FindLeadLocomotives(out int first, out int last)
         {
             first = last = -1;
             if (LeadLocomotiveIndex >= 0)
@@ -4210,9 +4223,7 @@ namespace Orts.Simulation.Physics
 
         public TrainCar FindLeadLocomotive()
         {
-            int first = -1;
-            int last = -1;
-            FindLeadLocomotives(ref first, ref last);
+            FindLeadLocomotives(out int first, out int last);
             if (first != -1 && first < LeadLocomotiveIndex)
             {
                 return Cars[first];
@@ -4466,12 +4477,130 @@ namespace Orts.Simulation.Physics
                     car.UpdatedTraveler(traveller, elapsedTime, distance, SpeedMpS);
                 }
                 length += car.CarLengthM;
+                // update position of container in discrete freight animations
+                car.UpdateFreightAnimationDiscretePositions();
             }
 
             FrontTDBTraveller = traveller;
             Length = length;
             travelled += distance;
         } // CalculatePositionOfCars
+
+        //================================================================================================//
+        /// <summary>
+        /// 
+        /// </summary>
+        /// 
+
+        public void CalculatePositionOfEOT()
+        {
+            var traveller = new Traveller(RearTDBTraveller, Traveller.TravellerDirection.Backward);
+            float distance = 0;
+            float elapsedTime = 0;
+            // The traveller location represents the back of the train.
+            var length = 0f;
+
+            var car = Cars[Cars.Count - 1];
+            traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
+            length += car.CouplerSlackM + car.GetCouplerZeroLengthM();
+            if (car.WheelAxlesLoaded)
+            {
+                car.ComputePosition(traveller, true, elapsedTime, distance, SpeedMpS);
+            }
+            else
+            {
+                var bogieSpacing = car.CarLengthM * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
+
+                // traveller is positioned at the back of the car
+                // advance to the first bogie 
+                traveller.Move((car.CarLengthM - bogieSpacing) / 2.0f);
+                var tileX = traveller.TileX;
+                var tileZ = traveller.TileZ;
+                var x = traveller.X;
+                var y = traveller.Y;
+                var z = traveller.Z;
+                traveller.Move(bogieSpacing);
+
+                // normalize across tile boundaries
+                while (tileX > traveller.TileX)
+                {
+                    x += 2048;
+                    --tileX;
+                }
+                while (tileX < traveller.TileX)
+                {
+                    x -= 2048;
+                    ++tileX;
+                }
+                while (tileZ > traveller.TileZ)
+                {
+                    z += 2048;
+                    --tileZ;
+                }
+                while (tileZ < traveller.TileZ)
+                {
+                    z -= 2048;
+                    ++tileZ;
+                }
+
+
+                // note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
+                car.WorldPosition.XNAMatrix = Matrix.Identity;
+                if (car.Flipped)
+                {
+                    //  Rotate matrix 180' around Y axis.
+                    car.WorldPosition.XNAMatrix.M11 = -1;
+                    car.WorldPosition.XNAMatrix.M33 = -1;
+                }
+                car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y + 0.275f, traveller.Z, x, y + 0.275f, z);
+                car.WorldPosition.TileX = traveller.TileX;
+                car.WorldPosition.TileZ = traveller.TileZ;
+
+                traveller.Move((car.CarLengthM - bogieSpacing) / 2.0f);  // Move to the front of the car 
+
+                car.UpdatedTraveler(traveller, elapsedTime, distance, SpeedMpS);
+                length += car.CarLengthM;
+            }
+            traveller = new Traveller(traveller, Traveller.TravellerDirection.Backward);
+            RearTDBTraveller = new Traveller(traveller);
+
+            Length += length;
+        } // CalculatePositionOfEOT
+
+        //================================================================================================//
+        /// <summary>
+        /// Recalculate rear traveller when removing EOT
+        /// </summary>
+        /// 
+
+        public void RecalculateRearTDBTraveller()
+        {
+            var traveller = new Traveller(RearTDBTraveller);
+            float distance = 0;
+            float elapsedTime = 0;
+            // The traveller location represents the back of the train.
+            var length = 0f;
+
+            var car = Cars[Cars.Count - 1];
+            traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
+            length += car.CouplerSlackM + car.GetCouplerZeroLengthM();
+            if (car.WheelAxlesLoaded)
+            {
+                car.ComputePosition(traveller, true, elapsedTime, distance, SpeedMpS);
+            }
+            else
+            {
+                // traveller is positioned at the back of the car
+                // advance to the front of the car 
+                traveller.Move(car.CarLengthM);
+
+                car.UpdatedTraveler(traveller, elapsedTime, distance, SpeedMpS);
+                length += car.CarLengthM;
+            }
+            RearTDBTraveller = new Traveller(traveller);
+
+            Length -= length;
+        }
 
         //================================================================================================//
         /// <summary>
@@ -9097,22 +9226,46 @@ namespace Orts.Simulation.Physics
             // get next signal
 
             // forward
+            float distanceToSignalForward = 0;
+            float lengthOffset = PresentPosition[0].TCOffset;
             NextSignalObject[0] = null;
             for (int iindex = 0; iindex < ValidRoute[0].Count && NextSignalObject[0] == null; iindex++)
             {
                 TCRouteElement thisElement = ValidRoute[0][iindex];
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
                 NextSignalObject[0] = thisSection.EndSignals[thisElement.Direction];
+                if (iindex >= PresentPosition[0].RouteListIndex)
+                {
+                    distanceToSignalForward += thisSection.Length - lengthOffset;
+                    lengthOffset = 0;
+                }
             }
 
             // backward
+            float distanceToSignalBackward = 0;
+            lengthOffset = 0;
+            int presentIndex = -1;
             NextSignalObject[1] = null;
             for (int iindex = 0; iindex < ValidRoute[1].Count && NextSignalObject[1] == null; iindex++)
             {
                 TCRouteElement thisElement = ValidRoute[1][iindex];
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
                 NextSignalObject[1] = thisSection.EndSignals[thisElement.Direction];
+                if (presentIndex == -1 && PresentPosition[1].TCSectionIndex == thisElement.TCSectionIndex)
+                {
+                    lengthOffset = -PresentPosition[1].TCOffset + signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex].Length;
+                    presentIndex = iindex;
+                }
+                if (presentIndex != -1 && presentIndex <= iindex)
+                {
+                    distanceToSignalBackward += thisSection.Length - lengthOffset;
+                    lengthOffset = 0;
+                }
             }
+
+            DistanceToSignal = null;
+            if (MUDirection != Direction.Reverse && NextSignalObject[0] != null) DistanceToSignal = distanceToSignalForward;
+            if (MUDirection == Direction.Reverse && NextSignalObject[1] != null) DistanceToSignal = distanceToSignalBackward;
 
             // clear all build up distance actions
             requiredActions.RemovePendingAIActionItems(true);
@@ -11179,6 +11332,7 @@ namespace Orts.Simulation.Physics
 
             CheckFreight();
             SetDPUnitIDs();
+            ReinitializeEOT();
 
             // clear all track occupation actions
 
@@ -13499,6 +13653,7 @@ namespace Orts.Simulation.Physics
             IsPathless = true;
             CheckFreight();
             SetDPUnitIDs();
+            ReinitializeEOT();
             ToggleToManualMode();
             InitializeBrakes();
             InitializeSpeeds();
@@ -21427,5 +21582,29 @@ namespace Orts.Simulation.Physics
             else ToggleToManualMode();
             Simulator.Confirmer.Confirm(CabControl.SignalMode, CabSetting.Off);
         }
+
+        public void ReinitializeEOT()
+        {
+            if (EOT != null)
+            {
+                EOT.EOTState = EOT.EOTstate.Disarmed;
+                EOT = null;
+            }
+            if (Simulator.PlayerLocomotive?.Train != null && Simulator.PlayerLocomotive.Train == this)
+            {
+                if (Cars.First() == Simulator.PlayerLocomotive && Cars.Last() is EOT)
+                    EOT = (EOT)Cars.Last();
+                else if (Cars.Last() == Simulator.PlayerLocomotive && Cars.First() is EOT)
+                    EOT = (EOT)Cars.First();
+            }
+            else
+            {
+                if (Cars.First() is MSTSLocomotive && Cars.Last() is EOT)
+                    EOT = (EOT)Cars.Last();
+                else if (Cars.Last() is MSTSLocomotive && Cars.First() is EOT)
+                    EOT = (EOT)Cars.First();
+            }
+        }
+
     }// class Train
 }

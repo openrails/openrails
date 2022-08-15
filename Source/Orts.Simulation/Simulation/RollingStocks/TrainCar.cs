@@ -467,19 +467,29 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (RemoteControlGroup == 0 && Train != null)
                 {
-                    if (Train.LeadLocomotive != null && !((MSTSLocomotive)Train.LeadLocomotive).TrainControlSystem.TractionAuthorization && Train.MUThrottlePercent > 0)
+                    if (Train.LeadLocomotive is MSTSLocomotive locomotive)
                     {
-                        return 0;
+                        if (!locomotive.TrainControlSystem.TractionAuthorization
+                            || Train.MUThrottlePercent <= 0)
+                        {
+                            return 0;
+                        }
+                        else if (Train.MUThrottlePercent > locomotive.TrainControlSystem.MaxThrottlePercent)
+                        {
+                            return Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
+                        }
                     }
-                    else
-                    {
-                        return Train.MUThrottlePercent;
-                    }
+
+                    return Train.MUThrottlePercent;
                 }
                 else if (RemoteControlGroup == 1 && Train != null)
+                {
                     return Train.DPThrottlePercent;
+                }
                 else
+                {
                     return LocalThrottlePercent;
+                }
             }
             set
             {
@@ -514,21 +524,26 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
-                if (RemoteControlGroup >= 0 && Train != null)
+                if (RemoteControlGroup == 0 && Train != null)
                 {
-                    if (Train.LeadLocomotive != null && ((MSTSLocomotive) Train.LeadLocomotive).TrainControlSystem.FullDynamicBrakingOrder)
+                    if (Train.LeadLocomotive is MSTSLocomotive locomotive)
                     {
-                        return 100;
+                        if (locomotive.TrainControlSystem.FullDynamicBrakingOrder)
+                        {
+                            return 100;
+                        }
                     }
-                    else if (RemoteControlGroup == 1 && Train != null)
-                        return Train.DPDynamicBrakePercent;
-                    else
-                    {
-                        return Train.MUDynamicBrakePercent;
-                    }
-}
+
+                    return Train.MUDynamicBrakePercent;
+                }
+                else if (RemoteControlGroup == 1 && Train != null)
+                {
+                    return Train.DPDynamicBrakePercent;
+                }
                 else
+                {
                     return LocalDynamicBrakePercent;
+                }
             }
             set
             {
@@ -681,6 +696,7 @@ namespace Orts.Simulation.RollingStocks
             Tender,
             Passenger,
             Freight,
+            EOT,
         }
         public WagonTypes WagonType;
 
@@ -880,6 +896,32 @@ namespace Orts.Simulation.RollingStocks
                     _AccelerationMpSS = AccelerationFilter.Filter(_AccelerationMpSS, elapsedClockSeconds);
 
                 _PrevSpeedMpS = _SpeedMpS;
+            }
+        }
+
+
+
+        /// <summary>
+        /// update position of discrete freight animations (e.g. containers)
+        /// </summary>  
+        public void UpdateFreightAnimationDiscretePositions()
+        {
+            if (FreightAnimations?.Animations != null)
+            {
+                foreach (var freightAnim in FreightAnimations.Animations)
+                {
+                    if (freightAnim is FreightAnimationDiscrete)
+                    {
+                        var discreteFreightAnim = freightAnim as FreightAnimationDiscrete;
+                        if (discreteFreightAnim.Loaded && discreteFreightAnim.Container != null)
+                        {
+                            var container = discreteFreightAnim.Container;
+                            container.WorldPosition.XNAMatrix = Matrix.Multiply(container.RelativeContainerMatrix, discreteFreightAnim.Wagon.WorldPosition.XNAMatrix);
+                            container.WorldPosition.TileX = WorldPosition.TileX;
+                            container.WorldPosition.TileZ = WorldPosition.TileZ;
+                        }
+                    }
+                }
             }
         }
 
@@ -2134,8 +2176,27 @@ namespace Orts.Simulation.RollingStocks
             {
                 locomotivetypetext = "Unpowered Control Trailer Car";
             }
-            
-            return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t{8}\t",
+
+            var loco = this as MSTSDieselLocomotive;
+            if (loco != null && loco.DieselEngines.HasGearBox && loco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+            {
+                return String.Format("{0}\t{1}\t{2}\t{3}\t{4:F0}%\t{5} - {6:F0} rpm\t\t{7}\t{8}\t{9}\t",
+                CarID,
+                FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
+                Flipped ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : RemoteControlGroup == 1 ? Simulator.Catalog.GetString("Async") : "----",
+                ThrottlePercent,
+                String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
+                loco.DieselEngines[0].GearBox.HuDShaftRPM,
+                // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
+                FormatStrings.FormatPower((MotiveForceN) * SpeedMpS, IsMetric, false, false),
+                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
+                Simulator.Catalog.GetString(locomotivetypetext)
+                );
+            }
+            else
+            {
+                return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t{8}\t",
                 CarID,
                 Flipped ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
@@ -2146,8 +2207,8 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatPower((MotiveForceN) * SpeedMpS, IsMetric, false, false),
                 String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
                 Simulator.Catalog.GetString(locomotivetypetext)
-
                 );
+            }
         }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }
@@ -2212,6 +2273,7 @@ namespace Orts.Simulation.RollingStocks
             CarHeatCurrentCompartmentHeatJ = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
+            FreightAnimations?.LoadDataList?.Clear();
         }
 
         //================================================================================================//
@@ -2282,6 +2344,22 @@ namespace Orts.Simulation.RollingStocks
         public virtual bool GetCabFlipped()
         {
             return false;
+        }
+
+        //<comment>
+        //Initializes the physics of the car taking into account its variable discrete loads
+        //</comment>
+        public void InitializeLoadPhysics()
+        {
+            // TODO
+        }
+
+        //<comment>
+        //Updates the physics of the car taking into account its variable discrete loads
+        //</comment>
+        public void UpdateLoadPhysics()
+        {
+            // TODO
         }
 
         public virtual float GetCouplerZeroLengthM()
@@ -2945,7 +3023,8 @@ namespace Orts.Simulation.RollingStocks
             // NOTE: Traveller is at the FRONT of the TrainCar!
 
             // Don't add vibrations to train cars less than 2.5 meter in length; they're unsuitable for these calculations.
-            if (CarLengthM < 2.5f) return;
+            // Don't let vibrate car before EOT to avoid EOT not moving together with that car
+            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars[Train.Cars.Count - 2] == this) return;
             if (Simulator.Settings.CarVibratingLevel != 0)
             {
 

@@ -201,13 +201,19 @@ namespace ORTS.Common
 
         static void WriteGraphicsAdapter(TextWriter output)
         {
-            foreach (var adapter in GraphicsAdapter.Adapters)
-            {
-                try
+            try {
+                foreach (var adapter in GraphicsAdapter.Adapters)
                 {
-                    output.WriteLine("{0} = {1}", adapter.DeviceName, adapter.Description);
+                    try
+                    {
+                        output.WriteLine("{0} = {1}", adapter.DeviceName, adapter.Description);
+                    }
+                    catch (Exception) { }
                 }
-                catch (Exception) { }
+            }
+            catch (Exception error)
+            {
+                output.WriteLine(error);
             }
         }
 

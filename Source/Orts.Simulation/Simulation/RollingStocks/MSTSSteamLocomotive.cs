@@ -840,6 +840,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "engine(ortssteammaxgearpistonrate": MaxSteamGearPistonRateFtpM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsgearedtractiveeffortfactor": GearedTractiveEffortFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortstractiveeffortfactor": TractiveEffortFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamlocomotivetype":
                     stf.MustMatch("(");
                     var steamengineType = stf.ReadString();
@@ -905,6 +906,7 @@ namespace Orts.Simulation.RollingStocks
             EjectorLargeSteamConsumptionLbpS = locoCopy.EjectorLargeSteamConsumptionLbpS;
             ShovelMassKG = locoCopy.ShovelMassKG;
             GearedTractiveEffortFactor = locoCopy.GearedTractiveEffortFactor;
+            TractiveEffortFactor = locoCopy.TractiveEffortFactor;
             MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
             MaxLocoTenderWaterMassKG = locoCopy.MaxLocoTenderWaterMassKG;
             MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
@@ -1254,11 +1256,11 @@ namespace Orts.Simulation.RollingStocks
 
             // ******************  Test Locomotive and Gearing type *********************** 
 
-            // if the maximum cutoff for the locomotive is less then the default value, then decrease it so that tractive effort is not excessive. 
-            // At some future stage it may be worthwhile to add an extra parameter to the ENG file to allow user setting.
-            if (CutoffController.MaximumValue < TractiveEffortFactor)
+            // If the maximum cutoff for the locomotive is less then the default tractive effort constant value, then flag to the user to check. See this reference - 
+            // https://babel.hathitrust.org/cgi/pt?id=wu.89089676290&view=1up&seq=510&skin=2021&q1=booster
+            if (CutoffController.MaximumValue < TractiveEffortFactor && Simulator.Settings.VerboseConfigurationMessages && ( CutoffController.MaximumValue < 0.7 || TractiveEffortFactor >= 0.85))
             {
-                TractiveEffortFactor = CutoffController.MaximumValue;
+                Trace.TraceInformation("Maximum Cutoff setting {0} is less then the TractiveEffortFactor {1}, is this correct?", CutoffController.MaximumValue, TractiveEffortFactor);
             }
 
             if (SteamEngineType == SteamEngineTypes.Compound)
@@ -1398,8 +1400,8 @@ namespace Orts.Simulation.RollingStocks
 
             if (RestoredCombinedTenderWaterVolumeUKG > 1.0)// Check to see if this is a restored game -(assumed so if Restored >0), then set water controller values based upon saved values
             {
-                CombinedTenderWaterVolumeUKG = RestoredCombinedTenderWaterVolumeUKG;
                 MaxTotalCombinedWaterVolumeUKG = RestoredMaxTotalCombinedWaterVolumeUKG;
+                CombinedTenderWaterVolumeUKG = RestoredCombinedTenderWaterVolumeUKG;
             }
 
             InitializeTenderWithWater();
@@ -4652,7 +4654,7 @@ namespace Orts.Simulation.RollingStocks
 
             #region - Steam Adhesion Model Input for Steam Locomotives
 
-            // Based upon information presented in "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson - https://archive.org/details/locomotiveoperat00hend
+            // Based upon information presented on pg 276 of "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson - https://archive.org/details/locomotiveoperat00hend
             // At its simplest slip occurs when the wheel tangential force exceeds the static frictional force
             // Static frictional force = weight on the locomotive driving wheels * frictional co-efficient
             // Tangential force = Effective force (Interia + Piston force) * Tangential factor (sin (crank angle) + (crank radius / connecting rod length) * sin (crank angle) * cos (crank angle))
@@ -4979,21 +4981,27 @@ namespace Orts.Simulation.RollingStocks
                 // If locomotive slip is occuring, set parameters to reduce motive force (pulling power), and set wheel rotational speed for wheel viewers
                 if (IsLocoSlip)
                 {
-
+                    // Based upon information presented in "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson - https://archive.org/details/locomotiveoperat00hend
                     // This next section caluclates the turning speed for the wheel if slip occurs. It is based upon the force applied to the wheel and the moment of inertia for the wheel
                     // A Generic wheel profile is used, so results may not be applicable to all locomotive, but should provide a "reasonable" guestimation
                     // Generic wheel assumptions are - 80 inch drive wheels ( 2.032 metre), a pair of drive wheels weighs approx 6,000lbs, axle weighs 1,000 lbs, and has a diameter of 8 inches.
                     // Moment of Inertia (Wheel and axle) = (Mass x Radius) / 2.0
+                    // Reference model assumption
                     float WheelRadiusAssumptM = Me.FromIn(80.0f / 2.0f);
                     float WheelWeightKG = Kg.FromLb(6000.0f);
                     float AxleWeighKG = Kg.FromLb(1000.0f);
                     float AxleRadiusM = Me.FromIn(8.0f / 2.0f);
+
+                    // Take into account the actual lcomotive that we are modelling, and vary the above values by the ratio of drive wheel size.
+                    var wheelSizeRatio = DriverWheelRadiusM / WheelRadiusAssumptM;
+                    WheelRadiusAssumptM *= wheelSizeRatio;
+                    WheelWeightKG *= wheelSizeRatio;
+                    AxleWeighKG *= wheelSizeRatio;
+                    AxleRadiusM *= wheelSizeRatio;
+
                     float WheelMomentInertia = (WheelWeightKG * WheelRadiusAssumptM * WheelRadiusAssumptM) / 2.0f;
                     float AxleMomentInertia = (WheelWeightKG * AxleRadiusM * AxleRadiusM) / 2.0f;
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheel
-
-                    // The moment of inertia will be adjusted up or down compared to the size of the wheel on the player locomotive compared to the Generic wheel                
-                    TotalWheelMomentofInertia *= DriverWheelRadiusM / WheelRadiusAssumptM;
 
                     // The moment of inertia needs to be increased by the number of wheel sets
                     TotalWheelMomentofInertia *= LocoNumDrvAxles;
@@ -5002,6 +5010,7 @@ namespace Orts.Simulation.RollingStocks
                     // Assume rods weigh approx 1500 lbs
                     // // MoI = rod weight x stroke radius (ie stroke / 2)
                     float RodWeightKG = Kg.FromLb(1500.0f);
+                    RodWeightKG *= wheelSizeRatio;
                     // ???? For both compound and simple??????
                     float RodStrokeM = CylinderStrokeM / 2.0f;
                     float RodMomentInertia = RodWeightKG * RodStrokeM * RodStrokeM;
@@ -5010,11 +5019,19 @@ namespace Orts.Simulation.RollingStocks
 
                     // angular acceleration = (sum of forces * wheel radius) / moment of inertia
                     float AngAccRadpS2 = (N.FromLbf(SteamTangentialWheelForce - SteamStaticWheelForce) * DriverWheelRadiusM) / TotalMomentInertia;
+
+ //                   Trace.TraceInformation("AngAcc {0}  Tang {1} Static {2} Radius {3} Inertia {4} WheelSpeed {5}", AngAccRadpS2, N.FromLbf(SteamTangentialWheelForce), N.FromLbf(SteamStaticWheelForce), DriverWheelRadiusM, TotalMomentInertia, FrictionWheelSpeedMpS);
                     // tangential acceleration = angular acceleration * wheel radius
                     // tangential speed = angular acceleration * time
                     PrevFrictionWheelSpeedMpS = FrictionWheelSpeedMpS; // Save current value of wheelspeed
                     // Speed = current velocity + acceleration * time
-                    FrictionWheelSpeedMpS += (AngAccRadpS2 * DriverWheelRadiusM * elapsedClockSeconds);  // increase wheel speed whilever wheel accelerating
+                    var wheelSpeedRadpS = (AngAccRadpS2 * elapsedClockSeconds);
+                    // Convert from radpS to MpS for the wheel size
+                    var revsPs = wheelSpeedRadpS / (2.0f * (float)Math.PI); // Convert rads to revs
+                    var diffWheelSpeedMpS = revsPs * 2.0f * (float)Math.PI * DriverWheelRadiusM;
+                    
+                    // each wheel rev will travel the circumference of the wheel
+                    FrictionWheelSpeedMpS += diffWheelSpeedMpS;  // change wheel speed whilever wheel accelerating/decelerating
                     FrictionWheelSpeedMpS = MathHelper.Clamp(FrictionWheelSpeedMpS, 0.0f, 62.58f);  // Clamp wheel speed at maximum of 140mph (62.58 m/s)
 
                     WheelSlip = true;  // Set wheel slip if locomotive is slipping
@@ -6828,7 +6845,7 @@ public void SteamStartGearBoxIncrease()
                     if (SteamGearPosition > 0.0f) // Gear number can't go below zero
                     {
                         SteamGearPosition -= 1.0f;
-                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, SteamGearPosition);
+                        Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, SteamGearPosition);
                         if (SteamGearPosition == 1.0)
                         {
 

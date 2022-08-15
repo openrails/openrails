@@ -45,6 +45,7 @@ using System.IO;
 using System.Text;
 using Event = Orts.Common.Event;
 using ORTS.Scripting.Api;
+using System.Linq;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 
 namespace Orts.Simulation.RollingStocks
@@ -62,6 +63,7 @@ namespace Orts.Simulation.RollingStocks
 
         public float IdleRPM;
         public float MaxRPM;
+        public float GovernorRPM;
         public float MaxRPMChangeRate;
         public float PercentChangePerSec = .2f;
         public float InitialExhaust;
@@ -89,6 +91,11 @@ namespace Orts.Simulation.RollingStocks
 
         public float LocomotiveMaxRailOutputPowerW;
 
+        public int currentGearIndexRestore = -1;
+        public int currentnextGearRestore = -1;
+        public bool gearSaved;
+        public int dieselEngineRestoreState;
+
         public float EngineRPM;
         public SmoothedData ExhaustParticles = new SmoothedData(1);
         public SmoothedData ExhaustMagnitude = new SmoothedData(1);
@@ -103,7 +110,22 @@ namespace Orts.Simulation.RollingStocks
         public float DieselMaxTemperatureDeg;
         public DieselEngine.Cooling DieselEngineCooling = DieselEngine.Cooling.Proportional;
 
-        public DieselEngines DieselEngines;
+        public enum DieselTransmissionTypes
+        {
+            Legacy,
+            Electric,
+            Hydraulic,
+            Mechanic,
+            Hydromechanic,
+        }
+        public DieselTransmissionTypes DieselTransmissionType;
+
+        float CalculatedMaxContinuousForceN;
+
+        // diesel performance reporting
+        public float DieselPerformanceTimeS = 0.0f; // Records the time since starting movement
+
+    public DieselEngines DieselEngines;
 
         /// <summary>
         /// Used to accumulate a quantity that is not lost because of lack of precision when added to the Fuel level
@@ -144,6 +166,7 @@ namespace Orts.Simulation.RollingStocks
 
                 case "engine(dieselengineidlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselenginemaxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortsdieselenginegovernorrpm": GovernorRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
                 case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsdieselenginemaxpower": MaximumDieselEnginePowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
@@ -152,18 +175,34 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dieselsmokeeffectmaxsmokerate": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxmagnitude": MaxMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
 
+                case "engine(ortsdieseltransmissiontype":
+                    stf.MustMatch("(");
+                    var transmissionType = stf.ReadString();
+                    try
+                    {
+                        DieselTransmissionType = (DieselTransmissionTypes)Enum.Parse(typeof(DieselTransmissionTypes), transmissionType.First().ToString().ToUpper() + transmissionType.Substring(1));
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Skipped unknown diesel transmission type " + transmissionType);
+                    }
+                    break;
                 case "engine(ortsdieselengines":
                 case "engine(gearboxnumberofgears":
                 case "engine(gearboxdirectdrivegear":
+                case "engine(ortsmainclutchtype":
+                case "engine(ortsgearboxtype":
                 case "engine(gearboxoperation":
                 case "engine(gearboxenginebraking":
                 case "engine(gearboxmaxspeedforgears":
                 case "engine(gearboxmaxtractiveforceforgears":
+                case "engine(ortsgearboxtractiveforceatspeed":
                 case "engine(gearboxoverspeedpercentageforfailure":
                 case "engine(gearboxbackloadforce":
                 case "engine(gearboxcoastingforce":
                 case "engine(gearboxupgearproportion":
                 case "engine(gearboxdowngearproportion":
+                case "engine(ortsgearboxfreewheel":
                     DieselEngines.Parse(lowercasetoken, stf);
                     break;
 
@@ -309,7 +348,7 @@ namespace Orts.Simulation.RollingStocks
             // Check force assumptions set for diesel
             if (Simulator.Settings.VerboseConfigurationMessages)
             {
-                float CalculatedMaxContinuousForceN = 0;
+                CalculatedMaxContinuousForceN = 0;
                 float ThrottleSetting = 1.0f; // Must be at full throttle for these calculations
                 if (TractiveForceCurves == null)  // Basic configuration - ie no force and Power tables, etc
                 {
@@ -344,20 +383,25 @@ namespace Orts.Simulation.RollingStocks
                     Trace.TraceInformation("!!!! Warning: MaxPower {0} is less then continuous force calculated power {1} @ speed of {2}, please check !!!!", FormatStrings.FormatPower(MaxPowerW, IsMetric, false, false), FormatStrings.FormatPower(CalculatedContinuousPowerW, IsMetric, false, false), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                 }
 
-                // Check Adhesion values
-                var calculatedmaximumpowerw = CalculatedMaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
-                var maxforcekN = MaxForceN / 1000.0f;
-                var designadhesionzerospeed = maxforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
-                var calculatedmaxcontinuousforcekN = CalculatedMaxContinuousForceN / 1000.0f;
-                var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
-                var zerospeed = 0;
-                var configuredadhesionzerospeed = (Curtius_KnifflerA / (zerospeed + Curtius_KnifflerB) + Curtius_KnifflerC);
-                var configuredadhesionmaxcontinuousspeed = (Curtius_KnifflerA / (SpeedOfMaxContinuousForceMpS + Curtius_KnifflerB) + Curtius_KnifflerC);
-                var dropoffspeed = calculatedmaximumpowerw / (MaxForceN);
-                var configuredadhesiondropoffspeed = (Curtius_KnifflerA / (dropoffspeed + Curtius_KnifflerB) + Curtius_KnifflerC);
+                if (!DieselEngines.HasGearBox)
+                {
+                    // Check Adhesion values
+                    var calculatedmaximumpowerw = CalculatedMaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
+                    var maxforcekN = MaxForceN / 1000.0f;
+                    var designadhesionzerospeed = maxforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
+                    var calculatedmaxcontinuousforcekN = CalculatedMaxContinuousForceN / 1000.0f;
+                    var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
+                    var zerospeed = 0;
+                    var configuredadhesionzerospeed = (Curtius_KnifflerA / (zerospeed + Curtius_KnifflerB) + Curtius_KnifflerC);
+                    var configuredadhesionmaxcontinuousspeed = (Curtius_KnifflerA / (SpeedOfMaxContinuousForceMpS + Curtius_KnifflerB) + Curtius_KnifflerC);
+                    var dropoffspeed = calculatedmaximumpowerw / (MaxForceN);
+                    var configuredadhesiondropoffspeed = (Curtius_KnifflerA / (dropoffspeed + Curtius_KnifflerB) + Curtius_KnifflerC);
 
-                Trace.TraceInformation("Apparent (Design) Adhesion: Zero - {0:N2} @ {1}, Max Continuous Speed - {2:N2} @ {3}, Drive Wheel Weight - {4}", designadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric) );
-                Trace.TraceInformation("OR Calculated Adhesion Setting: Zero Speed - {0:N2} @ {1}, Dropoff Speed - {2:N2} @ {3}, Max Continuous Speed - {4:N2} @ {5}", configuredadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), configuredadhesiondropoffspeed, FormatStrings.FormatSpeedDisplay(dropoffspeed, IsMetric),  configuredadhesionmaxcontinuousspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+                    Trace.TraceInformation("Slip control system: {0}, Traction motor type: {1}", SlipControlSystem.ToString(), TractionMotorType.ToString()); // Slip control
+
+                    Trace.TraceInformation("Apparent (Design) Adhesion: Zero - {0:N2} @ {1}, Max Continuous Speed - {2:N2} @ {3}, Drive Wheel Weight - {4}", designadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
+                    Trace.TraceInformation("OR Calculated Adhesion Setting: Zero Speed - {0:N2} @ {1}, Dropoff Speed - {2:N2} @ {3}, Max Continuous Speed - {4:N2} @ {5}", configuredadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), configuredadhesiondropoffspeed, FormatStrings.FormatSpeedDisplay(dropoffspeed, IsMetric), configuredadhesionmaxcontinuousspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+                }
 
                 Trace.TraceInformation("===================================================================================================================\n\n");
             }
@@ -378,10 +422,12 @@ namespace Orts.Simulation.RollingStocks
             EngineRPM = locoCopy.EngineRPM;
             IdleRPM = locoCopy.IdleRPM;
             MaxRPM = locoCopy.MaxRPM;
+            GovernorRPM = locoCopy.GovernorRPM;
             MaxRPMChangeRate = locoCopy.MaxRPMChangeRate;
             MaximumDieselEnginePowerW = locoCopy.MaximumDieselEnginePowerW;
             PercentChangePerSec = locoCopy.PercentChangePerSec;
             LocomotiveMaxRailOutputPowerW = locoCopy.LocomotiveMaxRailOutputPowerW;
+            DieselTransmissionType = locoCopy.DieselTransmissionType;
 
             EngineRPMderivation = locoCopy.EngineRPMderivation;
             EngineRPMold = locoCopy.EngineRPMold;
@@ -427,6 +473,44 @@ namespace Orts.Simulation.RollingStocks
                     CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
                 }
             }
+
+            // TO BE LOOKED AT - fix restoration process for gearbox and gear controller
+            // It appears that the gearbox is initialised in two different places to cater for Basic and Advanced ENG file configurations(?).
+            // Hence the restore values recovered in gearbox class are being overwritten , and resume was not working correctly
+            // Hence restore gear position values are read as part of the diesel and restored at this point.
+            if (gearSaved)
+            {
+                DieselEngines[0].GearBox.nextGearIndex = currentnextGearRestore;
+                DieselEngines[0].GearBox.currentGearIndex = currentGearIndexRestore;
+                GearBoxController.SetValue((float)DieselEngines[0].GearBox.currentGearIndex);
+            }
+
+            if (Simulator.Settings.VerboseConfigurationMessages)
+            {
+                if (DieselEngines.HasGearBox)
+                {
+                    Trace.TraceInformation("==================================================== {0} has Gearbox =========================================================", LocomotiveName);
+                    Trace.TraceInformation("Gearbox Type: {0}, Transmission Type: {1}, Number of Gears: {2}, Idle RpM: {3}, Max RpM: {4}, Gov RpM: {5}, GearBoxType: {6}, ClutchType: {7}, FreeWheel: {8}", DieselEngines[0].GearBox.GearBoxOperation, DieselTransmissionType, DieselEngines[0].GearBox.NumOfGears, DieselEngines[0].IdleRPM, DieselEngines[0].MaxRPM, DieselEngines[0].GovernorRPM, DieselEngines[0].GearBox.GearBoxType, DieselEngines[0].GearBox.ClutchType, DieselEngines[0].GearBox.GearBoxFreeWheelFitted);
+
+                    Trace.TraceInformation("Gear\t Ratio\t Max Speed\t Max TE\t    Chg Up RpM\t Chg Dwn RpM\t Coast Force\t Back Force\t");
+
+                    for (int i = 0; i < DieselEngines[0].GearBox.NumOfGears; i++)
+                    {
+                        Trace.TraceInformation("\t{0}\t\t\t {1:N2}\t\t{2:N2}\t\t{3:N2}\t\t\t{4}\t\t\t\t{5:N0}\t\t\t\t\t{6}\t\t\t{7}", i + 1, DieselEngines[0].GearBox.Gears[i].Ratio, FormatStrings.FormatSpeedDisplay(DieselEngines[0].GearBox.Gears[i].MaxSpeedMpS, IsMetric), FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].MaxTractiveForceN, IsMetric), DieselEngines[0].GearBox.Gears[i].ChangeUpSpeedRpM, DieselEngines[0].GearBox.Gears[i].ChangeDownSpeedRpM, FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].CoastingForceN, IsMetric), FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].BackLoadForceN, IsMetric));
+
+                    }
+
+
+
+                    var calculatedmaxcontinuousforcekN = DieselEngines[0].GearBox.Gears[0].MaxTractiveForceN / 1000.0f;
+                    var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
+
+                    Trace.TraceInformation("Apparent (Design) Adhesion for Gear 1: {0:N2} @ {1}, Drive Wheel Weight - {2}", designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(DieselEngines[0].GearBox.Gears[0].MaxSpeedMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
+
+                    Trace.TraceInformation("===================================================================================================================\n\n");
+                }
+            }
+
         }
 
         /// <summary>
@@ -552,7 +636,8 @@ namespace Orts.Simulation.RollingStocks
             // Advanced configuration (TF table) - use a user defined tractive force table
             // With Simple adhesion apart from correction for rail adhesion, there is no further variation to the motive force. 
             // With Advanced adhesion the raw motive force is fed into the advanced (axle) adhesion model, and is corrected for wheel slip and rail adhesion
-            if (LocomotivePowerSupply.MainPowerSupplyOn && Direction != Direction.N)
+            // TO be Checked how main power supply conditions apply to geared locomotives - Note for geared locomotives it is possible to get some tractive force due to the drag of a stalled engine, if in gear, and clutch engaged
+            if ((LocomotivePowerSupply.MainPowerSupplyOn || DieselEngines.HasGearBox) && Direction != Direction.N)
             {
                 // Appartent throttle setting is a reverse lookup of the throttletab vs rpm, hence motive force increase will be related to increase in rpm. The minimum of the two values
                 // is checked to enable fast reduction in tractive force when decreasing the throttle. Typically it will take longer for the prime mover to decrease rpm then drop motive force.
@@ -586,13 +671,25 @@ namespace Orts.Simulation.RollingStocks
                 // its impact. More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
                 // Simple adhesion control does not have any slip control feature built into it.
                 // TODO - a full review of slip/no slip control.
-                if (WheelSlip && AdvancedAdhesionModel)
+                if (TractionMotorType == TractionMotorTypes.AC)
                 {
-                    AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    if (AbsWheelSpeedMpS > 1.1 * MaxSpeedMpS)
+                    {
+                        AverageForceN = TractiveForceN = 0;
+                        return;
+                    }
                 }
                 else
                 {
-                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    if (WheelSlip && AdvancedAdhesionModel)
+                    {
+                        AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    }
+                    else
+                    {
+                        AbsTractionSpeedMpS = AbsSpeedMpS;
+                    }
                 }
 
                 if (TractiveForceCurves == null)
@@ -628,9 +725,16 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
 
-                    TractiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
+                    if (DieselEngines.HasGearBox && DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                    {
+                        TractiveForceN = DieselEngines.TractiveForceN;
+                    }
+                    else
+                    {
+                        // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
+                        TractiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
+                    }
 
                     if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         TractiveForceN = 0;
@@ -715,6 +819,10 @@ namespace Orts.Simulation.RollingStocks
                     DieselEngines[0].GearBox.AutoGearUp();
                     GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
                 }
+                else if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Manual)
+                {
+                    DieselEngines[0].GearBox.ManualGearUp = true;
+                }
             }
         }
 
@@ -727,6 +835,10 @@ namespace Orts.Simulation.RollingStocks
                 {
                     DieselEngines[0].GearBox.AutoGearDown();
                     GearBoxController.SetValue((float)DieselEngines[0].GearBox.NextGearIndex);
+                }
+                else if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Manual)
+                {
+                    DieselEngines[0].GearBox.ManualGearDown = true;
                 }
             }
         }
@@ -824,9 +936,8 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Engine"),
                 Simulator.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(DieselEngines[0].State)));
             if (DieselEngines.HasGearBox)
-                status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0
-                    ? Simulator.Catalog.GetParticularString("Gear", "N")
-                    : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString());
+                status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"),
+                DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString());
             status.AppendLine();
             status.AppendFormat("{0} = {1}\n",
                 Simulator.Catalog.GetString("Battery switch"),
@@ -851,11 +962,14 @@ namespace Orts.Simulation.RollingStocks
         {
             var status = new StringBuilder(base.GetDebugStatus());
 
-            if (DieselEngines.HasGearBox)
-                status.AppendFormat("\t{0} {1}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex);
-            status.AppendFormat("\t{0} {1}\t\t{2}\n", 
-                Simulator.Catalog.GetString("Fuel"), 
+            if (DieselEngines.HasGearBox && DieselTransmissionType == DieselTransmissionTypes.Mechanic)
+            {
+                status.AppendFormat("\t{0} {1}-{2}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString(), DieselEngines[0].GearBox.GearBoxType);
+            }
+                status.AppendFormat("\t{0} {1}\t\t{2}\n",
+                Simulator.Catalog.GetString("Fuel"),
                 FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
+
 
             if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {
@@ -919,9 +1033,9 @@ namespace Orts.Simulation.RollingStocks
 
             var status = new StringBuilder();
             status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
+            status.AppendFormat("{0}\t", throttle);
             status.AppendFormat("{0} {1}\t", GetStringAttribute.GetPrettyName(Direction), Flipped ? Simulator.Catalog.GetString("(flipped)") : "");
             status.AppendFormat("{0}\t", IsLeadLocomotive() || RemoteControlGroup < 0 ? "———" : RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : Simulator.Catalog.GetString("Async"));
-            status.AppendFormat("{0}\t", throttle);
             status.AppendFormat("{0}\t", FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK));
             status.AppendFormat("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerOverloaded ? "???" : "");
             status.Append(DieselEngines.GetDPStatus());
@@ -963,7 +1077,7 @@ namespace Orts.Simulation.RollingStocks
 
             var status = new StringBuilder();
             // ID
-            status.AppendFormat("{0}({1})\t", CarID, DPUnitID);
+            status.AppendFormat("{0}({1})\t", CarID.Replace(" ", ""), DPUnitID);
             // Throttle
             status.AppendFormat("{0}\t", throttle);
 
@@ -1098,9 +1212,8 @@ namespace Orts.Simulation.RollingStocks
         private static string[] DpuLabels;
         private static string[] DPULabels;
 
-        private static void SetDebugLabels(int numberOfEngines)
+        private static void SetDebugLabels()
         {
-            MaxNumberOfEngines = numberOfEngines;
             var labels = new StringBuilder();
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("ID"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Throttle"));
@@ -1108,7 +1221,7 @@ namespace Orts.Simulation.RollingStocks
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Remote"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Fuel"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Tractive Effort"));
-            labels.Append(DieselEngines.SetDebugLabels(numberOfEngines));
+            labels.Append(DieselEngines.SetDebugLabels());
             DebugLabels = labels.ToString().Split('\t');
         }
 
@@ -1135,10 +1248,11 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        public static string GetDebugTableBase(int locomotivesInTrain, int maxNumberOfEngines)
+        public static string GetDebugTableBase(int locomotivesInTrain)
         {
-            if (MaxNumberOfEngines != maxNumberOfEngines || DebugLabels == null)
-                SetDebugLabels(maxNumberOfEngines);
+            if (DebugLabels == null)
+                SetDebugLabels();
+
             string table = "";
             for (var i = 0; i < DebugLabels.Length; i++)
             {
