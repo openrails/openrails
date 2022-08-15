@@ -1,0 +1,3 @@
+Downloaded from: https://polyhaven.com/a/champagne_castle_1
+Converted to TGA by: https://seenax.com/portfolio/HDR_Compressor.rar
+//Converted to cube map by: https://matheowis.github.io/HDRI-to-CubeMap
