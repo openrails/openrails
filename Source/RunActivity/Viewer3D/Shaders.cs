@@ -255,7 +255,6 @@ namespace Orts.Viewer3D
             zFar.SetValue(zFarDistance);
         }
 
-            if (fadeDuration < 0) lighting = 1 + lighting;
         public float SignalLightIntensity { set { signalLightIntensity.SetValue(value); } }
 
         public float Overcast { set { overcast.SetValue(new Vector2(value, value / 2)); } }
