@@ -1583,6 +1583,15 @@ namespace Orts.Viewer3D
         {
             float nextKey;
             var animation = SharedShape.Animations[0];
+            if (Turntable.AlignToRemote)
+            {
+                AnimationKey = (Turntable.YAngle / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
+                if (AnimationKey < 0)
+                    AnimationKey += animation.FrameCount;
+                Turntable.AlignToRemote = false;
+            }
+            else
+            {
             if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
             {
                 nextKey = Turntable.TargetY / (2 * (float)Math.PI) * animation.FrameCount;
@@ -1614,7 +1623,7 @@ namespace Orts.Viewer3D
                 Rotating = false;
                 if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
             }
-
+            }
             // Update the pose for each matrix
             for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
                 AnimateMatrix(matrix, AnimationKey);
@@ -1682,6 +1691,16 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var animation = SharedShape.Animations[0];
+            if (Transfertable.AlignToRemote)
+            {
+                AnimationKey = (Transfertable.OffsetPos - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
+                if (AnimationKey < 0)
+                    AnimationKey = 0;
+                Transfertable.AlignToRemote = false;
+            }
+            else
+            {
             if (Transfertable.GoToTarget)
             {
                 AnimationKey = (Transfertable.TargetOffset - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
@@ -1710,6 +1729,7 @@ namespace Orts.Viewer3D
             {
                 Translating = false;
                 if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
+            }
             }
 
             // Update the pose for each matrix

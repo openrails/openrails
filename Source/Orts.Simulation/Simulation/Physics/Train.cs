@@ -1821,7 +1821,7 @@ namespace Orts.Simulation.Physics
         {
             if (!auxiliaryUpdate)
                 FormationReversed = false;
-            if (IsActualPlayerTrain && Simulator.ActiveMovingTable != null)
+            if ((IsActualPlayerTrain || TrainType == TRAINTYPE.REMOTE) && Simulator.ActiveMovingTable != null)
                 Simulator.ActiveMovingTable.CheckTrainOnMovingTable(this);
 
             if (IsActualPlayerTrain && Simulator.OriginalPlayerTrain != this && !CheckStations) // if player train is to check own stations
