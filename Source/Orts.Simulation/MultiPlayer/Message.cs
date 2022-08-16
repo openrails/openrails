@@ -26,6 +26,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Scripting.Api;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -76,6 +77,7 @@ namespace Orts.MultiPlayer
             else if (key == "SIGNALCHANGE") return new MSGSignalChange(m.Substring(index + 1));
             else if (key == "EXHAUST") return new MSGExhaust(m.Substring(index + 1));
             else if (key == "FLIP") return new MSGFlip(m.Substring(index + 1));
+            else if (key == "MOVINGTBL") return new MSGMovingTbl(m.Substring(index + 1));
             else throw new Exception("Unknown Keyword" + key);
         }
 
@@ -2345,7 +2347,7 @@ namespace Orts.MultiPlayer
         }
 
     }
-#endregion MSGGetTrain
+    #endregion MSGGetTrain
 
 #region MSGUncouple
 
@@ -2779,8 +2781,9 @@ namespace Orts.MultiPlayer
             }
         }
     }
-#endregion MSGUncouple
+    #endregion MSGUncouple
 
+ 
 #region MSGCouple
     public class MSGCouple : Message
     {
@@ -3893,4 +3896,104 @@ namespace Orts.MultiPlayer
 
 #endregion MSGFlip
 
+#region MSGMovingTbl
+
+    public class MSGMovingTbl : Message
+    {
+        public string user, newTrainName, carID, firstCarIDOld, firstCarIDNew;
+        public MovingTable.submessagecode subMessageCode;
+        public int movingTableIndex;
+        public bool clockwise;
+        public float yangle;
+
+        public MSGMovingTbl(string m)
+        {
+            string[] areas = m.Split('\t');
+
+            movingTableIndex = int.Parse(areas[0].Trim());
+            user = areas[1].Trim();
+            subMessageCode = (MovingTable.submessagecode) int.Parse(areas[2].Trim());
+            clockwise = int.Parse(areas[3].Trim()) == 0 ? false : true;
+            yangle = float.Parse(areas[4].Trim());
+
+        }
+
+        public MSGMovingTbl(int mti, string u, MovingTable.submessagecode smc, bool cw, float y)
+        {
+            movingTableIndex = mti;
+            user = u;
+            subMessageCode = smc;
+            clockwise = cw;
+            yangle = y;
+        }
+
+        public override string ToString()
+        {
+            if (user == "") return "5: ALIVE"; //wrong, so just return an ALIVE string
+            string tmp = "MOVINGTBL " + movingTableIndex + "\t" + user + "\t" + (int)subMessageCode + "\t" + (clockwise ? 1 : 0) + "\t" + yangle + "\t";
+            return " " + tmp.Length + ": " + tmp;
+        }
+
+        public override void HandleMsg()
+        {
+            if (user != MPManager.GetUserName())
+            {
+                MPManager.Simulator.ActiveMovingTable = MPManager.Simulator.MovingTables[movingTableIndex];
+                if (MPManager.Simulator.ActiveMovingTable is Turntable turntable)
+                {
+                    switch (subMessageCode)
+                    {
+                        case MovingTable.submessagecode.GoToTarget:
+                            turntable.RemotelyControlled = true;
+                            if (Math.Abs(MathHelper.WrapAngle(turntable.YAngle - yangle)) > 0.2f)
+                            {
+                                turntable.YAngle = yangle;
+                                turntable.TargetY = yangle;
+                                turntable.AlignToRemote = true;
+                            }
+                            turntable.GeneralComputeTarget(clockwise);
+                            break;
+                        case MovingTable.submessagecode.StartingContinuous:
+                            turntable.YAngle = yangle;
+                            turntable.TargetY = yangle;
+                            turntable.AlignToRemote = true;
+                            turntable.GeneralStartContinuous(clockwise);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else if (MPManager.Simulator.ActiveMovingTable is Transfertable transfertable)
+                {
+                    switch (subMessageCode)
+                    {
+                        case MovingTable.submessagecode.GoToTarget:
+                            transfertable.RemotelyControlled = true;
+                            if (Math.Abs(transfertable.OffsetPos - yangle) > 2.8f)
+                            {
+                                transfertable.OffsetPos = yangle;
+                                transfertable.TargetOffset = yangle;
+                                transfertable.AlignToRemote = true;
+                            }
+                            transfertable.GeneralComputeTarget(clockwise);
+                            break;
+                        case MovingTable.submessagecode.StartingContinuous:
+                            transfertable.OffsetPos = yangle;
+                            transfertable.TargetOffset = yangle;
+                            transfertable.AlignToRemote = true;
+                            transfertable.GeneralStartContinuous(clockwise);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                if (MPManager.IsServer())
+                {
+                    MPManager.BroadCast(this.ToString());//if server receives this, will tell others, including whoever sent the information
+                }
+            }
+        }
+    }
+
+#endregion MSGMovingTbl
 }
