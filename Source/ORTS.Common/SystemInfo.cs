@@ -15,14 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Forms;
+using Microsoft.Win32;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS.Common
@@ -35,7 +35,6 @@ namespace ORTS.Common
             WriteEnvironment(output);
             WriteAvailableRuntimes(output);
             output.WriteLine("Runtime    = {0} ({1}bit)", Environment.Version, IntPtr.Size * 8);
-            WriteGraphicsAdapter(output);
         }
 
         static void WriteEnvironment(TextWriter output)
@@ -84,9 +83,10 @@ namespace ORTS.Common
             }
             try
             {
-                foreach (var screen in Screen.AllScreens)
+                foreach (GraphicsAdapter adapter in GraphicsAdapter.Adapters)
                 {
-                    output.WriteLine("Display    = {0} ({3} x {4}, {5}-bit{6}, {1} x {2})", screen.DeviceName, screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height, screen.BitsPerPixel, screen.Primary ? ", primary" : "");
+                    DisplayMode displayMode = adapter.CurrentDisplayMode;
+                    output.WriteLine("Display    = {0}, GPU {1}, size {2} x {3}{4}", adapter.DeviceName, adapter.Description, displayMode.Width, displayMode.Height, adapter.IsDefaultAdapter ? ", primary" : "");
                 }
             }
             catch (Exception error)
@@ -197,24 +197,6 @@ namespace ORTS.Common
                 output.Write(" {0} ", versionKeyName.Substring(1), fullVersion);
             }
             return fullVersion;
-        }
-
-        static void WriteGraphicsAdapter(TextWriter output)
-        {
-            try {
-                foreach (var adapter in GraphicsAdapter.Adapters)
-                {
-                    try
-                    {
-                        output.WriteLine("{0} = {1}", adapter.DeviceName, adapter.Description);
-                    }
-                    catch (Exception) { }
-                }
-            }
-            catch (Exception error)
-            {
-                output.WriteLine(error);
-            }
         }
 
         static T SafeReadKey<T>(RegistryKey key, string name, T defaultValue)

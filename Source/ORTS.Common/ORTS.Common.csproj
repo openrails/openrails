@@ -2,8 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Library</OutputType>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <IsPublishable>False</IsPublishable>
     <AssemblyTitle>Open Rails Common Library</AssemblyTitle>
     <Description>Open Rails Transport Simulator</Description>
