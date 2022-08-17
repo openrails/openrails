@@ -611,7 +611,7 @@ namespace Orts.Simulation.Signalling
                 else
                     state = MstsSignalAspect.CLEAR_2;
 
-                def_draw_state(state);
+                draw_state = def_draw_state(state);
             }
         }
 
