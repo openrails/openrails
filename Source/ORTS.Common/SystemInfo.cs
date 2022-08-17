@@ -15,14 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Forms;
+using Microsoft.Win32;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS.Common
@@ -35,7 +35,6 @@ namespace ORTS.Common
             WriteEnvironment(output);
             WriteAvailableRuntimes(output);
             output.WriteLine("Runtime    = {0} ({1}bit)", Environment.Version, IntPtr.Size * 8);
-            WriteGraphicsAdapter(output);
         }
 
         static void WriteEnvironment(TextWriter output)
@@ -44,7 +43,7 @@ namespace ORTS.Common
             NativeMethods.GlobalMemoryStatusEx(buffer);
             try
             {
-                foreach (ManagementObject bios in new ManagementClass("Win32_BIOS").GetInstances())
+                foreach (ManagementObject bios in new ManagementClass("Win32_BIOS").GetInstances().OfType<ManagementObject>())
                 {
                     output.WriteLine("BIOS       = {0} ({1})", (string)bios["Description"], (string)bios["Manufacturer"]);
                 }
@@ -55,10 +54,10 @@ namespace ORTS.Common
             }
             try
             {
-                foreach (ManagementObject processor in new ManagementClass("Win32_Processor").GetInstances())
+                foreach (ManagementObject processor in new ManagementClass("Win32_Processor").GetInstances().OfType<ManagementObject>())
                 {
                     output.Write("Processor  = {0} ({2} threads, {1} cores, {3:F1} GHz)", (string)processor["Name"], (uint)processor["NumberOfCores"], (uint)processor["NumberOfLogicalProcessors"], (float)(uint)processor["MaxClockSpeed"] / 1000);
-                    foreach (ManagementObject cpuCache in processor.GetRelated("Win32_CacheMemory"))
+                    foreach (ManagementObject cpuCache in processor.GetRelated("Win32_CacheMemory").OfType<ManagementObject>())
                     {
                         output.Write(" ({0} {1:F0} KB)", (string)cpuCache["Purpose"], (float)(uint)cpuCache["InstalledSize"]);
                     }
@@ -72,7 +71,7 @@ namespace ORTS.Common
             output.WriteLine("Memory     = {0:F1} GB", (float)buffer.TotalPhysical / 1024 / 1024 / 1024);
             try
             {
-                foreach (ManagementObject display in new ManagementClass("Win32_VideoController").GetInstances())
+                foreach (ManagementObject display in new ManagementClass("Win32_VideoController").GetInstances().OfType<ManagementObject>())
                 {
                     // ? used as display["AdapterRAM"] may be null on a virtual machine (e.g. VMWare)
                     output.WriteLine("Video      = {0} ({1:F1} GB RAM){2}", (string)display["Description"], (float?)(uint?)display["AdapterRAM"] / 1024 / 1024 / 1024, GetPnPDeviceDrivers(display));
@@ -84,9 +83,10 @@ namespace ORTS.Common
             }
             try
             {
-                foreach (var screen in Screen.AllScreens)
+                foreach (GraphicsAdapter adapter in GraphicsAdapter.Adapters)
                 {
-                    output.WriteLine("Display    = {0} ({3} x {4}, {5}-bit{6}, {1} x {2})", screen.DeviceName, screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height, screen.BitsPerPixel, screen.Primary ? ", primary" : "");
+                    DisplayMode displayMode = adapter.CurrentDisplayMode;
+                    output.WriteLine("Display    = {0}, GPU {1}, size {2} x {3}{4}", adapter.DeviceName, adapter.Description, displayMode.Width, displayMode.Height, adapter.IsDefaultAdapter ? ", primary" : "");
                 }
             }
             catch (Exception error)
@@ -95,7 +95,7 @@ namespace ORTS.Common
             }
             try
             {
-                foreach (ManagementObject sound in new ManagementClass("Win32_SoundDevice").GetInstances())
+                foreach (ManagementObject sound in new ManagementClass("Win32_SoundDevice").GetInstances().OfType<ManagementObject>())
                 {
                     Console.WriteLine("Sound      = {0}{1}", (string)sound["Description"], GetPnPDeviceDrivers(sound));
                 }
@@ -106,7 +106,7 @@ namespace ORTS.Common
             }
             try
             {
-                foreach (ManagementObject disk in new ManagementClass("Win32_LogicalDisk").GetInstances())
+                foreach (ManagementObject disk in new ManagementClass("Win32_LogicalDisk").GetInstances().OfType<ManagementObject>())
                 {
                     output.Write("Disk       = {0} ({1}, {2}", (string)disk["Name"], (string)disk["Description"], (string)disk["FileSystem"]);
                     if (disk["Size"] != null && disk["FreeSpace"] != null)
@@ -121,7 +121,7 @@ namespace ORTS.Common
             }
             try
             {
-                foreach (ManagementObject os in new ManagementClass("Win32_OperatingSystem").GetInstances())
+                foreach (ManagementObject os in new ManagementClass("Win32_OperatingSystem").GetInstances().OfType<ManagementObject>())
                 {
                     output.WriteLine("OS         = {0} {1} ({2})", (string)os["Caption"], (string)os["OSArchitecture"], (string)os["Version"]);
                 }
@@ -135,9 +135,9 @@ namespace ORTS.Common
         static string GetPnPDeviceDrivers(ManagementObject device)
         {
             var output = new StringBuilder();
-            foreach (ManagementObject pnpDevice in device.GetRelated("Win32_PnPEntity"))
+            foreach (ManagementObject pnpDevice in device.GetRelated("Win32_PnPEntity").OfType<ManagementObject>())
             {
-                foreach (ManagementObject dataFile in pnpDevice.GetRelated("CIM_DataFile"))
+                foreach (ManagementObject dataFile in pnpDevice.GetRelated("CIM_DataFile").OfType<ManagementObject>())
                 {
                     output.AppendFormat(" ({0} {1})", (string)dataFile["FileName"], (string)dataFile["Version"]);
                 }
@@ -197,24 +197,6 @@ namespace ORTS.Common
                 output.Write(" {0} ", versionKeyName.Substring(1), fullVersion);
             }
             return fullVersion;
-        }
-
-        static void WriteGraphicsAdapter(TextWriter output)
-        {
-            try {
-                foreach (var adapter in GraphicsAdapter.Adapters)
-                {
-                    try
-                    {
-                        output.WriteLine("{0} = {1}", adapter.DeviceName, adapter.Description);
-                    }
-                    catch (Exception) { }
-                }
-            }
-            catch (Exception error)
-            {
-                output.WriteLine(error);
-            }
         }
 
         static T SafeReadKey<T>(RegistryKey key, string name, T defaultValue)
