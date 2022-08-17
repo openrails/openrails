@@ -180,8 +180,8 @@ namespace Orts.Simulation
             if (!Continuous) return;
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
-                SubMessageCode = subMessageCode.GoToTarget;
-                MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessageCode, isForward, OffsetPos).ToString());
+                SubMessCode = SubMessageCode.GoToTarget;
+                MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessCode, isForward, OffsetPos).ToString());
             }
             RemotelyControlled = false;
             GeneralComputeTarget(isForward);
@@ -280,8 +280,8 @@ namespace Orts.Simulation
             }
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
-                SubMessageCode = subMessageCode.StartingContinuous;
-                MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessageCode, isForward, OffsetPos).ToString());
+                SubMessCode = SubMessageCode.StartingContinuous;
+                MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessCode, isForward, OffsetPos).ToString());
             }
             GeneralStartContinuous(isForward);
         }

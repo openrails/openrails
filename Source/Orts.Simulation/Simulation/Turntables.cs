@@ -81,7 +81,7 @@ namespace Orts.Simulation
         protected int[] MyTrVectorSectionsIndex;
         public bool[] MyTrackNodesOrientation { get; protected set; } // true if forward, false if backward
         public int TrackShapeIndex;
-        public enum subMessageCode
+        public enum SubMessageCode
         {
             GoToTarget,
             StartingContinuous,
@@ -108,7 +108,7 @@ namespace Orts.Simulation
         public Vector3 FinalFrontTravellerXNALocation;
         public Vector3 FinalRearTravellerXNALocation;
         public Simulator Simulator;
-        public subMessageCode SubMessageCode;
+        public SubMessageCode SubMessCode;
         public bool AlignToRemote;
         public bool RemotelyControlled;
 
@@ -485,8 +485,8 @@ namespace Orts.Simulation
             if (!Continuous) return;
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
-                SubMessageCode = subMessageCode.GoToTarget;
-                MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessageCode, isClockwise, YAngle).ToString());
+                SubMessCode = SubMessageCode.GoToTarget;
+                MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessCode, isClockwise, YAngle).ToString());
             }
             RemotelyControlled = false;
             GeneralComputeTarget(isClockwise);
@@ -628,8 +628,8 @@ namespace Orts.Simulation
             }
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
-                SubMessageCode = subMessageCode.StartingContinuous;
-                MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessageCode, isClockwise, YAngle).ToString());
+                SubMessCode = SubMessageCode.StartingContinuous;
+                MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessCode, isClockwise, YAngle).ToString());
             }
             GeneralStartContinuous(isClockwise);
         }
