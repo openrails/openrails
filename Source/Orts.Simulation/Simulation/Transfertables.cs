@@ -47,7 +47,10 @@ namespace Orts.Simulation
         {
             get => VerticalTransfer ? CenterOffset.Y : CenterOffset.X;
         }
-        public float OffsetDiff = 1.4f;
+        public float OffsetDiff
+        {
+            get => RemotelyControlled ? 2.8f : 1.4f;
+        }
         // Dynamic data
         public bool Forward; // forward motion on
         public bool Reverse; // reverse motion on
@@ -177,7 +180,7 @@ namespace Orts.Simulation
             if (!Continuous) return;
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
-                SubMessageCode = submessagecode.GoToTarget;
+                SubMessageCode = subMessageCode.GoToTarget;
                 MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessageCode, isForward, OffsetPos).ToString());
             }
             RemotelyControlled = false;
@@ -191,7 +194,6 @@ namespace Orts.Simulation
             GoToTarget = false;
             Forward = isForward;
             Reverse = !isForward;
-            OffsetDiff = RemotelyControlled ? 2.8f : 1.4f;
             if (Forward)
             {
                 Connected = false;
@@ -278,7 +280,7 @@ namespace Orts.Simulation
             }
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
-                SubMessageCode = submessagecode.StartingContinuous;
+                SubMessageCode = subMessageCode.StartingContinuous;
                 MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessageCode, isForward, OffsetPos).ToString());
             }
             GeneralStartContinuous(isForward);

@@ -2347,7 +2347,7 @@ namespace Orts.MultiPlayer
         }
 
     }
-    #endregion MSGGetTrain
+#endregion MSGGetTrain
 
 #region MSGUncouple
 
@@ -2781,7 +2781,7 @@ namespace Orts.MultiPlayer
             }
         }
     }
-    #endregion MSGUncouple
+#endregion MSGUncouple
 
  
 #region MSGCouple
@@ -3900,11 +3900,11 @@ namespace Orts.MultiPlayer
 
     public class MSGMovingTbl : Message
     {
-        public string user, newTrainName, carID, firstCarIDOld, firstCarIDNew;
-        public MovingTable.submessagecode subMessageCode;
-        public int movingTableIndex;
-        public bool clockwise;
-        public float yangle;
+        private string user;
+        private MovingTable.subMessageCode subMessageCode;
+        private int movingTableIndex;
+        private bool clockwise;
+        private float yangle;
 
         public MSGMovingTbl(string m)
         {
@@ -3912,13 +3912,13 @@ namespace Orts.MultiPlayer
 
             movingTableIndex = int.Parse(areas[0].Trim());
             user = areas[1].Trim();
-            subMessageCode = (MovingTable.submessagecode) int.Parse(areas[2].Trim());
+            subMessageCode = (MovingTable.subMessageCode)int.Parse(areas[2].Trim());
             clockwise = int.Parse(areas[3].Trim()) == 0 ? false : true;
             yangle = float.Parse(areas[4].Trim());
 
         }
 
-        public MSGMovingTbl(int mti, string u, MovingTable.submessagecode smc, bool cw, float y)
+        public MSGMovingTbl(int mti, string u, MovingTable.subMessageCode smc, bool cw, float y)
         {
             movingTableIndex = mti;
             user = u;
@@ -3943,7 +3943,7 @@ namespace Orts.MultiPlayer
                 {
                     switch (subMessageCode)
                     {
-                        case MovingTable.submessagecode.GoToTarget:
+                        case MovingTable.subMessageCode.GoToTarget:
                             turntable.RemotelyControlled = true;
                             if (Math.Abs(MathHelper.WrapAngle(turntable.YAngle - yangle)) > 0.2f)
                             {
@@ -3953,7 +3953,7 @@ namespace Orts.MultiPlayer
                             }
                             turntable.GeneralComputeTarget(clockwise);
                             break;
-                        case MovingTable.submessagecode.StartingContinuous:
+                        case MovingTable.subMessageCode.StartingContinuous:
                             turntable.YAngle = yangle;
                             turntable.TargetY = yangle;
                             turntable.AlignToRemote = true;
@@ -3967,7 +3967,7 @@ namespace Orts.MultiPlayer
                 {
                     switch (subMessageCode)
                     {
-                        case MovingTable.submessagecode.GoToTarget:
+                        case MovingTable.subMessageCode.GoToTarget:
                             transfertable.RemotelyControlled = true;
                             if (Math.Abs(transfertable.OffsetPos - yangle) > 2.8f)
                             {
@@ -3977,7 +3977,7 @@ namespace Orts.MultiPlayer
                             }
                             transfertable.GeneralComputeTarget(clockwise);
                             break;
-                        case MovingTable.submessagecode.StartingContinuous:
+                        case MovingTable.subMessageCode.StartingContinuous:
                             transfertable.OffsetPos = yangle;
                             transfertable.TargetOffset = yangle;
                             transfertable.AlignToRemote = true;
