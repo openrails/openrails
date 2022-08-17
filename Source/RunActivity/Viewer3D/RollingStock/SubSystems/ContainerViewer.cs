@@ -31,15 +31,6 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         List<Container> VisibleContainers = new List<Container>();
         readonly Viewer Viewer;
 
-        public ContainersViewer(Viewer viewer, ContainerHandlingItem containerHandlingItem, string wagonFolderSlash)
-        {
-            foreach (var container in containerHandlingItem.Containers)
-            {
-                if (container.ShapeFileName != null)
-                    Containers.Add(container, new ContainerViewer(viewer, containerHandlingItem, wagonFolderSlash, container));
-            }
-        }
-
         public ContainersViewer(Viewer viewer)
         {
             Viewer = viewer;
@@ -52,7 +43,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
             var visibleContainers = new List<Container>();
             var removeDistance = Viewer.Settings.ViewingDistance * 1.5f;
             foreach (var container in Viewer.Simulator.ContainerManager.Containers)
-                if (WorldLocation.ApproximateDistance(Viewer.Camera.CameraWorldLocation, container.WorldPosition.WorldLocation) < removeDistance)
+                if (WorldLocation.ApproximateDistance(Viewer.Camera.CameraWorldLocation, container.WorldPosition.WorldLocation) < removeDistance && container.Visible)
                     visibleContainers.Add(container);
             VisibleContainers = visibleContainers;
         }
