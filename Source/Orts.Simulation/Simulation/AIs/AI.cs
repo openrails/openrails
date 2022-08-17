@@ -1328,6 +1328,9 @@ namespace Orts.Simulation.AIs
                         {
                             car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
                             car.IsPartOfActiveTrain = false;  // to stop sounds
+                            // remove continers if any
+                            if (car.FreightAnimations?.Animations != null)
+                                car.FreightAnimations?.RemoveLoads();
                         }
                     }
                 }
