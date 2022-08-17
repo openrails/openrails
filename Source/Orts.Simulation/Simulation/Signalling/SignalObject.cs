@@ -4232,7 +4232,6 @@ namespace Orts.Simulation.Signalling
             foreach (var sigHead in SignalHeads)
             {
                 sigHead.RequestLeastRestrictiveAspect();
-                sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
             }
         }
 
