@@ -81,7 +81,7 @@ namespace Orts.Simulation
         protected int[] MyTrVectorSectionsIndex;
         public bool[] MyTrackNodesOrientation { get; protected set; } // true if forward, false if backward
         public int TrackShapeIndex;
-        public enum submessagecode
+        public enum subMessageCode
         {
             GoToTarget,
             StartingContinuous,
@@ -108,7 +108,7 @@ namespace Orts.Simulation
         public Vector3 FinalFrontTravellerXNALocation;
         public Vector3 FinalRearTravellerXNALocation;
         public Simulator Simulator;
-        public submessagecode SubMessageCode;
+        public subMessageCode SubMessageCode;
         public bool AlignToRemote;
         public bool RemotelyControlled;
 
@@ -485,7 +485,7 @@ namespace Orts.Simulation
             if (!Continuous) return;
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
-                SubMessageCode = submessagecode.GoToTarget;
+                SubMessageCode = subMessageCode.GoToTarget;
                 MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessageCode, isClockwise, YAngle).ToString());
             }
             RemotelyControlled = false;
@@ -628,7 +628,7 @@ namespace Orts.Simulation
             }
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
-                SubMessageCode = submessagecode.StartingContinuous;
+                SubMessageCode = subMessageCode.StartingContinuous;
                 MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessageCode, isClockwise, YAngle).ToString());
             }
             GeneralStartContinuous(isClockwise);
