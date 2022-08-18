@@ -919,7 +919,7 @@ namespace Orts.Simulation.AIs
                     TrainCar car = RollingStock.Load(Simulator, train, wagonFilePath);
                     car.Flipped = wagon.Flip;
                     car.UiD = wagon.UiD;
-                    car.FreightAnimations?.Load(car as MSTSWagon, wagon.LoadDataList);
+                    car.FreightAnimations?.Load(wagon.LoadDataList);
                     train.Length += car.CarLengthM;
                     if (car is EOT)
                     {
