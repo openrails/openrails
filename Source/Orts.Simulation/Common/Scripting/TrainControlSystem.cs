@@ -273,6 +273,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> LineSpeedMpS;
         /// <summary>
+        /// Running total of distance travelled - negative or positive depending on train direction
+        /// </summary>
+        public Func<float> SignedDistanceM;
+        /// <summary>
         /// True if starting from terminal station (no track behind the train).
         /// </summary>
         public Func<bool> DoesStartFromTerminalStation;
