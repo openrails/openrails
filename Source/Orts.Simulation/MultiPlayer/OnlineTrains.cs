@@ -211,7 +211,7 @@ namespace Orts.MultiPlayer
                             Enum.TryParse(loadDataItems[2], out loadData.LoadPosition);
                             loadDataList.Add(loadData);
                         }
-                        car.FreightAnimations?.Load(car as MSTSWagon, loadDataList);
+                        car.FreightAnimations?.Load(loadDataList);
                     }
                 }
                 catch (Exception error)

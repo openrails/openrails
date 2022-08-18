@@ -653,7 +653,7 @@ namespace Orts.MultiPlayer
                                         car.IsPartOfActiveTrain = false;  // to stop sounds
                                                                           // remove containers if any
                                         if (car.FreightAnimations?.Animations != null)
-                                            car.FreightAnimations?.HideDiscreteFreightAnimations(car as MSTSWagon);
+                                            car.FreightAnimations?.HideDiscreteFreightAnimations();
                                     }
                                 }
                                 p.Train.RemoveFromTrack();
