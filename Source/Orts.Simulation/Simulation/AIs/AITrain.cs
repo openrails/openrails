@@ -28,6 +28,11 @@
 // #define DEBUG_TRACEINFO
 // DEBUG flag for debug prints
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
@@ -37,11 +42,6 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.AIs
@@ -1261,7 +1261,7 @@ namespace Orts.Simulation.AIs
                         }
                         else if (thisInfo.distance_to_train > 2.0f * signalApproachDistanceM) // set restricted only if not close
                         {
-                            if (!thisInfo.ObjectDetails.this_sig_noSpeedReduction(MstsSignalFunction.NORMAL))
+                            if (!thisInfo.ObjectDetails.this_sig_noSpeedReduction(SignalFunction.NORMAL))
                             {
                                 CreateTrainAction(validSpeed, 0.0f,
                                         thisInfo.distance_to_train, thisInfo,
@@ -2082,7 +2082,7 @@ namespace Orts.Simulation.AIs
 
             // first, check state of signal
 
-            if (thisStation.ExitSignal >= 0 && (thisStation.HoldSignal || signalRef.SignalObjects[thisStation.ExitSignal].holdState == SignalObject.HoldState.StationStop))
+            if (thisStation.ExitSignal >= 0 && (thisStation.HoldSignal || signalRef.SignalObjects[thisStation.ExitSignal].holdState == HoldState.StationStop))
             {
                 if (HoldingSignals.Contains(thisStation.ExitSignal)) HoldingSignals.Remove(thisStation.ExitSignal);
                 var nextSignal = signalRef.SignalObjects[thisStation.ExitSignal];
@@ -2364,7 +2364,7 @@ namespace Orts.Simulation.AIs
                 {
                     nextActionInfo.NextAction = AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED;
                     if (((nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM) ||
-                         nextActionInfo.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(MstsSignalFunction.NORMAL))
+                         nextActionInfo.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(SignalFunction.NORMAL))
                     {
                         clearAction = true;
 #if DEBUG_REPORTS
@@ -2394,7 +2394,7 @@ namespace Orts.Simulation.AIs
             {
                 if ((nextActionInfo.ActiveItem.signal_state >= MstsSignalAspect.APPROACH_1) ||
                    ((nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM) ||
-                   (nextActionInfo.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(MstsSignalFunction.NORMAL)))
+                   (nextActionInfo.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(SignalFunction.NORMAL)))
                 {
                     clearAction = true;
 #if DEBUG_REPORTS
@@ -4229,7 +4229,7 @@ namespace Orts.Simulation.AIs
             if (Simulator.TimetableMode) removeIt = true;
             else if (TrainType == TRAINTYPE.AI_PLAYERHOSTING || Simulator.OriginalPlayerTrain == this) removeIt = false;
             else if (TCRoute.TCRouteSubpaths.Count == 1 || TCRoute.activeSubpath != TCRoute.TCRouteSubpaths.Count - 1) removeIt = true;
-            else if (NextSignalObject[0] != null && NextSignalObject[0].isSignal && distanceToNextSignal < 25 && distanceToNextSignal >= 0 && PresentPosition[1].DistanceTravelledM < distanceThreshold)
+            else if (NextSignalObject[0] != null && NextSignalObject[0].Type == SignalObjectType.Signal && distanceToNextSignal < 25 && distanceToNextSignal >= 0 && PresentPosition[1].DistanceTravelledM < distanceThreshold)
             {
                 removeIt = false;
                 MovementState = AI_MOVEMENT_STATE.FROZEN;
@@ -4949,7 +4949,6 @@ namespace Orts.Simulation.AIs
 
         public void RequestSignalPermission(TCSubpathRoute selectedRoute, int routeIndex)
         {
-
             // check if signal at danger
 
             TCRouteElement thisElement = selectedRoute[PresentPosition[0].RouteListIndex];
@@ -4965,7 +4964,7 @@ namespace Orts.Simulation.AIs
                 return;
 
             requestedSignal.enabledTrain = routeIndex == 0 ? routedForward : routedBackward;
-            requestedSignal.holdState = SignalObject.HoldState.None;
+            requestedSignal.holdState = HoldState.None;
             requestedSignal.hasPermission = SignalObject.Permission.Requested;
 
             requestedSignal.checkRouteState(false, requestedSignal.signalRoute, routedForward, false);
@@ -5451,7 +5450,7 @@ namespace Orts.Simulation.AIs
             else if (thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
             {
                 if (thisItem.ActiveItem.signal_state == MstsSignalAspect.STOP &&
-                    thisItem.ActiveItem.ObjectDetails.holdState == SignalObject.HoldState.StationStop)
+                    thisItem.ActiveItem.ObjectDetails.holdState == HoldState.StationStop)
                 {
                     actionValid = false;
 
@@ -5499,7 +5498,7 @@ namespace Orts.Simulation.AIs
                 {
                     thisItem.NextAction = AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED;
                     if (((thisItem.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM) ||
-                         thisItem.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(MstsSignalFunction.NORMAL))
+                         thisItem.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(SignalFunction.NORMAL))
                     {
                         actionValid = false;
                         actionCleared = true;
@@ -6959,7 +6958,7 @@ namespace Orts.Simulation.AIs
             thisInfo.processed = inf.ReadBoolean();
 
             thisInfo.signal_state = MstsSignalAspect.UNKNOWN;
-            if (thisInfo.ObjectDetails.isSignal)
+            if (thisInfo.ObjectDetails.Type == SignalObjectType.Signal)
             {
                 thisInfo.signal_state = thisInfo.ObjectDetails.this_sig_lr(MstsSignalFunction.NORMAL);
             }
