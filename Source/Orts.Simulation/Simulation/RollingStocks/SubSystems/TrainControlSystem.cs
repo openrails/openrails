@@ -407,14 +407,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     {
                         Locomotive.TrainBrakeController.TCSFullServiceBraking = value;
 
-                        //Debrief Eval
-                        if (value && Locomotive.IsPlayerTrain && !ldbfevalfullbrakeabove16kmh && Math.Abs(Locomotive.SpeedMpS) > 4.44444)
+                    //Debrief Eval
+                    if (value && Locomotive.IsPlayerTrain && !ldbfevalfullbrakeabove16kmh && Math.Abs(Locomotive.SpeedMpS) > 4.44444)
                         {
                             var train = Simulator.PlayerLocomotive.Train;//Debrief Eval
-                            DbfevalFullBrakeAbove16kmh++;
+                        DbfevalFullBrakeAbove16kmh++;
                             ldbfevalfullbrakeabove16kmh = true;
                             train.DbfEvalValueChanged = true;//Debrief eval
-                        }
+                    }
                         if (!value)
                             ldbfevalfullbrakeabove16kmh = false;
                     }
@@ -629,10 +629,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Locomotive.Train.ValidRoute[dir].GetRouteIndex(Locomotive.Train.PresentPosition[dir].TCSectionIndex, 0);
 
             if (!Locomotive.Train.signalRef.SignalFunctions.ContainsKey(signalFunctionTypeName))
-            {
-                distanceM = -1;
-                goto Exit;
-            }
+                {
+                    distanceM = -1;
+                    goto Exit;
+                }
             SignalFunction function = Locomotive.Train.signalRef.SignalFunctions[signalFunctionTypeName];
 
             if (index < 0)
@@ -644,47 +644,47 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case Train.TrainObjectItem.TRAINOBJECTTYPE.SPEED_SIGNAL:
                 {
                     var playerTrainSignalList = Locomotive.Train.PlayerTrainSignals[dir][function];
-                    if (itemSequenceIndex > playerTrainSignalList.Count - 1)
-                        goto Exit; // no n-th signal available
-                    var trainSignal = playerTrainSignalList[itemSequenceIndex];
-                    if (trainSignal.DistanceToTrainM > maxDistanceM)
-                        goto Exit; // the requested signal is too distant
+                if (itemSequenceIndex > playerTrainSignalList.Count - 1)
+                    goto Exit; // no n-th signal available
+                var trainSignal = playerTrainSignalList[itemSequenceIndex];
+                if (trainSignal.DistanceToTrainM > maxDistanceM)
+                    goto Exit; // the requested signal is too distant
 
-                    // All OK, we can retrieve the data for the required signal;
-                    distanceM = trainSignal.DistanceToTrainM;
-                    mainHeadSignalTypeName = trainSignal.SignalObject.SignalHeads[0].SignalTypeName;
-                    if (signalFunctionTypeName == "NORMAL")
-                    {
-                        aspect = (Aspect)trainSignal.SignalState;
-                        speedLimitMpS = trainSignal.AllowedSpeedMpS;
-                        altitudeM = trainSignal.SignalObject.tdbtraveller.Y;
-                    }
-                    else
-                    {
+                // All OK, we can retrieve the data for the required signal;
+                distanceM = trainSignal.DistanceToTrainM;
+                mainHeadSignalTypeName = trainSignal.SignalObject.SignalHeads[0].SignalTypeName;
+                if (signalFunctionTypeName == "NORMAL")
+                {
+                    aspect = (Aspect)trainSignal.SignalState;
+                    speedLimitMpS = trainSignal.AllowedSpeedMpS;
+                    altitudeM = trainSignal.SignalObject.tdbtraveller.Y;
+                }
+                else
+                {
                         aspect = (Aspect)Locomotive.Train.signalRef.TranslateToTCSAspect(trainSignal.SignalObject.this_sig_lr(function));
-                    }
+                }
 
                     var functionHead = trainSignal.SignalObject.SignalHeads.Find(head => head.Function == function);
-                    signalTypeName = functionHead.SignalTypeName;
+                signalTypeName = functionHead.SignalTypeName;
                 if (functionHead.signalType.DrawStates.Any(d => d.Value.Index == functionHead.draw_state))
-                    {
-                        drawStateName = functionHead.signalType.DrawStates.First(d => d.Value.Index == functionHead.draw_state).Value.Name;
-                    }
-                    textAspect = functionHead?.TextSignalAspect ?? "";
-                    break;
-                }
-                case Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST:
                 {
-                    var playerTrainSpeedpostList = Locomotive.Train.PlayerTrainSpeedposts[dir].Where(x => !x.IsWarning).ToList();
-                    if (itemSequenceIndex > playerTrainSpeedpostList.Count - 1)
-                        goto Exit; // no n-th speedpost available
-                    var trainSpeedpost = playerTrainSpeedpostList[itemSequenceIndex];
-                    if (trainSpeedpost.DistanceToTrainM > maxDistanceM)
-                        goto Exit; // the requested speedpost is too distant
+                    drawStateName = functionHead.signalType.DrawStates.First(d => d.Value.Index == functionHead.draw_state).Value.Name;
+                }
+                textAspect = functionHead?.TextSignalAspect ?? "";
+                    break;
+            }
+                case Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST:
+            {
+                var playerTrainSpeedpostList = Locomotive.Train.PlayerTrainSpeedposts[dir].Where(x => !x.IsWarning).ToList();
+                if (itemSequenceIndex > playerTrainSpeedpostList.Count - 1)
+                    goto Exit; // no n-th speedpost available
+                var trainSpeedpost = playerTrainSpeedpostList[itemSequenceIndex];
+                if (trainSpeedpost.DistanceToTrainM > maxDistanceM)
+                    goto Exit; // the requested speedpost is too distant
 
-                    // All OK, we can retrieve the data for the required speedpost;
-                    distanceM = trainSpeedpost.DistanceToTrainM;
-                    speedLimitMpS = trainSpeedpost.AllowedSpeedMpS;
+                // All OK, we can retrieve the data for the required speedpost;
+                distanceM = trainSpeedpost.DistanceToTrainM;
+                speedLimitMpS = trainSpeedpost.AllowedSpeedMpS;
                     break;
                 }
             }
