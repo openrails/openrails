@@ -183,7 +183,7 @@ namespace ORTS.Settings
         public bool DynamicShadows { get; set; }
         [Default(false)]
         public bool ShadowAllShapes { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool ModelInstancing { get; set; }
         [Default(true)]
         public bool Wire { get; set; }
@@ -195,6 +195,8 @@ namespace ORTS.Settings
         public bool DistantMountains { get; set; }
         [Default(40000)]
         public int DistantMountainsViewingDistance { get; set; }
+        [Default(true)]
+        public bool LODViewingExtension { get; set; }
         [Default(45)] // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
         public int ViewingFOV { get; set; }
         [Default(49)]
@@ -273,7 +275,7 @@ namespace ORTS.Settings
         public bool FullScreen { get; set; }
         [Default("1024x768")]
         public string WindowSize { get; set; }
-        [Default(true)]
+        [Default(false)]
         public bool WindowGlass { get; set; }
         [Default(false)]
         public bool SuppressConfirmations { get; set; }
@@ -299,8 +301,6 @@ namespace ORTS.Settings
         public bool DoubleWire { get; set; }
         [Default(false)]
         public bool AuxActionEnabled { get; set; }
-        [Default(false)]
-        public bool PreferDDSTexture { get; set; }
         [Default(false)]
         public bool UseLocationPassingPaths { get; set; }
         [Default(false)]

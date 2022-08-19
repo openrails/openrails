@@ -165,6 +165,7 @@ namespace ORTS
             labelDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
             numericDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
             numericDistantMountainsViewingDistance.Value = Settings.DistantMountainsViewingDistance / 1000;
+            checkLODViewingExtension.Checked = Settings.LODViewingExtension;
             numericViewingFOV.Value = Settings.ViewingFOV;
             numericWorldObjectDensity.Value = Settings.WorldObjectDensity;
             trackDayAmbientLight.Value = Settings.DayAmbientLight;
@@ -316,17 +317,12 @@ namespace ORTS
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
             checkSignalLightGlow.Checked = Settings.SignalLightGlow;
-            checkPreferDDSTexture.Checked = Settings.PreferDDSTexture;
             checkUseLocationPassingPaths.Checked = Settings.UseLocationPassingPaths;
             checkUseMSTSEnv.Checked = Settings.UseMSTSEnv;
             trackAdhesionFactor.Value = Settings.AdhesionFactor;
-            checkAdhesionPropToWeather.Checked = Settings.AdhesionProportionalToWeather;
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;   // Inverted as "Show warnings" is better UI than "Suppress warnings"
-            precipitationBoxHeight.Value = Settings.PrecipitationBoxHeight;
-            precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
-            precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
             checkCorrectQuestionableBrakingParams.Checked = Settings.CorrectQuestionableBrakingParams;
             numericActRandomizationLevel.Value = Settings.ActRandomizationLevel;
             numericActWeatherRandomizationLevel.Value = Settings.ActWeatherRandomizationLevel;
@@ -445,6 +441,7 @@ namespace ORTS
             Settings.ViewingDistance = (int)numericViewingDistance.Value;
             Settings.DistantMountains = checkDistantMountains.Checked;
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
+            Settings.LODViewingExtension = checkLODViewingExtension.Checked;
             Settings.ViewingFOV = (int)numericViewingFOV.Value;
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
 
@@ -507,16 +504,11 @@ namespace ORTS
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
-            Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
             Settings.UseLocationPassingPaths = checkUseLocationPassingPaths.Checked;
             Settings.UseMSTSEnv = checkUseMSTSEnv.Checked;
             Settings.AdhesionFactor = (int)trackAdhesionFactor.Value;
-            Settings.AdhesionProportionalToWeather = checkAdhesionPropToWeather.Checked;
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
-            Settings.PrecipitationBoxHeight = (int)precipitationBoxHeight.Value;
-            Settings.PrecipitationBoxWidth = (int)precipitationBoxWidth.Value;
-            Settings.PrecipitationBoxLength = (int)precipitationBoxLength.Value;
             Settings.CorrectQuestionableBrakingParams = checkCorrectQuestionableBrakingParams.Checked;
             Settings.ActRandomizationLevel = (int)numericActRandomizationLevel.Value;
             Settings.ActWeatherRandomizationLevel = (int)numericActWeatherRandomizationLevel.Value;
@@ -582,8 +574,8 @@ namespace ORTS
         private void SetAdhesionLevelValue()
         {
             int level = trackAdhesionFactor.Value - trackAdhesionFactorChange.Value;
-            if (checkAdhesionPropToWeather.Checked)
-                level -= 40;
+            // Adjust level to be proportional to weather 
+            level -= 40;
 
             if (level > 159)
                 AdhesionLevelValue.Text = catalog.GetString("Very easy");
@@ -792,10 +784,22 @@ namespace ORTS
         }
 
         #region Help for General Options
-        // To add a HelpIcon for a control:
-        // - In code, extend the mapping in InitializeHelpIcons() below by adding the name of controls for checkboxes or (labels and comboboxes)
-        // - Using the Design View, in the properties of each control and of the icon, add a MouseEnter event "HelpIcon_MouseEnter" and a MouseLeave event "HelpIcon_MouseLeave"
-        // - Using the Design View, in the properties of the icon, add a Click event "HelpIcon_Click"
+        // The icons all share the same code which assumes they are named according to a simple scheme as follows:
+        //   1. To add a new Help Icon, copy an existing one and paste it onto the tab.
+        //   2. Give it the same name as the associated control but change the prefix to "pb" for Picture Box.
+        //   3. Add a Click event named HelpIcon_Click to each HelpIcon
+        //      Do not add code for this event (or press Return/double click in the Properties field which creates a code stub for you). 
+        //   4. Add MouseEnter/Leave events to each HelpIcon, label and checkbox:
+        //     - MouseEnter event named HelpIcon_MouseEnter
+        //     - MouseLeave event named HelpIcon_MouseLeave
+        //     Numeric controls do not have MouseEnter/Leave events so, for them, use:
+        //     - Enter event named HelpIcon_MouseEnter
+        //     - Leave event named HelpIcon_MouseLeave
+        //      Do not add code for these events (or press Return/double click in the Properties field which creates a code stub for you). 
+        //   5. Add an entry to InitializeHelpIcons() which links the icon to the control and, if there is one, the label.
+        //      This link will highlight the icon when the user hovers (mouses over) the control or the label.
+        //   6. Add an entry to HelpIcon_Click() which opens the user's browser with the correct help page.
+        //      The URL can be found from visiting the page and hovering over the title of the section.
 
         /// <summary>
         /// Allows multiple controls to change a single help icon with their hover events.
@@ -844,6 +848,11 @@ namespace ORTS
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
                 (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
+
+                // Audio tab
+                (pbSoundVolumePercent, new Control[] { labelSoundVolume, numericSoundVolumePercent }),
+                (pbSoundDetailLevel, new Control[]  { labelSoundDetailLevel, numericSoundDetailLevel }),
+                (pbExternalSoundPassThruPercent, new Control[]  { labelExternalSound, numericExternalSoundPassThruPercent }),
 
                 // System
                 (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
@@ -905,6 +914,21 @@ namespace ORTS
                     pbOverspeedMonitor,
                     baseUrl + "/options.html#overspeed-monitor"
                 },
+
+                // Audio tab
+                {
+                    pbSoundVolumePercent,
+                    baseUrl + "/options.html#audio-options"
+                },
+                {
+                    pbSoundDetailLevel,
+                    baseUrl + "/options.html#audio-options"
+                },
+                {
+                    pbExternalSoundPassThruPercent,
+                    baseUrl + "/options.html#audio-options"
+                },
+
                 // System tab
                 {
                     pbLanguage,

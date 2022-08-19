@@ -20,17 +20,17 @@
 // Prints out lots of diagnostic information about the construction of signals from shape data and their state changes.
 //#define DEBUG_SIGNAL_SHAPES
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Simulation.Signalling;
 using Orts.Viewer3D.Common;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Event = Orts.Common.Event;
 using Events = Orts.Common.Events;
 
@@ -514,7 +514,7 @@ namespace Orts.Viewer3D
 
                     if (mstsSignalType.Semaphore)
                         glowDay = 0.0f;
-                    if (mstsSignalType.FnType == MstsSignalFunction.INFO || mstsSignalType.FnType == MstsSignalFunction.SHUNTING) // These are good at identifying theatre boxes.
+                    if (mstsSignalType.Function == SignalFunction.INFO || mstsSignalType.Function == SignalFunction.SHUNTING) // These are good at identifying theatre boxes.
                         glowDay = glowNight = 0.0f;
 
                     // use values from signal if defined

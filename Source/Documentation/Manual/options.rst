@@ -121,16 +121,23 @@ Audio Options
 
 .. image:: images/options-audio.png
 
+Sound Volume
+------------
+The *% sound volume* scroll button allows adjustment of the volume of OR sound. 
+
+Default is 40.
+
+Sound Detail Level
+------------------
 Except for very slow computers, it is suggested that you set the Sound detail level to 5.
 
-The *% sound volume* scroll button allows adjustment of the volume of OR
-sound. Default is 40.
-
-The *% external sound heard internally* scroll button allows to define the percentage
-of the original volume of external sounds heard in cab and passenger views. In fact
-in real world external sounds are attenuated when heard within a trainset.
+External Sound
+--------------
+The *% external sound heard internally* scroll button defines the percentage
+of the original volume of external sounds heard in cab and passenger views.
 This percentage may be overridden trainset by trainset as defined
 :ref:`here <sound-external>`.
+
 
 Video Options
 =============
@@ -206,15 +213,16 @@ The default setting is checked.
 Viewing distance
 ----------------
 
-This option defines the maximum distance at which terrain is displayed. 
+This option defines the maximum distance at which terrain and objects are displayed. 
 Where the content provides "Distant Mountains", these are displayed independently (see below).
-
-Note: Some routes are optimized for the standard MSTS maximum viewing distance (2km).
 
 Note: When the option to tune settings automatically is applied, then this 
 value will be overridden and dynamically changed to maintain a target frame rate.
 
+Note: Some routes are optimized for a viewing distance of 2km as this is the maximum provided by MSTS.
+
 The default distance is 2km.
+
 
 Distant mountains
 -----------------
@@ -225,9 +233,32 @@ Note: "Distant Mountains" are present in the route if it has a folder called LO_
 
 The default setting is checked.
 
-The default distance is 40km
+The default distance is 40km.
 
 .. image:: images/options-mountains.png
+
+
+Extend object maximum viewing distance to horizon
+-------------------------------------------------
+
+With this option selected, all objects viewable up to the viewing distance
+(as defined above) are displayed, even if they have a level of detail (LOD) that is less distant. 
+
+Without this option, ORTS only displays objects up to their peak distance set by their level of detail (LOD) 
+or the viewing distance, whichever is less. 
+
+Selecting this option shows all the objects that should be in view but it may reduce the frame rate.
+MSTS limits the viewing distance to just 2km and the peak LOD distances are usually 2km, so this option
+is especially useful for viewing routes created for MSTS at distances above 2km.
+
+However, for routes that make good use of LOD settings, showing the objects that should be in view can be 
+achieved at higher frame rates by unchecking this option.
+For example, if the viewing distance is 10km and the content has been created with some large objects having 
+peak distance LODs set at 5km and smaller objects having LODs which are much shorter, then this strategy
+will show all the objects that should be in view without reducing the frame rate.
+
+The default setting is checked.
+
 
 Viewing vertical FOV
 --------------------
@@ -710,15 +741,6 @@ lat/lon rectangle corresponding to the arid zone of North America (lat from
 The randomization is not performed either if the activity contains weather
 change events.
 
-.. _options-dds-textures:
-
-Load DDS textures in preference to ACE
---------------------------------------
-
-Open Rails is capable of loading both ACE and DDS textures. If only one of
-the two is present, it is loaded. If both are present, the ACE texture is
-loaded unless this option has been selected.
-
 
 MSTS Environments
 -----------------
@@ -730,12 +752,6 @@ With this option selected, ORTS applies the MSTS environment files. This
 includes support of Kosmos environments, even if the final effect may be
 different from the current MSTS one.
 
-Adhesion factor correction
---------------------------
-
-The adhesion is multiplied by this percentage factor. Therefore lower
-values of the slider reduce adhesion and cause more frequent wheel slips
-and therefore a more difficult, but more challenging driving experience.
 
 Level of detail bias
 --------------------
@@ -762,37 +778,21 @@ Note: If your content does not use multiple LODs, then this option will have no 
 Adhesion proportional to rain/snow/fog
 --------------------------------------
 
-When this option is selected, adhesion becomes dependent on the intensity
+Adhesion is dependent on the intensity
 of rain and snow and the density of fog. Intensities and density can be
 modified at runtime by the player.
+
+
+Adhesion factor correction
+--------------------------
+
+The adhesion is multiplied by this percentage factor. Therefore lower
+values of the slider reduce adhesion and cause more frequent wheel slips
+and therefore a more difficult, but more challenging driving experience.
+
 
 Adhesion factor random change
 -----------------------------
 
 This factor randomizes the adhesion factor corrector by the entered
 percentage. The higher the value, the higher the adhesion variations.
-
-Precipitation Box Size
-----------------------
-
-Open Rails will simulate precipitation -- i.e. rain or snow, as falling
-individual particles. This represents a significant computing and display
-system load, especially for systems with limited resources. Therefore, the
-region in which the precipitation particles are visible, the
-*Precipitation Box*, is limited in size and moves with the camera. The
-size of the box can be set by the entries in the height, width and length
-boxes. The X and Z values are centered on the camera location, and falling
-particles *spawn* and fall from the top of the box.
-
-The max size for both length and width is 3000 meters or 9,842ft. Due to possibe
-resource issues, the ability to use max length and width may not be possible.  The
-best way to use the precipitation box is to define a square around your entire train
-if small enough or around most of your train.  Keep track on how your resources are 
-being used since snow will take up the most resources so you will have to adjust the
-size until you are satisified with the results.
-
-The reason for defining a square around your train is to minimize the moments when your train
-is approaching the edge of the precipitation box.  Worst case is to save the activity,
-exit and re-enter the activity since doing this will set your train back in the middle of the
-precipitation box.
-

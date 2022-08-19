@@ -863,6 +863,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             return false;
         }
+
+        /// <summary>
+        /// Removes loads (e.g. containers) when AI train is deleted
+        /// </summary>
+
+        public void RemoveLoads()
+        {
+            foreach (var animation in Animations)
+            {
+                if (animation is FreightAnimationDiscrete discreteAnimation && discreteAnimation.Container != null)
+                {
+                    Wagon.Simulator.ContainerManager.Containers.Remove(discreteAnimation.Container);
+                }
+            }
+
+        }
     }
 
 
