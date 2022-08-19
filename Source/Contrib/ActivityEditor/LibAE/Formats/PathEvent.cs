@@ -22,12 +22,24 @@
 /// 
 
 using System;
-using System.Drawing;
+using System.Windows;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Reflection;
+using Microsoft.Xna.Framework;
+using MSTS;
+using ORTS;
+using LibAE;
+
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Orts.Formats.OR;
 using ORTS.Common;
+
 
 namespace LibAE.Formats
 {

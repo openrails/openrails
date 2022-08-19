@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+// COPYRIGHT 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Simulation;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,7 +28,6 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using ORTS.Common;
 
 namespace Orts.Common.Scripting
 {
@@ -37,7 +38,6 @@ namespace Orts.Common.Scripting
         static readonly string[] ReferenceAssemblies = new[]
         {
             typeof(System.Object).Assembly.Location,
-            typeof(System.Enum).Assembly.Location,
             typeof(System.Diagnostics.Debug).Assembly.Location,
             typeof(ORTS.Common.ElapsedTime).Assembly.Location,
             typeof(ORTS.Scripting.Api.Timer).Assembly.Location,
