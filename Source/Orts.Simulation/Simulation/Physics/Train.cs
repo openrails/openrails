@@ -5640,45 +5640,12 @@ namespace Orts.Simulation.Physics
                 car.RearCouplerSlackM = car.CouplerSlackM / AdvancedCouplerDuplicationFactor;
                 Cars[i + 1].FrontCouplerSlackM = car.CouplerSlackM / AdvancedCouplerDuplicationFactor;
 
-                // Check to see if coupler is opened or closed - only closed or opened couplers have been specified
-                // It is assumed that the front coupler on first car will always be opened, and so will the coupler on last car. All others on the train will be coupled
-                if (i == 0) // first car
-                {
-                    if (car.FrontCouplerOpenFitted)
-                    {
-
-                        car.FrontCouplerOpen = true;
-                    }
-                    else
-                    {
-                        car.FrontCouplerOpen = false;
-                    }
-                }
-                else
-                {
-                    car.FrontCouplerOpen = false;
-                }
-
-                // Set up coupler information for last car
-                if (i == Cars.Count - 2) // 2nd last car in count, but set up last car, ie i+1
-                {
-
-                    if (Cars[i + 1].RearCouplerOpenFitted)
-                    {
-                        Cars[i + 1].RearCouplerOpen = true;
-                    }
-                    else
-                    {
-                        Cars[i + 1].RearCouplerOpen = false;
-                    }
-
-                }
-                else
-                {
-                    car.RearCouplerOpen = false;
-                }
-
-
+                // Update coupler open/closed status; it is assumed that:
+                //   - the front coupler on first car will always be open
+                //   - the rear coupler on last car will always be open
+                //   - all others will be closed
+                car.FrontCoupler.IsOpen = i == 0;
+                car.RearCoupler.IsOpen = i == Cars.Count - 1;
 
                 TotalCouplerSlackM += car.CouplerSlackM; // Total coupler slack displayed in HUD only
                 

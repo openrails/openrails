@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2022 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -38,6 +38,7 @@ using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks.Coupling;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
@@ -211,57 +212,12 @@ namespace Orts.Simulation.RollingStocks
         public float InitialMaxBrakeForceN = 89e3f;   // Initial force when agon initialised
 
         // Coupler Animation
-        public string FrontCouplerShapeFileName;
-        public float FrontCouplerAnimLengthM;
-        public float FrontCouplerAnimWidthM;
-        public float FrontCouplerAnimHeightM;
-
-        public string FrontCouplerOpenShapeFileName;
-        public float FrontCouplerOpenAnimLengthM;
-        public float FrontCouplerOpenAnimWidthM;
-        public float FrontCouplerOpenAnimHeightM;
-        public bool FrontCouplerOpenFitted = false;
-        public bool FrontCouplerOpen = false;
-
-        public string RearCouplerShapeFileName;
-        public float RearCouplerAnimLengthM;
-        public float RearCouplerAnimWidthM;
-        public float RearCouplerAnimHeightM;
-
-        public string RearCouplerOpenShapeFileName;
-        public float RearCouplerOpenAnimLengthM;
-        public float RearCouplerOpenAnimWidthM;
-        public float RearCouplerOpenAnimHeightM;
-        public bool RearCouplerOpenFitted = false;
-        public bool RearCouplerOpen = false;
+        public AnimatedCoupler FrontCoupler = new AnimatedCoupler();
+        public AnimatedCoupler RearCoupler = new AnimatedCoupler();
 
         // Air hose animation
-        public string FrontAirHoseShapeFileName;
-        public float FrontAirHoseAnimLengthM;
-        public float FrontAirHoseAnimWidthM;
-        public float FrontAirHoseAnimHeightM;
-
-        public string FrontAirHoseDisconnectedShapeFileName;
-        public float FrontAirHoseDisconnectedAnimLengthM;
-        public float FrontAirHoseDisconnectedAnimWidthM;
-        public float FrontAirHoseDisconnectedAnimHeightM;
-
-        public string RearAirHoseShapeFileName;
-        public float RearAirHoseAnimLengthM;
-        public float RearAirHoseAnimWidthM;
-        public float RearAirHoseAnimHeightM;
-
-        public string RearAirHoseDisconnectedShapeFileName;
-        public float RearAirHoseDisconnectedAnimLengthM;
-        public float RearAirHoseDisconnectedAnimWidthM;
-        public float RearAirHoseDisconnectedAnimHeightM;
-
-        public float FrontAirHoseHeightAdjustmentM;
-        public float RearAirHoseHeightAdjustmentM;
-        public float FrontAirHoseYAngleAdjustmentRad;
-        public float FrontAirHoseZAngleAdjustmentRad;
-        public float RearAirHoseYAngleAdjustmentRad;
-        public float RearAirHoseZAngleAdjustmentRad;
+        public AnimatedAirHose FrontAirHose = new AnimatedAirHose();
+        public AnimatedAirHose RearAirHose = new AnimatedAirHose();
 
         public float CarAirHoseLengthM;
         public float CarAirHoseHorizontalLengthM;
@@ -1463,60 +1419,60 @@ namespace Orts.Simulation.RollingStocks
                 var frontairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow(CarBehind.CarAirHoseHorizontalLengthM, 2));
 
                 // actual airhose height
-                RearAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
-                CarBehind.FrontAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
+                RearAirHose.HeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
+                CarBehind.FrontAirHose.HeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
 
                 // refererence adjustment heights to rest position
                 // If higher then rest position, then +ve adjustment
-                if (RearAirHoseHeightAdjustmentM >= rearairhoseheightadjustmentreferenceM)
+                if (RearAirHose.HeightAdjustmentM >= rearairhoseheightadjustmentreferenceM)
                 {
-                    RearAirHoseHeightAdjustmentM -= rearairhoseheightadjustmentreferenceM;
+                    RearAirHose.HeightAdjustmentM -= rearairhoseheightadjustmentreferenceM;
                 }
                 else // if lower then the rest position, then -ve adjustment
                 {
-                    RearAirHoseHeightAdjustmentM = (rearairhoseheightadjustmentreferenceM - RearAirHoseHeightAdjustmentM);
+                    RearAirHose.HeightAdjustmentM = (rearairhoseheightadjustmentreferenceM - RearAirHose.HeightAdjustmentM);
                 }
 
-                if (CarBehind.FrontAirHoseHeightAdjustmentM >= frontairhoseheightadjustmentreferenceM)
+                if (CarBehind.FrontAirHose.HeightAdjustmentM >= frontairhoseheightadjustmentreferenceM)
                 {
-                    CarBehind.FrontAirHoseHeightAdjustmentM -= frontairhoseheightadjustmentreferenceM;
+                    CarBehind.FrontAirHose.HeightAdjustmentM -= frontairhoseheightadjustmentreferenceM;
                 }
                 else
                 {
-                    CarBehind.FrontAirHoseHeightAdjustmentM = frontairhoseheightadjustmentreferenceM - CarBehind.FrontAirHoseHeightAdjustmentM;
+                    CarBehind.FrontAirHose.HeightAdjustmentM = frontairhoseheightadjustmentreferenceM - CarBehind.FrontAirHose.HeightAdjustmentM;
                 }
 
                 // Calculate angle adjustments
                 var rearAirhoseAngleAdjustmentReferenceRad = (float)Math.Asin(CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
                 var frontAirhoseAngleAdjustmentReferenceRad = (float)Math.Asin(CarBehind.CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
 
-                RearAirHoseZAngleAdjustmentRad = (float)Math.Asin((CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
-                CarBehind.FrontAirHoseZAngleAdjustmentRad = (float)Math.Asin((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
+                RearAirHose.ZAngleAdjustmentRad = (float)Math.Asin((CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
+                CarBehind.FrontAirHose.ZAngleAdjustmentRad = (float)Math.Asin((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
 
                 // refererence adjustment angles to rest position
-                if (RearAirHoseZAngleAdjustmentRad >= rearAirhoseAngleAdjustmentReferenceRad)
+                if (RearAirHose.ZAngleAdjustmentRad >= rearAirhoseAngleAdjustmentReferenceRad)
                 {
-                    RearAirHoseZAngleAdjustmentRad -= rearAirhoseAngleAdjustmentReferenceRad;
+                    RearAirHose.ZAngleAdjustmentRad -= rearAirhoseAngleAdjustmentReferenceRad;
                 }
                 else
                 {
-                    RearAirHoseZAngleAdjustmentRad = (rearAirhoseAngleAdjustmentReferenceRad - RearAirHoseZAngleAdjustmentRad);
+                    RearAirHose.ZAngleAdjustmentRad = (rearAirhoseAngleAdjustmentReferenceRad - RearAirHose.ZAngleAdjustmentRad);
                 }
 
                 // The Y axis angle adjustment should be the same as the z axis
-                RearAirHoseYAngleAdjustmentRad = RearAirHoseZAngleAdjustmentRad;
+                RearAirHose.YAngleAdjustmentRad = RearAirHose.ZAngleAdjustmentRad;
 
-                if (CarBehind.FrontAirHoseZAngleAdjustmentRad >= frontAirhoseAngleAdjustmentReferenceRad)
+                if (CarBehind.FrontAirHose.ZAngleAdjustmentRad >= frontAirhoseAngleAdjustmentReferenceRad)
                 {
-                    CarBehind.FrontAirHoseZAngleAdjustmentRad -= frontAirhoseAngleAdjustmentReferenceRad;
+                    CarBehind.FrontAirHose.ZAngleAdjustmentRad -= frontAirhoseAngleAdjustmentReferenceRad;
                 }
                 else
                 {
-                    CarBehind.FrontAirHoseZAngleAdjustmentRad = (frontAirhoseAngleAdjustmentReferenceRad - CarBehind.FrontAirHoseZAngleAdjustmentRad);
+                    CarBehind.FrontAirHose.ZAngleAdjustmentRad = (frontAirhoseAngleAdjustmentReferenceRad - CarBehind.FrontAirHose.ZAngleAdjustmentRad);
                 }
 
                 // The Y axis angle adjustment should be the same as the z axis
-                CarBehind.FrontAirHoseYAngleAdjustmentRad = CarBehind.FrontAirHoseZAngleAdjustmentRad;
+                CarBehind.FrontAirHose.YAngleAdjustmentRad = CarBehind.FrontAirHose.ZAngleAdjustmentRad;
 
             }
 
