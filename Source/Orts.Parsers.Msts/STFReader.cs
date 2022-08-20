@@ -1372,6 +1372,19 @@ namespace Orts.Parsers.Msts
             return defaultValue;
         }
 
+        /// <summary>Read a Vector3 object in the STF format '... {X} {Y} {Z} ...'
+        /// </summary>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
+        /// <param name="defaultValue">The default vector if any of the values are not specified</param>
+        /// <returns>The STF block as a Vector3</returns>
+        public Vector3 ReadVector3(UNITS validUnits, Vector3 defaultValue)
+        {
+            defaultValue.X = ReadFloat(validUnits, defaultValue.X);
+            defaultValue.Y = ReadFloat(validUnits, defaultValue.Y);
+            defaultValue.Z = ReadFloat(validUnits, defaultValue.Z);
+            return defaultValue;
+        }
+
         /// <summary>Read a Vector3 object in the STF format '( {X} {Y} {Z} ... )'
         /// </summary>
         /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
