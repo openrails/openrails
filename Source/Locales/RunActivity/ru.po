@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-08-20 01:12:47+0300\n"
-"PO-Revision-Date: 2022-08-20 01:47+0300\n"
+"POT-Creation-Date: 2022-08-20 10:45:47+0300\n"
+"PO-Revision-Date: 2022-08-20 10:49+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -722,15 +722,15 @@ msgstr "Имя папки"
 
 #: ../../RunActivity/Viewer3D/Popups/EOTListWindow.cs:103
 msgid "Can't attach EOT if player train not stopped"
-msgstr ""
+msgstr "Нельзя подключить EOT пока поезд движется"
 
 #: ../../RunActivity/Viewer3D/Popups/EOTListWindow.cs:110
 msgid "Player train already has a mounted EOT"
-msgstr ""
+msgstr "EOT уже установлен на составе"
 
 #: ../../RunActivity/Viewer3D/Popups/EOTListWindow.cs:122
 msgid "Can't mount an EOT if another one is mounted"
-msgstr ""
+msgstr "Нельзя подключить EOT если один уже имеется"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:78
 msgid "Help"

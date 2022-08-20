@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-08-20 01:12:41+0300\n"
-"PO-Revision-Date: 2022-08-20 01:29+0300\n"
+"POT-Creation-Date: 2022-08-20 10:45:37+0300\n"
+"PO-Revision-Date: 2022-08-20 10:54+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -349,7 +349,7 @@ msgstr "Помощь Список поездов на полигоне"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:50
 msgid "Display EOT List Window"
-msgstr ""
+msgstr "EOT Открыть список"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:52
 msgid "Debug Speed Up"
@@ -729,7 +729,7 @@ msgstr "Кнопки Аварийный останов"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:148
 msgid "Control EOT Emergency Brake"
-msgstr ""
+msgstr "EOT Экстренное торможение"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:149
 msgid "Control Sander"
