@@ -82,6 +82,7 @@ namespace Orts.Simulation
         public Matrix RelativeContainerMatrix = Matrix.Identity;
         public MSTSWagon Wagon;
         public string LoadFilePath;
+        public bool Visible = true;
         public Container(FreightAnimationDiscrete freightAnimDiscreteCopy, FreightAnimationDiscrete freightAnimDiscrete, bool stacked = false)
         {
             Wagon = freightAnimDiscrete.Wagon;
@@ -125,6 +126,7 @@ namespace Orts.Simulation
             Name = inf.ReadString();
             BaseShapeFileFolderSlash = inf.ReadString();
             ShapeFileName = inf.ReadString();
+            LoadFilePath = inf.ReadString();
             IntrinsicShapeOffset.X = inf.ReadSingle();
             IntrinsicShapeOffset.Y = inf.ReadSingle();
             IntrinsicShapeOffset.Z = inf.ReadSingle();
@@ -222,6 +224,7 @@ namespace Orts.Simulation
             outf.Write(Name);
             outf.Write(BaseShapeFileFolderSlash);
             outf.Write(ShapeFileName);
+            outf.Write(LoadFilePath);
             outf.Write(IntrinsicShapeOffset.X);
             outf.Write(IntrinsicShapeOffset.Y);
             outf.Write(IntrinsicShapeOffset.Z);
