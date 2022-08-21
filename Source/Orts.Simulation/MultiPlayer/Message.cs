@@ -448,7 +448,7 @@ namespace Orts.MultiPlayer
             for (var i = 0; i < cars.Length; i++)
             {
                 var c = cars[i];
-                var index = c.LastIndexOf("\\trains\\trainset\\", StringComparison.OrdinalIgnoreCase);
+                var index = c.LastIndexOf("\\trains\\trainset\\", StringComparison.OrdinalIgnoreCase); 
                 {
                     c = c.Remove(0, index + 17);
                 }//c: wagon path without folder name
