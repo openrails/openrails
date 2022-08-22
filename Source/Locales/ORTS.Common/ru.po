@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-08-20 10:45:37+0300\n"
-"PO-Revision-Date: 2022-08-20 10:54+0300\n"
+"POT-Creation-Date: 2022-07-09 11:25:45+0300\n"
+"PO-Revision-Date: 2022-07-09 11:54+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -349,7 +349,7 @@ msgstr "Помощь Список поездов на полигоне"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:50
 msgid "Display EOT List Window"
-msgstr "EOT Открыть список"
+msgstr "Помощь Окно ЕОТ"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:52
 msgid "Debug Speed Up"
@@ -729,7 +729,7 @@ msgstr "Кнопки Аварийный останов"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:148
 msgid "Control EOT Emergency Brake"
-msgstr "EOT Экстренное торможение"
+msgstr "Кнопки Стоп-кран"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:149
 msgid "Control Sander"
@@ -961,7 +961,7 @@ msgstr "Экипировка"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:206
 msgid "Control Discrete Unload"
-msgstr "Разгрузка частями"
+msgstr "Разгрузка по отдельности"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:207
 msgid "Control Water Scoop"
@@ -989,11 +989,11 @@ msgstr "Тумблер 2"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:213
 msgid "Control TCS Generic 1"
-msgstr "КЛУБ Общ.1"
+msgstr "КЛУБ. Общ.1"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:214
 msgid "Control TCS Generic 2"
-msgstr "КЛУБ Общ.2"
+msgstr "КЛУБ. Общ.2"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:215
 msgid "Control Cab Radio"
