@@ -287,58 +287,70 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 //            Load(Wagon, LoadDataList);
         }
 
-        public void Load(MSTSWagon wagon, string loadFilePath, LoadPosition loadPosition)
+        public void Load(string loadFilePath, LoadPosition loadPosition)
         {
             if (GeneralIntakePoint.Type == MSTSWagon.PickupType.Container)
             {
                 Container container;
-                container = new Container(wagon, loadFilePath);
+                container = new Container(Wagon, loadFilePath);
                 if (ContainerManager.LoadedContainers.ContainsKey(loadFilePath))
                 {
                     container.Copy(ContainerManager.LoadedContainers[loadFilePath]);
                 }
                 else
                 {
-                    container.LoadFromContainerFile(loadFilePath, wagon.Simulator.BasePath +@"\trains\trainset\");
+                    container.LoadFromContainerFile(loadFilePath, Wagon.Simulator.BasePath +@"\trains\trainset\");
                     ContainerManager.LoadedContainers.Add(loadFilePath, container);
                 }
                 Vector3 offset = new Vector3(0, 0, 0);
-                var validity = Validity(wagon, container, loadPosition, Offset, LoadingAreaLength, out offset);
+                var validity = Validity(Wagon, container, loadPosition, Offset, LoadingAreaLength, out offset);
                 if (validity)
                 {
                     var freightAnimDiscrete = new FreightAnimationDiscrete(this, container, loadPosition, offset);
                     Animations.Add(freightAnimDiscrete);
                     container.ComputeWorldPosition(freightAnimDiscrete);
-                    wagon.Simulator.ContainerManager.Containers.Add(container);
+                    Wagon.Simulator.ContainerManager.Containers.Add(container);
                     UpdateEmptyFreightAnims(container.LengthM);
                 }
                 else
-                    Trace.TraceWarning($"Container {container.ShapeFileName} could not be allocated on wagon {wagon.WagFilePath}");
+                    Trace.TraceWarning($"Container {container.ShapeFileName} could not be allocated on wagon {Wagon.WagFilePath} with ID {Wagon.CarID}");
             }
             else
                 Trace.TraceWarning("No match between wagon and load");
         }
 
-        public void Load(MSTSWagon wagon, List<LoadData> loadDataList, bool listInWagFile = false)
+        public void Load(List<LoadData> loadDataList, bool listInWagFile = false)
         {
             if (GeneralIntakePoint == null)
                 return;
-            if (loadDataList != null && loadDataList.Count != 0)
+            var discrete = false;
+            foreach (var animation in Animations)
             {
-                foreach (var loadData in loadDataList)
+                if (animation is FreightAnimationDiscrete)
                 {
-                    string loadDataFolder = wagon.Simulator.BasePath + @"\trains\trainset\" + loadData.Folder;
-                    string loadFilePath = loadDataFolder + @"\" + loadData.Name + ".load-or";
-                    if (!File.Exists(loadFilePath))
+                    discrete = true;
+                    break;
+                }
+            }
+            if (!(listInWagFile && Wagon.Train.TrainType == Physics.Train.TRAINTYPE.REMOTE))
+            {
+                if (loadDataList != null && loadDataList.Count != 0)
+                {
+                    foreach (var loadData in loadDataList)
                     {
-                        Trace.TraceWarning($"Ignored missing load {loadFilePath}");
-                        continue;
+                        string loadDataFolder = Wagon.Simulator.BasePath + @"\trains\trainset\" + loadData.Folder;
+                        string loadFilePath = loadDataFolder + @"\" + loadData.Name + ".load-or";
+                        if (!File.Exists(loadFilePath))
+                        {
+                            Trace.TraceWarning($"Ignored missing load {loadFilePath}");
+                            continue;
+                        }
+                        Load(loadFilePath, loadData.LoadPosition);
                     }
-                   Load(wagon, loadFilePath, loadData.LoadPosition);
                 }
             }
             if (listInWagFile) return;
-            var discrete = false;
+            discrete = false;
             foreach (var animation in Animations)
             {
                 if (animation is FreightAnimationDiscrete)
@@ -352,7 +364,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 EmptyAnimations.Add(new FreightAnimationDiscrete(this, LoadPosition.Center));
             EmptyAbove();
             if (!listInWagFile)
-                wagon.UpdateLoadPhysics();
+                Wagon.UpdateLoadPhysics();
         }
 
         public void EmptyAbove()
@@ -878,6 +890,60 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
             }
 
+        }
+
+        /// <summary>
+        /// Hides discrete freight animations and containers when remote train quits
+        /// </summary>
+
+        public void HideDiscreteFreightAnimations()
+        {
+            foreach (var animation in Animations)
+            {
+                if (animation is FreightAnimationDiscrete discreteAnimation && discreteAnimation.Container != null)
+                {
+                    discreteAnimation.Container.Visible = false;
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Shows discrete freight animations and containers when remote train quits
+        /// </summary>
+
+        public void ShowDiscreteFreightAnimations()
+        {
+            foreach (var animation in Animations)
+            {
+                if (animation is FreightAnimationDiscrete discreteAnimation && discreteAnimation.Container != null)
+                {
+                    discreteAnimation.Container.Visible = true;
+                }
+            }
+
+        }
+
+        public string FADiscretesString()
+        {
+            var discretesCount = 0;
+            var discretesDataString = "";
+
+            foreach (var animation in Wagon.FreightAnimations.Animations)
+            {
+                if (animation is FreightAnimationDiscrete discreteAnimation)
+                {
+                    discretesCount++;
+                    var fileName = Path.GetFileNameWithoutExtension(discreteAnimation.Container.LoadFilePath);
+                    var directoryName = Path.GetDirectoryName(discreteAnimation.Container.LoadFilePath);
+                    int relativeDirectoryIndex = directoryName.ToLower().IndexOf("trainset") + 9;
+                    var relativeDirectoryName = directoryName.Substring(relativeDirectoryIndex, directoryName.Length - relativeDirectoryIndex);
+                    var loadPosition = discreteAnimation.LoadPosition.ToString();
+                    discretesDataString += "&" + fileName + "%" + relativeDirectoryName + "%" + loadPosition + "%";
+                }
+            }
+            var totalString = discretesCount.ToString() + discretesDataString;
+            return discretesCount.ToString() + discretesDataString;
         }
     }
 
