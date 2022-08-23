@@ -85,6 +85,7 @@ function ApiHeadUpDisplay() {
 						DebugColSpanTo3 = ['Render process','Updater process','Loader process','Sound process','Total process'],
 						DebugWidthTofix = ['primitives','Camera'],
 					// Force information
+						ForceColSpanTo15 = ['Wind Speed'],
 						ForceColSpanTo4 = ['(Simple adhesion model)','Dynamic brake'],
 						ForceColSpanTo3 = ['Axle out force','Loco Adhesion','Wagon Adhesion'],
 					// Brake information
@@ -135,6 +136,9 @@ function ApiHeadUpDisplay() {
 								Str += "<td class='td_nowrap' >" + obj.extraTable.values[next] + "</td>";
 							}
 							// Force info requires colspan into first col
+							else if (obj.extraTable.values[next].includes(ForceColSpanTo15)) {
+								Str += "<td colspan='15' >" + obj.extraTable.values[next] + "</td>";
+							}
 							else if (ForceColSpanTo4.indexOf(obj.extraTable.values[next]) !== -1 || obj.extraTable.values[next].indexOf('===') !== -1){ // Locomotive info
 								Str += "<td colspan='4' >" + obj.extraTable.values[next] + "</td>";
 							}
