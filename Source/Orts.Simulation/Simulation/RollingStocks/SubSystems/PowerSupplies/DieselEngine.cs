@@ -124,6 +124,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     break;
                 case "engine(gearboxnumberofgears":
+                case "engine(ortsreversegearboxindication":
                 case "engine(gearboxdirectdrivegear":
                 case "engine(ortsmainclutchtype":
                 case "engine(ortsgearboxtype":

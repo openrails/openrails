@@ -433,6 +433,7 @@ public List<CabView> CabViewList = new List<CabView>();
         public MSTSNotchController DPDynamicBrakeController;
 
         private int PreviousGearBoxNotch;
+        private int previousChangedGearBoxNotch;
 
         public float EngineBrakeIntervention = -1;
         public float TrainBrakeIntervention = -1;
@@ -1817,6 +1818,32 @@ public List<CabView> CabViewList = new List<CabView>();
                     MainResChargingRatePSIpS = ControlActiveLocomotive.MainResChargingRatePSIpS;
                     BrakePipeChargingRatePSIorInHgpS = ControlActiveLocomotive.BrakePipeChargingRatePSIorInHgpS;
                     TrainBrakePipeLeakPSIorInHgpS = ControlActiveLocomotive.TrainBrakePipeLeakPSIorInHgpS;
+                }
+            }
+
+
+            // pass gearbox command to other locomotives in train
+            foreach (TrainCar car in Train.Cars)
+            {
+                var locog = car as MSTSDieselLocomotive;
+                var dieselloco = this as MSTSDieselLocomotive;
+
+                if (locog != null && dieselloco != null && car != this && locog.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                {
+                    if (GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
+                    {
+                        locog.DieselEngines[0].GearBox.currentGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex;
+                        locog.GearBoxController.CurrentNotch = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        locog.GearboxGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        locog.GearBoxController.SetValue((float)dieselloco.GearBoxController.CurrentNotch);
+
+                        locog.Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, locog.GearBoxController.CurrentNotch);
+                        locog.AlerterReset(TCSEvent.GearBoxChanged);
+                        locog.SignalGearBoxChangeEvents();
+
+                        previousChangedGearBoxNotch = GearBoxController.CurrentNotch; // reset loop until next gear change
+
+                    }
                 }
             }
 
@@ -3579,8 +3606,10 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             if (GearBoxController != null)
             {
+                
                 if (this is MSTSDieselLocomotive)
                 {
+
                     var dieselloco = this as MSTSDieselLocomotive;
 
                     if (dieselloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
@@ -3589,7 +3618,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
                         {
                             GearBoxController.StartIncrease();
-                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, dieselloco.DieselEngines[0].GearBox.GearIndication);
                             AlerterReset(TCSEvent.GearBoxChanged);
                             SignalGearBoxChangeEvents();
                             dieselloco.DieselEngines[0].GearBox.clutchOn = false;
@@ -3602,7 +3631,8 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (ThrottlePercent == 0)
                             {
                                 GearBoxController.StartIncrease();
-                                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                                Trace.TraceInformation("Controller Increase - Current Notch {0} Indication {1} GearIndex {2}", GearBoxController.CurrentNotch, dieselloco.DieselEngines[0].GearBox.GearIndication, dieselloco.DieselEngines[0].GearBox.CurrentGearIndex);
+                                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, dieselloco.DieselEngines[0].GearBox.GearIndication );
                                 AlerterReset(TCSEvent.GearBoxChanged);
                                 SignalGearBoxChangeEvents();
                                 dieselloco.DieselEngines[0].GearBox.clutchOn = false;
@@ -3620,6 +3650,10 @@ public List<CabView> CabViewList = new List<CabView>();
                         AlerterReset(TCSEvent.GearBoxChanged);
                         SignalGearBoxChangeEvents();
                     }
+
+//                    ChangeGearUp();
+
+
                 }
             }
 
@@ -3652,7 +3686,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
                         {
                             GearBoxController.StartDecrease();
-                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, dieselloco.DieselEngines[0].GearBox.GearIndication);
                             AlerterReset(TCSEvent.GearBoxChanged);
                             SignalGearBoxChangeEvents();
                             dieselloco.DieselEngines[0].GearBox.clutchOn = false;
@@ -3663,7 +3697,8 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (ThrottlePercent == 0)
                             {
                                 GearBoxController.StartDecrease();
-                                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                                Trace.TraceInformation("Controller Decrease - Current Notch {0} Indication {1} GearIndex {2}", GearBoxController.CurrentNotch, dieselloco.DieselEngines[0].GearBox.GearIndication, dieselloco.DieselEngines[0].GearBox.CurrentGearIndex);
+                                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, dieselloco.DieselEngines[0].GearBox.GearIndication);
                                 AlerterReset(TCSEvent.GearBoxChanged);
                                 SignalGearBoxChangeEvents();
                                 dieselloco.DieselEngines[0].GearBox.clutchOn = false;
@@ -3680,6 +3715,21 @@ public List<CabView> CabViewList = new List<CabView>();
                         Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
                         AlerterReset(TCSEvent.GearBoxChanged);
                         SignalGearBoxChangeEvents();
+
+                    }
+
+                    // pass gearbox command to other locomotives
+                    foreach (TrainCar car in Train.Cars)
+                    {
+                        var locog = car as MSTSDieselLocomotive;
+
+                        if (locog != null && car != this && locog.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                        {
+                            locog.GearBoxController.StartDecrease();
+                            locog.Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                            locog.AlerterReset(TCSEvent.GearBoxChanged);
+                            locog.SignalGearBoxChangeEvents();
+                        }
 
                     }
                 }
@@ -3746,7 +3796,7 @@ public List<CabView> CabViewList = new List<CabView>();
             var dieselloco = this as MSTSDieselLocomotive;
             if (change != 0)
             {
-                //new GarBoxCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                //new GearBoxCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
                 SignalEvent(change > 0 ? Event.GearUp : Event.GearDown);
                 AlerterReset(TCSEvent.GearBoxChanged);
             }
@@ -5229,7 +5279,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         {
                             var dieselLoco = this as MSTSDieselLocomotive;
                             if (dieselLoco.DieselEngines.HasGearBox)
-                                data = dieselLoco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                                data = dieselLoco.DieselEngines[0].GearBox.GearIndication;
                         }
                         break;
                     }
