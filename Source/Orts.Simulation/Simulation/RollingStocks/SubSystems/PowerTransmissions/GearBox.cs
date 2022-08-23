@@ -32,6 +32,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     public class MSTSGearBoxParams
     {
         public int GearBoxNumberOfGears = 1;
+        public bool ReverseGearBoxIndication;
         public int GearBoxDirectDriveGear = 1;
         public bool FreeWheelFitted = false;
         public TypesGearBox GearBoxType = TypesGearBox.Unknown;
@@ -69,6 +70,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             switch (lowercasetoken)
             {
                 case "engine(gearboxnumberofgears": GearBoxNumberOfGears = stf.ReadIntBlock(1); initLevel++; break;
+                case "engine(ortsreversegearboxindication": int tempIndication = stf.ReadIntBlock(1); if (tempIndication == 1) { ReverseGearBoxIndication = true; } Trace.TraceInformation("Read Indication {0}",ReverseGearBoxIndication); break;
                 case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(1); break;
                 case "engine(ortsgearboxfreewheel":
                     var freeWheel = stf.ReadIntBlock(null);
@@ -189,6 +191,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public void Copy(MSTSGearBoxParams copy)
         {
             GearBoxNumberOfGears = copy.GearBoxNumberOfGears;
+            ReverseGearBoxIndication = copy.ReverseGearBoxIndication;
             GearBoxDirectDriveGear = copy.GearBoxDirectDriveGear;
             GearBoxType = copy.GearBoxType;
             MaxTEFound = copy.MaxTEFound;
@@ -250,6 +253,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             get
             {
                 return currentGearIndex;
+            }
+            set
+            {
+                currentGearIndex = value;
             }
         }
 
@@ -431,6 +438,25 @@ public Gear NextGear
 
         public int NumOfGears { get { return Gears.Count; } }
 
+        // The default gear configuration is N-1-2-3-4, etc. However some locomotives have a N-4-3-2-1 configuration. So the display indication is reversed to 
+        // give the impression that this gear system is set.
+        public int GearIndication
+        {
+            get
+            {
+                if (ReverseGearBoxIndication )
+                {
+                    int tempgear = NumOfGears - CurrentGearIndex;
+                    tempgear = MathHelper.Clamp(tempgear, 0, NumOfGears);
+                    return tempgear;
+                }
+                else
+                {
+                    return CurrentGearIndex + 1;
+                }
+            }
+        }
+
         public float CurrentSpeedMpS 
         {
             get
@@ -533,6 +559,7 @@ public Gear NextGear
 
         public bool AutoClutch = true;
 
+        public bool ReverseGearBoxIndication = false;
         public TypesClutch ClutchType = TypesClutch.Unknown;
         public TypesGearBox GearBoxType = TypesGearBox.Unknown;
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
@@ -757,6 +784,7 @@ public Gear NextGear
                 if ((!GearBoxParams.IsInitialized) && (GearBoxParams.AtLeastOneParamFound))
                     Trace.TraceWarning("Some of the gearbox parameters are missing! Default physics will be used.");
 
+                ReverseGearBoxIndication = GearBoxParams.ReverseGearBoxIndication;
                 GearBoxType = GearBoxParams.GearBoxType;
                 ClutchType = GearBoxParams.ClutchType;
                 GearBoxFreeWheelFitted = GearBoxParams.FreeWheelFitted;
