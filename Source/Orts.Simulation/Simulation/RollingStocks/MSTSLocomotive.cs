@@ -1822,16 +1822,33 @@ public List<CabView> CabViewList = new List<CabView>();
             }
 
 
-            // pass gearbox command to other locomotives in train
-            foreach (TrainCar car in Train.Cars)
-            {
-                var locog = car as MSTSDieselLocomotive;
-                var dieselloco = this as MSTSDieselLocomotive;
+            var gearloco = this as MSTSDieselLocomotive;
 
-                if (locog != null && dieselloco != null && car != this && locog.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+            // pass gearbox command key to other gearboxes in the same locomotive
+            // Note - at the moment there is only one GearBox Controller created, but a gearbox for each diesel engine is created. 
+            // This code keeps all gearboxes in the locomotive aligned with the first engine and gearbox.
+            if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
+            {
+                int ii = 0;
+                foreach (var eng in gearloco.DieselEngines.DEList)
                 {
-                    if (GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
+                    if (gearloco.DieselEngines.Count != 0)
                     {
+                        gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
+                    }
+
+                    ii = ii + 1;
+                }
+
+                // pass gearbox command key to other locomotives in train
+                foreach (TrainCar car in Train.Cars)
+                {
+                    var dieselloco = this as MSTSDieselLocomotive;
+                    var locog = car as MSTSDieselLocomotive;
+
+                    if (locog != null && dieselloco != null && car != this)
+                    {
+
                         locog.DieselEngines[0].GearBox.currentGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex;
                         locog.GearBoxController.CurrentNotch = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
                         locog.GearboxGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
@@ -1843,10 +1860,10 @@ public List<CabView> CabViewList = new List<CabView>();
 
                         previousChangedGearBoxNotch = GearBoxController.CurrentNotch; // reset loop until next gear change
 
+
                     }
                 }
             }
-
 
             TrainControlSystem.Update(elapsedClockSeconds);
 
@@ -3631,7 +3648,6 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (ThrottlePercent == 0)
                             {
                                 GearBoxController.StartIncrease();
-                                Trace.TraceInformation("Controller Increase - Current Notch {0} Indication {1} GearIndex {2}", GearBoxController.CurrentNotch, dieselloco.DieselEngines[0].GearBox.GearIndication, dieselloco.DieselEngines[0].GearBox.CurrentGearIndex);
                                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, dieselloco.DieselEngines[0].GearBox.GearIndication );
                                 AlerterReset(TCSEvent.GearBoxChanged);
                                 SignalGearBoxChangeEvents();
