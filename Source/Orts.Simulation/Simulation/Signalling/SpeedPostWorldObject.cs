@@ -12,5 +12,10 @@ namespace Orts.Simulation.Signalling
             // get filename in Uppercase
             SFileName = Path.GetFileName(speedPostItem.FileName).ToUpperInvariant();
         }
+
+        public SpeedPostWorldObject(SpeedPostWorldObject other)
+        {
+            SFileName = other.SFileName;
+        }
     }
 }
