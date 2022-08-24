@@ -1010,7 +1010,7 @@ namespace Orts.Simulation.Signalling
         {
             validSignal = true;
 
-            SignalObjects[foundSignals] = new SignalObject(this);
+            SignalObjects[foundSignals] = new SignalObject(this, SignalObjectType.Signal);
             SignalObjects[foundSignals].direction = (int)sigItem.Direction;
             SignalObjects[foundSignals].trackNode = trackNode;
             SignalObjects[foundSignals].trRefIndex = nodeIndx;
@@ -1056,7 +1056,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile)
         {
-            SignalObjects[foundSignals] = new SignalObject(this);
+            SignalObjects[foundSignals] = new SignalObject(this, SignalObjectType.SpeedPost);
             SignalObjects[foundSignals].direction = 0;                  // preset - direction not yet known //
             SignalObjects[foundSignals].trackNode = trackNode;
             SignalObjects[foundSignals].trRefIndex = nodeIndx;
