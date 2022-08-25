@@ -8140,7 +8140,7 @@ namespace Orts.Simulation.Physics
             bool hasEndSignal = false;     // ends with cleared signal
             int sectionWithSignalIndex = 0;
 
-            SignalObject previousSignal = new SignalObject(signalRef);
+            SignalObject previousSignal = new SignalObject(signalRef, SignalObjectType.Signal);
 
             for (int iindex = 0; iindex < newRoute.Count && !endWithSignal; iindex++)
             {

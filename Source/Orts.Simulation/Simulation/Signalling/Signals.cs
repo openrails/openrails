@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
@@ -182,11 +183,6 @@ namespace Orts.Simulation.Signalling
                         sob.AppendFormat("TDB  Index          : {0}\n", thisHead.TDBIndex);
                         sob.AppendFormat("Junction Main Node  : {0}\n", thisHead.JunctionMainNode);
                         sob.AppendFormat("Junction Path       : {0}\n", thisHead.JunctionPath);
-
-                        if (thisHead.usedCsSignalScript == null && singleSignal.Type == SignalObjectType.Signal)
-                        {
-                            nonCSharpSignals.Add(thisHead.signalType.Name);
-                        }
                     }
 
                     sob.AppendFormat("TC Reference   : {0}\n", singleSignal.TCReference);
@@ -1010,7 +1006,7 @@ namespace Orts.Simulation.Signalling
         {
             validSignal = true;
 
-            SignalObjects[foundSignals] = new SignalObject(this);
+            SignalObjects[foundSignals] = new SignalObject(this, SignalObjectType.Signal);
             SignalObjects[foundSignals].direction = (int)sigItem.Direction;
             SignalObjects[foundSignals].trackNode = trackNode;
             SignalObjects[foundSignals].trRefIndex = nodeIndx;
@@ -1056,7 +1052,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile)
         {
-            SignalObjects[foundSignals] = new SignalObject(this);
+            SignalObjects[foundSignals] = new SignalObject(this, SignalObjectType.SpeedPost);
             SignalObjects[foundSignals].direction = 0;                  // preset - direction not yet known //
             SignalObjects[foundSignals].trackNode = trackNode;
             SignalObjects[foundSignals].trRefIndex = nodeIndx;

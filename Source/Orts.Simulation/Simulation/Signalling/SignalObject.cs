@@ -90,20 +90,7 @@ namespace Orts.Simulation.Signalling
         public int thisRef;                     // This signal's reference.
         public int direction;                   // Direction facing on track
 
-        public SignalObjectType Type
-        {
-            get
-            {
-                if (SignalHeads.Exists(x => x.Function.MstsFunction != MstsSignalFunction.SPEED))
-                {
-                    return SignalObjectType.Signal;
-                }
-                else
-                {
-                    return SpeedPostWorldObject != null ? SignalObjectType.SpeedPost : SignalObjectType.SpeedSignal;
-                }
-            }
-        }
+        public SignalObjectType Type { get; protected set; }
         public List<SignalHead> SignalHeads = new List<SignalHead>();
 
         public int SignalNumClearAhead_MSTS = -2;    // Overall maximum SignalNumClearAhead over all heads (MSTS calculation)
@@ -203,9 +190,11 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         ///  Constructor for empty item
         /// </summary>
-        public SignalObject(Signals signalReference)
+        public SignalObject(Signals signalReference, SignalObjectType type)
         {
             signalRef = signalReference;
+
+            Type = type;
 
             LockedTrains = new List<KeyValuePair<int, int>>();
 
@@ -222,7 +211,18 @@ namespace Orts.Simulation.Signalling
         public SignalObject(SignalObject copy)
         {
             signalRef = copy.signalRef;
-            WorldObject = new SignalWorldObject(copy.WorldObject);
+            Type = copy.Type;
+            switch (Type)
+            {
+                case SignalObjectType.Signal:
+                case SignalObjectType.SpeedSignal:
+                    WorldObject = new SignalWorldObject(copy.WorldObject);
+                    break;
+
+                case SignalObjectType.SpeedPost:
+                    SpeedPostWorldObject = new SpeedPostWorldObject(copy.SpeedPostWorldObject);
+                    break;
+            }
 
             trackNode = copy.trackNode;
             LockedTrains = new List<KeyValuePair<int, int>>();
@@ -1880,6 +1880,12 @@ namespace Orts.Simulation.Signalling
             foreach (SignalHead sigHead in SignalHeads)
             {
                 sigHead.SetSignalType(trItems, sigCFG);
+            }
+
+            if (Type == SignalObjectType.Signal
+                && !SignalHeads.Exists(x => x.Function.MstsFunction != MstsSignalFunction.SPEED))
+            {
+                Type = SignalObjectType.SpeedSignal;
             }
         }
 
