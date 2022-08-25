@@ -1821,7 +1821,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
             }
 
-
+            
             var gearloco = this as MSTSDieselLocomotive;
 
             // pass gearbox command key to other gearboxes in the same locomotive
@@ -1832,7 +1832,8 @@ public List<CabView> CabViewList = new List<CabView>();
                 int ii = 0;
                 foreach (var eng in gearloco.DieselEngines.DEList)
                 {
-                    if (gearloco.DieselEngines.Count != 0)
+                    // don't change the first engine as this is the reference for all the others
+                    if (ii != 0)
                     {
                         gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
                     }
@@ -1840,13 +1841,13 @@ public List<CabView> CabViewList = new List<CabView>();
                     ii = ii + 1;
                 }
 
-                // pass gearbox command key to other locomotives in train
+                // pass gearbox command key to other locomotives in train, don't treat the player locomotive in this fashion.
                 foreach (TrainCar car in Train.Cars)
                 {
                     var dieselloco = this as MSTSDieselLocomotive;
                     var locog = car as MSTSDieselLocomotive;
 
-                    if (locog != null && dieselloco != null && car != this)
+                    if (locog != null && dieselloco != null && car != this && !locog.IsLeadLocomotive())
                     {
 
                         locog.DieselEngines[0].GearBox.currentGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex;
@@ -1857,12 +1858,10 @@ public List<CabView> CabViewList = new List<CabView>();
                         locog.Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, locog.GearBoxController.CurrentNotch);
                         locog.AlerterReset(TCSEvent.GearBoxChanged);
                         locog.SignalGearBoxChangeEvents();
-
-                        previousChangedGearBoxNotch = GearBoxController.CurrentNotch; // reset loop until next gear change
-
-
                     }
                 }
+
+                previousChangedGearBoxNotch = GearBoxController.CurrentNotch; // reset loop until next gear change
             }
 
             TrainControlSystem.Update(elapsedClockSeconds);
