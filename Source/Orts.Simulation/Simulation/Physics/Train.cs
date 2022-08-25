@@ -10193,15 +10193,13 @@ namespace Orts.Simulation.Physics
             }
             else if (ControlMode == TRAIN_CONTROL.EXPLORER)
             {
-                if (LeadLocomotive is MSTSLocomotive locomotive &&
-                    (locomotive.TrainBrakeController.TCSEmergencyBraking || locomotive.TrainBrakeController.TCSFullServiceBraking))
-                {
-                    locomotive.TrainControlSystem.HandleEvent(TCSEvent.EmergencyBrakingReleasedBySimulator);
-                    ResetExplorerMode();
-                    return;
-                }
-                else if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
+                if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Cannot change to Manual Mode while in Explorer Mode"));
+            }
+            else if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && ControlModeBeforeOutOfControl == TRAIN_CONTROL.EXPLORER)
+            {
+                if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Cannot change to Manual Mode. Use the Reset Out Of Control Mode command to release brakes"));
             }
             else
             {
