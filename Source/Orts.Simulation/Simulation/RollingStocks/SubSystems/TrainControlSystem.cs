@@ -540,6 +540,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     }
                 };
                 Script.RequestToggleManualMode = () => Locomotive.Train.RequestToggleManualMode();
+                Script.ResetOutOfControlMode = () => Locomotive.Train.ManualResetOutOfControlMode();
 
                 // TrainControlSystem INI configuration file
                 Script.GetBoolParameter = (arg1, arg2, arg3) => LoadParameter<bool>(arg1, arg2, arg3);
