@@ -1266,6 +1266,7 @@ public List<CabView> CabViewList = new List<CabView>();
             outf.Write(GenericItem2);
             outf.Write(RemoteControlGroup);
             outf.Write(DPUnitID);
+            outf.Write(PreviousGearBoxNotch);
 
             base.Save(outf);
 
@@ -1319,6 +1320,7 @@ public List<CabView> CabViewList = new List<CabView>();
             GenericItem2 = inf.ReadBoolean();
             RemoteControlGroup = inf.ReadInt32();
             DPUnitID = inf.ReadInt32();
+            PreviousGearBoxNotch = inf.ReadInt32();
 
             base.Restore(inf);
 
@@ -1821,24 +1823,29 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
             }
 
-            
             var gearloco = this as MSTSDieselLocomotive;
 
-            // pass gearbox command key to other gearboxes in the same locomotive
+            // Pass Gearbox commands
             // Note - at the moment there is only one GearBox Controller created, but a gearbox for each diesel engine is created. 
             // This code keeps all gearboxes in the locomotive aligned with the first engine and gearbox.
             if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
             {
-                int ii = 0;
-                foreach (var eng in gearloco.DieselEngines.DEList)
-                {
-                    // don't change the first engine as this is the reference for all the others
-                    if (ii != 0)
-                    {
-                        gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
-                    }
+                // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive
 
-                    ii = ii + 1;
+                if (gearloco == this)
+                {
+
+                    int ii = 0;
+                    foreach (var eng in gearloco.DieselEngines.DEList)
+                    {
+                        // don't change the first engine as this is the reference for all the others
+                        if (ii != 0)
+                        {
+                            gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
+                        }
+
+                        ii = ii + 1;
+                    }
                 }
 
                 // pass gearbox command key to other locomotives in train, don't treat the player locomotive in this fashion.
@@ -1851,6 +1858,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     {
 
                         locog.DieselEngines[0].GearBox.currentGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex;
+
                         locog.GearBoxController.CurrentNotch = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
                         locog.GearboxGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
                         locog.GearBoxController.SetValue((float)dieselloco.GearBoxController.CurrentNotch);
@@ -2050,7 +2058,6 @@ public List<CabView> CabViewList = new List<CabView>();
             UpdateHornAndBell(elapsedClockSeconds);
 
             UpdateSoundVariables(elapsedClockSeconds);
-
             PrevMotiveForceN = MotiveForceN;
             base.Update(elapsedClockSeconds);
 

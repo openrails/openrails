@@ -1084,7 +1084,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Locomotive.PrevMotiveForceN *= -1f;
 
             if ((State == DieselEngineState.Running) && (Locomotive.ThrottlePercent > 0))
-            {
+            {        
                 OutputPowerW = (Locomotive.PrevMotiveForceN > 0 ? Locomotive.PrevMotiveForceN * Locomotive.AbsSpeedMpS : 0) / Locomotive.DieselEngines.NumOfActiveEngines;
             }
             else
