@@ -539,7 +539,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         CustomizedCabviewControlNames[id] = value;
                     }
                 };
-                Script.RequestToggleManualMode = () => Locomotive.Train.RequestToggleManualMode();
+                Script.RequestToggleManualMode = () => 
+                {
+                    if (Locomotive.Train.ControlMode == Train.TRAIN_CONTROL.OUT_OF_CONTROL && Locomotive.Train.ControlModeBeforeOutOfControl == Train.TRAIN_CONTROL.EXPLORER)
+                    {
+                        Trace.TraceWarning("RequestToggleManualMode() is deprecated for explorer mode. Please use ResetOutOfControlMode() instead");
+                        Locomotive.Train.ManualResetOutOfControlMode();
+                    }
+                    else Locomotive.Train.RequestToggleManualMode();
+                };
                 Script.ResetOutOfControlMode = () => Locomotive.Train.ManualResetOutOfControlMode();
 
                 // TrainControlSystem INI configuration file

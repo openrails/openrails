@@ -348,7 +348,7 @@ namespace Orts.Simulation.Physics
         /// <summary>
         /// Set when the train is out of control
         /// </summary>
-        private TRAIN_CONTROL ControlModeBeforeOutOfControl = TRAIN_CONTROL.UNDEFINED;
+        public TRAIN_CONTROL ControlModeBeforeOutOfControl = TRAIN_CONTROL.UNDEFINED;
 
         public enum OUTOFCONTROL
         {
