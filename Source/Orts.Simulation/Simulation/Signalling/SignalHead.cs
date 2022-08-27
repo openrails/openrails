@@ -156,6 +156,7 @@ namespace Orts.Simulation.Signalling
                 }
                 else
                 {
+                    Function = SignalFunction.UNKNOWN;
                     Trace.TraceWarning("SignalObject trItem={0}, trackNode={1} has SignalHead with undefined SignalType {2}.",
                                   mainSignal.trItem, mainSignal.trackNode, sigItem.SignalType);
                 }
