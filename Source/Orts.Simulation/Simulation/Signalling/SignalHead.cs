@@ -50,7 +50,7 @@ namespace Orts.Simulation.Signalling
         public float? ApproachControlLimitPositionM;
         public float? ApproachControlLimitSpeedMpS;
 
-        public SignalFunction Function { get; protected set; }
+        public SignalFunction Function { get; protected set; } = SignalFunction.UNKNOWN;
 
         public int ORTSNormalSubtypeIndex;     // subtype index form sigcfg file
 
@@ -156,7 +156,6 @@ namespace Orts.Simulation.Signalling
                 }
                 else
                 {
-                    Function = SignalFunction.UNKNOWN;
                     Trace.TraceWarning("SignalObject trItem={0}, trackNode={1} has SignalHead with undefined SignalType {2}.",
                                   mainSignal.trItem, mainSignal.trackNode, sigItem.SignalType);
                 }
