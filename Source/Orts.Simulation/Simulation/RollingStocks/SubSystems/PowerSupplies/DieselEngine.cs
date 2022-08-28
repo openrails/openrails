@@ -1084,8 +1084,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Locomotive.PrevMotiveForceN *= -1f;
 
             if ((State == DieselEngineState.Running) && (Locomotive.ThrottlePercent > 0))
-            {        
-                OutputPowerW = (Locomotive.PrevMotiveForceN > 0 ? Locomotive.PrevMotiveForceN * Locomotive.AbsSpeedMpS : 0) / Locomotive.DieselEngines.NumOfActiveEngines;
+            {
+                var abstempMotiveForce = Math.Abs(Locomotive.PrevMotiveForceN);
+                OutputPowerW = ( abstempMotiveForce > 0 ? abstempMotiveForce * Locomotive.AbsSpeedMpS : 0) / Locomotive.DieselEngines.NumOfActiveEngines;
             }
             else
             {
@@ -1438,7 +1439,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
             {
-                CurrentDieselOutputPowerW -= Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
+
+                CurrentDieselOutputPowerW = (CurrentDieselOutputPowerW - Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW) / Locomotive.DieselEngines.NumOfActiveEngines;
                 CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
             }
 
