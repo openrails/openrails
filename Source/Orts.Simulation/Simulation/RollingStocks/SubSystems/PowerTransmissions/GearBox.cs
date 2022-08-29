@@ -809,6 +809,18 @@ public Gear NextGear
                         // if they entered the TE at maximum gear speed, then increase the value accordingly 
                         Gears[i].MaxTractiveForceN = GearBoxParams.GearBoxTractiveForceAtSpeedN[i] * 1.234f;
                     }
+                    // For purposes of calculating engine efficiency the tractive force at maximum gear speed needs to be used.
+                    if (GearBoxParams.GearBoxTractiveForceAtSpeedN[i] != 0)
+                    {
+                        // Assume that user has entered the TE at max speed already in the Eng
+                        Gears[i].TractiveForceatMaxSpeedN = GearBoxParams.GearBoxTractiveForceAtSpeedN[i];
+                    }
+                    else
+                    {
+                        // Assume that user entered max TE at maximum torque point
+                        Gears[i].TractiveForceatMaxSpeedN = GearBoxParams.GearBoxMaxTractiveForceForGearsN[i] / 1.234f;
+                    }                                  
+
                     Gears[i].OverspeedPercentage = GearBoxParams.GearBoxOverspeedPercentageForFailure;
                     Gears[i].UpGearProportion = GearBoxParams.GearBoxUpGearProportion;
                     if (Locomotive != null && Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
@@ -1046,6 +1058,7 @@ public Gear NextGear
         public float ChangeUpSpeedRpM;
         public float ChangeDownSpeedRpM;
         public float MaxTractiveForceN;
+        public float TractiveForceatMaxSpeedN;
         public float OverspeedPercentage;
         public float BackLoadForceN;
         public float CoastingForceN;
