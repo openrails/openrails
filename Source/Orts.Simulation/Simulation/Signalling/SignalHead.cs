@@ -50,7 +50,7 @@ namespace Orts.Simulation.Signalling
         public float? ApproachControlLimitPositionM;
         public float? ApproachControlLimitSpeedMpS;
 
-        public SignalFunction Function { get; protected set; }
+        public SignalFunction Function { get; protected set; } = SignalFunction.UNKNOWN;
 
         public int ORTSNormalSubtypeIndex;     // subtype index form sigcfg file
 
