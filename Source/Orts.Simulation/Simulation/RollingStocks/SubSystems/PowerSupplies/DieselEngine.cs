@@ -921,7 +921,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                return CurrentDieselOutputPowerW <= 0f ? 0f : ((OutputPowerW + (Locomotive.DieselEngines.NumOfActiveEngines > 0 ? Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines : 0f)) * 100f / CurrentDieselOutputPowerW);
+                if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                {
+                    float tempEff = 0;
+                    if (GearBox.CurrentGear != null)
+                    {
+                        tempEff = (((GearBox.CurrentGear.TractiveForceatMaxSpeedN * GearBox.CurrentGear.MaxSpeedMpS / Locomotive.DieselEngines.NumOfActiveEngines) / (DieselTorqueTab[MaxRPM] * MaxRPM / 9.54f)) * 100.0f);
+                    }
+
+                    return tempEff;
+                }
+                else
+                {
+                    return CurrentDieselOutputPowerW <= 0f ? 0f : ((OutputPowerW + (Locomotive.DieselEngines.NumOfActiveEngines > 0 ? Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines : 0f)) * 100f / CurrentDieselOutputPowerW);
+                }
             }
         }
         /// <summary>
