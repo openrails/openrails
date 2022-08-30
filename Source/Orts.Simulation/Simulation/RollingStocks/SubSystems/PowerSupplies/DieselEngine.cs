@@ -1638,6 +1638,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             RealRPM = inf.ReadSingle();
             OutputPowerW = inf.ReadSingle();
             DieselTemperatureDeg = inf.ReadSingle();
+            GovernorEnabled = inf.ReadBoolean();
 
             Locomotive.gearSaved = inf.ReadBoolean();  // read boolean which indicates gear data was saved
 
@@ -1654,6 +1655,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             outf.Write(RealRPM);
             outf.Write(OutputPowerW);
             outf.Write(DieselTemperatureDeg);
+            outf.Write(GovernorEnabled);
+
             if (GearBox != null)
             {
                 outf.Write(true);

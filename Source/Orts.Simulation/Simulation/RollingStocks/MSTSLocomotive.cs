@@ -1267,6 +1267,7 @@ public List<CabView> CabViewList = new List<CabView>();
             outf.Write(RemoteControlGroup);
             outf.Write(DPUnitID);
             outf.Write(PreviousGearBoxNotch);
+            outf.Write(previousChangedGearBoxNotch);
 
             base.Save(outf);
 
@@ -1321,6 +1322,7 @@ public List<CabView> CabViewList = new List<CabView>();
             RemoteControlGroup = inf.ReadInt32();
             DPUnitID = inf.ReadInt32();
             PreviousGearBoxNotch = inf.ReadInt32();
+            previousChangedGearBoxNotch = inf.ReadInt32();
 
             base.Restore(inf);
 
@@ -3672,10 +3674,6 @@ public List<CabView> CabViewList = new List<CabView>();
                         AlerterReset(TCSEvent.GearBoxChanged);
                         SignalGearBoxChangeEvents();
                     }
-
-//                    ChangeGearUp();
-
-
                 }
             }
 
@@ -3737,21 +3735,6 @@ public List<CabView> CabViewList = new List<CabView>();
                         Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
                         AlerterReset(TCSEvent.GearBoxChanged);
                         SignalGearBoxChangeEvents();
-
-                    }
-
-                    // pass gearbox command to other locomotives
-                    foreach (TrainCar car in Train.Cars)
-                    {
-                        var locog = car as MSTSDieselLocomotive;
-
-                        if (locog != null && car != this && locog.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
-                        {
-                            locog.GearBoxController.StartDecrease();
-                            locog.Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
-                            locog.AlerterReset(TCSEvent.GearBoxChanged);
-                            locog.SignalGearBoxChangeEvents();
-                        }
 
                     }
                 }
