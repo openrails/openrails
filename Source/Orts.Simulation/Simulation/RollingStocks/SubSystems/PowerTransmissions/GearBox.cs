@@ -656,6 +656,8 @@ public Gear NextGear
 
                             // During normal operation fuel admission is fixed, and therefore TE follows curve as RpM varies
                             tractiveForceN = torqueCurveMultiplier * DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] / DieselEngine.DieselTorqueTab.MaxY() * CurrentGear.MaxTractiveForceN;
+
+                        //    Trace.TraceInformation("Tractive Force - TF {0} tcm {1} RpM {2} Torque@RpM {3} TorqueMax {4} MaxTE {5}", tractiveForceN, torqueCurveMultiplier, DieselEngine.RealRPM, DieselEngine.DieselTorqueTab[DieselEngine.RealRPM], DieselEngine.DieselTorqueTab.MaxY(), CurrentGear.MaxTractiveForceN);
                             
                             Locomotive.HuDGearMaximumTractiveForce = CurrentGear.MaxTractiveForceN;
 
@@ -807,7 +809,7 @@ public Gear NextGear
                     else
                     {
                         // if they entered the TE at maximum gear speed, then increase the value accordingly 
-                        Gears[i].MaxTractiveForceN = GearBoxParams.GearBoxTractiveForceAtSpeedN[i] * 1.234f;
+                        Gears[i].MaxTractiveForceN = GearBoxParams.GearBoxTractiveForceAtSpeedN[i] * DieselEngine.DieselTorqueTab.MaxY() / DieselEngine.DieselTorqueTab[DieselEngine.RealRPM];
                     }
                     // For purposes of calculating engine efficiency the tractive force at maximum gear speed needs to be used.
                     if (GearBoxParams.GearBoxTractiveForceAtSpeedN[i] != 0)
@@ -818,7 +820,7 @@ public Gear NextGear
                     else
                     {
                         // Assume that user entered max TE at maximum torque point
-                        Gears[i].TractiveForceatMaxSpeedN = GearBoxParams.GearBoxMaxTractiveForceForGearsN[i] / 1.234f;
+                        Gears[i].TractiveForceatMaxSpeedN = GearBoxParams.GearBoxMaxTractiveForceForGearsN[i] / (DieselEngine.DieselTorqueTab.MaxY() / DieselEngine.DieselTorqueTab[DieselEngine.RealRPM]);
                     }                                  
 
                     Gears[i].OverspeedPercentage = GearBoxParams.GearBoxOverspeedPercentageForFailure;
