@@ -3,9 +3,11 @@
     <TargetFramework>net472</TargetFramework>
     <OutputType>Library</OutputType>
     <IsPublishable>False</IsPublishable>
-    <Copyright>© Open Rails project</Copyright>
-    <Authors>Open Rails project</Authors>
-    <Description>Open Rails tests</Description>
+    <AssemblyTitle>Open Rails Tests</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">

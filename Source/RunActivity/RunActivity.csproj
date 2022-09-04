@@ -7,9 +7,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <IsPublishable>False</IsPublishable>
-    <Copyright>© Open Rails project</Copyright>
-    <Authors>Open Rails project</Authors>
-    <Description>Open Rails activity runner</Description>
+    <AssemblyTitle>Open Rails Activity Runner</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <DefineConstants>TRACE;WINDOWS;NEW_ACTION;WITH_NEW_SAVE;ACTIVITY_EDITOR</DefineConstants>
   </PropertyGroup>
@@ -34,10 +36,6 @@
     </Reference>
     <Reference Include="MonoGame.Framework.Content.Pipeline">
       <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.Content.Pipeline.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

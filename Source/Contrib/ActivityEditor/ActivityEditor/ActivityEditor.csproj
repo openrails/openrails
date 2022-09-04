@@ -7,9 +7,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <IsPublishable>False</IsPublishable>
-    <Copyright>© Open Rails project</Copyright>
-    <Authors>Open Rails project</Authors>
-    <Description>Open Rails activity editor (contributed)</Description>
+    <AssemblyTitle>Open Rails Activity Editor (Contributed)</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails (disabled)</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <DefineConstants>TRACE;WINDOWS;ACTIVITY_EDITOR</DefineConstants>
   </PropertyGroup>
