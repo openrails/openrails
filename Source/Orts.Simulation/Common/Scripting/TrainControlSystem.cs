@@ -188,6 +188,14 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> IsRearCab;
         /// <summary>
+        /// True if left doors are open
+        /// </summary>
+        public Func<bool> AreLeftDoorsOpen;
+        /// <summary>
+        /// True if right doors are open
+        /// </summary>
+        public Func<bool> AreRightDoorsOpen;
+        /// <summary>
         /// True if train brake controller is in emergency position, otherwise false.
         /// </summary>
         public Func<bool> IsBrakeEmergency;
