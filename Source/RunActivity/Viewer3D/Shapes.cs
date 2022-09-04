@@ -1592,37 +1592,37 @@ namespace Orts.Viewer3D
             }
             else
             {
-            if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
-            {
-                nextKey = Turntable.TargetY / (2 * (float)Math.PI) * animation.FrameCount;
-            }
-            else
-            {
-                float moveFrames;
-                if (Turntable.Counterclockwise)
-                    moveFrames = animation.FrameRate * elapsedTime.ClockSeconds;
-                else if (Turntable.Clockwise)
-                    moveFrames = -animation.FrameRate * elapsedTime.ClockSeconds;
+                if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
+                {
+                    nextKey = Turntable.TargetY / (2 * (float)Math.PI) * animation.FrameCount;
+                }
                 else
-                    moveFrames = 0;
-                nextKey = AnimationKey + moveFrames;
-            }
-            AnimationKey = nextKey % animation.FrameCount;
-            if (AnimationKey < 0)
-                AnimationKey += animation.FrameCount;
-            Turntable.YAngle = MathHelper.WrapAngle(nextKey / animation.FrameCount * 2 * (float)Math.PI);
+                {
+                    float moveFrames;
+                    if (Turntable.Counterclockwise)
+                        moveFrames = animation.FrameRate * elapsedTime.ClockSeconds;
+                    else if (Turntable.Clockwise)
+                        moveFrames = -animation.FrameRate * elapsedTime.ClockSeconds;
+                    else
+                        moveFrames = 0;
+                    nextKey = AnimationKey + moveFrames;
+                }
+                AnimationKey = nextKey % animation.FrameCount;
+                if (AnimationKey < 0)
+                    AnimationKey += animation.FrameCount;
+                Turntable.YAngle = MathHelper.WrapAngle(nextKey / animation.FrameCount * 2 * (float)Math.PI);
 
-            if ((Turntable.Clockwise || Turntable.Counterclockwise || Turntable.AutoClockwise || Turntable.AutoCounterclockwise) && !Rotating)
-            {
-                Rotating = true;
-                if (Sound != null) Sound.HandleEvent(Turntable.TrainsOnMovingTable.Count == 1 &&
-                    Turntable.TrainsOnMovingTable[0].FrontOnBoard && Turntable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
-            }
-            else if ((!Turntable.Clockwise && !Turntable.Counterclockwise && !Turntable.AutoClockwise && !Turntable.AutoCounterclockwise && Rotating))
-            {
-                Rotating = false;
-                if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
-            }
+                if ((Turntable.Clockwise || Turntable.Counterclockwise || Turntable.AutoClockwise || Turntable.AutoCounterclockwise) && !Rotating)
+                {
+                    Rotating = true;
+                    if (Sound != null) Sound.HandleEvent(Turntable.TrainsOnMovingTable.Count == 1 &&
+                        Turntable.TrainsOnMovingTable[0].FrontOnBoard && Turntable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
+                }
+                else if ((!Turntable.Clockwise && !Turntable.Counterclockwise && !Turntable.AutoClockwise && !Turntable.AutoCounterclockwise && Rotating))
+                {
+                    Rotating = false;
+                    if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
+                }
             }
             // Update the pose for each matrix
             for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
@@ -1701,35 +1701,35 @@ namespace Orts.Viewer3D
             }
             else
             {
-            if (Transfertable.GoToTarget)
-            {
-                AnimationKey = (Transfertable.TargetOffset - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
-            }
+                if (Transfertable.GoToTarget)
+                {
+                    AnimationKey = (Transfertable.TargetOffset - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
+                }
 
-            else if (Transfertable.Forward)
-            {
-                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
-            }
-            else if (Transfertable.Reverse)
-            {
-                AnimationKey -= SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
-            }
-            if (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey = SharedShape.Animations[0].FrameCount;
-            if (AnimationKey < 0) AnimationKey = 0;
+                else if (Transfertable.Forward)
+                {
+                    AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+                }
+                else if (Transfertable.Reverse)
+                {
+                    AnimationKey -= SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+                }
+                if (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey = SharedShape.Animations[0].FrameCount;
+                if (AnimationKey < 0) AnimationKey = 0;
 
-            Transfertable.OffsetPos = AnimationKey / SharedShape.Animations[0].FrameCount * Transfertable.Span + Transfertable.CenterOffsetComponent;
+                Transfertable.OffsetPos = AnimationKey / SharedShape.Animations[0].FrameCount * Transfertable.Span + Transfertable.CenterOffsetComponent;
 
-            if ((Transfertable.Forward || Transfertable.Reverse) && !Translating)
-            {
-                Translating = true;
-                if (Sound != null) Sound.HandleEvent(Transfertable.TrainsOnMovingTable.Count == 1 &&
-                    Transfertable.TrainsOnMovingTable[0].FrontOnBoard && Transfertable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
-            }
-            else if ((!Transfertable.Forward && !Transfertable.Reverse && Translating))
-            {
-                Translating = false;
-                if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
-            }
+                if ((Transfertable.Forward || Transfertable.Reverse) && !Translating)
+                {
+                    Translating = true;
+                    if (Sound != null) Sound.HandleEvent(Transfertable.TrainsOnMovingTable.Count == 1 &&
+                        Transfertable.TrainsOnMovingTable[0].FrontOnBoard && Transfertable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
+                }
+                else if ((!Transfertable.Forward && !Transfertable.Reverse && Translating))
+                {
+                    Translating = false;
+                    if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
+                }
             }
 
             // Update the pose for each matrix
@@ -1788,7 +1788,7 @@ namespace Orts.Viewer3D
                 graphicsDevice.SetVertexBuffers(VertexBufferBindings);
                 if (IndexBuffer != null)
                 {
-                    graphicsDevice.Indices = IndexBuffer;
+                graphicsDevice.Indices = IndexBuffer;
                     graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: 0, startIndex: 0, primitiveCount: PrimitiveCount);
                 }
                 else
@@ -2581,8 +2581,8 @@ namespace Orts.Viewer3D
                     else
                     {
                         // .s lod-ding is based on distance levels
-                        while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
-                            displayDetailLevel--;
+                    while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
+                        displayDetailLevel--;
                     }
                 }
 
@@ -2629,12 +2629,12 @@ namespace Orts.Viewer3D
             bones = null; // standard scenery material has no skin and bones
             var xnaMatrix = Matrix.Identity;
             var hi = shapePrimitive.HierarchyIndex;
-            while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
-            {
-                Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
-                hi = shapePrimitive.Hierarchy[hi];
-            }
-            Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+                        while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
+                        {
+                            Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
+                            hi = shapePrimitive.Hierarchy[hi];
+                        }
+                        Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
             return xnaMatrix;
         }
 
