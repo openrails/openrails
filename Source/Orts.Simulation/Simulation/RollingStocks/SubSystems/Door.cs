@@ -31,12 +31,81 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         Opening,
         Open,
     }
+    public class Doors : ISubSystem<Doors>
+    {
+        public Door RightDoor;
+        public Door LeftDoor;
+
+        public Doors(MSTSWagon wagon)
+        {
+            LeftDoor = new Door(wagon, false);
+            RightDoor = new Door(wagon, true);
+        }
+
+        public virtual void Parse(string lowercasetoken, STFReader stf)
+        {
+            switch (lowercasetoken)
+            {
+                case "wagon(ortsdoors(closingdelay": 
+                {
+                    float delayS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0f);
+                    LeftDoor.ClosingDelayS = delayS;
+                    RightDoor.ClosingDelayS = delayS;
+                    break;
+                }
+                case "wagon(ortsdoors(openingdelay": 
+                {
+                    float delayS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0f);
+                    LeftDoor.OpeningDelayS = delayS;
+                    RightDoor.OpeningDelayS = delayS;
+                    break;
+                }
+            }
+        }
+
+        public void Copy(Doors other)
+        {
+            LeftDoor.Copy(other.LeftDoor);
+            RightDoor.Copy(other.RightDoor);
+        }
+
+        public virtual void Initialize()
+        {
+            LeftDoor.Initialize();
+            RightDoor.Initialize();
+        }
+
+        /// <summary>
+        /// Initialization when simulation starts with moving train
+        /// </summary>
+        public virtual void InitializeMoving()
+        {
+        }
+
+        public virtual void Save(BinaryWriter outf)
+        {
+            LeftDoor.Save(outf);
+            RightDoor.Save(outf);
+        }
+
+        public virtual void Restore(BinaryReader inf)
+        {
+            LeftDoor.Restore(inf);
+            RightDoor.Restore(inf);
+        }
+
+        public virtual void Update(float elapsedClockSeconds)
+        {
+            LeftDoor.Update(elapsedClockSeconds);
+            RightDoor.Update(elapsedClockSeconds);
+        }
+    }
     public class Door : ISubSystem<Door>
     {
         
         // Parameters
-        public float OpeningDelayS { get; protected set; } = 0f;
-        public float ClosingDelayS { get; protected set; } = 0f;
+        public float OpeningDelayS { get; set; } = 0f;
+        public float ClosingDelayS { get; set; } = 0f;
 
         // Variables
         readonly MSTSWagon Wagon;
@@ -59,16 +128,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public virtual void Parse(string lowercasetoken, STFReader stf)
         {
-            switch (lowercasetoken)
-            {
-                case "wagon(ortsdoors(closingdelay":
-                    ClosingDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0f);
-                    break;
-
-                case "engine(ortsdoors(openingdelay":
-                    OpeningDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0f);
-                    break;
-            }
         }
 
         public void Copy(Door other)
