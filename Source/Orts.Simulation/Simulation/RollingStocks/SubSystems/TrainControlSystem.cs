@@ -343,8 +343,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.CurrentTrainMUDirection = () => Locomotive.Train.MUDirection; // Direction of train
                 Script.IsFlipped = () => Locomotive.Flipped;
                 Script.IsRearCab = () => Locomotive.UsingRearCab;
-                Script.AreLeftDoorsOpen = () => Locomotive.DoorLeftOpen;
-                Script.AreRightDoorsOpen = () => Locomotive.DoorRightOpen;
                 Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
                 Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
                 Script.PowerAuthorization = () => PowerAuthorization;
@@ -364,6 +362,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     }
                 };
                 Script.ArePantographsDown = () => Locomotive.Pantographs.State == PantographState.Down;
+                Script.GetLeftDoorState = () => Locomotive.Train.GetDoorState(Locomotive.Flipped ^ Locomotive.GetCabFlipped());
+                Script.GetRightDoorState = () => Locomotive.Train.GetDoorState(!Locomotive.Flipped ^ Locomotive.GetCabFlipped());
                 Script.ThrottlePercent = () => Locomotive.ThrottleController.CurrentValue * 100;
                 Script.MaxThrottlePercent = () => MaxThrottlePercent;
                 Script.DynamicBrakePercent = () => Locomotive.DynamicBrakeController == null ? 0 : Locomotive.DynamicBrakeController.CurrentValue * 100;
@@ -472,6 +472,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 };
                 Script.SetVigilanceAlarm = (value) => Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
                 Script.SetHorn = (value) => Locomotive.TCSHorn = value;
+                Script.ToggleLeftDoors = (open) => Locomotive.Train.ToggleDoors(Locomotive.Flipped ^ Locomotive.GetCabFlipped(), open);
+                Script.ToggleRightDoors = (open) => Locomotive.Train.ToggleDoors(!Locomotive.Flipped ^ Locomotive.GetCabFlipped(), open);
+                Script.LockLeftDoors = (lck) => Locomotive.Train.LockDoors(Locomotive.Flipped ^ Locomotive.GetCabFlipped(), lck);
+                Script.LockRightDoors = (lck) => Locomotive.Train.LockDoors(!Locomotive.Flipped ^ Locomotive.GetCabFlipped(), lck);
+
                 Script.TriggerSoundAlert1 = () => this.SignalEvent(Event.TrainControlSystemAlert1, Script);
                 Script.TriggerSoundAlert2 = () => this.SignalEvent(Event.TrainControlSystemAlert2, Script);
                 Script.TriggerSoundInfo1 = () => this.SignalEvent(Event.TrainControlSystemInfo1, Script);

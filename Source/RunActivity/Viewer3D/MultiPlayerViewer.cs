@@ -52,10 +52,6 @@ namespace Orts.Viewer3D
 
             if (UserInput.IsPressed(UserCommand.ControlWiper)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
 
-            if (UserInput.IsPressed(UserCommand.ControlDoorLeft)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "DOORL", (++DoorLeftCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommand.ControlDoorRight)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "DOORR", (++DoorRightCount) % 2)).ToString());
-
             if (UserInput.IsPressed(UserCommand.ControlMirror)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "MIRRORS", (++MirrorsCount) % 2)).ToString());
 
             if (UserInput.IsPressed(UserCommand.ControlHeadlightIncrease))

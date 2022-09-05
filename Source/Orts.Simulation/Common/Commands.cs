@@ -1196,8 +1196,9 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            if (Receiver.GetCabFlipped()) Receiver.ToggleDoorsRight();
-            else Receiver.ToggleDoorsLeft();
+            bool right = Receiver.GetCabFlipped() ^ Receiver.Flipped;
+            var state = Receiver.Train.GetDoorState(right);
+            Receiver.Train.ToggleDoors(right, state == DoorState.Closed || state == DoorState.Closing);
             // Report();
         }
     }
@@ -1215,8 +1216,9 @@ namespace Orts.Common
 
         public override void Redo()
         {
-            if (Receiver.GetCabFlipped()) Receiver.ToggleDoorsLeft();
-            else Receiver.ToggleDoorsRight();
+            bool right = !Receiver.GetCabFlipped() ^ Receiver.Flipped;
+            var state = Receiver.Train.GetDoorState(right);
+            Receiver.Train.ToggleDoors(right, state == DoorState.Closed || state == DoorState.Closing);
             // Report();
         }
     }

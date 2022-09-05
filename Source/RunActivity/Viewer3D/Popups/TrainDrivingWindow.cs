@@ -1315,15 +1315,19 @@ namespace Orts.Viewer3D.Popups
 
             // Doors
             var wagon = (MSTSWagon)locomotive;
-            if (wagon.DoorLeftOpen || wagon.DoorRightOpen)
+            var doorLeftState = train.GetDoorState(false);
+            var doorRightState = train.GetDoorState(true);
+            var doorLeftOpen = doorLeftState != Simulation.RollingStocks.SubSystems.DoorState.Closed;
+            var doorRightOpen = doorRightState != Simulation.RollingStocks.SubSystems.DoorState.Closed;
+            if (doorLeftOpen || doorRightOpen)
             {
                 var status = new List<string>();
-                bool flipped = locomotive.GetCabFlipped();
+                bool flipped = locomotive.Flipped ^ locomotive.GetCabFlipped();
                 doorsLabelVisible = true;
                 clockDoorsTime = Owner.Viewer.Simulator.ClockTime;
-                if (wagon.DoorLeftOpen)
+                if (doorLeftOpen)
                     status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString(flipped ? "Right" : "Left")));
-                if (wagon.DoorRightOpen)
+                if (doorRightOpen)
                     status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString(flipped ? "Left" : "Right")));
 
                 AddLabel(new ListLabel
