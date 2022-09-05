@@ -16284,16 +16284,62 @@ namespace Orts.Simulation.Physics
             foreach (TrainCar car in Cars)
             {
                 var mstsWagon = car as MSTSWagon;
-                if (!car.Flipped && right || car.Flipped && !right)
+                if ((!car.Flipped && right) || (car.Flipped && !right))
                 {
-                    mstsWagon.DoorRightOpen = open;
+                    mstsWagon.RightDoor.SetDoor(open);
                 }
                 else
                 {
-                    mstsWagon.DoorLeftOpen = open;
+                    mstsWagon.LeftDoor.SetDoor(open);
                 }
-                mstsWagon.SignalEvent(open ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
             }
+            if (Simulator.PlayerLocomotive?.Train == this && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), right ? "DORR" : "DOORL", open ? 1 : 0)).ToString());
+        }
+
+        /// <summary>
+        /// LockDoors
+        /// Locks doors of a train so they cannot be opened
+        /// Parameters: right = true if right doors; lck = true if locking
+        /// </summary>
+        public void LockDoors(bool right, bool lck)
+        {
+            foreach (TrainCar car in Cars)
+            {
+                var mstsWagon = car as MSTSWagon;
+                if ((!car.Flipped && right) || (car.Flipped && !right))
+                {
+                    mstsWagon.RightDoor.SetDoorLock(lck);
+                }
+                else
+                {
+                    mstsWagon.LeftDoor.SetDoorLock(lck);
+                }
+            }
+        }
+
+        /// <summary>
+        /// GetDoorState
+        /// Returns status of doors of a train
+        /// Parameter: right = true if right doors
+        /// </summary>
+        public DoorState GetDoorState(bool right)
+        {
+            DoorState state = DoorState.Closed;
+            foreach (TrainCar car in Cars)
+            {
+                var mstsWagon = car as MSTSWagon;
+                DoorState wagonDoorState;
+                if ((!car.Flipped && right) || (car.Flipped && !right))
+                {
+                    wagonDoorState = mstsWagon.RightDoor.State;
+                }
+                else
+                {
+                    wagonDoorState = mstsWagon.LeftDoor.State;
+                }
+                if (state < wagonDoorState) state = wagonDoorState;
+            }
+            return state;
         }
 
         /// <summary>

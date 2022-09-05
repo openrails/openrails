@@ -19,7 +19,7 @@ using System;
 using System.IO;
 using ORTS.Common;
 using Orts.Common;
-using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using ORTS.Scripting.Api.ETCS;
 
 namespace ORTS.Scripting.Api
@@ -188,14 +188,6 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> IsRearCab;
         /// <summary>
-        /// True if left doors are open
-        /// </summary>
-        public Func<bool> AreLeftDoorsOpen;
-        /// <summary>
-        /// True if right doors are open
-        /// </summary>
-        public Func<bool> AreRightDoorsOpen;
-        /// <summary>
         /// True if train brake controller is in emergency position, otherwise false.
         /// </summary>
         public Func<bool> IsBrakeEmergency;
@@ -228,6 +220,14 @@ namespace ORTS.Scripting.Api
         /// True if all pantographs are down.
         /// </summary>
         public Func<bool> ArePantographsDown;
+        /// <summary>
+        /// Get left doors state
+        /// </summary>
+        public Func<DoorState> GetLeftDoorState;
+        /// <summary>
+        /// Get right doors state
+        /// </summary>
+        public Func<DoorState> GetRightDoorState;
         /// <summary>
         /// Returns throttle percent
         /// </summary>
@@ -395,6 +395,24 @@ namespace ORTS.Scripting.Api
         /// Set horn on (true) or off (false).
         /// </summary>
         public Action<bool> SetHorn;
+        /// <summary>
+        /// Open or close left doors
+        /// bool: true for closing order, false for opening order
+        /// </summary>
+        public Action<bool> ToggleLeftDoors;
+        /// <summary>
+        /// Open or close right doors
+        /// bool: true for closing order, false for opening order
+        /// </summary>
+        public Action<bool> ToggleRightDoors;
+        /// <summary>
+        /// Lock left doors so they cannot be opened
+        /// </summary>
+        public Action<bool> LockLeftDoors;
+        /// <summary>
+        /// Lock right doors so they cannot be opened
+        /// </summary>
+        public Action<bool> LockRightDoors;
         /// <summary>
         /// Trigger Alert1 sound event
         /// </summary>
@@ -680,6 +698,22 @@ namespace ORTS.Scripting.Api
         /// Traction cut-off relay has been opened.
         /// </summary>
         TractionCutOffRelayOpen,
+        /// <summary>
+        /// Left doors have been opened.
+        /// </summary>
+        LeftDoorsOpen,
+        /// <summary>
+        /// Left doors have been closed.
+        /// </summary>
+        LeftDoorsClosed,
+        /// <summary>
+        /// Right doors have been opened.
+        /// </summary>
+        RightDoorsOpen,
+        /// <summary>
+        /// Right doors have been closed.
+        /// </summary>
+        RightDoorsClosed
     }
 
     /// <summary>
