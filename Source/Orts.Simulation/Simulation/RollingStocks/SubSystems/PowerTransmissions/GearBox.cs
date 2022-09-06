@@ -70,7 +70,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             switch (lowercasetoken)
             {
                 case "engine(gearboxnumberofgears": GearBoxNumberOfGears = stf.ReadIntBlock(1); initLevel++; break;
-                case "engine(ortsreversegearboxindication": int tempIndication = stf.ReadIntBlock(1); if (tempIndication == 1) { ReverseGearBoxIndication = true; } Trace.TraceInformation("Read Indication {0}",ReverseGearBoxIndication); break;
+                case "engine(ortsreversegearboxindication": int tempIndication = stf.ReadIntBlock(1); if (tempIndication == 1) { ReverseGearBoxIndication = true; }; break;
                 case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(1); break;
                 case "engine(ortsgearboxfreewheel":
                     var freeWheel = stf.ReadIntBlock(null);
@@ -661,11 +661,12 @@ public Gear NextGear
 
                             if (CurrentSpeedMpS > 0)
                             {
-                                if (tractiveForceN > (DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS))
-                                {
-                                    tractiveForceN = DieselEngine.RailPowerTab[DieselEngine.RealRPM] / CurrentSpeedMpS;
-                                }
+                                var tractiveEffortLimitN = (DieselEngine.DieselPowerTab[DieselEngine.RealRPM] * (DieselEngine.LoadPercent / 100f)) / CurrentSpeedMpS;
 
+                                if (tractiveForceN > tractiveEffortLimitN )
+                                {
+                                    tractiveForceN = tractiveEffortLimitN;
+                                }
                             }
 
                             // Set TE to zero if gear change happening && type B gear box
