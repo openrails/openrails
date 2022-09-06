@@ -1315,10 +1315,8 @@ namespace Orts.Viewer3D.Popups
 
             // Doors
             var wagon = (MSTSWagon)locomotive;
-            var doorLeftState = train.GetDoorState(false);
-            var doorRightState = train.GetDoorState(true);
-            var doorLeftOpen = doorLeftState != Simulation.RollingStocks.SubSystems.DoorState.Closed;
-            var doorRightOpen = doorRightState != Simulation.RollingStocks.SubSystems.DoorState.Closed;
+            var doorLeftOpen = train.GetDoorState(false) != DoorState.Closed;
+            var doorRightOpen = train.GetDoorState(true) != DoorState.Closed;
             if (doorLeftOpen || doorRightOpen)
             {
                 var status = new List<string>();

@@ -17,6 +17,7 @@
 
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using ORTS.Common;
 using ORTS.Common.Input;
@@ -770,10 +771,8 @@ namespace Orts.Viewer3D.WebServices
 
             // Doors
             var wagon = (MSTSWagon)locomotive;
-            var doorLeftState = train.GetDoorState(false);
-            var doorRightState = train.GetDoorState(true);
-            var doorLeftOpen = doorLeftState != Simulation.RollingStocks.SubSystems.DoorState.Closed;
-            var doorRightOpen = doorRightState != Simulation.RollingStocks.SubSystems.DoorState.Closed;
+            var doorLeftOpen = train.GetDoorState(false) != DoorState.Closed;
+            var doorRightOpen = train.GetDoorState(true) != DoorState.Closed;
             if (doorLeftOpen || doorRightOpen)
             {
                 var status = new List<string>();
