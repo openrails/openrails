@@ -978,7 +978,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "exhaustdynamicsdown": ExhaustDecelReduction = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.ExhaustDynamics; break;
                     case "exhaustcolor":    ExhaustSteadyColor = stf.ReadColorBlock(Color.Gray); initLevel |= SettingsFlags.ExhaustColor; break;
                     case "exhausttransientcolor": ExhaustTransientColor = stf.ReadColorBlock(Color.Black);initLevel |= SettingsFlags.ExhaustTransientColor; break;
-                    case "dieselpowertab": DieselPowerTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselPowerTab; break;
+                    case "dieselpowertab": DieselPowerTab = new Interpolator(stf); initLevel |= SettingsFlags.DieselPowerTab; break;
                     case "dieselconsumptiontab": DieselConsumptionTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselConsumptionTab; break;
                     case "throttlerpmtab":
                         ThrottleRPMTab = new Interpolator(stf);
@@ -1688,7 +1688,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public void InitFromMSTS()
         {
-
             if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
             {
                 MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowerW parameter
@@ -2141,7 +2140,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             // Set up the reverse ThrottleRPM table. This is used to provide an apparent throttle setting to the Tractive Force calculation, and allows the diesel engine to control the up/down time of 
             // tractive force. This table should be creeated with all locomotives, as they will either use (create) a default ThrottleRPM table, or the user will enter one. 
-
             if (ThrottleRPMTab != null)
             {
                 var size = ThrottleRPMTab.GetSize();
