@@ -23,6 +23,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
@@ -481,10 +482,8 @@ namespace Orts.Viewer3D.Popups
                     TableAddLine(table, Viewer.Catalog.GetString("Sander on") + "???");
             }
 
-            var doorLeftState = Viewer.PlayerLocomotive.Train.GetDoorState(false);
-            var doorRightState = Viewer.PlayerLocomotive.Train.GetDoorState(true);
-            var doorLeftOpen = doorLeftState != Simulation.RollingStocks.SubSystems.DoorState.Closed;
-            var doorRightOpen = doorRightState != Simulation.RollingStocks.SubSystems.DoorState.Closed;
+            var doorLeftOpen = Viewer.PlayerLocomotive.Train.GetDoorState(false) != DoorState.Closed;
+            var doorRightOpen = Viewer.PlayerLocomotive.Train.GetDoorState(true) != DoorState.Closed;
             if (doorLeftOpen || doorRightOpen)
             {
                 var color = Math.Abs(Viewer.PlayerLocomotive.SpeedMpS) > 0.1f ? "!!!" : "???";
