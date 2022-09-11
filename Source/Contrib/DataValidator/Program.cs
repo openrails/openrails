@@ -50,6 +50,7 @@ namespace DataValidator
             Console.WriteLine();
             Console.WriteLine("Options:");
             Console.WriteLine("  /verbose  Displays all expected/valid values in addition to any errors");
+            Console.WriteLine("  /help     Show help and usage information");
             Console.WriteLine();
         }
 
