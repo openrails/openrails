@@ -97,6 +97,11 @@ namespace Orts.DataConverter
             Console.WriteLine("  <INPUT>   Specifies the file to read");
             Console.WriteLine("  <OUTPUT>  Specifies the file to generate");
             Console.WriteLine();
+            Console.WriteLine("Options:");
+            Console.WriteLine("  /input   Indicate that next argument is input");
+            Console.WriteLine("  /output  Indicate that following arguments are outputs");
+            Console.WriteLine("  /help    Show help and usage information");
+            Console.WriteLine();
             Console.WriteLine("Multiple outputs may be specified for each input");
             Console.WriteLine();
             Console.WriteLine("Available file format conversions:");
