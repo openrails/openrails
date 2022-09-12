@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2022 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -14,12 +14,10 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+using System.IO;
 using Orts.Common;
 using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
@@ -28,8 +26,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
     {
         Closed,
         Closing,
-        Opening,
         Open,
+        Opening,
+    }
+    public enum DoorSide
+    {
+        Left,
+        Right,
+        Both
     }
     public class Doors : ISubSystem<Doors>
     {
@@ -38,8 +42,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public Doors(MSTSWagon wagon)
         {
-            LeftDoor = new Door(wagon, false);
-            RightDoor = new Door(wagon, true);
+            LeftDoor = new Door(wagon, DoorSide.Left);
+            RightDoor = new Door(wagon, DoorSide.Right);
         }
 
         public virtual void Parse(string lowercasetoken, STFReader stf)
@@ -99,6 +103,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             LeftDoor.Update(elapsedClockSeconds);
             RightDoor.Update(elapsedClockSeconds);
         }
+
+        public static DoorSide FlippedDoorSide(DoorSide trainSide)
+        {
+            switch(trainSide)
+            {
+                case DoorSide.Left:
+                    return DoorSide.Right;
+                case DoorSide.Right:
+                    return DoorSide.Left;
+                default:
+                    return DoorSide.Both;
+            }
+        }
     }
     public class Door : ISubSystem<Door>
     {
@@ -110,17 +127,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         // Variables
         readonly MSTSWagon Wagon;
         protected Simulator Simulator => Wagon.Simulator;
-        public readonly bool RightSide;
+        public readonly DoorSide Side;
         protected Timer OpeningTimer;
         protected Timer ClosingTimer;
         
         public DoorState State { get; protected set; } = DoorState.Closed;
         public bool Locked {get; protected set; }
 
-        public Door(MSTSWagon wagon, bool right)
+        public Door(MSTSWagon wagon, DoorSide side)
         {
             Wagon = wagon;
-            RightSide = right;
+            Side = side;
 
             OpeningTimer = new Timer(wagon);
             ClosingTimer = new Timer(wagon);
@@ -192,19 +209,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
         public void SetDoor(bool open)
         {
-            if (!Locked && open && (State == DoorState.Closed || State == DoorState.Closing))
+            switch (State)
             {
-                State = DoorState.Opening;
-                Wagon.SignalEvent(Event.DoorOpen);
-                bool driverRightSide = RightSide ^ Wagon.GetCabFlipped();
-                Confirm(driverRightSide ? CabControl.DoorsRight : CabControl.DoorsLeft, CabSetting.On);
-            }
-            else if (!open && (State == DoorState.Open || State == DoorState.Opening))
-            {
-                State = DoorState.Closing;
-                Wagon.SignalEvent(Event.DoorClose);
-                bool driverRightSide = RightSide ^ Wagon.GetCabFlipped();
-                Confirm(driverRightSide ? CabControl.DoorsRight : CabControl.DoorsLeft, CabSetting.Off);
+                case DoorState.Closed:
+                case DoorState.Closing:
+                    if (!Locked && open)
+                    {
+                        State = DoorState.Opening;
+                        Wagon.SignalEvent(Event.DoorOpen);
+                        bool driverRightSide = (Side == DoorSide.Right) ^ Wagon.GetCabFlipped();
+                        Confirm(driverRightSide ? CabControl.DoorsRight : CabControl.DoorsLeft, CabSetting.On);
+                    }
+                    break;
+                case DoorState.Open:
+                case DoorState.Opening:
+                    if (!open)
+                    {
+                        State = DoorState.Closing;
+                        Wagon.SignalEvent(Event.DoorClose);
+                        bool driverRightSide = (Side == DoorSide.Right) ^ Wagon.GetCabFlipped();
+                        Confirm(driverRightSide ? CabControl.DoorsRight : CabControl.DoorsLeft, CabSetting.Off);
+                    }
+                    break;
             }
         }
         protected void Confirm(CabControl control, CabSetting setting)

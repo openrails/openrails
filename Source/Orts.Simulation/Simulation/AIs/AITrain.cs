@@ -39,6 +39,7 @@ using Orts.Formats.OR;
 using Orts.MultiPlayer;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
@@ -260,12 +261,12 @@ namespace Orts.Simulation.AIs
                     if (thisStation.PlatformItem.PlatformSide[0])
                     {
                         //open left doors
-                        ToggleDoors(frontIsFront, true);
+                        SetDoors(frontIsFront ? DoorSide.Right : DoorSide.Left, true);
                     }
                     if (thisStation.PlatformItem.PlatformSide[1])
                     {
                         //open right doors
-                        ToggleDoors(!frontIsFront, true);
+                        SetDoors(frontIsFront ? DoorSide.Left : DoorSide.Right, true);
                     }
                 }
             }
@@ -1958,12 +1959,12 @@ namespace Orts.Simulation.AIs
                                 if (thisStation.PlatformItem.PlatformSide[0])
                                 {
                                     //open left doors
-                                    ToggleDoors(frontIsFront, true);
+                                    SetDoors(frontIsFront ? DoorSide.Right : DoorSide.Left, true);
                                 }
                                 if (thisStation.PlatformItem.PlatformSide[1])
                                 {
                                     //open right doors
-                                    ToggleDoors(!frontIsFront, true);
+                                    SetDoors(frontIsFront ? DoorSide.Left : DoorSide.Right, true);
                                 }
                             }
                         }
@@ -1974,13 +1975,13 @@ namespace Orts.Simulation.AIs
                             {
                                 if (thisStation.PlatformItem.PlatformSide[0])
                                 {
-                                    //close left doors
-                                    ToggleDoors(frontIsFront, false);
+                                    //open left doors
+                                    SetDoors(frontIsFront ? DoorSide.Right : DoorSide.Left, false);
                                 }
                                 if (thisStation.PlatformItem.PlatformSide[1])
                                 {
-                                    //close right doors
-                                    ToggleDoors(!frontIsFront, false);
+                                    //open right doors
+                                    SetDoors(frontIsFront ? DoorSide.Left : DoorSide.Right, false);
                                 }
                             }
                         }

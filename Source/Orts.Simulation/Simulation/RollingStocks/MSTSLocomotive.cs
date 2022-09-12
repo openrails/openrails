@@ -5144,9 +5144,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                 case CABViewControlTypes.DOORS_DISPLAY:
                     {
-                        var leftDoorState = Train.GetDoorState(false);
-                        var rightDoorState = Train.GetDoorState(true);
-                        data = (leftDoorState != DoorState.Closed || rightDoorState != DoorState.Closed)? 1 : 0;
+                        data = Train.DoorState(DoorSide.Both) != DoorState.Closed ? 1 : 0;
                         break;
                     }
                 case CABViewControlTypes.SANDERS:
@@ -5366,7 +5364,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 case CABViewControlTypes.ORTS_RIGHTDOOR:
                     {
                         bool right = (cvc.ControlType == CABViewControlTypes.ORTS_RIGHTDOOR) ^ Flipped ^ GetCabFlipped();
-                        var state = Train.GetDoorState(right);
+                        var state = Train.DoorState(right ? DoorSide.Right : DoorSide.Left);
                         data = (state == DoorState.Opening || state == DoorState.Open) ? 1 : 0;
                     }
                     break;
