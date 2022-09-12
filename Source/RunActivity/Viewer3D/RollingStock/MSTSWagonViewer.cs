@@ -408,8 +408,8 @@ namespace Orts.Viewer3D.RollingStock
             Pantograph2.SetState(MSTSWagon.Pantographs[2].CommandUp);
             if (MSTSWagon.Pantographs.List.Count > 2) Pantograph3.SetState(MSTSWagon.Pantographs[3].CommandUp);
             if (MSTSWagon.Pantographs.List.Count > 3) Pantograph4.SetState(MSTSWagon.Pantographs[4].CommandUp);
-            LeftDoor.SetState(MSTSWagon.LeftDoor.State == DoorState.Open || MSTSWagon.LeftDoor.State == DoorState.Opening);
-            RightDoor.SetState(MSTSWagon.RightDoor.State == DoorState.Open || MSTSWagon.RightDoor.State == DoorState.Opening);
+            LeftDoor.SetState(MSTSWagon.LeftDoor.State >= DoorState.Open);
+            RightDoor.SetState(MSTSWagon.RightDoor.State >= DoorState.Open);
             Mirrors.SetState(MSTSWagon.MirrorOpen);
             Item1TwoState.SetState(MSTSWagon.GenericItem1);
             Item2TwoState.SetState(MSTSWagon.GenericItem2);

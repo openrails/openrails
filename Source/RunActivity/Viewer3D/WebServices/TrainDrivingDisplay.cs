@@ -771,18 +771,18 @@ namespace Orts.Viewer3D.WebServices
 
             // Doors
             var wagon = (MSTSWagon)locomotive;
-            var doorLeftOpen = train.GetDoorState(false) != DoorState.Closed;
-            var doorRightOpen = train.GetDoorState(true) != DoorState.Closed;
+            var flipped = locomotive.Flipped ^ locomotive.GetCabFlipped();
+            var doorLeftOpen = train.DoorState(flipped ? DoorSide.Right : DoorSide.Left) != DoorState.Closed;
+            var doorRightOpen = train.DoorState(flipped ? DoorSide.Left : DoorSide.Right) != DoorState.Closed;
             if (doorLeftOpen || doorRightOpen)
             {
                 var status = new List<string>();
-                var flipped = locomotive.Flipped ^ locomotive.GetCabFlipped();
                 doorsLabelVisible = true;
                 clockDoorsTime = viewer.Simulator.ClockTime;
                 if (doorLeftOpen)
-                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString(flipped ? "Right" : "Left")));
+                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString("Left")));
                 if (doorRightOpen)
-                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString(flipped ? "Left" : "Right")));
+                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString("Right")));
 
                 AddLabel(new ListLabel
                 {

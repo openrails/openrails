@@ -482,17 +482,17 @@ namespace Orts.Viewer3D.Popups
                     TableAddLine(table, Viewer.Catalog.GetString("Sander on") + "???");
             }
 
-            var doorLeftOpen = Viewer.PlayerLocomotive.Train.GetDoorState(false) != DoorState.Closed;
-            var doorRightOpen = Viewer.PlayerLocomotive.Train.GetDoorState(true) != DoorState.Closed;
+                bool flipped = (Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped() ^ (Viewer.PlayerLocomotive as MSTSLocomotive).Flipped;
+            var doorLeftOpen = Viewer.PlayerLocomotive.Train.DoorState(flipped ? DoorSide.Right : DoorSide.Left) != DoorState.Closed;
+            var doorRightOpen = Viewer.PlayerLocomotive.Train.DoorState(flipped ? DoorSide.Left : DoorSide.Right) != DoorState.Closed;
             if (doorLeftOpen || doorRightOpen)
             {
                 var color = Math.Abs(Viewer.PlayerLocomotive.SpeedMpS) > 0.1f ? "!!!" : "???";
                 var status = "";
-                bool flipped = (Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped() ^ (Viewer.PlayerLocomotive as MSTSLocomotive).Flipped;
                 if (doorLeftOpen)
-                    status += Viewer.Catalog.GetString(flipped ? "Right" : "Left");
+                    status += Viewer.Catalog.GetString("Left");
                 if (doorRightOpen)
-                    status += string.Format(status == "" ? "{0}" : " {0}", Viewer.Catalog.GetString(flipped ? "Left" : "Right"));
+                    status += string.Format(status == "" ? "{0}" : " {0}", Viewer.Catalog.GetString("Right"));
                 status += color;
 
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Doors open") + color, status);

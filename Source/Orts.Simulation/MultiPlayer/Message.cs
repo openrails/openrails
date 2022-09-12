@@ -2224,12 +2224,12 @@ namespace Orts.MultiPlayer
             }
             else if (EventName == "DOORL")
             {
-                t.ToggleDoors(false, EventState == 1);
+                t.SetDoors(DoorSide.Left, EventState == 1);
                 MPManager.BroadCast(this.ToString()); //if the server, will broadcast
             }
             else if (EventName == "DOORR")
             {
-                t.ToggleDoors(true, EventState == 1);
+                t.SetDoors(DoorSide.Right, EventState == 1);
                 MPManager.BroadCast(this.ToString()); //if the server, will broadcast
             }
             else if (EventName == "MIRRORS")
