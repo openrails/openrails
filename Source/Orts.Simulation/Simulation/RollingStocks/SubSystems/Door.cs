@@ -183,22 +183,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             switch(State)
             {
                 case DoorState.Opening:
-                    ClosingTimer.Stop();
                     if (!OpeningTimer.Started) OpeningTimer.Start();
-                    if (OpeningTimer.Triggered) State = DoorState.Open;
+                    if (OpeningTimer.Triggered)
+                    {
+                        State = DoorState.Open;
+                        OpeningTimer.Stop();
+                    }
                     break;
                 case DoorState.Closing:
-                    OpeningTimer.Stop();
                     if (!ClosingTimer.Started) ClosingTimer.Start();
-                    if (ClosingTimer.Triggered) State = DoorState.Closed;
-                    break;
-                case DoorState.Closed:
-                    ClosingTimer.Stop();
-                    OpeningTimer.Stop();
-                    break;
-                case DoorState.Open:
-                    ClosingTimer.Stop();
-                    OpeningTimer.Stop();
+                    if (ClosingTimer.Triggered)
+                    {
+                        State = DoorState.Closed;
+                        ClosingTimer.Stop();
+                    }
                     break;
             }
         }
@@ -215,6 +213,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case DoorState.Closing:
                     if (!Locked && open)
                     {
+                        ClosingTimer.Stop();
                         State = DoorState.Opening;
                         Wagon.SignalEvent(Event.DoorOpen);
                         bool driverRightSide = (Side == DoorSide.Right) ^ Wagon.GetCabFlipped();
@@ -225,6 +224,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case DoorState.Opening:
                     if (!open)
                     {
+                        OpeningTimer.Stop();
                         State = DoorState.Closing;
                         Wagon.SignalEvent(Event.DoorClose);
                         bool driverRightSide = (Side == DoorSide.Right) ^ Wagon.GetCabFlipped();
