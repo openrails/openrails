@@ -309,7 +309,7 @@ msgstr "Instalační profil:"
 
 #: ../../Menu/MainForm.Designer.cs:366
 msgid "Documents ▼"
-msgstr "Dokumenty"
+msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:378
 msgid "Mode:"
@@ -345,7 +345,7 @@ msgstr "Konec trasy:"
 
 #: ../../Menu/MainForm.Designer.cs:558
 msgid "Duration:"
-msgstr "Doba trvání:"
+msgstr "Dobra trvání:"
 
 #: ../../Menu/MainForm.Designer.cs:569
 msgid "Time:"
@@ -361,7 +361,7 @@ msgstr "Obtížnost:"
 
 #: ../../Menu/MainForm.Designer.cs:665 ../../Menu/MainForm.Designer.cs:788
 msgid "Season:"
-msgstr "Období:"
+msgstr "Roční doba:"
 
 #: ../../Menu/MainForm.Designer.cs:697
 msgid "Train:"
@@ -965,7 +965,7 @@ msgstr "Náhodné nastavení počasí"
 
 #: ../../Menu/Options.Designer.cs:1691
 msgid "Activity randomization"
-msgstr "Informace o aktivitě "
+msgstr "Infromace o aktivitě "
 
 #: ../../Menu/Options.Designer.cs:1724
 msgid "Correct questionable braking parameters"
