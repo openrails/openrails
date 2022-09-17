@@ -223,7 +223,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Get doors state
         /// </summary>
-        public Func<DoorSide, DoorState> DoorState;
+        public Func<DoorSide, DoorState> CurrentDoorState;
         /// <summary>
         /// Returns throttle percent
         /// </summary>
