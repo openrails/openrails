@@ -516,8 +516,8 @@ namespace Orts.Simulation.Signalling
             int return_value = 0;
             int parameter1_value = 0;
             int parameter2_value = 0;
-            SignalFunction function1 = null;
-            SignalFunction function2 = null;
+            SignalFunction function1 = SignalFunction.NORMAL;
+            SignalFunction function2 = SignalFunction.NORMAL;
 
             // extract parameters (max. 2)
 
