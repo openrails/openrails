@@ -2513,33 +2513,7 @@ namespace Orts.Formats.Msts
                 {
                     PartType = TypeIn;
                     PartParameter = IntIn;
-                    switch(IntIn)
-                    {
-                        case 0:
-                            SignalFunction = SignalFunction.NORMAL;
-                            break;
-                        case 1:
-                            SignalFunction = SignalFunction.DISTANCE;
-                            break;
-                        case 2:
-                            SignalFunction = SignalFunction.REPEATER;
-                            break;
-                        case 3:
-                            SignalFunction = SignalFunction.SHUNTING;
-                            break;
-                        case 4:
-                            SignalFunction = SignalFunction.INFO;
-                            break;
-                        case 5:
-                            SignalFunction = SignalFunction.SPEED;
-                            break;
-                        case 6:
-                            SignalFunction = SignalFunction.ALERT;
-                            break;
-                        default:
-                            SignalFunction = SignalFunction.UNKNOWN;
-                            break;
-                    }
+                    if (Enum.IsDefined(typeof(MstsSignalFunction), IntIn)) SignalFunction = new SignalFunction((MstsSignalFunction)IntIn);
                 }
 
                 // <summary>

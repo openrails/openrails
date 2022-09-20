@@ -529,7 +529,10 @@ namespace Orts.Simulation.Signalling
                     parameter1_value = SH_termvalue(thisHead, thisParameter,
                         localFloats, sigscr);
 
-                    function1 = thisParameter.SignalFunction;
+                    if (thisParameter.SignalFunction != null)
+                    {
+                        function1 = thisParameter.SignalFunction;
+                    }
                 }
 
                 if (thisTerm.PartParameter.Length >= 2)
@@ -538,7 +541,10 @@ namespace Orts.Simulation.Signalling
                     parameter2_value = SH_termvalue(thisHead, thisParameter,
                         localFloats, sigscr);
 
-                    function2 = thisParameter.SignalFunction;
+                    if (thisParameter.SignalFunction != null)
+                    {
+                        function2 = thisParameter.SignalFunction;
+                    }
                 }
             }
 
