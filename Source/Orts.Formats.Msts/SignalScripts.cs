@@ -2513,10 +2513,7 @@ namespace Orts.Formats.Msts
                 {
                     PartType = TypeIn;
                     PartParameter = IntIn;
-                    if (Enum.IsDefined(typeof(MstsSignalFunction), IntIn))
-                    {
-                        SignalFunction = new SignalFunction((MstsSignalFunction)IntIn);
-                    }
+                    if (Enum.IsDefined(typeof(MstsSignalFunction), IntIn)) SignalFunction = new SignalFunction((MstsSignalFunction)IntIn);
                 }
 
                 // <summary>
