@@ -804,24 +804,18 @@ public Gear NextGear
                     {
                         // If user has entered this value then assume that they have already put the maximum torque value in
                         Gears[i].MaxTractiveForceN = GearBoxParams.GearBoxMaxTractiveForceForGearsN[i] / Locomotive.DieselEngines.Count;
+
+                        // For purposes of calculating engine efficiency the tractive force at maximum gear speed needs to be used.
+                        Gears[i].TractiveForceatMaxSpeedN = (GearBoxParams.GearBoxMaxTractiveForceForGearsN[i] / (DieselEngine.DieselTorqueTab.MaxY() / DieselEngine.DieselTorqueTab[DieselEngine.MaxRPM])) / Locomotive.DieselEngines.Count;
                     }
                     else
                     {
                         // if they entered the TE at maximum gear speed, then increase the value accordingly 
                         Gears[i].MaxTractiveForceN = (GearBoxParams.GearBoxTractiveForceAtSpeedN[i] * DieselEngine.DieselTorqueTab.MaxY() / DieselEngine.DieselTorqueTab[DieselEngine.MaxRPM]) / Locomotive.DieselEngines.Count;
-                    //    Trace.TraceInformation("MaxTractiveForce - CarID {0} MaxTE {1} ")
-                    }
-                    // For purposes of calculating engine efficiency the tractive force at maximum gear speed needs to be used.
-                    if (GearBoxParams.GearBoxTractiveForceAtSpeedN != null && GearBoxParams.GearBoxTractiveForceAtSpeedN[i] != 0)
-                    {
-                        // Assume that user has entered the TE at max speed already in the Eng
+
+                        // For purposes of calculating engine efficiency the tractive force at maximum gear speed needs to be used.
                         Gears[i].TractiveForceatMaxSpeedN = GearBoxParams.GearBoxTractiveForceAtSpeedN[i] / Locomotive.DieselEngines.Count;
-                    }
-                    else
-                    {
-                        // Assume that user entered max TE at maximum torque point
-                        Gears[i].TractiveForceatMaxSpeedN = (GearBoxParams.GearBoxMaxTractiveForceForGearsN[i] / (DieselEngine.DieselTorqueTab.MaxY() / DieselEngine.DieselTorqueTab[DieselEngine.MaxRPM])) / Locomotive.DieselEngines.Count;
-                    }                                  
+                    }                        
 
                     Gears[i].OverspeedPercentage = GearBoxParams.GearBoxOverspeedPercentageForFailure;
                     Gears[i].UpGearProportion = GearBoxParams.GearBoxUpGearProportion;
