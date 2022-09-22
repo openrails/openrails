@@ -812,7 +812,7 @@ public Gear NextGear
                     //    Trace.TraceInformation("MaxTractiveForce - CarID {0} MaxTE {1} ")
                     }
                     // For purposes of calculating engine efficiency the tractive force at maximum gear speed needs to be used.
-                    if (GearBoxParams.GearBoxTractiveForceAtSpeedN[i] != 0)
+                    if (GearBoxParams.GearBoxTractiveForceAtSpeedN != null && GearBoxParams.GearBoxTractiveForceAtSpeedN[i] != 0)
                     {
                         // Assume that user has entered the TE at max speed already in the Eng
                         Gears[i].TractiveForceatMaxSpeedN = GearBoxParams.GearBoxTractiveForceAtSpeedN[i] / Locomotive.DieselEngines.Count;
