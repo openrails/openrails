@@ -696,7 +696,7 @@ needs to be set to "Mechanic".
 
 Two ORTS mechanical gearbox configurations can be set up.
 
-These two gearboxes can be selected by the use of the following parameter:
+These three gearboxes can be selected by the use of the following parameter:
 
 ``ORTSGearBoxType ( A )`` - represents a semi-automatic pre-selector gearbox that gives 
 a continuous power output that is not interrupted when changing gears.
@@ -705,6 +705,9 @@ a continuous power output that is not interrupted when changing gears.
 although there is a break in tractive effort when changing from one gear to another, 
 the engine speed is reduced by a shaft brake if needed, so that there is no need for 
 the driver to adjust the throttle.
+
+``ORTSGearBoxType ( C )`` - represents a semi-automatic pre-selector type gear box where 
+there is a need for the driver to adjust the throttle before making a gear change.
 
 One of three possible types of main clutch are selectable for each of the above gear box 
 types, as follows:
@@ -726,14 +729,20 @@ to coast with the engine in gear.
 
 ``GearBoxNumberOfGears`` - The number of gears available in the gear box.
 
-Currently only a BASIC model configuration is available (ie no user defined traction curves or 
-diesel engine curves are supported). OR calculates the tractive force curves for each gear based 
+Currently a BASIC model configuration is available (ie no user defined traction curves or 
+diesel engine curves are supported), or an ADVANCED configuration (ie the user defines the diesel engine 
+parameters including the torque curve. Two diesel engines of the same type can be installed on the same 
+locomotive or railcar using the advanced diesel engine block. Where two engines are installed it is 
+assumed they will each drive a separate axle or bogie via a separate, identical gear box. Two or more 
+locomotives or power cars in the same consist should also now operate correctly.
+
+OR calculates the tractive force curves for each gear based 
 on the "inbuilt" torque curve of a typical diesel engine. 
 
 ``GearBoxMaxSpeedForGears`` - sets the maximum speed for each gear, corresponding to maximum engine 
 rpm and maximum power . As an example, the values for a typical British Railways first generation dmu are:
 
-GearBoxMaxSpeedForGears( 15.3 27 41 65.5 ) The default values are in mph, although other units can be entered. 
+``GearBoxMaxSpeedForGears( 15.3 27 41 65.5 )`` - The default values are in mph, although other units can be entered. 
 In the above case the maximum permitted speed of the train is 70 mph; a small amount of ‘overspeed’ being allowed
  in top gear. The fourth gear speed of 65.5 mph corresponds to the maximum engine rpm set in the eng file by 
  ``DieselEngineMaxRPM``. The diesel engine may continue to ‘runaway’ above its normal ‘maximum speed’ until it 
@@ -746,9 +755,14 @@ ORTSDieselEngineGovenorRpM ( 2000 )
 
 If under any circumstances the engine reaches ``ORTSDieselEngineGovenorRpM`` then the diesel engine will automatically be shut down.
 
-"ORTSGearBoxTractiveForceAtSpeed" - The tractive force available in each gear at the speed indicated in GearBoxMaxSpeedForGears. Units 
+``ORTSGearBoxTractiveForceAtSpeed`` - The tractive force available in each gear at the speed indicated in GearBoxMaxSpeedForGears. Units 
 by default are in N, however lbf, N or kN. Published values for tractive effort of geared locomotives and multiple units 
 are generally those at the maximum speed for each gear.
+
+``ORTSReverseGearboxIndication`` - Some gearboxes have a "reverse" gearing arrangement, ie N-4-3-2-1. This parameter allows the 
+gear selector to display gears in the correct order for this type of gearbox arrangement. If using this parameter, note in the 
+above example that ``GearBoxMaxSpeedForGears`` and ``ORTSGearBoxTractiveForceatSpeed`` need to list the gears in the order 4-3-2-1 
+rather than in ascending order.
 
 Hence a typical gear configuration for a diesel mechanic locomotive might look like the following:
 
