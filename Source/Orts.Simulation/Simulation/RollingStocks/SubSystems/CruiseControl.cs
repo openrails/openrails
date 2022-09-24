@@ -91,8 +91,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float AccelerationDemandMpSS;
         public float AccelerationRampMinMpSSS = 0.01f;
         public bool ResetForceAfterAnyBraking = false;
-        public float ThrottleFullRangeIncreaseTimeSeconds = 0;
-        public float ThrottleFullRangeDecreaseTimeSeconds = 0;
+        public float ThrottleFullRangeIncreaseTimeSeconds = 6;
+        public float ThrottleFullRangeDecreaseTimeSeconds = 6;
         public float DynamicBrakeFullRangeIncreaseTimeSeconds;
         public float DynamicBrakeFullRangeDecreaseTimeSeconds;
         public float ParkingBrakeEngageSpeed = 0;
@@ -1041,7 +1041,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 RestrictedSpeedActive = false;
                 Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Speed restricted zone off."));
-                Locomotive.SignalEvent(Common.Event.Alert);
+                Locomotive.SignalEvent(Common.Event.CruiseControlAlert);
             }
         }
 
@@ -1052,7 +1052,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 SpeedRegMode = SpeedRegulatorMode.Auto;
             if (SpeedRegMode == SpeedRegulatorMode.Manual)
                 return;
-            Locomotive.SignalEvent(Common.Event.Alert1);
+            Locomotive.SignalEvent(Common.Event.CruiseControlAlert1);
             var requiredSpeedMpS = SpeedIsMph ? MpS.FromMpH(Speed) : MpS.FromKpH(Speed);
             if (MinimumSpeedForCCEffectMpS == 0)
                 SelectedSpeedMpS = requiredSpeedMpS;

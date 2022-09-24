@@ -262,8 +262,8 @@ namespace Orts.Common
         CruiseControlSpeedRegulator,
         CruiseControlSpeedSelector,
         CruiseControlMaxForce,
-        Alert,
-        Alert1,
+        CruiseControlAlert,
+        CruiseControlAlert1,
 
         MPCChangePosition,
 
@@ -530,8 +530,8 @@ namespace Orts.Common
                         case 300: return Event.CruiseControlSpeedRegulator;
                         case 301: return Event.CruiseControlSpeedSelector;
                         case 302: return Event.CruiseControlMaxForce;
-                        case 303: return Event.Alert;
-                        case 304: return Event.Alert1;
+                        case 303: return Event.CruiseControlAlert;
+                        case 304: return Event.CruiseControlAlert1;
 
                         case 310: return Event.MPCChangePosition;
 
