@@ -1970,7 +1970,11 @@ public List<CabView> CabViewList = new List<CabView>();
 
             // Cruise Control
             CruiseControl?.Update(elapsedClockSeconds);
-            if (CruiseControl != null && CruiseControl.OverrideForceCalculation) CruiseControl.UpdateMotiveForce(elapsedClockSeconds, AbsWheelSpeedMpS);
+            if (CruiseControl != null && CruiseControl.OverrideForceCalculation)
+            {
+                CruiseControl.UpdateMotiveForce(elapsedClockSeconds, AbsWheelSpeedMpS);
+                SetAbsTractionSpeedMpS();
+            }
             else UpdateTractiveForce(elapsedClockSeconds, t, AbsSpeedMpS, AbsWheelSpeedMpS);
 
             if (MultiPositionControllers != null)
@@ -2357,6 +2361,28 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
 
         /// <summary>
+        /// This function derives AbsTractionSpeedMpS.
+        /// </summary>
+        public void SetAbsTractionSpeedMpS()
+        {
+                if (TractionMotorType == TractionMotorTypes.AC)
+                {
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                }
+                else
+                {
+                    if (WheelSlip && AdvancedAdhesionModel)
+                    {
+                        AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    }
+                    else
+                    {
+                        AbsTractionSpeedMpS = AbsSpeedMpS;
+                    }
+                }
+        }
+
+        /// <summary>
         /// This function updates periodically the locomotive's motive force.
         /// </summary>
         protected virtual void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
@@ -2376,21 +2402,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 // More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
                 // Simple adhesion control does not have any slip control feature built into it.
                 // TODO - a full review of slip/no slip control.
-                if (TractionMotorType == TractionMotorTypes.AC)
-                {
-                    AbsTractionSpeedMpS = AbsSpeedMpS;
-                }
-                else
-                {
-                    if (WheelSlip && AdvancedAdhesionModel)
-                    {
-                        AbsTractionSpeedMpS = AbsWheelSpeedMpS;
-                    }
-                    else
-                    {
-                        AbsTractionSpeedMpS = AbsSpeedMpS;
-                    }
-                }
+                SetAbsTractionSpeedMpS();
 
                 if (TractiveForceCurves == null)
                 {
