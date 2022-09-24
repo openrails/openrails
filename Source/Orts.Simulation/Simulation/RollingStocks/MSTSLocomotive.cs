@@ -1233,8 +1233,7 @@ public List<CabView> CabViewList = new List<CabView>();
             WaterScoopDepthM = locoCopy.WaterScoopDepthM;
             WaterScoopWidthM = locoCopy.WaterScoopWidthM;
             MoveParamsToAxle();
-            if (locoCopy.CruiseControl != null)
-                CruiseControl = locoCopy.CruiseControl.Clone(this);
+            CruiseControl = locoCopy.CruiseControl?.Clone(this);
             if (locoCopy.MultiPositionControllers != null)
                 MultiPositionControllers = locoCopy.CloneMPC(this);
         }
@@ -1299,8 +1298,7 @@ public List<CabView> CabViewList = new List<CabView>();
             TrainControlSystem.Save(outf);
 
             LocomotiveAxle.Save(outf);
-            if (CruiseControl != null)
-                CruiseControl.Save(outf);
+            CruiseControl?.Save(outf);
         }
 
         /// <summary>
@@ -1356,8 +1354,7 @@ public List<CabView> CabViewList = new List<CabView>();
             LocomotiveAxle = new Axle(inf);
             MoveParamsToAxle();
             LocomotiveAxle.Reset(Simulator.GameTime, axleSpeedMpS);
-            if (CruiseControl != null)
-                CruiseControl.Restore(inf);
+            CruiseControl?.Restore(inf);
         }
 
         public bool IsLeadLocomotive()
@@ -1438,8 +1435,7 @@ public List<CabView> CabViewList = new List<CabView>();
             BrakemanBrakeController.Initialize();
             LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
-            if (CruiseControl != null)
-                CruiseControl.Initialize();
+            CruiseControl?.Initialize();
 
             if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
             {
@@ -1891,8 +1887,6 @@ public List<CabView> CabViewList = new List<CabView>();
 
             LocomotivePowerSupply?.Update(elapsedClockSeconds);
             UpdateControllers(elapsedClockSeconds);
-
-            elapsedTime = elapsedClockSeconds;
 
             // Train Heading - only check the lead locomotive otherwise flipped locomotives further in consist will overwrite the train direction
             if (IsLeadLocomotive())
@@ -4963,11 +4957,6 @@ public List<CabView> CabViewList = new List<CabView>();
             base.SignalEvent(evt);
         }
 
-        //used by remote train locomotives
-        /*       public virtual void RemoteUpdate()
-               {
-               }*/
-        private float elapsedTime;
         public virtual float GetDataOf(CabViewControl cvc)
         {
             float data = 0;
