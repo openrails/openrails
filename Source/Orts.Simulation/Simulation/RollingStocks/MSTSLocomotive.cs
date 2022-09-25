@@ -470,15 +470,6 @@ public List<CabView> CabViewList = new List<CabView>();
         public CruiseControl CruiseControl;
         //       public MultiPositionController MultiPositionController;
         public List<MultiPositionController> MultiPositionControllers;
-        public bool SelectingSpeedPressed = false;
-        public bool EngineBrakePriority = false;
-        public bool IsAPartOfPlayerTrain = false;
-        public float ThrottleOverriden = 0;
-        public int AccelerationBits = 0;
-        public bool Speed0Pressed, Speed10Pressed, Speed20Pressed, Speed30Pressed, Speed40Pressed, Speed50Pressed
-            , Speed60Pressed, Speed70Pressed, Speed80Pressed, Speed90Pressed, Speed100Pressed
-            , Speed110Pressed, Speed120Pressed, Speed130Pressed, Speed140Pressed, Speed150Pressed
-            , Speed160Pressed, Speed170Pressed, Speed180Pressed, Speed190Pressed, Speed200Pressed;
 
         public MSTSLocomotive(Simulator simulator, string wagPath)
             : base(simulator, wagPath)
@@ -4356,7 +4347,7 @@ public List<CabView> CabViewList = new List<CabView>();
             if (EngineBrakeController == null)
                 return;
 
-            EngineBrakePriority = true;
+            if (CruiseControl != null) CruiseControl.EngineBrakePriority = true;
             EngineBrakeController.StartIncrease(target);
             Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
             SignalEvent(Event.EngineBrakeChange);
@@ -5974,11 +5965,8 @@ public List<CabView> CabViewList = new List<CabView>();
                 case CABViewControlTypes.ORTS_ODOMETER_RESET:
                     data = OdometerResetButtonPressed ? 1 : 0;
                     break;
-
-                default:
-                    if (CruiseControl != null)
-                        data = CruiseControl.GetDataOf(cvc);
-                    if (MultiPositionControllers != null && data == 0)
+                case CABViewControlTypes.ORTS_MULTI_POSITION_CONTROLLER:
+                    if (MultiPositionControllers != null)
                     {
                         foreach (var mpc in MultiPositionControllers)
                             if (mpc.ControllerId == cvc.ControlId)
@@ -5987,6 +5975,11 @@ public List<CabView> CabViewList = new List<CabView>();
                                 break;
                             }
                     }
+                    break;
+
+                default:
+                    if (CruiseControl != null)
+                        data = CruiseControl.GetDataOf(cvc);
                         if (Train?.EOT != null && data == 0)
                             data = Train.EOT.GetDataOf(cvc);
                         break;
