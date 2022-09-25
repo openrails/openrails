@@ -39,7 +39,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         protected float elapsedSecondsFromLastChange = 0;
         protected bool checkNeutral = false;
         protected bool noKeyPressed = true;
-        protected string currentPosition = "";
+        protected ControllerPosition currentPosition = ControllerPosition.Undefined;
         protected bool emergencyBrake = false;
         protected bool previousDriveModeWasAddPower = false;
         protected bool isBraking = false;
@@ -81,7 +81,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             outf.Write(this.checkNeutral);
             outf.Write((int)this.controllerPosition);
-            outf.Write(this.currentPosition);
+            outf.Write((int)this.currentPosition);
             outf.Write(this.elapsedSecondsFromLastChange);
             outf.Write(this.emergencyBrake);
             outf.Write(this.Equipped);
@@ -96,9 +96,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             initialized = true;
             checkNeutral = inf.ReadBoolean();
-            int fControllerPosition = inf.ReadInt32();
-            controllerPosition = (ControllerPosition)fControllerPosition;
-            currentPosition = inf.ReadString();
+            int fPosition = inf.ReadInt32();
+            controllerPosition = (ControllerPosition)fPosition;
+            fPosition = inf.ReadInt32();
+            currentPosition = (ControllerPosition)fPosition;
             elapsedSecondsFromLastChange = inf.ReadSingle();
             emergencyBrake = inf.ReadBoolean();
             Equipped = inf.ReadBoolean();
@@ -629,7 +630,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             if (movement == Movement.Forward) movedAft = false;
             if (movement == Movement.Neutral) movedForward = movedAft = false;
             messageDisplayed = false;
-            if (String.IsNullOrEmpty(currentPosition))
+            if (currentPosition == ControllerPosition.Undefined)
             {
                 foreach (Position pair in PositionsList)
                 {
@@ -645,7 +646,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 noKeyPressed = false;
                 checkNeutral = false;
                 bool isFirst = true;
-                string previous = "";
+                ControllerPosition previous = ControllerPosition.Undefined;
                 foreach (Position pair in PositionsList)
                 {
                     if (pair.Type == currentPosition)
@@ -725,119 +726,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     }
                 }
             }
-            switch (currentPosition)
-            {
-                case "ThrottleIncrease":
-                    {
-                        controllerPosition = ControllerPosition.ThrottleIncrease;
-                        break;
-                    }
-                case "ThrottleIncreaseFast":
-                    {
-                        controllerPosition = ControllerPosition.ThrottleIncreaseFast;
-                        break;
-                    }
-                case "ThrottleIncreaseOrDynamicBrakeDecrease":
-                    {
-                        controllerPosition = ControllerPosition.ThrottleIncreaseOrDynamicBrakeDecrease;
-                        break;
-                    }
-                case "ThrottleIncreaseOrDynamicBrakeDecreaseFast":
-                    {
-                        controllerPosition = ControllerPosition.ThrottleIncreaseOrDynamicBrakeDecreaseFast;
-                        break;
-                    }
-                case "DynamicBrakeIncreaseOrThrottleDecrease":
-                    {
-                        controllerPosition = ControllerPosition.DynamicBrakeIncreaseOrThrottleDecrease;
-                        break;
-                    }
-                case "DynamicBrakeIncreaseOrThrottleDecreaseFast":
-                    {
-                        controllerPosition = ControllerPosition.DynamicBrakeIncreaseOrThrottleDecreaseFast;
-                        break;
-                    }
-                case "ThrottleDecrease":
-                    {
-                        controllerPosition = ControllerPosition.ThrottleDecrease;
-                        break;
-                    }
-                case "ThrottleDecreaseFast":
-                    {
-                        controllerPosition = ControllerPosition.ThrottleDecreaseFast;
-                        break;
-                    }
-                case "Drive":
-                    {
-                        controllerPosition = ControllerPosition.Drive;
-                        break;
-                    }
-                case "ThrottleHold":
-                    {
-                        controllerPosition = ControllerPosition.ThrottleHold;
-                        break;
-                    }
-                case "Neutral":
-                    {
-                        controllerPosition = ControllerPosition.Neutral;
-                        break;
-                    }
-                case "KeepCurrent":
-                    {
-                        controllerPosition = ControllerPosition.KeepCurrent;
-                        break;
-                    }
-                case "DynamicBrakeHold":
-                    {
-                        controllerPosition = ControllerPosition.DynamicBrakeHold;
-                        break;
-                    }
-                case "DynamicBrakeIncrease":
-                    {
-                        controllerPosition = ControllerPosition.DynamicBrakeIncrease;
-                        break;
-                    }
-                case "DynamicBrakeIncreaseFast":
-                    {
-                        controllerPosition = ControllerPosition.DynamicBrakeIncreaseFast;
-                        break;
-                    }
-                case "DynamicBrakeDecrease":
-                    {
-                        controllerPosition = ControllerPosition.DynamicBrakeDecrease;
-                        break;
-                    }
-                case "TrainBrakeIncrease":
-                    {
-                        controllerPosition = ControllerPosition.TrainBrakeIncrease;
-                        break;
-                    }
-                case "TrainBrakeDecrease":
-                    {
-                        controllerPosition = ControllerPosition.TrainBrakeDecrease;
-                        break;
-                    }
-                case "EmergencyBrake":
-                    {
-                        controllerPosition = ControllerPosition.EmergencyBrake;
-                        break;
-                    }
-                case "SelectedSpeedIncrease":
-                    {
-                        controllerPosition = ControllerPosition.SelectedSpeedIncrease;
-                        break;
-                    }
-                case "SelectedSpeedDecrease":
-                    {
-                        controllerPosition = ControllerPosition.SelectedSpeedDecrease;
-                        break;
-                    }
-                case "SelectSpeedZero":
-                    {
-                        controllerPosition = ControllerPosition.SelectSpeedZero;
-                        break;
-                    }
-            }
+            controllerPosition = currentPosition;
             if (!messageDisplayed)
             {
                 string msg = GetPositionName(currentPosition);
@@ -850,7 +739,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         protected void CheckNeutralPosition()
         {
             bool setNext = false;
-            String previous = "";
+            ControllerPosition previous = ControllerPosition.Undefined;
             foreach (Position pair in PositionsList)
             {
                 if (setNext)
@@ -876,12 +765,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
         }
 
-        protected string GetPositionName(string type)
+        protected string GetPositionName(ControllerPosition type)
         {
             string ret = "";
             foreach (Position p in PositionsList)
             {
-                if (p.Type.ToLower() == type.ToLower())
+                if (p.Type == type)
                     ret = p.Name;
             }
             return ret;
@@ -901,6 +790,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         };
         public enum ControllerPosition
         {
+            Undefined,
             Neutral,
             Drive,
             ThrottleIncrease,
@@ -932,58 +822,46 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public float GetDataOf(CabViewControl cvc)
         {
-            if (cvc.ControlId != ControllerId)
-                return 0;
             float data = 0;
-            switch (cvc.ControlType)
+            switch (controllerPosition)
             {
-                case CABViewControlTypes.ORTS_MULTI_POSITION_CONTROLLER:
-                    {
-                        switch (controllerPosition)
-                        {
-                            case ControllerPosition.ThrottleIncrease:
-                                data = 0;
-                                break;
-                            case ControllerPosition.Drive:
-                            case ControllerPosition.ThrottleHold:
-                                data = 1;
-                                break;
-                            case ControllerPosition.Neutral:
-                                data = 2;
-                                break;
-                            case ControllerPosition.DynamicBrakeIncrease:
-                                data = 3;
-                                break;
-                            case ControllerPosition.TrainBrakeIncrease:
-                                data = 4;
-                                break;
-                            case ControllerPosition.EmergencyBrake:
-                            case ControllerPosition.DynamicBrakeIncreaseFast:
-                                data = 5;
-                                break;
-                            case ControllerPosition.ThrottleIncreaseFast:
-                                data = 6;
-                                break;
-                            case ControllerPosition.ThrottleDecrease:
-                                data = 7;
-                                break;
-                            case ControllerPosition.ThrottleDecreaseFast:
-                                data = 8;
-                                break;
-                            case ControllerPosition.SelectedSpeedIncrease:
-                                data = 9;
-                                break;
-                            case ControllerPosition.SelectedSpeedDecrease:
-                                data = 10;
-                                break;
-                            case ControllerPosition.SelectSpeedZero:
-                                data = 11;
-                                break;
-                        }
-                        break;
-                    }
-                default:
+                case ControllerPosition.ThrottleIncrease:
                     data = 0;
+                    break;
+                case ControllerPosition.Drive:
+                case ControllerPosition.ThrottleHold:
+                    data = 1;
+                    break;
+                case ControllerPosition.Neutral:
+                    data = 2;
+                    break;
+                case ControllerPosition.DynamicBrakeIncrease:
+                    data = 3;
+                    break;
+                case ControllerPosition.TrainBrakeIncrease:
+                    data = 4;
+                    break;
+                case ControllerPosition.EmergencyBrake:
+                case ControllerPosition.DynamicBrakeIncreaseFast:
+                    data = 5;
+                    break;
+                case ControllerPosition.ThrottleIncreaseFast:
+                    data = 6;
+                    break;
+                case ControllerPosition.ThrottleDecrease:
+                    data = 7;
+                    break;
+                case ControllerPosition.ThrottleDecreaseFast:
+                    data = 8;
+                    break;
+                case ControllerPosition.SelectedSpeedIncrease:
+                    data = 9;
+                    break;
+                case ControllerPosition.SelectedSpeedDecrease:
+                    data = 10;
+                    break;
+                case ControllerPosition.SelectSpeedZero:
+                    data = 11;
                     break;
             }
             return data;
@@ -991,12 +869,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public class Position
         {
-            public string Type { get; set; }
+            public ControllerPosition Type;
             public string Flag { get; set; }
             public string Name { get; set; }
             public Position(string positionType, string positionFlag, string name)
             {
-                Type = positionType;
+                Enum.TryParse(positionType, out Type);
                 Flag = positionFlag;
                 Name = name;
             }
