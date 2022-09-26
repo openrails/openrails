@@ -1,5 +1,5 @@
-﻿Open Rails software Prerequisites.txt - Release v1.4
-July 2021
+﻿Open Rails software Prerequisites.txt - Release v1.5
+September 2022
 
 Visit our web-page at http://openrails.org for details and links.
 
@@ -7,7 +7,7 @@ Please note the distribution and use of Open Rails software is governed by the G
 Source code can be downloaded from https://github.com/openrails/openrails
 
 INSTALLATION PRE-REQUISITES
-- You must have a PC running Windows 7 with Service Pack 1 or later version of Windows, including Windows 10.
+- You must have a PC running Windows 7 with Service Pack 1 or later version of Windows, including Windows 11.
 - If not already installed, Microsoft .NET Framework 4.7.2 will be added by the Open Rails installer.
 - Open Rails is compatible with an existing Microsoft Train Simulator installation and will also work without one.
-- The default folder is C:\Program Files (x86)\Open Rails\ but you can choose another location and multiple installations can co-exist.
+- The default folder is C:\Program Files\Open Rails\ but you can choose another location and multiple installations can co-exist.
