@@ -144,71 +144,6 @@ Video Options
 
 .. image:: images/options-video.png
 
-Dynamic shadows
----------------
-
-This option causes movable objects such as trains to cast shadows.
-Unchecking the option will increase the frame rate.
-
-The default setting is checked.
-
-
-Shadow for all shapes
----------------------
-
-Check this option to cast shadows from static objects.
-
-The default setting is unchecked.
-
-Note: This may reduce the frame rate.
-
-Note: Static objects provided with shadows (in the World files) 
-will cast shadows anyway. This option adds shadows for other static objects.
-
-Model instancing
-----------------
-
-When the option is checked, in cases where multiple instances of the same 
-object have to be drawn, only a single draw call is sent to the GPU. 
-Uncheck this option to avoid the graphical glitches which appear on some 
-hardware, but this may reduce the frame rate.
-
-The default setting is checked.
-
-
-Overhead wire
--------------
-
-This option will enable or disable display of the overhead wire.
-
-
-.. _options-double-overhead-wires:
-
-Double overhead wires
----------------------
-
-MSTS uses a single wire for electrified routes; you may check this box so
-that ORTS will show the two overhead wires that are more common.
-
-
-.. _options-vsync:
-
-Vertical sync
--------------
-
-Vertical Sync (VSync) attempts to lock Open Rails’ output frame rate 
-to your monitor's refresh rate for the smoothest image and to resist 
-image "tearing".
-
-VSync may help keep the frame rate more stable on complex routes, 
-reducing sudden frame rate drops and apparent control lag in some cases.
-If Open Rails' frame rate drops below your monitor's frame rate, you 
-may see stuttering or image "tearing". To prevent this, either uncheck 
-the VSync option or reduce the values for video options such as view 
-distance, anti-aliasing, or world object density.
-
-The default setting is checked.
-
 
 Viewing distance
 ----------------
@@ -260,11 +195,103 @@ will show all the objects that should be in view without reducing the frame rate
 The default setting is checked.
 
 
-Viewing vertical FOV
---------------------
+Dynamic shadows
+---------------
 
-This value defines the vertical angle of the world that is shown. Higher
-values correspond roughly to a zoom out effect. The default is 45 degrees.
+This option causes movable objects such as trains to cast shadows.
+Unchecking the option will increase the frame rate.
+
+The default setting is checked.
+
+
+Shadow for all shapes
+---------------------
+
+Check this option to cast shadows from static objects.
+
+The default setting is unchecked.
+
+Note: This may reduce the frame rate.
+
+Note: Static objects provided with shadows (in the World files) 
+will cast shadows anyway. This option adds shadows for other static objects.
+
+
+Overhead wire
+-------------
+
+This option will enable or disable display of the overhead wire.
+
+
+.. _options-double-overhead-wires:
+
+Double overhead wires
+---------------------
+
+MSTS uses a single wire for electrified routes; you may check this box so
+that ORTS will show the two overhead wires that are more common.
+
+
+Signal light glow
+-----------------
+
+When this option is set, a glowing effect is added to signal semaphores
+when seen at distance, so that they are visible at a greater distance.
+There are routes where this effect has already been natively introduced;
+for these, this option is not recommended.
+
+
+Ambient daylight brightness
+---------------------------
+
+With this slider you can set the daylight brightness.
+
+
+Note: The controls on the right side of the tab are more subtle and the 
+changes they make may be less easy to detect.
+
+
+Model instancing
+----------------
+
+When the option is checked, in cases where multiple instances of the same 
+object have to be drawn, only a single draw call is sent to the GPU. 
+Uncheck this option to avoid the graphical glitches which appear on some 
+hardware, but this may reduce the frame rate.
+
+The default setting is checked.
+
+
+.. _options-vsync:
+
+Vertical sync
+-------------
+
+Vertical Sync (VSync) attempts to lock Open Rails’ output frame rate 
+to your monitor's refresh rate for the smoothest image and to resist 
+image "tearing".
+
+VSync may help keep the frame rate more stable on complex routes, 
+reducing sudden frame rate drops and apparent control lag in some cases.
+If Open Rails' frame rate drops below your monitor's frame rate, you 
+may see stuttering or image "tearing". To prevent this, either uncheck 
+the VSync option or reduce the values for video options such as view 
+distance, anti-aliasing, or world object density.
+
+The default setting is checked.
+
+
+Anti-aliasing
+-------------
+
+Controls the anti-aliasing method used by Open Rails. Anti-aliasing is a
+computer graphics technique that smooths any harsh edges, otherwise known as
+"jaggies," present in the video image. Currently, Open Rails only supports the
+multisample anti-aliasing (MSAA) method. Higher applications of anti-aliasing
+will require exponentially more graphics computing power.
+
+The default setting is MSAA with 2x sampling.
+
 
 World object density
 --------------------
@@ -278,21 +305,35 @@ In more modern routes, content may be assigned to categories between 0 and 49.
 Content builders are advised to reserve values 50 to 99 for objects used in building the route.
 
 
-Ambient daylight brightness
----------------------------
+Level of detail bias
+--------------------
 
-With this slider you can set the daylight brightness.
+Many visual objects are modelled at more than one level of detail (LOD) so, 
+when they are seen at a distance, Open Rails can switch to the lesser level 
+of detail without compromising the view. This use of multiple LODs reduces 
+the processing load and so may increase frame rates.
 
-Anti-aliasing
--------------
+Lowering the LOD Bias setting below 0 reduces the distance at which a lower 
+level of detail comes into view, and so boosts frame rates but there may be 
+some loss of sharpness.
 
-Controls the anti-aliasing method used by Open Rails. Anti-aliasing is a
-computer graphics technique that smooths any harsh edges, otherwise known as
-"jaggies," present in the video image. Currently, Open Rails only supports the
-multisample anti-aliasing (MSAA) method. Higher applications of anti-aliasing
-will require exponentially more graphics computing power.
+Raising the LOD Bias setting above 0 increases the distance at which a lower 
+level of detail comes into view. This may be useful to sharpen distant content 
+that was created for a smaller screen or a wider field of view than you are 
+currently using.
 
-The default setting is MSAA with 2x sampling.
+The default setting is 0.
+
+Note: If your content does not use multiple LODs, then this option will have no effect.
+
+
+Viewing vertical FOV
+--------------------
+
+This value defines the vertical angle of the world that is shown. Higher
+values correspond roughly to a zoom out effect. The default is 45 degrees.
+
+
 
 .. _options-simulation:
 
@@ -677,13 +718,6 @@ When this option is selected, when ORTS is loading the shape (.s) files it
 will report errors in syntax and structure (even if these don't cause
 runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop.
 
-Signal light glow
------------------
-
-When this option is set, a glowing effect is added to signal semaphores
-when seen at distance, so that they are visible at a greater distance.
-There are routes where this effect has already been natively introduced;
-for these, this option is not recommended.
 
 Correct questionable braking parameters
 ---------------------------------------
@@ -751,28 +785,6 @@ night sky and for clouds.
 With this option selected, ORTS applies the MSTS environment files. This
 includes support of Kosmos environments, even if the final effect may be
 different from the current MSTS one.
-
-
-Level of detail bias
---------------------
-
-Many visual objects are modelled at more than one level of detail (LOD) so, 
-when they are seen at a distance, Open Rails can switch to the lesser level 
-of detail without compromising the view. This use of multiple LODs reduces 
-the processing load and so may increase frame rates.
-
-Lowering the LOD Bias setting below 0 reduces the distance at which a lower 
-level of detail comes into view, and so boosts frame rates but there may be 
-some loss of sharpness.
-
-Raising the LOD Bias setting above 0 increases the distance at which a lower 
-level of detail comes into view. This may be useful to sharpen distant content 
-that was created for a smaller screen or a wider field of view than you are 
-currently using.
-
-The default setting is 0.
-
-Note: If your content does not use multiple LODs, then this option will have no effect.
 
 
 Adhesion proportional to rain/snow/fog

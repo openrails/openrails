@@ -783,7 +783,7 @@ namespace ORTS
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
 
-        #region Help for General Options
+        #region Help for Options
         // The icons all share the same code which assumes they are named according to a simple scheme as follows:
         //   1. To add a new Help Icon, copy an existing one and paste it onto the tab.
         //   2. Give it the same name as the associated control but change the prefix to "pb" for Picture Box.
@@ -853,6 +853,23 @@ namespace ORTS
                 (pbSoundVolumePercent, new Control[] { labelSoundVolume, numericSoundVolumePercent }),
                 (pbSoundDetailLevel, new Control[]  { labelSoundDetailLevel, numericSoundDetailLevel }),
                 (pbExternalSoundPassThruPercent, new Control[]  { labelExternalSound, numericExternalSoundPassThruPercent }),
+
+                // Video tab
+                (pbViewingDistance, new Control[] { labelViewingDistance, numericViewingDistance }),
+                (pbDistantMountains, new Control[] { checkDistantMountains, numericDistantMountainsViewingDistance, labelDistantMountainsViewingDistance }),
+                (pbLODViewingExtension, new[] { checkLODViewingExtension }),
+                (pbDynamicShadows, new[] { checkDynamicShadows }),
+                (pbShadowAllShapes, new[] { checkShadowAllShapes }),
+                (pbWire, new[] { checkWire }),
+                (pbDoubleWire, new[] { checkDoubleWire }),
+                (pbSignalLightGlow, new[] { checkSignalLightGlow }),
+                (pbDayAmbientLight, new Control[] { labelAmbientDaylightBrightness, trackDayAmbientLight }),
+                (pbModelInstancing, new[] { checkModelInstancing }),
+                (pbVerticalSync, new[] { checkVerticalSync }),
+                (pbAntiAliasing, new Control[] { labelAntiAliasingValue, trackAntiAliasing }),
+                (pbWorldObjectDensity, new Control[] { labelWorldObjectDensity, numericWorldObjectDensity }),
+                (pbLODBias, new Control[] { labelLODBias, trackLODBias }),
+                (pbViewingFOV, new Control[] { labelViewingVerticalFOV, numericViewingFOV }),
 
                 // System
                 (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
@@ -927,6 +944,68 @@ namespace ORTS
                 {
                     pbExternalSoundPassThruPercent,
                     baseUrl + "/options.html#audio-options"
+                },
+
+                // Video tab
+                {
+                    pbViewingDistance,
+                    baseUrl + "/options.html#viewing-distance"
+                },
+                {
+                    pbDistantMountains,
+                    baseUrl + "/options.html#distant-mountains"
+                },
+                {
+                    pbLODViewingExtension,
+                    baseUrl + "/options.html#extend-object-maximum-viewing-distance-to-horizon"
+                },
+                {
+                    pbDynamicShadows,
+                    baseUrl + "/options.html#dynamic-shadows"
+                },
+                {
+                    pbShadowAllShapes,
+                    baseUrl + "/options.html#shadow-for-all-shapes"
+                },
+                {
+                    pbWire,
+                    baseUrl + "/options.html#overhead-wire"
+                },
+                {
+                    pbDoubleWire,
+                    baseUrl + "/options.html#double-overhead-wires"
+                },
+                {
+                    pbSignalLightGlow,
+                    baseUrl + "/options.html#signal-light-glow"
+                },
+                {
+                    pbDayAmbientLight,
+                    baseUrl + "/options.html#ambient-daylight-brightness"
+                },
+                {
+                    pbModelInstancing,
+                    baseUrl + "/options.html#model-instancing"
+                },
+                {
+                    pbVerticalSync,
+                    baseUrl + "/options.html#vertical-sync"
+                },
+                {
+                    pbAntiAliasing,
+                    baseUrl + "/options.html#anti-aliasing"
+                },
+                {
+                    pbWorldObjectDensity,
+                    baseUrl + "/options.html#world-object-density"
+                },
+                {
+                    pbLODBias,
+                    baseUrl + "/options.html#level-of-detail-bias"
+                },
+                {
+                    pbViewingFOV,
+                    baseUrl + "/options.html#viewing-vertical-fov"
                 },
 
                 // System tab
