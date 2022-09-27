@@ -270,6 +270,8 @@ namespace Orts.Viewer3D
         {
             foreach (var path in TextureMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
             {
+                // Sort of hack to avoid default snow terrtex not appearing
+                if (Textures[path] != SharedMaterialManager.DefaultSnowTexture && Textures[path] != SharedMaterialManager.DefaultDMSnowTexture) 
                 Textures[path].Dispose();
                 Textures.Remove(path);
         }
