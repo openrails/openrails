@@ -2239,57 +2239,7 @@ namespace Orts.Viewer3D.RollingStock
                     index = ControlDiscrete.Values.FindIndex(ind => ind > (int)data) - 1;
                     if (index == -2) index = ControlDiscrete.Values.Count - 1;
                     break;
-
-                // Train Control System controls
-                case CABViewControlTypes.ORTS_TCS1:
-                case CABViewControlTypes.ORTS_TCS2:
-                case CABViewControlTypes.ORTS_TCS3:
-                case CABViewControlTypes.ORTS_TCS4:
-                case CABViewControlTypes.ORTS_TCS5:
-                case CABViewControlTypes.ORTS_TCS6:
-                case CABViewControlTypes.ORTS_TCS7:
-                case CABViewControlTypes.ORTS_TCS8:
-                case CABViewControlTypes.ORTS_TCS9:
-                case CABViewControlTypes.ORTS_TCS10:
-                case CABViewControlTypes.ORTS_TCS11:
-                case CABViewControlTypes.ORTS_TCS12:
-                case CABViewControlTypes.ORTS_TCS13:
-                case CABViewControlTypes.ORTS_TCS14:
-                case CABViewControlTypes.ORTS_TCS15:
-                case CABViewControlTypes.ORTS_TCS16:
-                case CABViewControlTypes.ORTS_TCS17:
-                case CABViewControlTypes.ORTS_TCS18:
-                case CABViewControlTypes.ORTS_TCS19:
-                case CABViewControlTypes.ORTS_TCS20:
-                case CABViewControlTypes.ORTS_TCS21:
-                case CABViewControlTypes.ORTS_TCS22:
-                case CABViewControlTypes.ORTS_TCS23:
-                case CABViewControlTypes.ORTS_TCS24:
-                case CABViewControlTypes.ORTS_TCS25:
-                case CABViewControlTypes.ORTS_TCS26:
-                case CABViewControlTypes.ORTS_TCS27:
-                case CABViewControlTypes.ORTS_TCS28:
-                case CABViewControlTypes.ORTS_TCS29:
-                case CABViewControlTypes.ORTS_TCS30:
-                case CABViewControlTypes.ORTS_TCS31:
-                case CABViewControlTypes.ORTS_TCS32:
-                case CABViewControlTypes.ORTS_TCS33:
-                case CABViewControlTypes.ORTS_TCS34:
-                case CABViewControlTypes.ORTS_TCS35:
-                case CABViewControlTypes.ORTS_TCS36:
-                case CABViewControlTypes.ORTS_TCS37:
-                case CABViewControlTypes.ORTS_TCS38:
-                case CABViewControlTypes.ORTS_TCS39:
-                case CABViewControlTypes.ORTS_TCS40:
-                case CABViewControlTypes.ORTS_TCS41:
-                case CABViewControlTypes.ORTS_TCS42:
-                case CABViewControlTypes.ORTS_TCS43:
-                case CABViewControlTypes.ORTS_TCS44:
-                case CABViewControlTypes.ORTS_TCS45:
-                case CABViewControlTypes.ORTS_TCS46:
-                case CABViewControlTypes.ORTS_TCS47:
-                case CABViewControlTypes.ORTS_TCS48:
-
+                case CABViewControlTypes.ORTS_TCS:
                 // Jindrich
                 case CABViewControlTypes.ORTS_RESTRICTED_SPEED_ZONE_ACTIVE:
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_MODE:
@@ -2350,7 +2300,8 @@ namespace Orts.Viewer3D.RollingStock
 
         public string GetControlName()
         {
-            return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(GetControlType().ToString());
+            if (ControlDiscrete.ControlType == CABViewControlTypes.ORTS_TCS) return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(ControlDiscrete.ControlSubtype);
+            return GetControlType().ToString();
         }
 
         public string ControlLabel => Control.Label;
@@ -2567,58 +2518,13 @@ namespace Orts.Viewer3D.RollingStock
                     break;
 
                 // Train Control System controls
-                case CABViewControlTypes.ORTS_TCS1:
-                case CABViewControlTypes.ORTS_TCS2:
-                case CABViewControlTypes.ORTS_TCS3:
-                case CABViewControlTypes.ORTS_TCS4:
-                case CABViewControlTypes.ORTS_TCS5:
-                case CABViewControlTypes.ORTS_TCS6:
-                case CABViewControlTypes.ORTS_TCS7:
-                case CABViewControlTypes.ORTS_TCS8:
-                case CABViewControlTypes.ORTS_TCS9:
-                case CABViewControlTypes.ORTS_TCS10:
-                case CABViewControlTypes.ORTS_TCS11:
-                case CABViewControlTypes.ORTS_TCS12:
-                case CABViewControlTypes.ORTS_TCS13:
-                case CABViewControlTypes.ORTS_TCS14:
-                case CABViewControlTypes.ORTS_TCS15:
-                case CABViewControlTypes.ORTS_TCS16:
-                case CABViewControlTypes.ORTS_TCS17:
-                case CABViewControlTypes.ORTS_TCS18:
-                case CABViewControlTypes.ORTS_TCS19:
-                case CABViewControlTypes.ORTS_TCS20:
-                case CABViewControlTypes.ORTS_TCS21:
-                case CABViewControlTypes.ORTS_TCS22:
-                case CABViewControlTypes.ORTS_TCS23:
-                case CABViewControlTypes.ORTS_TCS24:
-                case CABViewControlTypes.ORTS_TCS25:
-                case CABViewControlTypes.ORTS_TCS26:
-                case CABViewControlTypes.ORTS_TCS27:
-                case CABViewControlTypes.ORTS_TCS28:
-                case CABViewControlTypes.ORTS_TCS29:
-                case CABViewControlTypes.ORTS_TCS30:
-                case CABViewControlTypes.ORTS_TCS31:
-                case CABViewControlTypes.ORTS_TCS32:
-                case CABViewControlTypes.ORTS_TCS33:
-                case CABViewControlTypes.ORTS_TCS34:
-                case CABViewControlTypes.ORTS_TCS35:
-                case CABViewControlTypes.ORTS_TCS36:
-                case CABViewControlTypes.ORTS_TCS37:
-                case CABViewControlTypes.ORTS_TCS38:
-                case CABViewControlTypes.ORTS_TCS39:
-                case CABViewControlTypes.ORTS_TCS40:
-                case CABViewControlTypes.ORTS_TCS41:
-                case CABViewControlTypes.ORTS_TCS42:
-                case CABViewControlTypes.ORTS_TCS43:
-                case CABViewControlTypes.ORTS_TCS44:
-                case CABViewControlTypes.ORTS_TCS45:
-                case CABViewControlTypes.ORTS_TCS46:
-                case CABViewControlTypes.ORTS_TCS47:
-                case CABViewControlTypes.ORTS_TCS48:
-                    int commandIndex = (int)Control.ControlType - (int)CABViewControlTypes.ORTS_TCS1;
-                    if (ChangedValue(1) > 0 ^ Locomotive.TrainControlSystem.TCSCommandButtonDown[commandIndex])
-                        new TCSButtonCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandButtonDown[commandIndex], commandIndex);
-                    new TCSSwitchCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.TCSCommandSwitchOn[commandIndex] ? 1 : 0) > 0, commandIndex);
+                case CABViewControlTypes.ORTS_TCS:
+                    int commandIndex = (int)Control.ControlSubtype - 1;
+                    Locomotive.TrainControlSystem.TCSCommandButtonDown.TryGetValue(commandIndex, out bool currentValue);
+                    if (ChangedValue(1) > 0 ^ currentValue)
+                        new TCSButtonCommand(Viewer.Log, !currentValue, commandIndex);
+                    Locomotive.TrainControlSystem.TCSCommandSwitchOn.TryGetValue(commandIndex, out bool currentSwitchValue);
+                    new TCSSwitchCommand(Viewer.Log, ChangedValue(currentSwitchValue ? 1 : 0) > 0, commandIndex);
                     break;
 
                 // Jindrich
