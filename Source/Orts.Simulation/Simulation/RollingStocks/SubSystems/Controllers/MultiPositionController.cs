@@ -109,7 +109,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             StateChanged = inf.ReadBoolean();
             haveCruiseControl = inf.ReadBoolean();
         }
-        public void Parse(string lowercasetoken, STFReader stf)
+        public void Parse(STFReader stf)
         {
             stf.MustMatch("(");
             while (!stf.EndOfBlock())
@@ -146,6 +146,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         break;
                     case "engine(ortsmultipositioncontroller(controllerid": ControllerId = stf.ReadIntBlock(0); break;
                     case "engine(ortsmultipositioncontrollercancontroltrainbrake": CanControlTrainBrake = stf.ReadBoolBlock(false); break;
+                    default: break;
                 }
             }
         }
