@@ -634,8 +634,8 @@ public List<CabView> CabViewList = new List<CabView>();
                 {
                     msDisplay = (CVCMultiStateDisplay) cabView.CVFFile.CabViewControls.Where(
                         control => control is CVCMultiStateDisplay &&
-                        (((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY ||
-                        ((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.CPH_DISPLAY)).First();
+                        (((CVCMultiStateDisplay) control).ControlType.Type == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY ||
+                        ((CVCMultiStateDisplay) control).ControlType.Type == CABViewControlTypes.CPH_DISPLAY)).First();
                 }
                 catch
                 {
@@ -643,7 +643,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 if (msDisplay != null)
                 {
-                    if (msDisplay.ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY)
+                    if (msDisplay.ControlType.Type == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY)
                     {
                         foreach (var switchval in msDisplay.Values)
                             dpDynController.AddNotch((float) switchval);
@@ -705,11 +705,8 @@ public List<CabView> CabViewList = new List<CabView>();
                         CabViewControls cvcList = CabViewList[0].CVFFile.CabViewControls;
                         foreach (CabViewControl cvc in cvcList)
                         {
-                            if (brakeSystemComponents.ContainsKey(cvc.ControlType) && pressureUnits.ContainsKey(cvc.Units))
+                            if (brakeSystemComponents.TryGetValue(cvc.ControlType.Type, out var component) && pressureUnits.TryGetValue(cvc.Units, out var unit))
                             {
-                                BrakeSystemComponent component = brakeSystemComponents[cvc.ControlType];
-                                PressureUnit unit = pressureUnits[cvc.Units];
-
                                 BrakeSystemPressureUnits[component] = unit;
                             }
                         }
@@ -4992,7 +4989,7 @@ public List<CabView> CabViewList = new List<CabView>();
         public virtual float GetDataOf(CabViewControl cvc)
         {
             float data = 0;
-            switch (cvc.ControlType)
+            switch (cvc.ControlType.Type)
             {
                 case CABViewControlTypes.SPEEDOMETER:
                     {
@@ -5090,7 +5087,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                             {
                                 float rangeFactor;
-                                if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS)
+                                if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS)
                                 {
                                     if (DynamicBrakeMaxCurrentA == 0)
                                         rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
@@ -5108,11 +5105,11 @@ public List<CabView> CabViewList = new List<CabView>();
                             }
                             if (direction == 1)
                                 data = -data;
-                            if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
+                            if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
                             break;
                         }
                         data = this.MotiveForceN / MaxForceN * MaxCurrentA;
-                        if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
+                        if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
                         break;
                     }
                 case CABViewControlTypes.LOAD_METER:
@@ -5819,7 +5816,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
 
                 case CABViewControlTypes.ORTS_TCS:
-                    TrainControlSystem.CabDisplayControls.TryGetValue(cvc.ControlSubtype - 1, out data);
+                    TrainControlSystem.CabDisplayControls.TryGetValue(cvc.ControlType.Subtype - 1, out data);
                     break;
 
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_COMMAND_SWITCH:
