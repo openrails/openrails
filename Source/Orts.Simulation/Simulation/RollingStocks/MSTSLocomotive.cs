@@ -1097,14 +1097,10 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(ortsmaxtracksanderboxcapacity": MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(ortsmaxtracksandersandconsumption": TrackSanderSandConsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(ortsmaxtracksanderairconsumption": TrackSanderAirComsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "engine(ortscruisecontrol": SetUpCruiseControl(); break;
-                case "engine(ortsmultipositioncontroller": SetUpMPC(lowercasetoken, stf); break;
+                case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
+                case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
                 default:
                     base.Parse(lowercasetoken, stf);
-                    if (CruiseControl != null)
-                        CruiseControl.Parse(lowercasetoken, stf);
-                    //                    if (MultiPositionController != null)
-                    //                        MultiPositionController.Parse(lowercasetoken, stf);
                     break;
                     
             }
@@ -1704,19 +1700,20 @@ public List<CabView> CabViewList = new List<CabView>();
         /// <summary>
         /// Make instance of Cruise Control and Initialize it
         /// </summary>
-        public void SetUpCruiseControl()
+        public void SetUpCruiseControl(STFReader stf)
         {
             CruiseControl = new CruiseControl(this);
             CruiseControl.Equipped = true;
+            CruiseControl.Parse(stf);
         }
 
         /// <summary>
         /// Make instance of multi position controller
         /// </summary>
-        public void SetUpMPC(string lowercasetoken, STFReader stf)
+        public void SetUpMPC(STFReader stf)
         {
             var multiPositionController = new MultiPositionController(this);
-            multiPositionController.Parse(lowercasetoken, stf);
+            multiPositionController.Parse(stf);
             if (MultiPositionControllers == null)
             {
                 MultiPositionControllers = new List<MultiPositionController>();
