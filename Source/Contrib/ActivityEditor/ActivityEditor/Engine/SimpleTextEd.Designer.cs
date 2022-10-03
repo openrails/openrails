@@ -36,53 +36,61 @@ namespace ActivityEditor.Engine
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SimpleTextEd));
             this.aEditer = new System.Windows.Forms.TextBox();
-            this.fileMenu = new System.Windows.Forms.MenuItem();
-            this.save = new System.Windows.Forms.MenuItem();
-            this.bar = new System.Windows.Forms.MainMenu(this.components);
+            this.fileMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.save = new System.Windows.Forms.ToolStripMenuItem();
+            this.bar = new System.Windows.Forms.MenuStrip();
+            this.bar.SuspendLayout();
             this.SuspendLayout();
             // 
             // aEditer
             // 
-            this.aEditer.Location = new System.Drawing.Point(5, 5);
+            this.aEditer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.aEditer.Location = new System.Drawing.Point(0, 24);
             this.aEditer.Multiline = true;
             this.aEditer.Name = "aEditer";
             this.aEditer.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.aEditer.Size = new System.Drawing.Size(490, 190);
+            this.aEditer.Size = new System.Drawing.Size(500, 176);
             this.aEditer.TabIndex = 0;
             this.aEditer.WordWrap = false;
             // 
             // fileMenu
             // 
-            this.fileMenu.Index = 0;
-            this.fileMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.fileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.save});
+            this.fileMenu.Name = "fileMenu";
+            this.fileMenu.Size = new System.Drawing.Size(37, 20);
             this.fileMenu.Text = "File";
             // 
             // save
             // 
-            this.save.Index = 0;
-            this.save.Shortcut = System.Windows.Forms.Shortcut.CtrlS;
+            this.save.Name = "save";
+            this.save.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.save.Size = new System.Drawing.Size(138, 22);
             this.save.Text = "Save";
             this.save.Click += new System.EventHandler(this.Save_Click);
             // 
             // bar
             // 
-            this.bar.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.bar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileMenu});
+            this.bar.Location = new System.Drawing.Point(0, 0);
+            this.bar.Name = "bar";
+            this.bar.Size = new System.Drawing.Size(500, 24);
+            this.bar.TabIndex = 0;
             // 
             // SimpleTextEd
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(484, 162);
+            this.ClientSize = new System.Drawing.Size(500, 200);
             this.Controls.Add(this.aEditer);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Menu = this.bar;
+            this.Controls.Add(this.bar);
+            this.MainMenuStrip = this.bar;
             this.Name = "SimpleTextEd";
             this.Text = "Form1";
+            this.bar.ResumeLayout(false);
+            this.bar.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -90,8 +98,8 @@ namespace ActivityEditor.Engine
 
         #endregion
         public TextBox aEditer;
-        private MenuItem fileMenu;
-        private MenuItem save;
-        private MainMenu bar;
+        private ToolStripMenuItem fileMenu;
+        private ToolStripMenuItem save;
+        private MenuStrip bar;
     }
 }
