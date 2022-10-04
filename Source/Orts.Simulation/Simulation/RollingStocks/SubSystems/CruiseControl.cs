@@ -30,9 +30,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
     {
         MSTSLocomotive Locomotive;
-        Simulator Simulator;
-
-        public bool Equipped = false;
+        readonly Simulator Simulator;
         public bool SpeedIsMph = false;
         public bool SpeedRegulatorMaxForcePercentUnits = false;
         public float SpeedRegulatorMaxForceSteps = 0;
@@ -65,13 +63,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public int RemainingTrainLengthToPassRestrictedZone = 0;
         public bool RestrictedSpeedActive = false;
         public float CurrentSelectedSpeedMpS = 0;
-        protected float nextSelectedSpeedMps = 0;
         protected float restrictedRegionTravelledDistance = 0;
-        protected double clockTime = 0;
-        protected bool dynamicBrakeSetToZero = false;
         public float StartReducingSpeedDelta = 0.5f;
         public float StartReducingSpeedDeltaDownwards = 0f;
-        public bool Battery = false;
         public bool DynamicBrakePriority = false;
         public List<int> ForceStepsThrottleTable = new List<int>();
         public List<float> AccelerationTable = new List<float>();
@@ -141,12 +135,116 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float LowSpeed = 2f; // default parking speed
         public bool HasTwoForceValues = false; // when UseThrottleAsSpeedSelector is true, two max force values (50% and 100%) are available
 
+        protected bool firstIteration = true;
+        // CCThrottleOrDynBrakePercent may vary from -100 to 100 and is the percentage value which the Cruise Control
+        // sets to throttle (if CCThrottleOrDynBrakePercent >=0) or to dynamic brake (if CCThrottleOrDynBrakePercent <0)
+        public float CCThrottleOrDynBrakePercent = 0;
+        protected bool breakout = false;
+        protected float timeFromEngineMoved = 0;
+        protected bool reducingForce = false;
+        protected float skidSpeedDegratation = 0;
+        public bool TrainBrakePriority = false;
+        public bool WasBraking = false;
+        public bool WasForceReset = true;
+
+
+        public bool SelectingSpeedPressed = false;
+        public bool EngineBrakePriority = false;
+        public int AccelerationBits = 0;
+        public bool Speed0Pressed, Speed10Pressed, Speed20Pressed, Speed30Pressed, Speed40Pressed, Speed50Pressed
+            , Speed60Pressed, Speed70Pressed, Speed80Pressed, Speed90Pressed, Speed100Pressed
+            , Speed110Pressed, Speed120Pressed, Speed130Pressed, Speed140Pressed, Speed150Pressed
+            , Speed160Pressed, Speed170Pressed, Speed180Pressed, Speed190Pressed, Speed200Pressed;
 
         public CruiseControl(MSTSLocomotive locomotive)
         {
             Locomotive = locomotive;
+            Simulator = Locomotive.Simulator;
         }
 
+        public CruiseControl(CruiseControl other, MSTSLocomotive locomotive)
+        {
+            Simulator = locomotive.Simulator;
+            Locomotive = locomotive;
+
+            SpeedIsMph = other.SpeedIsMph;
+            SpeedRegulatorMaxForcePercentUnits = other.SpeedRegulatorMaxForcePercentUnits;
+            SpeedRegulatorMaxForceSteps = other.SpeedRegulatorMaxForceSteps;
+            MaxForceSetSingleStep = other.MaxForceSetSingleStep;
+            MaxForceKeepSelectedStepWhenManualModeSet = other.MaxForceKeepSelectedStepWhenManualModeSet;
+            KeepSelectedSpeedWhenManualModeSet = other.KeepSelectedSpeedWhenManualModeSet;
+            ForceRegulatorAutoWhenNonZeroSpeedSelected = other.ForceRegulatorAutoWhenNonZeroSpeedSelected;
+            ForceRegulatorAutoWhenNonZeroForceSelected = other.ForceRegulatorAutoWhenNonZeroForceSelected;
+            ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero = other.ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero;
+            MaxForceSelectorIsDiscrete = other.MaxForceSelectorIsDiscrete;
+            SpeedRegulatorOptions = other.SpeedRegulatorOptions;
+            CruiseControlLogic = other.CruiseControlLogic;
+            SpeedRegulatorNominalSpeedStepMpS = other.SpeedRegulatorNominalSpeedStepMpS;
+            SpeedRegulatorNominalSpeedStepKpHOrMpH = other.SpeedRegulatorNominalSpeedStepKpHOrMpH;
+            MaxAccelerationMpSS = other.MaxAccelerationMpSS;
+            MaxDecelerationMpSS = other.MaxDecelerationMpSS;
+            UseThrottleInCombinedControl = other.UseThrottleInCombinedControl;
+            AntiWheelSpinEquipped = other.AntiWheelSpinEquipped;
+            AntiWheelSpinSpeedDiffThreshold = other.AntiWheelSpinSpeedDiffThreshold;
+            DynamicBrakeMaxForceAtSelectorStep = other.DynamicBrakeMaxForceAtSelectorStep;
+            StartReducingSpeedDelta = other.StartReducingSpeedDelta;
+            StartReducingSpeedDeltaDownwards = other.StartReducingSpeedDeltaDownwards;
+            ForceStepsThrottleTable = other.ForceStepsThrottleTable;
+            AccelerationTable = other.AccelerationTable;
+            DynamicBrakeIncreaseSpeed = other.DynamicBrakeIncreaseSpeed;
+            DynamicBrakeDecreaseSpeed = other.DynamicBrakeDecreaseSpeed;
+            AccelerationRampMaxMpSSS = other.AccelerationRampMaxMpSSS;
+            AccelerationRampMinMpSSS = other.AccelerationRampMinMpSSS;
+            ResetForceAfterAnyBraking = other.ResetForceAfterAnyBraking;
+            ThrottleFullRangeIncreaseTimeSeconds = other.ThrottleFullRangeIncreaseTimeSeconds;
+            ThrottleFullRangeDecreaseTimeSeconds = other.ThrottleFullRangeDecreaseTimeSeconds;
+            DynamicBrakeFullRangeIncreaseTimeSeconds = other.DynamicBrakeFullRangeIncreaseTimeSeconds;
+            DynamicBrakeFullRangeDecreaseTimeSeconds = other.DynamicBrakeFullRangeDecreaseTimeSeconds;
+            ParkingBrakeEngageSpeed = other.ParkingBrakeEngageSpeed;
+            ParkingBrakePercent = other.ParkingBrakePercent;
+            DisableZeroForceStep = other.DisableZeroForceStep;
+            DynamicBrakeIsSelectedForceDependant = other.DynamicBrakeIsSelectedForceDependant;
+            UseThrottleAsSpeedSelector = other.UseThrottleAsSpeedSelector;
+            UseThrottleAsForceSelector = other.UseThrottleAsForceSelector;
+            ContinuousSpeedIncreasing = other.ContinuousSpeedIncreasing;
+            ContinuousSpeedDecreasing = other.ContinuousSpeedDecreasing;
+            PowerBreakoutAmpers = other.PowerBreakoutAmpers;
+            PowerBreakoutSpeedDelta = other.PowerBreakoutSpeedDelta;
+            PowerResumeSpeedDelta = other.PowerResumeSpeedDelta;
+            PowerReductionDelayPaxTrain = other.PowerReductionDelayPaxTrain;
+            PowerReductionDelayCargoTrain = other.PowerReductionDelayCargoTrain;
+            PowerReductionValue = other.PowerReductionValue;
+            MaxPowerThreshold = other.MaxPowerThreshold;
+            SafeSpeedForAutomaticOperationMpS = other.SafeSpeedForAutomaticOperationMpS;
+            SpeedSelectorStepTimeSeconds = other.SpeedSelectorStepTimeSeconds;
+            DisableCruiseControlOnThrottleAndZeroSpeed = other.DisableCruiseControlOnThrottleAndZeroSpeed;
+            DisableCruiseControlOnThrottleAndZeroForce = other.DisableCruiseControlOnThrottleAndZeroForce;
+            DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed = other.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed;
+            ForceResetRequiredAfterBraking = other.ForceResetRequiredAfterBraking;
+            ForceResetIncludeDynamicBrake = other.ForceResetIncludeDynamicBrake;
+            ZeroSelectedSpeedWhenPassingToThrottleMode = other.ZeroSelectedSpeedWhenPassingToThrottleMode;
+            DynamicBrakeCommandHasPriorityOverCruiseControl = other.DynamicBrakeCommandHasPriorityOverCruiseControl;
+            HasIndependentThrottleDynamicBrakeLever = other.HasIndependentThrottleDynamicBrakeLever;
+            HasProportionalSpeedSelector = other.HasProportionalSpeedSelector;
+            DisableManualSwitchToManualWhenSetForceNotAtZero = other.DisableManualSwitchToManualWhenSetForceNotAtZero;
+            DisableManualSwitchToAutoWhenThrottleNotAtZero = other.DisableManualSwitchToAutoWhenThrottleNotAtZero;
+            DisableManualSwitchToAutoWhenSetSpeedNotAtTop = other.DisableManualSwitchToAutoWhenSetSpeedNotAtTop;
+            EnableSelectedSpeedSelectionWhenManualModeSet = other.EnableSelectedSpeedSelectionWhenManualModeSet;
+            SpeedSelectorIsDiscrete = other.SpeedSelectorIsDiscrete;
+            DoComputeNumberOfAxles = other.DoComputeNumberOfAxles;
+            UseTrainBrakeAndDynBrake = other.UseTrainBrakeAndDynBrake;
+            SpeedDeltaToEnableTrainBrake = other.SpeedDeltaToEnableTrainBrake;
+            SpeedDeltaToEnableFullTrainBrake = other.SpeedDeltaToEnableFullTrainBrake;
+            MinimumSpeedForCCEffectMpS = other.MinimumSpeedForCCEffectMpS;
+            TrainBrakeMinPercentValue = other.TrainBrakeMinPercentValue;
+            TrainBrakeMaxPercentValue = other.TrainBrakeMaxPercentValue;
+            StartInAutoMode = other.StartInAutoMode;
+            ThrottleNeutralPosition = other.ThrottleNeutralPosition;
+            ThrottleLowSpeedPosition = other.ThrottleLowSpeedPosition;
+            LowSpeed = other.LowSpeed;
+            HasTwoForceValues = other.HasTwoForceValues;
+
+        }
 
         public void Parse(STFReader stf)
         {
@@ -276,95 +374,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             return new CruiseControl(this, locomotive);
         }
 
-        public CruiseControl(CruiseControl other, MSTSLocomotive locomotive)
-        {
-            Simulator = locomotive.Simulator;
-            Locomotive = locomotive;
-
-            Equipped = other.Equipped;
-            SpeedIsMph = other.SpeedIsMph;
-            SpeedRegulatorMaxForcePercentUnits = other.SpeedRegulatorMaxForcePercentUnits;
-            SpeedRegulatorMaxForceSteps = other.SpeedRegulatorMaxForceSteps;
-            MaxForceSetSingleStep = other.MaxForceSetSingleStep;
-            MaxForceKeepSelectedStepWhenManualModeSet = other.MaxForceKeepSelectedStepWhenManualModeSet;
-            KeepSelectedSpeedWhenManualModeSet = other.KeepSelectedSpeedWhenManualModeSet;
-            ForceRegulatorAutoWhenNonZeroSpeedSelected = other.ForceRegulatorAutoWhenNonZeroSpeedSelected;
-            ForceRegulatorAutoWhenNonZeroForceSelected = other.ForceRegulatorAutoWhenNonZeroForceSelected;
-            ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero = other.ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero;
-            MaxForceSelectorIsDiscrete = other.MaxForceSelectorIsDiscrete;
-            SpeedRegulatorOptions = other.SpeedRegulatorOptions;
-            CruiseControlLogic = other.CruiseControlLogic;
-            SpeedRegulatorNominalSpeedStepMpS = other.SpeedRegulatorNominalSpeedStepMpS;
-            SpeedRegulatorNominalSpeedStepKpHOrMpH = other.SpeedRegulatorNominalSpeedStepKpHOrMpH;
-            MaxAccelerationMpSS = other.MaxAccelerationMpSS;
-            MaxDecelerationMpSS = other.MaxDecelerationMpSS;
-            UseThrottleInCombinedControl = other.UseThrottleInCombinedControl;
-            AntiWheelSpinEquipped = other.AntiWheelSpinEquipped;
-            AntiWheelSpinSpeedDiffThreshold = other.AntiWheelSpinSpeedDiffThreshold;
-            DynamicBrakeMaxForceAtSelectorStep = other.DynamicBrakeMaxForceAtSelectorStep;
-            StartReducingSpeedDelta = other.StartReducingSpeedDelta;
-            StartReducingSpeedDeltaDownwards = other.StartReducingSpeedDeltaDownwards;
-            ForceStepsThrottleTable = other.ForceStepsThrottleTable;
-            AccelerationTable = other.AccelerationTable;
-            DynamicBrakeIncreaseSpeed = other.DynamicBrakeIncreaseSpeed;
-            DynamicBrakeDecreaseSpeed = other.DynamicBrakeDecreaseSpeed;
-            AccelerationRampMaxMpSSS = other.AccelerationRampMaxMpSSS;
-            AccelerationRampMinMpSSS = other.AccelerationRampMinMpSSS;
-            ResetForceAfterAnyBraking = other.ResetForceAfterAnyBraking;
-            ThrottleFullRangeIncreaseTimeSeconds = other.ThrottleFullRangeIncreaseTimeSeconds;
-            ThrottleFullRangeDecreaseTimeSeconds = other.ThrottleFullRangeDecreaseTimeSeconds;
-            DynamicBrakeFullRangeIncreaseTimeSeconds = other.DynamicBrakeFullRangeIncreaseTimeSeconds;
-            DynamicBrakeFullRangeDecreaseTimeSeconds = other.DynamicBrakeFullRangeDecreaseTimeSeconds;
-            ParkingBrakeEngageSpeed = other.ParkingBrakeEngageSpeed;
-            ParkingBrakePercent = other.ParkingBrakePercent;
-            DisableZeroForceStep = other.DisableZeroForceStep;
-            DynamicBrakeIsSelectedForceDependant = other.DynamicBrakeIsSelectedForceDependant;
-            UseThrottleAsSpeedSelector = other.UseThrottleAsSpeedSelector;
-            UseThrottleAsForceSelector = other.UseThrottleAsForceSelector;
-            ContinuousSpeedIncreasing = other.ContinuousSpeedIncreasing;
-            ContinuousSpeedDecreasing = other.ContinuousSpeedDecreasing;
-            PowerBreakoutAmpers = other.PowerBreakoutAmpers;
-            PowerBreakoutSpeedDelta = other.PowerBreakoutSpeedDelta;
-            PowerResumeSpeedDelta = other.PowerResumeSpeedDelta;
-            PowerReductionDelayPaxTrain = other.PowerReductionDelayPaxTrain;
-            PowerReductionDelayCargoTrain = other.PowerReductionDelayCargoTrain;
-            PowerReductionValue = other.PowerReductionValue;
-            MaxPowerThreshold = other.MaxPowerThreshold;
-            SafeSpeedForAutomaticOperationMpS = other.SafeSpeedForAutomaticOperationMpS;
-            SpeedSelectorStepTimeSeconds = other.SpeedSelectorStepTimeSeconds;
-            DisableCruiseControlOnThrottleAndZeroSpeed = other.DisableCruiseControlOnThrottleAndZeroSpeed;
-            DisableCruiseControlOnThrottleAndZeroForce = other.DisableCruiseControlOnThrottleAndZeroForce;
-            DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed = other.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed;
-            ForceResetRequiredAfterBraking = other.ForceResetRequiredAfterBraking;
-            ForceResetIncludeDynamicBrake = other.ForceResetIncludeDynamicBrake;
-            ZeroSelectedSpeedWhenPassingToThrottleMode = other.ZeroSelectedSpeedWhenPassingToThrottleMode;
-            DynamicBrakeCommandHasPriorityOverCruiseControl = other.DynamicBrakeCommandHasPriorityOverCruiseControl;
-            HasIndependentThrottleDynamicBrakeLever = other.HasIndependentThrottleDynamicBrakeLever;
-            HasProportionalSpeedSelector = other.HasProportionalSpeedSelector;
-            DisableManualSwitchToManualWhenSetForceNotAtZero = other.DisableManualSwitchToManualWhenSetForceNotAtZero;
-            DisableManualSwitchToAutoWhenThrottleNotAtZero = other.DisableManualSwitchToAutoWhenThrottleNotAtZero;
-            DisableManualSwitchToAutoWhenSetSpeedNotAtTop = other.DisableManualSwitchToAutoWhenSetSpeedNotAtTop;
-            EnableSelectedSpeedSelectionWhenManualModeSet = other.EnableSelectedSpeedSelectionWhenManualModeSet;
-            SpeedSelectorIsDiscrete = other.SpeedSelectorIsDiscrete;
-            DoComputeNumberOfAxles = other.DoComputeNumberOfAxles;
-            UseTrainBrakeAndDynBrake = other.UseTrainBrakeAndDynBrake;
-            SpeedDeltaToEnableTrainBrake = other.SpeedDeltaToEnableTrainBrake;
-            SpeedDeltaToEnableFullTrainBrake = other.SpeedDeltaToEnableFullTrainBrake;
-            MinimumSpeedForCCEffectMpS = other.MinimumSpeedForCCEffectMpS;
-            TrainBrakeMinPercentValue = other.TrainBrakeMinPercentValue;
-            TrainBrakeMaxPercentValue = other.TrainBrakeMaxPercentValue;
-            StartInAutoMode = other.StartInAutoMode;
-            ThrottleNeutralPosition = other.ThrottleNeutralPosition;
-            ThrottleLowSpeedPosition = other.ThrottleLowSpeedPosition;
-            LowSpeed = other.LowSpeed;
-            HasTwoForceValues = other.HasTwoForceValues;
-
-        }
-
         public void Initialize()
         {
-            Simulator = Locomotive.Simulator;
-            clockTime = Simulator.ClockTime * 100;
             ComputeNumberOfAxles();
             if (StartReducingSpeedDeltaDownwards == 0) StartReducingSpeedDeltaDownwards = StartReducingSpeedDelta;
             if (StartInAutoMode) SpeedRegMode = SpeedRegulatorMode.Auto;
@@ -449,54 +460,38 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write(this.applyingPneumaticBrake);
-            outf.Write(this.Battery);
-            outf.Write(this.brakeIncreasing);
-            outf.Write(this.clockTime);
-            outf.Write(this.controllerTime);
-            outf.Write(this.CurrentSelectedSpeedMpS);
-            outf.Write(this.dynamicBrakeSetToZero);
-            outf.Write(this.fromAcceleration);
-            outf.Write(this.maxForceDecreasing);
-            outf.Write(this.maxForceIncreasing);
-            outf.Write(this.nextSelectedSpeedMps);
-            outf.Write(this.restrictedRegionTravelledDistance);
-            outf.Write(this.RestrictedSpeedActive);
-            outf.Write(this.SelectedMaxAccelerationPercent);
-            outf.Write(this.SelectedMaxAccelerationStep);
-            outf.Write(this.SelectedNumberOfAxles);
-            outf.Write(this.SelectedSpeedMpS);
-            outf.Write((int)this.SpeedRegMode);
-            outf.Write((int)this.SpeedSelMode);
-            outf.Write(this.trainBrakePercent);
-            outf.Write(this.TrainLengthMeters);
+            outf.Write(CurrentSelectedSpeedMpS);
+            outf.Write(maxForceDecreasing);
+            outf.Write(maxForceIncreasing);
+            outf.Write(restrictedRegionTravelledDistance);
+            outf.Write(RestrictedSpeedActive);
+            outf.Write(SelectedMaxAccelerationPercent);
+            outf.Write(SelectedMaxAccelerationStep);
+            outf.Write(SelectedNumberOfAxles);
+            outf.Write(SelectedSpeedMpS);
+            outf.Write(DynamicBrakePriority);
+            outf.Write((int)SpeedRegMode);
+            outf.Write((int)SpeedSelMode);
+            outf.Write(trainBrakePercent);
+            outf.Write(TrainLengthMeters);
             outf.Write(speedRegulatorIntermediateValue);
             outf.Write(CCIsUsingTrainBrake);
         }
 
         public void Restore(BinaryReader inf)
         {
-            applyingPneumaticBrake = inf.ReadBoolean();
-            Battery = inf.ReadBoolean();
-            brakeIncreasing = inf.ReadBoolean();
-            clockTime = inf.ReadDouble();
-            controllerTime = inf.ReadSingle();
             CurrentSelectedSpeedMpS = inf.ReadSingle();
-            dynamicBrakeSetToZero = inf.ReadBoolean();
-            fromAcceleration = inf.ReadSingle();
             maxForceDecreasing = inf.ReadBoolean();
             maxForceIncreasing = inf.ReadBoolean();
-            nextSelectedSpeedMps = inf.ReadSingle();
             restrictedRegionTravelledDistance = inf.ReadSingle();
             RestrictedSpeedActive = inf.ReadBoolean();
             SelectedMaxAccelerationPercent = inf.ReadSingle();
             SelectedMaxAccelerationStep = inf.ReadSingle();
             SelectedNumberOfAxles = inf.ReadInt32();
             SelectedSpeedMpS = inf.ReadSingle();
-            int fSpeedRegMode = inf.ReadInt32();
-            SpeedRegMode = (SpeedRegulatorMode)fSpeedRegMode;
-            int fSpeedSelMode = inf.ReadInt32();
-            SpeedSelMode = (SpeedSelectorMode)fSpeedSelMode;
+            DynamicBrakePriority = inf.ReadBoolean();
+            SpeedRegMode = (SpeedRegulatorMode)inf.ReadInt32();
+            SpeedSelMode = (SpeedSelectorMode)inf.ReadInt32();
             trainBrakePercent = inf.ReadSingle();
             TrainLengthMeters = inf.ReadInt32();
             speedRegulatorIntermediateValue = inf.ReadSingle();
@@ -520,7 +515,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (!Locomotive.IsPlayerTrain) return;
             Locomotive.SignalEvent(Common.Event.CruiseControlSpeedRegulator);
             SpeedRegulatorMode previousMode = SpeedRegMode;
-            if (!Equipped) return;
             if (SpeedRegMode == SpeedRegulatorMode.Testing) return;
             if (SpeedRegMode == SpeedRegulatorMode.Manual &&
                ((DisableManualSwitchToAutoWhenThrottleNotAtZero && (Locomotive.ThrottlePercent != 0 ||
@@ -552,7 +546,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public void SpeedRegulatorModeDecrease()
         {
             Locomotive.SignalEvent(Common.Event.CruiseControlSpeedRegulator);
-            if (!Equipped) return;
             if (SpeedRegMode == SpeedRegulatorMode.Manual) return;
             if (SpeedRegMode == SpeedRegulatorMode.Auto &&
                 (DisableManualSwitchToManualWhenSetForceNotAtZero && SelectedMaxAccelerationStep != 0))
@@ -581,7 +574,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public void SpeedSelectorModeStartIncrease()
         {
             Locomotive.SignalEvent(Common.Event.CruiseControlSpeedSelector);
-            if (!Equipped) return;
             if (SpeedSelMode == SpeedSelectorMode.Start) return;
             bool test = false;
             while (!test)
@@ -602,7 +594,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public void SpeedSelectorModeStopIncrease()
         {
             Locomotive.SignalEvent(Common.Event.CruiseControlSpeedSelector);
-            if (!Equipped) return;
             if (SpeedSelMode == SpeedSelectorMode.Start)
             {
                 bool test = false;
@@ -625,7 +616,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             Locomotive.SignalEvent(Common.Event.CruiseControlSpeedSelector);
             SpeedSelectorMode previousMode = SpeedSelMode;
-            if (!Equipped) return;
             if (SpeedSelMode == SpeedSelectorMode.Parking && !EngineBrakePriority) return;
             bool test = false;
             while (!test)
@@ -680,7 +670,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             Locomotive.SignalEvent(Common.Event.CruiseControlMaxForce);
             if (MaxForceSetSingleStep) maxForceIncreasing = false;
             if (SelectedMaxAccelerationStep == 0.5f) SelectedMaxAccelerationStep = 0;
-            if (!Equipped) return;
             if (SpeedRegulatorMaxForcePercentUnits)
             {
                 if (SelectedMaxAccelerationPercent == 100)
@@ -715,7 +704,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             Locomotive.SignalEvent(Common.Event.CruiseControlMaxForce);
             if (MaxForceSetSingleStep) maxForceDecreasing = false;
-            if (!Equipped) return;
             if (DisableZeroForceStep)
             {
                 if (SelectedMaxAccelerationStep <= 1)
@@ -855,8 +843,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         protected double selectedSpeedLeverHoldTime = 0;
         public void SpeedRegulatorSelectedSpeedIncrease()
         {
-            if (!Equipped) return;
-
             if (selectedSpeedLeverHoldTime + SpeedSelectorStepTimeSeconds > TotalTime)
                 return;
             selectedSpeedLeverHoldTime = TotalTime;
@@ -909,8 +895,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
         public void SpeedRegulatorSelectedSpeedDecrease()
         {
-            if (!Equipped) return;
-
             if (selectedSpeedLeverHoldTime + SpeedSelectorStepTimeSeconds > TotalTime)
                 return;
             selectedSpeedLeverHoldTime = TotalTime;
@@ -1036,7 +1020,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public void SetSpeed(float Speed)
         {
-            if (!Equipped) return;
             if (SpeedRegMode == SpeedRegulatorMode.Manual && (ForceRegulatorAutoWhenNonZeroSpeedSelected || ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero))
                 SpeedRegMode = SpeedRegulatorMode.Auto;
             if (SpeedRegMode == SpeedRegulatorMode.Manual)
@@ -1055,36 +1038,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 SelectedSpeedMpS = Locomotive.MaxSpeedMpS;
             Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Selected speed set to ") + Speed.ToString() + (SpeedIsMph ? "mph" : "kmh"));
         }
-        protected float _AccelerationMpSS = 0;
-        protected bool brakeIncreasing = false;
-        protected float controllerTime = 0;
-        protected float fromAcceleration = 0;
-        protected bool applyingPneumaticBrake = false;
-        protected bool firstIteration = true;
-        protected float previousMotiveForce = 0;
-        protected float addPowerTimeCount = 0;
-        // CCThrottleOrDynBrakePercent may vary from -100 to 100 and is the percentage value which the Cruise Control
-        // sets to throttle (if CCThrottleOrDynBrakePercent >=0) or to dynamic brake (if CCThrottleOrDynBrakePercent <0)
-        public float CCThrottleOrDynBrakePercent = 0;
-        protected float throttleChangeTime = 0;
-        protected bool breakout = false;
-        protected float timeFromEngineMoved = 0;
-        protected bool reducingForce = false;
-        protected List<float> concurrentAccelerationList = new List<float>();
-        protected float skidSpeedDegratation = 0;
-        protected float previousAccelerationDemand = 0;
-        public bool TrainBrakePriority = false;
-        public bool WasBraking = false;
-        public bool WasForceReset = true;
-
-
-        public bool SelectingSpeedPressed = false;
-        public bool EngineBrakePriority = false;
-        public int AccelerationBits = 0;
-        public bool Speed0Pressed, Speed10Pressed, Speed20Pressed, Speed30Pressed, Speed40Pressed, Speed50Pressed
-            , Speed60Pressed, Speed70Pressed, Speed80Pressed, Speed90Pressed, Speed100Pressed
-            , Speed110Pressed, Speed120Pressed, Speed130Pressed, Speed140Pressed, Speed150Pressed
-            , Speed160Pressed, Speed170Pressed, Speed180Pressed, Speed190Pressed, Speed200Pressed;
 
         public void CalculateRequiredForce(float elapsedClockSeconds, float AbsWheelSpeedMpS)
         {
@@ -1406,7 +1359,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     {
                         if (Locomotive.DynamicBrakeAvailable)
                         {
-                            float val = (StartReducingSpeedDeltaDownwards) * coeff * ((deltaSpeedMpS + 0.5f) / 3);
+                            float val = StartReducingSpeedDeltaDownwards * coeff * ((deltaSpeedMpS + 0.5f) / 3);
                             if (val < 0)
                                 val = -val;
                             AccelerationDemandMpSS = -(float)Math.Sqrt(val);
@@ -1544,17 +1497,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         if (t > PowerReductionValue / 100)
                             t = PowerReductionValue / 100;
                     }
-                    float DemandedThrottleOrDynBrakePercent = t * 100;
+                    float demandedPercent = t * 100;
                     float current = Math.Abs(Locomotive.TractiveForceN) / Locomotive.MaxForceN * Locomotive.MaxCurrentA;
                     if (current < PowerBreakoutAmpers)
                         breakout = true;
                     if (breakout && deltaSpeedMpS > 0.2f)
                         breakout = false;
-                    if ((CCThrottleOrDynBrakePercent != DemandedThrottleOrDynBrakePercent) && deltaSpeedMpS > 0)
+                    if ((CCThrottleOrDynBrakePercent != demandedPercent) && deltaSpeedMpS > 0)
                     {
                         if (a > 0 && (SpeedIsMph ? MpS.ToMpH(Locomotive.WheelSpeedMpS) : MpS.ToKpH(Locomotive.WheelSpeedMpS)) > 5)
                         {
-                            if (CCThrottleOrDynBrakePercent < DemandedThrottleOrDynBrakePercent && Locomotive.AccelerationMpSS < a - 0.02)
+                            if (CCThrottleOrDynBrakePercent < demandedPercent && Locomotive.AccelerationMpSS < a - 0.02)
                             {
                                 float step = 100 / ThrottleFullRangeIncreaseTimeSeconds;
                                 step *= elapsedClockSeconds;
@@ -1563,7 +1516,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         }
                         else
                         {
-                            if (CCThrottleOrDynBrakePercent < DemandedThrottleOrDynBrakePercent && DemandedThrottleOrDynBrakePercent >= 0)
+                            if (CCThrottleOrDynBrakePercent < demandedPercent && demandedPercent >= 0)
                             {
                                 float step = 100 / ThrottleFullRangeIncreaseTimeSeconds;
                                 step *= elapsedClockSeconds;
@@ -1575,7 +1528,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         }
                         if (a > 0 && (SpeedIsMph ? MpS.ToMpH(Locomotive.WheelSpeedMpS) : MpS.ToKpH(Locomotive.WheelSpeedMpS)) > 5)
                         {
-                            if (CCThrottleOrDynBrakePercent > DemandedThrottleOrDynBrakePercent && Locomotive.AccelerationMpSS > a + 0.02)
+                            if (CCThrottleOrDynBrakePercent > demandedPercent && Locomotive.AccelerationMpSS > a + 0.02)
                             {
                                 float step = 100 / ThrottleFullRangeIncreaseTimeSeconds;
                                 step *= elapsedClockSeconds;
@@ -1584,14 +1537,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         }
                         else
                         {
-                            if (CCThrottleOrDynBrakePercent - 0.2f > DemandedThrottleOrDynBrakePercent)
+                            if (CCThrottleOrDynBrakePercent - 0.2f > demandedPercent)
                             {
                                 float step = 100 / ThrottleFullRangeIncreaseTimeSeconds;
                                 step *= elapsedClockSeconds;
                                 CCThrottleOrDynBrakePercent -= step;
                             }
                         }
-                        if (CCThrottleOrDynBrakePercent > DemandedThrottleOrDynBrakePercent && deltaSpeedMpS < 0.8)
+                        if (CCThrottleOrDynBrakePercent > demandedPercent && deltaSpeedMpS < 0.8)
                         {
                             float step = 100 / ThrottleFullRangeIncreaseTimeSeconds;
                             step *= elapsedClockSeconds;

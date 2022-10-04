@@ -1698,7 +1698,6 @@ public List<CabView> CabViewList = new List<CabView>();
         public void SetUpCruiseControl(STFReader stf)
         {
             CruiseControl = new CruiseControl(this);
-            CruiseControl.Equipped = true;
             CruiseControl.Parse(stf);
         }
 
