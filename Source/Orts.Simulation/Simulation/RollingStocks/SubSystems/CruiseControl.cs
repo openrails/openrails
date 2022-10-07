@@ -1306,12 +1306,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (throttleOrDynPercent < 0)
             {
                 float step = 100 / DynamicBrakeFullRangeDecreaseTimeSeconds * elapsedClockSeconds;
-                CCThrottleOrDynBrakePercent = Math.Min(CCThrottleOrDynBrakePercent + step, Math.Min(maxPercent, 0));
+                throttleOrDynPercent = Math.Min(throttleOrDynPercent + step, Math.Min(maxPercent, 0));
             }
             else
             {
                 float step = 100 / ThrottleFullRangeIncreaseTimeSeconds * elapsedClockSeconds;
-                CCThrottleOrDynBrakePercent = Math.Min(CCThrottleOrDynBrakePercent + step, maxPercent);
+                throttleOrDynPercent = Math.Min(throttleOrDynPercent + step, maxPercent);
             }
         }
 
@@ -1320,12 +1320,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (throttleOrDynPercent > 0)
             {
                 float step = 100 / ThrottleFullRangeDecreaseTimeSeconds * elapsedClockSeconds;
-                CCThrottleOrDynBrakePercent = Math.Min(CCThrottleOrDynBrakePercent - step, Math.Max(minPercent, 0));
+                throttleOrDynPercent = Math.Max(throttleOrDynPercent - step, Math.Max(minPercent, 0));
             }
             else
             {
                 float step = 100 / DynamicBrakeFullRangeIncreaseTimeSeconds * elapsedClockSeconds;
-                CCThrottleOrDynBrakePercent = Math.Min(CCThrottleOrDynBrakePercent - step, minPercent);
+                throttleOrDynPercent = Math.Max(throttleOrDynPercent - step, minPercent);
             }
         }
 
