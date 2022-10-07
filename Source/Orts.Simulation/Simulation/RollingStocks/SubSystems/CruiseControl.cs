@@ -88,6 +88,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float ThrottleFullRangeDecreaseTimeSeconds = 6;
         public float DynamicBrakeFullRangeIncreaseTimeSeconds;
         public float DynamicBrakeFullRangeDecreaseTimeSeconds;
+        public float TrainBrakeFullRangeIncreaseTimeSeconds = 10;
+        public float TrainBrakeFullRangeDecreaseTimeSeconds = 5;
         public float ParkingBrakeEngageSpeed = 0;
         public float ParkingBrakePercent = 0;
         public bool SkipThrottleDisplay = false;
@@ -209,6 +211,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             ThrottleFullRangeDecreaseTimeSeconds = other.ThrottleFullRangeDecreaseTimeSeconds;
             DynamicBrakeFullRangeIncreaseTimeSeconds = other.DynamicBrakeFullRangeIncreaseTimeSeconds;
             DynamicBrakeFullRangeDecreaseTimeSeconds = other.DynamicBrakeFullRangeDecreaseTimeSeconds;
+            TrainBrakeFullRangeIncreaseTimeSeconds = other.TrainBrakeFullRangeIncreaseTimeSeconds;
+            TrainBrakeFullRangeDecreaseTimeSeconds = other.TrainBrakeFullRangeDecreaseTimeSeconds;
             ParkingBrakeEngageSpeed = other.ParkingBrakeEngageSpeed;
             ParkingBrakePercent = other.ParkingBrakePercent;
             DisableZeroForceStep = other.DisableZeroForceStep;
@@ -270,6 +274,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     case "resetforceafteranybraking": ResetForceAfterAnyBraking = stf.ReadBoolBlock(false); break;
                     case "dynamicbrakefullrangeincreasetimeseconds": DynamicBrakeFullRangeIncreaseTimeSeconds = stf.ReadFloatBlock(STFReader.UNITS.Any, 5); break;
                     case "dynamicbrakefullrangedecreasetimeseconds": DynamicBrakeFullRangeDecreaseTimeSeconds = stf.ReadFloatBlock(STFReader.UNITS.Any, 5); break;
+                    case "trainbrakefullrangeincreasetimeseconds": TrainBrakeFullRangeIncreaseTimeSeconds = stf.ReadFloatBlock(STFReader.UNITS.Any, 10); break;
+                    case "trainbrakefullrangedecreasetimeseconds": TrainBrakeFullRangeDecreaseTimeSeconds = stf.ReadFloatBlock(STFReader.UNITS.Any, 5); break;
                     case "parkingbrakeengagespeed": ParkingBrakeEngageSpeed = stf.ReadFloatBlock(STFReader.UNITS.Speed, 0); break;
                     case "parkingbrakepercent": ParkingBrakePercent = stf.ReadFloatBlock(STFReader.UNITS.Any, 0); break;
                     case "maxpowerthreshold": MaxPowerThreshold = stf.ReadFloatBlock(STFReader.UNITS.Any, 0); break;
@@ -1361,9 +1367,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 CCIsUsingTrainBrake = true;
                 if (RelativeAccelerationMpSS > -MaxDecelerationMpSS + 0.01f)
-                    brakePercent += 10*elapsedClockSeconds;
+                    brakePercent += 100/TrainBrakeFullRangeIncreaseTimeSeconds*elapsedClockSeconds;
                 else if (RelativeAccelerationMpSS < -MaxDecelerationMpSS - 0.01f)
-                    brakePercent -= 20*elapsedClockSeconds;
+                    brakePercent -= 100/TrainBrakeFullRangeDecreaseTimeSeconds*elapsedClockSeconds;
                 brakePercent = MathHelper.Clamp(brakePercent, TrainBrakeMinPercentValue - 3.0f, TrainBrakeMaxPercentValue);
             }
         }
