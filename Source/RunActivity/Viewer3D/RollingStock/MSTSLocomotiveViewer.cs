@@ -2747,7 +2747,7 @@ namespace Orts.Viewer3D.RollingStock
                                     Locomotive.CruiseControl.SpeedRegMode = Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto;
                                 if (p == 1)
                                 {
-                                    if (mpc.controllerBinding == MultiPositionController.ControllerBinding.SelectedSpeed && Locomotive.CruiseControl.ForceRegulatorAutoWhenNonZeroSpeedSelected)
+                                    if (mpc.controllerBinding == ControllerBinding.SelectedSpeed && Locomotive.CruiseControl.ForceRegulatorAutoWhenNonZeroSpeedSelected)
                                     {
                                         Locomotive.CruiseControl.SpeedRegMode = Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto;
                                         Locomotive.CruiseControl.SpeedSelMode = Simulation.RollingStocks.SubSystems.CruiseControl.SpeedSelectorMode.On;

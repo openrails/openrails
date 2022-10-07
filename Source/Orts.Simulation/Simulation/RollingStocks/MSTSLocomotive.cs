@@ -487,6 +487,7 @@ public List<CabView> CabViewList = new List<CabView>();
             TrainBrakeController = new ScriptedBrakeController(this);
             EngineBrakeController = new ScriptedBrakeController(this);
             BrakemanBrakeController = new ScriptedBrakeController(this);
+            MultiPositionControllers = new List<MultiPositionController>();
             ThrottleController = new MSTSNotchController();
             DynamicBrakeController = new MSTSNotchController();
             TrainControlSystem = new ScriptedTrainControlSystem(this);
@@ -1222,8 +1223,7 @@ public List<CabView> CabViewList = new List<CabView>();
             WaterScoopWidthM = locoCopy.WaterScoopWidthM;
             MoveParamsToAxle();
             CruiseControl = locoCopy.CruiseControl?.Clone(this);
-            if (locoCopy.MultiPositionControllers != null)
-                MultiPositionControllers = locoCopy.CloneMPC(this);
+            MultiPositionControllers = locoCopy.CloneMPC(this);
         }
 
         /// <summary>
@@ -1428,6 +1428,10 @@ public List<CabView> CabViewList = new List<CabView>();
             LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
             CruiseControl?.Initialize();
+            foreach (MultiPositionController mpc in MultiPositionControllers)
+            {
+                mpc.Initialize();
+            }
 
             if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
             {
@@ -1713,10 +1717,6 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             var multiPositionController = new MultiPositionController(this);
             multiPositionController.Parse(stf);
-            if (MultiPositionControllers == null)
-            {
-                MultiPositionControllers = new List<MultiPositionController>();
-            }
             MultiPositionControllers.Add(multiPositionController);
         }
 
@@ -1958,10 +1958,9 @@ public List<CabView> CabViewList = new List<CabView>();
             // TODO  this is a wild simplification for electric and diesel electric
             UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
 
-            if (MultiPositionControllers != null)
+            foreach (MultiPositionController mpc in MultiPositionControllers)
             {
-                foreach (MultiPositionController mpc in MultiPositionControllers)
-                    mpc.Update(elapsedClockSeconds);
+                mpc.Update(elapsedClockSeconds);
             }
 
             ApplyDirectionToTractiveForce();
@@ -3429,20 +3428,15 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 CruiseControl.SkipThrottleDisplay = false;
             }
-            if (MultiPositionControllers != null)
+            var mpc = MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.Throttle).FirstOrDefault();
+            if (mpc != null)
             {
-                foreach (MultiPositionController mpc in MultiPositionControllers)
+                if (!mpc.StateChanged)
                 {
-                    if (mpc.controllerBinding == MultiPositionController.ControllerBinding.Throttle)
-                    {
-                        if (!mpc.StateChanged)
-                        {
-                            mpc.StateChanged = true;
-                            mpc.DoMovement(MultiPositionController.Movement.Forward);
-                        }
-                        return;
-                    }
+                    mpc.StateChanged = true;
+                    mpc.DoMovement(MultiPositionController.Movement.Forward);
                 }
+                return;
             }
             if (CruiseControl != null && (CombinedControlType == CombinedControl.None || CruiseControl.UseThrottleInCombinedControl))
             {
@@ -3488,20 +3482,15 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void StopThrottleIncrease()
         {
-            if (MultiPositionControllers != null)
+            var mpc = MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.Throttle).FirstOrDefault();
+            if (mpc != null)
             {
-                foreach (MultiPositionController mpc in MultiPositionControllers)
+                if (mpc.StateChanged)
                 {
-                    if (mpc.controllerBinding == MultiPositionController.ControllerBinding.Throttle)
-                    {
-                        if (mpc.StateChanged)
-                        {
-                            mpc.StateChanged = false;
-                            mpc.DoMovement(MultiPositionController.Movement.Neutral);
-                        }
-                        return;
-                    }
+                    mpc.StateChanged = false;
+                    mpc.DoMovement(MultiPositionController.Movement.Neutral);
                 }
+                return;
             }
             if (CruiseControl != null)
             {
@@ -3569,20 +3558,15 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 CruiseControl.SkipThrottleDisplay = false;
             }
-            if (MultiPositionControllers != null)
+            var mpc = MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.Throttle).FirstOrDefault();
+            if (mpc != null)
             {
-                foreach (MultiPositionController mpc in MultiPositionControllers)
+                if (!mpc.StateChanged)
                 {
-                    if (mpc.controllerBinding == MultiPositionController.ControllerBinding.Throttle)
-                    {
-                        if (!mpc.StateChanged)
-                        {
-                            mpc.StateChanged = true;
-                            mpc.DoMovement(MultiPositionController.Movement.Aft);
-                        }
-                        return;
-                    }
+                    mpc.StateChanged = true;
+                     mpc.DoMovement(MultiPositionController.Movement.Aft);
                 }
+                return;
             }
             if (CruiseControl != null && (CombinedControlType == CombinedControl.None || CruiseControl.UseThrottleInCombinedControl))
             {
@@ -3616,20 +3600,15 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void StopThrottleDecrease()
         {
-            if (MultiPositionControllers != null)
+            var mpc = MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.Throttle).FirstOrDefault();
+            if (mpc != null)
             {
-                foreach (MultiPositionController mpc in MultiPositionControllers)
+                if (mpc.StateChanged)
                 {
-                    if (mpc.controllerBinding == MultiPositionController.ControllerBinding.Throttle)
-                    {
-                        if (mpc.StateChanged)
-                        {
-                            mpc.StateChanged = false;
-                            mpc.DoMovement(MultiPositionController.Movement.Neutral);
-                        }
-                        return;
-                    }
+                    mpc.StateChanged = false;
+                    mpc.DoMovement(MultiPositionController.Movement.Neutral);
                 }
+                return;
             }
             if (CruiseControl != null)
             {
@@ -5922,12 +5901,8 @@ public List<CabView> CabViewList = new List<CabView>();
                 case CABViewControlTypes.ORTS_MULTI_POSITION_CONTROLLER:
                     if (MultiPositionControllers != null)
                     {
-                        foreach (var mpc in MultiPositionControllers)
-                            if (mpc.ControllerId == cvc.ControlId)
-                            {
-                                data = mpc.GetDataOf(cvc);
-                                break;
-                            }
+                        var mpc = MultiPositionControllers.Where(x => x.ControllerId == cvc.ControlId).FirstOrDefault();
+                        if (mpc != null) data = mpc.GetDataOf(cvc);
                     }
                     break;
 

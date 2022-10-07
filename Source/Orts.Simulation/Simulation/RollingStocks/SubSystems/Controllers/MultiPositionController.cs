@@ -31,7 +31,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public List<Position> PositionsList = new List<Position>();
 
-        public bool Equipped = false;
         public bool StateChanged = false;
 
         public ControllerPosition controllerPosition = new ControllerPosition();
@@ -45,7 +44,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         protected bool isBraking = false;
         protected bool needPowerUpAfterBrake = false;
         public bool CanControlTrainBrake = false;
-        protected bool initialized = false;
         protected bool movedForward = false;
         protected bool movedAft = false;
         protected bool haveCruiseControl = false;
@@ -79,93 +77,66 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write(this.checkNeutral);
-            outf.Write((int)this.controllerPosition);
-            outf.Write((int)this.currentPosition);
-            outf.Write(this.elapsedSecondsFromLastChange);
-            outf.Write(this.emergencyBrake);
-            outf.Write(this.Equipped);
-            outf.Write(this.isBraking);
-            outf.Write(this.noKeyPressed);
-            outf.Write(this.previousDriveModeWasAddPower);
-            outf.Write(this.StateChanged);
-            outf.Write(haveCruiseControl);
+            outf.Write(checkNeutral);
+            outf.Write((int)controllerPosition);
+            outf.Write((int)currentPosition);
+            outf.Write(elapsedSecondsFromLastChange);
+            outf.Write(emergencyBrake);
+            outf.Write(isBraking);
+            outf.Write(noKeyPressed);
+            outf.Write(previousDriveModeWasAddPower);
+            outf.Write(StateChanged);
         }
 
         public void Restore(BinaryReader inf)
         {
-            initialized = true;
             checkNeutral = inf.ReadBoolean();
-            int fPosition = inf.ReadInt32();
-            controllerPosition = (ControllerPosition)fPosition;
-            fPosition = inf.ReadInt32();
-            currentPosition = (ControllerPosition)fPosition;
+            controllerPosition = (ControllerPosition)inf.ReadInt32();
+            currentPosition = (ControllerPosition)inf.ReadInt32();
             elapsedSecondsFromLastChange = inf.ReadSingle();
             emergencyBrake = inf.ReadBoolean();
-            Equipped = inf.ReadBoolean();
             isBraking = inf.ReadBoolean();
             noKeyPressed = inf.ReadBoolean();
             previousDriveModeWasAddPower = inf.ReadBoolean();
             StateChanged = inf.ReadBoolean();
-            haveCruiseControl = inf.ReadBoolean();
         }
         public void Parse(STFReader stf)
         {
             stf.MustMatch("(");
-            while (!stf.EndOfBlock())
-            {
-                stf.ReadItem();
-                switch (stf.Tree.ToLower())
-                {
-                    case "engine(ortsmultipositioncontroller(positions":
-                        stf.MustMatch("(");
-                        while (!stf.EndOfBlock())
-                        {
-                            stf.ParseBlock(new STFReader.TokenProcessor[] {
+            stf.ParseBlock(new [] {
+                new STFReader.TokenProcessor("positions", () => {
+                    stf.MustMatch("(");
+                    stf.ParseBlock(new [] {
                         new STFReader.TokenProcessor("position", ()=>{
                             stf.MustMatch("(");
                             string positionType = stf.ReadString();
                             string positionFlag = stf.ReadString();
                             string positionName = stf.ReadString();
+                            stf.SkipRestOfBlock();
                             PositionsList.Add(new Position(positionType, positionFlag, positionName));
                         }),
                     });
-                        }
-                        break;
-                    case "engine(ortsmultipositioncontroller(controllerbinding":
-                        String binding = stf.ReadStringBlock("null").ToLower();
-                        switch (binding)
-                        {
-                            case "throttle":
-                                controllerBinding = ControllerBinding.Throttle;
-                                break;
-                            case "selectedspeed":
-                                controllerBinding = ControllerBinding.SelectedSpeed;
-                                break;
-                        }
-                        break;
-                    case "engine(ortsmultipositioncontroller(controllerid": ControllerId = stf.ReadIntBlock(0); break;
-                    case "engine(ortsmultipositioncontrollercancontroltrainbrake": CanControlTrainBrake = stf.ReadBoolBlock(false); break;
-                    default: break;
+                }),
+                new STFReader.TokenProcessor("controllerbinding", () => Enum.TryParse(stf.ReadStringBlock(null), true, out controllerBinding)),
+                new STFReader.TokenProcessor("controllerid", () => ControllerId = stf.ReadIntBlock(0)),
+                new STFReader.TokenProcessor("cancontroltrainbrake", () => CanControlTrainBrake = stf.ReadBoolBlock(false)),
+            });
+        }
+        public void Initialize()
+        {
+            if (Locomotive.CruiseControl != null)
+                haveCruiseControl = true;
+            foreach (Position pair in PositionsList)
+            {
+                if (pair.Flag == ControllerPositionFlag.Default)
+                {
+                    currentPosition = pair.Type;
+                    break;
                 }
             }
         }
         public void Update(float elapsedClockSeconds)
         {
-            if (!initialized)
-            {
-                if (Locomotive.CruiseControl != null)
-                    haveCruiseControl = true;
-                foreach (Position pair in PositionsList)
-                {
-                    if (pair.Flag.ToLower() == "default")
-                    {
-                        currentPosition = pair.Type;
-                        break;
-                    }
-                }
-                initialized = true;
-            }
             if (!Locomotive.IsPlayerTrain) return;
 
             if (haveCruiseControl)
@@ -176,7 +147,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             {
                 if (emergencyBrake)
                 {
-                    Locomotive.TrainBrakeController.TCSEmergencyBraking = true;
+                    Locomotive.TrainBrakeController.EmergencyBrakingPushButton = true;
                     return;
                 }
             }
@@ -184,10 +155,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             {
                 emergencyBrake = false;
             }
-/*            if (Locomotive.TrainBrakeController.TCSEmergencyBraking)
-                Locomotive.TrainBrakeController.TCSEmergencyBraking = false; */
             elapsedSecondsFromLastChange += elapsedClockSeconds;
-            // Simulator.Confirmer.MSG(currentPosition.ToString());
             if (checkNeutral)
             {
                 // Check every 200 ms if state of MPC has changed
@@ -635,7 +603,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             {
                 foreach (Position pair in PositionsList)
                 {
-                    if (pair.Flag.ToLower() == "default")
+                    if (pair.Flag == ControllerPositionFlag.Default)
                     {
                         currentPosition = pair.Type;
                         break;
@@ -685,12 +653,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 {
                     if (pair.Type == currentPosition)
                     {
-                        if (pair.Flag.ToLower() == "springloadedbackwards" || pair.Flag.ToLower() == "springloadedforwards")
+                        if (pair.Flag == ControllerPositionFlag.SpringLoadedBackwards || pair.Flag == ControllerPositionFlag.SpringLoadedForwards)
                         {
                             checkNeutral = true;
                             elapsedSecondsFromLastChange = 0;
                         }
-                        if (pair.Flag.ToLower() == "springloadedbackwardsimmediately" || pair.Flag.ToLower() == "springloadedforwardsimmediately")
+                        if (pair.Flag == ControllerPositionFlag.SpringLoadedBackwardsImmediately || pair.Flag == ControllerPositionFlag.SpringLoadedForwardsImmediately)
                         {
                             if (!MouseInputActive)
                             {
@@ -712,11 +680,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 {
                     if (pair.Type == currentPosition)
                     {
-                        if (pair.Flag.ToLower() == "cruisecontrol.needincreaseafteranybrake")
+                        if (pair.Flag == ControllerPositionFlag.CCNeedIncreaseAfterAnyBrake)
                         {
                             needPowerUpAfterBrake = true;
                         }
-                        if (pair.Flag.ToLower() == "springloadedforwards" || pair.Flag.ToLower() == "springloadedbackwards")
+                        if (pair.Flag == ControllerPositionFlag.SpringLoadedForwards || pair.Flag == ControllerPositionFlag.SpringLoadedForwards)
                         {
                             if (elapsedSecondsFromLastChange > 0.2f)
                             {
@@ -751,11 +719,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 }
                 if (pair.Type == currentPosition)
                 {
-                    if (pair.Flag.ToLower() == "springloadedbackwards" || pair.Flag.ToLower() == "springloadedbackwardsimmediately")
+                    if (pair.Flag == ControllerPositionFlag.SpringLoadedBackwards || pair.Flag == ControllerPositionFlag.SpringLoadedBackwardsImmediately)
                     {
                         setNext = true;
                     }
-                    if (pair.Flag.ToLower() == "springloadedforwards" || pair.Flag.ToLower() == "springloadedforwardsimmediately")
+                    if (pair.Flag == ControllerPositionFlag.SpringLoadedForwards || pair.Flag == ControllerPositionFlag.SpringLoadedForwardsImmediately)
                     {
                         currentPosition = previous;
                         Locomotive.SignalEvent(Common.Event.MPCChangePosition);
@@ -781,7 +749,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             Locomotive.SetThrottlePercent(0);
             Locomotive.SetDynamicBrakePercent(100);
-            Locomotive.TrainBrakeController.TCSEmergencyBraking = true;
+            Locomotive.TrainBrakeController.EmergencyBrakingPushButton = true;
         }
         public enum Movement
         {
@@ -789,37 +757,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             Neutral,
             Aft
         };
-        public enum ControllerPosition
-        {
-            Undefined,
-            Neutral,
-            Drive,
-            ThrottleIncrease,
-            ThrottleDecrease,
-            ThrottleIncreaseFast,
-            ThrottleDecreaseFast,
-            DynamicBrakeIncrease, DynamicBrakeDecrease,
-            DynamicBrakeIncreaseFast,
-            TrainBrakeIncrease,
-            TrainBrakeDecrease,
-            EmergencyBrake,
-            ThrottleHold,
-            DynamicBrakeHold,
-            ThrottleIncreaseOrDynamicBrakeDecreaseFast,
-            ThrottleIncreaseOrDynamicBrakeDecrease,
-            DynamicBrakeIncreaseOrThrottleDecreaseFast,
-            DynamicBrakeIncreaseOrThrottleDecrease,
-            KeepCurrent,
-            SelectedSpeedIncrease,
-            SelectedSpeedDecrease,
-            SelectSpeedZero
-        };
-
-        public enum ControllerBinding
-        {
-            Throttle,
-            SelectedSpeed
-        }
 
         public float GetDataOf(CabViewControl cvc)
         {
@@ -868,17 +805,68 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             return data;
         }
 
-        public class Position
+        public struct Position
         {
             public ControllerPosition Type;
-            public string Flag { get; set; }
-            public string Name { get; set; }
+            public ControllerPositionFlag Flag;
+            public string Name;
             public Position(string positionType, string positionFlag, string name)
             {
-                Enum.TryParse(positionType, out Type);
-                Flag = positionFlag;
+                Enum.TryParse(positionType, true, out Type);
+                if (!Enum.TryParse(positionFlag, true, out Flag))
+                {
+                    switch(positionFlag.ToLower())
+                    {
+                        case "cruisecontrol.needincreaseafteranybrake":
+                            Flag = ControllerPositionFlag.CCNeedIncreaseAfterAnyBrake;
+                            break;
+
+                    }
+                }
                 Name = name;
             }
         }
+    }
+    public enum ControllerPosition
+    {
+        Undefined,
+        Neutral,
+        Drive,
+        ThrottleIncrease,
+        ThrottleDecrease,
+        ThrottleIncreaseFast,
+        ThrottleDecreaseFast,
+        DynamicBrakeIncrease, DynamicBrakeDecrease,
+        DynamicBrakeIncreaseFast,
+        TrainBrakeIncrease,
+        TrainBrakeDecrease,
+        EmergencyBrake,
+        ThrottleHold,
+        DynamicBrakeHold,
+        ThrottleIncreaseOrDynamicBrakeDecreaseFast,
+        ThrottleIncreaseOrDynamicBrakeDecrease,
+        DynamicBrakeIncreaseOrThrottleDecreaseFast,
+        DynamicBrakeIncreaseOrThrottleDecrease,
+        KeepCurrent,
+        SelectedSpeedIncrease,
+        SelectedSpeedDecrease,
+        SelectSpeedZero
+    };
+
+    public enum ControllerPositionFlag
+    {
+        Default,
+        Stable,
+        SpringLoadedForwards,
+        SpringLoadedForwardsImmediately,
+        SpringLoadedBackwards,
+        SpringLoadedBackwardsImmediately,
+        CCNeedIncreaseAfterAnyBrake
+    }
+
+    public enum ControllerBinding
+    {
+        Throttle,
+        SelectedSpeed
     }
 }

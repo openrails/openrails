@@ -22,6 +22,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 namespace Orts.Simulation.RollingStocks.SubSystems
@@ -811,26 +812,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool selectedSpeedIncreasing = false;
         public void SpeedRegulatorSelectedSpeedStartIncrease()
         {
-            if (Locomotive.MultiPositionControllers != null)
+            var mpc = Locomotive.MultiPositionControllers.Where(x => 
+                x.controllerBinding == ControllerBinding.SelectedSpeed && !x.StateChanged).FirstOrDefault();
+            if (mpc != null)
             {
-                foreach (Controllers.MultiPositionController mpc in Locomotive.MultiPositionControllers)
+                mpc.StateChanged = true;
+                if (SpeedRegMode != SpeedRegulatorMode.Auto && (ForceRegulatorAutoWhenNonZeroSpeedSelected ||
+                    SelectedMaxAccelerationStep == 0 && DisableCruiseControlOnThrottleAndZeroForce && ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero &&
+                    Locomotive.ThrottleController.CurrentValue == 0 && Locomotive.DynamicBrakeController.CurrentValue == 0))
                 {
-                    if (mpc.controllerBinding != Controllers.MultiPositionController.ControllerBinding.SelectedSpeed)
-                        return;
-                    if (!mpc.StateChanged)
-                    {
-                        mpc.StateChanged = true;
-                        if (SpeedRegMode != SpeedRegulatorMode.Auto && (ForceRegulatorAutoWhenNonZeroSpeedSelected ||
-                            SelectedMaxAccelerationStep == 0 && DisableCruiseControlOnThrottleAndZeroForce && ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero &&
-                            Locomotive.ThrottleController.CurrentValue == 0 && Locomotive.DynamicBrakeController.CurrentValue == 0))
-                        {
-                            SpeedRegMode = SpeedRegulatorMode.Auto;
-                        }
-
-                        mpc.DoMovement(Controllers.MultiPositionController.Movement.Forward);
-                        return;
-                    }
+                    SpeedRegMode = SpeedRegulatorMode.Auto;
                 }
+
+                mpc.DoMovement(MultiPositionController.Movement.Forward);
+                return;
             }
             if (SpeedRegMode != SpeedRegulatorMode.Auto && (ForceRegulatorAutoWhenNonZeroSpeedSelected || HasProportionalSpeedSelector &&
                 SelectedMaxAccelerationStep == 0 && DisableCruiseControlOnThrottleAndZeroForce && ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero &&
@@ -857,16 +852,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
         public void SpeedRegulatorSelectedSpeedStopIncrease()
         {
-            if (Locomotive.MultiPositionControllers != null)
+            var mpc = Locomotive.MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.SelectedSpeed).FirstOrDefault();
+            if (mpc != null)
             {
-                foreach (Controllers.MultiPositionController mpc in Locomotive.MultiPositionControllers)
-                {
-                    if (mpc.controllerBinding != Controllers.MultiPositionController.ControllerBinding.SelectedSpeed)
-                        return;
-                    mpc.StateChanged = false;
-                    mpc.DoMovement(Controllers.MultiPositionController.Movement.Neutral);
-                    return;
-                }
+                mpc.StateChanged = false;
+                mpc.DoMovement(Controllers.MultiPositionController.Movement.Neutral);
+                return;
             }
             if (UseThrottleAsSpeedSelector || HasProportionalSpeedSelector)
                 selectedSpeedIncreasing = false;
@@ -893,19 +884,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool SelectedSpeedDecreasing = false;
         public void SpeedRegulatorSelectedSpeedStartDecrease()
         {
-            if (Locomotive.MultiPositionControllers != null)
+            var mpc = Locomotive.MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.SelectedSpeed && !x.StateChanged).FirstOrDefault();
+            if (mpc != null)
             {
-                foreach (Controllers.MultiPositionController mpc in Locomotive.MultiPositionControllers)
-                {
-                    if (mpc.controllerBinding != Controllers.MultiPositionController.ControllerBinding.SelectedSpeed)
-                        return;
-                    if (!mpc.StateChanged)
-                    {
-                        mpc.StateChanged = true;
-                        mpc.DoMovement(Controllers.MultiPositionController.Movement.Aft);
-                        return;
-                    }
-                }
+                mpc.StateChanged = true;
+                mpc.DoMovement(Controllers.MultiPositionController.Movement.Aft);
+                return;
             }
             if (UseThrottleAsSpeedSelector || HasProportionalSpeedSelector)
                 SelectedSpeedDecreasing = true;
@@ -914,16 +898,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
         public void SpeedRegulatorSelectedSpeedStopDecrease()
         {
-            if (Locomotive.MultiPositionControllers != null)
+            var mpc = Locomotive.MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.SelectedSpeed).FirstOrDefault();
+            if (mpc != null)
             {
-                foreach (Controllers.MultiPositionController mpc in Locomotive.MultiPositionControllers)
-                {
-                    if (mpc.controllerBinding != Controllers.MultiPositionController.ControllerBinding.SelectedSpeed)
-                        return;
-                    mpc.StateChanged = false;
-                    mpc.DoMovement(Controllers.MultiPositionController.Movement.Neutral);
-                    return;
-                }
+                mpc.StateChanged = false;
+                mpc.DoMovement(Controllers.MultiPositionController.Movement.Neutral);
+                return;
             }
             SelectedSpeedDecreasing = false;
         }
@@ -1326,12 +1306,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (throttleOrDynPercent < 0)
             {
                 float step = 100 / DynamicBrakeFullRangeDecreaseTimeSeconds * elapsedClockSeconds;
-                CCThrottleOrDynBrakePercent = Math.Min(CCThrottleOrDynBrakePercent + step, Math.Min(maxPercent, 0));
+                throttleOrDynPercent = Math.Min(throttleOrDynPercent + step, Math.Min(maxPercent, 0));
             }
             else
             {
                 float step = 100 / ThrottleFullRangeIncreaseTimeSeconds * elapsedClockSeconds;
-                CCThrottleOrDynBrakePercent = Math.Min(CCThrottleOrDynBrakePercent + step, maxPercent);
+                throttleOrDynPercent = Math.Min(throttleOrDynPercent + step, maxPercent);
             }
         }
 
@@ -1340,12 +1320,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (throttleOrDynPercent > 0)
             {
                 float step = 100 / ThrottleFullRangeDecreaseTimeSeconds * elapsedClockSeconds;
-                CCThrottleOrDynBrakePercent = Math.Min(CCThrottleOrDynBrakePercent - step, Math.Max(minPercent, 0));
+                throttleOrDynPercent = Math.Max(throttleOrDynPercent - step, Math.Max(minPercent, 0));
             }
             else
             {
                 float step = 100 / DynamicBrakeFullRangeIncreaseTimeSeconds * elapsedClockSeconds;
-                CCThrottleOrDynBrakePercent = Math.Min(CCThrottleOrDynBrakePercent - step, minPercent);
+                throttleOrDynPercent = Math.Max(throttleOrDynPercent - step, minPercent);
             }
         }
 
