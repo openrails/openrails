@@ -1165,6 +1165,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                             {
                                 IncreaseForce(ref CCThrottleOrDynBrakePercent, elapsedClockSeconds, 0);
                             }
+                            if (DynamicBrakeIsSelectedForceDependant)
+                            {
+                                float maxPercent = (MaxForceSelectorIsDiscrete ? (int)SelectedMaxAccelerationStep : SelectedMaxAccelerationStep) * 100 / SpeedRegulatorMaxForceSteps;
+                                if (CCThrottleOrDynBrakePercent < -maxPercent)
+                                    CCThrottleOrDynBrakePercent = -maxPercent;
+                            }
                         }
                         if (UseTrainBrakeAndDynBrake || !Locomotive.DynamicBrakeAvailable) // use TrainBrake
                             SetTrainBrake(ref trainBrakePercent, elapsedClockSeconds, deltaSpeedMpS);
@@ -1186,7 +1192,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
                 else // start braking
                 {
-                    if (CCThrottleOrDynBrakePercent >= 0)
+                    if (CCThrottleOrDynBrakePercent > 0)
                     {
                         DecreaseForce(ref CCThrottleOrDynBrakePercent, elapsedClockSeconds, 0);
                     }
@@ -1198,12 +1204,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                             AccelerationDemandMpSS = -(float)Math.Sqrt(val);
                             if (RelativeAccelerationMpSS > AccelerationDemandMpSS)
                             {
-                                float maxPercent = DynamicBrakeIsSelectedForceDependant ? ((MaxForceSelectorIsDiscrete ? (int)SelectedMaxAccelerationStep : SelectedMaxAccelerationStep) * 100 / SpeedRegulatorMaxForceSteps) : 100;
-                                DecreaseForce(ref CCThrottleOrDynBrakePercent, elapsedClockSeconds, -maxPercent);
+                                float maxStep = (RelativeAccelerationMpSS - AccelerationDemandMpSS) * 2; 
+                                DecreaseForce(ref CCThrottleOrDynBrakePercent, elapsedClockSeconds, Math.Max(CCThrottleOrDynBrakePercent-maxStep, -100));
                             }
                             else if (RelativeAccelerationMpSS + 0.01f < AccelerationDemandMpSS)
                             {
-                                IncreaseForce(ref CCThrottleOrDynBrakePercent, elapsedClockSeconds, 0);
+                                float maxStep = (AccelerationDemandMpSS - RelativeAccelerationMpSS) * 2;
+                                IncreaseForce(ref CCThrottleOrDynBrakePercent, elapsedClockSeconds, Math.Min(CCThrottleOrDynBrakePercent+maxStep, 0));
+                            }
+                            if (DynamicBrakeIsSelectedForceDependant)
+                            {
+                                float maxPercent = (MaxForceSelectorIsDiscrete ? (int)SelectedMaxAccelerationStep : SelectedMaxAccelerationStep) * 100 / SpeedRegulatorMaxForceSteps;
+                                if (CCThrottleOrDynBrakePercent < -maxPercent)
+                                    CCThrottleOrDynBrakePercent = -maxPercent;
                             }
                         }
                         if (UseTrainBrakeAndDynBrake || !Locomotive.DynamicBrakeAvailable) // use TrainBrake
