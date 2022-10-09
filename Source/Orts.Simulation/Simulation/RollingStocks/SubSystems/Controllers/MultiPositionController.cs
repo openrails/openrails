@@ -423,7 +423,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 if (controllerPosition == ControllerPosition.SelectedSpeedIncrease)
                 {
                     if (Locomotive.CruiseControl.ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero &&
-                        Locomotive.CruiseControl.SelectedMaxAccelerationStep == 0 && Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed &&
+                        Locomotive.CruiseControl.SelectedMaxAccelerationPercent == 0 && Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed &&
                            Locomotive.ThrottleController.CurrentValue == 0 && Locomotive.DynamicBrakeController.CurrentValue == 0)
                     {
                         Locomotive.CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Auto;

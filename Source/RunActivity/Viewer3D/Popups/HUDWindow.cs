@@ -463,8 +463,7 @@ namespace Orts.Viewer3D.Popups
                 if (cc.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto)
                 {
                     TableAddLabelValue(table, Viewer.Catalog.GetString("Speed target"), "{0}", FormatStrings.FormatSpeedDisplay(cc.SelectedSpeedMpS, Viewer.PlayerLocomotive.IsMetric));
-                    TableAddLabelValue(table, Viewer.Catalog.GetString("Max acceleration"), "{0:F0}%", cc.SpeedRegulatorMaxForcePercentUnits ?
-                    cc.SelectedMaxAccelerationPercent : cc.SelectedMaxAccelerationStep);
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Max acceleration"), "{0:F0}%", cc.SelectedMaxAccelerationPercent);
                 }
             }
             if (multipleUnitsConfiguration != null)
