@@ -3333,7 +3333,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
                     CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
                 }
-                if (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && CruiseControl.SelectedMaxAccelerationPercent == 0 && CruiseControl.SelectedMaxAccelerationStep == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                if (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && CruiseControl.SelectedMaxAccelerationPercent == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
                 {
                     if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
                     CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
@@ -3344,7 +3344,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     return;
                 }
                 if (CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && CruiseControl.SelectedSpeedMpS == 0 &&
-                    CruiseControl.SelectedMaxAccelerationPercent == 0 && CruiseControl.SelectedMaxAccelerationStep == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                    CruiseControl.SelectedMaxAccelerationPercent == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
                 {
                     if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
                     CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
@@ -3363,10 +3363,10 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void StartThrottleIncrease()
         {
-            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationStep != 0
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
                 && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
                 return;
-            if ((CruiseControl?.SelectedMaxAccelerationPercent == 0 && CruiseControl.SelectedMaxAccelerationStep == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) &&
+            if ((CruiseControl?.SelectedMaxAccelerationPercent == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) &&
                 (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && CruiseControl.SelectedSpeedMpS == 0))
             {
                 if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
@@ -3493,10 +3493,10 @@ public List<CabView> CabViewList = new List<CabView>();
         protected bool speedSelectorModeDecreasing = false;
         public void StartThrottleDecrease()
         {
-            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationStep != 0
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
                 && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
                 return;
-            if ((CruiseControl?.SelectedMaxAccelerationPercent == 0 && CruiseControl.SelectedMaxAccelerationStep == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) &&
+            if ((CruiseControl?.SelectedMaxAccelerationPercent == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) &&
                 (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && CruiseControl.SelectedSpeedMpS == 0))
             {
                 if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
@@ -3520,7 +3520,7 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && 
                     !(CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl && (CruiseControl.DynamicBrakePriority ||
-                    (CruiseControl.SelectedMaxAccelerationPercent == 0 && CruiseControl.SelectedMaxAccelerationStep == 0))))
+                    CruiseControl.SelectedMaxAccelerationPercent == 0)))
                 {
                     CruiseControl.SpeedRegulatorMaxForceStartDecrease();
                     return;
@@ -3575,7 +3575,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 if (CombinedControlType == CombinedControl.None || CruiseControl.UseThrottleInCombinedControl)
                 {
                     if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto
-                        && (CruiseControl.SelectedMaxAccelerationPercent > 0 || CruiseControl.SelectedMaxAccelerationStep > 0))
+                        && CruiseControl.SelectedMaxAccelerationPercent > 0)
                     {
                         CruiseControl.SpeedRegulatorMaxForceStopDecrease();
                         return;
@@ -3687,7 +3687,7 @@ public List<CabView> CabViewList = new List<CabView>();
         /// </summary>
         public void ThrottleChangeTo(bool increase, float? target)
         {
-            if ((CruiseControl != null && target != 0 && CruiseControl.SelectedMaxAccelerationStep <= 0
+            if ((CruiseControl != null && target != 0 && CruiseControl.SelectedMaxAccelerationPercent <= 0
                 && ThrottleController.CurrentValue == 0 && DynamicBrakeController.CurrentValue == 0) && 
                 (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && CruiseControl.SelectedSpeedMpS == 0))
             {
@@ -3786,10 +3786,10 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void ThrottleToZero()
         {
-            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationStep != 0
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
                 && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
                 return;
-            if ((CruiseControl?.SelectedMaxAccelerationPercent == 0 && CruiseControl.SelectedMaxAccelerationStep == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) &&
+            if ((CruiseControl?.SelectedMaxAccelerationPercent == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) &&
                 (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && CruiseControl.SelectedSpeedMpS == 0))
             {
                 if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
@@ -3880,12 +3880,12 @@ public List<CabView> CabViewList = new List<CabView>();
         /// <returns>Combined position into 0-1 range, where arrangement is [[1--throttle--0]split[0--dynamic|airbrake--1]]</returns>
         public float GetCombinedHandleValue(bool intermediateValue)
         {
-            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationStep != 0
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
                 && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
                 return CombinedControlSplitPosition;
             if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsForceSelector && CruiseControl.UseThrottleInCombinedControl && !CruiseControl.DynamicBrakePriority
                 && CombinedControlType == CombinedControl.ThrottleDynamic)
-                return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedMaxAccelerationStep / CruiseControl.SpeedRegulatorMaxForceSteps));
+                return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedMaxAccelerationPercent / 100));
             if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.UseThrottleInCombinedControl && !CruiseControl.DynamicBrakePriority
                 && CombinedControlType == CombinedControl.ThrottleDynamic)
                 return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedSpeedMpS / MaxSpeedMpS));
@@ -3917,7 +3917,7 @@ public List<CabView> CabViewList = new List<CabView>();
             else if (CruiseControl.UseThrottleAsSpeedSelector)
                 return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedSpeedMpS / MaxSpeedMpS));
             else if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.UseThrottleInCombinedControl)
-                return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedMaxAccelerationStep / CruiseControl.SpeedRegulatorMaxForceSteps));
+                return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedMaxAccelerationPercent / 100));
             else
                 return CombinedControlSplitPosition;
 
@@ -4473,7 +4473,7 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && (CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl ||
-                (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && CruiseControl.SelectedMaxAccelerationPercent == 0 && CruiseControl.SelectedMaxAccelerationStep == 0)))
+                (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && CruiseControl.SelectedMaxAccelerationPercent == 0)))
             {
                 ThrottlePercent = 0;
                 CruiseControl.DynamicBrakePriority = true;

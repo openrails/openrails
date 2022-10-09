@@ -1105,7 +1105,7 @@ namespace Orts.Viewer3D.Popups
                         LastCol = $"{FormatStrings.FormatSpeedDisplay(cc.SelectedSpeedMpS, Owner.Viewer.PlayerLocomotive.IsMetric) + ColorCode[Color.Cyan]}"//"%%%"
                     });
 
-                    var maxAcceleration = Math.Round((cc.MaxForceSelectorIsDiscrete ? (int)cc.SelectedMaxAccelerationStep : cc.SelectedMaxAccelerationStep) * 100 / cc.SpeedRegulatorMaxForceSteps).ToString("0") + "% ";//, "", false, keyPressed);
+                    var maxAcceleration = Math.Round(cc.SelectedMaxAccelerationPercent).ToString("0") + "% ";//, "", false, keyPressed);
                     AddLabel(new ListLabel
                     {
                         FirstCol = Viewer.Catalog.GetString("MaxAccel"),
