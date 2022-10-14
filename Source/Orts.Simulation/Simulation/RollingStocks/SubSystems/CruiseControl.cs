@@ -41,11 +41,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             get
             {
                 if (SpeedRegulatorMaxForcePercentUnits) return selectedMaxAccelerationPercent;
+                if (MaxForceSelectorIsDiscrete) return (float)Math.Round(selectedMaxAccelerationStep) / SpeedRegulatorMaxForceSteps * 100;
                 return selectedMaxAccelerationStep / SpeedRegulatorMaxForceSteps * 100;
             }
             set
             {
                 if (SpeedRegulatorMaxForcePercentUnits) selectedMaxAccelerationPercent = value;
+                else if (MaxForceSelectorIsDiscrete) selectedMaxAccelerationStep = (int)Math.Round(value * SpeedRegulatorMaxForceSteps / 100);
                 else selectedMaxAccelerationStep = value * SpeedRegulatorMaxForceSteps / 100;
             }
         }
@@ -795,6 +797,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             Locomotive.SignalEvent(Common.Event.CruiseControlMaxForce);
             maxForceDecreasing = true;
+            speedRegulatorIntermediateValue = SpeedRegulatorMaxForcePercentUnits ? selectedMaxAccelerationPercent : selectedMaxAccelerationStep;
         }
         public void SpeedRegulatorMaxForceStopDecrease()
         {
@@ -1031,10 +1034,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     else if (movExtension < 0)
                         return;
                 }
-                var deltaSpeed = SpeedSelectorIsDiscrete ? (metric ? MpS.FromKpH((float)Math.Round(movExtension * maxValue / SpeedRegulatorNominalSpeedStepKpHOrMpH) * SpeedRegulatorNominalSpeedStepKpHOrMpH) :
-                    MpS.FromMpH((float)Math.Round(movExtension * maxValue / SpeedRegulatorNominalSpeedStepKpHOrMpH) * SpeedRegulatorNominalSpeedStepKpHOrMpH)) :
-                    (metric ? MpS.FromKpH((float)Math.Round(movExtension * maxValue)) :
-                    MpS.FromMpH((float)Math.Round(movExtension * maxValue)));
+                var deltaSpeed = SpeedSelectorIsDiscrete ? 
+                    MpS.ToMpS((float)Math.Round(movExtension * maxValue / SpeedRegulatorNominalSpeedStepKpHOrMpH) * SpeedRegulatorNominalSpeedStepKpHOrMpH, metric) :
+                    MpS.ToMpS((float)Math.Round(movExtension * maxValue), true);
                 if (deltaSpeed > 0)
                     SelectedSpeedMpS = Math.Max(SelectedSpeedMpS + deltaSpeed, MinimumSpeedForCCEffectMpS);
                 else
