@@ -1,4 +1,4 @@
-// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -1038,6 +1038,7 @@ namespace Orts.Viewer3D.Popups
 
         void TextPageForceInfo(TableData table)
         {
+            TableSetLabelValueColumns(table, 0, 2);
             TextPageHeading(table, Viewer.Catalog.GetString("FORCE INFORMATION"));
 
             var train = Viewer.PlayerLocomotive.Train;
