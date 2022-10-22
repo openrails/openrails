@@ -22,7 +22,7 @@ msgstr "+ Esplorazione in modalità Activity +"
 
 #: ../../ORTS.Menu/Activities.cs:81
 msgid "Not same route:"
-msgstr "Non è la stessa route:"
+msgstr "Non è lo stesso scenario"
 
 #: ../../ORTS.Menu/Activities.cs:85 ../../ORTS.Menu/Consists.cs:47
 #: ../../ORTS.Menu/Consists.cs:71 ../../ORTS.Menu/Consists.cs:196
