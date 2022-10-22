@@ -156,7 +156,7 @@ namespace Orts.Simulation.Signalling
                     }
                     else
                     {
-                        Trace.TraceInformation("Invalid reservation for train : {0} [{1}], section : {2} not restored", reservedTrain.Name, reservedDirection, sectionIndex);
+                        Trace.TraceWarning("Invalid reservation for train : {0} [{1}], section : {2} not restored. May lead to a fatal error later.", reservedTrain.Name, reservedDirection, sectionIndex);
                     }
                 }
                 else

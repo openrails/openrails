@@ -17,17 +17,17 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Viewer3D.Common;
-using Orts.Viewer3D.Popups;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Viewer3D.Common;
+using Orts.Viewer3D.Popups;
+using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
@@ -81,7 +81,7 @@ namespace Orts.Viewer3D
                                 texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, aceTexture);
                                 Trace.TraceWarning("Required texture {1} not existing; using existing texture {2}", path, aceTexture);
                             }
-                            else texture = defaultTexture;
+                            else return defaultTexture;
                         }
                     }
                     else if (Path.GetExtension(path) == ".ace")
