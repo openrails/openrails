@@ -151,6 +151,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float EmergencyRatePSIpS { get; private set; }
         public float FullServReductionPSI { get; private set; }
         public float MinReductionPSI { get; private set; }
+        public float TrainDynamicBrakeIntervention { get; private set; } = -1;
+        public double TrainDynamicBrakeCommandStartTime { get; private set; }
 
         /// <summary>
         /// Needed for proper mouse operation in the cabview
@@ -395,11 +397,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
                 Script.SetDynamicBrakeIntervention = (value) =>
                 {
-                    // TODO: Set dynamic brake intervention instead of controller position
-                    // There are some issues that need to be identified and fixed before setting the intervention directly
-                    if (Locomotive.DynamicBrakeController == null) return;
-                    Locomotive.DynamicBrakeChangeActiveState(value > 0);
-                    Locomotive.DynamicBrakeController.SetValue(value);
+                    if (value > 0 && TrainDynamicBrakeIntervention <= 0)
+                        TrainDynamicBrakeCommandStartTime = Simulator.ClockTime;
+                    if (value <= 0)
+                        TrainDynamicBrakeIntervention = -1;
+                    else TrainDynamicBrakeIntervention = Math.Min(value, 1);
                 };
 
                 Script.Initialize();
