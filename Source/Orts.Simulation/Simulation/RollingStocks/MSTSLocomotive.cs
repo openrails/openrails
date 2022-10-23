@@ -4134,7 +4134,7 @@ public List<CabView> CabViewList = new List<CabView>();
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartIncrease(target);
             TrainBrakeController.CommandStartTime = Simulator.ClockTime;
-            if (CruiseControl != null)
+            if (CruiseControl != null && CruiseControl.TrainBrakeCommandHasPriorityOverCruiseControl)
             {
                 CruiseControl.TrainBrakePriority = true;
             }
@@ -4223,7 +4223,7 @@ public List<CabView> CabViewList = new List<CabView>();
             if (change != 0)
             {
                 new TrainBrakeCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
-                if (change > 0 && CruiseControl != null) CruiseControl.TrainBrakePriority = true;
+                if (change > 0 && CruiseControl != null && CruiseControl.TrainBrakeCommandHasPriorityOverCruiseControl) CruiseControl.TrainBrakePriority = true;
                 SignalEvent(Event.TrainBrakeChange);
                 AlerterReset(TCSEvent.TrainBrakeChanged);
             }

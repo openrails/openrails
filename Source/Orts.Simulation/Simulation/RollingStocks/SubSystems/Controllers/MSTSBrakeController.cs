@@ -225,8 +225,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 }
             }
 
+            float ccdemand = CruiseControlBrakeDemand();
+            if (ccdemand > 0)
+            {
+                pressureBar = Math.Min(MaxPressureBar() - MinReductionBar() * (1 - ccdemand) - FullServReductionBar() * ccdemand, pressureBar);
+                epState = ccdemand;
+            }
+
             if (pressureBar < 0)
                 pressureBar = 0;
+
             epControllerState = epState;
         }
 

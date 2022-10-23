@@ -120,6 +120,10 @@ namespace ORTS.Scripting.Api
         /// Gives the list of notches
         /// </summary>
         public Func<List<MSTSNotch>> Notches;
+        /// <summary>
+        /// Fraction of train brake demanded by cruise control
+        /// </summary>
+        public Func<float> CruiseControlBrakeDemand;
 
         /// <summary>
         /// Sets the current value of the brake controller lever
