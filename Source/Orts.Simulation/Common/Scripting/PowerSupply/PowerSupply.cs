@@ -140,6 +140,7 @@ namespace ORTS.Scripting.Api
         CloseBatterySwitchButtonReleased,
         OpenBatterySwitchButtonPressed,
         OpenBatterySwitchButtonReleased,
+        OpenBatterySwitchRequestedByPowerSupply,
         TurnOnMasterKey,
         TurnOffMasterKey,
         RaisePantograph,
