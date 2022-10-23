@@ -2594,10 +2594,10 @@ namespace Orts.Viewer3D.RollingStock
                     new ToggleMasterKeyCommand(Viewer.Log, ChangedValue(Locomotive.LocomotivePowerSupply.MasterKey.CommandSwitch ? 1 : 0) > 0);
                     break;
                 case CABViewControlTypes.ORTS_SERVICE_RETENTION_BUTTON:
-                    new ServiceRetentionButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0);
+                    new ServiceRetentionButtonCommand(Viewer.Log, ChangedValue(Locomotive.LocomotivePowerSupply.ServiceRetentionButton ? 1 : 0) > 0);
                     break;
                 case CABViewControlTypes.ORTS_SERVICE_RETENTION_CANCELLATION_BUTTON:
-                    new ServiceRetentionCancellationButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0);
+                    new ServiceRetentionCancellationButtonCommand(Viewer.Log, ChangedValue(Locomotive.LocomotivePowerSupply.ServiceRetentionCancellationButton ? 1 : 0) > 0);
                     break;
                 case CABViewControlTypes.ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH:
                     new ElectricTrainSupplyCommand(Viewer.Log, ChangedValue(Locomotive.LocomotivePowerSupply.ElectricTrainSupplySwitch.CommandSwitch ? 1 : 0) > 0);
