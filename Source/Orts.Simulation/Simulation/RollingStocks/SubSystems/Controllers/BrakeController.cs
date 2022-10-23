@@ -27,8 +27,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 {
     public class ScriptedBrakeController : IController
     {
-        readonly MSTSLocomotive Locomotive;
-        readonly Simulator Simulator;
+        public readonly MSTSLocomotive Locomotive;
+        public readonly Simulator Simulator;
 
         public bool Activated;
         string ScriptName = "MSTS";
@@ -337,6 +337,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     (Script as MSTSBrakeController).ForceControllerReleaseGraduated = Simulator.Settings.GraduatedRelease;
                 }
 
+                Script.AttachToHost(this);
+
                 // AbstractScriptClass
                 Script.ClockTime = () => (float)Simulator.ClockTime;
                 Script.GameTime = () => (float)Simulator.GameTime;
@@ -352,52 +354,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     {
                         Locomotive.Train.SignalEvent(evt);
                     }
-                };
-
-                // BrakeController
-                Script.EmergencyBrakingPushButton = () => EmergencyBrakingPushButton;
-                Script.TCSEmergencyBraking = () => TCSEmergencyBraking;
-                Script.TCSFullServiceBraking = () => TCSFullServiceBraking;
-                Script.QuickReleaseButtonPressed = () => QuickReleaseButtonPressed;
-                Script.OverchargeButtonPressed = () => OverchargeButtonPressed;
-                Script.IsLowVoltagePowerSupplyOn = () => Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn;
-                Script.IsCabPowerSupplyOn = () => Locomotive.LocomotivePowerSupply.CabPowerSupplyOn;
-
-                Script.MainReservoirPressureBar = () =>
-                {
-                    if (Locomotive.Train != null)
-                        return Bar.FromPSI(Locomotive.MainResPressurePSI);
-                    else
-                        return float.MaxValue;
-                };
-                Script.MaxPressureBar = () => Bar.FromPSI(MaxPressurePSI);
-                Script.MaxOverchargePressureBar = () => Bar.FromPSI(MaxOverchargePressurePSI);
-                Script.ReleaseRateBarpS = () => BarpS.FromPSIpS(ReleaseRatePSIpS);
-                Script.QuickReleaseRateBarpS = () => BarpS.FromPSIpS(QuickReleaseRatePSIpS);
-                Script.OverchargeEliminationRateBarpS = () => BarpS.FromPSIpS(OverchargeEliminationRatePSIpS);
-                Script.SlowApplicationRateBarpS = () => BarpS.FromPSIpS(SlowApplicationRatePSIpS);
-                Script.ApplyRateBarpS = () => BarpS.FromPSIpS(ApplyRatePSIpS);
-                Script.EmergencyRateBarpS = () => BarpS.FromPSIpS(EmergencyRatePSIpS);
-                Script.FullServReductionBar = () => Bar.FromPSI(FullServReductionPSI);
-                Script.MinReductionBar = () => Bar.FromPSI(MinReductionPSI);
-                Script.CurrentValue = () => CurrentValue;
-                Script.MinimumValue = () => MinimumValue;
-                Script.MaximumValue = () => MaximumValue;
-                Script.StepSize = () => StepSize;
-                Script.UpdateValue = () => UpdateValue;
-                Script.Notches = () => Notches;
-                Script.CruiseControlBrakeDemand = () => Locomotive.CruiseControl != null ? Locomotive.CruiseControl.TrainBrakePercent/100 : 0;
-
-                Script.SetCurrentValue = (value) => CurrentValue = value;
-                Script.SetUpdateValue = (value) => UpdateValue = value;
-
-                Script.SetDynamicBrakeIntervention = (value) =>
-                {
-                    // TODO: Set dynamic brake intervention instead of controller position
-                    // There are some issues that need to be identified and fixed before setting the intervention directly
-                    if (Locomotive.DynamicBrakeController == null) return;
-                    Locomotive.DynamicBrakeChangeActiveState(value > 0);
-                    Locomotive.DynamicBrakeController.SetValue(value);
                 };
 
                 Script.Initialize();
