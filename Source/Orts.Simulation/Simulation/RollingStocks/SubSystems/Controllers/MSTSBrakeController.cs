@@ -15,9 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ORTS.Scripting.Api;
 using System;
-using System.Diagnostics;
+using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 {
@@ -61,13 +60,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             NotchController.SetValue(0);
             if (NotchController.NotchCount() > 0) NotchController.CurrentNotch = 0;
             else NotchController.CurrentNotch = -1;
+            CurrentNotch = NotchController.CurrentNotch;
         }
 
         public override float Update(float elapsedSeconds)
         {
             float value = NotchController.Update(elapsedSeconds);
             SetCurrentValue(value);
+            IntermediateValue = NotchController.IntermediateValue;
             SetUpdateValue(NotchController.UpdateValue);
+            CurrentNotch = NotchController.CurrentNotch;
             return value;
         }
 

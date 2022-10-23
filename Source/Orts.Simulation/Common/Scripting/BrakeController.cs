@@ -142,6 +142,21 @@ namespace ORTS.Scripting.Api
         public float CurrentValue() => Host.CurrentValue;
 
         /// <summary>
+        /// Intermediate value of the brake controller
+        /// </summary>
+        public float IntermediateValue
+        {
+            get
+            {
+                return Host.IntermediateValue;
+            }
+            set
+            {
+                Host.IntermediateValue = value;
+            }
+        }
+
+        /// <summary>
         /// Minimum value of the brake controller
         /// </summary>
         public float MinimumValue() => Host.MinimumValue;
@@ -170,6 +185,21 @@ namespace ORTS.Scripting.Api
         /// Fraction of train brake demanded by cruise control
         /// </summary>
         public float CruiseControlBrakeDemand() => Locomotive.CruiseControl != null ? Locomotive.CruiseControl.TrainBrakePercent/100 : 0;
+
+        /// <summary>
+        /// Current notch of the brake controller
+        /// </summary>
+        public int CurrentNotch
+        {
+            get
+            {
+                return Host.CurrentNotch;
+            }
+            set
+            {
+                Host.CurrentNotch = value;
+            }
+        }
 
         /// <summary>
         /// Sets the current value of the brake controller lever

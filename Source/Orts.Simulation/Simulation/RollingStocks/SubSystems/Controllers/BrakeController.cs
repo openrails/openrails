@@ -155,12 +155,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         /// <summary>
         /// Needed for proper mouse operation in the cabview
         /// </summary>
-        public float IntermediateValue { get { return Script is MSTSBrakeController ? (Script as MSTSBrakeController).NotchController.IntermediateValue : CurrentValue; } }
+        public float IntermediateValue { get; set; }
 
         /// <summary>
         /// Knowing actual notch and its change is needed for proper repeatability of mouse and RailDriver operation
         /// </summary>
-        public int CurrentNotch { get { return Script is MSTSBrakeController ? (Script as MSTSBrakeController).NotchController.CurrentNotch : 0; } set { } }
+        public int CurrentNotch { get; set; }
 
         public ControllerState TrainBrakeControllerState
         {
