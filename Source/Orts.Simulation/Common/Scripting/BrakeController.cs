@@ -222,11 +222,11 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public void SetDynamicBrakeIntervention(float value)
         {
-            // TODO: Set dynamic brake intervention instead of controller position
-            // There are some issues that need to be identified and fixed before setting the intervention directly
-            if (Locomotive.DynamicBrakeController == null) return;
-            Locomotive.DynamicBrakeChangeActiveState(value > 0);
-            Locomotive.DynamicBrakeController.SetValue(value);
+            if (value > 0 && Host.TrainDynamicBrakeIntervention <= 0)
+                Host.TrainDynamicBrakeCommandStartTime = Host.Simulator.ClockTime;
+            if (value <= 0)
+                Host.TrainDynamicBrakeIntervention = -1;
+            else Host.TrainDynamicBrakeIntervention = Math.Min(value, 1);
         }
 
         /// <summary>
