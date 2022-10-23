@@ -80,7 +80,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool AntiWheelSpinEquipped = false;
         public float AntiWheelSpinSpeedDiffThreshold = 0.5f;
         public float DynamicBrakeMaxForceAtSelectorStep = 0;
-        protected float trainBrakePercent = 0;
+        float trainBrakePercent;
+        public float TrainBrakePercent { get { return trainBrakePercent; }}
         protected float trainLength = 0;
         public int TrainLengthMeters = 0;
         public float CurrentSelectedSpeedMpS = 0;
@@ -131,6 +132,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool ForceResetIncludeDynamicBrake = false;
         public bool ZeroSelectedSpeedWhenPassingToThrottleMode = false;
         public bool DynamicBrakeCommandHasPriorityOverCruiseControl = true;
+        public bool TrainBrakeCommandHasPriorityOverCruiseControl = true;
         public bool HasIndependentThrottleDynamicBrakeLever = false;
         public bool HasProportionalSpeedSelector = false;
         public bool SpeedSelectorIsDiscrete = false;
@@ -248,6 +250,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             ForceResetIncludeDynamicBrake = other.ForceResetIncludeDynamicBrake;
             ZeroSelectedSpeedWhenPassingToThrottleMode = other.ZeroSelectedSpeedWhenPassingToThrottleMode;
             DynamicBrakeCommandHasPriorityOverCruiseControl = other.DynamicBrakeCommandHasPriorityOverCruiseControl;
+            TrainBrakeCommandHasPriorityOverCruiseControl = other.TrainBrakeCommandHasPriorityOverCruiseControl;
             HasIndependentThrottleDynamicBrakeLever = other.HasIndependentThrottleDynamicBrakeLever;
             HasProportionalSpeedSelector = other.HasProportionalSpeedSelector;
             DisableManualSwitchToManualWhenSetForceNotAtZero = other.DisableManualSwitchToManualWhenSetForceNotAtZero;
@@ -347,6 +350,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     case "forceresetincludedynamicbrake": ForceResetIncludeDynamicBrake = stf.ReadBoolBlock(false); break;
                     case "zeroselectedspeedwhenpassingtothrottlemode": ZeroSelectedSpeedWhenPassingToThrottleMode = stf.ReadBoolBlock(false); break;
                     case "dynamicbrakecommandhaspriorityovercruisecontrol": DynamicBrakeCommandHasPriorityOverCruiseControl = stf.ReadBoolBlock(true); break;
+                    case "trainbrakecommandhaspriorityovercruisecontrol": TrainBrakeCommandHasPriorityOverCruiseControl = stf.ReadBoolBlock(true); break;
                     case "hasindependentthrottledynamicbrakelever": HasIndependentThrottleDynamicBrakeLever = stf.ReadBoolBlock(false); break;
                     case "hasproportionalspeedselector": HasProportionalSpeedSelector = stf.ReadBoolBlock(false); break;
                     case "speedselectorisdiscrete": SpeedSelectorIsDiscrete = stf.ReadBoolBlock(false); break;
@@ -539,10 +543,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         if (Locomotive.DynamicBrakePercent < 0) Locomotive.DynamicBrakeCommandStartTime = Locomotive.Simulator.ClockTime;
                         Locomotive.ThrottlePercent = 0;
                         Locomotive.DynamicBrakePercent = -CCThrottleOrDynBrakePercent;
-                    }
-                    if (prevTrainBrakePercent != trainBrakePercent && !TrainBrakePriority)
-                    {
-                        Locomotive.TrainBrakeController.SetPercent(trainBrakePercent); // TODO: do not move actual train brake lever
                     }
                     IsActive = true;
                 }
