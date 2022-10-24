@@ -162,6 +162,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlSteamHeatIncrease, new Action[] { () => Locomotive.StopSteamHeatIncrease(), () => Locomotive.StartSteamHeatIncrease(null) });
             UserInputCommands.Add(UserCommand.ControlSteamHeatDecrease, new Action[] { () => Locomotive.StopSteamHeatDecrease(), () => Locomotive.StartSteamHeatDecrease(null) });
             UserInputCommands.Add(UserCommand.ControlBailOff, new Action[] { () => new BailOffCommand(Viewer.Log, false), () => new BailOffCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlBrakeQuickRelease, new Action[] { () => new QuickReleaseCommand(Viewer.Log, false), () => new QuickReleaseCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlBrakeOvercharge, new Action[] { () => new BrakeOverchargeCommand(Viewer.Log, false), () => new BrakeOverchargeCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlInitializeBrakes, new Action[] { Noop, () => new InitializeBrakesCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlHandbrakeNone, new Action[] { Noop, () => new HandbrakeCommand(Viewer.Log, false) });
