@@ -16,6 +16,8 @@ install:
     (New-Object Net.WebClient).DownloadFile('https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x86.exe', 'rcedit-x86.exe')
 
     $env:PATH="C:\ProgramData\chocolatey\bin;$env:PATH;C:\lazarus;$((Get-ChildItem -Recurse C:\lazarus\fpc\strip.exe).DirectoryName);C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin"
+
+    dotnet tool restore
 build_script:
 - cmd: Build.cmd unstable
 test: off

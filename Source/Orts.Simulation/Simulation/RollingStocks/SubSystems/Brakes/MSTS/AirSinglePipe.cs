@@ -145,7 +145,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            return new string[] {
+                return new string[] {
                 DebugType,
                 string.Format("{0}{1}",FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true), (Car as MSTSWagon).WheelBrakeSlideProtectionActive ? "???" : ""),
                 FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
@@ -160,7 +160,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
                 BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
-            };
+                };
 
         }
 
@@ -303,10 +303,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 ControlResPressurePSI = maxPressurePSI;
             FullServPressurePSI = fullServPressurePSI;
             AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
-            AuxResPressurePSI = TwoPipes ? maxPressurePSI : Math.Max(maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
+            AuxResPressurePSI = Math.Max(TwoPipes ? maxPressurePSI : maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
             if ((Car as MSTSWagon).EmergencyReservoirPresent)
                 EmergResPressurePSI = Math.Max(AuxResPressurePSI, maxPressurePSI);
-            TripleValveState = ValveState.Lap;
+            TripleValveState = AutoCylPressurePSI < 1 ? ValveState.Release : ValveState.Lap;
             HoldingValve = ValveState.Release;
             HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
             SetRetainer(RetainerSetting.Exhaust);
@@ -380,27 +380,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 else
                 {
-                    if (AuxResPressurePSI < 0.01f && AutoCylPressurePSI < 0.01f && BrakeLine1PressurePSI < 0.01f && (EmergResPressurePSI < 0.01f || !(Car as MSTSWagon).EmergencyReservoirPresent))
-                    {
-                        BleedOffValveOpen = false;
-                    }
-                    else
-                    {
-                        AuxResPressurePSI -= elapsedClockSeconds * MaxApplicationRatePSIpS;
-                        if (AuxResPressurePSI < 0)
-                            AuxResPressurePSI = 0;
-                        AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
-                        if (AutoCylPressurePSI < 0)
-                            AutoCylPressurePSI = 0;
-                        if ((Car as MSTSWagon).EmergencyReservoirPresent)
-                        {
-                            EmergResPressurePSI -= elapsedClockSeconds * EmergResChargingRatePSIpS;
-                            if (EmergResPressurePSI < 0)
-                                EmergResPressurePSI = 0;
-                        }
-                        TripleValveState = ValveState.Release;
-                    }
+                if (AuxResPressurePSI < 0.01f && AutoCylPressurePSI < 0.01f && BrakeLine1PressurePSI < 0.01f && (EmergResPressurePSI < 0.01f || !(Car as MSTSWagon).EmergencyReservoirPresent))
+                {
+                    BleedOffValveOpen = false;
                 }
+                else
+                {
+                    AuxResPressurePSI -= elapsedClockSeconds * MaxApplicationRatePSIpS;
+                    if (AuxResPressurePSI < 0)
+                        AuxResPressurePSI = 0;
+                    AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
+                    if (AutoCylPressurePSI < 0)
+                        AutoCylPressurePSI = 0;
+                    if ((Car as MSTSWagon).EmergencyReservoirPresent)
+                    {
+                        EmergResPressurePSI -= elapsedClockSeconds * EmergResChargingRatePSIpS;
+                        if (EmergResPressurePSI < 0)
+                            EmergResPressurePSI = 0;
+                    }
+                    TripleValveState = ValveState.Release;
+                }
+            }
             }
             else
                 UpdateTripleValveState(elapsedClockSeconds);
@@ -540,8 +540,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             CylPressurePSI = Math.Min(requiredCylPressure, CylPressurePSI + MaxApplicationRatePSIpS * elapsedClockSeconds);
                         if (requiredCylPressure < CylPressurePSI)
                             CylPressurePSI = Math.Max(requiredCylPressure, CylPressurePSI - MaxReleaseRatePSIpS * elapsedClockSeconds);
-                    }
                 }
+            }
             }
             if (!bailoff)
                 CylPressurePSI = AutoCylPressurePSI;

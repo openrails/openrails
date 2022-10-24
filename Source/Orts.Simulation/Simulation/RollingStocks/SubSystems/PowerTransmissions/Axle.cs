@@ -259,19 +259,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float TrainSpeedMpS;
 
         /// <summary>
-        /// Read only wheel slip indicator
+        /// Wheel slip indicator
         /// - is true when absolute value of SlipSpeedMpS is greater than WheelSlipThresholdMpS, otherwise is false
         /// </summary>
-        public bool IsWheelSlip
-        {
-            get
-            {
-                if (Math.Abs(SlipSpeedMpS) > WheelSlipThresholdMpS) 
-                    return true;
-                else
-                    return false;
-            }
-        }
+        public bool IsWheelSlip { get; private set; }
+        float WheelSlipTimeS;
 
         /// <summary>
         /// Read only wheelslip threshold value used to indicate maximal effective slip
@@ -290,18 +282,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         /// <summary>
-        /// Read only wheelslip warning indication
+        /// Wheelslip warning indication
         /// - is true when SlipSpeedMpS is greater than zero and 
         ///   SlipSpeedPercent is greater than SlipWarningThresholdPercent in both directions,
         ///   otherwise is false
         /// </summary>
-        public bool IsWheelSlipWarning
-        {
-            get
-            {
-                return Math.Abs(SlipSpeedPercent) > SlipWarningTresholdPercent;
-            }
-        }
+        public bool IsWheelSlipWarning { get; private set; }
+        float WheelSlipWarningTimeS;
 
         /// <summary>
         /// Read only slip speed value in metric meters per second
@@ -552,6 +539,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // Hence CompensatedAxleForce is the actual output force on the axle. 
             CompensatedAxleForceN = AxleForceN + Math.Sign(TrainSpeedMpS) * BrakeRetardForceN;
             if (AxleForceN == 0) CompensatedAxleForceN = 0;
+
+            if (Math.Abs(SlipSpeedMpS) > WheelSlipThresholdMpS)
+            {
+                // Wait some time before indicating wheelslip to avoid false triggers
+                if (WheelSlipTimeS > 0.1f)
+                {
+                    IsWheelSlip = IsWheelSlipWarning = true;
+                }
+                WheelSlipTimeS += timeSpan;
+            }
+            else if (Math.Abs(SlipSpeedPercent) > SlipWarningTresholdPercent)
+            {
+                // Wait some time before indicating wheelslip to avoid false triggers
+                if (WheelSlipWarningTimeS > 0.1f) IsWheelSlipWarning = true;
+                IsWheelSlip = false;
+                WheelSlipWarningTimeS += timeSpan;
+            }
+            else
+            {
+                IsWheelSlipWarning = false;
+                IsWheelSlip = false;
+                WheelSlipWarningTimeS = WheelSlipTimeS = 0;
+            }
 
             if (timeSpan > 0.0f)
             {
