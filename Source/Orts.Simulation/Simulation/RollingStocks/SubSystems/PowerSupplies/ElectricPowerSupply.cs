@@ -165,25 +165,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             Script?.Update(elapsedClockSeconds);
         }
-
-        protected override void AssignScriptFunctions()
-        {
-            base.AssignScriptFunctions();
-
-            // ElectricPowerSupply getters
-            Script.CurrentPantographState = () => Pantographs.State;
-            Script.CurrentCircuitBreakerState = () => CircuitBreaker.State;
-            Script.CircuitBreakerDriverClosingOrder = () => CircuitBreaker.DriverClosingOrder;
-            Script.CircuitBreakerDriverOpeningOrder = () => CircuitBreaker.DriverOpeningOrder;
-            Script.CircuitBreakerDriverClosingAuthorization = () => CircuitBreaker.DriverClosingAuthorization;
-            Script.PantographVoltageV = () => PantographVoltageV;
-            Script.FilterVoltageV = () => FilterVoltageV;
-            Script.LineVoltageV = () => LineVoltageV;
-
-            // ElectricPowerSupply setters
-            Script.SetPantographVoltageV = (value) => PantographVoltageV = value;
-            Script.SetFilterVoltageV = (value) => FilterVoltageV = value;
-        }
     }
 
     public class DefaultElectricPowerSupply : ElectricPowerSupply

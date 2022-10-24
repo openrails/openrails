@@ -15,12 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.IO;
+using System.Linq;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
-using System;
-using System.Linq;
+using ORTS.Common;
 
 namespace ORTS.Scripting.Api
 {
@@ -33,104 +35,190 @@ namespace ORTS.Scripting.Api
         internal Simulator Simulator => Locomotive.Simulator;
 
         /// <summary>
+        /// Returns true if the current locomotive is leading
+        /// </summary>
+        protected bool IsLocomotiveLeading => Locomotive.IsLeadLocomotive();
+
+        /// <summary>
         /// Current state of the main power supply
         /// Main power comes from the pantograph or the diesel generator
         /// </summary>
-        public Func<PowerSupplyState> CurrentMainPowerSupplyState;
+        protected PowerSupplyState CurrentMainPowerSupplyState() => LpsHost.MainPowerSupplyState;
+
         /// <summary>
         /// Current state of the auxiliary power supply
         /// Auxiliary power is used by auxiliary systems of a locomotive (such as ventilation or air compressor) and by systems of the cars (such as air conditionning)
         /// </summary>
-        public Func<PowerSupplyState> CurrentAuxiliaryPowerSupplyState;
+        protected PowerSupplyState CurrentAuxiliaryPowerSupplyState() => LpsHost.AuxiliaryPowerSupplyState;
+
         /// <summary>
         /// Current state of the cab power supply
         /// </summary>
-        public Func<PowerSupplyState> CurrentCabPowerSupplyState;
+        protected PowerSupplyState CurrentCabPowerSupplyState() => LpsHost.CabPowerSupplyState;
+
         /// <summary>
         /// Current state of the helper engines
         /// </summary>
-        public Func<DieselEngineState> CurrentHelperEnginesState;
+        protected DieselEngineState CurrentHelperEnginesState()
+        {
+            DieselEngineState state = DieselEngineState.Unavailable;
+
+            foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where(locomotive => locomotive.RemoteControlGroup != -1))
+            {
+                if (locomotive == Simulator.PlayerLocomotive)
+                {
+                    foreach (DieselEngine dieselEngine in locomotive.DieselEngines.DEList.Where(de => de != locomotive.DieselEngines[0]))
+                    {
+                        if (dieselEngine.State > state)
+                            state = dieselEngine.State;
+                    }
+                }
+                else
+                {
+                    foreach (DieselEngine dieselEngine in locomotive.DieselEngines)
+                    {
+                        if (dieselEngine.State > state)
+                            state = dieselEngine.State;
+                    }
+                }
+            }
+
+            return state;
+        }
+
         /// <summary>
         /// Current availability of the dynamic brake
         /// </summary>
-        public Func<bool> CurrentDynamicBrakeAvailability;
+        protected bool CurrentDynamicBrakeAvailability() => LpsHost.DynamicBrakeAvailable;
+
         /// <summary>
         /// Current throttle percentage
         /// </summary>
-        public Func<float> ThrottlePercent;
+        protected float ThrottlePercent() => Locomotive.ThrottlePercent;
+
         /// <summary>
         /// Main supply power on delay
         /// </summary>
-        public Func<float> PowerOnDelayS;
+        protected float PowerOnDelayS() => LpsHost.PowerOnDelayS;
+
         /// <summary>
         /// Auxiliary supply power on delay
         /// </summary>
-        public Func<float> AuxPowerOnDelayS;
+        protected float AuxPowerOnDelayS() => LpsHost.AuxPowerOnDelayS;
+
         /// <summary>
         /// True if the master key is switched on
         /// </summary>
-        public Func<bool> MasterKeyOn;
+        protected bool MasterKeyOn() => LpsHost.MasterKey.On;
+
         /// <summary>
         /// True if the electric train supply is switched on
         /// </summary>
-        public Func<bool> ElectricTrainSupplySwitchOn;
+        protected bool ElectricTrainSupplySwitchOn() => LpsHost.ElectricTrainSupplySwitch.On;
+
         /// <summary>
         /// True if the locomotive is not fitted with electric train supply
         /// </summary>
-        public Func<bool> ElectricTrainSupplyUnfitted;
+        protected bool ElectricTrainSupplyUnfitted() => LpsHost.ElectricTrainSupplySwitch.Mode == ElectricTrainSupplySwitch.ModeType.Unfitted;
+
+        /// <summary>
+        /// Returns the number of locomotives in the train
+        /// </summary>
+        public int NumberOfLocomotives()
+        {
+            return Train.Cars.OfType<MSTSLocomotive>().Count();
+        }
+
+        /// <summary>
+        /// Returns the index of the current locomotive in the train (taking into account only locomotives)
+        /// </summary>
+        public int IndexOfLocomotive()
+        {
+            return Train.Cars.OfType<MSTSLocomotive>().ToList().IndexOf(Locomotive);
+        }
+
+        /// <summary>
+        /// True if the service retention button is pressed
+        /// </summary>
+        protected bool ServiceRetentionButton
+        {
+            get => LpsHost.ServiceRetentionButton;
+            set => LpsHost.ServiceRetentionButton = value;
+        }
+
+        /// <summary>
+        /// True if the service retention cancellation button is pressed
+        /// </summary>
+        protected bool ServiceRetentionCancellationButton
+        {
+            get => LpsHost.ServiceRetentionCancellationButton;
+            set => LpsHost.ServiceRetentionCancellationButton = value;
+        }
+
+        /// <summary>
+        /// True if the service retention is active
+        /// </summary>
+        protected bool ServiceRetentionActive
+        {
+            get => LpsHost.ServiceRetentionActive;
+            set => LpsHost.ServiceRetentionActive = value;
+        }
 
         /// <summary>
         /// Sets the current state of the main power supply (power from the pantograph or the generator)
         /// Main power comes from the pantograph or the diesel generator
         /// </summary>
-        public Action<PowerSupplyState> SetCurrentMainPowerSupplyState;
+        protected void SetCurrentMainPowerSupplyState(PowerSupplyState state) => LpsHost.MainPowerSupplyState = state;
+
         /// <summary>
         /// Sets the current state of the auxiliary power supply
         /// Auxiliary power is used by auxiliary systems of a locomotive (such as ventilation or air compressor) and by systems of the cars (such as air conditionning)
         /// </summary>
-        public Action<PowerSupplyState> SetCurrentAuxiliaryPowerSupplyState;
+        protected void SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState state) => LpsHost.AuxiliaryPowerSupplyState = state;
+
         /// <summary>
         /// Sets the current state of the cab power supply
         /// </summary>
-        public Action<PowerSupplyState> SetCurrentCabPowerSupplyState;
+        protected void SetCurrentCabPowerSupplyState(PowerSupplyState state) => LpsHost.CabPowerSupplyState = state;
+
         /// <summary>
         /// Sets the current state of the electric train supply
         /// ETS is used by the systems of the cars (such as air conditionning)
         /// </summary>
-        public Action<PowerSupplyState> SetCurrentElectricTrainSupplyState;
+        protected void SetCurrentElectricTrainSupplyState(PowerSupplyState state) => LpsHost.ElectricTrainSupplyState = state;
         /// <summary>
         /// Sets the current availability of the dynamic brake
         /// </summary>
-        public Action<bool> SetCurrentDynamicBrakeAvailability;
+        protected void SetCurrentDynamicBrakeAvailability(bool avail) => LpsHost.DynamicBrakeAvailable = avail;
 
         /// <summary>
         /// Sends an event to the master switch
         /// </summary>
-        public void SignalEventToMasterKey(PowerSupplyEvent evt) => LpsHost.MasterKey.HandleEvent(evt);
+        protected void SignalEventToMasterKey(PowerSupplyEvent evt) => LpsHost.MasterKey.HandleEvent(evt);
 
         /// <summary>
         /// Sends an event to the electric train supply switch
         /// </summary>
-        public void SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent evt) => LpsHost.ElectricTrainSupplySwitch.HandleEvent(evt);
+        protected void SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent evt) => LpsHost.ElectricTrainSupplySwitch.HandleEvent(evt);
 
         /// <summary>
         /// Sends an event to the train control system
         /// </summary>
-        public void SignalEventToTcs(PowerSupplyEvent evt) => LpsHost.Locomotive.TrainControlSystem.HandleEvent(evt);
+        protected void SignalEventToTcs(PowerSupplyEvent evt) => Locomotive.TrainControlSystem.HandleEvent(evt);
 
         /// <summary>
         /// Sends an event to the train control system with a message
         /// </summary>
-        public void SignalEventToTcsWithMessage(PowerSupplyEvent evt, string message) => LpsHost.Locomotive.TrainControlSystem.HandleEvent(evt, message);
+        protected void SignalEventToTcsWithMessage(PowerSupplyEvent evt, string message) => Locomotive.TrainControlSystem.HandleEvent(evt, message);
 
         /// <summary>
         /// Sends an event to the power supplies of other locomotives
         /// </summary>
-        public void SignalEventToOtherLocomotives(PowerSupplyEvent evt)
+        protected void SignalEventToOtherLocomotives(PowerSupplyEvent evt)
         {
             if (Locomotive == Train.LeadLocomotive)
             {
-                foreach (MSTSLocomotive locomotive in Locomotive.Train.Cars.OfType<MSTSLocomotive>())
+                foreach (MSTSLocomotive locomotive in Train.Cars.OfType<MSTSLocomotive>())
                 {
                     if (locomotive != Locomotive && locomotive.RemoteControlGroup != -1)
                     {
@@ -143,11 +231,11 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Sends an event to the power supplies of other locomotives
         /// </summary>
-        public void SignalEventToOtherLocomotivesWithId(PowerSupplyEvent evt, int id)
+        protected void SignalEventToOtherLocomotivesWithId(PowerSupplyEvent evt, int id)
         {
             if (Locomotive == Train.LeadLocomotive)
             {
-                foreach (MSTSLocomotive locomotive in Locomotive.Train.Cars.OfType<MSTSLocomotive>())
+                foreach (MSTSLocomotive locomotive in Train.Cars.OfType<MSTSLocomotive>())
                 {
                     if (locomotive != Locomotive && locomotive.RemoteControlGroup != -1)
                     {
@@ -160,11 +248,11 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Sends an event to the power supplies of other train vehicles
         /// </summary>
-        public void SignalEventToOtherTrainVehicles(PowerSupplyEvent evt)
+        protected void SignalEventToOtherTrainVehicles(PowerSupplyEvent evt)
         {
             if (Locomotive == Train.LeadLocomotive)
             {
-                foreach (TrainCar car in Locomotive.Train.Cars)
+                foreach (TrainCar car in Train.Cars)
                 {
                     if (car != Locomotive && car.RemoteControlGroup != -1)
                     {
@@ -184,11 +272,11 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Sends an event to the power supplies of other train vehicles
         /// </summary>
-        public void SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent evt, int id)
+        protected void SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent evt, int id)
         {
             if (Locomotive == Train.LeadLocomotive)
             {
-                foreach (TrainCar car in Locomotive.Train.Cars)
+                foreach (TrainCar car in Train.Cars)
                 {
                     if (car != Locomotive && car.RemoteControlGroup != -1)
                     {
@@ -208,11 +296,11 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Sends an event to all helper engines
         /// </summary>
-        public void SignalEventToHelperEngines(PowerSupplyEvent evt)
+        protected void SignalEventToHelperEngines(PowerSupplyEvent evt)
         {
             bool helperFound = false; //this avoids that locomotive engines toggle in opposite directions
 
-            foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where((locomotive) => locomotive.RemoteControlGroup != -1))
+            foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where(locomotive => locomotive.RemoteControlGroup != -1))
             {
                 if (locomotive == Train.LeadLocomotive)
                 {

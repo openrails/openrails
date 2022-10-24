@@ -42,14 +42,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         protected string ScriptName = "Default";
         protected LocomotivePowerSupply AbstractScript;
 
-        public PowerSupplyState MainPowerSupplyState { get; protected set; } = PowerSupplyState.PowerOff;
+        public PowerSupplyState MainPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool MainPowerSupplyOn => MainPowerSupplyState == PowerSupplyState.PowerOn;
-        public bool DynamicBrakeAvailable { get; protected set; } = false;
+        public bool DynamicBrakeAvailable { get; set; } = false;
 
-        public PowerSupplyState AuxiliaryPowerSupplyState { get; protected set; } = PowerSupplyState.PowerOff;
+        public PowerSupplyState AuxiliaryPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool AuxiliaryPowerSupplyOn => AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
 
-        public PowerSupplyState ElectricTrainSupplyState { get; protected set; } = PowerSupplyState.PowerOff;
+        public PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool ElectricTrainSupplyOn => ElectricTrainSupplyState == PowerSupplyState.PowerOn;
         public bool FrontElectricTrainSupplyCableConnected { get; set; }
         public float ElectricTrainSupplyPowerW
@@ -68,20 +68,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        public PowerSupplyState LowVoltagePowerSupplyState { get; protected set; } = PowerSupplyState.PowerOff;
+        public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
 
-        public PowerSupplyState BatteryState { get; protected set; } = PowerSupplyState.PowerOff;
+        public PowerSupplyState BatteryState { get; set; } = PowerSupplyState.PowerOff;
         public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
 
-        public PowerSupplyState CabPowerSupplyState { get; protected set; } = PowerSupplyState.PowerOff;
+        public PowerSupplyState CabPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool CabPowerSupplyOn => CabPowerSupplyState == PowerSupplyState.PowerOn;
 
         public float PowerOnDelayS { get; protected set; } = 0f;
         public float AuxPowerOnDelayS { get; protected set; } = 0f;
 
-        public bool ServiceRetentionButton { get; protected set; } = false;
-        public bool ServiceRetentionCancellationButton { get; protected set; } = false;
+        public bool ServiceRetentionButton { get; set; } = false;
+        public bool ServiceRetentionCancellationButton { get; set; } = false;
 
         private bool firstUpdate = true;
 
@@ -272,57 +272,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AbstractScript.Message = Locomotive.Simulator.Confirmer.Message;
             AbstractScript.SignalEvent = Locomotive.SignalEvent;
             AbstractScript.SignalEventToTrain = (evt) => Locomotive.Train?.SignalEvent(evt);
-
-            // AbstractPowerSupply getters
-            AbstractScript.CurrentMainPowerSupplyState = () => MainPowerSupplyState;
-            AbstractScript.CurrentAuxiliaryPowerSupplyState = () => AuxiliaryPowerSupplyState;
-            AbstractScript.CurrentElectricTrainSupplyState = () => ElectricTrainSupplyState;
-            AbstractScript.CurrentLowVoltagePowerSupplyState = () => LowVoltagePowerSupplyState;
-            AbstractScript.CurrentBatteryState = () => BatteryState;
-            AbstractScript.CurrentCabPowerSupplyState = () => CabPowerSupplyState;
-            AbstractScript.CurrentHelperEnginesState = () =>
-            {
-                DieselEngineState state = DieselEngineState.Unavailable;
-
-                foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where((MSTSLocomotive locomotive) => { return locomotive.RemoteControlGroup != -1; }))
-                {
-                    if (locomotive == Simulator.PlayerLocomotive)
-                    {
-                        foreach (DieselEngine dieselEngine in locomotive.DieselEngines.DEList.Where(de => de != locomotive.DieselEngines[0]))
-                        {
-                            if (dieselEngine.State > state)
-                                state = dieselEngine.State;
-                        }
-                    }
-                    else
-                    {
-                        foreach (DieselEngine dieselEngine in locomotive.DieselEngines)
-                        {
-                            if (dieselEngine.State > state)
-                                state = dieselEngine.State;
-                        }
-                    }
-                }
-
-                return state;
-            };
-            AbstractScript.CurrentDynamicBrakeAvailability = () => DynamicBrakeAvailable;
-            AbstractScript.ThrottlePercent = () => Locomotive.ThrottlePercent;
-            AbstractScript.PowerOnDelayS = () => PowerOnDelayS;
-            AbstractScript.AuxPowerOnDelayS = () => AuxPowerOnDelayS;
-            AbstractScript.BatterySwitchOn = () => BatterySwitch.On;
-            AbstractScript.MasterKeyOn = () => MasterKey.On;
-            AbstractScript.ElectricTrainSupplySwitchOn = () => ElectricTrainSupplySwitch.On;
-            AbstractScript.ElectricTrainSupplyUnfitted = () => ElectricTrainSupplySwitch.Mode == ElectricTrainSupplySwitch.ModeType.Unfitted;
-
-            // AbstractPowerSupply setters
-            AbstractScript.SetCurrentMainPowerSupplyState = (value) => MainPowerSupplyState = value;
-            AbstractScript.SetCurrentAuxiliaryPowerSupplyState = (value) => AuxiliaryPowerSupplyState = value;
-            AbstractScript.SetCurrentElectricTrainSupplyState = (value) => ElectricTrainSupplyState = value;
-            AbstractScript.SetCurrentLowVoltagePowerSupplyState = (value) => LowVoltagePowerSupplyState = value;
-            AbstractScript.SetCurrentBatteryState = (value) => BatteryState = value;
-            AbstractScript.SetCurrentCabPowerSupplyState = (value) => CabPowerSupplyState = value;
-            AbstractScript.SetCurrentDynamicBrakeAvailability = (value) => DynamicBrakeAvailable = value;
         }
     }
 
