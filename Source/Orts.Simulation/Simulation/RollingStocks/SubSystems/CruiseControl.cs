@@ -1351,7 +1351,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             if (deltaSpeedMpS > -SpeedDeltaToEnableFullTrainBrake)
             {
-                if (!Locomotive.DynamicBrakeAvailable || deltaSpeedMpS < -SpeedDeltaToEnableTrainBrake)
+                bool dynamicBrakeAvailable = Locomotive.DynamicBrakeAvailable && Locomotive.LocomotivePowerSupply.DynamicBrakeAvailable && Locomotive.AbsSpeedMpS > Locomotive.DynamicBrakeSpeed1MpS;
+                if (!dynamicBrakeAvailable || deltaSpeedMpS < -SpeedDeltaToEnableTrainBrake)
                 {
                     CCIsUsingTrainBrake = true;
                     brakePercent = TrainBrakeMinPercentValue - 3.0f + (-deltaSpeedMpS * 10)/SpeedDeltaToEnableTrainBrake;
