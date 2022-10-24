@@ -67,6 +67,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortspowerondelay":
                 case "engine(ortsauxpowerondelay":
                 case "engine(ortspowersupply":
+                case "engine(ortspowersupplyparameters":
                 case "engine(ortscircuitbreaker":
                 case "engine(ortscircuitbreakerclosingdelay":
                 case "engine(ortsbattery(mode":
