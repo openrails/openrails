@@ -29,18 +29,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         MasterKey MasterKey { get; }
         ElectricTrainSupplySwitch ElectricTrainSupplySwitch { get; }
 
-        PowerSupplyState MainPowerSupplyState { get; }
+        PowerSupplyState MainPowerSupplyState { get; set; }
         bool MainPowerSupplyOn { get; }
-        bool DynamicBrakeAvailable { get; }
+        bool DynamicBrakeAvailable { get; set; }
 
-        PowerSupplyState AuxiliaryPowerSupplyState { get; }
+        PowerSupplyState AuxiliaryPowerSupplyState { get; set; }
         bool AuxiliaryPowerSupplyOn { get; }
 
-        PowerSupplyState CabPowerSupplyState { get; }
+        PowerSupplyState CabPowerSupplyState { get; set; }
         bool CabPowerSupplyOn { get; }
 
-        bool ServiceRetentionButton { get; }
-        bool ServiceRetentionCancellationButton { get; }
+        bool ServiceRetentionButton { get; set; }
+        bool ServiceRetentionCancellationButton { get; set; }
 
         void HandleEventFromTcs(PowerSupplyEvent evt, string message);
     }
