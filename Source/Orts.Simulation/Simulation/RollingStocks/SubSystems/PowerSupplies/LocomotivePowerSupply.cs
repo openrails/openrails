@@ -83,6 +83,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public bool ServiceRetentionButton { get; set; } = false;
         public bool ServiceRetentionCancellationButton { get; set; } = false;
+        public bool ServiceRetentionActive { get; set; } = false;
 
         private bool firstUpdate = true;
 

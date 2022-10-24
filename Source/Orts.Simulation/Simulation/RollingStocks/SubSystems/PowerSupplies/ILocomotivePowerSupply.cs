@@ -41,6 +41,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         bool ServiceRetentionButton { get; set; }
         bool ServiceRetentionCancellationButton { get; set; }
+        bool ServiceRetentionActive { get; set; }
 
         void HandleEventFromTcs(PowerSupplyEvent evt, string message);
     }
