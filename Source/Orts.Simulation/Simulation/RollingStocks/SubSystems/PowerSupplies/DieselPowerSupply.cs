@@ -127,34 +127,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             Script?.Update(elapsedClockSeconds);
         }
-
-        protected override void AssignScriptFunctions()
-        {
-            base.AssignScriptFunctions();
-
-            // DieselPowerSupply getters
-            Script.CurrentDieselEnginesState = () => DieselLocomotive.DieselEngines.State;
-            Script.CurrentDieselEngineState = (id) =>
-            {
-                if (id >= 0 && id < DieselEngines.Count)
-                {
-                    return DieselEngines[id].State;
-                }
-                else
-                {
-                    return DieselEngineState.Unavailable;
-                }
-            };
-            Script.CurrentTractionCutOffRelayState = () => TractionCutOffRelay.State;
-            Script.TractionCutOffRelayDriverClosingOrder = () => TractionCutOffRelay.DriverClosingOrder;
-            Script.TractionCutOffRelayDriverOpeningOrder = () => TractionCutOffRelay.DriverOpeningOrder;
-            Script.TractionCutOffRelayDriverClosingAuthorization = () => TractionCutOffRelay.DriverClosingAuthorization;
-
-            // DieselPowerSupply setters
-            Script.SignalEventToDieselEngines = (evt) => DieselEngines.HandleEvent(evt);
-            Script.SignalEventToDieselEngine = (evt, id) => DieselEngines.HandleEvent(evt, id);
-            Script.SignalEventToTractionCutOffRelay = (evt) => TractionCutOffRelay.HandleEvent(evt);
-        }
     }
 
     public class DefaultDieselPowerSupply : DieselPowerSupply

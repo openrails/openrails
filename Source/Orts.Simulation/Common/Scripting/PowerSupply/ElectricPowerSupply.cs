@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
-using System;
 
 namespace ORTS.Scripting.Api
 {
@@ -28,67 +28,82 @@ namespace ORTS.Scripting.Api
     {
         // Internal members and methods (inaccessible from script)
         internal ScriptedElectricPowerSupply EpsHost => LpsHost as ScriptedElectricPowerSupply;
+        internal MSTSElectricLocomotive ElectricLocomotive => Locomotive as MSTSElectricLocomotive;
+        internal Pantographs Pantographs => ElectricLocomotive.Pantographs;
+        internal ScriptedCircuitBreaker CircuitBreaker => EpsHost.CircuitBreaker;
+        internal ScriptedVoltageSelector VoltageSelector => EpsHost.VoltageSelector;
+        internal ScriptedPantographSelector PantographSelector => EpsHost.PantographSelector;
+        internal ScriptedPowerLimitationSelector PowerLimitationSelector => EpsHost.PowerLimitationSelector;
 
-        protected bool IsLocomotiveLeading => EpsHost.Locomotive.IsLeadLocomotive();
         /// <summary>
         /// Current position of the voltage selector
         /// </summary>
-        protected VoltageSelectorPosition VoltageSelectorPosition => EpsHost.VoltageSelector.Position;
+        protected VoltageSelectorPosition VoltageSelectorPosition => VoltageSelector.Position;
+
         /// <summary>
         /// Current position of the pantograph selector
         /// </summary>
-        protected PantographSelectorPosition PantographSelectorPosition => EpsHost.PantographSelector.Position;
+        protected PantographSelectorPosition PantographSelectorPosition => PantographSelector.Position;
+
         /// <summary>
         /// Current position of the power limitation selector
         /// </summary>
-        protected PowerLimitationSelectorPosition PowerLimitationSelectorPosition => EpsHost.PowerLimitationSelector.Position;
+        protected PowerLimitationSelectorPosition PowerLimitationSelectorPosition => PowerLimitationSelector.Position;
 
         /// <summary>
         /// Current state of the pantograph
         /// </summary>
-        public Func<PantographState> CurrentPantographState;
+        protected PantographState CurrentPantographState() => Pantographs.State;
+
         /// <summary>
         /// Current state of the circuit breaker
         /// </summary>
-        public Func<CircuitBreakerState> CurrentCircuitBreakerState;
+        protected CircuitBreakerState CurrentCircuitBreakerState() => CircuitBreaker.State;
+
         /// <summary>
         /// Driver's closing order of the circuit breaker
         /// </summary>
-        public Func<bool> CircuitBreakerDriverClosingOrder;
+        protected bool CircuitBreakerDriverClosingOrder() => CircuitBreaker.DriverClosingOrder;
+
         /// <summary>
         /// Driver's opening order of the circuit breaker
         /// </summary>
-        public Func<bool> CircuitBreakerDriverOpeningOrder;
+        protected bool CircuitBreakerDriverOpeningOrder() => CircuitBreaker.DriverOpeningOrder;
+
         /// <summary>
         /// Driver's closing authorization of the circuit breaker
         /// </summary>
-        public Func<bool> CircuitBreakerDriverClosingAuthorization;
+        protected bool CircuitBreakerDriverClosingAuthorization() => CircuitBreaker.DriverClosingAuthorization;
+
         /// <summary>
         /// Voltage of the pantograph
         /// </summary>
-        public Func<float> PantographVoltageV;
+        protected float PantographVoltageV() => EpsHost.PantographVoltageV;
+
         /// <summary>
         /// Voltage of the filter
         /// </summary>
-        public Func<float> FilterVoltageV;
+        protected float FilterVoltageV() => EpsHost.FilterVoltageV;
+
         /// <summary>
         /// Line voltage
         /// </summary>
-        public Func<float> LineVoltageV;
+        protected float LineVoltageV() => EpsHost.LineVoltageV;
 
         /// <summary>
         /// Sets the voltage of the pantograph
         /// </summary>
-        public Action<float> SetPantographVoltageV;
+        protected void SetPantographVoltageV(float voltage) => EpsHost.PantographVoltageV = voltage;
+
         /// <summary>
         /// Sets the voltage of the filter
         /// </summary>
-        public Action<float> SetFilterVoltageV;
+        protected void SetFilterVoltageV(float voltage) => EpsHost.FilterVoltageV = voltage;
 
         /// <summary>
         /// Maximum power of the locomotive
         /// </summary>
-        public float MaximumPowerW
+        protected float MaximumPowerW
         {
             get => EpsHost.MaximumPowerW;
             set => EpsHost.MaximumPowerW = value;
@@ -97,37 +112,37 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Sends an event to the circuit breaker
         /// </summary>
-        public void SignalEventToCircuitBreaker(PowerSupplyEvent evt) => EpsHost.CircuitBreaker.HandleEvent(evt);
+        public void SignalEventToCircuitBreaker(PowerSupplyEvent evt) => CircuitBreaker.HandleEvent(evt);
 
         /// <summary>
         /// Sends an event to the voltage selector
         /// </summary>
-        public void SignalEventToVoltageSelector(PowerSupplyEvent evt) => EpsHost.VoltageSelector.HandleEvent(evt);
+        public void SignalEventToVoltageSelector(PowerSupplyEvent evt) => VoltageSelector.HandleEvent(evt);
 
         /// <summary>
         /// Sends an event to the voltage selector
         /// </summary>
-        public void SignalEventToVoltageSelector(PowerSupplyEvent evt, int id) => EpsHost.VoltageSelector.HandleEvent(evt, id);
+        public void SignalEventToVoltageSelector(PowerSupplyEvent evt, int id) => VoltageSelector.HandleEvent(evt, id);
 
         /// <summary>
         /// Sends an event to the pantograph selector
         /// </summary>
-        public void SignalEventToPantographSelector(PowerSupplyEvent evt) => EpsHost.PantographSelector.HandleEvent(evt);
+        public void SignalEventToPantographSelector(PowerSupplyEvent evt) => PantographSelector.HandleEvent(evt);
         
         /// <summary>
         /// Sends an event to the pantograph selector
         /// </summary>
-        public void SignalEventToPantographSelector(PowerSupplyEvent evt, int id) => EpsHost.PantographSelector.HandleEvent(evt, id);
+        public void SignalEventToPantographSelector(PowerSupplyEvent evt, int id) => PantographSelector.HandleEvent(evt, id);
 
         /// <summary>
         /// Sends an event to the power limitation selector
         /// </summary>
-        public void SignalEventToPowerLimitationSelector(PowerSupplyEvent evt) => EpsHost.PowerLimitationSelector.HandleEvent(evt);
+        public void SignalEventToPowerLimitationSelector(PowerSupplyEvent evt) => PowerLimitationSelector.HandleEvent(evt);
 
         /// <summary>
         /// Sends an event to the power limitation selector
         /// </summary>
-        public void SignalEventToPowerLimitationSelector(PowerSupplyEvent evt, int id) => EpsHost.PowerLimitationSelector.HandleEvent(evt, id);
+        public void SignalEventToPowerLimitationSelector(PowerSupplyEvent evt, int id) => PowerLimitationSelector.HandleEvent(evt, id);
 
         public override void HandleEvent(PowerSupplyEvent evt)
         {

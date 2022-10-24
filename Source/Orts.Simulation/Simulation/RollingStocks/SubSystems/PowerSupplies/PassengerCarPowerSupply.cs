@@ -29,7 +29,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public class ScriptedPassengerCarPowerSupply : IPassengerCarPowerSupply, ISubSystem<ScriptedPassengerCarPowerSupply>
     {
         public TrainCar Car { get; }
-        public MSTSWagon Wagon => Car as MSTSWagon; protected Simulator Simulator => Wagon.Simulator;
+        public MSTSWagon Wagon => Car as MSTSWagon;
+        protected Simulator Simulator => Wagon.Simulator;
         protected Train Train => Wagon.Train;
         public Pantographs Pantographs => Wagon.Pantographs;
         protected int CarId = 0;
@@ -42,21 +43,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         // Variables
         public IEnumerable<MSTSLocomotive> ElectricTrainSupplyConnectedLocomotives = new List<MSTSLocomotive>();
-        public PowerSupplyState ElectricTrainSupplyState { get; protected set; } = PowerSupplyState.PowerOff;
+        public PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool ElectricTrainSupplyOn => ElectricTrainSupplyState == PowerSupplyState.PowerOn;
         public bool FrontElectricTrainSupplyCableConnected { get; set; }
-        public float ElectricTrainSupplyPowerW { get; protected set; } = 0f;
+        public float ElectricTrainSupplyPowerW { get; set; } = 0f;
 
-        public PowerSupplyState LowVoltagePowerSupplyState { get; protected set; } = PowerSupplyState.PowerOff;
+        public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
 
-        public PowerSupplyState BatteryState { get; protected set; }
+        public PowerSupplyState BatteryState { get; set; }
         public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
 
-        public PowerSupplyState VentilationState { get; protected set; }
-        public PowerSupplyState HeatingState { get; protected set; }
-        public PowerSupplyState AirConditioningState { get; protected set; }
-        public float HeatFlowRateW { get; protected set; }
+        public PowerSupplyState VentilationState { get; set; }
+        public PowerSupplyState HeatingState { get; set; }
+        public PowerSupplyState AirConditioningState { get; set; }
+        public float HeatFlowRateW { get; set; }
 
         // Parameters
         public float PowerOnDelayS { get; protected set; } = 0f;
@@ -311,43 +312,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             Script.Message = Simulator.Confirmer.Message;
             Script.SignalEvent = Wagon.SignalEvent;
             Script.SignalEventToTrain = (evt) => Train?.SignalEvent(evt);
-
-            // AbstractPowerSupply getters
-            Script.CurrentElectricTrainSupplyState = () => ElectricTrainSupplyState;
-            Script.CurrentLowVoltagePowerSupplyState = () => LowVoltagePowerSupplyState;
-            Script.CurrentBatteryState = () => BatteryState;
-            Script.BatterySwitchOn = () => BatterySwitch.On;
-
-            // PassengerCarPowerSupply getters
-            Script.CurrentVentilationState = () => VentilationState;
-            Script.CurrentHeatingState = () => HeatingState;
-            Script.CurrentAirConditioningState = () => AirConditioningState;
-            Script.CurrentElectricTrainSupplyPowerW = () => ElectricTrainSupplyPowerW;
-            Script.CurrentHeatFlowRateW = () => HeatFlowRateW;
-            Script.ContinuousPowerW = () => ContinuousPowerW;
-            Script.HeatingPowerW = () => HeatingPowerW;
-            Script.AirConditioningPowerW = () => AirConditioningPowerW;
-            Script.AirConditioningYield = () => AirConditioningYield;
-            Script.PowerOnDelayS = () => PowerOnDelayS;
-            Script.DesiredTemperatureC = () => Wagon.DesiredCompartmentTempSetpointC;
-            Script.InsideTemperatureC = () => Wagon.CarInsideTempC;
-            Script.OutsideTemperatureC = () => Wagon.CarOutsideTempC;
-
-            // AbstractPowerSupply setters
-            Script.SetCurrentLowVoltagePowerSupplyState = (value) => LowVoltagePowerSupplyState = value;
-            Script.SetCurrentBatteryState = (value) => BatteryState = value;
-
-            // PassengerCarPowerSupply setters
-            Script.SetCurrentVentilationState = (value) => VentilationState = value;
-            Script.SetCurrentHeatingState = (value) => HeatingState = value;
-            Script.SetCurrentAirConditioningState = (value) => AirConditioningState = value;
-            Script.SetCurrentElectricTrainSupplyPowerW = (value) => {
-                if (value >= 0f)
-                {
-                    ElectricTrainSupplyPowerW = value;
-                }
-            };
-            Script.SetCurrentHeatFlowRateW = (value) => HeatFlowRateW = value;
         }
     }
 
