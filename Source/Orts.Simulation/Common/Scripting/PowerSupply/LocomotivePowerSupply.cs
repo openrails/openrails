@@ -385,5 +385,30 @@ namespace ORTS.Scripting.Api
             SignalEventToElectricTrainSupplySwitch(evt);
             SignalEventToTcs(evt);
         }
+
+        protected bool GetBoolParameter(string sectionName, string keyName, bool defaultValue) => LoadParameter(sectionName, keyName, defaultValue);
+        protected int GetIntParameter(string sectionName, string keyName, int defaultValue) => LoadParameter(sectionName, keyName, defaultValue);
+        protected float GetFloatParameter(string sectionName, string keyName, float defaultValue) => LoadParameter(sectionName, keyName, defaultValue);
+        protected string GetStringParameter(string sectionName, string keyName, string defaultValue) => LoadParameter(sectionName, keyName, defaultValue);
+
+        protected T LoadParameter<T>(string sectionName, string keyName, T defaultValue)
+        {
+            string buffer;
+            int length;
+
+            if (File.Exists(LpsHost.ParametersFileName))
+            {
+                buffer = new string('\0', 256);
+                length = NativeMethods.GetPrivateProfileString(sectionName, keyName, null, buffer, buffer.Length, LpsHost.ParametersFileName);
+
+                if (length > 0)
+                {
+                    buffer.Trim();
+                    return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+                }
+            }
+
+            return defaultValue;
+        }
     }
 }
