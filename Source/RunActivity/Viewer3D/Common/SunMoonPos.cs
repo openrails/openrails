@@ -86,6 +86,10 @@ namespace Orts.Viewer3D.Common
                 +Math.Cos(latitude)
                 * Math.Sin(Math.Acos(solarZenithCosine)));
 
+            // Running at 64 bit solarAzimuthCosine can be slightly below -1, generating NaN results
+            if (solarAzimuthCosine > 1.0d) solarAzimuthCosine = 1.0d;
+            if (solarAzimuthCosine < -1.0d) solarAzimuthCosine = -1.0d;
+
             // Solar azimuth angle, radians. Currently not used.
             //          double solarAzimuthAngle = Math.Acos(solarAzimuthCosine);
             //          if (clockTime > 0.5)
