@@ -100,6 +100,14 @@ namespace ORTS.Scripting.Api
         protected float ClosingDelayS() => Host.DelayS;
 
         /// <summary>
+        /// True if the service retention is active
+        /// </summary>
+        protected bool ServiceRetentionActive
+        {
+            get => PowerSupply.ServiceRetentionActive;
+        }
+
+        /// <summary>
         /// Sets the driver's circuit breaker closing order
         /// </summary>
         protected void SetDriverClosingOrder(bool value)
