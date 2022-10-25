@@ -2302,7 +2302,7 @@ namespace Orts.Viewer3D.RollingStock
 
         public string GetControlName()
         {
-            if (ControlDiscrete.ControlType.Type == CABViewControlTypes.ORTS_TCS) return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(ControlDiscrete.ControlType.Subtype);
+            if (ControlDiscrete.ControlType.Type == CABViewControlTypes.ORTS_TCS) return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(ControlDiscrete.ControlType.Id);
             return GetControlType().ToString();
         }
 
@@ -2521,7 +2521,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 // Train Control System controls
                 case CABViewControlTypes.ORTS_TCS:
-                    int commandIndex = Control.ControlType.Subtype - 1;
+                    int commandIndex = Control.ControlType.Id - 1;
                     Locomotive.TrainControlSystem.TCSCommandButtonDown.TryGetValue(commandIndex, out bool currentValue);
                     if (ChangedValue(1) > 0 ^ currentValue)
                         new TCSButtonCommand(Viewer.Log, !currentValue, commandIndex);

@@ -342,14 +342,14 @@ namespace Orts.Formats.Msts
     public struct CabViewControlType
     {
         public CABViewControlTypes Type;
-        public int Subtype;
+        public int Id;
         public CabViewControlType(string name)
         {
             Type = CABViewControlTypes.NONE;
-            Subtype = 0;
+            Id = 0;
             if (name != null && name.ToUpperInvariant().StartsWith("ORTS_TCS"))
             {
-                if (int.TryParse(name.Substring(8), out Subtype))
+                if (int.TryParse(name.Substring(8), out Id))
                 {
                     Type = CABViewControlTypes.ORTS_TCS;
                 }
@@ -358,7 +358,7 @@ namespace Orts.Formats.Msts
         }
         public override string ToString()
         {
-            if (Type == CABViewControlTypes.ORTS_TCS) return Type.ToString() + Subtype;
+            if (Type == CABViewControlTypes.ORTS_TCS) return Type.ToString() + Id;
             return Type.ToString();
         }
     }
@@ -592,7 +592,7 @@ namespace Orts.Formats.Msts
             ControlType = new CabViewControlType()
             {
                 Type = dialtype,
-                Subtype = 0,
+                Id = 0,
             };
             ControlStyle = CABViewControlStyles.NEEDLE;
             Direction = 0;

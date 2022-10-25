@@ -5816,7 +5816,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
 
                 case CABViewControlTypes.ORTS_TCS:
-                    TrainControlSystem.CabDisplayControls.TryGetValue(cvc.ControlType.Subtype - 1, out data);
+                    TrainControlSystem.CabDisplayControls.TryGetValue(cvc.ControlType.Id - 1, out data);
                     break;
 
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_COMMAND_SWITCH:
