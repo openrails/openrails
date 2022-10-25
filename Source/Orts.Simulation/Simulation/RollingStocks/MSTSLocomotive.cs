@@ -349,6 +349,7 @@ namespace Orts.Simulation.RollingStocks
         public float TrainBrakePipeLeakPSIorInHgpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
+        public bool CompressorIsMUControlled = false;
         public float MainResChargingRatePSIpS = 0.4f;
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
         public float EngineBrakeApplyRatePSIpS = 12.5f;
@@ -984,6 +985,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         CompressorIsMechanical = true;
                     }
                     break;
+                case "engine(ortscompressorismucontrolled": CompressorIsMUControlled = stf.ReadBoolBlock(false); break;
                 case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(vacuumbrakesvacuumpumpresistance": VacuumPumpResistanceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
 
@@ -1172,6 +1174,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
             CompressorIsMechanical = locoCopy.CompressorIsMechanical;
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
+            CompressorIsMUControlled = locoCopy.CompressorIsMUControlled;
             TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
             MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
             MainResPressurePSI = locoCopy.MaxMainResPressurePSI;
@@ -2645,9 +2648,20 @@ public List<CabView> CabViewList = new List<CabView>();
 
             // Turn compressor on and off
             if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+            {
                 SignalEvent(Event.CompressorOn);
+                foreach (var loco in Train.Cars.OfType<MSTSLocomotive>())
+                {
+                    if (loco.RemoteControlGroup == 0 && loco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !loco.CompressorIsOn && loco.CompressorIsMUControlled)
+                    {
+                        loco.SignalEvent(Event.CompressorOn);
+                    }
+                }
+            }
             else if ((MainResPressurePSI >= MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
+            {
                 SignalEvent(Event.CompressorOff);
+            }
 
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * reservoirChargingRate;
