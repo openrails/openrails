@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
-using System;
 
 namespace ORTS.Scripting.Api
 {
@@ -25,23 +25,33 @@ namespace ORTS.Scripting.Api
     /// </summary>
     public abstract class CircuitBreaker : TractionCutOffSubsystem
     {
+        internal ScriptedCircuitBreaker CbHost => Host as ScriptedCircuitBreaker;
+
         /// <summary>
         /// Current state of the circuit breaker
         /// </summary>
-        public Func<CircuitBreakerState> CurrentState;
+        protected CircuitBreakerState CurrentState() => CbHost.State;
+
         /// <summary>
         /// TCS' circuit breaker closing order
         /// </summary>
-        public Func<bool> TCSClosingOrder;
+        protected bool TCSClosingOrder() => CbHost.TCSClosingOrder;
+
         /// <summary>
         /// TCS' circuit breaker opening order
         /// </summary>
-        public Func<bool> TCSOpeningOrder;
+        protected bool TCSOpeningOrder() => CbHost.TCSOpeningOrder;
 
         /// <summary>
         /// Sets the current state of the circuit breaker
         /// </summary>
-        public Action<CircuitBreakerState> SetCurrentState;
+        protected void SetCurrentState(CircuitBreakerState state)
+        {
+            CbHost.State = state;
+
+            TCSEvent tcsEvent = state == CircuitBreakerState.Closed ? TCSEvent.CircuitBreakerClosed : TCSEvent.CircuitBreakerOpen;
+            Locomotive.TrainControlSystem.HandleEvent(tcsEvent);
+        }
     }
 
     public enum CircuitBreakerState
