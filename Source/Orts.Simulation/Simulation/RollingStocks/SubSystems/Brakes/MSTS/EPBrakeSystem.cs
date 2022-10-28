@@ -37,11 +37,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override void Update(float elapsedClockSeconds)
         {
-            MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
-            float demandedAutoCylPressurePSI = 0;
+            MSTSLocomotive lead = Car.Train.LeadLocomotive as MSTSLocomotive;
 
             // Only allow EP brake tokens to operate if car is connected to an EP system
-            if (lead == null || !(lead.BrakeSystem is EPBrakeSystem))
+            if (lead == null || !(lead.BrakeSystem is EPBrakeSystem) || Car.Train.BrakeLine4 == -1)
             {
                 HoldingValve = ValveState.Release;
                 base.Update(elapsedClockSeconds);
@@ -50,14 +49,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             if (EPBrakeControlsBrakePipe)
             {
-                if (Car.Train.BrakeLine4 != 0)
+                if (Car.Train.BrakeLine4 >= 0)
                 {
                     float targetPressurePSI = 0;
-                    if (Car.Train.BrakeLine4 < 0)
+                    if (Car.Train.BrakeLine4 == 0)
                     {
                         targetPressurePSI = lead.TrainBrakeController.MaxPressurePSI;
                     }
-                    else
+                    else if (Car.Train.BrakeLine4 > 0)
                     {
                         float x = Math.Min(Car.Train.BrakeLine4, 1);
                         targetPressurePSI = lead.TrainBrakeController.MaxPressurePSI - lead.TrainBrakeController.MinReductionPSI * (1 - x) - lead.TrainBrakeController.FullServReductionPSI * x;
@@ -83,13 +82,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {
-                if (BrakeLine3PressurePSI >= 1000f || Car.Train.BrakeLine4 < 0)
+                float demandedAutoCylPressurePSI = 0;
+                if (BrakeLine3PressurePSI >= 1000f)
                 {
                     HoldingValve = ValveState.Release;
                 }
-                else if (Car.Train.BrakeLine4 == 0)
+                else if (Car.Train.BrakeLine4 == -2) // Holding wire on
                 {
                     HoldingValve = ValveState.Lap;
+                }
+                else if (Car.Train.BrakeLine4 == 0)
+                {
+                    HoldingValve = ValveState.Release;
                 }
                 else
                 {
@@ -97,9 +101,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
                 }
                 
-
                 base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
-
 
                 if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
                 {
