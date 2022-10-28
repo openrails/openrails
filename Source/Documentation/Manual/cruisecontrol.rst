@@ -329,7 +329,7 @@ table here below.
    "ORTS_AMPERS_BY_CONTROLLER_VOLTAGE", "Displays the current used for the motive force of the locomotive", "Amperes", 
    "ORTS_ACCELERATION_IN_TIME", "Value of AccelerationBits; some cabs can show 'Arrows' pointing up or down according to speed change", "", 
    "ORTS_ODOMETER", "Displays the odometer value since last odometer reset", "meters or Km", 
-   "ORTS_CC_SELECT_SPEED", "obsolete (maybe)", "", 
+   "ORTS_CC_SELECT_SPEED", "Sets speed to value of second ScaleRange parameter (KpH or MpH depending from eng parameter SpeedIsMpH)", "", "Y" 
    "ORTS_NUMBER_OF_AXES_INCREASE", "Increases the number of axles of the train, when mouse pressed", "", "Y"
    "ORTS_NUMBER_OF_AXES_DECREASE", "Decreases the number of axles of the train, when mouse pressed", "", "Y"
    "ORTS_MULTI_POSITION_CONTROLLER", "Displays and sets the position of the MPC", "", "Y"
@@ -354,6 +354,10 @@ table here below.
    "ORTS_CC_SPEED_180", "As above, but speed as shown in control name", "", "Y"
    "ORTS_CC_SPEED_190", "As above, but speed as shown in control name", "", "Y"
    "ORTS_CC_SPEED_200", "As above, but speed as shown in control name", "", "Y"
+   "ORTS_CC_SPEED_PLUS5", "As above, but speed incremented by 5", "", "Y"
+   "ORTS_CC_SPEED_MINUS5", "As above, but speed decremented by 5", "", "Y"
+   "ORTS_CC_SPEED_PLUS1", "As above, but speed incremented by 1", "", "Y"
+   "ORTS_CC_SPEED_MINUS1", "As above, but speed decremented by 1", "", "Y"
    "ORTS_SELECTED_SPEED_SELECTOR", "Speed selection done by independent lever ranging from 0 to max speed; UoM may be KpH or MpH.", "", "Y"
 
 
