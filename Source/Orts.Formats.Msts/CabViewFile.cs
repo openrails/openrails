@@ -312,7 +312,11 @@ namespace Orts.Formats.Msts
         ORTS_CC_SPEED_180,
         ORTS_CC_SPEED_190,
         ORTS_CC_SPEED_200,
-
+		ORTS_CC_SPEED_PLUS5,
+        ORTS_CC_SPEED_MINUS5,
+        ORTS_CC_SPEED_PLUS1,
+        ORTS_CC_SPEED_MINUS1,
+					
         ORTS_ODOMETER,
         ORTS_ODOMETER_RESET,
         ORTS_ODOMETER_DIRECTION,

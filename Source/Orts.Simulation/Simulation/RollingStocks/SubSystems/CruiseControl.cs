@@ -71,6 +71,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 return selected;
             }
         }
+		public float SetSpeedKpHOrMpH
+        {
+            get
+            {
+                return SpeedIsMph ? MpS.ToMpH(SetSpeedMpS) : MpS.ToKpH(SetSpeedMpS);
+            }
+        } 
         public int SelectedNumberOfAxles = 0;
         public float SpeedRegulatorNominalSpeedStepMpS = 0;
         public float SpeedRegulatorNominalSpeedStepKpHOrMpH = 0;
@@ -173,7 +180,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool Speed0Pressed, Speed10Pressed, Speed20Pressed, Speed30Pressed, Speed40Pressed, Speed50Pressed
             , Speed60Pressed, Speed70Pressed, Speed80Pressed, Speed90Pressed, Speed100Pressed
             , Speed110Pressed, Speed120Pressed, Speed130Pressed, Speed140Pressed, Speed150Pressed
-            , Speed160Pressed, Speed170Pressed, Speed180Pressed, Speed190Pressed, Speed200Pressed;
+            , Speed160Pressed, Speed170Pressed, Speed180Pressed, Speed190Pressed, Speed200Pressed, SpeedPlus5Pressed, SpeedMinus5Pressed
+            , SpeedPlus1Pressed, SpeedMinus1Pressed;
 
         public CruiseControl(MSTSLocomotive locomotive)
         {
@@ -1582,6 +1590,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case CABViewControlTypes.ORTS_CC_SPEED_200:
                     {
                         data = Speed200Pressed ? 1 : 0;
+                        break;
+                    }
+				case CABViewControlTypes.ORTS_CC_SPEED_PLUS5:
+                    {
+                        data = SpeedPlus5Pressed ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_CC_SPEED_MINUS5:
+                    {
+                        data = SpeedMinus5Pressed ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_CC_SPEED_PLUS1:
+                    {
+                        data = SpeedPlus1Pressed ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_CC_SPEED_MINUS1:
+                    {
+                        data = SpeedMinus1Pressed ? 1 : 0;
                         break;
                     }
                 default:
