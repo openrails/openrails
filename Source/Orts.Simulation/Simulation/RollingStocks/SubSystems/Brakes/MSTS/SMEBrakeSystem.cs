@@ -41,7 +41,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float demandedAutoCylPressurePSI = 0;
 
             // Only allow SME brake tokens to operate if car is connected to an SME system
-            if (lead == null || !(lead.BrakeSystem is SMEBrakeSystem))
+            if (lead == null || !(lead.BrakeSystem is SMEBrakeSystem) || Car.Train.BrakeLine4 < 0)
             {
                 HoldingValve = ValveState.Release;
                 base.Update(elapsedClockSeconds);
@@ -50,13 +50,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             // process valid SME brake tokens
 
-            if (BrakeLine3PressurePSI >= 1000f || Car.Train.BrakeLine4 < 0)
+            if (BrakeLine3PressurePSI >= 1000f)
             {
                 HoldingValve = ValveState.Release;
-            }
-            else if (Car.Train.BrakeLine4 == 0)
-            {
-                HoldingValve = ValveState.Lap;
             }
             else
             {
@@ -64,7 +60,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
             }
             
-                base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
+            base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
 
 
             if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)

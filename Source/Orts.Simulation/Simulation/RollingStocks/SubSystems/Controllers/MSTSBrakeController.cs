@@ -76,7 +76,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         // Train Brake Controllers
         public override void UpdatePressure(ref float pressureBar, float elapsedClockSeconds, ref float epControllerState)
         {
-            float epState = 0;
+            float epState = -2; // EP Holding wire on. For tokens that do not operate EP brakes
 
             if (EmergencyBrakingPushButton() || TCSEmergencyBraking())
             {
@@ -104,7 +104,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 {
                     pressureBar = MaxPressureBar() - FullServReductionBar() * CurrentValue();
                     epState = CurrentValue();
-                    if (epState == 0) epState = -1;
                 }
                 else
                 {
@@ -131,17 +130,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         case ControllerState.Release:
                             IncreasePressure(ref pressureBar, Math.Min(MaxPressureBar(), MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
-                            epState = -1;
+                            epState = 0;
                             break;
                         case ControllerState.FullQuickRelease:
                         case ControllerState.SMEReleaseStart:
                             IncreasePressure(ref pressureBar, Math.Min(MaxPressureBar(), MainReservoirPressureBar()), QuickReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
-                            epState = -1;
+                            epState = 0;
                             break;
                         case ControllerState.Overcharge:
                             IncreasePressure(ref pressureBar, Math.Min(MaxOverchargePressureBar(), MainReservoirPressureBar()), QuickReleaseRateBarpS(), elapsedClockSeconds);
-                            epState = -1;
+                            epState = 0;
                             break;
                         case ControllerState.SlowService:
                             DecreasePressure(ref pressureBar, MaxPressureBar() - FullServReductionBar(), SlowApplicationRateBarpS(), elapsedClockSeconds);
