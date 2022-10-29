@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-07-09 11:25:47+0300\n"
-"PO-Revision-Date: 2022-07-09 12:04+0300\n"
+"POT-Creation-Date: 2022-10-29 14:20:25+0300\n"
+"PO-Revision-Date: 2022-10-29 17:01+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -332,82 +332,82 @@ msgstr ""
 msgid "Alt-E to gain control of your train"
 msgstr "Чтобы управлять поездом, нажмите Alt-E"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:835
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:858
 msgid "Dispatcher does not allow hand throw at this time"
 msgstr "Сейчас диспетчер запретил ручной перевод стрелок"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:879
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:902
 msgid "main route"
-msgstr "прямое"
+msgstr "прямому"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:879
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:902
 msgid "side route"
-msgstr "отклонённое"
+msgstr "отклонённому"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:1719
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1796
 msgid "You are the new dispatcher. Enjoy!"
 msgstr "Вы теперь диспетчер. Поздравляем!"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:1850
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1927
 msgid "Name conflicted with people in the game, will play in single mode"
 msgstr ""
 "Имя совпадает с именем другого игрока. Игра продолжится в "
 "однопользовательском режиме"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:1930
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2007
 #: ../../Orts.Simulation/MultiPlayer/MPManager.cs:188
 msgid "You gained back the control of your train"
 msgstr "Вы снова управляете своим поездом"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:2176
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2253
 msgid "Server quits, will play as single mode"
 msgstr "Сервер отключился, начат однопользовательский режим"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:2457
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:2711
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2534
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2788
 msgid "Trains uncoupled, gain back control by Alt-E"
 msgstr "Поезд расцеплен. Для управления им, нажмите Alt-E"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:2855
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:2983
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2933
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:3061
 msgid "Trains coupled, hit \\ then Shift-? to release brakes"
 msgstr "Поезд сцеплен, нажмите\"\\\"затем \"Shift-?\"для сброса автотормозов"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:3487
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:3565
 msgid "You are an assistant now, will be able to handle switches and signals."
 msgstr "Вы теперь помошник диспетчера. Можете управлять стрелками и сигналами."
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:3493
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:3571
 msgid "You are no longer an assistant."
 msgstr "Вы больше не помошник диспетчера."
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:878
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:901
 #, csharp-format
 msgid "Switched, current route is {0}"
-msgstr ""
+msgstr "Пропуск по {0}"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:1727
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1804
 #, csharp-format
 msgid "New dispatcher is {0}"
 msgstr "Диспетчер теперь {0}"
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:2187
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2264
 #: ../../Orts.Simulation/MultiPlayer/OnlinePlayer.cs:175
 #, csharp-format
 msgid "{0} quit."
 msgstr "{0} вышел."
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:2259
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2336
 #, csharp-format
 msgid "{0} lost."
 msgstr "{0} слетел."
 
-#: ../../Orts.Simulation/MultiPlayer/Message.cs:3373
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:3451
 #, csharp-format
 msgid " From {0}: {1}"
 msgstr " От {0}: {1}"
 
-#: ../../Orts.Simulation/MultiPlayer/MPManager.cs:829
+#: ../../Orts.Simulation/MultiPlayer/MPManager.cs:840
 msgid "Missing car, have substituted with other one."
 msgstr "Отсутствующий вагон заменён другим."
 
@@ -422,19 +422,19 @@ msgstr[2] ""
 "Нельзя расцепиться до полной остановки: в составе поезда {0} игроков ."
 
 #: ../../Orts.Simulation/Simulation/Activity.cs:1004
-#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6578
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6575
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10599
 msgid "Passenger boarding completed. Waiting for signal ahead to clear."
 msgstr "Посадка окончена. Ожидание разрешающего сигнала."
 
 #: ../../Orts.Simulation/Simulation/Activity.cs:1009
-#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6583
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6580
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10607
 msgid "Passenger boarding completed. You may depart now."
 msgstr "Посадка окончена. Отправление разрешается."
 
 #: ../../Orts.Simulation/Simulation/Activity.cs:984
-#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6590
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6587
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10614
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
@@ -442,7 +442,7 @@ msgstr "Посадка заканчивается в {0:D2}:{1:D2}"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:26
 msgid "None"
-msgstr ""
+msgstr "Нет"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:27
 msgid "Information"
@@ -485,8 +485,8 @@ msgid "locked. Close throttle, stop train then re-try."
 msgstr "заблокирован. Выключите контроллер и остановите поезд."
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:183
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1194
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1208
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1222
 msgid "Throttle"
 msgstr "Контроллер"
 
@@ -669,7 +669,7 @@ msgid "Boiler Water Tank"
 msgstr "Водяной бак"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:199
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:924
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:938
 msgid "Traction cut-off relay"
 msgstr "РП"
 
@@ -1000,7 +1000,7 @@ msgid "Battery"
 msgstr "АБ"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:247
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:921
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:935
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:351
 msgid "Master key"
 msgstr "ВУ"
@@ -1154,7 +1154,7 @@ msgstr "{0} {1:0}%"
 
 #. Context: NonSteam
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:182
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1195
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1209
 msgctxt "NonSteam"
 msgid "Reverser"
 msgstr "Реверсор"
@@ -1208,15 +1208,15 @@ msgctxt "Switch"
 msgid "change"
 msgstr "переведена"
 
-#: ../../Orts.Simulation/Simulation/Container.cs:1018
+#: ../../Orts.Simulation/Simulation/Container.cs:1021
 msgid "No suitable position to unload"
 msgstr "Нет подходящего места для разгрузки"
 
-#: ../../Orts.Simulation/Simulation/Container.cs:1070
+#: ../../Orts.Simulation/Simulation/Container.cs:1073
 msgid "No suitable container to load"
 msgstr "Нет подходящего контейнера для погрузки"
 
-#: ../../Orts.Simulation/Simulation/Container.cs:689
+#: ../../Orts.Simulation/Simulation/Container.cs:692
 #, csharp-format
 msgid "Wagon out of range: move wagon towards crane by {0} metres"
 msgstr "Платформа слишком далеко: сдвиньте её к крану на {0} метров"
@@ -1238,80 +1238,77 @@ msgid ""
 msgstr ""
 "Поезд игрока объединён с {0} в поезд {1}, который теперь управляется Вами"
 
-#: ../../Orts.Simulation/Simulation/Transfertables.cs:259
+#: ../../Orts.Simulation/Simulation/Transfertables.cs:277
+#: ../../Orts.Simulation/Simulation/Turntables.cs:625
+msgid "Rotation can't start: check throttle, speed, direction and control mode"
+msgstr "Не повернуть. Проверьте контроллер, реверсор, скорость, АЛС"
+
+#: ../../Orts.Simulation/Simulation/Transfertables.cs:296
 msgid "Train partially on transfertable, can't transfer"
 msgstr "Часть состава не на столе, переставлять нельзя"
 
-#: ../../Orts.Simulation/Simulation/Transfertables.cs:270
-msgid "Transfer can't start: check throttle, speed, direction and control mode"
-msgstr "Не сдвинуть. Проверьте контроллер, реверсор, скорость, АЛС"
-
-#: ../../Orts.Simulation/Simulation/Transfertables.cs:297
+#: ../../Orts.Simulation/Simulation/Transfertables.cs:327
 msgid "Transfertable starting transferring train"
 msgstr "Перестановка начата"
 
-#: ../../Orts.Simulation/Simulation/Transfertables.cs:366
-#: ../../Orts.Simulation/Simulation/Transfertables.cs:382
+#: ../../Orts.Simulation/Simulation/Transfertables.cs:396
+#: ../../Orts.Simulation/Simulation/Transfertables.cs:412
 msgid "Transfertable connected"
 msgstr "Перестановка окончена"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:205
+#: ../../Orts.Simulation/Simulation/Turntables.cs:213
 msgid "turntable"
 msgstr "поворотный круг"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:205
+#: ../../Orts.Simulation/Simulation/Turntables.cs:213
 msgid "transfertable"
 msgstr "передаточную платформу"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:224
-#: ../../Orts.Simulation/Simulation/Turntables.cs:265
+#: ../../Orts.Simulation/Simulation/Turntables.cs:232
+#: ../../Orts.Simulation/Simulation/Turntables.cs:273
 #, csharp-format
 msgid "Train slipped into non aligned {0}"
 msgstr "Скатывание с не готового {0}"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:231
+#: ../../Orts.Simulation/Simulation/Turntables.cs:239
 #, csharp-format
 msgid "Train front on {0}"
 msgstr "Зашёл на {0}"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:239
+#: ../../Orts.Simulation/Simulation/Turntables.cs:247
 #, csharp-format
 msgid "Train front outside {0}"
 msgstr "Переехал  {0}"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:272
+#: ../../Orts.Simulation/Simulation/Turntables.cs:280
 #, csharp-format
 msgid "Train rear on {0}"
 msgstr "Полностью на {0}"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:280
+#: ../../Orts.Simulation/Simulation/Turntables.cs:288
 #, csharp-format
 msgid "Train rear outside {0}"
 msgstr "Недозаехал на {0}"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:599
+#: ../../Orts.Simulation/Simulation/Turntables.cs:644
 msgid "Train partially on turntable, can't rotate"
 msgstr "Часть поезда не на мосту"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:610
-msgid "Rotation can't start: check throttle, speed, direction and control mode"
-msgstr "Не повернуть. Проверьте контроллер, реверсор, скорость, АЛС"
-
-#: ../../Orts.Simulation/Simulation/Turntables.cs:618
+#: ../../Orts.Simulation/Simulation/Turntables.cs:656
 msgid "Turntable starting rotation with train"
 msgstr "Поворот начат"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:730
-#: ../../Orts.Simulation/Simulation/Turntables.cs:761
+#: ../../Orts.Simulation/Simulation/Turntables.cs:770
+#: ../../Orts.Simulation/Simulation/Turntables.cs:801
 msgid "Turntable forward connected"
 msgstr "Выезд вперёд"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:743
-#: ../../Orts.Simulation/Simulation/Turntables.cs:774
+#: ../../Orts.Simulation/Simulation/Turntables.cs:783
+#: ../../Orts.Simulation/Simulation/Turntables.cs:814
 msgid "Turntable backward connected"
 msgstr "Выезд назад"
 
-#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:5019
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:5018
 #, csharp-format
 msgid ""
 "Join success: Train {0} service {1} has been incorporated into train {2} "
@@ -1333,67 +1330,75 @@ msgid ""
 "locked out."
 msgstr "Расход пара превысил производительность котла."
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6961
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6966
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6895
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6900
 msgid "Other train is blocking path"
 msgstr "Маршрут занят другим составом"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7826
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7753
 msgid "Stopped due to errors in route setting"
 msgstr "Остановлен, поскольку маршрут задан с ошибками"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8540
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9705
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8467
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9662
 msgid "No signal in train's path"
 msgstr "На маршруте нет сигналов"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8548
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8475
 msgid "Next signal already allocated to other train"
 msgstr "Участок впереди уже выделен другому поезду"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8609
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8536
 msgid "Request to clear signal cannot be processed"
 msgstr "Запрос на открытие сигнала не может быть выполнен"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8717
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9825
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8644
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9782
 msgid "No switch found"
 msgstr "Стрелок не обнаружено"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10185
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10136
 msgid "You cannot enter manual mode when autopiloted"
 msgstr "На автопилоте нельзя перейти в маневровый режим"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10190
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10141
 msgid "You cannot use this command for pathless trains"
 msgstr "Команда неприменима, когда поезду не задан маршрут"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10202
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10153
 msgid "Train is not back on original route"
 msgstr "Поезд не вернулся на маршрут"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10211
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10162
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr "Маршрут требует смены направления. Сначала остановите поезд"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10231
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10175
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "В режиме исследования нельзя включить маневровый режим АЛС"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10320
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10180
+msgid ""
+"Cannot change to Manual Mode. Use the Reset Out Of Control Mode command to "
+"release brakes"
+msgstr ""
+"Не переключиться в ручной режим. Для отпуска тормозов, используйте команду "
+"Reset Out Of Control Mode"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10269
 msgid "Reversal required and rear of train not on required route"
 msgstr "Необходимо сменить направление, хвост поезда не освободил стрелку"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10594
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10543
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "Нельзя открыть сигнал сзади при автоматическом режмие АЛС"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10826
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10775
 msgid "Out of control mode reset"
 msgstr "Сброс автостопа"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10831
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10780
 msgid ""
 "You can only reset if you passed a signal at danger or if you passed a "
 "misaligned switch."
@@ -1401,12 +1406,12 @@ msgstr ""
 "Сброс можно выполнить только после проезда запрещающего сигнала или взреза "
 "стрелки."
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16374
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16338
 msgid "Car "
 msgstr "Вагон "
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16448
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16453
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16410
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16415
 msgid "Locomotive "
 msgstr "Локомотив "
 
@@ -1420,30 +1425,30 @@ msgstr "В вагоне {0} слишком холодно. Пассажиры м
 msgid "Car {0} temperature is too cold for the freight."
 msgstr "В вагоне {0} влишком холодно для этого груза."
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:11124
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:11073
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
 "Поезд остановлен из-за неполадок с другим поездом: поезд {0} , причина: {1}"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:911
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:925
 msgid "Engine"
 msgstr "ДВС"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:914
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:942
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:928
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:956
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5955
 msgid "Gear"
 msgstr "Передача"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:918
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:932
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:348
 msgid "Battery switch"
 msgstr "Руб.АкБ"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:919
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:922
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:928
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:933
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:936
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:942
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:349
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:352
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:358
@@ -1451,9 +1456,9 @@ msgstr "Руб.АкБ"
 msgid "On"
 msgstr "Вкл"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:919
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:922
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:928
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:933
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:936
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:942
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:349
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:352
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:358
@@ -1461,28 +1466,28 @@ msgstr "Вкл"
 msgid "Off"
 msgstr "Откл"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:927
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:941
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:357
 msgid "Electric train supply"
 msgstr "Эл.Отоп"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:942
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:956
 msgid "N"
 msgstr "Нейтр"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:945
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1197
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:959
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1211
 msgid "Fuel"
 msgstr "Топливо"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:954
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:968
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:379
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6245
 msgid "StHeat:"
 msgstr "ПарОтоп:"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:955
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:965
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:969
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:979
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:380
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:390
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6246
@@ -1492,74 +1497,74 @@ msgstr "ПарОтоп:"
 msgid "Press"
 msgstr "Давл"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:957
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:971
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:382
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6248
 msgid "StTemp"
 msgstr "Темп.пара"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:959
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:973
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:384
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6250
 msgid "StUse"
 msgstr "Расх.пара"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:962
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:976
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:387
 msgid "WaterLvl"
 msgstr "Зап.воды"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:964
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:978
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:389
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6253
 msgid "Last:"
 msgstr "Хвост:"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:967
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:981
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:392
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6256
 msgid "Temp"
 msgstr "Тепрер"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:969
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:983
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:394
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6258
 msgid "OutTemp"
 msgstr "Наружн"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:971
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:985
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:396
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6260
 msgid "NetHt"
 msgstr "Баланс"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1003
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1047
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1017
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1061
 msgid "Setup"
 msgstr "Подг"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1012
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1026
 msgid "(flipped)"
 msgstr "(разверн)"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1013
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1118
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1122
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2171
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2187
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1027
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1132
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1136
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2142
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2158
 msgid "Sync"
 msgstr "Синхр"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1013
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1118
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1122
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2171
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2187
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1027
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1132
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1136
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2142
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2158
 msgid "Async"
 msgstr "Асинхр"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1109
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1210
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1123
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1224
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:131
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:139
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:75
@@ -1569,7 +1574,7 @@ msgstr "Асинхр"
 msgid "BP"
 msgstr "ТМ"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1109
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1123
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:141
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:90
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:99
@@ -1577,14 +1582,14 @@ msgstr "ТМ"
 msgid "EOT"
 msgstr "ХВ"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1127
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1141
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:137
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:129
 msgid "EQ"
 msgstr "УР"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1127
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1220
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1141
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1234
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:130
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:138
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:82
@@ -1592,68 +1597,68 @@ msgstr "УР"
 msgid "BC"
 msgstr "ТЦ"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1193
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1207
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1221
 msgid "ID"
 msgstr "№"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1196
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1213
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1218
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1210
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1227
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1232
 msgid "Remote"
 msgstr "Управл"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1198
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1212
 msgid "Tractive Effort"
 msgstr "Тягов.Усилие"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1209
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1223
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:404
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:435
 msgid "Load"
 msgstr "Нагрузка"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1219
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1233
 msgid "ER"
 msgstr "УР"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1221
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1235
 msgid "MR"
 msgstr "ГР"
 
 #. Context: Gear
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:915
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:929
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5956
 msgctxt "Gear"
 msgid "N"
 msgstr "Нейтраль"
 
 #. Context: PowerSupply
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:931
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:945
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:361
 msgctxt "PowerSupply"
 msgid "Power"
 msgstr "Напряж"
 
 #. Context: Notch
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:983
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1027
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:997
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1041
 msgctxt "Notch"
 msgid "N"
 msgstr "0"
 
 #. Context: Notch
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:991
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:999
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1035
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1043
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1005
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1013
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1049
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1057
 msgctxt "Notch"
 msgid "B"
 msgstr "Т"
 
 #. Context: Notch
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1005
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1049
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1019
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1063
 msgctxt "Notch"
 msgid "Idle"
 msgstr "Выбег"
@@ -1684,41 +1689,41 @@ msgstr ""
 msgid "Auxiliary power"
 msgstr "Питание ВЦ"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2712
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2766
 msgid "No water scoop on this loco"
 msgstr "Локомотив не оборудован черпаком"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2719
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2773
 msgid "Scoop is broken, can't refill"
 msgstr "Черпак повреждён, набор воды невозможен"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2726
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2780
 msgid "Scoop is broken by junction track"
 msgstr "Черпак разбит об рельсы"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2736
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2790
 msgid "Scoop is not over trough, can't refill"
 msgstr "Черпак не над канавой, набор воды невозможен"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3101
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3155
 msgid "Sand supply has been exhausted"
 msgstr "Песочный бункер экипировочного устройства пуст"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3536
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3597
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3590
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3651
 msgid "Throttle must be reduced to Idle before gear change can happen."
 msgstr "Установите контроллер на ноль перед переключением передачи."
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2747
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2801
 msgid "Refill: Loco must be moving forward."
 msgstr "Для набора двигайтесь вперёд."
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2756
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2810
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0} for water to enter tender."
 msgstr "Для набора воды, скорость движения должна превышать {0}."
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2766
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2820
 msgid "Refill: Water supply now replenished."
 msgstr "Запасы воды пополнены."
 
@@ -1766,7 +1771,7 @@ msgstr "Уровень в котле нормализовался."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5953
 msgid "Fixed gear"
-msgstr ""
+msgstr "Редукторный"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5957
 msgid "Steam usage"
@@ -1846,7 +1851,7 @@ msgstr "Кал.топл"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5998
 msgid "Adj:"
-msgstr "Перем:"
+msgstr "Поправки:"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5999
 msgid "CylEff"
@@ -1854,7 +1859,7 @@ msgstr "Эфф.Цил"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6001
 msgid "PortOpen"
-msgstr "Откр.регул"
+msgstr "L вп.окна"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6005
 msgid "Steam Production"
@@ -1878,7 +1883,7 @@ msgstr "Эффективн"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6022
 msgid "Heat:"
-msgstr "Тепло:"
+msgstr "Теплота:"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6023
 msgid "In"
@@ -1917,7 +1922,7 @@ msgstr "Темпер:"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6041
 msgid "Flue"
-msgstr "Стенок"
+msgstr "Газов"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6043
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6366
@@ -1979,7 +1984,7 @@ msgstr "Эверласт"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6076
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6103
 msgid "MaxSafe"
-msgstr "Все пред"
+msgstr "Все пр.кл"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6091
 msgid "Ejector"
@@ -2007,15 +2012,15 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6121
 msgid "ExhLap"
-msgstr ""
+msgstr "ВыпПер"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6123
 msgid "StLap"
-msgstr ""
+msgstr "ВпПер"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6125
 msgid "AdvAng"
-msgstr ""
+msgstr "УгОпер"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6134
 msgid "CylEvts:"
@@ -2027,7 +2032,7 @@ msgstr "Отсечка"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6139
 msgid "CylComp"
-msgstr ""
+msgstr "Компаунд"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6141
 msgid "CyAdmis"
@@ -2077,7 +2082,7 @@ msgstr "Давл:"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6202
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6377
 msgid "Status:"
-msgstr "Состоян:"
+msgstr "События:"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6204
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:167
@@ -2117,8 +2122,8 @@ msgstr "Заглушка"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6669
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6690
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6692
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2170
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2185
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2141
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2156
 msgid "Yes"
 msgstr "Да"
 
@@ -2143,8 +2148,8 @@ msgstr "Да"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6669
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6690
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6692
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2170
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2185
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2141
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:2156
 msgid "No"
 msgstr "Нет"
 
@@ -2182,11 +2187,11 @@ msgstr "Подача"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6275
 msgid "BurnRate"
-msgstr "Ск Сгор"
+msgstr "Ск.Сгор"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6277
 msgid "Combust"
-msgstr "Уд Сгор"
+msgstr "Уд.Сгор"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6281
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6388
@@ -2220,7 +2225,7 @@ msgstr "Темп.2"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6342
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6362
 msgid "Tender:"
-msgstr "Тендер:"
+msgstr "Запасы:"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6343
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6363
@@ -2275,7 +2280,7 @@ msgstr "Сбр.пар"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6394
 msgid "AIOR"
-msgstr ""
+msgstr "КорОтопл"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6400
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6445
@@ -2305,7 +2310,7 @@ msgstr "На сцепке"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6409
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6454
 msgid "BlrLmt"
-msgstr "Огр.кот"
+msgstr "ПрМощн"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6413
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6458
@@ -2432,7 +2437,7 @@ msgstr "Давл.ГР"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6569
 msgid "Slip Debug"
-msgstr ""
+msgstr "Боксование"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6571
 msgid "Start:"
@@ -2441,12 +2446,12 @@ msgstr "Трогание:"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6572
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6586
 msgid "CyPressL"
-msgstr ""
+msgstr "ЛевЦил"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6574
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6588
 msgid "CyPressR"
-msgstr ""
+msgstr "ПравЦил"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6585
 msgid "Speed:"
@@ -2585,51 +2590,51 @@ msgctxt "HUD"
 msgid "Power"
 msgstr "Мощн"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1999
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1941
 msgid "Starting unload"
 msgstr "Начинается разгрузка"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4057
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3999
 msgid "Incompatible data"
 msgstr "Несовместимо"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4072
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4014
 msgid "Starting refill"
 msgstr "Экипировка начата"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4081
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4128
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4023
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4070
 msgid "Preparing for unload"
 msgstr "Подготовка к выгрузке"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4101
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4043
 msgid "Container station busy with preceding mission"
 msgstr "Крановщик ещё занят предыдущей работой"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4108
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4050
 msgid "No containers to load"
 msgstr "Нет контейнеров для погрузки"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4112
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4054
 msgid "Starting load"
 msgstr "Погрузка начата"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4122
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4064
 msgid "Container station full, can't unload"
 msgstr "Контейнерная площадка переполнена - некуда разгружать"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1965
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1936
 msgid ""
 "You were travelling too fast for this curve, and have snapped a brake hose "
 "on Car "
 msgstr "Скорость в кривой превышена. Разъединился тормозной рукав у вагона "
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1653
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1624
 #, csharp-format
 msgid "Car {0} has derailed on the curve."
 msgstr "Вагон {0} сошёл с рельсов в кривой."
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1927
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1898
 #, csharp-format
 msgid ""
 "You are travelling too fast for this curve. Slow down, your freight car {0} "
@@ -2638,7 +2643,7 @@ msgstr ""
 "Скорость в кривой превышена. Притормозите,груз в вагоне {0} может быть "
 "повреждён. Рекомендуется скорость {1}"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1931
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1902
 #, csharp-format
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers in "
@@ -2752,6 +2757,10 @@ msgstr "Высадка пассажиров окончена. Поезд анн�
 #, csharp-format
 msgid "Turntable is ready for access - allowed speed set to {0}"
 msgstr "Поворотный круг готов - разрешённая скорость {0}"
+
+#~ msgid ""
+#~ "Transfer can't start: check throttle, speed, direction and control mode"
+#~ msgstr "Не сдвинуть. Проверьте контроллер, реверсор, скорость, АЛС"
 
 #~ msgid "No power line!"
 #~ msgstr "Отсутствует КС!"
