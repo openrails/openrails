@@ -132,8 +132,6 @@ A list of the available .eng file CC parameters follows here below.
    "UseThrottleAsSpeedSelector", "if ControllerCruiseControlLogic is set to SpeedOnly, throttle when in Auto mode will change the maximum CC speed", "Boolean", "FALSE"
    "UseThrottleAsForceSelector", "if ControllerCruiseControlLogic is set to None, throttle when in Auto mode will change the maximum CC Force", "Boolean", "FALSE"
    "UseThrottleInCombinedControl", "Throttle is used as force selector or speed selector even if in combined control, to be used in conjunction of one of the two above parameters", "Boolean", "FALSE"
-   "DynamicBrakeIncreaseSpeed", "How fast the dynamic brake can increase (0.5 means 1% in 0.5sec)", "Float", "0.5"
-   "DynamicBrakeDecreaseSpeed", "Same for decreasing", "Float", "0.6"
    "ControllerCruiseControlLogic", "Can have values 'None', 'SpeedOnly', 'Full'", "Enum", "Full"
    "HasProportionalSpeedSelector", "Speed selector is performed by a lever ranging from 0 to max speed", "Boolean", "FALSE"
    "SpeedSelectorIsDiscrete", "Speed selected can have only values multiple of NominalSpeedStep, even if selection is through mouse", "Boolean", "FALSE"
@@ -143,8 +141,8 @@ A list of the available .eng file CC parameters follows here below.
    "UseTrainBrakeAndDynBrake", "CC uses train brake and dyn brake together", "Boolean", "FALSE"
    "SpeedDeltaToEnableTrainBrake", "This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake", "Float(speed)", "5m/s"
    "SpeedDeltaToEnableFullTrainBrake", "This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake with no reduced intensity", "Float(speed)", "10m/s"
-   "TrainBrakeMinPercentValue", "This is the minimum train brake percent used by the CC, this depends also from the value of the smooth notch in the Brake_Train block", "Float(percent)", "30"
-   "TrainBrakeMaxPercentValue", "As above for maximum value. It must be lower than the value of the subsequent notch, and not too high to avoid that the brake is not fully released timely", "Float(percent)", "85"
+   "TrainBrakeMinPercentValue", "This is the minimum train brake percent used by the CC. 0 means no braking, 100 means full service braking", "Float(percent)", "30"
+   "TrainBrakeMaxPercentValue", "As above for maximum value. It must not be too high to avoid that the brake is not fully released timely", "Float(percent)", "85"
    "ThrottleNeutralPosition", "The zero throttle position is neutral in auto mode, that is in such position the CC does not intervene", "Boolean", "FALSE"
    "MinimumSpeedForCCEffect", "Below this speed CC has no effect", "Float(speed)", "0"
    "StartInAutoMode", "Game starts with CC in Auto mode", "Boolean", "FALSE"
@@ -182,11 +180,9 @@ Train brake usage occurs when the delta between the actual train speed and
 the target speed is higher than parameter SpeedDeltaToEnableTrainBrake.
 Between this delta and SpeedDeltaToEnableFullTrainBrake the train brake is 
 set at TrainBrakeMinPercentValue. Above SpeedDeltaToEnableFullTrainBrake 
-the train brake is set to the maximum between a percentage of 
-TrainBrakeMaxPercentValue proportional to the max force percent set and 
-TrainBrakeMinPercentValue. 
-In other words, when the speed delta is high, train braking occurs with a 
-value that is proportional to the max force percent set; when train decelerates 
+the train brake is continuously adjusted to achieve a constant deceleration.
+In other words, when the speed delta is high, train braking is adjusted to
+obtain a constant deceleration when dynamic braking is not enough; when train decelerates 
 and delta reduces to SpeedDeltaToEnableFullTrainBrake the train brake is reduced to 
 TrainBrakeMinPercentValue. When train decelerates further and delta reduces to 
 SpeedDeltaToEnableTrainBrake the train brake is released. By adjusting these 
@@ -200,23 +196,8 @@ block within the .eng file follows here::
   	UseTrainBrakeAndDynBrake ( True ) comment (** CC uses train brake and dyn brake together **)
 		SpeedDeltaToEnableTrainBrake ( 15km/h ) comment (** This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake **)
 		SpeedDeltaToEnableFullTrainBrake ( 30km/h ) comment (** This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake with no reduced intensity **)		
-		TrainBrakeMinPercentValue ( 30 ) comment (** This is the minimum train brake percent used by the CC; this depends also from the value of the smooth notch in the Brake_Train block **)
-		TrainBrakeMaxPercentValue ( 60 ) comment (** As above for maximum value. It must be lower than the value of the subsequent notch, and not too high to avoid that the brake is not fully released  timely **)
-
-This is related to a brake controller defined as follows in the .eng file::
-
-  		Brake_Train ( 0 1 0.03 0.3
-			NumNotches ( 5 
-				Notch ( 0 0 TrainBrakesControllerReleaseStart ) 
-				Notch ( 0.3 1 TrainBrakesControllerGraduatedSelfLapLimitedHoldingStart ) 
-				Notch ( 0.85 0 TrainBrakesControllerSuppressionStart ) 
-				Notch ( 0.9 0 TrainBrakesControllerContinuousServiceStart ) 
-				Notch ( 0.95 0 TrainBrakesControllerEmergencyStart ) 
-			) 
-
-The continuous part of the controller is between second and third notch, that 
-is between 0.3 and 0.85. Therefore CC control of the train brake can occur 
-for percentages between 30 and 85.
+		TrainBrakeMinPercentValue ( 10 ) comment (** This is the minimum train brake percent used by the CC, where 0 means no braking and 100 full braking **)
+		TrainBrakeMaxPercentValue ( 60 ) comment (** As above for maximum value. It must not be too high to avoid that the brake is not fully released timely **)
 
 Multi Position Controller (MPC)
 -------------------------------

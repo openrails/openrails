@@ -100,8 +100,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public List<float> AccelerationTable = new List<float>();
         public enum SpeedRegulatorMode { Manual, Auto, Testing, AVV }
         public enum SpeedSelectorMode { Parking, Neutral, On, Start }
-        public float DynamicBrakeIncreaseSpeed = 0;
-        public float DynamicBrakeDecreaseSpeed = 0;
         public uint MinimumMetersToPass = 19;
         public float AccelerationRampMaxMpSSS = 0.7f;
         public float AccelerationDemandMpSS;
@@ -219,8 +217,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             StartReducingSpeedDeltaDownwards = other.StartReducingSpeedDeltaDownwards;
             ForceStepsThrottleTable = other.ForceStepsThrottleTable;
             AccelerationTable = other.AccelerationTable;
-            DynamicBrakeIncreaseSpeed = other.DynamicBrakeIncreaseSpeed;
-            DynamicBrakeDecreaseSpeed = other.DynamicBrakeDecreaseSpeed;
             AccelerationRampMaxMpSSS = other.AccelerationRampMaxMpSSS;
             AccelerationRampMinMpSSS = other.AccelerationRampMinMpSSS;
             ResetForceAfterAnyBraking = other.ResetForceAfterAnyBraking;
@@ -348,8 +344,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         }
                     case "usethrottleasspeedselector": UseThrottleAsSpeedSelector = stf.ReadBoolBlock(false); break;
                     case "usethrottleasforceselector": UseThrottleAsForceSelector = stf.ReadBoolBlock(false); break;
-                    case "dynamicbrakeincreasespeed": DynamicBrakeIncreaseSpeed = stf.ReadFloatBlock(STFReader.UNITS.Any, 0.5f); break;
-                    case "dynamicbrakedecreasespeed": DynamicBrakeDecreaseSpeed = stf.ReadFloatBlock(STFReader.UNITS.Any, 0.5f); break;
                     case "forceresetrequiredafterbraking": ForceResetRequiredAfterBraking = stf.ReadBoolBlock(false); break;
                     case "forceresetincludedynamicbrake": ForceResetIncludeDynamicBrake = stf.ReadBoolBlock(false); break;
                     case "zeroselectedspeedwhenpassingtothrottlemode": ZeroSelectedSpeedWhenPassingToThrottleMode = stf.ReadBoolBlock(false); break;
