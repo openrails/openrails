@@ -287,35 +287,13 @@ namespace Orts.Formats.Msts
         ORTS_CONTROLLER_VOLTAGE,
         ORTS_AMPERS_BY_CONTROLLER_VOLTAGE,
         ORTS_ACCELERATION_IN_TIME,
-        ORTS_CC_SELECT_SPEED,
+        ORTS_CC_SELECTED_SPEED,
         ORTS_NUMBER_OF_AXES_INCREASE,
         ORTS_NUMBER_OF_AXES_DECREASE,
         ORTS_MULTI_POSITION_CONTROLLER,
         ORTS_CC_SPEED_0,
-        ORTS_CC_SPEED_10,
-        ORTS_CC_SPEED_20,
-        ORTS_CC_SPEED_30,
-        ORTS_CC_SPEED_40,
-        ORTS_CC_SPEED_50,
-        ORTS_CC_SPEED_60,
-        ORTS_CC_SPEED_70,
-        ORTS_CC_SPEED_80,
-        ORTS_CC_SPEED_90,
-        ORTS_CC_SPEED_100,
-        ORTS_CC_SPEED_110,
-        ORTS_CC_SPEED_120,
-        ORTS_CC_SPEED_130,
-        ORTS_CC_SPEED_140,
-        ORTS_CC_SPEED_150,
-        ORTS_CC_SPEED_160,
-        ORTS_CC_SPEED_170,
-        ORTS_CC_SPEED_180,
-        ORTS_CC_SPEED_190,
-        ORTS_CC_SPEED_200,
-		ORTS_CC_SPEED_PLUS5,
-        ORTS_CC_SPEED_MINUS5,
-        ORTS_CC_SPEED_PLUS1,
-        ORTS_CC_SPEED_MINUS1,
+
+		ORTS_CC_SPEED_DELTA,
 					
         ORTS_ODOMETER,
         ORTS_ODOMETER_RESET,
@@ -467,6 +445,7 @@ namespace Orts.Formats.Msts
         public string ACEFile = "";
         public string Label = "";
         public int ControlId = 0;
+        public float Parameter1; // Generic parameter, individually interpreted by the controls using it
 
         public int Display;
         public List<string> Screens;
@@ -1152,6 +1131,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsscreenpage", () => {ParseScreen(stf); }),
                 new STFReader.TokenProcessor("ortsnewscreenpage", () => {ParseNewScreen(stf); }),
                 new STFReader.TokenProcessor("ortscabviewpoint", ()=>{ParseCabViewpoint(stf); }),
+                new STFReader.TokenProcessor("ortsparameter1", ()=>{ Parameter1 = stf.ReadFloatBlock(STFReader.UNITS.Any, 0); }),
                 });
 
                 // If no ACE, just don't need any fixup
