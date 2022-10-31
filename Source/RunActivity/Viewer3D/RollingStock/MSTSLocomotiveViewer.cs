@@ -234,46 +234,59 @@ namespace Orts.Viewer3D.RollingStock
             if (UserInput.IsPressed(UserCommand.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); }
             if (UserInput.IsPressed(UserCommand.DebugToggleAdvancedAdhesion)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); Locomotive.Simulator.UseAdvancedAdhesion = !Locomotive.Simulator.UseAdvancedAdhesion; }
 
-            if (UserInput.RDState != null)
+            ExternalDeviceState[] externalDevices = {UserInput.RDState, UserInput.WebDeviceState};
+            foreach (var external in externalDevices)
             {
-                if (UserInput.RDState.BailOff)
+                if (external == null) continue;
+                if (external.Throttle.Changed)
+                    Locomotive.SetThrottlePercentWithSound(external.Throttle.Value * 100);
+                if (external.TrainBrake.Changed)
+                    Locomotive.SetTrainBrakePercent(external.TrainBrake.Value * 100);
+                if (external.EngineBrake.Changed)
+                    Locomotive.SetEngineBrakePercent(external.EngineBrake.Value * 100);
+                //    Locomotive.SetBrakemanBrakePercent(external.BrakemanBrakePercent); // For Raildriver control not complete for this value?
+                if (external.DynamicBrake.Changed && Locomotive.CombinedControlType != MSTSLocomotive.CombinedControl.ThrottleAir)
+                    Locomotive.SetDynamicBrakePercentWithSound(external.DynamicBrake.Value * 100);
+                
+                if (external.Direction.Changed)
                 {
-                    Locomotive.SetBailOff(true);
-                }
-                if (UserInput.RDState.Changed)
-                {
-                    Locomotive.AlerterReset();
-
-                    Locomotive.SetThrottlePercentWithSound(UserInput.RDState.ThrottlePercent);
-                    Locomotive.SetTrainBrakePercent(UserInput.RDState.TrainBrakePercent);
-                    Locomotive.SetEngineBrakePercent(UserInput.RDState.EngineBrakePercent);
-                    //    Locomotive.SetBrakemanBrakePercent(UserInput.RDState.BrakemanBrakePercent); // For Raildriver control not complete for this value?
-                    if (Locomotive.CombinedControlType != MSTSLocomotive.CombinedControl.ThrottleAir)
-                        Locomotive.SetDynamicBrakePercentWithSound(UserInput.RDState.DynamicBrakePercent);
-                    if (UserInput.RDState.DirectionPercent > 50)
+                    if (Locomotive is MSTSSteamLocomotive steam)
+                    {
+                        steam.SetCutoffPercent(UserInput.RDState.Direction.Value * 100);
+                    }
+                    else if (external.Direction.Value > 0.5f)
                         Locomotive.SetDirection(Direction.Forward);
-                    else if (UserInput.RDState.DirectionPercent < -50)
+                    else if (external.Direction.Value < -0.5f)
                         Locomotive.SetDirection(Direction.Reverse);
                     else
                         Locomotive.SetDirection(Direction.N);
-                    if (UserInput.RDState.Emergency)
-                        new EmergencyPushButtonCommand(Viewer.Log, true);
-                    else
-                        new EmergencyPushButtonCommand(Viewer.Log, false);
-                    if (UserInput.RDState.Wipers == 1 && Locomotive.Wiper)
-                        Locomotive.SignalEvent(Event.WiperOff);
-                    if (UserInput.RDState.Wipers != 1 && !Locomotive.Wiper)
-                        Locomotive.SignalEvent(Event.WiperOn);
+                }
+                
+                if (external.Lights.Changed)
+                {
                     // changing Headlight more than one step at a time doesn't work for some reason
-                    if (Locomotive.Headlight < UserInput.RDState.Lights - 1)
+                    if (Locomotive.Headlight < external.Lights.Value - 1)
                     {
                         Locomotive.Headlight++;
                         Locomotive.SignalEvent(Event.LightSwitchToggle);
                     }
-                    if (Locomotive.Headlight > UserInput.RDState.Lights - 1)
+                    if (Locomotive.Headlight > external.Lights.Value - 1)
                     {
                         Locomotive.Headlight--;
                         Locomotive.SignalEvent(Event.LightSwitchToggle);
+                    }
+                }
+                // Handle other cabcontrols
+                foreach (var kvp in external.CabControls)
+                {
+                    if (_CabRenderer == null) break;
+                    if (!kvp.Value.Changed) continue;
+                    if (_CabRenderer.ControlMap.TryGetValue(kvp.Key, out var renderer) && renderer is CabViewDiscreteRenderer discrete)
+                    {
+                        var oldChanged = discrete.ChangedValue;
+                        discrete.ChangedValue = (val) => kvp.Value.Value;
+                        discrete.HandleUserInput();
+                        discrete.ChangedValue = oldChanged;
                     }
                 }
             }
@@ -1973,7 +1986,7 @@ namespace Orts.Viewer3D.RollingStock
         /// <summary>
         /// Function calculating response value for mouse events (movement, left-click), determined by configured style.
         /// </summary>
-        readonly Func<float, float> ChangedValue;
+        public Func<float, float> ChangedValue;
 
         public CabViewDiscreteRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCWithFrames control, CabShader shader)
             : base(viewer, locomotive, control, shader)

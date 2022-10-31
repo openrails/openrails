@@ -26,7 +26,7 @@ using EmbedIO.WebApi;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Orts.Simulation.Physics;
+using Orts.Formats.Msts;
 using Orts.Viewer3D.RollingStock;
 using System;
 using System.Collections.Generic;
@@ -83,6 +83,14 @@ namespace Orts.Viewer3D.WebServices
                     Formatting = Formatting.Indented,
                     ContractResolver = new XnaFriendlyResolver()
                 }));
+            }
+        }
+        
+        public static async Task<T> DeserializationCallback<T>(IHttpContext context)
+        {
+            using (var text = context.OpenRequestText())
+            {
+                return JsonConvert.DeserializeObject<T>(await text.ReadToEndAsync());
             }
         }
 
@@ -248,6 +256,48 @@ namespace Orts.Viewer3D.WebServices
         #region /API/CABCONTROLS
         [Route(HttpVerbs.Get, "/CABCONTROLS")]
         public IEnumerable<ControlValue> CabControls() => ((MSTSLocomotiveViewer)Viewer.PlayerLocomotiveViewer).GetWebControlValueList();
+        #endregion
+
+        #region /API/CABCONTROLS
+        [Route(HttpVerbs.Post, "/CABCONTROLS")]
+        public async Task SetCabControls()
+        {
+            var data = await HttpContext.GetRequestDataAsync<IEnumerable<ControlValuePost>>(WebServer.DeserializationCallback<IEnumerable<ControlValuePost>>);
+                var dev = UserInput.WebDeviceState;
+            foreach (var control in data)
+            {
+                if (control.TypeName == "TRAIN_BRAKE")
+                {
+                    dev.TrainBrake.Value = (float)control.Value;
+                }
+                else if (control.TypeName == "THROTTLE")
+                {
+                    dev.Throttle.Value = (float)control.Value;
+                }
+                else if (control.TypeName == "DYNAMIC_BRAKE")
+                {
+                    dev.DynamicBrake.Value = (float)control.Value;
+                }
+                else if (control.TypeName == "ENGINE_BRAKE")
+                {
+                    dev.EngineBrake.Value = (float)control.Value;
+                }
+                else if (control.TypeName == "REVERSER")
+                {
+                    dev.Direction.Value = (float)control.Value;
+                }
+                else
+                {
+                    var key = (new CabViewControlType(control.TypeName), control.ControlIndex);
+                    if (!dev.CabControls.TryGetValue(key, out var state))
+                    {
+                        state = new ExternalDeviceCabControl();
+                        dev.CabControls[key] = state;
+                    }
+                    state.Value = (float)control.Value;
+                }
+            }
+        }
         #endregion
 
         #region /API/TIME
