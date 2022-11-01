@@ -196,14 +196,16 @@ namespace Orts.Viewer3D.RollingStock
                 () => new TCSButtonCommand(Viewer.Log, false, 0),
                 () => {
                     new TCSButtonCommand(Viewer.Log, true, 0);
-                    new TCSSwitchCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandSwitchOn[0], 0);
+                    Locomotive.TrainControlSystem.TCSCommandSwitchOn.TryGetValue(0, out bool wasPressed);
+                    new TCSSwitchCommand(Viewer.Log, !wasPressed, 0);
                 }
             });
             UserInputCommands.Add(UserCommand.ControlTCSGeneric2, new Action[] {
                 () => new TCSButtonCommand(Viewer.Log, false, 1),
                 () => {
                     new TCSButtonCommand(Viewer.Log, true, 1);
-                    new TCSSwitchCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandSwitchOn[1], 1);
+                    Locomotive.TrainControlSystem.TCSCommandSwitchOn.TryGetValue(1, out bool wasPressed);
+                    new TCSSwitchCommand(Viewer.Log, !wasPressed, 1);
                 }
             });
 
