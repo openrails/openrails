@@ -29,8 +29,6 @@ namespace Orts.Viewer3D
         static int PantoThirdCount;
         static int WiperCount;
         static int HeadLightCount;
-        static int DoorLeftCount;
-        static int DoorRightCount;
         static int MirrorsCount;
 
         public static void HandleUserInput()
