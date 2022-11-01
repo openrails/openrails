@@ -29,29 +29,17 @@ namespace Orts.Viewer3D
     /// </summary>
     public class ExternalDeviceState
     {
-        public ExternalDeviceCabControl Direction = new ExternalDeviceCabControl();      // -100 (reverse) to 100 (forward)
-        public ExternalDeviceCabControl Throttle = new ExternalDeviceCabControl();       // 0 to 100
-        public ExternalDeviceCabControl DynamicBrake = new ExternalDeviceCabControl();   // 0 to 100 if active otherwise less than 0
-        public ExternalDeviceCabControl TrainBrake = new ExternalDeviceCabControl();     // 0 (release) to 100 (CS), does not include emergency
-        public ExternalDeviceCabControl EngineBrake = new ExternalDeviceCabControl();    // 0 to 100
-        public ExternalDeviceCabControl Lights = new ExternalDeviceCabControl();                  // lights rotary, 1 off, 2 dim, 3 full
         public Dictionary<(CabViewControlType,int), ExternalDeviceCabControl> CabControls;
-        public Dictionary<UserCommand, ExternalDeviceButton> Buttons;
+        public Dictionary<UserCommand, ExternalDeviceButton> Commands;
         public ExternalDeviceState()
         {
-            Buttons = new Dictionary<UserCommand, ExternalDeviceButton>();
+            Commands = new Dictionary<UserCommand, ExternalDeviceButton>();
             CabControls = new Dictionary<(CabViewControlType,int), ExternalDeviceCabControl>();
         }
 
         public virtual void Handled()
         {
-            Direction.Changed = false;
-            Throttle.Changed = false;
-            DynamicBrake.Changed = false;
-            TrainBrake.Changed = false;
-            EngineBrake.Changed = false;
-            Lights.Changed = false;
-            foreach (var button in Buttons.Values)
+            foreach (var button in Commands.Values)
             {
                 button.Changed = false;
             }
@@ -63,17 +51,17 @@ namespace Orts.Viewer3D
 
         public bool IsPressed(UserCommand command)
 		{
-            return Buttons.TryGetValue(command, out var button) && button.IsPressed;
+            return Commands.TryGetValue(command, out var button) && button.IsPressed;
 		}
 
 		public bool IsReleased(UserCommand command)
 		{
-            return Buttons.TryGetValue(command, out var button) && button.IsReleased;
+            return Commands.TryGetValue(command, out var button) && button.IsReleased;
 		}
 
 		public bool IsDown(UserCommand command)
 		{
-            return Buttons.TryGetValue(command, out var button) && button.IsDown;
+            return Commands.TryGetValue(command, out var button) && button.IsDown;
 		}
     }
     public class ExternalDeviceButton

@@ -266,36 +266,13 @@ namespace Orts.Viewer3D.WebServices
                 var dev = UserInput.WebDeviceState;
             foreach (var control in data)
             {
-                if (control.TypeName == "TRAIN_BRAKE")
+                var key = (new CabViewControlType(control.TypeName), control.ControlIndex);
+                if (!dev.CabControls.TryGetValue(key, out var state))
                 {
-                    dev.TrainBrake.Value = (float)control.Value;
+                    state = new ExternalDeviceCabControl();
+                    dev.CabControls[key] = state;
                 }
-                else if (control.TypeName == "THROTTLE")
-                {
-                    dev.Throttle.Value = (float)control.Value;
-                }
-                else if (control.TypeName == "DYNAMIC_BRAKE")
-                {
-                    dev.DynamicBrake.Value = (float)control.Value;
-                }
-                else if (control.TypeName == "ENGINE_BRAKE")
-                {
-                    dev.EngineBrake.Value = (float)control.Value;
-                }
-                else if (control.TypeName == "REVERSER")
-                {
-                    dev.Direction.Value = (float)control.Value;
-                }
-                else
-                {
-                    var key = (new CabViewControlType(control.TypeName), control.ControlIndex);
-                    if (!dev.CabControls.TryGetValue(key, out var state))
-                    {
-                        state = new ExternalDeviceCabControl();
-                        dev.CabControls[key] = state;
-                    }
-                    state.Value = (float)control.Value;
-                }
+                state.Value = (float)control.Value;
             }
         }
         #endregion

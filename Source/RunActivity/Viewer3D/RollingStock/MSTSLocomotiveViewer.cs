@@ -238,55 +238,67 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var external in externalDevices)
             {
                 if (external == null) continue;
-                if (external.Throttle.Changed)
-                    Locomotive.SetThrottlePercentWithSound(external.Throttle.Value * 100);
-                if (external.TrainBrake.Changed)
-                    Locomotive.SetTrainBrakePercent(external.TrainBrake.Value * 100);
-                if (external.EngineBrake.Changed)
-                    Locomotive.SetEngineBrakePercent(external.EngineBrake.Value * 100);
-                //    Locomotive.SetBrakemanBrakePercent(external.BrakemanBrakePercent); // For Raildriver control not complete for this value?
-                if (external.DynamicBrake.Changed && Locomotive.CombinedControlType != MSTSLocomotive.CombinedControl.ThrottleAir)
-                    Locomotive.SetDynamicBrakePercentWithSound(external.DynamicBrake.Value * 100);
-                
-                if (external.Direction.Changed)
-                {
-                    if (Locomotive is MSTSSteamLocomotive steam)
-                    {
-                        steam.SetCutoffPercent(UserInput.RDState.Direction.Value * 100);
-                    }
-                    else if (external.Direction.Value > 0.5f)
-                        Locomotive.SetDirection(Direction.Forward);
-                    else if (external.Direction.Value < -0.5f)
-                        Locomotive.SetDirection(Direction.Reverse);
-                    else
-                        Locomotive.SetDirection(Direction.N);
-                }
-                
-                if (external.Lights.Changed)
-                {
-                    // changing Headlight more than one step at a time doesn't work for some reason
-                    if (Locomotive.Headlight < external.Lights.Value - 1)
-                    {
-                        Locomotive.Headlight++;
-                        Locomotive.SignalEvent(Event.LightSwitchToggle);
-                    }
-                    if (Locomotive.Headlight > external.Lights.Value - 1)
-                    {
-                        Locomotive.Headlight--;
-                        Locomotive.SignalEvent(Event.LightSwitchToggle);
-                    }
-                }
                 // Handle other cabcontrols
                 foreach (var kvp in external.CabControls)
                 {
                     if (_CabRenderer == null) break;
                     if (!kvp.Value.Changed) continue;
-                    if (_CabRenderer.ControlMap.TryGetValue(kvp.Key, out var renderer) && renderer is CabViewDiscreteRenderer discrete)
+                    float val = kvp.Value.Value;
+                    switch (kvp.Key.Item1.Type)
                     {
-                        var oldChanged = discrete.ChangedValue;
-                        discrete.ChangedValue = (val) => kvp.Value.Value;
-                        discrete.HandleUserInput();
-                        discrete.ChangedValue = oldChanged;
+                        // Some cab controls need specific handling for better results
+                        case CABViewControlTypes.THROTTLE:
+                            Locomotive.SetThrottlePercentWithSound(val * 100);
+                            break;
+                        case CABViewControlTypes.DIRECTION:
+                            if (Locomotive is MSTSSteamLocomotive steam)
+                            {
+                                steam.SetCutoffPercent(val * 100);
+                            }
+                            else if (val > 0.5f)
+                                Locomotive.SetDirection(Direction.Forward);
+                            else if (val < -0.5f)
+                                Locomotive.SetDirection(Direction.Reverse);
+                            else
+                                Locomotive.SetDirection(Direction.N);
+                            break;
+                        case CABViewControlTypes.TRAIN_BRAKE:
+                            Locomotive.SetTrainBrakePercent(val * 100);
+                            break;
+                        case CABViewControlTypes.DYNAMIC_BRAKE:
+                            if (Locomotive.CombinedControlType != MSTSLocomotive.CombinedControl.ThrottleAir)
+                                Locomotive.SetDynamicBrakePercentWithSound(val * 100);
+                            break;
+                        case CABViewControlTypes.ENGINE_BRAKE:
+                            Locomotive.SetEngineBrakePercent(val * 100);
+                            break;
+                        case CABViewControlTypes.FRONT_HLIGHT:
+                            // changing Headlight more than one step at a time doesn't work for some reason
+                            if (Locomotive.Headlight < val - 1)
+                            {
+                                Locomotive.Headlight++;
+                                Locomotive.SignalEvent(Event.LightSwitchToggle);
+                            }
+                            if (Locomotive.Headlight > val - 1)
+                            {
+                                Locomotive.Headlight--;
+                                Locomotive.SignalEvent(Event.LightSwitchToggle);
+                            }
+                            break;
+                        case CABViewControlTypes.ORTS_SELECTED_SPEED_SELECTOR:
+                            Locomotive.CruiseControl.SelectedSpeedMpS = val;
+                            break;
+                        // Other controls can hopefully be controlled faking mouse input
+                        // TODO: refactor HandleUserInput() 
+                        default:
+                            if (_CabRenderer.ControlMap.TryGetValue(kvp.Key, out var renderer) && renderer is CabViewDiscreteRenderer discrete)
+                            {
+                                var oldChanged = discrete.ChangedValue;
+                                discrete.ChangedValue = (oldval) => val;
+                                discrete.HandleUserInput();
+                                discrete.ChangedValue = oldChanged;
+                            }
+                            break;
                     }
                 }
             }

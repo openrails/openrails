@@ -19,6 +19,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
+using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
@@ -113,8 +114,8 @@ namespace Orts.Viewer3D
             float a = State.EngineBrake.Value;
             float calOff = (1 - a) * BailOffDisengagedRelease + a * BailOffDisengagedFull;
             float calOn = (1 - a) * BailOffEngagedRelease + a * BailOffEngagedFull;
-            State.Buttons[UserCommand.ControlBailOff].IsDown = Percentage(data[5], calOff, calOn) > 50;
-            State.Buttons[UserCommand.ControlWiper].IsDown = (int)(.01 * Percentage(data[6], Rotary1Position1, Rotary1Position2, Rotary1Position3) + 2.5) != 1;
+            State.Commands[UserCommand.ControlBailOff].IsDown = Percentage(data[5], calOff, calOn) > 50;
+            State.Commands[UserCommand.ControlWiper].IsDown = (int)(.01 * Percentage(data[6], Rotary1Position1, Rotary1Position2, Rotary1Position3) + 2.5) != 1;
             State.Lights.Value = (int)(.01 * Percentage(data[7], Rotary2Position1, Rotary2Position2, Rotary2Position3) + 2.5);
             State.AddButtonData(data);
 
@@ -324,6 +325,12 @@ namespace Orts.Viewer3D
     public class RailDriverState : ExternalDeviceState
     {
         byte[] ButtonData;
+        public ExternalDeviceCabControl Direction = new ExternalDeviceCabControl();      // -100 (reverse) to 100 (forward)
+        public ExternalDeviceCabControl Throttle = new ExternalDeviceCabControl();       // 0 to 100
+        public ExternalDeviceCabControl DynamicBrake = new ExternalDeviceCabControl();   // 0 to 100 if active otherwise less than 0
+        public ExternalDeviceCabControl TrainBrake = new ExternalDeviceCabControl();     // 0 (release) to 100 (CS), does not include emergency
+        public ExternalDeviceCabControl EngineBrake = new ExternalDeviceCabControl();    // 0 to 100
+        public ExternalDeviceCabControl Lights = new ExternalDeviceCabControl();                  // lights rotary, 1 off, 2 dim, 3 full
 
         public RailDriverButton Activation;
 
@@ -333,62 +340,69 @@ namespace Orts.Viewer3D
 
             // top row of blue buttons left to right
 
-            Buttons[UserCommand.GamePauseMenu] = new RailDriverButton(0, 0x01);
-            Buttons[UserCommand.GameSave] = new RailDriverButton(0, 0x02);
+            Commands[UserCommand.GamePauseMenu] = new RailDriverButton(0, 0x01);
+            Commands[UserCommand.GameSave] = new RailDriverButton(0, 0x02);
 
-            Buttons[UserCommand.DisplayTrackMonitorWindow] = new RailDriverButton(0, 0x08);
+            Commands[UserCommand.DisplayTrackMonitorWindow] = new RailDriverButton(0, 0x08);
 
-            Buttons[UserCommand.DisplaySwitchWindow] = new RailDriverButton(0, 0x40);
-            Buttons[UserCommand.DisplayTrainOperationsWindow] = new RailDriverButton(0, 0x80);
-            Buttons[UserCommand.DisplayNextStationWindow] = new RailDriverButton(1, 0x01);
+            Commands[UserCommand.DisplaySwitchWindow] = new RailDriverButton(0, 0x40);
+            Commands[UserCommand.DisplayTrainOperationsWindow] = new RailDriverButton(0, 0x80);
+            Commands[UserCommand.DisplayNextStationWindow] = new RailDriverButton(1, 0x01);
 
-            Buttons[UserCommand.DisplayCompassWindow] = new RailDriverButton(1, 0x08);
-            Buttons[UserCommand.GameSwitchAhead] = new RailDriverButton(1, 0x10);
-            Buttons[UserCommand.GameSwitchBehind] = new RailDriverButton(1, 0x20);
+            Commands[UserCommand.DisplayCompassWindow] = new RailDriverButton(1, 0x08);
+            Commands[UserCommand.GameSwitchAhead] = new RailDriverButton(1, 0x10);
+            Commands[UserCommand.GameSwitchBehind] = new RailDriverButton(1, 0x20);
 
             // bottom row of blue buttons left to right
 
-            Buttons[UserCommand.CameraToggleShowCab] = new RailDriverButton(1, 0x80);       // Btn 16 Default Legend Hide Cab Panel
+            Commands[UserCommand.CameraToggleShowCab] = new RailDriverButton(1, 0x80);       // Btn 16 Default Legend Hide Cab Panel
 
-            Buttons[UserCommand.CameraCab] = new RailDriverButton(2, 0x01);                 // Btn 17 Default Legend Frnt Cab View
-            Buttons[UserCommand.CameraOutsideFront] = new RailDriverButton(2, 0x02);        // Btn 18 Default Legend Ext View 1
-            Buttons[UserCommand.CameraOutsideRear] = new RailDriverButton(2, 0x04);         // Btn 19 Default Legend Ext.View 2
-            Buttons[UserCommand.CameraCarPrevious] = new RailDriverButton(2, 0x08);         // Btn 20 Default Legend FrontCoupler
+            Commands[UserCommand.CameraCab] = new RailDriverButton(2, 0x01);                 // Btn 17 Default Legend Frnt Cab View
+            Commands[UserCommand.CameraOutsideFront] = new RailDriverButton(2, 0x02);        // Btn 18 Default Legend Ext View 1
+            Commands[UserCommand.CameraOutsideRear] = new RailDriverButton(2, 0x04);         // Btn 19 Default Legend Ext.View 2
+            Commands[UserCommand.CameraCarPrevious] = new RailDriverButton(2, 0x08);         // Btn 20 Default Legend FrontCoupler
 
-            Buttons[UserCommand.CameraCarNext] = new RailDriverButton(2, 0x10);             // Btn 21 Default Legend Rear Coupler
-            Buttons[UserCommand.CameraTrackside] = new RailDriverButton(2, 0x20);           // Btn 22 Default Legend Track View      
-            Buttons[UserCommand.CameraPassenger] = new RailDriverButton(2, 0x40);           // Btn 23 Default Legend Passgr View      
-            Buttons[UserCommand.CameraBrakeman] = new RailDriverButton(2, 0x80);            // Btn 24 Default Legend Coupler View
+            Commands[UserCommand.CameraCarNext] = new RailDriverButton(2, 0x10);             // Btn 21 Default Legend Rear Coupler
+            Commands[UserCommand.CameraTrackside] = new RailDriverButton(2, 0x20);           // Btn 22 Default Legend Track View      
+            Commands[UserCommand.CameraPassenger] = new RailDriverButton(2, 0x40);           // Btn 23 Default Legend Passgr View      
+            Commands[UserCommand.CameraBrakeman] = new RailDriverButton(2, 0x80);            // Btn 24 Default Legend Coupler View
 
-            Buttons[UserCommand.CameraFree] = new RailDriverButton(3, 0x01);                // Btn 25 Default Legend Yard View
-            Buttons[UserCommand.GameClearSignalForward] = new RailDriverButton(3, 0x02);    // Btn 26 Default Legend Request Pass
+            Commands[UserCommand.CameraFree] = new RailDriverButton(3, 0x01);                // Btn 25 Default Legend Yard View
+            Commands[UserCommand.GameClearSignalForward] = new RailDriverButton(3, 0x02);    // Btn 26 Default Legend Request Pass
             //Commands[UserCommand. load passengers] = new RailDriverUserCommand(3, 0x04);        // Btn 27 Default Legend Load/Unload
             //Commands[UserCommand. ok] = new RailDriverUserCommand(3, 0x08);                     // Btn 28 Default Legend OK
 
             // controls to right of blue buttons
 
-            Buttons[UserCommand.CameraZoomIn] = new RailDriverButton(3, 0x10);
-            Buttons[UserCommand.CameraZoomOut] = new RailDriverButton(3, 0x20);
-            Buttons[UserCommand.CameraPanUp] = new RailDriverButton(3, 0x40);
-            Buttons[UserCommand.CameraPanRight] = new RailDriverButton(3, 0x80);
-            Buttons[UserCommand.CameraPanDown] = new RailDriverButton(4, 0x01);
-            Buttons[UserCommand.CameraPanLeft] = new RailDriverButton(4, 0x02);
+            Commands[UserCommand.CameraZoomIn] = new RailDriverButton(3, 0x10);
+            Commands[UserCommand.CameraZoomOut] = new RailDriverButton(3, 0x20);
+            Commands[UserCommand.CameraPanUp] = new RailDriverButton(3, 0x40);
+            Commands[UserCommand.CameraPanRight] = new RailDriverButton(3, 0x80);
+            Commands[UserCommand.CameraPanDown] = new RailDriverButton(4, 0x01);
+            Commands[UserCommand.CameraPanLeft] = new RailDriverButton(4, 0x02);
 
             // buttons on top left
 
-            Buttons[UserCommand.ControlGearUp] = new RailDriverButton(4, 0x04);
-            Buttons[UserCommand.ControlGearDown] = new RailDriverButton(4, 0x08);
-            Buttons[UserCommand.ControlEmergencyPushButton] = new RailDriverButton(4, 0x30);
-            Buttons[UserCommand.ControlAlerter] = new RailDriverButton(4, 0x40);
-            Buttons[UserCommand.ControlSander] = new RailDriverButton(4, 0x80);
-            Buttons[UserCommand.ControlPantograph1] = new RailDriverButton(5, 0x01);
-            Buttons[UserCommand.ControlBellToggle] = new RailDriverButton(5, 0x02);
-            Buttons[UserCommand.ControlHorn] = new RailDriverButton(5, 0x0c);//either of two bits
+            Commands[UserCommand.ControlGearUp] = new RailDriverButton(4, 0x04);
+            Commands[UserCommand.ControlGearDown] = new RailDriverButton(4, 0x08);
+            Commands[UserCommand.ControlEmergencyPushButton] = new RailDriverButton(4, 0x30);
+            Commands[UserCommand.ControlAlerter] = new RailDriverButton(4, 0x40);
+            Commands[UserCommand.ControlSander] = new RailDriverButton(4, 0x80);
+            Commands[UserCommand.ControlPantograph1] = new RailDriverButton(5, 0x01);
+            Commands[UserCommand.ControlBellToggle] = new RailDriverButton(5, 0x02);
+            Commands[UserCommand.ControlHorn] = new RailDriverButton(5, 0x0c);//either of two bits
 
-            Buttons[UserCommand.ControlBailOff] = new ExternalDeviceButton();
-            Buttons[UserCommand.ControlWiper] = new ExternalDeviceButton();
+            Commands[UserCommand.ControlBailOff] = new ExternalDeviceButton();
+            Commands[UserCommand.ControlWiper] = new ExternalDeviceButton();
 
             Activation = new RailDriverButton(1, 0x40);
+
+            CabControls[(new CabViewControlType(CABViewControlTypes.DIRECTION), -1)] = Direction;
+            CabControls[(new CabViewControlType(CABViewControlTypes.THROTTLE), -1)] = Throttle;
+            CabControls[(new CabViewControlType(CABViewControlTypes.TRAIN_BRAKE), -1)] = TrainBrake;
+            CabControls[(new CabViewControlType(CABViewControlTypes.ENGINE_BRAKE), -1)] = EngineBrake;
+            CabControls[(new CabViewControlType(CABViewControlTypes.DYNAMIC_BRAKE), -1)] = DynamicBrake;
+            CabControls[(new CabViewControlType(CABViewControlTypes.FRONT_HLIGHT), -1)] = Lights;
         }
 
         /// <summary>
@@ -410,7 +424,7 @@ namespace Orts.Viewer3D
         {
             for (int i = 0; i < ButtonData.Length; i++)
                 ButtonData[i] |= data[i + 8];
-            foreach (var button in Buttons.Values)
+            foreach (var button in Commands.Values)
             {
                 if (button is RailDriverButton rd) rd.Update(ButtonData);
             }
