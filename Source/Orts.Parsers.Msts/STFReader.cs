@@ -1827,6 +1827,9 @@ namespace Orts.Parsers.Msts
                             filename = ReadItem(skip_mode, string_mode);
                             SkipRestOfBlock();
                         }
+                        var purefilename = Path.GetFileName(filename).ToLower();
+                        if (purefilename == "##samename##")
+                            filename = Path.GetDirectoryName(filename) + @"\" + Path.GetFileName(FileName);
                         var includeFileName = Path.GetDirectoryName(FileName) + @"\" + filename;
                         if (!File.Exists(includeFileName))
                             STFException.TraceWarning(this, string.Format("'{0}' not found", includeFileName));
