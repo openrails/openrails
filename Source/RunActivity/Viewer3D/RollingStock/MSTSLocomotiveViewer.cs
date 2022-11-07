@@ -1617,7 +1617,13 @@ namespace Orts.Viewer3D.RollingStock
         /// <returns>Data value as fraction (from 0 to 1) of the range between Min and Max values</returns>
         public float GetRangeFraction(bool offsetFromZero = false)
         {
-            var data = Locomotive.GetDataOf(Control);
+            float data;
+
+            if (!IsPowered && Control.ValueIfDisabled != null)
+                data = (float)Control.ValueIfDisabled;
+            else
+                data = Locomotive.GetDataOf(Control);
+
             if (data < Control.MinValue)
                 return 0;
             if (data > Control.MaxValue)
@@ -1637,9 +1643,7 @@ namespace Orts.Viewer3D.RollingStock
         [CallOnThread("Updater")]
         public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            var noPower = (Control.DisabledIfLowVoltagePowerSupplyOff && !Locomotive.LocomotivePowerSupply.LowVoltagePowerSupplyOn)
-                || (Control.DisabledIfCabPowerSupplyOff && !Locomotive.LocomotivePowerSupply.CabPowerSupplyOn);
-            if (noPower)
+            if (!IsPowered && Control.HideIfDisabled)
                 return;
 
             frame.AddPrimitive(ControlView, this, RenderPrimitiveGroup.Cab, ref Matrix);
@@ -1803,7 +1807,10 @@ namespace Orts.Viewer3D.RollingStock
             float percent, xpos, ypos, zeropos;
 
             percent = IsFire ? 1f : GetRangeFraction();
-            //           LoadMeterPositive = percent + Gauge.MinValue / (Gauge.MaxValue - Gauge.MinValue) >= 0;
+
+            if (!IsPowered && Control.ValueIfDisabled != null)
+                Num = (float)Control.ValueIfDisabled;
+            else
             Num = Locomotive.GetDataOf(Control);
 
             if (Gauge.Orientation == 0)  // gauge horizontal
@@ -2051,7 +2058,12 @@ namespace Orts.Viewer3D.RollingStock
         /// <returns>index of the Texture</returns>
         public virtual int GetDrawIndex()
         {
-            var data = Locomotive.GetDataOf(Control);
+            float data;
+
+            if (!IsPowered && Control.ValueIfDisabled != null)
+                data = (float)Control.ValueIfDisabled;
+            else
+                data = Locomotive.GetDataOf(Control);
 
             var index = OldFrameIndex;
             switch (ControlDiscrete.ControlType)
@@ -2898,7 +2910,14 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            var animate = Locomotive.GetDataOf(Control) != 0;
+            float data;
+
+            if (!IsPowered && Control.ValueIfDisabled != null)
+                data = (float)Control.ValueIfDisabled;
+            else
+                data = Locomotive.GetDataOf(Control);
+
+            var animate = data != 0;
             if (animate)
                 AnimationOn = true;
 
@@ -2976,7 +2995,11 @@ namespace Orts.Viewer3D.RollingStock
         {
             var digital = Control as CVCDigital;
 
+            if (!IsPowered && Control.ValueIfDisabled != null)
+                Num = (float)Control.ValueIfDisabled;
+            else
             Num = Locomotive.GetDataOf(Control);
+
             if (digital.MinValue < digital.MaxValue) Num = MathHelper.Clamp(Num, (float)digital.MinValue, (float)digital.MaxValue);
             if (Math.Abs(Num) < digital.AccuracySwitch)
                 Format = Format2;
@@ -3057,7 +3080,12 @@ namespace Orts.Viewer3D.RollingStock
             {
                 var digital = Control as CVCDigital;
                 string displayedText = "";
+
+                if (!IsPowered && Control.ValueIfDisabled != null)
+                    Num = (float)Control.ValueIfDisabled;
+                else
                 Num = Locomotive.GetDataOf(Control);
+
                 if (Math.Abs(Num) < digital.AccuracySwitch)
                     Format = Format2;
                 else
@@ -3130,7 +3158,12 @@ namespace Orts.Viewer3D.RollingStock
             {
                 var digital = Control as CVCDigital;
                 string displayedText = "";
+
+                if (!IsPowered && Control.ValueIfDisabled != null)
+                    Num = (float)Control.ValueIfDisabled;
+                else
                 Num = Locomotive.GetDataOf(Control);
+
                 if (digital.MinValue < digital.MaxValue) Num = MathHelper.Clamp(Num, (float)digital.MinValue, (float)digital.MaxValue);
                 if (Math.Abs(Num) < digital.AccuracySwitch)
                     Format = Format2;
@@ -3367,11 +3400,6 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            var trainCarShape = LocoViewer.ThreeDimentionCabViewer.TrainCarShape;
-            var animatedParts = LocoViewer.ThreeDimentionCabViewer.AnimateParts;
-            var controlMap = LocoViewer.ThreeDimentionCabRenderer.ControlMap;
-            var doShow = true;
-            CabViewControlRenderer cabRenderer;
             foreach (var p in AnimateParts)
             {
                 if (p.Value.Type >= CABViewControlTypes.EXTERNALWIPERS) //for wipers, doors and mirrors
@@ -3410,32 +3438,31 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 else
                 {
-                   doShow = true;
-                    cabRenderer = null;
-                    if (LocoViewer.ThreeDimentionCabRenderer.ControlMap.TryGetValue(p.Key, out cabRenderer))
+                    var doShow = true;
+                    if (LocoViewer.ThreeDimentionCabRenderer.ControlMap.TryGetValue(p.Key, out var cabRenderer))
                     { 
-                        if (cabRenderer is CabViewDiscreteRenderer)
+                        if (!cabRenderer.IsPowered && cabRenderer.Control.HideIfDisabled)
+                        {
+                            doShow = false;
+                        }
+                        else if (cabRenderer is CabViewDiscreteRenderer)
                         {
                             var control = cabRenderer.Control;
                             if (control.Screens != null && control.Screens[0] != "all")
                             {
-                                doShow = false;
-                                foreach (var screen in control.Screens)
-                                {
-                                    if (LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[control.Display] == screen)
-                                    {
-                                        doShow = true;
-                                        break;
-                                    }
-                                }
+                                doShow = control.Screens.Any(screen =>
+                                    LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[control.Display] == screen);
                             }
                         }
                     }
+
                     foreach (var matrixIndex in p.Value.MatrixIndexes)
                         MatrixVisible[matrixIndex] = doShow;
-                    p.Value.Update(this.LocoViewer, elapsedTime); //for all other intruments with animations
+
+                    p.Value.Update(LocoViewer, elapsedTime); //for all other instruments with animations
                 }
             }
+
             foreach (var p in DigitParts3D)
             {
                 var digital = p.Value.CVFR.Control;
@@ -3453,6 +3480,7 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 p.Value.PrepareFrame(frame, elapsedTime);
             }
+
             foreach (var p in DPIDisplays3D)
             {
                 var dpdisplay = p.Value.CVFR.Control;
@@ -3470,6 +3498,7 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 p.Value.PrepareFrame(frame, elapsedTime);
             }
+
             foreach (var p in Gauges)
             {
                 var gauge = p.Value.CVFR.Control;
@@ -3776,7 +3805,7 @@ namespace Orts.Viewer3D.RollingStock
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (!CVFR.IsPowered)
+            if (!CVFR.IsPowered && CVFR.Control.HideIfDisabled)
                 return;
 
             UpdateDigit();
@@ -3995,7 +4024,7 @@ namespace Orts.Viewer3D.RollingStock
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (!CVFR.IsPowered)
+            if (!CVFR.IsPowered && CVFR.Control.HideIfDisabled)
                 return;
 
             UpdateDigit();
@@ -4041,7 +4070,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (!locoViewer._has3DCabRenderer) return;
 
-            var scale = CVFR.IsPowered ? CVFR.GetRangeFraction() : 0f;
+            var scale = CVFR.IsPowered || CVFR.Control.ValueIfDisabled == null ? CVFR.GetRangeFraction() : (float)CVFR.Control.ValueIfDisabled;
 
             if (CVFR.GetStyle() == CABViewControlStyles.POINTER)
             {
