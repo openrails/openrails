@@ -1418,7 +1418,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case CABViewControlTypes.ORTS_TRAIN_LENGTH_METERS:
                     data = TrainLengthMeters;
                     break;
-                case CABViewControlTypes.ORTS_REMAINING_TRAIN_LENGHT_SPEED_RESTRICTED:
+                case CABViewControlTypes.ORTS_REMAINING_TRAIN_LENGTH_SPEED_RESTRICTED:
                     data = RestrictedRegionOdometer.Started ? RestrictedRegionOdometer.RemainingValue : 0;
                     break;
                 case CABViewControlTypes.ORTS_REMAINING_TRAIN_LENGTH_PERCENT:

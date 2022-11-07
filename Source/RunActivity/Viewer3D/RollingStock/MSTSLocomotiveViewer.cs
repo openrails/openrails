@@ -2315,7 +2315,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_NUMBER_OF_AXES_DISPLAY_TENS:
                 case CABViewControlTypes.ORTS_NUMBER_OF_AXES_DISPLAY_HUNDREDS:
                 case CABViewControlTypes.ORTS_TRAIN_LENGTH_METERS:
-                case CABViewControlTypes.ORTS_REMAINING_TRAIN_LENGHT_SPEED_RESTRICTED:
+                case CABViewControlTypes.ORTS_REMAINING_TRAIN_LENGTH_SPEED_RESTRICTED:
                 case CABViewControlTypes.ORTS_REMAINING_TRAIN_LENGTH_PERCENT:
                 case CABViewControlTypes.ORTS_MOTIVE_FORCE:
                 case CABViewControlTypes.ORTS_MOTIVE_FORCE_KILONEWTON:
