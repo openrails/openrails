@@ -4214,7 +4214,7 @@ Take into account that the first line must be blank (before the include line).
 In case of more trainsets residing in the same folder and requiring the same 
 additional .wag or .eng files with exactly the same contents, it is useful to 
 use the conventional filename ``##SameName##``.
-OR wil replace that filename with the filename of the file containing the Include 
+OR will replace that filename with the filename of the file containing the Include 
 statement. So, in the case of the example above, instead of::
 
     include ( ../bc13ge70tonner.eng )
