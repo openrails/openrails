@@ -283,7 +283,9 @@ Cruise Control Cabview Controls
 ===============================
 
 The list of the available cabview controls may be found in the 
-table here below.
+table here below. Please note that spaces within cabview control 
+names are there only for table display purposes, and must not be 
+entered in the .cvf files.
 
 .. csv-table:: Cabview Controls
    :header: "Control Name", "Description", "UoM", "Mouse activated"
@@ -299,7 +301,7 @@ table here below.
    "ORTS_NUMBER_OF_AXES_DISPLAY_TENS", "See above", "", 
    "ORTS_NUMBER_OF_AXES_DISPLAY_HUNDREDS", "See above", "", 
    "ORTS_TRAIN_LENGTH_METERS", "Displays the train length", "meters", 
-   "ORTS_REMAINING_TRAIN_LENGHT_SPEED _RESTRICTED", "When the restricted speed zone flag is activated, displays the remaining train lenght that hasn't yet arrived at the end of the restricted speed zone. Else shows 0", "meters", 
+   "ORTS_REMAINING_TRAIN_LENGTH_SPEED _RESTRICTED", "When the restricted speed zone flag is activated, displays the remaining train lenght that hasn't yet arrived at the end of the restricted speed zone. Else shows 0", "meters", 
    "ORTS_REMAINING_TRAIN_LENGTH_PERCENT", "When the restricted speed zone flag is activated, displays the remaining train lenght percent that hasn't yet arrived at the end of the restricted speed zone. Else shows 0", "", 
    "ORTS_ACCELERATION_IN_TIME", "Value of AccelerationBits; some cabs can show 'Arrows' pointing up or down according to speed change", "", 
  
