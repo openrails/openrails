@@ -3335,7 +3335,7 @@ namespace Orts.Viewer3D.RollingStock
                     if (style != null && style is CabViewDigitalRenderer)//digits?
                     {
                         //DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
-                        DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                        DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key], Locomotive));
                     }
                     else if (style != null && style is CabViewGaugeRenderer)
                     {
@@ -3558,7 +3558,7 @@ namespace Orts.Viewer3D.RollingStock
         Material AlertMaterial;
         float Size;
         string AceFile;
-        public ThreeDimCabDigit(Viewer viewer, int iMatrix, string size, string aceFile, PoseableShape trainCarShape, CabViewControlRenderer c)
+        public ThreeDimCabDigit(Viewer viewer, int iMatrix, string size, string aceFile, PoseableShape trainCarShape, CabViewControlRenderer c, MSTSLocomotive locomotive)
         {
 
             Size = int.Parse(size) * 0.001f;//input size is in mm
@@ -3586,7 +3586,7 @@ namespace Orts.Viewer3D.RollingStock
 
             //start position is the center of the text
             var start = new Vector3(0, 0, 0);
-            var rotation = 0;
+            var rotation = locomotive.UsingRearCab ? (float)Math.PI : 0;
 
             //find the left-most of text
             Vector3 offset;
