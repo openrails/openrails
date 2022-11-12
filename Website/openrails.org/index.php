@@ -99,7 +99,7 @@
             <h4>Videos</h4>
           </div>
           <div class="headed_content">
-            <h5><a href="https://youtube,com/" target="_blank">New features in Release 1.5</a></h5>
+            <h5><a href="https://youtu.be/ZY2_UYvacXg" target="_blank">New features in Release 1.5</a></h5>
           </div>
           <p>&nbsp;</p>
           <div>
