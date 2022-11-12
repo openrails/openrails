@@ -175,7 +175,6 @@ namespace AEWizard
 		/// </summary>
 		private void InitializeComponent()
 		{
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WizardForm));
             this.m_backButton = new System.Windows.Forms.Button();
             this.m_nextButton = new System.Windows.Forms.Button();
             this.m_cancelButton = new System.Windows.Forms.Button();
@@ -241,7 +240,6 @@ namespace AEWizard
             this.Controls.Add(this.m_finishButton);
             this.Controls.Add(this.m_separator);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "WizardForm";

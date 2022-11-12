@@ -33,8 +33,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -55,6 +53,26 @@ namespace Orts.Viewer3D.Processes
         static Viewer Viewer { get { return Program.Viewer; } set { Program.Viewer = value; } }
         static ORTraceListener ORTraceListener { get { return Program.ORTraceListener; } set { Program.ORTraceListener = value; } }
         static string logFileName { get { return Program.logFileName; } set { Program.logFileName = value; } }
+        static string EvaluationFilename { get { return Program.EvaluationFilename; } set { Program.EvaluationFilename = value; } }
+
+        // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
+        // that are likely to match the previously chosen route and activity.
+        // Append the current date and time, so that each file is unique.
+        // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which is not valid in filenames.
+        public static string FileStem
+        {   get
+            {   return String.Format("{0} {1} {2:yyyy-MM-dd HH.mm.ss}",
+                    Simulator.Activity != null
+                        ? Simulator.ActivityFileName
+                        : (String.IsNullOrEmpty(Simulator.TimetableFileName)
+                            ? Simulator.RoutePathName
+                            : Simulator.RoutePathName + " " + Simulator.TimetableFileName),
+                    MPManager.IsMultiPlayer() && MPManager.IsServer()
+                        ? "$Multipl$ "
+                        : "",
+                    DateTime.Now);
+            }
+        }
 
         struct savedValues
         {
@@ -174,27 +192,27 @@ namespace Orts.Viewer3D.Processes
                     case "start":
                     case "start-profile":
                         InitLogging(settings, args);
-                        InitLoading(args);
+                        InitLoading(settings, args);
                         Start(settings, acttype, data);
                         break;
                     case "resume":
                         InitLogging(settings, args);
-                        InitLoading(args);
+                        InitLoading(settings, args);
                         Resume(settings, data);
                         break;
                     case "replay":
                         InitLogging(settings, args);
-                        InitLoading(args);
+                        InitLoading(settings, args);
                         Replay(settings, data);
                         break;
                     case "replay_from_save":
                         InitLogging(settings, args);
-                        InitLoading(args);
+                        InitLoading(settings, args);
                         ReplayFromSave(settings, data);
                         break;
                     case "test":
                         InitLogging(settings, args, true);
-                        InitLoading(args);
+                        InitLoading(settings, args);
                         Test(settings, data);
                         break;
 
@@ -343,15 +361,22 @@ namespace Orts.Viewer3D.Processes
         public static void Save()
         {
             if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) return; //no save for multiplayer sessions yet
+            if (ContainerManager.ActiveOperationsCounter > 0)
+                // don't save if performing a container load/unload
+            {
+                Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Game save is not allowed during container load/unload"));
+                return;
+            }
+
             // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
             // that are likely to match the previously chosen route and activity.
             // Append the current date and time, so that each file is unique.
             // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which are not valid in filenames.
-            var fileStem = String.Format("{0} {1} {2:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName :
-                (!String.IsNullOrEmpty(Simulator.TimetableFileName) ? Simulator.RoutePathName + " " + Simulator.TimetableFileName : Simulator.RoutePathName),
-                MPManager.IsMultiPlayer() && MPManager.IsServer() ? "$Multipl$ " : "" , DateTime.Now);
+            //var fileStem = String.Format("{0} {1} {2:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName :
+            //    (!String.IsNullOrEmpty(Simulator.TimetableFileName) ? Simulator.RoutePathName + " " + Simulator.TimetableFileName : Simulator.RoutePathName),
+            //    MPManager.IsMultiPlayer() && MPManager.IsServer() ? "$Multipl$ " : "" , DateTime.Now);
 
-            using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write)))
+            using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + FileStem + ".save", FileMode.Create, FileAccess.Write)))
             {
                 // Save some version identifiers so we can validate on load.
                 outf.Write(VersionInfo.Version);
@@ -376,55 +401,55 @@ namespace Orts.Viewer3D.Processes
                     outf.Write(argument);
                 outf.Write(Acttype);
 
-                // The Save command is the only command that doesn't take any action. It just serves as a marker.
-                new SaveCommand(Simulator.Log, fileStem);
-                Simulator.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".replay"));
-
-                // Copy the logfile to the save folder
-                CopyLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".txt"));
-
                 Simulator.Save(outf);
-                Viewer.Save(outf, fileStem);
+                Viewer.Save(outf, FileStem);
                 // Save multiplayer parameters
                 if (MPManager.IsMultiPlayer() && MPManager.IsServer())
                     MPManager.OnlineTrains.Save (outf);
+
+                SaveEvaluation(outf);
 
                 // Write out position within file so we can check when restoring.
                 outf.Write(outf.BaseStream.Position);
             }
 
-            //Debrief Eval
-            if (Viewer.Settings.DebriefActivityEval)
-            {
-                var dbfEvalFiles = Directory.GetFiles(UserSettings.UserDataFolder, Simulator.ActivityFileName + "*.dbfeval");
-                foreach (var files in dbfEvalFiles)
-                   File.Delete(files);//Delete all debrief eval files previously saved, for the same activity.//fileDbfEval
+            // Having written .save file, write other files: .replay, .txt, .evaluation.txt
 
-                using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem + ".dbfeval", FileMode.Create, FileAccess.Write)))
-                {
-                    // Save debrief eval values.
-                    outf.Write(ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count);
-                    for (int i = 0; i < ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count; i++)
-                    {
-                        outf.Write((string) ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i]);
-                    }
-                    outf.Write(Popups.TrackMonitor.DbfEvalOverSpeed);
-                    outf.Write(Popups.TrackMonitor.DbfEvalOverSpeedTimeS);
-                    outf.Write(Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS);
-                    outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving);
-                    outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped);
-                    outf.Write(Simulation.Physics.Train.NumOfCouplerBreaks);
-                    outf.Write(Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh);
-                    outf.Write(Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh);
-                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned);
-                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast);
-                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose);
-                    outf.Write(Simulator.DbfEvalOverSpeedCoupling);
-                    outf.Write(Viewer.DbfEvalAutoPilotTimeS);
-                    outf.Write(Viewer.DbfEvalIniAutoPilotTimeS);
-                    outf.Write(Simulator.PlayerLocomotive.DistanceM + Popups.HelpWindow.DbfEvalDistanceTravelled);
-                }
+            // The Save command is the only command that doesn't take any action. It just serves as a marker.
+            new SaveCommand(Simulator.Log, FileStem);
+            Simulator.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, FileStem + ".replay"));
+
+            // Copy the logfile to the save folder
+            CopyLog(Path.Combine(UserSettings.UserDataFolder, FileStem + ".txt"));
+
+            // Copy the evaluation file to the save folder
+            if (File.Exists(Program.EvaluationFilename))
+                File.Copy(Program.EvaluationFilename, Path.Combine(UserSettings.UserDataFolder, FileStem + ".evaluation.txt"), true); 
+        }
+
+        private static void SaveEvaluation(BinaryWriter outf)
+        {
+            outf.Write(ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count);
+            for (int i = 0; i < ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count; i++)
+            {
+                outf.Write((string)ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i]);
             }
+            outf.Write(Popups.TrackMonitor.DbfEvalOverSpeed);
+            outf.Write(Popups.TrackMonitor.DbfEvalOverSpeedTimeS);
+            outf.Write(Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS);
+            outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving);
+            outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped);
+            outf.Write(Simulation.Physics.Train.NumOfCouplerBreaks);
+            outf.Write(Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh);
+            outf.Write(Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh);
+            outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned);
+            outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast);
+            outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose);
+            outf.Write(Simulator.DbfEvalOverSpeedCoupling);
+            outf.Write(Viewer.DbfEvalAutoPilotTimeS);
+            outf.Write(Viewer.DbfEvalIniAutoPilotTimeS);
+            outf.Write(Simulator.PlayerLocomotive.DistanceM + Popups.HelpWindow.DbfEvalDistanceTravelled);
+            outf.Write(Viewer.DbfEvalAutoPilot);
         }
 
         /// <summary>
@@ -462,44 +487,12 @@ namespace Orts.Viewer3D.Processes
                     if (MPManager.IsMultiPlayer() && MPManager.IsServer())
                         MPManager.OnlineTrains.Restore(inf);
 
+                    ResumeEvaluation(inf);
 
                     var restorePosition = inf.BaseStream.Position;
                     var savePosition = inf.ReadInt64();
                     if (restorePosition != savePosition)
                         throw new InvalidDataException("Saved game stream position is incorrect.");
-
-                    //Restore Debrief eval data
-                    var dbfevalfile = saveFile.Replace(".save", ".dbfeval");
-                    if (settings.DebriefActivityEval && File.Exists(dbfevalfile))
-                    {
-                        using (BinaryReader infDbfEval = new BinaryReader(new FileStream(dbfevalfile, FileMode.Open, FileAccess.Read)))
-                        {
-                            int nDepartBeforeBoarding = infDbfEval.ReadInt32();
-                            for (int i = 0; i < nDepartBeforeBoarding; i++)
-                            {
-                                ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Add(infDbfEval.ReadString());
-                            }
-                            Popups.TrackMonitor.DbfEvalOverSpeed = infDbfEval.ReadInt32();
-                            Popups.TrackMonitor.DbfEvalOverSpeedTimeS = infDbfEval.ReadDouble();
-                            Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS = infDbfEval.ReadDouble();
-                            RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving = infDbfEval.ReadInt32();
-                            RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped = infDbfEval.ReadInt32();
-                            Simulation.Physics.Train.NumOfCouplerBreaks = infDbfEval.ReadInt32();
-                            Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh = infDbfEval.ReadInt32();
-                            Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh = infDbfEval.ReadInt32();
-                            Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned = infDbfEval.ReadInt32();
-                            Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast = infDbfEval.ReadInt32();
-                            Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose = infDbfEval.ReadInt32();
-                            Simulator.DbfEvalOverSpeedCoupling = infDbfEval.ReadInt32();
-                            Viewer.DbfEvalAutoPilotTimeS = infDbfEval.ReadDouble();
-                            Viewer.DbfEvalIniAutoPilotTimeS = infDbfEval.ReadDouble();
-                            Popups.HelpWindow.DbfEvalDistanceTravelled = infDbfEval.ReadSingle();
-                        }
-                    }
-                    else if (settings.DebriefActivityEval && !File.Exists(dbfevalfile))
-                    {   //Resume mode: .dbfeval file doesn't exist.
-                        settings.DebriefActivityEval = false;//avoid to generate a new report.
-                    }
                 }
                 catch (Exception error)
                 {
@@ -530,6 +523,31 @@ namespace Orts.Viewer3D.Processes
 
                 Game.ReplaceState(new GameStateViewer3D(Viewer));
             }
+        }
+
+        private static void ResumeEvaluation(BinaryReader infDbfEval)
+        {
+            int nDepartBeforeBoarding = infDbfEval.ReadInt32();
+            for (int i = 0; i < nDepartBeforeBoarding; i++)
+            {
+                ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Add(infDbfEval.ReadString());
+            }
+            Popups.TrackMonitor.DbfEvalOverSpeed = infDbfEval.ReadInt32();
+            Popups.TrackMonitor.DbfEvalOverSpeedTimeS = infDbfEval.ReadDouble();
+            Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS = infDbfEval.ReadDouble();
+            RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving = infDbfEval.ReadInt32();
+            RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped = infDbfEval.ReadInt32();
+            Simulation.Physics.Train.NumOfCouplerBreaks = infDbfEval.ReadInt32();
+            Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh = infDbfEval.ReadInt32();
+            Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh = infDbfEval.ReadInt32();
+            Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned = infDbfEval.ReadInt32();
+            Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast = infDbfEval.ReadInt32();
+            Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose = infDbfEval.ReadInt32();
+            Simulator.DbfEvalOverSpeedCoupling = infDbfEval.ReadInt32();
+            Viewer.DbfEvalAutoPilotTimeS = infDbfEval.ReadDouble();
+            Viewer.DbfEvalIniAutoPilotTimeS = infDbfEval.ReadDouble();
+            Popups.HelpWindow.DbfEvalDistanceTravelled = infDbfEval.ReadSingle();
+            Viewer.DbfEvalAutoPilot = infDbfEval.ReadBoolean();
         }
 
         /// <summary>
@@ -758,10 +776,8 @@ namespace Orts.Viewer3D.Processes
                 {
                     fileName = settings.LoggingFilename;
                 }
-                foreach (var ch in Path.GetInvalidFileNameChars())
-                    fileName = fileName.Replace(ch, '.');
+                logFileName = GetFilePath(settings, fileName);
 
-                logFileName = Path.Combine(settings.LoggingPath, fileName);
                 // Ensure we start with an empty file.
                 if (!appendLog)
                     File.Delete(logFileName);
@@ -799,6 +815,33 @@ namespace Orts.Viewer3D.Processes
                 Console.WriteLine("Logging is disabled, only fatal errors will appear here.");
                 LogSeparator();
             }
+            InitEvaluation(settings);
+        }
+
+        /// <summary>
+        /// Sanitises the user's filename, adds logging path (Windows Desktop by default) and deletes any file already existing.
+        /// </summary>
+        /// <param name="settings"></param>
+        void InitEvaluation(UserSettings settings)
+        {
+            EvaluationFilename = GetFilePath(settings, settings.EvaluationFilename);
+
+            // Ensure we start with an empty file.
+            File.Delete(EvaluationFilename);
+        }
+
+        /// <summary>
+        /// Sanitise user's filename and combine with logging path
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        private string GetFilePath(UserSettings settings, string fileName)
+        {
+            foreach (var ch in Path.GetInvalidFileNameChars())
+                fileName = fileName.Replace(ch, '.');
+
+            return Path.Combine(settings.LoggingPath, fileName);
         }
 
         #region Loading progress indication calculations
@@ -816,7 +859,7 @@ namespace Orts.Viewer3D.Processes
         DateTime LoadingNextSample = DateTime.MinValue;
         float LoadedPercent = -1;
 
-        void InitLoading(string[] args)
+        void InitLoading(UserSettings settings, string[] args)
         {
             // Get the initial bytes; this is subtracted from all further uses of GetProcessBytesLoaded().
             LoadingBytesInitial = GetProcessBytesLoaded();
@@ -824,15 +867,8 @@ namespace Orts.Viewer3D.Processes
             // We hash together all the appropriate arguments to the program as the key for the loading cache file.
             // Arguments without a '.' in them and those starting '/' are ignored, since they are explore activity
             // configuration (time, season, etc.) or flags like /test which we don't want to change on.
-            LoadingDataKey = String.Join(" ", args.Where(a => a.Contains('.') && !a.StartsWith("-") && !a.StartsWith("/")).ToArray()).ToLowerInvariant();
-            var hash = new MD5CryptoServiceProvider();
-            hash.ComputeHash(Encoding.Default.GetBytes(LoadingDataKey));
-            var loadingHash = String.Join("", hash.Hash.Select(h => h.ToString("x2")).ToArray());
-            var dataPath = Path.Combine(UserSettings.UserDataFolder, "Load Cache");
-            LoadingDataFilePath = Path.Combine(dataPath, loadingHash + ".dat");
-
-            if (!Directory.Exists(dataPath))
-                Directory.CreateDirectory(dataPath);
+            LoadingDataKey = String.Join(" ", args.Where(a => a.Contains('.') && !a.StartsWith("-") && !a.StartsWith("/"))).ToLowerInvariant();
+            LoadingDataFilePath = settings.GetCacheFilePath("Load", LoadingDataKey);
 
             var loadingTime = 0;
             var bytesExpected = new long[LoadingSampleCount];
@@ -1473,7 +1509,7 @@ namespace Orts.Viewer3D.Processes
                 {
                     var alternativeTexture = Path.ChangeExtension(path, ".dds");
 
-                    if (File.Exists(alternativeTexture) && game.Settings.PreferDDSTexture)
+                    if (File.Exists(alternativeTexture))
                     {
                         DDSLib.DDSFromFile(alternativeTexture, gd, true, out texture);
                     }

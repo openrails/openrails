@@ -17,9 +17,12 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using ORTS.Common;
+using Orts.Viewer3D.RollingStock.SubSystems;
 using System.Collections.Generic;
 
 namespace Orts.Viewer3D
@@ -35,6 +38,7 @@ namespace Orts.Viewer3D
         public readonly SceneryDrawer Scenery;
         public readonly TrainDrawer Trains;
         public readonly RoadCarViewer RoadCars;
+        public readonly ContainersViewer Containers;
         public readonly SoundSource GameSounds;
         public readonly WorldSounds Sounds;
 
@@ -46,6 +50,7 @@ namespace Orts.Viewer3D
         int VisibleTileX;
         int VisibleTileZ;
         bool PerformanceTune;
+        bool MarkSweepError;
 
         [CallOnThread("Render")]
         public World(Viewer viewer, double gameTime)
@@ -73,6 +78,7 @@ namespace Orts.Viewer3D
             Scenery = new SceneryDrawer(viewer);
             Trains = new TrainDrawer(viewer);
             RoadCars = new RoadCarViewer(viewer);
+            Containers = new ContainersViewer(viewer);
             // Then sound.
             if (viewer.Settings.SoundDetailLevel > 0)
             {
@@ -92,28 +98,38 @@ namespace Orts.Viewer3D
             Scenery.Load();
             Trains.Load();
             RoadCars.Load();
+            Containers.Load();
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
                 TileX = VisibleTileX;
                 TileZ = VisibleTileZ;
-                Viewer.ShapeManager.Mark();
-                Viewer.MaterialManager.Mark();
-                Viewer.TextureManager.Mark();
-                Viewer.SignalTypeDataManager.Mark();
-                if (Viewer.Settings.UseMSTSEnv)
-                    MSTSSky.Mark();
-                else
-                    Sky.Mark();
-                Precipitation.Mark();
-                Terrain.Mark();
-                Scenery.Mark();
-                Trains.Mark();
-                RoadCars.Mark();
-                Viewer.Mark();
-                Viewer.ShapeManager.Sweep();
-                Viewer.MaterialManager.Sweep();
-                Viewer.TextureManager.Sweep();
-                Viewer.SignalTypeDataManager.Sweep();
+                try
+                {
+                    Viewer.ShapeManager.Mark();
+                    Viewer.MaterialManager.Mark();
+                    Viewer.TextureManager.Mark();
+                    Viewer.SignalTypeDataManager.Mark();
+                    if (Viewer.Settings.UseMSTSEnv)
+                        MSTSSky.Mark();
+                    else
+                        Sky.Mark();
+                    Precipitation.Mark();
+                    Terrain.Mark();
+                    Scenery.Mark();
+                    Trains.Mark();
+                    RoadCars.Mark();
+                    Containers.Mark();
+                    Viewer.Mark();
+                    Viewer.ShapeManager.Sweep();
+                    Viewer.MaterialManager.Sweep();
+                    Viewer.TextureManager.Sweep();
+                    Viewer.SignalTypeDataManager.Sweep();
+                }
+                catch (Exception error)
+                {
+                    if (!MarkSweepError) Trace.WriteLine(error);
+                    MarkSweepError = true;
+                }
             }
         }
 
@@ -179,6 +195,7 @@ namespace Orts.Viewer3D
             Scenery.LoadPrep();
             Trains.LoadPrep();
             RoadCars.LoadPrep();
+            Containers.LoadPrep();
             VisibleTileX = Viewer.Camera.TileX;
             VisibleTileZ = Viewer.Camera.TileZ;
             PerformanceTune = Viewer.Settings.PerformanceTuner;
@@ -195,6 +212,7 @@ namespace Orts.Viewer3D
             Terrain.PrepareFrame(frame, elapsedTime);
             Scenery.PrepareFrame(frame, elapsedTime);
             Trains.PrepareFrame(frame, elapsedTime);
+            Containers.PrepareFrame(frame, elapsedTime);
             RoadCars.PrepareFrame(frame, elapsedTime);
         }
     }

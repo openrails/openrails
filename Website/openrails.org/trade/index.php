@@ -38,7 +38,7 @@ These vendors sell or create products suitable for Open Rails:
   <li><a href="https://pikku.msts.cz">Pikku Locomotive Works</a> - Czechoslovakia</li>
   <li><a href="http://broadgaugeproduction.irts.in/">Broad Gauge Productions</a> - India</li>  
   <li><a href="http://www.3dtrains.com" target="_blank">3DTrains</a> - USA</li>
-  <li><a href="http://dekosoft.com/trains">Dekosoft Trains</a> - USA</li>
+  <li><a href="https://dekogames.com/trains/">Deko Games</a> - USA</li>
   <li><a href="http://www.gabriele90.com/">Gabriele 90</a> - Italy</li>
 </ul>
 <p>&nbsp;</p>

@@ -918,8 +918,9 @@ namespace Orts.Simulation.AIs
                 {
                     TrainCar car = RollingStock.Load(Simulator, train, wagonFilePath);
                     car.Flipped = wagon.Flip;
-                    train.Length += car.CarLengthM;
                     car.UiD = wagon.UiD;
+                    car.FreightAnimations?.Load(wagon.LoadDataList);
+                    train.Length += car.CarLengthM;
                     if (car is EOT)
                     {
                         train.EOT = car as EOT;
@@ -1327,6 +1328,9 @@ namespace Orts.Simulation.AIs
                         {
                             car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
                             car.IsPartOfActiveTrain = false;  // to stop sounds
+                            // remove continers if any
+                            if (car.FreightAnimations?.Animations != null)
+                                car.FreightAnimations?.RemoveLoads();
                         }
                     }
                 }
