@@ -1828,7 +1828,7 @@ namespace Orts.Parsers.Msts
                             SkipRestOfBlock();
                         }
                         var purefilename = Path.GetFileName(filename).ToLower();
-                        if (purefilename == ">>samename<<")
+                        if (purefilename == "[[samename]]")
                             filename = Path.GetDirectoryName(filename) + @"\" + Path.GetFileName(FileName);
                         var includeFileName = Path.GetDirectoryName(FileName) + @"\" + filename;
                         if (!File.Exists(includeFileName))
