@@ -21,12 +21,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
     </Reference>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\3rdPartyLibs\GNU.Gettext\GNU.Gettext.csproj" />
     <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
