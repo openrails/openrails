@@ -15,6 +15,21 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
+        <h2>Nov 2022 - Version 1.5</h2>
+        <p>
+          <a href="/discover/version-1-5/">Open Rails 1.5</a> released.
+        </p>
+        <hr />        
+        <h2>Summer 2022</h2>
+        <p>
+          Three new UK routes are now available for immediate download <a href="http://openrails.org/download/content/">here</a>.
+        </p>
+        <hr />        
+        <h2>Oct 2021 - Version 1.4</h2>
+        <p>
+          <a href="/discover/version-1-4/">Open Rails 1.4</a> released.
+        </p>
+        <hr />        
         <h2>Nov 2020</h2>
         <p>
           Wagons can now be braked individually as on the oldest railways. This can be experienced in 2 scenarios - <a href="https://www.coalstonewcastle.com.au/physics/stock/#rainhill">Stephenson's Rocket at Rainhill Trials</a> and <a href="https://www.coalstonewcastle.com.au/physics/stock/#select">Langley Vale Timber Tramway</a>. 
