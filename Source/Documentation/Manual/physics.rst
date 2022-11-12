@@ -4221,7 +4221,7 @@ statement. So, in the case of the example above, instead of::
 
 the following can be written::
 
-    include ( ../##SameName## )    
+    include ( ../>>SameName<< )    
   
 This way all additional .wag or .eng files referring to similar trainsets would 
 have exactly the same contents, drastically reducing editing time.
