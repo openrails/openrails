@@ -38,6 +38,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public float LineVoltageV => (float)Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
         public float PantographVoltageV { get; set; }
+        public float PantographVoltageVAC { get; set; }
+        public float PantographVoltageVDC { get; set; }
         public float FilterVoltageV { get; set; } = 0;
 
         public float MaximumPowerW

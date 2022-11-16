@@ -233,6 +233,18 @@ namespace Orts.Simulation.RollingStocks
                         data /= 1000;
                     break;
 
+                case CABViewControlTypes.ORTS_PANTOGRAPH_VOLTAGE_AC:
+                    data = ElectricPowerSupply.PantographVoltageVAC;
+                    if (cvc.Units == CABViewControlUnits.KILOVOLTS)
+                        data /= 1000;
+                    break;
+
+                case CABViewControlTypes.ORTS_PANTOGRAPH_VOLTAGE_DC:
+                    data = ElectricPowerSupply.PantographVoltageVDC;
+                    if (cvc.Units == CABViewControlUnits.KILOVOLTS)
+                        data /= 1000;
+                    break;
+                
                 case CABViewControlTypes.PANTO_DISPLAY:
                     data = Pantographs.State == PantographState.Up ? 1 : 0;
                     break;

@@ -81,6 +81,24 @@ namespace ORTS.Scripting.Api
         protected float PantographVoltageV() => EpsHost.PantographVoltageV;
 
         /// <summary>
+        /// AC voltage of the pantograph
+        /// </summary>
+        protected float PantographVoltageVAC
+        {
+            get => EpsHost.PantographVoltageVAC;
+            set => EpsHost.PantographVoltageVAC = value;
+        }
+
+        /// <summary>
+        /// DC voltage of the pantograph
+        /// </summary>
+        protected float PantographVoltageVDC
+        {
+            get => EpsHost.PantographVoltageVDC;
+            set => EpsHost.PantographVoltageVDC = value;
+        }
+
+        /// <summary>
         /// Voltage of the filter
         /// </summary>
         protected float FilterVoltageV() => EpsHost.FilterVoltageV;

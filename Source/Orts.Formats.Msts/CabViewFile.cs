@@ -81,6 +81,8 @@ namespace Orts.Formats.Msts
         BRAKE_CYL,
         BRAKE_PIPE,
         LINE_VOLTAGE,
+        ORTS_PANTOGRAPH_VOLTAGE_AC,
+        ORTS_PANTOGRAPH_VOLTAGE_DC,
         AMMETER,
         AMMETER_ABS,
         LOAD_METER,
