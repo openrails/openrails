@@ -40,6 +40,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         private bool tcsFullServiceBraking = false;
         private bool overchargeButtonPressed = false;
         private bool quickReleaseButtonPressed = false;
+        private bool neutralModeCommandSwitchOn = false;
+
         public bool EmergencyBraking
         {
             get
@@ -140,6 +142,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 overchargeButtonPressed = value;
             }
         }
+
+        public bool NeutralModeCommandSwitchOn
+        {
+            get
+            {
+                return neutralModeCommandSwitchOn;
+            }
+            set
+            {
+                if (Simulator.Confirmer != null)
+                {
+                    if (value && !neutralModeCommandSwitchOn)
+                        Simulator.Confirmer.Confirm(CabControl.NeutralMode, CabSetting.On);
+                    else if (!value && neutralModeCommandSwitchOn)
+                        Simulator.Confirmer.Confirm(CabControl.NeutralMode, CabSetting.Off);
+                }
+
+                neutralModeCommandSwitchOn = value;
+            }
+        }
+
+        public bool NeutralModeOn { get; set; }
 
         public float MaxPressurePSI { get; set; }
         public float MaxOverchargePressurePSI { get; private set; }
