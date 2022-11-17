@@ -2068,12 +2068,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.SMALL_EJECTOR:
                 case CABViewControlTypes.ORTS_LARGE_EJECTOR:
                 case CABViewControlTypes.FIREHOLE:
-                    index = PercentToIndex(data);
-                    break;
                 case CABViewControlTypes.THROTTLE:
-
-                    index = PercentToIndex(Locomotive.GetThrottleHandleValue(data));
-                    break;
                 case CABViewControlTypes.THROTTLE_DISPLAY:
                     index = PercentToIndex(data);
                     break;
@@ -2370,18 +2365,18 @@ namespace Orts.Viewer3D.RollingStock
             {
                 case CABViewControlTypes.REGULATOR:
                 case CABViewControlTypes.THROTTLE:
-                    if ((Locomotive.CruiseControl?.SelectedMaxAccelerationPercent == 0 && Locomotive.CruiseControl.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto)
+                    if ((Locomotive.CruiseControl?.SelectedMaxAccelerationPercent == 0 && Locomotive.CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
                         && (Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && Locomotive.CruiseControl.SelectedSpeedMpS == 0))
                     {
                         if (Locomotive.CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) Locomotive.CruiseControl.SetSpeed(0);
                         if (Locomotive.ThrottleController.CurrentValue == 0)
                         {
-                            Locomotive.CruiseControl.SpeedRegMode = Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Manual;
+                            Locomotive.CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
                             Locomotive.CruiseControl.DynamicBrakePriority = false;
                         }
                         Locomotive.CruiseControl.SkipThrottleDisplay = false;
                     }
-                    if (Locomotive.CruiseControl?.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto
+                    if (Locomotive.CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto
                         && Locomotive.CruiseControl.SelectedMaxAccelerationPercent != 0 && Locomotive.CruiseControl.HasIndependentThrottleDynamicBrakeLever)
                         break;
                     Locomotive.SetThrottleValue(ChangedValue(Locomotive.ThrottleController.IntermediateValue));
@@ -2450,18 +2445,18 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_OVERCHARGE: new BrakeOverchargeCommand(Viewer.Log, ChangedValue(Locomotive.TrainBrakeController.OverchargeButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.RESET: new AlerterCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.AlerterButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.CP_HANDLE:
-                    if ((Locomotive.CruiseControl?.SelectedMaxAccelerationPercent == 0 && Locomotive.CruiseControl.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto)
+                    if ((Locomotive.CruiseControl?.SelectedMaxAccelerationPercent == 0 && Locomotive.CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
                          && (Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && Locomotive.CruiseControl.SelectedSpeedMpS == 0))
                     {
                         if (Locomotive.CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) Locomotive.CruiseControl.SetSpeed(0);
                         if (Locomotive.ThrottleController.CurrentValue == 0)
                         {
-                            Locomotive.CruiseControl.SpeedRegMode = Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Manual;
+                            Locomotive.CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
                             Locomotive.CruiseControl.DynamicBrakePriority = false;
                         }
                         Locomotive.CruiseControl.SkipThrottleDisplay = false;
                     }
-                    if (Locomotive.CruiseControl?.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto
+                    if (Locomotive.CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto
                         && Locomotive.CruiseControl.SelectedMaxAccelerationPercent != 0 && Locomotive.CruiseControl.HasIndependentThrottleDynamicBrakeLever)
                         break;
                     Locomotive.SetCombinedHandleValue(ChangedValue(Locomotive.GetCombinedHandleValue(true)));
