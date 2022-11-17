@@ -2071,6 +2071,9 @@ namespace Orts.Viewer3D.RollingStock
                     index = PercentToIndex(data);
                     break;
                 case CABViewControlTypes.THROTTLE:
+
+                    index = PercentToIndex(Locomotive.GetThrottleHandleValue(data));
+                    break;
                 case CABViewControlTypes.THROTTLE_DISPLAY:
                     index = PercentToIndex(data);
                     break;
