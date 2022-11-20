@@ -26,8 +26,10 @@ using EmbedIO.WebApi;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Orts.Common;
 using Orts.Simulation.Physics;
 using Orts.Viewer3D.RollingStock;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -112,12 +114,28 @@ namespace Orts.Viewer3D.WebServices
         /// The Viewer to serve train data from.
         /// </summary>
         private readonly Viewer Viewer;
+        private bool latLongCorrToBeRead = true;
+        protected WorldLocation cameraLocation = new WorldLocation();
 
         public ORTSApiController(Viewer viewer)
         {
             Viewer = viewer;
         }
 
+        public string getLatLong()
+        {
+            double latitude = 0;
+            double longitude = 0;
+
+            var playerLocation = Viewer.Simulator.PlayerLocomotive.WorldPosition.WorldLocation;
+
+            new WorldLatLon().ConvertWTC(playerLocation.TileX, playerLocation.TileZ, playerLocation.Location, ref latitude, ref longitude);;
+
+            string latitudeStr = (MathHelper.ToDegrees((float)latitude)).ToString("F6").Replace(',', '.');
+            string longitudeStr = (MathHelper.ToDegrees((float)longitude)).ToString("F6").Replace(',', '.');
+
+            return (latitudeStr + " " + longitudeStr);
+        }
 
         #region /API/APISAMPLE
         public struct Embedded
@@ -253,6 +271,11 @@ namespace Orts.Viewer3D.WebServices
         #region /API/TIME
         [Route(HttpVerbs.Get, "/TIME")]
         public double Time() => Viewer.Simulator.ClockTime;
+        #endregion
+
+        #region /API/MAP
+        [Route(HttpVerbs.Get, "/MAP")]
+        public string LatLong() => getLatLong();
         #endregion
     }
 }
