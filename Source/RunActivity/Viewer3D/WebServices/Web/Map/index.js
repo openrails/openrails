@@ -55,7 +55,7 @@ function ApiMap() {
                     MapInit(latLong);
                 }
 
-                if ((latLong[0] != latLongPrev[0]) && (latLong[1] != latLongPrev[1])) {
+                if ((latLong[0] != latLongPrev[0]) || (latLong[1] != latLongPrev[1])) {
                     if (typeof locomotivMarker !== 'undefined') {
                         locomotivMarker.removeFrom(map);
                     }
