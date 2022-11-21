@@ -114,7 +114,6 @@ namespace Orts.Viewer3D.WebServices
         /// The Viewer to serve train data from.
         /// </summary>
         private readonly Viewer Viewer;
-        private bool latLongCorrToBeRead = true;
         protected WorldLocation cameraLocation = new WorldLocation();
 
         public ORTSApiController(Viewer viewer)
@@ -122,7 +121,7 @@ namespace Orts.Viewer3D.WebServices
             Viewer = viewer;
         }
 
-        public string getLatLong()
+        public string getLatLon()
         {
             double latitude = 0;
             double longitude = 0;
@@ -275,7 +274,7 @@ namespace Orts.Viewer3D.WebServices
 
         #region /API/MAP
         [Route(HttpVerbs.Get, "/MAP")]
-        public string LatLong() => getLatLong();
+        public string LatLon() => getLatLon();
         #endregion
     }
 }
