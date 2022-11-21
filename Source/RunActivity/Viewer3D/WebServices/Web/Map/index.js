@@ -48,7 +48,7 @@ function ApiMap() {
             if (responseText.length > 0) {
                 latLon = responseText.split(" ");
                 if (typeof locomotivMarker !== 'undefined') {
-                    if ((latLon[0] != latLonPrev[0]) && (latLon[1] != latLonPrev[1])) {
+                    if ((latLon[0] != latLonPrev[0]) || (latLon[1] != latLonPrev[1])) {
                         map.panTo(latLon);
                     }
                 } else {
