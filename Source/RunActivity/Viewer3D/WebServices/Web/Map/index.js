@@ -22,11 +22,11 @@ var xmlHttpRequestCodeDone = 4;
 
 var locomotivMarker;
 var map;
-var latLongPrev = [0, 0];
+var latLonPrev = [0, 0];
 
-function MapInit(latLong) {
+function MapInit(latLon) {
 
-    map = L.map('map').setView(latLong, 13);
+    map = L.map('map').setView(latLon, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -46,25 +46,25 @@ function ApiMap() {
         if (this.readyState == xmlHttpRequestCodeDone && this.status == httpCodeSuccess) {
             var responseText = JSON.parse(hr.responseText);
             if (responseText.length > 0) {
-                latLong = responseText.split(" ");
+                latLon = responseText.split(" ");
                 if (typeof locomotivMarker !== 'undefined') {
-                    if ((latLong[0] != latLongPrev[0]) && (latLong[1] != latLongPrev[1])) {
-                        map.panTo(latLong);
+                    if ((latLon[0] != latLonPrev[0]) && (latLon[1] != latLonPrev[1])) {
+                        map.panTo(latLon);
                     }
                 } else {
-                    MapInit(latLong);
+                    MapInit(latLon);
                 }
 
-                if ((latLong[0] != latLongPrev[0]) || (latLong[1] != latLongPrev[1])) {
+                if ((latLon[0] != latLonPrev[0]) || (latLon[1] != latLonPrev[1])) {
                     if (typeof locomotivMarker !== 'undefined') {
                         locomotivMarker.removeFrom(map);
                     }
                     locomotivMarker = L.marker(
-                        latLong,
+                        latLon,
                         { icon: myIcon }
                     ).addTo(map);
-                    latLongPrev[0] = latLong[0];
-                    latLongPrev[1] = latLong[1];
+                    latLonPrev[0] = latLon[0];
+                    latLonPrev[1] = latLon[1];
                 }
             }
         }
@@ -72,7 +72,7 @@ function ApiMap() {
 }
 
 var myIcon = L.icon({
-    iconUrl: 'locomotiv.png',
+    iconUrl: 'locomotive.png',
     iconSize: [29, 24],
     iconAnchor: [9, 21],
 })
