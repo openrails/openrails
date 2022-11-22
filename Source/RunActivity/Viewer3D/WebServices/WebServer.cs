@@ -121,21 +121,6 @@ namespace Orts.Viewer3D.WebServices
             Viewer = viewer;
         }
 
-        public string getLatLon()
-        {
-            double latitude = 0;
-            double longitude = 0;
-
-            var playerLocation = Viewer.Simulator.PlayerLocomotive.WorldPosition.WorldLocation;
-
-            new WorldLatLon().ConvertWTC(playerLocation.TileX, playerLocation.TileZ, playerLocation.Location, ref latitude, ref longitude);;
-
-            string latitudeStr = (MathHelper.ToDegrees((float)latitude)).ToString("F6").Replace(',', '.');
-            string longitudeStr = (MathHelper.ToDegrees((float)longitude)).ToString("F6").Replace(',', '.');
-
-            return (latitudeStr + " " + longitudeStr);
-        }
-
         #region /API/APISAMPLE
         public struct Embedded
         {
@@ -274,7 +259,7 @@ namespace Orts.Viewer3D.WebServices
 
         #region /API/MAP
         [Route(HttpVerbs.Get, "/MAP")]
-        public string LatLon() => getLatLon();
+        public LatLon LatLon() => Viewer.Simulator.PlayerLocomotive.GetLatLon();
         #endregion
     }
 }
