@@ -16,11 +16,11 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-var hr = new XMLHttpRequest;
-var httpCodeSuccess = 200;
-var xmlHttpRequestCodeDone = 4;
+const hr = new XMLHttpRequest;
+const httpCodeSuccess = 200;
+const xmlHttpRequestCodeDone = 4;
 
-var locomotivMarker;
+var locomotiveMarker;
 var map;
 var latLonPrev = [0, 0];
 
@@ -44,28 +44,29 @@ function ApiMap() {
     hr.send();
     hr.onreadystatechange = function () {
         if (this.readyState == xmlHttpRequestCodeDone && this.status == httpCodeSuccess) {
-            var responseText = JSON.parse(hr.responseText);
-            if (responseText.length > 0) {
-                latLon = responseText.split(" ");
-                if (typeof locomotivMarker !== 'undefined') {
-                    if ((latLon[0] != latLonPrev[0]) || (latLon[1] != latLonPrev[1])) {
-                        map.panTo(latLon);
-                    }
-                } else {
-                    MapInit(latLon);
-                }
 
-                if ((latLon[0] != latLonPrev[0]) || (latLon[1] != latLonPrev[1])) {
-                    if (typeof locomotivMarker !== 'undefined') {
-                        locomotivMarker.removeFrom(map);
-                    }
-                    locomotivMarker = L.marker(
+            let latLonObj = JSON.parse(hr.responseText);
+
+            if (latLonObj != null) {
+
+                let latLon = [latLonObj.Lat, latLonObj.Lon];
+
+                if (typeof locomotiveMarker == 'undefined') {
+                    // init
+                    MapInit(latLon);
+                    locomotiveMarker = L.marker(
                         latLon,
                         { icon: myIcon }
                     ).addTo(map);
-                    latLonPrev[0] = latLon[0];
-                    latLonPrev[1] = latLon[1];
+                } else {
+                    if ((latLon[0] != latLonPrev[0]) || (latLon[1] != latLonPrev[1])) {
+                        // changed
+                        map.panTo(latLon);
+                        locomotiveMarker.setLatLng(latLon).update();
+                    }
                 }
+                latLonPrev[0] = latLon[0];
+                latLonPrev[1] = latLon[1];
             }
         }
     }

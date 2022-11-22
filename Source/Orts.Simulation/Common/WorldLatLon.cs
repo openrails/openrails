@@ -287,4 +287,22 @@ namespace Orts.Common
         }
 
     }
+
+    /// <summary>
+    /// Class to store the latitude and longitude values of a point on the map
+    /// </summary>
+    public class LatLon
+    {
+        private readonly float _lat;
+        private readonly float _lon;
+
+        public LatLon(float lat, float lon)
+        {
+            this._lat = lat;
+            this._lon = lon;
+        }
+
+        public float Lat => _lat;
+        public float Lon => _lon;
+    }
 }

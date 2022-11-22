@@ -34,6 +34,7 @@
 //#define DEBUG_BRAKE_SLIDE
 
 using Microsoft.Xna.Framework;
+using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.AIs;
@@ -3347,6 +3348,25 @@ namespace Orts.Simulation.RollingStocks
             float HeatLossInfiltrationW = W.FromKW(SpecificHeatCapacityAirKJpKgK * DensityAirKgpM3 * NumAirShiftspSec * CarHeatVolumeM3 * (CarInsideTempC - CarOutsideTempC));
 
             TotalCarCompartmentHeatLossW = HeatLossTransmissionW + HeatLossInfiltrationW + HeatLossVentilationW;
+        }
+
+        /// <summary>
+        /// Determine latitude/longitude position of the current TrainCar
+        /// </summary>
+        public LatLon GetLatLon()
+        {
+            double lat = 0;
+            double lon = 0;
+
+            var playerLocation = WorldPosition.WorldLocation;
+
+            new WorldLatLon().ConvertWTC(playerLocation.TileX, playerLocation.TileZ, playerLocation.Location, ref lat, ref lon);
+
+            LatLon latLon = new LatLon(
+                MathHelper.ToDegrees((float)lat),
+                MathHelper.ToDegrees((float)lon));
+
+            return (latLon);
         }
     }
 
