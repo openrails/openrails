@@ -2113,9 +2113,9 @@ namespace Orts.Viewer3D.RollingStock
                                     index = 0;
                                 }
                                 else
-                            index = PercentToIndex(dynBrakePercent);
-                    }
-                    else
+                                    index = PercentToIndex(dynBrakePercent);
+                            }
+                            else
                                 index = PercentToIndex(dynBrakePercent);
                         }
                     }
@@ -2136,10 +2136,10 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.CP_HANDLE:
                     if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0
-                        || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
-                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
-                    else
-                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                            || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
+                            index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                        else
+                            index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
                     break;
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_DISPLAY:
                     if (Locomotive.CruiseControl == null)

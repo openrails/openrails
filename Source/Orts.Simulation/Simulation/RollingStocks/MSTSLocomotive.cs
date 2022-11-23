@@ -1105,7 +1105,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 default:
                     base.Parse(lowercasetoken, stf);
                     break;
-                    
+
             }
         }
 
@@ -1968,7 +1968,7 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 UpdateCarSteamHeat(elapsedClockSeconds);
             }
- 
+
             if (!AdvancedAdhesionModel)  // Advanced adhesion model turned off.
                AbsWheelSpeedMpS = AbsSpeedMpS;
 
@@ -2359,7 +2359,7 @@ public List<CabView> CabViewList = new List<CabView>();
 				this.notificationReceived = false;
 			}
 #endif
-                    }
+        }
 
         /// <summary>
         /// This function updates periodically the locomotive's motive force.
@@ -3499,9 +3499,9 @@ public List<CabView> CabViewList = new List<CabView>();
                 if (!(CombinedControlType == CombinedControl.ThrottleDynamic
                     || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0))
                 {
-                Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
-                return;
-            }
+                    Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
+                    return;
+                }
             }
 
             if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake)
@@ -3859,7 +3859,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     ThrottleController.SetPercent(percent);
             }
             else
-            ThrottleController.SetPercent(percent);
+                ThrottleController.SetPercent(percent);
         }
 
         public void SetThrottlePercentWithSound(float percent)
@@ -4021,7 +4021,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                     else
                     {
-                return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (intermediateValue ? DynamicBrakeController.IntermediateValue : DynamicBrakeController.CurrentValue);
+                        return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (intermediateValue ? DynamicBrakeController.IntermediateValue : DynamicBrakeController.CurrentValue);
                     }
                 }
                 else
@@ -4759,7 +4759,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 return null;
             if (DynamicBrakePercent < 0)
                 return string.Empty;
-                return string.Format("{0:F0}%", DynamicBrakePercent);
+            return string.Format("{0:F0}%", DynamicBrakePercent);
         }
 
         public override string GetDPDynamicBrakeStatus()
@@ -5986,10 +5986,10 @@ public List<CabView> CabViewList = new List<CabView>();
                 default:
                     if (CruiseControl != null)
                         data = CruiseControl.GetDataOf(cvc);
-                        if (Train?.EOT != null && data == 0)
-                            data = Train.EOT.GetDataOf(cvc);
-                        break;
-                    }
+                    if (Train?.EOT != null && data == 0)
+                        data = Train.EOT.GetDataOf(cvc);
+                    break;
+            }
             return data;
         }
 

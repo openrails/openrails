@@ -1115,7 +1115,7 @@ namespace Orts.Viewer3D.Popups
                 AddSeparator();
             }
 
-           // EOT
+            // EOT
 
             if (locomotive.Train.EOT != null)
             {
