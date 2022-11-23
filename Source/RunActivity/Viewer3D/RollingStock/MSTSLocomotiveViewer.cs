@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -57,6 +57,7 @@ namespace Orts.Viewer3D.RollingStock
         public static int DbfEvalEBPBstopped = 0;//Debrief eval
         public static int DbfEvalEBPBmoving = 0;//Debrief eval
         public bool lemergencybuttonpressed = false;
+        CruiseControlViewer CruiseControlViewer;
 
         public MSTSLocomotiveViewer(Viewer viewer, MSTSLocomotive car)
             : base(viewer, car)
@@ -81,6 +82,11 @@ namespace Orts.Viewer3D.RollingStock
                         Trace.TraceInformation("File " + Locomotive.TrainControlSystem.Sounds[script] + " in script of locomotive of train " + Locomotive.Train.Name + " : " + error.Message);
                     }
                 }
+            if (Locomotive.CruiseControl != null)
+            {
+                CruiseControlViewer = new CruiseControlViewer(this, Locomotive, Locomotive.CruiseControl);
+                CruiseControlViewer.InitializeUserInputCommands();
+            }
         }
 
         protected virtual void StartGearBoxIncrease()
@@ -1945,13 +1951,14 @@ namespace Orts.Viewer3D.RollingStock
     /// </summary>
     public class CabViewDiscreteRenderer : CabViewControlRenderer, ICabViewMouseControlRenderer
     {
-        readonly CVCWithFrames ControlDiscrete;
+        protected readonly CVCWithFrames ControlDiscrete;
         readonly Rectangle SourceRectangle;
         Rectangle DestinationRectangle = new Rectangle();
         public readonly float CVCFlashTimeOn = 0.75f;
         public readonly float CVCFlashTimeTotal = 1.5f;
         float CumulativeTime;
         float Scale = 1;
+        int OldFrameIndex = 0;
         public bool ButtonState = false;
 
         /// <summary>
@@ -2040,11 +2047,11 @@ namespace Orts.Viewer3D.RollingStock
         /// Determines the index of the Texture to be drawn
         /// </summary>
         /// <returns>index of the Texture</returns>
-        public int GetDrawIndex()
+        public virtual int GetDrawIndex()
         {
             var data = Locomotive.GetDataOf(Control);
 
-            var index = 0;
+            var index = OldFrameIndex;
             switch (ControlDiscrete.ControlType)
             {
                 case CABViewControlTypes.ENGINE_BRAKE:
@@ -2061,8 +2068,6 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.SMALL_EJECTOR:
                 case CABViewControlTypes.ORTS_LARGE_EJECTOR:
                 case CABViewControlTypes.FIREHOLE:
-                    index = PercentToIndex(data);
-                    break;
                 case CABViewControlTypes.THROTTLE:
                 case CABViewControlTypes.THROTTLE_DISPLAY:
                     index = PercentToIndex(data);
@@ -2086,7 +2091,19 @@ namespace Orts.Viewer3D.RollingStock
                             index = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.CurrentNotch : 0;
                         }
                         else
-                            index = PercentToIndex(dynBrakePercent);
+                        {
+                            if (Locomotive.CruiseControl != null)
+                            {
+                                if ((Locomotive.CruiseControl.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto && !Locomotive.CruiseControl.DynamicBrakePriority) || Locomotive.DynamicBrakeIntervention > 0)
+                                {
+                                    index = 0;
+                                }
+                                else
+                                    index = PercentToIndex(dynBrakePercent);
+                            }
+                            else
+                                index = PercentToIndex(dynBrakePercent);
+                        }
                     }
                     else
                     {
@@ -2105,10 +2122,18 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.CP_HANDLE:
                     if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0
-                        || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
-                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
-                    else
-                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                            || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
+                            index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                        else
+                            index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                    break;
+                case CABViewControlTypes.ORTS_SELECTED_SPEED_DISPLAY:
+                    if (Locomotive.CruiseControl == null)
+                    {
+                        index = 0;
+                        break;
+                    }
+                    index = (int)MpS.ToKpH(Locomotive.CruiseControl.SelectedSpeedMpS) / 10;
                     break;
                 case CABViewControlTypes.ALERTER_DISPLAY:
                 case CABViewControlTypes.RESET:
@@ -2264,7 +2289,36 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_TCS46:
                 case CABViewControlTypes.ORTS_TCS47:
                 case CABViewControlTypes.ORTS_TCS48:
+
+                // Jindrich
+                case CABViewControlTypes.ORTS_RESTRICTED_SPEED_ZONE_ACTIVE:
+                case CABViewControlTypes.ORTS_SELECTED_SPEED_MODE:
+                case CABViewControlTypes.ORTS_SELECTED_SPEED_REGULATOR_MODE:
+                case CABViewControlTypes.ORTS_SELECTED_SPEED_MAXIMUM_ACCELERATION:
+                case CABViewControlTypes.ORTS_NUMBER_OF_AXES_DISPLAY_UNITS:
+                case CABViewControlTypes.ORTS_NUMBER_OF_AXES_DISPLAY_TENS:
+                case CABViewControlTypes.ORTS_NUMBER_OF_AXES_DISPLAY_HUNDREDS:
+                case CABViewControlTypes.ORTS_TRAIN_LENGTH_METERS:
+                case CABViewControlTypes.ORTS_REMAINING_TRAIN_LENGTH_SPEED_RESTRICTED:
+                case CABViewControlTypes.ORTS_REMAINING_TRAIN_LENGTH_PERCENT:
+                case CABViewControlTypes.ORTS_MOTIVE_FORCE:
+                case CABViewControlTypes.ORTS_MOTIVE_FORCE_KILONEWTON:
+                case CABViewControlTypes.ORTS_MAXIMUM_FORCE:
+                case CABViewControlTypes.ORTS_SELECTED_SPEED:
+                case CABViewControlTypes.ORTS_FORCE_IN_PERCENT_THROTTLE_AND_DYNAMIC_BRAKE:
+                case CABViewControlTypes.ORTS_TRAIN_TYPE_PAX_OR_CARGO:
+                case CABViewControlTypes.ORTS_CONTROLLER_VOLTAGE:
+                case CABViewControlTypes.ORTS_AMPERS_BY_CONTROLLER_VOLTAGE:
+                case CABViewControlTypes.ORTS_CC_SELECTED_SPEED:
+                case CABViewControlTypes.ORTS_MULTI_POSITION_CONTROLLER:
+                case CABViewControlTypes.ORTS_ACCELERATION_IN_TIME:
+				case CABViewControlTypes.ORTS_CC_SPEED_DELTA:											  
+                case CABViewControlTypes.ORTS_CC_SPEED_0:
                     index = (int)data;
+                    break;
+                case CABViewControlTypes.ORTS_SELECTED_SPEED_SELECTOR:
+                    var fraction = data / (float)(ControlDiscrete.MaxValue);
+                    index = (int)MathHelper.Clamp(0, (int)(fraction * ((ControlDiscrete as CVCDiscrete).FramesCount - 1)), (ControlDiscrete as CVCDiscrete).FramesCount - 1);
                     break;
             }
             // If it is a control with NumPositions and NumValues, the index becomes the reference to the Positions entry, which in turn is the frame index within the .ace file
@@ -2274,6 +2328,7 @@ namespace Orts.Viewer3D.RollingStock
 
             if (index >= ControlDiscrete.FramesCount) index = ControlDiscrete.FramesCount - 1;
             if (index < 0) index = 0;
+            OldFrameIndex = index;
             return index;
         }
 
@@ -2303,12 +2358,29 @@ namespace Orts.Viewer3D.RollingStock
         /// <summary>
         /// Handles cabview mouse events, and changes the corresponding locomotive control values.
         /// </summary>
+
         public void HandleUserInput()
         {
             switch (Control.ControlType)
             {
                 case CABViewControlTypes.REGULATOR:
-                case CABViewControlTypes.THROTTLE: Locomotive.SetThrottleValue(ChangedValue(Locomotive.ThrottleController.IntermediateValue)); break;
+                case CABViewControlTypes.THROTTLE:
+                    if ((Locomotive.CruiseControl?.SelectedMaxAccelerationPercent == 0 && Locomotive.CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                        && (Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && Locomotive.CruiseControl.SelectedSpeedMpS == 0))
+                    {
+                        if (Locomotive.CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) Locomotive.CruiseControl.SetSpeed(0);
+                        if (Locomotive.ThrottleController.CurrentValue == 0)
+                        {
+                            Locomotive.CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
+                            Locomotive.CruiseControl.DynamicBrakePriority = false;
+                        }
+                        Locomotive.CruiseControl.SkipThrottleDisplay = false;
+                    }
+                    if (Locomotive.CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto
+                        && Locomotive.CruiseControl.SelectedMaxAccelerationPercent != 0 && Locomotive.CruiseControl.HasIndependentThrottleDynamicBrakeLever)
+                        break;
+                    Locomotive.SetThrottleValue(ChangedValue(Locomotive.ThrottleController.IntermediateValue));
+                    break;
                 case CABViewControlTypes.ENGINE_BRAKE: Locomotive.SetEngineBrakeValue(ChangedValue(Locomotive.EngineBrakeController.IntermediateValue)); break;
                 case CABViewControlTypes.BRAKEMAN_BRAKE: Locomotive.SetBrakemanBrakeValue(ChangedValue(Locomotive.BrakemanBrakeController.IntermediateValue)); break;
                 case CABViewControlTypes.TRAIN_BRAKE: Locomotive.SetTrainBrakeValue(ChangedValue(Locomotive.TrainBrakeController.IntermediateValue)); break;
@@ -2372,7 +2444,24 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_QUICKRELEASE: new QuickReleaseCommand(Viewer.Log, ChangedValue(Locomotive.TrainBrakeController.QuickReleaseButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.ORTS_OVERCHARGE: new BrakeOverchargeCommand(Viewer.Log, ChangedValue(Locomotive.TrainBrakeController.OverchargeButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.RESET: new AlerterCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.AlerterButtonPressed ? 1 : 0) > 0); break;
-                case CABViewControlTypes.CP_HANDLE: Locomotive.SetCombinedHandleValue(ChangedValue(Locomotive.GetCombinedHandleValue(true))); break;
+                case CABViewControlTypes.CP_HANDLE:
+                    if ((Locomotive.CruiseControl?.SelectedMaxAccelerationPercent == 0 && Locomotive.CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                         && (Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && Locomotive.CruiseControl.SelectedSpeedMpS == 0))
+                    {
+                        if (Locomotive.CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) Locomotive.CruiseControl.SetSpeed(0);
+                        if (Locomotive.ThrottleController.CurrentValue == 0)
+                        {
+                            Locomotive.CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
+                            Locomotive.CruiseControl.DynamicBrakePriority = false;
+                        }
+                        Locomotive.CruiseControl.SkipThrottleDisplay = false;
+                    }
+                    if (Locomotive.CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto
+                        && Locomotive.CruiseControl.SelectedMaxAccelerationPercent != 0 && Locomotive.CruiseControl.HasIndependentThrottleDynamicBrakeLever)
+                        break;
+                    Locomotive.SetCombinedHandleValue(ChangedValue(Locomotive.GetCombinedHandleValue(true)));
+                    break;
+
                 // Steam locomotives only:
                 case CABViewControlTypes.CUTOFF: (Locomotive as MSTSSteamLocomotive).SetCutoffValue(ChangedValue((Locomotive as MSTSSteamLocomotive).CutoffController.IntermediateValue)); break;
                 case CABViewControlTypes.BLOWER: (Locomotive as MSTSSteamLocomotive).SetBlowerValue(ChangedValue((Locomotive as MSTSSteamLocomotive).BlowerController.IntermediateValue)); break;
@@ -2532,6 +2621,144 @@ namespace Orts.Viewer3D.RollingStock
                     new TCSSwitchCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.TCSCommandSwitchOn[commandIndex] ? 1 : 0) > 0, commandIndex);
                     break;
 
+                // Jindrich
+                case CABViewControlTypes.ORTS_CC_SELECTED_SPEED:
+                    if (Locomotive.CruiseControl == null)
+                        break;
+                    var p = ChangedValue(0);
+                    if (p == 1)
+                    {
+                        Locomotive.CruiseControl.SetSpeed(Control.Parameter1);
+                        Locomotive.CruiseControl.SelectedSpeedPressed = true;
+                    }
+                    else if (p == 0) Locomotive.CruiseControl.SelectedSpeedPressed = false;
+                    break;
+                case CABViewControlTypes.ORTS_SELECTED_SPEED_REGULATOR_MODE:
+                    p = ChangedValue(0);
+                    if (Control.ControlStyle == CABViewControlStyles.ONOFF)
+                    {
+                        if (ChangedValue(0) == 1)
+                        {
+                            if (Locomotive.CruiseControl.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Manual)
+                            {
+                                Locomotive.CruiseControl.SpeedRegulatorModeIncrease();
+                            }
+                            else if (Locomotive.CruiseControl.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto)
+                            {
+                                Locomotive.CruiseControl.SpeedRegulatorModeDecrease();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (p == 1)
+                        {
+                            Locomotive.CruiseControl.SpeedRegulatorModeIncrease();
+                        }
+                        else if (p == -1)
+                        {
+                            Locomotive.CruiseControl.SpeedRegulatorModeDecrease();
+                        }
+                    }
+                    break;
+                case CABViewControlTypes.ORTS_SELECTED_SPEED_MODE:
+                    p = ChangedValue(0);
+                    if (p == 1)
+                    {
+                        Locomotive.CruiseControl.SpeedSelectorModeStartIncrease();
+                    }
+                    else if (Locomotive.CruiseControl.SpeedSelMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedSelectorMode.Start)
+                    {
+                        if (UserInput.IsMouseLeftButtonReleased)
+                        {
+                            Locomotive.CruiseControl.SpeedSelectorModeStopIncrease();
+                        }
+                    }
+                    else if (p == -1)
+                    {
+                        Locomotive.CruiseControl.SpeedSelectorModeDecrease();
+                    }
+                    break;
+                case CABViewControlTypes.ORTS_RESTRICTED_SPEED_ZONE_ACTIVE:
+                    if (ChangedValue(0) == 1)
+                    {
+                        Locomotive.CruiseControl.ActivateRestrictedSpeedZone();
+                    }
+                    break;
+                case CABViewControlTypes.ORTS_NUMBER_OF_AXES_INCREASE:
+                    if (ChangedValue(0) == 1)
+                    {
+                        Locomotive.CruiseControl.NumerOfAxlesIncrease();
+                    }
+                    break;
+                case CABViewControlTypes.ORTS_NUMBER_OF_AXES_DECREASE:
+                    if (ChangedValue(0) == 1)
+                    {
+                        Locomotive.CruiseControl.NumberOfAxlesDecrease();
+                    }
+                    break;
+                case CABViewControlTypes.ORTS_SELECTED_SPEED_SELECTOR:
+                    p = ChangedValue(0);
+                    Locomotive.CruiseControl.SpeedRegulatorSelectedSpeedChangeByMouse(p, Control.Units == CABViewControlUnits.KM_PER_HOUR, (float)Control.MaxValue);
+                    break;
+                case CABViewControlTypes.ORTS_SELECTED_SPEED_MAXIMUM_ACCELERATION:
+                    p = ChangedValue(0);
+                    Locomotive.CruiseControl.SpeedRegulatorMaxForceChangeByMouse(p, (float)Control.MaxValue);
+                    break;
+                case CABViewControlTypes.ORTS_MULTI_POSITION_CONTROLLER:
+                    {
+                        foreach (MultiPositionController mpc in Locomotive.MultiPositionControllers)
+                        {
+                            if (mpc.ControllerId == Control.ControlId)
+                            {
+                                p = ChangedValue(0);
+                                if (!mpc.StateChanged)
+                                    mpc.StateChanged = true;
+                                if (p != 0 && Locomotive.CruiseControl.SelectedMaxAccelerationPercent == 0 && Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && Locomotive.CruiseControl.ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero &&
+ Locomotive.ThrottleController.CurrentValue == 0 && Locomotive.DynamicBrakeController.CurrentValue == 0 && Locomotive.CruiseControl.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Manual)
+                                    Locomotive.CruiseControl.SpeedRegMode = Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto;
+                                if (p == 1)
+                                {
+                                    if (mpc.controllerBinding == ControllerBinding.SelectedSpeed && Locomotive.CruiseControl.ForceRegulatorAutoWhenNonZeroSpeedSelected)
+                                    {
+                                        Locomotive.CruiseControl.SpeedRegMode = Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto;
+                                        Locomotive.CruiseControl.SpeedSelMode = Simulation.RollingStocks.SubSystems.CruiseControl.SpeedSelectorMode.On;
+                                    }
+                                    mpc.DoMovement(MultiPositionController.Movement.Forward);
+                                }
+                                if (p == -1) mpc.DoMovement(MultiPositionController.Movement.Aft);
+                                if (p == 0 && !UserInput.IsMouseLeftButtonDown)
+                                {
+                                    mpc.DoMovement(MultiPositionController.Movement.Neutral);
+                                    mpc.StateChanged = false;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_CC_SPEED_0:
+                    {
+                        p = ChangedValue(0);
+                        if (p == 1)
+                        {
+                            Locomotive.CruiseControl.SetSpeed(0);
+                            Locomotive.CruiseControl.Speed0Pressed = true;
+                        }
+                        else if (p == 0) Locomotive.CruiseControl.Speed0Pressed = false;
+
+                        break;
+                    }
+					case CABViewControlTypes.ORTS_CC_SPEED_DELTA:
+                    {
+                        p = ChangedValue(0);
+                        if (p == 1)
+                        {
+                            Locomotive.CruiseControl.SetSpeed(Locomotive.CruiseControl.SetSpeedKpHOrMpH + Control.Parameter1);
+                            Locomotive.CruiseControl.SpeedDeltaPressed = true;
+                        }
+                        else if (p == 0) Locomotive.CruiseControl.SpeedDeltaPressed = false;
+                        break;
+                    }
                 case CABViewControlTypes.ORTS_DP_MOVE_TO_FRONT:
                     buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
                     if (!ButtonState && (ButtonState ? 1 : 0) != ChangedValue(ButtonState ? 1 : 0))
@@ -2593,7 +2820,6 @@ namespace Orts.Viewer3D.RollingStock
                     ButtonState = buttonState;
                     break;
                 case CABViewControlTypes.ORTS_EOT_EMERGENCY_BRAKE:
-                    var p = ChangedValue(0);
                     if (ChangedValue(0) == 1)
                     {
                         if (Locomotive.Train?.EOT != null)

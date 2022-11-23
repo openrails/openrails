@@ -265,6 +265,36 @@ namespace Orts.Formats.Msts
         ORTS_TCS48,
         ORTS_ETCS,
 
+        // Cruise Control
+        ORTS_SELECTED_SPEED,
+        ORTS_SELECTED_SPEED_DISPLAY,
+        ORTS_SELECTED_SPEED_MODE,
+        ORTS_SELECTED_SPEED_REGULATOR_MODE,
+        ORTS_SELECTED_SPEED_MAXIMUM_ACCELERATION,
+        ORTS_SELECTED_SPEED_SELECTOR,
+        ORTS_RESTRICTED_SPEED_ZONE_ACTIVE,
+        ORTS_NUMBER_OF_AXES_DISPLAY_UNITS,
+        ORTS_NUMBER_OF_AXES_DISPLAY_TENS,
+        ORTS_NUMBER_OF_AXES_DISPLAY_HUNDREDS,
+        ORTS_TRAIN_LENGTH_METERS,
+        ORTS_REMAINING_TRAIN_LENGTH_SPEED_RESTRICTED,
+        ORTS_REMAINING_TRAIN_LENGTH_PERCENT,
+        ORTS_MOTIVE_FORCE,
+        ORTS_MOTIVE_FORCE_KILONEWTON,
+        ORTS_MAXIMUM_FORCE,
+        ORTS_FORCE_IN_PERCENT_THROTTLE_AND_DYNAMIC_BRAKE,
+        ORTS_TRAIN_TYPE_PAX_OR_CARGO,
+        ORTS_CONTROLLER_VOLTAGE,
+        ORTS_AMPERS_BY_CONTROLLER_VOLTAGE,
+        ORTS_ACCELERATION_IN_TIME,
+        ORTS_CC_SELECTED_SPEED,
+        ORTS_NUMBER_OF_AXES_INCREASE,
+        ORTS_NUMBER_OF_AXES_DECREASE,
+        ORTS_MULTI_POSITION_CONTROLLER,
+        ORTS_CC_SPEED_0,
+
+		ORTS_CC_SPEED_DELTA,
+					
         ORTS_ODOMETER,
         ORTS_ODOMETER_RESET,
         ORTS_ODOMETER_DIRECTION,
@@ -414,6 +444,8 @@ namespace Orts.Formats.Msts
         public double OldValue;
         public string ACEFile = "";
         public string Label = "";
+        public int ControlId = 0;
+        public float Parameter1; // Generic parameter, individually interpreted by the controls using it
 
         public int Display;
         public List<string> Screens;
@@ -1094,10 +1126,12 @@ namespace Orts.Formats.Msts
                     Label = stf.ReadString();
                     stf.SkipRestOfBlock();
                 }),
+                new STFReader.TokenProcessor("controlid", ()=> { ControlId = stf.ReadIntBlock(0); }),
                 new STFReader.TokenProcessor("ortsdisplay", ()=>{ParseDisplay(stf); }),
                 new STFReader.TokenProcessor("ortsscreenpage", () => {ParseScreen(stf); }),
                 new STFReader.TokenProcessor("ortsnewscreenpage", () => {ParseNewScreen(stf); }),
                 new STFReader.TokenProcessor("ortscabviewpoint", ()=>{ParseCabViewpoint(stf); }),
+                new STFReader.TokenProcessor("ortsparameter1", ()=>{ Parameter1 = stf.ReadFloatBlock(STFReader.UNITS.Any, 0); }),
                 });
 
                 // If no ACE, just don't need any fixup
