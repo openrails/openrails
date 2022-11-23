@@ -226,9 +226,6 @@ namespace Orts.Simulation.RollingStocks
         public float SteamTangentialWheelForce;
         public float SteamDrvWheelWeightLbs;  // Weight on each drive axle
         public float PreviousThrottleSetting = 0.0f;  // Holds the value of the previous throttle setting for calculating the correct antislip speed
-        float WheelSlipTimeS;
-        float WheelStopSlipTimeS;
-        float CurrentWheelSlipAdhesionMultiplier;
         float DebugTimer; // Used for debugging adhesion coefficient
         bool DebugSpeedReached = false; // Used for debugging adhesion coefficient
         float DebugSpeedIncrement = 1; // Used for debugging adhesion coefficient
@@ -2352,37 +2349,33 @@ public List<CabView> CabViewList = new List<CabView>();
         /// </summary>
         protected virtual void ApplyDirectionToTractiveForce()
         {
-            // Steam locomotives have their MotiveForceN already pre-inverted based on Direction
-            if (!(this is MSTSSteamLocomotive))
+            if (Train.IsPlayerDriven)
             {
-                if (Train.IsPlayerDriven)
+                switch (Direction)
                 {
-                    switch (Direction)
-                    {
-                        case Direction.Forward:
-                            //MotiveForceN *= 1;     //Not necessary
-                            break;
-                        case Direction.Reverse:
-                            TractiveForceN *= -1;
-                            break;
-                        case Direction.N:
-                        default:
-                            TractiveForceN *= 0;
-                            break;
-                    }
+                    case Direction.Forward:
+                        //MotiveForceN *= 1;     //Not necessary
+                        break;
+                    case Direction.Reverse:
+                        TractiveForceN *= -1;
+                        break;
+                    case Direction.N:
+                    default:
+                        TractiveForceN *= 0;
+                        break;
                 }
-                else // for AI locomotives
-                {
-                    switch (Direction)
-                    {
-                        case Direction.Reverse:
-                            TractiveForceN *= -1;
-                            break;
-                        default:
-                            break;
-                    }
-                }// end AI locomotive
             }
+            else // for AI locomotives
+            {
+                switch (Direction)
+                {
+                    case Direction.Reverse:
+                        TractiveForceN *= -1;
+                        break;
+                    default:
+                        break;
+                }
+            }// end AI locomotive            
         }
 
         protected enum Wheelslip
@@ -2654,9 +2647,9 @@ public List<CabView> CabViewList = new List<CabView>();
         /// Adjusts the MotiveForce to account for adhesion limits
         /// If UseAdvancedAdhesion is true, dynamic adhesion model is computed
         /// If UseAdvancedAdhesion is false, the basic force limits are calculated the same way MSTS calculates them, but
-        /// the weather handleing is different and Curtius-Kniffler curves are considered as a static limit
+        /// the weather handling is different and Curtius-Kniffler curves are considered as a static limit
         /// </summary>
-        public void AdvancedAdhesion(float elapsedClockSeconds)
+        public virtual void AdvancedAdhesion(float elapsedClockSeconds)
         {
 
             if (LocoNumDrvAxles <= 0)
@@ -2665,13 +2658,9 @@ public List<CabView> CabViewList = new List<CabView>();
                 return;
             }
 
-            //Curtius-Kniffler computation for the basic model
-            //        float max0 = 1.0f;  //Adhesion conditions [N]
-
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
             {
-                // Steam locomotive details updated in UpdateTractiveForce method, and inserted into adhesion module
-                // ****************  NB WheelSpeed updated within Steam Locomotive module at the moment - to be fixed to prevent discrepancies ******************
+                // Managed in MSTSSteamLocomotive implementation of AdvancedAdhesion
             }
             else
             {
@@ -2690,9 +2679,6 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 //Limit the inertia to 40000 kgm2
                 LocomotiveAxle.InertiaKgm2 = Math.Min(AxleInertiaKgm2, 40000);
-
-                //LocomotiveAxle.AxleRevolutionsInt.MinStep = LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f;
-                LocomotiveAxle.WheelRadiusM = DriverWheelRadiusM;
                 LocomotiveAxle.DampingNs = MassKG / 1000.0f;
                 LocomotiveAxle.FrictionN = MassKG / 1000.0f;
 
@@ -2712,28 +2698,31 @@ public List<CabView> CabViewList = new List<CabView>();
                         MotiveForceN = Math.Sign(MotiveForceN) * Math.Min(LocomotiveAxle.AdhesionLimit * LocomotiveAxle.AxleWeightN, Math.Abs(MotiveForceN));
                         if (LocomotiveAxle.IsWheelSlip) MotiveForceN = 0;
                     }
-                    LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
                 }
-
-                //Set axle model parameters
-
-                // Inputs
-                LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
-                LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //will be computed each time considering the tilting
-                LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
-                var watch = new Stopwatch();
-                watch.Start();
-                LocomotiveAxle.Update(elapsedClockSeconds); //Main updater of the axle model
-                watch.Stop();
-                //AdhesionConditions = watch.ElapsedTicks / 1000.0f;
-                MotiveForceN = LocomotiveAxle.CompensatedAxleForceN;
-                if (elapsedClockSeconds > 0)
-                {
-                    WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
-                    WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning && SlipControlSystem != SlipControlType.Full;
-                }
-                WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
             }
+
+            //Set axle model parameters
+
+            // Inputs
+            LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
+            LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
+            LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
+            LocomotiveAxle.WheelRadiusM = DriverWheelRadiusM;
+
+            LocomotiveAxle.Update(elapsedClockSeconds); //Main updater of the axle model
+
+            MotiveForceN = LocomotiveAxle.CompensatedAxleForceN;
+            if (elapsedClockSeconds > 0)
+            {
+                WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
+                WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning && SlipControlSystem != SlipControlType.Full;
+            }
+            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
+            {
+                WheelSpeedSlipMpS = LocomotiveAxle.AxleSpeedMpS;
+                WheelSpeedMpS = SpeedMpS;
+            }
+            else WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
         }
 
         public void SimpleAdhesion()
@@ -3128,56 +3117,6 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 BaseFrictionCoefficientFactor *= 0.75f;  // Dry track - static friction for vehicles with wheel weights less then 10,000lbs - u = 0.25
 
-            }
-
-            // When wheel slips or skids, then dynamic (kinetic) coeff of friction will be decreased below static value. Sanding will override this somewhat.
-            // The transition between static and dynamic friction appears to decrease at an exponential rate until it reaches a steady state dynamic value.
-            // 
-
-
-            // Test to see if loco wheel is slipping or skidding due to brake application
-            if ((EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared) && WheelSlip && ((ThrottlePercent > 0.2f && !BrakeSkid) || (ThrottlePercent < 0.1f && BrakeSkid)))   
-            {
-
-                WheelStopSlipTimeS = 0; // Reset stop slip time if wheel slip starts
-
-                // Exponential curve is used to transition between static friction and dynamic friction when wheel slips
-                // Exponential constant calculated between two points, using this tool - https://mathcracker.com/exponential-function-calculator#results
-                // Google search suggests that Steel on steel has a static coeff = 0.74, and a dynamic coeff = 0.57. Hence reduction = 0.77.
-                // Constant points facilitate a decrease from 1 to 0.7 in 3 seconds - P1 = (0, 1), P2 = (5, 0.77). Hence exp constant = −0.0523
-                var expAdhesion = -0.0523;
-                WheelSlipTimeS += elapsedClockSeconds;
-                WheelSlipTimeS = MathHelper.Clamp(WheelSlipTimeS, 0.0f, 5.0f); // Ensure that time to transition between the two friction cases is maintained - currently set to 3 secs
-
-                float adhesionMultiplier = (float) Math.Exp(expAdhesion * WheelSlipTimeS);
-                CurrentWheelSlipAdhesionMultiplier = adhesionMultiplier;
-
-                BaseFrictionCoefficientFactor *= adhesionMultiplier;  // Descrease friction to take into account dynamic (kinetic) friction, typically kinetic friction is approximately 50% of static friction.
-                SlipFrictionCoefficientFactor = BaseFrictionCoefficientFactor;
-
-                BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.05f, 1.0f); // Ensure friction coefficient never exceeds a "reasonable" value
-            }
-            else
-            {
-                WheelSlipTimeS = 0; // Reset slip time if wheel slip stops
-
-                if ((EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared) && SlipFrictionCoefficientFactor < BaseFrictionCoefficientFactor && SlipFrictionCoefficientFactor != 0) // Once these two are equal then assume that wheels have stopped slipping.
-                {
-                    //                    Trace.TraceInformation("SlipFriction {0} Base {1}", SlipFrictionCoefficientFactor, BaseFrictionCoefficientFactor);
-                    // Exponential curve is used to transition between dynamic friction and static friction when wheel stops slipping
-                    // Constant points facilitate an increase from 0.7 to 1 in 3 seconds - P1 = (5, 0.77), P2 = (0, 1). Hence exp constant = 0.0523
-                    var expAdhesion = 0.0523;
-                    WheelStopSlipTimeS += elapsedClockSeconds;
-                    WheelStopSlipTimeS = MathHelper.Clamp(WheelStopSlipTimeS, 0.0f, 5.0f); // Ensure that time to transition between the two friction cases is maintained - currently set to 3 secs
-
-                    float adhesionMultiplier = CurrentWheelSlipAdhesionMultiplier * (float)Math.Exp(expAdhesion * WheelStopSlipTimeS);
-
-//                    Trace.TraceInformation("adhesion {0} StopTime {1} Base {2} Current {3}", adhesionMultiplier, WheelStopSlipTimeS, BaseFrictionCoefficientFactor, CurrentWheelSlipAdhesionMultiplier);
-
-                    BaseFrictionCoefficientFactor *= adhesionMultiplier;  // Descrease friction to take into account dynamic (kinetic) friction, typically kinetic friction is approximately 50% of static friction.
-                    SlipFrictionCoefficientFactor = BaseFrictionCoefficientFactor;
-                    BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.05f, 1.0f); // Ensure friction coefficient never exceeds a "reasonable" value
-                }
             }
 
             var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
