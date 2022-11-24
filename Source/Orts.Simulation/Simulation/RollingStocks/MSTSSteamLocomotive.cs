@@ -5856,7 +5856,7 @@ namespace Orts.Simulation.RollingStocks
         {
             float data;
 
-            switch (cvc.ControlType.Type)
+            switch (cvc.ControlType)
             {
                 case CABViewControlTypes.WHISTLE:
                     data = Horn ? 1 : 0;

@@ -221,7 +221,7 @@ namespace Orts.Simulation.RollingStocks
         {
             float data = 0;
 
-            switch (cvc.ControlType.Type)
+            switch (cvc.ControlType)
             {
                 case CABViewControlTypes.LINE_VOLTAGE:
                     data = ElectricPowerSupply.PantographVoltageV;

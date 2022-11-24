@@ -848,7 +848,7 @@ namespace Orts.Simulation.RollingStocks
         {
             float data = 0;
 
-            switch (cvc.ControlType.Type)
+            switch (cvc.ControlType)
             {
                 case CABViewControlTypes.GEARS:
                     if (DieselEngines.HasGearBox)
@@ -1442,7 +1442,7 @@ namespace Orts.Simulation.RollingStocks
                         {
                             foreach ( var control in cabView.CVFFile.CabViewControls)
                             {
-                                if (control is CVCDiscrete && control.ControlType.Type == CABViewControlTypes.THROTTLE && (control as CVCDiscrete).Values.Count > 0 && (control as CVCDiscrete).Values[(control as CVCDiscrete).Values.Count - 1] > 1)
+                                if (control is CVCDiscrete && control.ControlType == CABViewControlTypes.THROTTLE && (control as CVCDiscrete).Values.Count > 0 && (control as CVCDiscrete).Values[(control as CVCDiscrete).Values.Count - 1] > 1)
                                 {
                                     var discreteControl = (CVCDiscrete)control;
                                     for (var i = 0; i < discreteControl.Values.Count; i++)
