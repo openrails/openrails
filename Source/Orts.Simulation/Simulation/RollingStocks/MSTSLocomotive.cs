@@ -635,8 +635,8 @@ public List<CabView> CabViewList = new List<CabView>();
                 {
                     msDisplay = (CVCMultiStateDisplay) cabView.CVFFile.CabViewControls.Where(
                         control => control is CVCMultiStateDisplay &&
-                        (((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY ||
-                        ((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.CPH_DISPLAY)).First();
+                        (((CVCMultiStateDisplay) control).ControlType.Type == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY ||
+                        ((CVCMultiStateDisplay) control).ControlType.Type == CABViewControlTypes.CPH_DISPLAY)).First();
                 }
                 catch
                 {
@@ -644,7 +644,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 if (msDisplay != null)
                 {
-                    if (msDisplay.ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY)
+                    if (msDisplay.ControlType.Type == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY)
                     {
                         foreach (var switchval in msDisplay.Values)
                             dpDynController.AddNotch((float) switchval);
@@ -706,11 +706,8 @@ public List<CabView> CabViewList = new List<CabView>();
                         CabViewControls cvcList = CabViewList[0].CVFFile.CabViewControls;
                         foreach (CabViewControl cvc in cvcList)
                         {
-                            if (brakeSystemComponents.ContainsKey(cvc.ControlType) && pressureUnits.ContainsKey(cvc.Units))
+                            if (brakeSystemComponents.TryGetValue(cvc.ControlType.Type, out var component) && pressureUnits.TryGetValue(cvc.Units, out var unit))
                             {
-                                BrakeSystemComponent component = brakeSystemComponents[cvc.ControlType];
-                                PressureUnit unit = pressureUnits[cvc.Units];
-
                                 BrakeSystemPressureUnits[component] = unit;
                             }
                         }
@@ -5024,7 +5021,7 @@ public List<CabView> CabViewList = new List<CabView>();
         public virtual float GetDataOf(CabViewControl cvc)
         {
             float data = 0;
-            switch (cvc.ControlType)
+            switch (cvc.ControlType.Type)
             {
                 case CABViewControlTypes.SPEEDOMETER:
                     {
@@ -5122,7 +5119,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                             {
                                 float rangeFactor;
-                                if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS)
+                                if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS)
                                 {
                                     if (DynamicBrakeMaxCurrentA == 0)
                                         rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
@@ -5140,11 +5137,11 @@ public List<CabView> CabViewList = new List<CabView>();
                             }
                             if (direction == 1)
                                 data = -data;
-                            if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
+                            if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
                             break;
                         }
                         data = this.MotiveForceN / MaxForceN * MaxCurrentA;
-                        if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
+                        if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
                         break;
                     }
                 case CABViewControlTypes.LOAD_METER:
@@ -5852,56 +5849,8 @@ public List<CabView> CabViewList = new List<CabView>();
                         break;
                     }
 
-                // Train Control System controls
-                case CABViewControlTypes.ORTS_TCS1:
-                case CABViewControlTypes.ORTS_TCS2:
-                case CABViewControlTypes.ORTS_TCS3:
-                case CABViewControlTypes.ORTS_TCS4:
-                case CABViewControlTypes.ORTS_TCS5:
-                case CABViewControlTypes.ORTS_TCS6:
-                case CABViewControlTypes.ORTS_TCS7:
-                case CABViewControlTypes.ORTS_TCS8:
-                case CABViewControlTypes.ORTS_TCS9:
-                case CABViewControlTypes.ORTS_TCS10:
-                case CABViewControlTypes.ORTS_TCS11:
-                case CABViewControlTypes.ORTS_TCS12:
-                case CABViewControlTypes.ORTS_TCS13:
-                case CABViewControlTypes.ORTS_TCS14:
-                case CABViewControlTypes.ORTS_TCS15:
-                case CABViewControlTypes.ORTS_TCS16:
-                case CABViewControlTypes.ORTS_TCS17:
-                case CABViewControlTypes.ORTS_TCS18:
-                case CABViewControlTypes.ORTS_TCS19:
-                case CABViewControlTypes.ORTS_TCS20:
-                case CABViewControlTypes.ORTS_TCS21:
-                case CABViewControlTypes.ORTS_TCS22:
-                case CABViewControlTypes.ORTS_TCS23:
-                case CABViewControlTypes.ORTS_TCS24:
-                case CABViewControlTypes.ORTS_TCS25:
-                case CABViewControlTypes.ORTS_TCS26:
-                case CABViewControlTypes.ORTS_TCS27:
-                case CABViewControlTypes.ORTS_TCS28:
-                case CABViewControlTypes.ORTS_TCS29:
-                case CABViewControlTypes.ORTS_TCS30:
-                case CABViewControlTypes.ORTS_TCS31:
-                case CABViewControlTypes.ORTS_TCS32:
-                case CABViewControlTypes.ORTS_TCS33:
-                case CABViewControlTypes.ORTS_TCS34:
-                case CABViewControlTypes.ORTS_TCS35:
-                case CABViewControlTypes.ORTS_TCS36:
-                case CABViewControlTypes.ORTS_TCS37:
-                case CABViewControlTypes.ORTS_TCS38:
-                case CABViewControlTypes.ORTS_TCS39:
-                case CABViewControlTypes.ORTS_TCS40:
-                case CABViewControlTypes.ORTS_TCS41:
-                case CABViewControlTypes.ORTS_TCS42:
-                case CABViewControlTypes.ORTS_TCS43:
-                case CABViewControlTypes.ORTS_TCS44:
-                case CABViewControlTypes.ORTS_TCS45:
-                case CABViewControlTypes.ORTS_TCS46:
-                case CABViewControlTypes.ORTS_TCS47:
-                case CABViewControlTypes.ORTS_TCS48:
-                    data = TrainControlSystem.CabDisplayControls[(int)cvc.ControlType - (int)CABViewControlTypes.ORTS_TCS1];
+                case CABViewControlTypes.ORTS_TCS:
+                    TrainControlSystem.CabDisplayControls.TryGetValue(cvc.ControlType.Id - 1, out data);
                     break;
 
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_COMMAND_SWITCH:
