@@ -317,10 +317,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
                 case "engine(ortstrainbrakecontroller":
                 case "engine(ortsenginebrakecontroller":
-                    if (Locomotive.Train as AITrain == null)
-                    {
-                        ScriptName = stf.ReadStringBlock(null);
-                    }
+                    ScriptName = stf.ReadStringBlock(null);
                     break;
             }
         }
