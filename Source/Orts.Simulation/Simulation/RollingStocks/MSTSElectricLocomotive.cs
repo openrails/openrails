@@ -74,7 +74,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortscircuitbreakerclosingdelay":
                 case "engine(ortsbattery(mode":
                 case "engine(ortsbattery(delay":
-                case "engine(ortsbattery(defaulton":
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
                 case "engine(ortsmasterkey(headlightcontrol":

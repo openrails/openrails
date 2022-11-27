@@ -88,7 +88,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 case "wagon(ortsbattery(mode":
                 case "wagon(ortsbattery(delay":
-                case "wagon(ortsbattery(defaulton":
                     BatterySwitch.Parse(lowercasetoken, stf);
                     break;
 

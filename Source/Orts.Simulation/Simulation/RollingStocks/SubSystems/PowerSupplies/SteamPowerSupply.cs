@@ -73,7 +73,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 case "engine(ortsbattery(mode":
                 case "engine(ortsbattery(delay":
-                case "engine(ortsbattery(defaulton":
                     BatterySwitch.Parse(lowercasetoken, stf);
                     break;
                 case "engine(ortsmasterkey(mode":
