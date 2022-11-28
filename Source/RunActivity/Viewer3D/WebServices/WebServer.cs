@@ -247,18 +247,26 @@ namespace Orts.Viewer3D.WebServices
         public IEnumerable<TrainDpuDisplay.ListLabel> TrainDpuDisplay([QueryField] bool normalText) => Viewer.TrainDpuDisplayList(normalText);
         #endregion
 
+        #region /API/CABCONTROLS
         // Note: to see the JSON, use "localhost:2150/API/CABCONTROLS" - Beware: case matters
         // Note: to run the webpage, use "localhost:2150/CabControls/index.html" - case doesn't matter
         // or use "localhost:2150/CabControls/"
         // Do not use "localhost:2150/CabControls/"
         // as that will return the webpage, but the path will be "/" not "/CabControls/ and the appropriate scripts will not be loaded.
 
-        #region /API/CABCONTROLS
         [Route(HttpVerbs.Get, "/CABCONTROLS")]
         public IEnumerable<ControlValue> CabControls() => ((MSTSLocomotiveViewer)Viewer.PlayerLocomotiveViewer).GetWebControlValueList();
         #endregion
 
         #region /API/CABCONTROLS
+        // SetCabControls() expects a request passing an array of ControlValuePost objects using JSON.
+        // For example:
+        // [{ "TypeName": "THROTTLE"    // A CABViewControlTypes name - must be uppercase.
+        //  , "ControlIndex": 1         // This property is optional and used in rendering cab view
+        //  , "Value": 0.50             // A floating-point value
+        //  }
+        // ]
+
         [Route(HttpVerbs.Post, "/CABCONTROLS")]
         public async Task SetCabControls()
         {
