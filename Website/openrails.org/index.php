@@ -45,7 +45,7 @@
             <!-- Button to trigger modal -->
             <a href="#modal1" role="button" class='btn download_button' data-toggle="modal">
               <span class='glyphicon glyphicon-download'></span>&nbsp; Download the installer
-              <?php echo '12 Nov 2022, ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB)'; ?>
+              <?php echo '27 Nov 2022, ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB)'; ?>
 			</a>
           </div>
         </div>
@@ -53,7 +53,7 @@
       <div class="row">
         <div class="col-md-4 divider">
           <div class="heading">
-            <h4>Key Changes in v1.5</h4>
+            <h4>Key Changes in v1.5.1</h4>
           </div>
           <p>
             Container loading and unloading
@@ -71,8 +71,8 @@
           </div>
           <div style="background-color: #ffffcc; margin: 0 -5px; padding: 0 5px;">
             <p>
-              <strong>July 2022</strong>
-              <a href="http://openrails.org/discover/version-1-5/">Version 1.5</a> is now available for immediate download <a href="http://openrails.org/download/program/">here</a>.
+              <strong>Nov 2022</strong>
+              <a href="http://openrails.org/discover/version-1-5/">Version 1.5.1</a> is now available for immediate download <a href="http://openrails.org/download/program/">here</a>.
             </p>
           </div>
           <div style="background-color: #ffffee; margin: 0 -5px; padding: 0 5px;">
@@ -99,7 +99,7 @@
             <h4>Videos</h4>
           </div>
           <div class="headed_content">
-            <h5><a href="https://youtu.be/ZY2_UYvacXg" target="_blank">New features in Release 1.5</a></h5>
+            <h5><a href="https://youtu.be/ZY2_UYvacXg" target="_blank">New features in Release 1.5.1</a></h5>
           </div>
           <p>&nbsp;</p>
           <div>
