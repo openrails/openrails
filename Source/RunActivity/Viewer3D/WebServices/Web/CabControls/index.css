@@ -6,3 +6,20 @@ tr td { text-align: right;}
 td { padding: 2px; }
 .scale { width: 100px; background-color: lightgray; }
 .gauge { margin: 0px; background-color: gold; }
+
+.row {
+    display: flex;
+}
+
+.column {
+    flex: 50%;
+}
+
+div.control {
+    text-align: left;
+    padding: 20px;
+}
+
+label {
+    padding: 0 0 20px 0;
+}
