@@ -17,6 +17,10 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -24,10 +28,6 @@ using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -218,12 +218,30 @@ namespace Orts.Viewer3D.Popups
                                 var aspects = string.Join(" / ", signalObj.Signal.SignalHeads.Select(
                                     head => $"{head.state}" + (head.TextSignalAspect.Length > 0 ? $" ({head.TextSignalAspect})" : string.Empty)
                                     ));
-                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation,
-                                           GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop ? Color.Red :
-                                               GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Warning ? Color.Yellow :
-                                               Color.Green,
-                                           $"Signal {signalObj.Signal.thisRef} ({aspects})",
-                                           Owner.TextFontDefaultOutlined));
+                                if (signalObj.Signal.Type == SignalObjectType.SpeedSignal)
+                                {
+                                    string speedText = "None / None";
+                                    if (signalObj.Signal.SignalHeads[0].CurrentSpeedInfo is ObjectSpeedInfo speedInfoItem)
+                                    {
+                                        speedText = $"{FormatStrings.FormatSpeed(speedInfoItem.speed_pass, true)} / {FormatStrings.FormatSpeed(speedInfoItem.speed_freight, true)}";
+                                    }
+
+                                    primitives.Add(new DispatcherLabel(currentPosition.WorldLocation,
+                                               GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop ? Color.Red :
+                                                   GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Warning ? Color.Yellow :
+                                                   Color.Green,
+                                            $"Speed signal {signalObj.Signal.thisRef} / {speedText} / ({aspects})",
+                                            Owner.TextFontDefaultOutlined));
+                                }
+                                else
+                                {
+                                    primitives.Add(new DispatcherLabel(currentPosition.WorldLocation,
+                                               GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop ? Color.Red :
+                                                   GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Warning ? Color.Yellow :
+                                                   Color.Green,
+                                               $"Signal {signalObj.Signal.thisRef} ({aspects})",
+                                               Owner.TextFontDefaultOutlined));
+                                }
                             }
 
                             if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
@@ -293,13 +311,10 @@ namespace Orts.Viewer3D.Popups
                 thisPosition.SetTCPosition(tn.TCCrossReference, offset, direction);
                 Train.TCSubpathRoute tempRoute = Owner.Viewer.Simulator.Signals.BuildTempRoute(null, thisPosition.TCSectionIndex, thisPosition.TCOffset, thisPosition.TCDirection, 5000.0f, true, false, false);
 
-                ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextObject_InRoute(null, tempRoute, 0,
-                    thisPosition.TCOffset, -1, ObjectItemInfo.ObjectItemType.Signal, thisPosition);
+                ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextSignal_InRoute(null, tempRoute, 0, thisPosition.TCOffset, -1, thisPosition, null);
 
                 var signal = thisInfo.ObjectDetails;
                 if (signal == null)
-                    break;
-                if (signal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.UNKNOWN)
                     break;
                 var signalDistance = thisInfo.distance_found;
 

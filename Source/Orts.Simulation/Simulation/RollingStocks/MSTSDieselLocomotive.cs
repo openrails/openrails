@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -189,6 +189,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "engine(ortsdieselengines":
                 case "engine(gearboxnumberofgears":
+                case "engine(ortsreversegearboxindication":
                 case "engine(gearboxdirectdrivegear":
                 case "engine(ortsmainclutchtype":
                 case "engine(ortsgearboxtype":
@@ -396,6 +397,8 @@ namespace Orts.Simulation.RollingStocks
                     var configuredadhesionmaxcontinuousspeed = (Curtius_KnifflerA / (SpeedOfMaxContinuousForceMpS + Curtius_KnifflerB) + Curtius_KnifflerC);
                     var dropoffspeed = calculatedmaximumpowerw / (MaxForceN);
                     var configuredadhesiondropoffspeed = (Curtius_KnifflerA / (dropoffspeed + Curtius_KnifflerB) + Curtius_KnifflerC);
+
+                    Trace.TraceInformation("Slip control system: {0}, Traction motor type: {1}", SlipControlSystem.ToString(), TractionMotorType.ToString()); // Slip control
 
                     Trace.TraceInformation("Apparent (Design) Adhesion: Zero - {0:N2} @ {1}, Max Continuous Speed - {2:N2} @ {3}, Drive Wheel Weight - {4}", designadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
                     Trace.TraceInformation("OR Calculated Adhesion Setting: Zero Speed - {0:N2} @ {1}, Dropoff Speed - {2:N2} @ {3}, Max Continuous Speed - {4:N2} @ {5}", configuredadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), configuredadhesiondropoffspeed, FormatStrings.FormatSpeedDisplay(dropoffspeed, IsMetric), configuredadhesionmaxcontinuousspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
@@ -669,13 +672,25 @@ namespace Orts.Simulation.RollingStocks
                 // its impact. More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
                 // Simple adhesion control does not have any slip control feature built into it.
                 // TODO - a full review of slip/no slip control.
-                if (WheelSlip && AdvancedAdhesionModel)
+                if (TractionMotorType == TractionMotorTypes.AC)
                 {
-                    AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    if (AbsWheelSpeedMpS > 1.1 * MaxSpeedMpS)
+                    {
+                        AverageForceN = TractiveForceN = 0;
+                        return;
+                    }
                 }
                 else
                 {
-                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    if (WheelSlip && AdvancedAdhesionModel)
+                    {
+                        AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    }
+                    else
+                    {
+                        AbsTractionSpeedMpS = AbsSpeedMpS;
+                    }
                 }
 
                 if (TractiveForceCurves == null)
@@ -837,7 +852,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 case CABViewControlTypes.GEARS:
                     if (DieselEngines.HasGearBox)
-                        data = DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        data = DieselEngines[0].GearBox.GearIndication;
                     break;
 
                 case CABViewControlTypes.FUEL_GAUGE:
@@ -923,7 +938,7 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(DieselEngines[0].State)));
             if (DieselEngines.HasGearBox)
                 status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"),
-                DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString());
+                DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (DieselEngines[0].GearBox.GearIndication).ToString());
             status.AppendLine();
             status.AppendFormat("{0} = {1}\n",
                 Simulator.Catalog.GetString("Battery switch"),
@@ -950,7 +965,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (DieselEngines.HasGearBox && DieselTransmissionType == DieselTransmissionTypes.Mechanic)
             {
-                status.AppendFormat("\t{0} {1}-{2}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString(), DieselEngines[0].GearBox.GearBoxType);
+                    status.AppendFormat("\t{0} {1}-{2}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.GearIndication).ToString(), DieselEngines[0].GearBox.GearBoxType);
             }
                 status.AppendFormat("\t{0} {1}\t\t{2}\n",
                 Simulator.Catalog.GetString("Fuel"),

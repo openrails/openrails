@@ -47,6 +47,10 @@ namespace Orts.Simulation
         {
             get => VerticalTransfer ? CenterOffset.Y : CenterOffset.X;
         }
+        public float OffsetDiff
+        {
+            get => RemotelyControlled ? 2.8f : 1.4f;
+        }
         // Dynamic data
         public bool Forward; // forward motion on
         public bool Reverse; // reverse motion on
@@ -174,13 +178,24 @@ namespace Orts.Simulation
         public override void ComputeTarget(bool isForward)
         {
             if (!Continuous) return;
+            if (MultiPlayer.MPManager.IsMultiPlayer())
+            {
+                SubMessCode = SubMessageCode.GoToTarget;
+                MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessCode, isForward, OffsetPos).ToString());
+            }
+            RemotelyControlled = false;
+            GeneralComputeTarget(isForward);
+        }
+
+        public void GeneralComputeTarget(bool isForward)
+        {
+            if (!Continuous) return;
             Continuous = false;
             GoToTarget = false;
             Forward = isForward;
             Reverse = !isForward;
             if (Forward)
             {
-                var offsetDiff = 1.4f;
                 Connected = false;
                 if (Offsets.Count <= 0)
                 {
@@ -194,7 +209,7 @@ namespace Orts.Simulation
                         if (MyTrackNodesIndex[iOffset] != -1 && MyTrVectorSectionsIndex[iOffset] != -1)
                         {
                             var thisOffsetDiff = Offsets[iOffset] - OffsetPos;
-                            if (thisOffsetDiff < offsetDiff && thisOffsetDiff >= 0)
+                            if (thisOffsetDiff < OffsetDiff && thisOffsetDiff >= 0)
                             {
                                 ConnectedTarget = iOffset;
                                 break;
@@ -211,7 +226,6 @@ namespace Orts.Simulation
             }
             else if (Reverse)
             {
-                var offsetDiff = -1.4f;
                 Connected = false;
                 if (Offsets.Count <= 0)
                 {
@@ -225,7 +239,7 @@ namespace Orts.Simulation
                         if (MyTrackNodesIndex[iOffset] != -1 && MyTrVectorSectionsIndex[iOffset] != -1)
                         {
                             var thisOffsetDiff = Offsets[iOffset] - OffsetPos;
-                            if (thisOffsetDiff > offsetDiff && thisOffsetDiff <= 0)
+                            if (thisOffsetDiff > -OffsetDiff && thisOffsetDiff <= 0)
                             {
                                 ConnectedTarget = iOffset;
                                 break;
@@ -241,6 +255,7 @@ namespace Orts.Simulation
                 }
 
             }
+            RemotelyControlled = false;
             return;
         }
 
@@ -250,6 +265,28 @@ namespace Orts.Simulation
         /// </summary>
         /// 
         public override void StartContinuous(bool isForward)
+        {
+            if (TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].FrontOnBoard && TrainsOnMovingTable[0].BackOnBoard)
+            {
+                // Preparing for rotation
+                var train = TrainsOnMovingTable[0].Train;
+                if (Math.Abs(train.SpeedMpS) > 0.1 || (train.LeadLocomotiveIndex != -1 && (train.LeadLocomotive.ThrottlePercent >= 1 || train.TrainType != Train.TRAINTYPE.REMOTE && !(train.LeadLocomotive.Direction == Direction.N
+                 || Math.Abs(train.MUReverserPercent) <= 1))) || (train.ControlMode != Train.TRAIN_CONTROL.MANUAL && train.ControlMode != Train.TRAIN_CONTROL.TURNTABLE &&
+                 train.ControlMode != Train.TRAIN_CONTROL.EXPLORER && train.ControlMode != Train.TRAIN_CONTROL.UNDEFINED))
+                {
+                    if (SendNotifications) Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Rotation can't start: check throttle, speed, direction and control mode"));
+                    return;
+                }
+            }
+            if (MultiPlayer.MPManager.IsMultiPlayer())
+            {
+                SubMessCode = SubMessageCode.StartingContinuous;
+                MultiPlayer.MPManager.Notify(new MultiPlayer.MSGMovingTbl(Simulator.ActiveMovingTableIndex, Orts.MultiPlayer.MPManager.GetUserName(), SubMessCode, isForward, OffsetPos).ToString());
+            }
+            GeneralStartContinuous(isForward);
+        }
+
+        public void GeneralStartContinuous(bool isForward)
         {
             if (TrainsOnMovingTable.Count > 1 || (TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].FrontOnBoard ^ TrainsOnMovingTable[0].BackOnBoard))
             {
@@ -263,13 +300,6 @@ namespace Orts.Simulation
             {
                 // Preparing for transfer
                 var train = TrainsOnMovingTable[0].Train;
-                if (Math.Abs(train.SpeedMpS) > 0.1 || (train.LeadLocomotiveIndex != -1 && (train.LeadLocomotive.ThrottlePercent >= 1 || !(train.LeadLocomotive.Direction == Direction.N 
-                 || Math.Abs(train.MUReverserPercent) <= 1))) || (train.ControlMode != Train.TRAIN_CONTROL.MANUAL && train.ControlMode != Train.TRAIN_CONTROL.TURNTABLE &&
-                 train.ControlMode != Train.TRAIN_CONTROL.EXPLORER && train.ControlMode != Train.TRAIN_CONTROL.UNDEFINED))
-                {
-                    Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Transfer can't start: check throttle, speed, direction and control mode"));
-                    return;
-                }
                 if (train.ControlMode == Train.TRAIN_CONTROL.MANUAL || train.ControlMode == Train.TRAIN_CONTROL.EXPLORER || train.ControlMode == Train.TRAIN_CONTROL.UNDEFINED)
                 {
                     SaveConnected = Connected ^ !MyTrackNodesOrientation[ConnectedTrackEnd];
@@ -329,6 +359,7 @@ namespace Orts.Simulation
                 foreach (TrainCar traincar in TrainsOnMovingTable[0].Train.Cars)
                 {
                     traincar.WorldPosition.XNAMatrix = Matrix.Multiply(RelativeCarPositions[iRelativeCarPositions], AnimationXNAMatrix);
+                    traincar.UpdateFreightAnimationDiscretePositions();
                     iRelativeCarPositions++;
                 }
             }

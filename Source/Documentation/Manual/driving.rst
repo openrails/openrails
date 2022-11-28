@@ -170,7 +170,7 @@ tank, then the refilling takes place as the key is held down. If the
 locomotive is further away, then the distance to the nearest pickup is 
 shown instead.
 
-Note also that the key ``<Shift+T>`` will provide immediate refill 
+Note also that the key ``<Ctrl+T>`` will provide immediate refill 
 at any time.
 
 Specific Features to Optimize Locomotive Driving
@@ -633,7 +633,7 @@ within the cabview, see :ref:`here <cabs-odometer>`.
 .. _debriefeval:
 
 
-Debrief Evaluation
+Activity Evaluation
 ------------------
 
 ``Description``
@@ -643,15 +643,14 @@ This feature displays a real-time evaluation of the player's performance
 during the activity run and a final report at the end of an activity.
 The evaluation reports various parameters to provide to the player info in order 
 to improve his train driving ability.
-While the activity is running relevant data are stored and displayed.
-The stored data are used to generate a report at the end of the activity.
+While the activity is running, relevant data are stored and displayed.
+The stored data is used to generate a report at the end of the activity.
 
 
 ``How It Works``
 ''''''''''''''''
 
-Activity evaluation is enabled only for Activity mode, and requires the 
-"Debrief evaluation" checkbox in the main menu window to be enabled.
+Activity evaluation is enabled only for Activity mode.
 Checking some checkboxes within the various option tabs of the main menu 
 provides additional parameters for the activity evaluation. 
 
@@ -664,23 +663,11 @@ and here an example about the Options/Simulation tab:
 .. image:: images/dbfeval-options-simulation.png
 
 Checkboxes shown as unchecked in the two above pictures may be checked or 
-unchecked, but don't have effect to activity evaluation.
+unchecked, but don't have any effect on activity evaluation.
 
 A tab named "Evaluation" is present on the F1 Help Information Monitor.
 Once the activity is running it displays dynamic information about the player 
 train performance up to that moment.
-
-If the "Debrief evaluation" checkbox is unchecked, a message reminds this.
-
-   
-
-.. image:: images/dbfeval-evaluation-unchecked.png
-   :scale: 100%
-   :align: center
-
-
-In case that Debrief evaluation was checked, **Actual status: (**\ |darr| **)**\ , is displayed.
-
    
 
 .. image:: images/dbfeval-evaluation-ini.png
@@ -691,7 +678,7 @@ In case that Debrief evaluation was checked, **Actual status: (**\ |darr| **)**\
 
    \newpage
    
-Clicking **Actual status: (**\ |darr| **)**\  expanded real-time display appears.
+Clicking **Actual status: (**\ |darr| **)**\  shows an expanded real-time display.
 
 
 .. image:: images/dbfeval-evaluation-expanded.png
@@ -702,8 +689,6 @@ Clicking **Actual status: (**\ |darr| **)**\  expanded real-time display appears
 
 Clicking **Actual status: (**\ |uarr| **)**\  collapses all items.
 
-Once the activity has ended, the report file is created and a new window displays it.
-
 .. image:: images/dbfeval-evaluation-ended.png
    :scale: 100%
    :align: center
@@ -713,6 +698,9 @@ Once the activity has ended, the report file is created and a new window display
 
    \newpage
 
+Once the activity has ended, as soon as the player views the Evaluation tab, a report file is 
+created and shown in an editor window as follows.
+
 This report is made up of several sections.
 
 .. image:: images/dbfeval-report.png
@@ -721,15 +709,12 @@ This report is made up of several sections.
 
 .. raw:: latex
 
-    \newpage
+The report file OpenRailsEvaluation.txt is saved alongside the log file OpenRailsLog.txt and
+the default location for this is the Windows Desktop.
 
-Activity saves (F2) will save also the evaluation data, if the "Debrief evaluation" 
-checkbox was checked.
-In such case the activity saves will have the "Eval" checkbox checked in the resume window.
+The Save Game (F2) command also copies any evaluation report alongside the save files so it can be
+kept and reviewed. This copy is deleted when the other files for that save are deleted.
 
-.. image:: images/dbfeval-resume.png
-   :scale: 100%
-   :align: center
 
 .. _driving-hud:
 
@@ -857,17 +842,14 @@ Map Window
 ==========
 
 Use the map window to monitor and control train operation. 
-The :ref:`Map window <options-map-window>` option must be selected prior to starting the simulation.
 
-The map window is opened and closed by pressing ``<Ctrl+9>``. 
-After the map window  has been selected with ``<Alt+Tab>``, successive 
-Alt+Tabs will toggle between the OR window and the dispatcher window.
+The map window is opened and closed from the graphics window by pressing ``<Ctrl+9>``. 
+You can toggle between the graphics window and an opened map window by pressing ``<Alt+Tab>``.
  
 The map window contains 2 tabs: Dispatcher and Timetable. Both provide maps of
 the route with each train following its own path.
 
-The map window is resizable and can also be maximized, e.g. on a 
-second display. 
+The map window is resizable and can also be maximized, e.g. on a second display. 
 
 To pan, use the left mouse button to drag the map around.
 
@@ -1224,6 +1206,38 @@ and the wagon can be rotated or translated.
 It is suggested to read also :ref:`this paragraph <features-route-turntable-operation>` 
 to better understand what is possible with turntables and transfertables.
 
+.. _driving-containers:
+
+Loading and Unloading Containers
+================================
+
+Provided that the wagons and the container cranes in the route fulfill the rules indicated 
+:ref:`here<features-containers>`,  containers can be unloaded and loaded on wagons at 
+locations where a container crane is present.
+
+.. image:: images/driving-containers.png
+
+The loading and unloading operations are started by the player, by pressing the key ``<T>`` 
+for loading, and the key  ``<Shift-T>`` . The operation is performed on the first wagon 
+(starting from the locomotive) which is within the container crane displacement range and which 
+fulfills the required conditions (e.g. loading space available for loading, container present 
+for unloading). So, if a train has only empty wagons and the locomotive is within the container 
+crane displacement range, the first wagon is loaded first, then the second and so on up to the 
+last wagon within the crane displacement range. At that point, if there are further 
+wagons to be loaded, the train must be moved forward so that a new group of wagons is within 
+the crane displacement range, and Load operations can be resumed.
+
+Every keypress loads or unloads a single wagon. 
+
+In some cases it can occur that during a load operation the crane stops motion and the following 
+message appears on the display: ``"Wagon out of range: move wagon towards crane by {0} metres"``; 
+this occurs when the wagon is at the boundary of the crane displacement range; the player must 
+move the wagon towards the inside of the crane displacement range and stop the train. The crane 
+will then continue its loading mission up to the end.
+
+Saves (key ``<F2>``) are rejected and a message appears on the display when a loading 
+or unloading operation is ongoing.
+
 .. _driving-autopilot:
 
 Autopilot Mode
@@ -1479,13 +1493,12 @@ The commands for each of the views are described below.
     The cab itself can be hidden with the ``<Shift+1>`` key. (The 2D view is 
     constructed from three 2D images, so the actual camera position can only be 
     modified by editing the contents of the .cvf file.) If there is a mismatch 
-    between the aspect ratio of the (optionally stretched) cab and the aspect 
+    between the aspect ratio of the cab and the aspect 
     ratio of the monitor, OR will clip the cab and show only the portion that fits 
-    within the display, as described in 
-    :ref:`2D cab stretching <options-cab-stretch>`. This clip can be panned around 
+    within the display. This clip can be panned around 
     to reveal the rest of the cab with the ``<Up>``, ``<Down>``, ``<Alt+Left>``, 
     and ``<Alt+Right>`` keys. Alternatively, if placed into letterboxing mode, 
-    which activates with the ``<Ctrl+1>`` key, OR will render the full cab 
+    by using the ``<Ctrl+1>`` key, OR will render the full cab 
     without a clip and cover the remaining space with black bars.
   - In case the 3D view is selected, the camera position and view direction are fully player 
     controllable.

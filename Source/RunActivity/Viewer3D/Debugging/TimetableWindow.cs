@@ -15,18 +15,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.Signalling;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
 using Color = System.Drawing.Color;
 
 namespace Orts.Viewer3D.Debugging
@@ -187,14 +187,12 @@ namespace Orts.Viewer3D.Debugging
                 switch (item.ItemType)
                 {
                     case TrItem.trItemType.trSIGNAL:
-                        if (item is SignalItem)
+                        if (item is SignalItem si)
                         {
-                            SignalItem si = item as SignalItem;
-
                             if (si.SigObj >= 0 && si.SigObj < F.simulator.Signals.SignalObjects.Length)
                             {
                                 var s = F.simulator.Signals.SignalObjects[si.SigObj];
-                                if (s != null && s.isSignal && s.isSignalNormal())
+                                if (s != null && s.Type == SignalObjectType.Signal && s.isSignalNormal())
                                     F.signals.Add(new SignalWidget(si, s));
                             }
                         }

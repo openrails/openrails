@@ -58,7 +58,7 @@ namespace Orts.Simulation
     public class FuelPickupItem
     {
         internal WorldLocation Location;
-        readonly TrackNode TrackNode;
+        public TrackNode TrackNode;
 
         public FuelPickupItem(TrackNode trackNode, TrItem trItem)
         {
@@ -78,6 +78,8 @@ namespace Orts.Simulation
                 return false;
             return false;
         }
+
+        public FuelPickupItem() { }
 
     } // end Class FuelPickupItem
 

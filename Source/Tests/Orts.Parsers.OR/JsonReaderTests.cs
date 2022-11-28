@@ -24,10 +24,12 @@ using Xunit;
 
 namespace Tests.Orts.Parsers.OR
 {
+    // TODO: This class is a temporary fix until `AssertWarnings` is removed
     public class JsonReaderTestsSetup
     {
         public JsonReaderTestsSetup()
         {
+            Trace.Listeners.Clear();
             Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
             Trace.AutoFlush = true;
         }

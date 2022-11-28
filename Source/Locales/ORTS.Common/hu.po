@@ -1,178 +1,178 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Common\n"
-"POT-Creation-Date: 2019-05-19 00:50:56+0200\n"
-"PO-Revision-Date: 2019-05-19 02:10+0200\n"
+"POT-Creation-Date: 2022-07-05 12:22:41+0200\n"
+"PO-Revision-Date: 2022-07-05 12:41+0200\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.2.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.1\n"
 
-#: ../../ORTS.Common/Conversions.cs:524
+#: ../../ORTS.Common/Conversions.cs:535
 msgid "m"
 msgstr "m"
 
-#: ../../ORTS.Common/Conversions.cs:525
+#: ../../ORTS.Common/Conversions.cs:536
 msgid "km"
 msgstr "km"
 
-#: ../../ORTS.Common/Conversions.cs:526
+#: ../../ORTS.Common/Conversions.cs:537
 msgid "mm"
 msgstr "mm"
 
-#: ../../ORTS.Common/Conversions.cs:527
+#: ../../ORTS.Common/Conversions.cs:538
 msgid "mi"
 msgstr "mf"
 
-#: ../../ORTS.Common/Conversions.cs:528
+#: ../../ORTS.Common/Conversions.cs:539
 msgid "ft"
 msgstr "láb"
 
-#: ../../ORTS.Common/Conversions.cs:529
+#: ../../ORTS.Common/Conversions.cs:540
 msgid "yd"
 msgstr "yard"
 
-#: ../../ORTS.Common/Conversions.cs:530
+#: ../../ORTS.Common/Conversions.cs:541
 msgid "m²"
 msgstr "m²"
 
-#: ../../ORTS.Common/Conversions.cs:531
+#: ../../ORTS.Common/Conversions.cs:542
 msgid "ft²"
 msgstr "láb²"
 
-#: ../../ORTS.Common/Conversions.cs:532
+#: ../../ORTS.Common/Conversions.cs:543
 msgid "m³"
 msgstr "m³"
 
-#: ../../ORTS.Common/Conversions.cs:533
+#: ../../ORTS.Common/Conversions.cs:544
 msgid "ft³"
 msgstr "láb³"
 
-#: ../../ORTS.Common/Conversions.cs:534
+#: ../../ORTS.Common/Conversions.cs:545
 msgid "km/h"
 msgstr "km/h"
 
-#: ../../ORTS.Common/Conversions.cs:535
+#: ../../ORTS.Common/Conversions.cs:546
 msgid "mph"
 msgstr "mf/ó"
 
-#: ../../ORTS.Common/Conversions.cs:536
+#: ../../ORTS.Common/Conversions.cs:547
 msgid "kPa"
 msgstr "kPa"
 
-#: ../../ORTS.Common/Conversions.cs:537
+#: ../../ORTS.Common/Conversions.cs:548
 msgid "bar"
 msgstr "bar"
 
-#: ../../ORTS.Common/Conversions.cs:538
+#: ../../ORTS.Common/Conversions.cs:549
 msgid "psi"
 msgstr "psi"
 
-#: ../../ORTS.Common/Conversions.cs:539
+#: ../../ORTS.Common/Conversions.cs:550
 msgid "inHg"
 msgstr "inHg"
 
-#: ../../ORTS.Common/Conversions.cs:540
+#: ../../ORTS.Common/Conversions.cs:551
 msgid "kgf/cm²"
 msgstr "kp/cm²"
 
-#: ../../ORTS.Common/Conversions.cs:541
+#: ../../ORTS.Common/Conversions.cs:552
 msgid "kg"
 msgstr "kg"
 
-#: ../../ORTS.Common/Conversions.cs:542
+#: ../../ORTS.Common/Conversions.cs:553
 msgid "t"
 msgstr "t"
 
-#: ../../ORTS.Common/Conversions.cs:543
+#: ../../ORTS.Common/Conversions.cs:554
 msgid "t-uk"
 msgstr "t-uk"
 
-#: ../../ORTS.Common/Conversions.cs:544
+#: ../../ORTS.Common/Conversions.cs:555
 msgid "t-us"
 msgstr "t-us"
 
-#: ../../ORTS.Common/Conversions.cs:545
+#: ../../ORTS.Common/Conversions.cs:556
 msgid "lb"
 msgstr "font"
 
-#: ../../ORTS.Common/Conversions.cs:546
+#: ../../ORTS.Common/Conversions.cs:557
 msgid "s"
 msgstr "s"
 
-#: ../../ORTS.Common/Conversions.cs:547
+#: ../../ORTS.Common/Conversions.cs:558
 msgid "min"
 msgstr "min"
 
-#: ../../ORTS.Common/Conversions.cs:548
+#: ../../ORTS.Common/Conversions.cs:559
 msgid "h"
 msgstr "h"
 
-#: ../../ORTS.Common/Conversions.cs:549
+#: ../../ORTS.Common/Conversions.cs:560
 msgid "L"
 msgstr "L"
 
-#: ../../ORTS.Common/Conversions.cs:550
+#: ../../ORTS.Common/Conversions.cs:561
 msgid "g-uk"
 msgstr "g-uk"
 
-#: ../../ORTS.Common/Conversions.cs:551
+#: ../../ORTS.Common/Conversions.cs:562
 msgid "g-us"
 msgstr "g-us"
 
-#: ../../ORTS.Common/Conversions.cs:552
+#: ../../ORTS.Common/Conversions.cs:563
 msgid "rpm"
 msgstr "f/min"
 
-#: ../../ORTS.Common/Conversions.cs:553
+#: ../../ORTS.Common/Conversions.cs:564
 msgid "kW"
 msgstr "kW"
 
-#: ../../ORTS.Common/Conversions.cs:554
+#: ../../ORTS.Common/Conversions.cs:565
 msgid "hp"
 msgstr "LE"
 
-#: ../../ORTS.Common/Conversions.cs:555
+#: ../../ORTS.Common/Conversions.cs:566
 msgid "bhp"
 msgstr "bhp"
 
-#: ../../ORTS.Common/Conversions.cs:556
+#: ../../ORTS.Common/Conversions.cs:567
 msgid "kJ"
 msgstr "kJ"
 
-#: ../../ORTS.Common/Conversions.cs:557
+#: ../../ORTS.Common/Conversions.cs:568
 msgid "MJ"
 msgstr "MJ"
 
-#: ../../ORTS.Common/Conversions.cs:558
+#: ../../ORTS.Common/Conversions.cs:569
 msgid "BTU"
 msgstr "BTU"
 
-#: ../../ORTS.Common/Conversions.cs:559
+#: ../../ORTS.Common/Conversions.cs:570
 msgid "°C"
 msgstr "°C"
 
-#: ../../ORTS.Common/Conversions.cs:560
+#: ../../ORTS.Common/Conversions.cs:571
 msgid "°F"
 msgstr "°F"
 
-#: ../../ORTS.Common/Conversions.cs:561
+#: ../../ORTS.Common/Conversions.cs:572
 msgid "N"
 msgstr "N"
 
-#: ../../ORTS.Common/Conversions.cs:562
+#: ../../ORTS.Common/Conversions.cs:573
 msgid "kN"
 msgstr "kN"
 
-#: ../../ORTS.Common/Conversions.cs:563
+#: ../../ORTS.Common/Conversions.cs:574
 msgid "lbf"
 msgstr "lbf"
 
-#: ../../ORTS.Common/Conversions.cs:564
+#: ../../ORTS.Common/Conversions.cs:575
 msgid "klbf"
 msgstr "klbf"
 
@@ -263,577 +263,786 @@ msgid "Game Switch Manual Mode"
 msgstr "Játék Kézi forgalomirányítás"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:28
+msgid "Game Reset Out Of Control Mode"
+msgstr "Játék Reset Out Of Control Mode"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:29
 msgid "Game Clear Signal Forward"
 msgstr "Játék Vágányút beállítása elöl"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:29
+#: ../../ORTS.Common/Input/UserCommand.cs:30
 msgid "Game Clear Signal Backward"
 msgstr "Játék Vágányút beállítása hátul"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:30
+#: ../../ORTS.Common/Input/UserCommand.cs:31
 msgid "Game Reset Signal Forward"
 msgstr "Játék Vágányút törlése elöl"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:31
+#: ../../ORTS.Common/Input/UserCommand.cs:32
 msgid "Game Reset Signal Backward"
 msgstr "Játék Vágányút törlése hátul"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:32
+#: ../../ORTS.Common/Input/UserCommand.cs:33
 msgid "Game Autopilot Mode"
 msgstr "Játék Robotpilóta üzemmód"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:33
+#: ../../ORTS.Common/Input/UserCommand.cs:34
 msgid "Game Suspend Old Player"
 msgstr "Játék Korábbi játékos felfüggesztése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:35
+#: ../../ORTS.Common/Input/UserCommand.cs:36
 msgid "Display Next Window Tab"
 msgstr "Megjelenítés Következő ablakfül"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:36
+#: ../../ORTS.Common/Input/UserCommand.cs:37
 msgid "Display Help Window"
 msgstr "Megjelenítés Súgóablak"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:37
+#: ../../ORTS.Common/Input/UserCommand.cs:38
 msgid "Display Track Monitor Window"
 msgstr "Megjelenítés Pályafigyelő ablak"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:38
+#: ../../ORTS.Common/Input/UserCommand.cs:39
 msgid "Display HUD"
 msgstr "Megjelenítés HUD"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:39
+#: ../../ORTS.Common/Input/UserCommand.cs:40
+msgid "Display Train Driving Window"
+msgstr "Megjelenítés Vonatvezetési ablak"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:41
+msgid "Display Multi Player Window"
+msgstr "Megjelenítés Többjátékos üzemmód ablaka"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:42
 msgid "Display Car Labels"
 msgstr "Megjelenítés Kocsik címkéi"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:40
+#: ../../ORTS.Common/Input/UserCommand.cs:43
 msgid "Display Station Labels"
 msgstr "Megjelenítés Állomások címkéi"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:41
+#: ../../ORTS.Common/Input/UserCommand.cs:44
 msgid "Display Switch Window"
 msgstr "Megjelenítés Váltóállító ablak"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:42
+#: ../../ORTS.Common/Input/UserCommand.cs:45
 msgid "Display Train Operations Window"
 msgstr "Megjelenítés Vonatvizsgáló ablak"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:43
+#: ../../ORTS.Common/Input/UserCommand.cs:46
+msgid "Display Train Dpu Window"
+msgstr "Megjelenítés Gépcsoportok ablaka"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:47
 msgid "Display Next Station Window"
 msgstr "Megjelenítés Következő állomások ablaka"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:44
+#: ../../ORTS.Common/Input/UserCommand.cs:48
 msgid "Display Compass Window"
 msgstr "Megjelenítés Iránytű ablak"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:45
-msgid "Display Basic HUD Toggle"
-msgstr "Megjelenítés Alap HUD-ra váltás"
-
-#: ../../ORTS.Common/Input/UserCommand.cs:46
+#: ../../ORTS.Common/Input/UserCommand.cs:49
 msgid "Display Train List Window"
-msgstr "Megjelenítés Vonatok Listája"
+msgstr "Megjelenítés Vonatok listája"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:48
+#: ../../ORTS.Common/Input/UserCommand.cs:50
+msgid "Display EOT List Window"
+msgstr "Megjelenítés Vonatvégi vezérlők"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:52
 msgid "Debug Speed Up"
 msgstr "Hibakeresés Idő gyorsítása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:49
+#: ../../ORTS.Common/Input/UserCommand.cs:53
 msgid "Debug Speed Down"
 msgstr "Hibakeresés Idő lassítása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:50
+#: ../../ORTS.Common/Input/UserCommand.cs:54
 msgid "Debug Speed Reset"
 msgstr "Hibakeresés Időgyorsítás alaphelyzetbe"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:51
+#: ../../ORTS.Common/Input/UserCommand.cs:55
 msgid "Debug Overcast Increase"
 msgstr "Hibakeresés Borússág növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:52
+#: ../../ORTS.Common/Input/UserCommand.cs:56
 msgid "Debug Overcast Decrease"
 msgstr "Hibakeresés Borússág csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:53
+#: ../../ORTS.Common/Input/UserCommand.cs:57
 msgid "Debug Fog Increase"
 msgstr "Hibakeresés Köd növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:54
+#: ../../ORTS.Common/Input/UserCommand.cs:58
 msgid "Debug Fog Decrease"
 msgstr "Hibakeresés Köd csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:55
+#: ../../ORTS.Common/Input/UserCommand.cs:59
 msgid "Debug Precipitation Increase"
 msgstr "Hibakeresés Csapadék növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:56
+#: ../../ORTS.Common/Input/UserCommand.cs:60
 msgid "Debug Precipitation Decrease"
 msgstr "Hibakeresés Csapadék csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:57
-#, fuzzy
-#| msgid "Debug Precipitation Increase"
+#: ../../ORTS.Common/Input/UserCommand.cs:61
 msgid "Debug Precipitation Liquidity Increase"
-msgstr "Hibakeresés Csapadék növelése"
+msgstr "Hibakeresés Csapadék nedvességének növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:58
-#, fuzzy
-#| msgid "Debug Precipitation Decrease"
+#: ../../ORTS.Common/Input/UserCommand.cs:62
 msgid "Debug Precipitation Liquidity Decrease"
-msgstr "Hibakeresés Csapadék csökkentése"
+msgstr "Hibakeresés Csapadék nedvességének csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:59
+#: ../../ORTS.Common/Input/UserCommand.cs:63
 msgid "Debug Weather Change"
 msgstr "Hibakeresés Időjárás megváltoztatása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:60
+#: ../../ORTS.Common/Input/UserCommand.cs:64
 msgid "Debug Clock Forwards"
 msgstr "Hibakeresés Óra előre"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:61
+#: ../../ORTS.Common/Input/UserCommand.cs:65
 msgid "Debug Clock Backwards"
 msgstr "Hibakeresés Óra hátra"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:62
+#: ../../ORTS.Common/Input/UserCommand.cs:66
 msgid "Debug Logger"
 msgstr "Hibakeresés Adatrögzítő"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:63
+#: ../../ORTS.Common/Input/UserCommand.cs:67
 msgid "Debug Lock Shadows"
 msgstr "Hibakeresés Árnyékok rögzítése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:64
+#: ../../ORTS.Common/Input/UserCommand.cs:68
 msgid "Debug Dump Keyboard Map"
 msgstr "Hibakeresés Billentyűzetkiosztás mentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:65
+#: ../../ORTS.Common/Input/UserCommand.cs:69
 msgid "Debug Log Render Frame"
 msgstr "Hibakeresés Render frame naplózása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:66
+#: ../../ORTS.Common/Input/UserCommand.cs:70
 msgid "Debug Tracks"
 msgstr "Hibakeresés Vágányok"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:67
+#: ../../ORTS.Common/Input/UserCommand.cs:71
 msgid "Debug Signalling"
 msgstr "Hibakeresés Jelzők"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:68
+#: ../../ORTS.Common/Input/UserCommand.cs:72
 msgid "Debug Reset Wheel Slip"
 msgstr "Hibakeresés Kerékcsúszás leállítása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:69
+#: ../../ORTS.Common/Input/UserCommand.cs:73
 msgid "Debug Toggle Advanced Adhesion"
 msgstr "Hibakeresés Fejlett súrlódás be/ki"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:70
+#: ../../ORTS.Common/Input/UserCommand.cs:74
 msgid "Debug Sound Form"
 msgstr "Hibakeresés Hang"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:71
+#: ../../ORTS.Common/Input/UserCommand.cs:75
 msgid "Debug Physics Form"
 msgstr "Hibakeresés Fizika"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:73
+#: ../../ORTS.Common/Input/UserCommand.cs:76
+msgid "Debug Toggle Confirmations"
+msgstr "Hibakeresés Visszajelzések be/ki"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:78
 msgid "Camera Cab"
 msgstr "Kamera Vezérállás"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:75
-msgid "Camera 3D Cab"
-msgstr "Kamera 3D vezérállás"
+#: ../../ORTS.Common/Input/UserCommand.cs:79
+msgid "Camera Change Passenger Viewpoint"
+msgstr "Kamera Utasnézet megváltoztatása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:76
+#: ../../ORTS.Common/Input/UserCommand.cs:80
+msgid "Camera Toggle 3D Cab"
+msgstr "Kamera 3D vezérállás ki/be"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:81
 msgid "Camera Toggle Show Cab"
 msgstr "Kamera Vezérálláskép ki/be"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:77
+#: ../../ORTS.Common/Input/UserCommand.cs:82
+msgid "Camera Toggle Letterbox Cab"
+msgstr "Kamera Letterbox Cab ki/be"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:83
 msgid "Camera Head Out Forward"
 msgstr "Kamera Kihajolás előrenézve"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:78
+#: ../../ORTS.Common/Input/UserCommand.cs:84
 msgid "Camera Head Out Backward"
 msgstr "Kamera Kihajolás hátranézve"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:79
+#: ../../ORTS.Common/Input/UserCommand.cs:85
 msgid "Camera Outside Front"
 msgstr "Kamera Kívül elöl"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:80
+#: ../../ORTS.Common/Input/UserCommand.cs:86
 msgid "Camera Outside Rear"
 msgstr "Kamera Kívül hátul"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:81
+#: ../../ORTS.Common/Input/UserCommand.cs:87
 msgid "Camera Trackside"
 msgstr "Kamera Pálya mellett"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:83
+#: ../../ORTS.Common/Input/UserCommand.cs:88
+msgid "Camera SpecialTracksidePoint"
+msgstr "Kamera Speciális pályamenti pont"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:89
 msgid "Camera Passenger"
 msgstr "Kamera Utaskamera"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:84
+#: ../../ORTS.Common/Input/UserCommand.cs:90
 msgid "Camera Brakeman"
 msgstr "Kamera Fékállás"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:85
+#: ../../ORTS.Common/Input/UserCommand.cs:91
 msgid "Camera Free"
 msgstr "Kamera Szabad"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:86
+#: ../../ORTS.Common/Input/UserCommand.cs:92
 msgid "Camera Previous Free"
 msgstr "Kamera Előző szabad"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:87
+#: ../../ORTS.Common/Input/UserCommand.cs:93
 msgid "Camera Reset"
 msgstr "Kamera Alaphelyzet"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:88
+#: ../../ORTS.Common/Input/UserCommand.cs:94
 msgid "Camera Move Fast"
 msgstr "Kamera Gyors mozgás"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:89
+#: ../../ORTS.Common/Input/UserCommand.cs:95
 msgid "Camera Move Slow"
 msgstr "Kamera Lassú mozgás"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:90
+#: ../../ORTS.Common/Input/UserCommand.cs:96
 msgid "Camera Pan (Rotate) Left"
 msgstr "Kamera Balra húzás (fordulás)"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:91
+#: ../../ORTS.Common/Input/UserCommand.cs:97
 msgid "Camera Pan (Rotate) Right"
 msgstr "Kamera Jobbra húzás (fordulás)"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:92
+#: ../../ORTS.Common/Input/UserCommand.cs:98
 msgid "Camera Pan (Rotate) Up"
 msgstr "Kamera Felfelé húzás (fordulás)"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:93
+#: ../../ORTS.Common/Input/UserCommand.cs:99
 msgid "Camera Pan (Rotate) Down"
 msgstr "Kamera Lefelé húzás (fordulás)"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:94
+#: ../../ORTS.Common/Input/UserCommand.cs:100
 msgid "Camera Zoom In (Move Z)"
 msgstr "Kamera Nagyítás (Z irányba mozgás)"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:95
+#: ../../ORTS.Common/Input/UserCommand.cs:101
 msgid "Camera Zoom Out (Move Z)"
 msgstr "Kamera Kicsinyítés (Z irányba mozgás)"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:96
+#: ../../ORTS.Common/Input/UserCommand.cs:102
 msgid "Camera Rotate (Pan) Left"
 msgstr "Kamera Balra fordulás (húzás)"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:97
+#: ../../ORTS.Common/Input/UserCommand.cs:103
 msgid "Camera Rotate (Pan) Right"
 msgstr "Kamera Jobbra fordulás (húzás)"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:98
+#: ../../ORTS.Common/Input/UserCommand.cs:104
 msgid "Camera Rotate (Pan) Up"
 msgstr "Kamera Felfelé fordulás (húzás)"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:99
+#: ../../ORTS.Common/Input/UserCommand.cs:105
 msgid "Camera Rotate (Pan) Down"
 msgstr "Kamera Lefelé fordulás (húzás)"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:100
+#: ../../ORTS.Common/Input/UserCommand.cs:106
 msgid "Camera Car Next"
 msgstr "Kamera Következő kocsi"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:101
+#: ../../ORTS.Common/Input/UserCommand.cs:107
 msgid "Camera Car Previous"
 msgstr "Kamera Előző kocsi"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:102
+#: ../../ORTS.Common/Input/UserCommand.cs:108
 msgid "Camera Car First"
 msgstr "Kamera Első kocsi"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:103
+#: ../../ORTS.Common/Input/UserCommand.cs:109
 msgid "Camera Car Last"
 msgstr "Kamera Utolsó kocsi"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:104
+#: ../../ORTS.Common/Input/UserCommand.cs:110
 msgid "Camera Jumping Trains"
 msgstr "Kamera Másik vonat"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:105
+#: ../../ORTS.Common/Input/UserCommand.cs:111
 msgid "Camera Jump Back Player"
 msgstr "Kamera Játékos vonata"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:106
+#: ../../ORTS.Common/Input/UserCommand.cs:112
 msgid "Camera Jump See Switch"
 msgstr "Kamera Ugrás a váltóhoz"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:107
+#: ../../ORTS.Common/Input/UserCommand.cs:113
 msgid "Camera Vibrate"
 msgstr "Kamera Rázkódás"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:113
+#: ../../ORTS.Common/Input/UserCommand.cs:114
+msgid "Camera Scroll Right"
+msgstr "Kamera Görgetés jobbra"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:115
+msgid "Camera Scroll Left"
+msgstr "Kamera Görgetés balra"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:116
+msgid "Camera Browse Backwards"
+msgstr "Kamera Browse hátra"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:117
+msgid "Camera Browse Forwards"
+msgstr "Kamera Browse előre"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:119
 msgid "Control Forwards"
 msgstr "Irányítás Előre"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:114
+#: ../../ORTS.Common/Input/UserCommand.cs:120
 msgid "Control Backwards"
 msgstr "Irányítás Hátra"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:115
+#: ../../ORTS.Common/Input/UserCommand.cs:121
 msgid "Control Throttle Increase"
 msgstr "Irányítás Menetszabályzó növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:116
+#: ../../ORTS.Common/Input/UserCommand.cs:122
 msgid "Control Throttle Decrease"
 msgstr "Irányítás Menetszabályzó csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:117
+#: ../../ORTS.Common/Input/UserCommand.cs:123
 msgid "Control Throttle Zero"
 msgstr "Irányítás Menetszabályzó alaphelyzetbe"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:118
+#: ../../ORTS.Common/Input/UserCommand.cs:124
 msgid "Control Gear Up"
 msgstr "Irányítás Sebességfokozat fel"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:119
+#: ../../ORTS.Common/Input/UserCommand.cs:125
 msgid "Control Gear Down"
 msgstr "Irányítás Sebességfokozat le"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:120
+#: ../../ORTS.Common/Input/UserCommand.cs:126
 msgid "Control Train Brake Increase"
-msgstr "Irányítás Vonatfék növelése"
+msgstr "Irányítás Fékszelep nyitása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:121
+#: ../../ORTS.Common/Input/UserCommand.cs:127
 msgid "Control Train Brake Decrease"
-msgstr "Irányítás Vonatfék csökkentése"
+msgstr "Irányítás Fékszelep zárása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:122
+#: ../../ORTS.Common/Input/UserCommand.cs:128
 msgid "Control Train Brake Zero"
-msgstr "Irányítás Vonatfék alaphelyzetbe"
+msgstr "Irányítás Fékszelep alaphelyzetbe"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:123
+#: ../../ORTS.Common/Input/UserCommand.cs:129
 msgid "Control Engine Brake Increase"
 msgstr "Irányítás Mozdonyfék növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:124
+#: ../../ORTS.Common/Input/UserCommand.cs:130
 msgid "Control Engine Brake Decrease"
 msgstr "Irányítás Mozdonyfék csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:125
+#: ../../ORTS.Common/Input/UserCommand.cs:131
+msgid "Control Brakeman Brake Increase"
+msgstr "Irányítás Fékező kézifék növelése"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:132
+msgid "Control Brakeman Brake Decrease"
+msgstr "Irányítás Fékező kézifék csökkentése"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:133
 msgid "Control Dynamic Brake Increase"
 msgstr "Irányítás Dinamikus fék növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:126
+#: ../../ORTS.Common/Input/UserCommand.cs:134
 msgid "Control Dynamic Brake Decrease"
 msgstr "Irányítás Dinamikus fék csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:127
+#: ../../ORTS.Common/Input/UserCommand.cs:135
 msgid "Control Bail Off"
 msgstr "Irányítás Fék kiengedése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:128
+#: ../../ORTS.Common/Input/UserCommand.cs:136
 msgid "Control Initialize Brakes"
 msgstr "Irányítás Fékek üzembe helyezése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:129
+#: ../../ORTS.Common/Input/UserCommand.cs:137
 msgid "Control Handbrake Full"
 msgstr "Irányítás Kézifék be"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:130
+#: ../../ORTS.Common/Input/UserCommand.cs:138
 msgid "Control Handbrake None"
 msgstr "Irányítás Kézifék ki"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:131
+#: ../../ORTS.Common/Input/UserCommand.cs:139
 msgid "Control Odometer Show/Hide"
 msgstr "Irányítás Útmérő Megjelenítés/Elrejtés"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:132
+#: ../../ORTS.Common/Input/UserCommand.cs:140
 msgid "Control Odometer Reset"
 msgstr "Irányítás Útmérő nullázása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:133
+#: ../../ORTS.Common/Input/UserCommand.cs:141
 msgid "Control Odometer Direction"
 msgstr "Irányítás Útmérő Mérési iránya"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:134
+#: ../../ORTS.Common/Input/UserCommand.cs:142
 msgid "Control Retainers On"
 msgstr "Irányítás Légfékvisszatartó szelepek be"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:135
+#: ../../ORTS.Common/Input/UserCommand.cs:143
 msgid "Control Retainers Off"
 msgstr "Irányítás Légfékvisszatartó szelepek ki"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:136
+#: ../../ORTS.Common/Input/UserCommand.cs:144
 msgid "Control Brake Hose Connect"
 msgstr "Irányítás Fékvezeték csatlakoztatása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:137
+#: ../../ORTS.Common/Input/UserCommand.cs:145
 msgid "Control Brake Hose Disconnect"
 msgstr "Irányítás Fékvezeték szétbontása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:138
+#: ../../ORTS.Common/Input/UserCommand.cs:146
 msgid "Control Alerter"
 msgstr "Irányítás Éberségjelző"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:139
+#: ../../ORTS.Common/Input/UserCommand.cs:147
 msgid "Control Emergency Push Button"
 msgstr "Irányítás Vészfék ütőgomb"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:140
+#: ../../ORTS.Common/Input/UserCommand.cs:148
+msgid "Control EOT Emergency Brake"
+msgstr "Irányítás Vonatvégi Vészfék"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:149
 msgid "Control Sander"
 msgstr "Irányítás Homokoló"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:141
+#: ../../ORTS.Common/Input/UserCommand.cs:150
 msgid "Control Sander Toggle"
 msgstr "Irányítás Homokoló ki/be"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:142
+#: ../../ORTS.Common/Input/UserCommand.cs:151
 msgid "Control Wiper"
 msgstr "Irányítás Ablaktörlő"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:143
+#: ../../ORTS.Common/Input/UserCommand.cs:152
 msgid "Control Horn"
 msgstr "Irányítás Kürt"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:144
+#: ../../ORTS.Common/Input/UserCommand.cs:153
 msgid "Control Bell"
 msgstr "Irányítás Harang"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:145
+#: ../../ORTS.Common/Input/UserCommand.cs:154
 msgid "Control Bell Toggle"
 msgstr "Irányítás Harang ki/be"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:146
+#: ../../ORTS.Common/Input/UserCommand.cs:155
 msgid "Control Door Left"
 msgstr "Irányítás Baloldali ajtók"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:147
+#: ../../ORTS.Common/Input/UserCommand.cs:156
 msgid "Control Door Right"
 msgstr "Irányítás Jobboldali ajtók"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:148
+#: ../../ORTS.Common/Input/UserCommand.cs:157
 msgid "Control Mirror"
 msgstr "Irányítás Tükrök"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:149
+#: ../../ORTS.Common/Input/UserCommand.cs:158
 msgid "Control Light"
 msgstr "Irányítás Fények"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:150
+#: ../../ORTS.Common/Input/UserCommand.cs:159
 msgid "Control Pantograph 1"
 msgstr "Irányítás 1-es áramszedő"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:151
+#: ../../ORTS.Common/Input/UserCommand.cs:160
 msgid "Control Pantograph 2"
 msgstr "Irányítás 2-es áramszedő"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:152
+#: ../../ORTS.Common/Input/UserCommand.cs:161
 msgid "Control Pantograph 3"
 msgstr "Irányítás 3-es áramszedő"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:153
+#: ../../ORTS.Common/Input/UserCommand.cs:162
 msgid "Control Pantograph 4"
 msgstr "Irányítás 4-es áramszedő"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:157
+#: ../../ORTS.Common/Input/UserCommand.cs:163
+msgid "Control Battery Close"
+msgstr "Irányítás Akkumulátor zárása"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:164
+msgid "Control Battery Open"
+msgstr "Irányítás Akkumulátor nyitása"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:165
+msgid "Control Master Key"
+msgstr "Irányítás Mesterkulcs"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:166
+msgid "Control Service Retention"
+msgstr "Irányítás Service Retention"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:167
+msgid "Control Service Retention Cancellation"
+msgstr "Irányítás Service Retention Cancellation"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:168
+msgid "Control Circuit Breaker Closing Order"
+msgstr "Irányítás Főmegszakító zárási parancs"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:169
+msgid "Control Circuit Breaker Opening Order"
+msgstr "Irányítás Főmegszakító nyitási parancs"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:170
+msgid "Control Circuit Breaker Closing Authorization"
+msgstr "Irányítás Főmegszakító zárási engedély"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:171
+msgid "Control Traction Cut-Off Relay Closing Order"
+msgstr "Irányítás Vontatásmegszakító relé zárási parancs"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:172
+msgid "Control Traction Cut-Off Relay Opening Order"
+msgstr "Irányítás Vontatásmegszakító relé nyitási parancs"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:173
+msgid "Control Traction Cut-Off Relay Closing Authorization"
+msgstr "Irányítás Vontatásmegszakító relé zárási engedély"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:174
+msgid "Control Electric Train Supply"
+msgstr "Irányítás Elektromos betáplálás"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:175
 msgid "Control Diesel Player"
-msgstr "Irányítás Irányított gép"
+msgstr "Irányítás Dízel irányított gép"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:158
+#: ../../ORTS.Common/Input/UserCommand.cs:176
 msgid "Control Diesel Helper"
-msgstr "Irányítás Segédgép"
+msgstr "Irányítás Dízel segédgép"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:159
+#: ../../ORTS.Common/Input/UserCommand.cs:177
 msgid "Control Headlight Increase"
 msgstr "Irányítás Homlokfény fel"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:160
+#: ../../ORTS.Common/Input/UserCommand.cs:178
 msgid "Control Headlight Decrease"
 msgstr "Irányítás Homlokfény le"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:161
+#: ../../ORTS.Common/Input/UserCommand.cs:179
 msgid "Control Injector 1 Increase"
 msgstr "Irányítás Bal gőzsugárszivattyú növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:162
+#: ../../ORTS.Common/Input/UserCommand.cs:180
 msgid "Control Injector 1 Decrease"
 msgstr "Irányítás Bal gőzsugárszivattyú csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:163
+#: ../../ORTS.Common/Input/UserCommand.cs:181
 msgid "Control Injector 1"
 msgstr "Irányítás Bal gőzsugárszivattyú"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:164
+#: ../../ORTS.Common/Input/UserCommand.cs:182
 msgid "Control Injector 2 Increase"
 msgstr "Irányítás Jobb gőzsugárszivattyú növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:165
+#: ../../ORTS.Common/Input/UserCommand.cs:183
 msgid "Control Injector 2 Decrease"
 msgstr "Irányítás Jobb gőzsugárszivattyú csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:166
+#: ../../ORTS.Common/Input/UserCommand.cs:184
 msgid "Control Injector 2"
 msgstr "Irányítás Jobb gőzsugárszivattyú"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:167
+#: ../../ORTS.Common/Input/UserCommand.cs:185
+msgid "Control Blowdown Valve"
+msgstr "Irányítás Lefúvató nyitása"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:186
 msgid "Control Blower Increase"
 msgstr "Irányítás Gőzsugár-fúvóka nyitása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:168
+#: ../../ORTS.Common/Input/UserCommand.cs:187
 msgid "Control Blower Decrease"
 msgstr "Irányítás Gőzsugár-szivattyú zárása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:169
+#: ../../ORTS.Common/Input/UserCommand.cs:188
 msgid "Control Steam Heat Increase"
 msgstr "Irányítás Gőzfűtés növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:170
+#: ../../ORTS.Common/Input/UserCommand.cs:189
 msgid "Control Steam Heat Decrease"
 msgstr "Irányítás Gőzfűtés csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:171
+#: ../../ORTS.Common/Input/UserCommand.cs:190
 msgid "Control Damper Increase"
 msgstr "Irányítás Légbefúvó növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:172
+#: ../../ORTS.Common/Input/UserCommand.cs:191
 msgid "Control Damper Decrease"
 msgstr "Irányítás Légbefúvó csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:173
+#: ../../ORTS.Common/Input/UserCommand.cs:192
 msgid "Control Firebox Open"
 msgstr "Irányítás Tűzszekrény nyitása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:174
+#: ../../ORTS.Common/Input/UserCommand.cs:193
 msgid "Control Firebox Close"
 msgstr "Irányítás Tűzszekrény zárása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:175
+#: ../../ORTS.Common/Input/UserCommand.cs:194
 msgid "Control Firing Rate Increase"
 msgstr "Irányítás Tüzelőadagolás növelése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:176
+#: ../../ORTS.Common/Input/UserCommand.cs:195
 msgid "Control Firing Rate Decrease"
 msgstr "Irányítás Tüzelőadagolás csökkentése"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:177
+#: ../../ORTS.Common/Input/UserCommand.cs:196
 msgid "Control Fire Shovel Full"
 msgstr "Irányítás Egy lapát szén rádobása"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:178
+#: ../../ORTS.Common/Input/UserCommand.cs:197
 msgid "Control Cylinder Cocks"
 msgstr "Irányítás Hengercsapok"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:181
+#: ../../ORTS.Common/Input/UserCommand.cs:198
+msgid "Control Large Ejector Increase"
+msgstr "Irányítás Nagy légsűrítő növelése"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:199
+msgid "Control Large Ejector Decrease"
+msgstr "Irányítás Nagy légsűrítő csökkentése"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:200
+msgid "Control Small Ejector Increase"
+msgstr "Irányítás Légsűrítő növelése"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:201
+msgid "Control Small Ejector Decrease"
+msgstr "Irányítás Légsűrítő csökkentése"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:202
+msgid "Control Vacuum Exhauster"
+msgstr "Irányítás Vákuumszivattyú"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:203
 msgid "Control Cylinder Compound"
 msgstr "Irányítás Kompaund Hengerek"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:182
+#: ../../ORTS.Common/Input/UserCommand.cs:204
 msgid "Control Firing"
 msgstr "Irányítás Tüzelés"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:183
+#: ../../ORTS.Common/Input/UserCommand.cs:205
 msgid "Control Refill"
 msgstr "Irányítás Üzemanyag-újratöltés"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:184
-msgid "Control TroughRefill"
-msgstr "Irányítás Vályús vízvétel"
+#: ../../ORTS.Common/Input/UserCommand.cs:206
+msgid "Control Discrete Unload"
+msgstr "Irányítás Kirakodás"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:185
+#: ../../ORTS.Common/Input/UserCommand.cs:207
+msgid "Control Water Scoop"
+msgstr "Irányítás Vízkanál"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:208
 msgid "Control ImmediateRefill"
 msgstr "Irányítás Azonnali újratöltés"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:209
+msgid "Control Turntable Clockwise"
+msgstr "Irányítás Fordítókorong óramutató szerint"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:210
+msgid "Control Turntable Counterclockwise"
+msgstr "Irányítás Fordítókorong óramutatóval ellentétesen"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:211
+msgid "Control Generic Item 1"
+msgstr "Irányítás Általános Vezérlő 1"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:212
+msgid "Control Generic Item 2"
+msgstr "Irányítás Általános Vezérlő 2"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:213
+msgid "Control TCS Generic 1"
+msgstr "Irányítás Vonatbefolyásoló Általános 1"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:214
+msgid "Control TCS Generic 2"
+msgstr "Irányítás Vonatbefolyásoló Általános 2"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:215
+msgid "Control Cab Radio"
+msgstr "Irányítás Mozdonyrádió"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:216
+msgid "Control AI Fire On"
+msgstr "Irányítás Automata tüzelés be"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:217
+msgid "Control AI Fire Off"
+msgstr "Irányítás Automata tüzelés ki"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:218
+msgid "Control AI Fire Reset"
+msgstr "Irányítás Automata tüzelés alaphelyzetbe"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:221
+msgid "Control DP Move To Front"
+msgstr "Irányítás Gépcsoport mozgatása előre"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:222
+msgid "Control DP Move To Back"
+msgstr "Irányítás Gépcsoport mozgatása hátra"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:223
+msgid "Control DP Traction"
+msgstr "Irányítás Gépcsoport vontatás"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:224
+msgid "Control DP Idle"
+msgstr "Irányítás Gépcsoport semleges"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:225
+msgid "Control DP Brake"
+msgstr "Irányítás Gépcsoport fékezés"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:226
+msgid "Control DP More"
+msgstr "Irányítás Gépcsoport növelés"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:227
+msgid "Control DP Less"
+msgstr "Irányítás Gépcsoport csökkentés"
+
+#~ msgid "Display Basic HUD Toggle"
+#~ msgstr "Megjelenítés Alap HUD-ra váltás"
+
+#~ msgid "Camera 3D Cab"
+#~ msgstr "Kamera 3D vezérállás"
+
+#~ msgid "Control TroughRefill"
+#~ msgstr "Irányítás Vályús vízvétel"

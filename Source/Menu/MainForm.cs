@@ -395,13 +395,6 @@ namespace ORTS
             ShowStartAtList();
             ShowEnvironment();
             ShowDetails();
-            //Debrief Activity Eval
-            //0 = "- Explore route -"
-            //1 = "+ Explore in Activity mode +"
-            if (comboBoxActivity.SelectedIndex < 2)
-            { checkDebriefActivityEval.Checked = false; checkDebriefActivityEval.Enabled = false; }
-            else
-            { checkDebriefActivityEval.Enabled = true; }
         }
         #endregion
 
@@ -658,11 +651,6 @@ namespace ORTS
         void LoadOptions()
         {
             checkBoxWarnings.Checked = Settings.Logging;
-            checkBoxWindowed.Checked = !Settings.FullScreen;
-            //Debrief activity evaluation
-            checkDebriefActivityEval.Checked = Settings.DebriefActivityEval;
-            //TO DO: Debrief TTactivity evaluation
-            //checkDebriefTTActivityEval.Checked = Settings.DebriefTTActivityEval;
             radioButtonModeActivity.Checked = Settings.IsModeActivity;
             radioButtonModeTimetable.Checked = !Settings.IsModeActivity;
 
@@ -673,12 +661,7 @@ namespace ORTS
         void SaveOptions()
         {
             Settings.Logging = checkBoxWarnings.Checked;
-            Settings.FullScreen = !checkBoxWindowed.Checked;
             Settings.Multiplayer_User = textBoxMPUser.Text;
-            //Debrief activity evaluation
-            Settings.DebriefActivityEval = checkDebriefActivityEval.Checked;
-            //TO DO: Debrief TTactivity evaluation
-            //Settings.DebriefTTActivityEval = checkDebriefTTActivityEval.Checked;
             Settings.IsModeActivity = radioButtonModeActivity.Checked;
 
             var mpHost = textBoxMPHost.Text.Split(':');

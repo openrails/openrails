@@ -69,6 +69,7 @@ namespace Orts.Formats.OR
             switch (item.Path)
             {
                 case "":
+                case "[]":
                     // Ignore these items.
                     break;
 

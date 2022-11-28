@@ -60,7 +60,7 @@ namespace Orts.Viewer3D.Common
             else if (!String.IsNullOrEmpty(nightTexturePath + textureName) && Path.GetExtension(nightTexturePath + textureName) == ".ace")
             {
                 var alternativeTexture = Path.ChangeExtension(nightTexturePath + textureName, ".dds");
-                if (simulator.Settings.PreferDDSTexture && !String.IsNullOrEmpty(alternativeTexture.ToLower()) && File.Exists(alternativeTexture))
+                if (!String.IsNullOrEmpty(alternativeTexture.ToLower()) && File.Exists(alternativeTexture))
                 {
                     return alternativeTexture;
                 }

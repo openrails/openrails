@@ -2,9 +2,18 @@
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Orts.Simulation.Signalling
 {
+    public enum SignalEvent
+    {
+        RequestMostRestrictiveAspect,
+        RequestApproachAspect,
+        RequestLeastRestrictiveAspect,
+    }
+
     // The exchange of information is done through the TextSignalAspect property.
     // The MSTS signal aspect is only used for TCS scripts that do not support TextSignalAspect.
     public abstract class CsSignalScript : AbstractScriptClass
@@ -12,8 +21,19 @@ namespace Orts.Simulation.Signalling
         // References and shortcuts. Must be private to not expose them through the API
         private SignalHead SignalHead { get; set; }
         private SignalObject SignalObject => SignalHead.mainSignal;
-        private int SigFnIndex(string sigFn) => SignalObject.signalRef.ORTSSignalTypes.IndexOf(sigFn);
-        private SignalObject SignalObjectById(int id) => SignalObject.signalRef.SignalObjects?[id];
+        private SignalFunction SignalFunction(string sigFn) => SignalObject.signalRef.SignalFunctions[sigFn];
+
+        private SignalObject SignalObjectById(int id)
+        {
+            if (id >= 0 && id < SignalObject.signalRef.SignalObjects.Length)
+            {
+                return SignalObject.signalRef.SignalObjects[id];
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         // Public interface
         /// <summary>
@@ -81,6 +101,10 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public bool RouteSet => SignalHead.route_set() > 0;
         /// <summary>
+        /// Hold state of the signal
+        /// </summary>
+        public HoldState HoldState => SignalObject.holdState;
+        /// <summary>
         /// Set this variable to true to allow clear to partial route
         /// </summary>
         public bool AllowClearPartialRoute { set { SignalObject.AllowClearPartialRoute(value ? 1 : 0); } }
@@ -94,12 +118,14 @@ namespace Orts.Simulation.Signalling
         /// <param name="signalAspect">Aspect for which the default draw state must be found</param>
         /// <returns></returns>
         public int DefaultDrawState(Aspect signalAspect) => SignalHead.def_draw_state((MstsSignalAspect)signalAspect);
+
         /// <summary>
         /// Index of the draw state with the specified name
         /// </summary>
         /// <param name="name">Name of the draw state as defined in sigcfg</param>
         /// <returns>The index of the draw state, -1 if no one exist with that name</returns>
-        public int GetDrawState(string name) => SignalHead.signalType.DrawStates.TryGetValue(name, out SignalDrawState drawState) ? drawState.Index : -1;
+        public int GetDrawState(string name) => SignalHead.signalType.DrawStates.TryGetValue(name.ToLower(), out SignalDrawState drawState) ? drawState.Index : -1;
+
         /// <summary>
         /// Signal identity of this signal
         /// </summary>
@@ -108,6 +134,10 @@ namespace Orts.Simulation.Signalling
         /// Name of this signal type, as defined in sigcfg
         /// </summary>
         public string SignalTypeName => SignalHead.SignalTypeName;
+        /// <summary>
+        /// Name of the signal shape, as defined in sigcfg
+        /// </summary>
+        public string SignalShapeName => Path.GetFileNameWithoutExtension(SignalObject.WorldObject.SFileName);
         /// <summary>
         /// Local storage of this signal, which can be accessed from other signals
         /// </summary>
@@ -157,7 +187,7 @@ namespace Orts.Simulation.Signalling
         /// <returns>Id of required signal</returns>
         public int NextSignalId(string sigfn, int count = 0)
         {
-            return SignalObject.next_nsig_id(SigFnIndex(sigfn), count + 1);
+            return SignalObject.next_nsig_id(SignalFunction(sigfn), count + 1);
         }
         /// <summary>
         /// Get id of opposite signal
@@ -166,7 +196,7 @@ namespace Orts.Simulation.Signalling
         /// <returns></returns>
         public int OppositeSignalId(string sigfn)
         {
-            return SignalObject.opp_sig_id(SigFnIndex(sigfn));
+            return SignalObject.opp_sig_id(SignalFunction(sigfn));
         }
         /// <summary>
         /// Find next normal signal of a specific subtype
@@ -186,6 +216,7 @@ namespace Orts.Simulation.Signalling
         {
             return SignalHead.id_sig_hasnormalsubtype(id, SignalObject.signalRef.ORTSNormalsubtypes.IndexOf(normalSubtype)) == 1;
         }
+
         /// <summary>
         /// Get the text aspect of a specific signal
         /// </summary>
@@ -194,20 +225,22 @@ namespace Orts.Simulation.Signalling
         /// <param name="headindex">Get aspect of nth head of the specified type</param>
         public string IdTextSignalAspect(int id, string sigfn, int headindex=0)
         {
-            var heads = SignalObjectById(id)?.SignalHeads;
-            if (heads != null)
+            if (SignalObject.signalRef.SignalFunctions.TryGetValue(sigfn, out SignalFunction function))
             {
-                foreach (SignalHead head in heads)
+                var heads = SignalObjectById(id)?.SignalHeads;
+                if (heads != null)
                 {
-                    if (head.ORTSsigFunctionIndex == SigFnIndex(sigfn))
+                    foreach (SignalHead head in heads.Where(head => head.Function == function))
                     {
                         if (headindex <= 0) return head.TextSignalAspect;
                         headindex--;
                     }
                 }
             }
+
             return "";
         }
+
         /// <summary>
         /// Obtains the most restrictive aspect of the signals of type A up to the first signal of type B
         /// </summary>
@@ -216,9 +249,10 @@ namespace Orts.Simulation.Signalling
         /// <param name="mostRestrictiveHead">Check most restrictive head per signal</param>
         public Aspect DistMultiSigMR(string sigfnA, string sigfnB, bool mostRestrictiveHead = true)
         {
-            if(mostRestrictiveHead) return (Aspect)SignalHead.dist_multi_sig_mr(SigFnIndex(sigfnA), SigFnIndex(sigfnB), DebugFileName);
-            return (Aspect)SignalHead.dist_multi_sig_mr_of_lr(SigFnIndex(sigfnA), SigFnIndex(sigfnB), DebugFileName);
+            if(mostRestrictiveHead) return (Aspect)SignalHead.dist_multi_sig_mr(SignalFunction(sigfnA), SignalFunction(sigfnB), DebugFileName);
+            return (Aspect)SignalHead.dist_multi_sig_mr_of_lr(SignalFunction(sigfnA), SignalFunction(sigfnB), DebugFileName);
         }
+
         /// <summary>
         /// Get aspect of required signal
         /// </summary>
@@ -228,15 +262,16 @@ namespace Orts.Simulation.Signalling
         /// <param name="checkRouting">If looking for most restrictive aspect, consider only heads with the route link activated</param>
         public Aspect IdSignalAspect(int id, string sigfn, bool mostRestrictive = false, bool checkRouting = false)
         {
-            if (!mostRestrictive) return (Aspect)SignalHead.id_sig_lr(id, SigFnIndex(sigfn));
+            if (!mostRestrictive) return (Aspect)SignalHead.id_sig_lr(id, SignalFunction(sigfn));
             else if (id >= 0 && id < SignalObject.signalRef.SignalObjects.Length)
             {
                 var signal = SignalObjectById(id);
-                if (checkRouting) return (Aspect)signal.this_sig_mr_routed(SigFnIndex(sigfn), DebugFileName);
-                else return (Aspect)signal.this_sig_mr(SigFnIndex(sigfn));
+                if (checkRouting) return (Aspect)signal.this_sig_mr_routed(SignalFunction(sigfn), DebugFileName);
+                else return (Aspect)signal.this_sig_mr(SignalFunction(sigfn));
             }
             return Aspect.Stop;
         }
+
         /// <summary>
         /// Get local variable of the required signal
         /// </summary>
@@ -343,16 +378,87 @@ namespace Orts.Simulation.Signalling
         /// Called once at initialization time
         /// </summary>
         public abstract void Initialize();
+
         /// <summary>
         /// Called regularly during the simulation
         /// </summary>
         public abstract void Update();
+
         /// <summary>
         /// Called when a signal sends a message to this signal
         /// </summary>
         /// <param name="signalId">Signal ID of the calling signal</param>
         /// <param name="message">Message sent to signal</param>
-        /// <returns></returns>
         public virtual void HandleSignalMessage(int signalId, string message) {}
+
+        /// <summary>
+        /// Called when the simulator
+        /// </summary>
+        /// <param name="evt"></param>
+        public virtual void HandleEvent(SignalEvent evt, string message = "") { }
+
+        /// <summary>
+        /// Indicates if the signal script has taken control over the speed limit (overrides the speed limit set in the SignalType).
+        /// </summary>
+        public bool SpeedLimitSetByScript { get => SignalHead.SpeedInfoSetBySignalScript; set => SignalHead.SpeedInfoSetBySignalScript = value; }
+
+        /// <summary>
+        /// Returns the parameters of the speed limit set by the script.
+        /// </summary>
+        /// <returns>A tuple containing the parameters of the speed limit, or null if the speed limit is not set</returns>
+        public (float PassengerSpeedLimitMpS, float FreightSpeedLimitMpS, bool Asap, bool Reset, bool NoSpeedReduction, bool IsWarning)? SpeedLimit()
+        {
+            if (SignalHead.SignalScriptSpeedInfo != null)
+            {
+                return (SignalHead.SignalScriptSpeedInfo.speed_pass,
+                        SignalHead.SignalScriptSpeedInfo.speed_freight,
+                        SignalHead.SignalScriptSpeedInfo.speed_flag != 0,
+                        SignalHead.SignalScriptSpeedInfo.speed_reset != 0,
+                        SignalHead.SignalScriptSpeedInfo.speed_noSpeedReductionOrIsTempSpeedReduction != 0,
+                        SignalHead.SignalScriptSpeedInfo.speed_isWarning);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Sets a speed limit for the signal head.
+        /// </summary>
+        /// <param name="passengerSpeedLimitMpS">The speed limit for passenger trains in meters per second.</param>
+        /// <param name="freightSpeedLimitMpS">The speed limit for freight trains in meters per second.</param>
+        /// <param name="asap">True if an AI train must apply this speed limit as soon as possible.</param>
+        /// <param name="reset">True if the speed limit is set to the train's maximum speed.</param>
+        /// <param name="noSpeedReduction">True if an AI train shouldn't approach the signal slowly for STOP_AND_PROCEED and RESTRICTED aspects.</param>
+        /// <param name="isWarning">True if this signal head warns about a speed limit on a following signal.</param>
+        public void SetSpeedLimit(float passengerSpeedLimitMpS, float freightSpeedLimitMpS, bool asap, bool reset, bool noSpeedReduction, bool isWarning)
+        {
+            if (SignalHead.SignalScriptSpeedInfo == null)
+            {
+                SignalHead.SignalScriptSpeedInfo = new ObjectSpeedInfo(passengerSpeedLimitMpS, freightSpeedLimitMpS, asap, reset, noSpeedReduction ? 1 : 0, isWarning);
+            }
+            else
+            {
+                SignalHead.SignalScriptSpeedInfo.speed_pass = passengerSpeedLimitMpS;
+                SignalHead.SignalScriptSpeedInfo.speed_freight = freightSpeedLimitMpS;
+                SignalHead.SignalScriptSpeedInfo.speed_flag = asap ? 1 : 0;
+                SignalHead.SignalScriptSpeedInfo.speed_reset = reset ? 1 : 0;
+                SignalHead.SignalScriptSpeedInfo.speed_noSpeedReductionOrIsTempSpeedReduction = noSpeedReduction ? 1 : 0;
+                SignalHead.SignalScriptSpeedInfo.speed_isWarning = isWarning;
+            }
+        }
+
+        /// <summary>
+        /// Removes the speed limit set by the signal script.
+        /// The signal head will now apply the speed limit of the 
+        /// </summary>
+        public void RemoveSpeedLimit()
+        {
+            if (SignalHead.SignalScriptSpeedInfo != null)
+            {
+                SignalHead.SignalScriptSpeedInfo = null;
+            }
+        }
     }
 }
