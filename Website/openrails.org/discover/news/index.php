@@ -15,6 +15,11 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
+        <h2>Nov 2022 - Version 1.5.1</h2>
+        <p>
+          <a href="/discover/version-1-5-1/">Open Rails 1.5.1</a> released to fix 3 bugs in v1.5.
+        </p>
+        <hr /> 
         <h2>Nov 2022 - Version 1.5</h2>
         <p>
           <a href="/discover/version-1-5/">Open Rails 1.5</a> released.
