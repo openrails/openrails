@@ -145,8 +145,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     loadData.Folder = stf.ReadString();
                     var positionString = stf.ReadString();
                     Enum.TryParse(positionString, out loadData.LoadPosition);
-                    LoadDataList.Add(loadData);
-                    stf.MustMatch(")");
+                    var state = stf.ReadString();
+                    if (state != ")")
+                    {
+                        Enum.TryParse(state, out loadData.LoadState);
+                        LoadDataList.Add(loadData);
+                        stf.MustMatch(")");
+                    }
+                    else
+                        LoadDataList.Add(loadData);
                 }),
             });
         }
@@ -287,7 +294,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 //            Load(Wagon, LoadDataList);
         }
 
-        public void Load(string loadFilePath, LoadPosition loadPosition)
+        public void Load(string loadFilePath, LoadPosition loadPosition, LoadState loadState)
         {
             if (GeneralIntakePoint.Type == MSTSWagon.PickupType.Container)
             {
@@ -302,6 +309,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     container.LoadFromContainerFile(loadFilePath, Wagon.Simulator.BasePath +@"\trains\trainset\");
                     ContainerManager.LoadedContainers.Add(loadFilePath, container);
                 }
+                switch (loadState)
+                {
+                    case LoadState.Empty:
+                        container.MassKG = container.EmptyMassKG;
+                        break;
+                    case LoadState.Loaded:
+                        container.MassKG = container.MaxMassWhenLoadedKG;
+                        break;
+                    case LoadState.Random:
+                        var loadPercent = Simulator.Random.Next(101);
+                        if (loadPercent < 30) container.MassKG = container.EmptyMassKG;
+                        else container.MassKG = container.MaxMassWhenLoadedKG * loadPercent / 100f;
+                        break;
+                }
+
                 Vector3 offset = new Vector3(0, 0, 0);
                 var validity = Validity(Wagon, container, loadPosition, Offset, LoadingAreaLength, out offset);
                 if (validity)
@@ -345,7 +367,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                             Trace.TraceWarning($"Ignored missing load {loadFilePath}");
                             continue;
                         }
-                        Load(loadFilePath, loadData.LoadPosition);
+                        Load(loadFilePath, loadData.LoadPosition, loadData.LoadState);
                     }
                 }
             }

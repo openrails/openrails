@@ -599,6 +599,8 @@ Here below a sample of a ``.load-or`` file::
 	  	"Shape" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.s",
 	  	"ContainerType" : "C40ftHC",
 	  	"IntrinsicShapeOffset": [0,1.175,0],
+   		"EmptyMassKG": 2100.,
+		  "MaxMassWhenLoadedKG": 28000.,
 	  }
   }
 
@@ -621,6 +623,13 @@ Here below a sample of a ``.load-or`` file::
   container with respect to the container shape file coordinates. Unfortunately often such 
   offset is not [0,0,0], which would be advisable for newly produced containers. A simple way to 
   state such offset is to use the ``Show Bounding Info`` of ``Shape Viewer``.
+- "EmptyMassKG" is an optional parameter that defines the tare (weight when empty) of the 
+  container. If the parameter is not present, OR uses a default parameter, specific for that 
+  ContainerType.
+- "MaxMassWhenLoadedKG" is an optional parameter that defines the sum of the tare plus the maximum 
+  allowed payload. As above, if the parameter is not present, OR uses a default parameter, specific for that 
+  ContainerType.
+
 
 Pre-setting a .wag file to accommodate containers
 -------------------------------------------------
@@ -628,6 +637,7 @@ Pre-setting a .wag file to accommodate containers
 As a minimum following block must be present in the .wag file for a double stacker::
 
   ORTSFreightAnims (
+		WagonEmptyWeight ( 12.575t )
 		LoadingAreaLength ( 12.20 )
 		AboveLoadingAreaLength ( 12.20 )
 		DoubleStacker ()
@@ -635,6 +645,8 @@ As a minimum following block must be present in the .wag file for a double stack
 		IntakePoint ( 0 6.0 Container)
 		)
 
+- WagonEmptyWeight is the weight of the wagon, when it has neither containers nor other 
+  weighing freight animations on board
 - LoadingAreaLength is the length in meters of the loading area available for containers
 - AboveLoadingAreaLength is the length in meters of the above loading area available 
   for containers (parameter not needed if not double stacker)
@@ -694,9 +706,9 @@ shown here::
 
   		Wagon (
 			  WagonData ( DTTX_620040_A ATW.DTTX_620040 )
-			  LoadData ( 20cmacgm common.containerdata CenterFront)
-			  LoadData ( 20hamburgsud common.containerdata CenterRear)
-			  LoadData ( 40msc common.containerdata Above)			
+			  LoadData ( 20cmacgm common.containerdata CenterFront Empty)
+			  LoadData ( 20hamburgsud common.containerdata CenterRear Loaded)
+			  LoadData ( 40msc common.containerdata Above Random)			
 			  UiD ( 11 )
 		)
 
@@ -707,7 +719,17 @@ present. The meaning of the parameters is as follows:
 - The first parameter is the name of the ``.load-or`` file 
 - The second parameter is the path (having ``Trainset`` as base path) where the ``.load-or``
   file resides 
-- The third parameter indicates where the container is allocated on the wagon.
+- The third parameter indicates where the container is allocated on the wagon
+- The fourth parameter, which is optional, defines the load state of the related container, 
+  which is used to derive the weight of the container. If ``Empty`` is present, the weight 
+  of the empty container is used as actual weight; if ``Loaded`` is present, the maximum 
+  weight (tare + payload) of the container is used; if ``Random`` is present, the weight 
+  is computed as follows: a random number between 0 and 100 is generated. If the number is 
+  below 31, the container is considered empty; else the number is used as percentage of the 
+  maximum weight of the container (tare + payload). The weight of the containers are added to 
+  the empty weight of the wagon, to compute the total weight of the wagon. If the parameter 
+  is not present, the ``Random`` value is assumed.
+
 
 The entry for the container allocated ``Above`` must be the last one.
 
@@ -733,18 +755,19 @@ A minimum ``FreightAnimations`` entry in a ``.wag`` file to have the same pre-lo
 set as in the previous paragraph is as follows::
 
     ORTSFreightAnims (
-	  	LoadingAreaLength ( 14.6 )
-	  	AboveLoadingAreaLength ( 16.15 )
+		  WagonEmptyWeight ( 12.575t )
+		  LoadingAreaLength ( 14.6 )
+		  AboveLoadingAreaLength ( 16.15 )
 		  DoubleStacker ()
 		  Offset( 0 0.34 0 )
 		  IntakePoint ( 0 6.0 Container)
-		  LoadData ( 20cmacgm common.containerdata CenterFront)
-		  LoadData ( 20hamburgsud common.containerdata CenterRear)
-		  LoadData ( 40msc common.containerdata Above)
+		  LoadData ( 20cmacgm common.containerdata CenterFront Empty)
+		  LoadData ( 20hamburgsud common.containerdata CenterRear Loaded)
+		  LoadData ( 40msc common.containerdata Above Random)
 		)
 
 As can be seen, the syntax of the ``LoadData`` entries is the same as in the case of 
-the ``.con``  file.
+the ``.con``  file. Also here the fourth parameter is optional.
 
 Obviously, using ``.wag`` files for this type of info, a different ``.wag`` file must 
 be created for every desired pre-loaded set of containers.
@@ -1048,9 +1071,9 @@ The ``.load-stations-loads-or`` file is a Json file. An example is shown here be
 		{
 			"LoadStationID" : { "wfile" : "w-005354+014849.w", "UiD" :  21, },
 			"LoadData" : [
-				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, },
-				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, },
-				{ "File" : "20cmacgm", "Folder" : "common.containerdata", "StackLocation" : 2, },
+				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, "LoadState" : "Empty"},
+				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, "LoadState" : "Loaded"},
+				{ "File" : "20cmacgm", "Folder" : "common.containerdata", "StackLocation" : 2, "LoadState" : "Random"},
 				{ "File" : "20kline", "Folder" : "common.containerdata", "StackLocation" : 2, },
 				{ "File" : "45HCtriton", "Folder" : "common.containerdata", "StackLocation" : 5, },
 				{ "File" : "45HCtriton", "Folder" : "common.containerdata", "StackLocation" : 5, },
@@ -1081,6 +1104,8 @@ The file can define the population at startup of many container stations.
   index refers to a child stack location.
 - If more than a container is defined for a stack location, they are stacked one above the 
   other.
+- The ``LoadState`` parameter is optional, and has the same meaning and values as the 
+  parameter of the same name which can be present in .con or .wag files.
 
 The container station population file must be written taking into account the constraints 
 of the stack locations (container length must be smaller than stack location lenght, 
