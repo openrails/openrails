@@ -72,4 +72,14 @@ namespace ORTS.Common
         Above
     }
 
+    /// <summary>
+    /// Defines the loading state of a load (e.g. a container) on a wagon
+    /// </summary>
+    public enum LoadState
+    {
+        Random,
+        Empty,
+        Loaded,
+    }
+
 }
