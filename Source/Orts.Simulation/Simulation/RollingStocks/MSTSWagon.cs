@@ -1976,7 +1976,10 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // Updates the mass of the wagon considering all types of loads
-                if (FreightAnimations.WagonEmptyWeight != -1) MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight +  totalContainerMassKG;
+                if (FreightAnimations != null && FreightAnimations.WagonEmptyWeight != -1)
+                {
+                    MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight + totalContainerMassKG;
+                }
             }
         }
 
