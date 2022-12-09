@@ -262,7 +262,7 @@ namespace Orts.Viewer3D.WebServices
         // SetCabControls() expects a request passing an array of ControlValuePost objects using JSON.
         // For example:
         // [{ "TypeName": "THROTTLE"    // A CABViewControlTypes name - must be uppercase.
-        //  , "ControlIndex": 1         // This property is optional and used in rendering cab view
+        //  , "ControlIndex": 1         // Index of control type in CVF (optional for most controls)
         //  , "Value": 0.50             // A floating-point value
         //  }
         // ]
@@ -271,14 +271,16 @@ namespace Orts.Viewer3D.WebServices
         public async Task SetCabControls()
         {
             var data = await HttpContext.GetRequestDataAsync<IEnumerable<ControlValuePost>>(WebServer.DeserializationCallback<IEnumerable<ControlValuePost>>);
-                var dev = UserInput.WebDeviceState;
+            var dev = UserInput.WebDeviceState;
             foreach (var control in data)
             {
                 var key = (new CabViewControlType(control.TypeName), control.ControlIndex);
                 if (!dev.CabControls.TryGetValue(key, out var state))
                 {
                     state = new ExternalDeviceCabControl();
-                    dev.CabControls[key] = state;
+                    var controls = new Dictionary<(CabViewControlType, int), ExternalDeviceCabControl>(dev.CabControls);
+                    controls[key] = state;
+                    dev.CabControls = controls;
                 }
                 state.Value = (float)control.Value;
             }
