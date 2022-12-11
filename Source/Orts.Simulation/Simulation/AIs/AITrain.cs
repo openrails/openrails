@@ -4088,8 +4088,7 @@ namespace Orts.Simulation.AIs
             float fullServReductionPSI = -5;
             float max = maxPressurePSI;
             float fullServ = fullServPressurePSI;
-            BrakeLine3PressurePSI = 0;
-            BrakeLine4 = -1;
+            BrakeLine3PressurePSI = BrakeLine4 = 0;
             if (FirstCar != null && FirstCar.BrakeSystem is VacuumSinglePipe)
             {
                 max = maxPressurePSIVacuum;
