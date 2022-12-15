@@ -76,11 +76,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         // Train Brake Controllers
         public override void UpdatePressure(ref float pressureBar, float elapsedClockSeconds, ref float epControllerState)
         {
-            var epState = -1f;
+            float epState = -2; // EP Holding wire on. For tokens that do not operate EP brakes
 
             if (EmergencyBrakingPushButton() || TCSEmergencyBraking())
             {
                 pressureBar -= EmergencyRateBarpS() * elapsedClockSeconds;
+                epState = 1;
             }
             else if (TCSFullServiceBraking())
             {
@@ -88,6 +89,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     pressureBar -= ApplyRateBarpS() * elapsedClockSeconds;
                 else if (pressureBar < MaxPressureBar() - FullServReductionBar())
                     pressureBar = MaxPressureBar() - FullServReductionBar();
+                epState = 1;
             }
             else
             {
@@ -101,10 +103,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 if (notch == null)
                 {
                     pressureBar = MaxPressureBar() - FullServReductionBar() * CurrentValue();
+                    epState = CurrentValue();
                 }
                 else
                 {
-                    epState = 0;
                     float x = NotchController.GetNotchFraction();
                     var type = notch.Type;
                     if (OverchargeButtonPressed()) type = ControllerState.Overcharge;
@@ -128,17 +130,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         case ControllerState.Release:
                             IncreasePressure(ref pressureBar, Math.Min(MaxPressureBar(), MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
-                            epState = -1;
+                            epState = 0;
                             break;
                         case ControllerState.FullQuickRelease:
                         case ControllerState.SMEReleaseStart:
                             IncreasePressure(ref pressureBar, Math.Min(MaxPressureBar(), MainReservoirPressureBar()), QuickReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
-                            epState = -1;
+                            epState = 0;
                             break;
                         case ControllerState.Overcharge:
                             IncreasePressure(ref pressureBar, Math.Min(MaxOverchargePressureBar(), MainReservoirPressureBar()), QuickReleaseRateBarpS(), elapsedClockSeconds);
-                            epState = -1;
+                            epState = 0;
                             break;
                         case ControllerState.SlowService:
                             DecreasePressure(ref pressureBar, MaxPressureBar() - FullServReductionBar(), SlowApplicationRateBarpS(), elapsedClockSeconds);
@@ -168,7 +170,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             if (PreviousNotchPosition.Type == ControllerState.Running)
                             {
                                 EnforceMinimalReduction = true;
-                                epState = -1;
                             }
                             break;
                         case ControllerState.MinimalReduction:
@@ -176,7 +177,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             if (PreviousNotchPosition.Type == ControllerState.Running || PreviousNotchPosition.Type == ControllerState.Release || PreviousNotchPosition.Type == ControllerState.FullQuickRelease)
                             {
                                 EnforceMinimalReduction = true;
-                                epState = -1;
                             }
                             break;
                         case ControllerState.ManualBraking:
@@ -184,7 +184,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         case ControllerState.VacApplyContServ:
                             // Continuous service position for vacuum brakes - allows brake to be adjusted up and down continuously between the ON and OFF position
                             pressureBar = (1 - x) * MaxPressureBar();
-                            epState = -1;
                             break;
                         case ControllerState.EPApply:
                         case ControllerState.EPOnly:
@@ -219,7 +218,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             x = MaxPressureBar() - FullServReductionBar() * (notch.Smooth ? x : CurrentValue());
                             IncreasePressure(ref pressureBar, Math.Min(x, MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
-                            epState = -1;
                             break;
                     }
 
