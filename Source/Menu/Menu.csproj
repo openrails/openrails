@@ -55,6 +55,7 @@
     <ProjectReference Include="..\ORTS.Updater\ORTS.Updater.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="RailDriverLegend.png" />
     <None Include="Resources\info-18-2.png" />
   </ItemGroup>
   <ItemGroup>
