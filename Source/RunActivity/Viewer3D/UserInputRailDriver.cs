@@ -225,7 +225,7 @@ namespace Orts.Viewer3D
             if (!Active || playerLoco == null || Device == null)
                 return;
             float speed = 10 * MpS.FromMpS(playerLoco.SpeedMpS, playerLoco.IsMetric);
-            int s = (int)(speed >= 0 ? speed + .5 : -speed + .5);
+            int s = (int) (speed >= 0 ? speed + .5 : -speed + .5);
             if (s != LEDSpeed)
             {
                 if (s < 100)
@@ -350,23 +350,18 @@ namespace Orts.Viewer3D
 
             // top row of blue buttons left to right
 
-            Commands[(int)UserCommand.GamePauseMenu] = new RailDriverUserCommand(0, 0x01);                      // Btn 01 Default Legend ESC (Game Pause)
-            Commands[(int)UserCommand.GameSave] = new RailDriverUserCommand(0, 0x02);                           // Btn 02 Default Legend Save Game
-            Commands[(int)UserCommand.DisplayTrainDrivingWindow]= new RailDriverUserCommand(0, 0x04);           // Btn 03 Default Legend Info Traindriver ... new, we try to use HelpWindow
-            Commands[(int)UserCommand.DisplayTrackMonitorWindow] = new RailDriverUserCommand(0, 0x08);          // Btn 04 Default Legend Track Monitor
-            Commands[(int)UserCommand.DisplayStationLabels] = new RailDriverUserCommand(0, 0x10);               // Btn 05 Default Legend Station & Siding Indicators... new
-          //  Commands[(int)UserCommands.DisplayCarLabels] = new RailDriverUserCommand(0, 0x20);                // Btn 06 Default Legend wagon # ... new
+            Commands[(int)UserCommand.GamePauseMenu] = new RailDriverUserCommand(0, 0x01);
+            Commands[(int)UserCommand.GameSave] = new RailDriverUserCommand(0, 0x02);
 
-            Commands[(int)UserCommand.DisplaySwitchWindow] = new RailDriverUserCommand(0, 0x40);                // Btn 07 Default Legend switch info
-            Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new RailDriverUserCommand(0, 0x80);       // Btn 08 Default Legend Train operation info
-            Commands[(int)UserCommand.DisplayNextStationWindow] = new RailDriverUserCommand(1, 0x01);           // Btn 09 Default Legend Next Station
+            Commands[(int)UserCommand.DisplayTrackMonitorWindow] = new RailDriverUserCommand(0, 0x08);
 
-            //  Commands[(int)UserCommand.DisplayHUD] = new RailDriverUserCommand(1, 0x02);                     // Btn 10 Default Legend Operation Log (??) ... n/a at the moment
-            
-           // Commands[(int)UserCommand.DisplayHUD] = new RailDriverUserCommand(1, 0x04);                       //Btn 11 Default Legend Infos off ... n/a at the moment
-            Commands[(int)UserCommand.DisplayCompassWindow] = new RailDriverUserCommand(1, 0x08);               // Btn 12 Default Legend compass
-            Commands[(int)UserCommand.GameSwitchAhead] = new RailDriverUserCommand(1, 0x10);                    // Btn 13 Default Legend switch ahead
-            Commands[(int)UserCommand.GameSwitchBehind] = new RailDriverUserCommand(1, 0x20);                   // Btn 14 Default Legend switch behind
+            Commands[(int)UserCommand.DisplaySwitchWindow] = new RailDriverUserCommand(0, 0x40);
+            Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new RailDriverUserCommand(0, 0x80);
+            Commands[(int)UserCommand.DisplayNextStationWindow] = new RailDriverUserCommand(1, 0x01);
+
+            Commands[(int)UserCommand.DisplayCompassWindow] = new RailDriverUserCommand(1, 0x08);
+            Commands[(int)UserCommand.GameSwitchAhead] = new RailDriverUserCommand(1, 0x10);
+            Commands[(int)UserCommand.GameSwitchBehind] = new RailDriverUserCommand(1, 0x20);
 
             // bottom row of blue buttons left to right
 
