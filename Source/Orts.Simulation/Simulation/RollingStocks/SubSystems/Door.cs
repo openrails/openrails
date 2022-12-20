@@ -26,8 +26,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
     {
         Closed,
         Closing,
-        Open,
         Opening,
+        Open,
     }
     public enum DoorSide
     {
