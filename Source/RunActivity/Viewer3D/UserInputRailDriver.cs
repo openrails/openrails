@@ -133,8 +133,6 @@ namespace Orts.Viewer3D
             Commands[UserCommand.ControlBailOff] = new ExternalDeviceButton();
             Commands[UserCommand.ControlWiper] = new ExternalDeviceButton();
 
-            //Activation = new RailDriverButton(1, 0x40);
-
             CabControls[(new CabViewControlType(CABViewControlTypes.DIRECTION), -1)] = Direction;
             CabControls[(new CabViewControlType(CABViewControlTypes.THROTTLE), -1)] = Throttle;
             CabControls[(new CabViewControlType(CABViewControlTypes.TRAIN_BRAKE), -1)] = TrainBrake;
@@ -296,8 +294,8 @@ namespace Orts.Viewer3D
         byte Mask;
         public RailDriverButton(byte command)
         {
-            Index = command / 8;
-            Mask = (byte)(command % 8);
+            Index = 8 + command / 8;
+            Mask = (byte)(1 << (command % 8));
         }
         public void Update(byte[] data)
         {
