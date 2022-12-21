@@ -513,6 +513,14 @@ namespace Orts.Simulation.RollingStocks
         float HPIndicatedHorsePowerHP;
         float LPIndicatedHorsePowerHP;
 
+        // Compound Cylinder Information - LP Cylinder - Compound Operation
+        float LPCompPressure_g_AtmPSI;
+        float LPCompPressure_l_AtmPSI;
+        float LPCompPressure_h_AtmPSI;
+        float LPCompPressure_m_AtmPSI;
+        float LPCompPressure_n_AtmPSI;
+        float LPCompPressure_q_AtmPSI;
+
         // Compound Cylinder Information - LP Cylinder - Simple Operation
         float LPPressure_a_AtmPSI;    // Initial Pressure to LP cylinder @ start if stroke
         float LPPressure_b_AtmPSI; // Pressure in combined HP & LP Cylinder pre-cutoff
@@ -3748,20 +3756,20 @@ namespace Orts.Simulation.RollingStocks
 
                     // (m) - LP exhaust pressure  
                     // LP Cylinder back pressure will be increased depending upon locomotive speed
-                    float LPCompPressure_m_AtmPSI = BackPressureIHPtoPSI[IndicatedHorsePowerHP] + OneAtmospherePSI;
+                    LPCompPressure_m_AtmPSI = BackPressureIHPtoPSI[IndicatedHorsePowerHP] + OneAtmospherePSI;
 
                     LogLPBackPressurePSI = LPCompPressure_m_AtmPSI - OneAtmospherePSI;  // Value for recording in log file
                     LogLPBackPressurePSI = MathHelper.Clamp(LogLPBackPressurePSI, 0.00f, LogLPBackPressurePSI); // Clamp so that LP Back pressure does not go negative
 
                     // (n) - LP Compression Pressure 
-                    float LPCompPressure_n_AtmPSI = LPCompPressure_m_AtmPSI;
+                    LPCompPressure_n_AtmPSI = LPCompPressure_m_AtmPSI;
 
                     // (q) - LP Admission close 
                     float LPCompVolumeRatio_nq = LPCylinderVolumePoint_n / LPCylinderVolumePoint_q;
-                    float LPCompPressure_q_AtmPSI = LPCompPressure_n_AtmPSI * LPCompVolumeRatio_nq;
+                    LPCompPressure_q_AtmPSI = LPCompPressure_n_AtmPSI * LPCompVolumeRatio_nq;
 
                     // (g) - LP Initial Pressure  
-                    float LPCompPressure_g_AtmPSI = ((LPPressure_f_AtmPSI * (LPCylinderVolumePoint_q * CompoundCylinderRatio)) + (HPCompPressure_f_AtmPSI * HPCylinderVolumePoint_f)) / ((LPCylinderVolumePoint_q * CompoundCylinderRatio) + HPCylinderVolumePoint_f);
+                    LPCompPressure_g_AtmPSI = ((LPPressure_f_AtmPSI * (LPCylinderVolumePoint_q * CompoundCylinderRatio)) + (HPCompPressure_f_AtmPSI * HPCylinderVolumePoint_f)) / ((LPCylinderVolumePoint_q * CompoundCylinderRatio) + HPCylinderVolumePoint_f);
 
                     LogLPInitialPressurePSI = LPCompPressure_g_AtmPSI - OneAtmospherePSI;  // Value for recording in log file
                     LogLPInitialPressurePSI = MathHelper.Clamp(LogLPInitialPressurePSI, 0.00f, LogLPInitialPressurePSI); // Clamp so that LP Initial pressure does not go negative
@@ -3777,7 +3785,7 @@ namespace Orts.Simulation.RollingStocks
                     // calculate pressure drop value based upon setting of Cylinder port opening (allows for condensaton into cylinder
                     LPCutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (LPCutoffDropUpper - LPCutoffDropLower)) + LPCutoffDropLower;
 
-                    float LPCompPressure_h_AtmPSI = LPCompPressure_g_AtmPSI * LPCutoffPressureDropRatio; // allow for wire drawing into LP cylinder
+                    LPCompPressure_h_AtmPSI = LPCompPressure_g_AtmPSI * LPCutoffPressureDropRatio; // allow for wire drawing into LP cylinder
 
                     LogLPCutoffPressurePSI = LPCompPressure_h_AtmPSI - OneAtmospherePSI;  // Value for recording in log file
                     LogLPCutoffPressurePSI = MathHelper.Clamp(LogLPCutoffPressurePSI, 0.00f, LogLPCutoffPressurePSI); // Clamp so that LP Cutoff pressure does not go negative
@@ -3789,7 +3797,7 @@ namespace Orts.Simulation.RollingStocks
                     // (l) - Release pressure
                     // LP cylinder release pressure
                     float LPCompVolumeRatio_hl = LPCylinderVolumePoint_h_LPpost / LPCylinderVolumePoint_l;
-                    float LPCompPressure_l_AtmPSI = LPCompPressure_h_AtmPSI * LPCompVolumeRatio_hl;
+                    LPCompPressure_l_AtmPSI = LPCompPressure_h_AtmPSI * LPCompVolumeRatio_hl;
 
                     LogLPReleasePressurePSI = LPCompPressure_l_AtmPSI - OneAtmospherePSI;  // Value for recording in log file
                     LogLPReleasePressurePSI = MathHelper.Clamp(LogLPReleasePressurePSI, 0.00f, LogLPReleasePressurePSI); // Clamp so that LP Release pressure does not go negative
@@ -4611,6 +4619,13 @@ namespace Orts.Simulation.RollingStocks
                 float backwardCylinderPosition;
                 float forwardCylinderPressure;
                 float backwardCylinderPressure;
+                float LPslipInitialPressureAtmPSI;
+                float LPslipCutoffPressureAtmPSI;
+                float LPslipCylinderReleasePressureAtmPSI;
+                float LPslipBackPressureAtmPSI;
+                float LPslipCompressionPressureAtmPSI;
+                float LPslipAdmissionPressureAtmPSI;
+
 
                 // Starting tangential force - at starting piston force is based upon cutoff pressure  & interia = 0
                 if (SteamEngineType == SteamEngineTypes.Compound)
@@ -4623,15 +4638,34 @@ namespace Orts.Simulation.RollingStocks
                         slipBackPressureAtmPSI = Pressure_d_AtmPSI;
                         slipCompressionPressureAtmPSI = Pressure_e_AtmPSI;
                         slipAdmissionPressureAtmPSI = Pressure_f_AtmPSI;
+
+                        // LP Cylinder
+                        LPslipInitialPressureAtmPSI = LPCompPressure_g_AtmPSI;
+                        LPslipCutoffPressureAtmPSI = LPCompPressure_h_AtmPSI;
+                        LPslipCylinderReleasePressureAtmPSI = LPCompPressure_l_AtmPSI;
+                        LPslipBackPressureAtmPSI = LPCompPressure_m_AtmPSI;
+                        LPslipCompressionPressureAtmPSI = LPCompPressure_n_AtmPSI;
+                        LPslipAdmissionPressureAtmPSI = LPCompPressure_q_AtmPSI;
+
                     }
                     else  // Simple mode
                     {
-                        slipInitialPressureAtmPSI = LPPressure_a_AtmPSI;
-                        slipCutoffPressureAtmPSI = LPPressure_b_AtmPSI;
-                        slipCylinderReleasePressureAtmPSI = LPPressure_c_AtmPSI;
-                        slipBackPressureAtmPSI = LPPressure_d_AtmPSI;
-                        slipCompressionPressureAtmPSI = LPPressure_e_AtmPSI;
-                        slipAdmissionPressureAtmPSI = LPPressure_f_AtmPSI;
+                        // HP Cylinder
+                        slipInitialPressureAtmPSI = Pressure_a_AtmPSI;
+                        slipCutoffPressureAtmPSI = Pressure_b_AtmPSI;
+                        slipCylinderReleasePressureAtmPSI = Pressure_c_AtmPSI;
+                        slipBackPressureAtmPSI = Pressure_d_AtmPSI;
+                        slipCompressionPressureAtmPSI = Pressure_e_AtmPSI;
+                        slipAdmissionPressureAtmPSI = Pressure_f_AtmPSI;
+
+                        // LP Cylinder
+                        LPslipInitialPressureAtmPSI = LPPressure_a_AtmPSI;
+                        LPslipCutoffPressureAtmPSI = LPPressure_b_AtmPSI;
+                        LPslipCylinderReleasePressureAtmPSI = LPPressure_c_AtmPSI;
+                        LPslipBackPressureAtmPSI = LPPressure_d_AtmPSI;
+                        LPslipCompressionPressureAtmPSI = LPPressure_e_AtmPSI;
+                        LPslipAdmissionPressureAtmPSI = LPPressure_f_AtmPSI;
+
                     }
                 }
                 else // simple locomotive
@@ -4655,9 +4689,10 @@ namespace Orts.Simulation.RollingStocks
                 for (int i = 0; i < NumCylinders; i++)
                 {
                     float crankAngleRad = (float)(LocomotiveAxle.AxlePositionRad + i * (NumCylinders == 4 ? Math.PI / 2 : NumCylinders == 3 ? 2 * Math.PI / 3 : Math.PI / 2));
-                    crankAngleRad = (float)(MathHelper.WrapAngle(crankAngleRad));
 
                     testCrankAngle = crankAngleRad;
+
+                    crankAngleRad = (float)(MathHelper.WrapAngle(crankAngleRad));
 
                     //       Trace.TraceInformation("Cyl {0} crankAng {1} Position {2} Diff {3}", NumCylinders, crankAngleRad, LocomotiveAxle.AxlePositionRad, i * (NumCylinders == 2 ? Math.PI / 2 : 2 * Math.PI / 3));
 
@@ -4690,6 +4725,10 @@ namespace Orts.Simulation.RollingStocks
                         backwardCylinderPosition = crankCylinderPosition;
                     }
 
+/*
+                    Trace.TraceInformation("Cyl {0} Position {1} testcrankAng {2} crankAngle {3} CrankPosition {4} forwardCrankPosition {5} backwardCrankPosition {6}", i+1, LocomotiveAxle.AxlePositionRad, MathHelper.ToDegrees(testCrankAngle), MathHelper.ToDegrees(crankAngleRad), crankCylinderPosition, forwardCylinderPosition, backwardCylinderPosition);
+*/
+
                     // Crank angles
                     float sin = (float)Math.Sin(crankAngleRad);
                     float cos = (float)Math.Cos(crankAngleRad);
@@ -4698,28 +4737,24 @@ namespace Orts.Simulation.RollingStocks
                     // Pressures are taken from the cylinder indication diagram above, and extrapolated depending upon the position of the cylinder.
 
                     // forward stroke
-                    if (cutoff > forwardCylinderPosition)
+                    if (cutoff > forwardCylinderPosition) // pressure will be in cutoff section of cylinder
                     {
                         // In cutoff section of cylinder pressure follows a straight line rperesentation between initial pressure and cutoff pressure
-                        float pressureGradient = (slipCutoffPressureAtmPSI - slipInitialPressureAtmPSI) / (CylinderClearancePC - cutoff + CylinderClearancePC);
+                        float pressureGradient = (slipCutoffPressureAtmPSI - slipInitialPressureAtmPSI) / (cutoff + CylinderClearancePC - CylinderClearancePC);
                         forwardCylinderPressure = slipInitialPressureAtmPSI + pressureGradient * (forwardCylinderPosition - CylinderClearancePC);
-
-                        //    Trace.TraceInformation("IntialPressure {0}", forwardCylinderPressure);
                     }
-                    else if (CylinderExhaustOpenFactor > forwardCylinderPosition)
+                    else if (CylinderExhaustOpenFactor > forwardCylinderPosition) // pressure will be in expansion section of cylinder
                     {
                         // In section of cylinder between cutoff and release, pressure follows a PV variation.
-                        forwardCylinderPressure = (slipCutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (forwardCylinderPosition + CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
-                                                                                                                                                                  //    Trace.TraceInformation("ExhaustPressure {0}", forwardCylinderPressure);
-
+                        forwardCylinderPressure = (slipCutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (forwardCylinderPosition + CylinderClearancePC);  
+                        // Check factor to calculate volume of cylinder for new volume at exhaust
                     }
-                    else // Pressure will be in the expansion section of the cylinder
+                    else // Pressure will be in the exhaust section of the cylinder
                     {
                         // In exhaust section of cylinder pressure follows a PV variation.
                         // Crank pressure = Cutoff Pressure x Cylinder Volume (at cutoff point) / cylinder volume (at release)
 
                         forwardCylinderPressure = slipCylinderReleasePressureAtmPSI * (CylinderExhaustOpenFactor + CylinderClearancePC) / (forwardCylinderPosition + CylinderClearancePC);
-                        //     Trace.TraceInformation("ExpansionPressure {0}", forwardCylinderPressure);
                     }
 
                     // backward stroke
@@ -4746,7 +4781,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
 #if DEBUG_STEAM_SLIP
-                    if (throttle > 0.01 && (absSpeedMpS < 0.2 || absSpeedMpS > 17.7 && absSpeedMpS < 18.2))
+                    if (throttle > 0.01 && (absSpeedMpS < 0.2 || absSpeedMpS > 17.9 && absSpeedMpS < 18.1 || absSpeedMpS > 35.5 && absSpeedMpS < 35.9))
                     {
                         Trace.TraceInformation("Cylinder {0} CrankAngle {1} FwdCylPosition {2} FwdCylPressure {3} BwdCylPosition {4} BwdCylPressure {5} CrankPressure {6} ForwardStroke {7} Speed {8}", i, MathHelper.ToDegrees(crankAngleRad), forwardCylinderPosition, forwardCylinderPressure, backwardCylinderPosition, backwardCylinderPressure, crankCylinderPressure, forwardStroke, MpS.ToMpH(absSpeedMpS));
                     }
@@ -4797,9 +4832,16 @@ namespace Orts.Simulation.RollingStocks
                         connectRodInertiaForcelbf *= -1;
                     }
 
+                    // For more then two cylinder eingines reciprocating inertia is not required as it only applies to the gearing on each side and not the number of cylinders.
+                    // Hence "zero" it out, however reciprocating rods will still apply
+                    if ((NumCylinders == 3 && i > 1) || (NumCylinders == 4 && (i == 1 || i == 3)))
+                    {
+                        reciprocatingInertiaForcelbf = 0;
+                    }
+
                     // Total inertia force
                     float totalInertiaForcelbf = reciprocatingInertiaForcelbf + connectRodInertiaForcelbf;
-
+                    
                     float totalTangentialInertiaForcelbf = totalInertiaForcelbf * tangentialCrankForceFactor;
 
                     // Calculate the force at the crank exerted on the drive wheel
@@ -4832,6 +4874,12 @@ namespace Orts.Simulation.RollingStocks
                         excessBalanceForcelbf *= -1;
                     }
 
+                    // For more then two cylinder eingines inertia is not required as it only applies to the geraing on each side and not the number of cylinders
+                    if ((NumCylinders == 3 && i > 1) || (NumCylinders == 4 && ( i == 1 || i==3 )) )
+                    {
+                        excessBalanceForcelbf = 0;
+                    }
+
                     // Consideration of excess balance and vertical thrust
                     // When running ahead, the vertical thrust should be added to the normal adhesive weight, but when running backwards, it should be
                     // subtracted, as the effect is to reduce the weight on drivers in back motion.
@@ -4844,6 +4892,23 @@ namespace Orts.Simulation.RollingStocks
                     {
                         totalDrvWeightN += N.FromLbf(excessBalanceForcelbf - verticalThrustForcelbf);
                     }
+
+/*                    if (DisplayTangentialWheelTreadForceLbf > SteamStaticWheelForce || WheelSlip)
+                    {
+                        //  Trace.TraceInformation("MaxSpeed {0}", MaxLocoSpeedMpH);
+
+                        Trace.TraceInformation("Cylinder Pressures - Cylinder {0} CylinderPressure {1} forwardPressure {2} backwardPressure {3} InitialPressure {4} CutoffPressure {5} forwardPosition {6} backwardPosition {7}", i+1, crankCylinderPressure, forwardCylinderPressure, backwardCylinderPressure, slipInitialPressureAtmPSI, slipCutoffPressureAtmPSI, forwardCylinderPosition, backwardCylinderPosition);
+
+                        Trace.TraceInformation("Crank Angle {0} Cylinder Position {1} AxlePosition {2} Cylinder {3} CylArea {4} CylPress {5}", MathHelper.ToDegrees(crankAngleRad), crankCylinderPosition, MathHelper.ToDegrees(LocomotiveAxle.AxlePositionRad), i, Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)), crankCylinderPressure);
+
+                        Trace.TraceInformation("Tang.CrankFactor {0} RecInertiaFactor {1}, ConInertiaFactor {2} VerticalForceFactor {3} InertiaSpeedFactor {4}", tangentialCrankForceFactor, reciprocatingInertiaAngleFactor, connectRodInertiaAngleFactor, verticalThrustFactor, inertiaSpeedCorrectionFactor);
+
+                        Trace.TraceInformation("PistonForce {0}lbf RodForce {1}lbf RecForce {2}lbf", pistonForceLbf, connectRodInertiaForcelbf, reciprocatingInertiaForcelbf);
+
+                        Trace.TraceInformation("VerticalThrustForce {0}lbf ExcessBalanceForce {1}lbf", verticalThrustForcelbf, excessBalanceForcelbf);
+
+                    }
+*/
 
 #if DEBUG_STEAM_SLIP
                     if (throttle > 0.01 && (absSpeedMpS < 0.2 || absSpeedMpS > 17.7 && absSpeedMpS < 18.2))
@@ -4864,14 +4929,20 @@ namespace Orts.Simulation.RollingStocks
 
                 LocomotiveAxle.AxleWeightN = totalDrvWeightN + 9.81f * DrvWheelWeightKg;
                 SteamStaticWheelForce = N.ToLbf(totalDrvWeightN + 9.81f * DrvWheelWeightKg) * LocomotiveCoefficientFrictionHUD;
-
-                if(DisplayTangentialWheelTreadForceLbf > SteamStaticWheelForce)
+/*
+                if (DisplayTangentialWheelTreadForceLbf > SteamStaticWheelForce)
                 {
-                    Trace.TraceInformation("Nominal Wheel Slip - TangForce {0} AdhesiveForce {1} Speed {2} CrankAngle {3} Slip {4} DriveForce {5} DriveW {6} AxleForce {7} Friction {8}", DisplayTangentialWheelTreadForceLbf, SteamStaticWheelForce, absSpeedMpS, MathHelper.ToDegrees(testCrankAngle), WheelSlip, N.ToLbf(totalDrvWeightN), N.ToLbf(9.81f * DrvWheelWeightKg), N.ToLbf(LocomotiveAxle.AxleWeightN), LocomotiveCoefficientFrictionHUD);
+                    Trace.TraceInformation("Static Wheel Slip (initiated by static comparison) - TangForce {0}lbf: AdhesiveForce {1}lbf: Speed {2}mph, WheelSpeed {3}mph, CrankAngle {4}deg, AdvSlip {5}, AdvSlipWarn {6}, AxleInput - DriveForceCorrect {7}lbf, TotalDriveW {8}lbf, AxleWeightForce {9}lbf, Friction {10}, throttle {11}, Reverser {12} SlipThresholdSpeed {13}mph, WheelSlipSpeed {14}mph, AxleDriveForce {15}lbf", DisplayTangentialWheelTreadForceLbf, SteamStaticWheelForce, MpS.ToMpH(absSpeedMpS), MpS.ToMpH(WheelSpeedMpS), MathHelper.ToDegrees(testCrankAngle), WheelSlip, WheelSlipWarning, N.ToLbf(totalDrvWeightN), N.ToLbf(9.81f * DrvWheelWeightKg), N.ToLbf(LocomotiveAxle.AxleWeightN), LocomotiveCoefficientFrictionHUD, throttle, cutoff, MpS.ToMpH(LocomotiveAxle.WheelSlipThresholdMpS), MpS.ToMpH(LocomotiveAxle.SlipSpeedMpS), N.ToLbf(LocomotiveAxle.DriveForceN));
 
                 }
 
+                if (WheelSlip && DisplayTangentialWheelTreadForceLbf < SteamStaticWheelForce)
+                {
+                    Trace.TraceInformation("Static Wheel Slip (initiated by axle model) - TangForce {0}lbf: AdhesiveForce {1}lbf: Speed {2}mph, WheelSpeed {3}mph, CrankAngle {4}deg, AdvSlip {5}, AdvSlipWarn {6}, AxleInput - DriveForceCorrect {7}lbf, TotalDriveW {8}lbf, AxleWeightForce {9}lbf, Friction {10}, throttle {11}, Reverser {12} SlipThresholdSpeed {13}mph, WheelSlipSpeed {14}mph, AxleDriveForce {15}lbf", DisplayTangentialWheelTreadForceLbf, SteamStaticWheelForce, MpS.ToMpH(absSpeedMpS), MpS.ToMpH(WheelSpeedMpS), MathHelper.ToDegrees(testCrankAngle), WheelSlip, WheelSlipWarning, N.ToLbf(totalDrvWeightN), N.ToLbf(9.81f * DrvWheelWeightKg), N.ToLbf(LocomotiveAxle.AxleWeightN), LocomotiveCoefficientFrictionHUD, throttle, cutoff, MpS.ToMpH(LocomotiveAxle.WheelSlipThresholdMpS), MpS.ToMpH(LocomotiveAxle.SlipSpeedMpS), N.ToLbf(LocomotiveAxle.DriveForceN));
 
+                }
+
+*/
 
 #if DEBUG_STEAM_SLIP
 
@@ -4942,7 +5013,7 @@ namespace Orts.Simulation.RollingStocks
 
                 // the inertia of the coupling rods can also be added
                 // Assume rods weigh approx 1500 lbs
-                // // MoI = rod weight x stroke radius^2 (ie stroke / 2)
+                // MoI = rod weight x stroke radius^2 (ie stroke / 2)
                 float RodWeightKG = Kg.FromLb(1500.0f);
                 // ???? For both compound and simple??????
                 float RodStrokeM = CylinderStrokeM / 2.0f;
@@ -4954,7 +5025,7 @@ namespace Orts.Simulation.RollingStocks
                 LocomotiveAxle.DampingNs = 9.81f * DrvWheelWeightKg / 200;
                 // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
                 LocomotiveAxle.FrictionN = N.FromLbf(3.8f * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / Me.ToIn(DrvWheelDiaM));
-            
+
                 if (WheelSlip && AdvancedAdhesionModel)
                     {
                         AbsTractionSpeedMpS = AbsWheelSpeedMpS;
