@@ -150,7 +150,11 @@ namespace Orts.Viewer3D
                     Throttle.Value = Percentage(readBuffer[2], throttle) / 100;
                     if (!fullRangeThrottle)
                         DynamicBrake.Value = Percentage(readBuffer[2], dynamicBrake) / 100;
-                    TrainBrake.Value = Percentage(readBuffer[3], autoBrake) / 100;
+                    float trainBrake = Percentage(readBuffer[3], autoBrake) / 100;
+                    if (trainBrake >= 1 && Percentage(readBuffer[3], emergencyBrake) > 50)
+                        TrainBrake.Value = 2;
+                    else
+                        TrainBrake.Value = trainBrake;
                     EngineBrake.Value = Percentage(readBuffer[4], independentBrake) / 100;
                     float a = EngineBrake.Value;
                     float calOff = (1 - a) * bailoffDisengaged.Item1 + a * bailoffDisengaged.Item2;
@@ -163,27 +167,6 @@ namespace Orts.Viewer3D
                     {
                         if (button is RailDriverButton rd) rd.Update(readBuffer);
                     }
-
-                    /* TODO: Emergency position of train brake controller is different to EBPB
-                    if (TrainBrakePercent >= 100)
-                        Emergency = Percentage(readBuffer[3], emergencyBrake) > 50;
-                    if (IsPressed(EmergencyStopCommandUp) || IsPressed(EmergencyStopCommandDown))
-                        Emergency = true;
-                    */
-                    /* TODO: Not every command resets alerter. Should be handled by HandleEvent
-                    on TrainControlSystem elsewhere
-                    // check for alerter reset
-                    if (readBuffer?.Length >= 8 && readBufferHistory?.Length >= 8)
-                    {
-                        for (int i = 1; i <= 5; i++)
-                        {
-                            if (Math.Abs(readBuffer[i] - readBufferHistory[i]) > 1)
-                            {
-                                Changed = true;
-                                break;
-                            }
-                        }
-                    }*/
                 }
             }
         }
