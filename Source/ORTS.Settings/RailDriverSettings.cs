@@ -214,8 +214,8 @@ namespace ORTS.Settings
         {
             StringBuilder errors = new StringBuilder();
 
-            var duplicates = buttonSettings.Where(button => button < 255).
-                Select((value, index) => new { Index = index, Button = value }).
+            var duplicates = buttonSettings.Select((value, index) => new { Index = index, Button = value }).
+                Where(g => g.Button < 255).
                 GroupBy(g => g.Button).
                 Where(g => g.Count() > 1).
                 OrderBy(g => g.Key);
