@@ -2913,7 +2913,9 @@ Typically this happens with lightly loaded vehicles at lower speeds, and hence t
 
 When a vehicle experiences wheel skid, an indication is provided in the FORCES INFORMATION HUD. To correct the problem the brakes must be released, and then applied slowly to ensure that the wheels are not *locked* up. Wheel skid will only occur if ADVANCED adhesion is selected in the options menu.
 
-(Ref to *Wheel Skidding due to Excessive Brake Force* for additional information)
+On some steam locomotives brakes are not applied to all the wheels, possibly only the drive wheels have braking, and the other wheels do not. The following parameter can be set to reflect this for the calculation of skidding.
+
+``ORTSLocomotiveDriveWheelOnlyBraking ( x )`` - where x = 1 if brakes are only fitted to the drive wheels, set to 0 or leave blank if all wheels are braked.
 
 Using the F5 HUD Expanded Braking Information
 ---------------------------------------------
