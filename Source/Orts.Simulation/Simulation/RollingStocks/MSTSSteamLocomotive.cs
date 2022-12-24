@@ -562,6 +562,7 @@ namespace Orts.Simulation.RollingStocks
         float DrvWheelDiaM;     // Diameter of driver wheel
         float DrvWheelRevRpS;       // number of revolutions of the drive wheel per minute based upon speed.
         float PistonSpeedFtpMin;      // Piston speed of locomotive
+        float WheelCrankAngleDiffRad;
         public float IndicatedHorsePowerHP;   // Indicated Horse Power (IHP), theoretical power of the locomotive, it doesn't take into account the losses due to friction, etc. Typically output HP will be 70 - 90% of the IHP
         public float DrawbarHorsePowerHP;  // Drawbar Horse Power  (DHP), maximum power available at the wheels.
         public float DrawBarPullLbsF;      // Drawbar pull in lbf
@@ -742,6 +743,7 @@ namespace Orts.Simulation.RollingStocks
             switch (lowercasetoken)
             {
                 case "engine(numcylinders": NumCylinders = stf.ReadIntBlock(null); break;
+                case "engine(ortswheelcrankangledifference": WheelCrankAngleDiffRad = stf.ReadFloatBlock(STFReader.UNITS.Angle, null); break;
                 case "engine(cylinderstroke": CylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(cylinderdiameter": CylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(lpnumcylinders": LPNumCylinders = stf.ReadIntBlock(null); break;
@@ -849,6 +851,7 @@ namespace Orts.Simulation.RollingStocks
 
             MSTSSteamLocomotive locoCopy = (MSTSSteamLocomotive)copy;
             NumCylinders = locoCopy.NumCylinders;
+            WheelCrankAngleDiffRad = locoCopy.WheelCrankAngleDiffRad;
             CylinderStrokeM = locoCopy.CylinderStrokeM;
             CylinderDiameterM = locoCopy.CylinderDiameterM;
             LPNumCylinders = locoCopy.LPNumCylinders;
@@ -1211,6 +1214,19 @@ namespace Orts.Simulation.RollingStocks
             if (FractionBoilerAreaInsulated == 0)
             {
                 FractionBoilerAreaInsulated = 0.86f; // Rough approximation - based upon empirical graphing
+            }
+
+            // Set crank angle between different sides of the locomotive
+            if (WheelCrankAngleDiffRad == 0)
+            {
+                if (NumCylinders == 3)
+                {
+                    WheelCrankAngleDiffRad = MathHelper.ToRadians(120.0f);
+                }
+                else
+                {
+                    WheelCrankAngleDiffRad = MathHelper.ToRadians(90.0f);
+                }
             }
 
             // ******************  Test Locomotive and Gearing type *********************** 
@@ -4688,13 +4704,13 @@ namespace Orts.Simulation.RollingStocks
 
                 for (int i = 0; i < NumCylinders; i++)
                 {
-                    float crankAngleRad = (float)(LocomotiveAxle.AxlePositionRad + i * (NumCylinders == 4 ? Math.PI / 2 : NumCylinders == 3 ? 2 * Math.PI / 3 : Math.PI / 2));
+                    float crankAngleRad = (float)(LocomotiveAxle.AxlePositionRad + i * WheelCrankAngleDiffRad);
 
                     testCrankAngle = crankAngleRad;
 
                     crankAngleRad = (float)(MathHelper.WrapAngle(crankAngleRad));
 
-                    //       Trace.TraceInformation("Cyl {0} crankAng {1} Position {2} Diff {3}", NumCylinders, crankAngleRad, LocomotiveAxle.AxlePositionRad, i * (NumCylinders == 2 ? Math.PI / 2 : 2 * Math.PI / 3));
+//                    Trace.TraceInformation("Cyl {0} crankAng {1} Position {2} Diff {3}", NumCylinders, MathHelper.ToDegrees(crankAngleRad), MathHelper.ToDegrees(LocomotiveAxle.AxlePositionRad), MathHelper.ToDegrees(WheelCrankAngleDiffRad));
 
                     float crankCylinderPressure = (MeanEffectivePressurePSI * CylinderEfficiencyRate); // fallback default value
 
@@ -6419,7 +6435,7 @@ namespace Orts.Simulation.RollingStocks
                 // Only display slip monitor if advanced adhesion is set and simplecontrols/physics not set
             {
                 status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Slip Monitor"));
-                status.AppendFormat("{0}\t{1}\t{2:N0}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8:N2}\t{9}\t{10}\t{11:N2}\t{12}\t{13}\t{14:N1}\n",
+                status.AppendFormat("{0}\t{1}\t{2:N0}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8:N1}\t{9}\t{10:N2}\t{11}\t{12}\t{13:N2}\t{14}\t{15}\t{16:N1}\n",
                     Simulator.Catalog.GetString("Slip:"),
                     Simulator.Catalog.GetString("MForceN"),
                     FormatStrings.FormatForce(MotiveForceN, IsMetric),
@@ -6427,6 +6443,8 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatForce(N.FromLbf(DisplayTangentialWheelTreadForceLbf), IsMetric),
                     Simulator.Catalog.GetString("Static"),
                     FormatStrings.FormatForce(N.FromLbf(SteamStaticWheelForce), IsMetric),
+                    Simulator.Catalog.GetString("Crank"),
+                    MathHelper.ToDegrees(WheelCrankAngleDiffRad),
                     Simulator.Catalog.GetString("Coeff"),
                     Train.LocomotiveCoefficientFriction,
                     Simulator.Catalog.GetString("Slip"),
