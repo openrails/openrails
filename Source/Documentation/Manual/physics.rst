@@ -2022,13 +2022,22 @@ of a relevant wagon (including diesel, steam or electric locomotives.
 
 OR supports the following special visual effects in a steam locomotive:
 
-- Steam cylinders (named ``CylindersFX`` and ``Cylinders2FX``) -- two effects
-  are provided which will represent the steam exhausted when the steam
-  cylinder cocks are opened.  Two effects are provided to represent the steam
-  exhausted at the front and rear of each piston stroke. These effects will
-  appear whenever the cylinder cocks are opened, and there is sufficient
-  steam pressure at the cylinder to cause the steam to exhaust, typically the
-  regulator is open (> 0%).
+- Steam cylinder cocks (named ``Cylinders11FX``, ``Cylinders12FX``, ``Cylinders21FX``, 
+  ``Cylinders22FX``, ``Cylinders31FX``, ``Cylinders32FX``, ``Cylinders41FX``, 
+  ``Cylinders42FX``) -- these effects are provided which will represent the steam 
+  exhausted when the steam cylinder cocks are opened.  The effects are provided to 
+  represent the steam exhausted at the front and rear of each piston stroke. The 
+  numbers in the value names represent firstly the cylinder and the second the 
+  cylinder position, ie "11" = cylinder 1, front stroke, "12" = cylinder 1, backward 
+  stroke. These effects will appear whenever the cylinder cocks are opened, and 
+  there is sufficient steam pressure at the cylinder to cause the steam to exhaust, 
+  typically when the regulator is open (> 0%). Note: ``CylindersFX`` and ``Cylinders2FX`` 
+  should now be considered legacy parameters and ideally should not be  used.
+- Cylinder Exhaust (named ``CylinderSteamExhaust1FX``, ``CylinderSteamExhaust2FX``, 
+  ``CylinderSteamExhaust3FX``, ``CylinderSteamExhaust4FX``) -- these effects represent 
+  the steam exhausted from the cylinders at the end of each stroke. Typically this 
+  steam is feed back through a blast pipe up the smoke stack to improve draught in the 
+  firebox and bolier. The above parameters represent up to 4 individual steam cylinders.
 - Stack (named ``StackFX``) -- represents the smoke stack emissions. This
   effect will appear all the time in different forms depending upon the firing
   and steaming conditions of the locomotive.
@@ -2085,7 +2094,7 @@ Similarly if any of the co-ordinates are zero, then the effect will not be displ
 Each effect is defined by inserting a code block into the ENG/WAG file similar to
 the one shown below::
 
-    CylindersFX (
+    Cylinders11FX (
         -1.0485 1.0 2.8
         -1  0  0
         0.1
