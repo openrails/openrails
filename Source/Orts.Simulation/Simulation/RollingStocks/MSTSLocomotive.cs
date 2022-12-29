@@ -921,7 +921,13 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
-
+                case "engine(ortslocomotivedrivewheelonlybraking":
+                    var wheelbraking = stf.ReadIntBlock(null);
+                    if (wheelbraking == 1)
+                    {
+                        DriveWheelOnlyBrakes = true;
+                    }
+                    break;
                 case "engine(trainbrakescontrollermaxsystempressure":
                 case "engine(ortstrainbrakescontrollermaxoverchargepressure":
                 case "engine(trainbrakescontrollermaxreleaserate":
@@ -972,13 +978,6 @@ public List<CabView> CabViewList = new List<CabView>();
                     if (compressorMechanical == 1)
                     {
                         CompressorIsMechanical = true;
-                    }
-                    break;
-                case "engine(ortslocomotivedrivewheelonlybraking":
-                    var wheelbraking = stf.ReadIntBlock(null);
-                    if (wheelbraking == 1)
-                    {
-                        DriveWheelOnlyBrakes = true;
                     }
                     break;
                 case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
