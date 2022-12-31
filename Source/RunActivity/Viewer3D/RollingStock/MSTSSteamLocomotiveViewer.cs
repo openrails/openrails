@@ -97,7 +97,10 @@ namespace Orts.Viewer3D.RollingStock
                 else if (emitter.Key.ToLowerInvariant() == "cylinders42fx")
                     Cylinders42.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "cylindersteamexhaust1fx")
+                {
                     CylinderSteamExhaust1.AddRange(emitter.Value);
+                    car.CylinderAdvancedSteamExhaustEffects = true;
+                }
                 else if (emitter.Key.ToLowerInvariant() == "cylindersteamexhaust2fx")
                     CylinderSteamExhaust2.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "cylindersteamexhaust3fx")

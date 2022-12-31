@@ -339,6 +339,16 @@ The ``ORTSSlipControlSystem ( Full )``  parameter can be inserted
 into the engine section of the .eng file to indicate the presence of
 such system.
 
+Steam locomotives will have varying magnitude of rotational forces depending upon the separation 
+between the cylinder crank angles.
+
+The crank angles for example of a 2 cylinder locomotive has a 90 deg separation whereas a 3 cylinder locomotive 
+has a 120 deg variation. OR will default to a "common" value for the number of cylinders defined, but the user 
+can override this with "ORTSWheelCrankAngleDifference ( A B C D )", where A, B, C and D are the separations for 
+up to a 4 cylinder locomotive. For example, a 4 cylinder locomotive can have a separation of 90 deg for each 
+cylinder or sometimes it has two of the cranks separated by 45 deg instead. These values can either be in 
+Rad (default) or Deg.
+
 
 Engine -- Classes of Motive Power
 =================================
