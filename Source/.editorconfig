@@ -146,3 +146,15 @@ dotnet_naming_symbols.all_fields.applicable_accessibilities = *
 dotnet_naming_rule.all_fields_should_be_pascal_case.symbols  = all_fields
 dotnet_naming_rule.all_fields_should_be_pascal_case.style    = pascal_case_style
 dotnet_naming_rule.all_fields_should_be_pascal_case.severity = warning
+
+# StyleCop analyzers
+dotnet_diagnostic.SA1101.severity = none # Readability: PrefixLocalCallsWithThis
+dotnet_diagnostic.SA1200.severity = none # Ordering: UsingDirectivesMustBePlacedCorrectly
+dotnet_diagnostic.SA1306.severity = none # Naming: FieldNamesMustBeginWithLowerCaseLetter
+dotnet_diagnostic.SA1400.severity = none # Maintainability: AccessModifierMustBeDeclared
+dotnet_diagnostic.SA1401.severity = none # Maintainability: FieldsMustBePrivate
+dotnet_diagnostic.SA1402.severity = none # Maintainability: FileMayOnlyContainASingleType
+dotnet_diagnostic.SA1600.severity = none # Documentation: ElementsMustBeDocumented
+dotnet_diagnostic.SA1602.severity = none # Documentation: EnumerationItemsMustBeDocumented
+dotnet_diagnostic.SA1633.severity = none # Documentation: FileMustHaveHeader
+dotnet_diagnostic.SA1649.severity = none # Documentation: FileNameMustMatchTypeName
