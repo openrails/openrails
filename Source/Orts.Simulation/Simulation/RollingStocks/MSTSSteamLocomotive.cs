@@ -646,6 +646,8 @@ namespace Orts.Simulation.RollingStocks
 
         public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         public float StackSteamVolumeM3pS;
+        public float StackParticleDurationS;
+        public float StackCount;
         public float Cylinders1SteamVelocityMpS;
         public float Cylinders1SteamVolumeM3pS;
         public float Cylinders2SteamVelocityMpS;
@@ -2097,7 +2099,7 @@ namespace Orts.Simulation.RollingStocks
                 // Find 
                 for (int i = 0; i < NumCylinders; i++)
                 {
-                   // float realCrankAngleRad = (float)(LocomotiveAxle.AxlePositionRad + i * WheelCrankAngleDiffRad[i]);
+                    // float realCrankAngleRad = (float)(LocomotiveAxle.AxlePositionRad + i * WheelCrankAngleDiffRad[i]);
                     float realCrankAngleRad = (float)(LocomotiveAxle.AxlePositionRad);
                     float normalisedCrankAngleRad = 0;
 
@@ -2130,44 +2132,46 @@ namespace Orts.Simulation.RollingStocks
                         exhaustCrankAngleRad = CylinderExhaustOpenFactor * (float)Math.PI + (float)Math.PI;
                     }
 
+                    if (absSpeedMpS > 0.001)
+                    {
+                        if (i == 0 && (normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad))
+                        {
+                            CylinderSteamExhaust1On = true;
+                        }
+                        else
+                        {
+                            CylinderSteamExhaust1On = false;
+                        }
 
-                    if (i==0 && (normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || ( normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad))
-                    {
-                        CylinderSteamExhaust1On = true;
-                    }
-                    else
-                    {
-                        CylinderSteamExhaust1On = false;
-                    }
+                        if (i == 1 && (normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad))
+                        {
+                            CylinderSteamExhaust2On = true;
+                        }
+                        else
+                        {
+                            CylinderSteamExhaust2On = false;
+                        }
 
-                    if (i == 1 && (normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad))
-                    {
-                        CylinderSteamExhaust2On = true;
-                    }
-                    else
-                    {
-                        CylinderSteamExhaust2On = false;
-                    }
-
-                    //                    Trace.TraceInformation("Exhaust - Factor {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3} ExhaustOn {4} Cylinder {5}", CylinderExhaustOpenFactor, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad), SteamExhaust1On, i+1);
+                        //                    Trace.TraceInformation("Exhaust - Factor {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3} ExhaustOn {4} Cylinder {5}", CylinderExhaustOpenFactor, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad), SteamExhaust1On, i+1);
 
 
-                    if (i == 2 && (normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad))
-                    {
-                        CylinderSteamExhaust3On = true;
-                    }
-                    else
-                    {
-                        CylinderSteamExhaust3On = false;
-                    }
+                        if (i == 2 && (normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad))
+                        {
+                            CylinderSteamExhaust3On = true;
+                        }
+                        else
+                        {
+                            CylinderSteamExhaust3On = false;
+                        }
 
-                    if (i == 3 && (normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad))
-                    {
-                        CylinderSteamExhaust4On = true;
-                    }
-                    else
-                    {
-                        CylinderSteamExhaust4On = false;
+                        if (i == 3 && (normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad))
+                        {
+                            CylinderSteamExhaust4On = true;
+                        }
+                        else
+                        {
+                            CylinderSteamExhaust4On = false;
+                        }
                     }
 
 
@@ -2469,25 +2473,48 @@ namespace Orts.Simulation.RollingStocks
             float SmokeColorFireMass = (FireMassKG / IdealFireMassKG); // As firemass exceeds the ideal mass the fire becomes 'blocked', when firemass is < ideal then fire burns more freely.
             SmokeColorFireMass = (1.0f / SmokeColorFireMass) * (1.0f / SmokeColorFireMass) * (1.0f / SmokeColorFireMass); // Inverse the firemass value, then cube it to make it a bit more significant
 
+            float Throttlepercent = ThrottlePercent > 0 ? ThrottlePercent / 10f : 0f;
+
             if (CylinderAdvancedSteamExhaustEffects)
             {
 
                 if (CylinderSteamExhaust1On || CylinderSteamExhaust2On || CylinderSteamExhaust3On || CylinderSteamExhaust4On)
                 {
-                    StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(Pressure_c_AtmPSI) * 1000 * 50 / WaterDensityAt100DegC1BarKGpM3));
-                    StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * 20 * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
-                }
-                else
-                {
-                    StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(Pressure_c_AtmPSI) * 0.5f * 1000 / WaterDensityAt100DegC1BarKGpM3));
-                    StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * 0.25f * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
+                    float smokeVelocityVariationFactor = 5 * cutoff; // adjust smoke velocity based upon throttle and cutoff settings
+                    float smokeVolumeVariationFactor = 1.5f * cutoff; // adjust smoke volume based upon throttle and cutoff settings
 
+                    StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(Pressure_c_AtmPSI) * 1000 * smokeVelocityVariationFactor / WaterDensityAt100DegC1BarKGpM3));
+                    StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * smokeVolumeVariationFactor * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
+                    StackSteamVolumeM3pS = StackSteamVolumeM3pS / StackCount;
+                    StackParticleDurationS = Throttlepercent + FireRatio;
+                //    Trace.TraceInformation("Puff - cutoff {0} Throttle {1} Velocity {2} Volume {3} Duration {4}", cutoff, throttle, StackSteamVelocityMpS.Value, StackSteamVolumeM3pS, StackParticleDurationS);
+
+                }
+                else // when not exhausting
+                {
+                    if (absSpeedMpS < 10)
+                    {
+                        float smokeRestVelocityVariationFactor = 2 * cutoff; // adjust smoke velocity based upon throttle and cutoff settings
+                        float smokeRestVolumeVariationFactor = 1 * cutoff; // adjust smoke volume based upon throttle and cutoff settings
+
+                        float velocityRate = (absSpeedMpS < 1 ? 1.0f : 1.0f/ AbsSpeedMpS);
+                        StackSteamVelocityMpS.Update(elapsedClockSeconds, velocityRate);
+                        StackSteamVolumeM3pS = Kg.FromLb(BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * smokeRestVolumeVariationFactor * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
+                        StackSteamVolumeM3pS = StackSteamVolumeM3pS / StackCount + FireRatio;
+                        StackParticleDurationS = Throttlepercent + FireRatio;
+                    //    Trace.TraceInformation("Rest - cutoff {0} Velocity {1} Volume {2} Duration {3} VelocityRate {4} Throttle% {5}", cutoff, StackSteamVelocityMpS.SmoothedValue, StackSteamVolumeM3pS, StackParticleDurationS, velocityRate, Throttlepercent);
+                    }
                 }    
+
             }
-            else
+            else // Legacy smoke implementation
             {
+                float velocityRate = (float)Math.Sqrt(KPa.FromPSI(Pressure_c_AtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
                 StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(Pressure_c_AtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
                 StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
+                StackSteamVolumeM3pS = StackSteamVolumeM3pS / StackCount + FireRatio;
+                StackParticleDurationS = Throttlepercent + FireRatio;
+            //    Trace.TraceInformation("Legacy - cutoff {0} Throttle {1} Velocity {2} Volume {3} Duration {4} VelocityRate {5}", cutoff, throttle, StackSteamVelocityMpS.SmoothedValue, StackSteamVolumeM3pS, StackParticleDurationS, velocityRate);
             }
 
 
