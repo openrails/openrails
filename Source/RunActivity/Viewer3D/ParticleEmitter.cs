@@ -472,7 +472,7 @@ namespace Orts.Viewer3D
         {
             var shader = Viewer.MaterialManager.ParticleEmitterShader;
             if (Viewer.Settings.UseMSTSEnv == false)
-                shader.LightVector = Viewer.World.Sky.solarDirection;
+                shader.LightVector = Viewer.World.Sky.SolarDirection;
             else
                 shader.LightVector = Viewer.World.MSTSSky.mstsskysolarDirection; 
 
