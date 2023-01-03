@@ -48,7 +48,8 @@ namespace Orts.Viewer3D
         public ExternalDeviceCabControl TrainBrake = new ExternalDeviceCabControl();     // 0 (release) to 100 (CS), does not include emergency
         public ExternalDeviceCabControl EngineBrake = new ExternalDeviceCabControl();    // 0 to 100
         public ExternalDeviceCabControl Lights = new ExternalDeviceCabControl();                  // lights rotary, 1 off, 2 dim, 3 full
-
+        ExternalDeviceButton BailOff;
+        ExternalDeviceButton Wiper;
         public RailDriverState(Game game)
         {
             try
@@ -119,8 +120,16 @@ namespace Orts.Viewer3D
 
                     for (int i=0; i<settings.UserCommands.Length; i++)
                     {
-                        byte command = settings.UserCommands[i];
-                        if (command >= 0 && command != byte.MaxValue) Commands.Add((UserCommand)i, new RailDriverButton(command));
+                        var userCommand = (UserCommand)i;
+                        byte button = settings.UserCommands[i];
+                        if (button >= 0 && button != byte.MaxValue)
+                        {
+                            RegisterCommand(userCommand, new RailDriverButton(button));
+                            if (userCommand == UserCommand.ControlHorn || userCommand == UserCommand.ControlEmergencyPushButton)
+                            {
+                                RegisterCommand(userCommand, new RailDriverButton((byte)(button+1)));
+                            }
+                        }
                     }
                 }
             }
@@ -130,8 +139,10 @@ namespace Orts.Viewer3D
                 Trace.WriteLine(error);
             }
             
-            Commands[UserCommand.ControlBailOff] = new ExternalDeviceButton();
-            Commands[UserCommand.ControlWiper] = new ExternalDeviceButton();
+            BailOff = new ExternalDeviceButton();
+            Wiper = new ExternalDeviceButton();
+            RegisterCommand(UserCommand.ControlBailOff, BailOff);
+            RegisterCommand(UserCommand.ControlWiper, Wiper);
 
             CabControls[(new CabViewControlType(CABViewControlTypes.DIRECTION), -1)] = Direction;
             CabControls[(new CabViewControlType(CABViewControlTypes.THROTTLE), -1)] = Throttle;
@@ -159,13 +170,16 @@ namespace Orts.Viewer3D
                     float a = EngineBrake.Value;
                     float calOff = (1 - a) * bailoffDisengaged.Item1 + a * bailoffDisengaged.Item2;
                     float calOn = (1 - a) * bailoffEngaged.Item1 + a * bailoffEngaged.Item2;
-                    Commands[UserCommand.ControlBailOff].IsDown = Percentage(readBuffer[5], calOff, calOn) > 50;
-                    Commands[UserCommand.ControlWiper].IsDown = (int)(.01 * Percentage(readBuffer[6], wipers) + 2.5) != 1;
+                    BailOff.IsDown = Percentage(readBuffer[5], calOff, calOn) > 50;
+                    Wiper.IsDown = (int)(.01 * Percentage(readBuffer[6], wipers) + 2.5) != 1;
                     Lights.Value = (int)(.01 * Percentage(readBuffer[7], headlight) + 2.5);
 
-                    foreach (var button in Commands.Values)
+                    foreach (var buttonList in Commands.Values)
                     {
-                        if (button is RailDriverButton rd) rd.Update(readBuffer);
+                        foreach (var button in buttonList)
+                        {
+                            if (button is RailDriverButton rd) rd.Update(readBuffer);
+                        }
                     }
                 }
             }
@@ -275,10 +289,10 @@ namespace Orts.Viewer3D
     {
         int Index;
         byte Mask;
-        public RailDriverButton(byte command)
+        public RailDriverButton(byte button)
         {
-            Index = 8 + command / 8;
-            Mask = (byte)(1 << (command % 8));
+            Index = 8 + button / 8;
+            Mask = (byte)(1 << (button % 8));
         }
         public void Update(byte[] data)
         {
