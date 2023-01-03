@@ -347,7 +347,8 @@ has a 120 deg variation. OR will default to a "common" value for the number of c
 can override this with "ORTSWheelCrankAngleDifference ( A B C D )", where A, B, C and D are the separations for 
 up to a 4 cylinder locomotive. For example, a 4 cylinder locomotive can have a separation of 90 deg for each 
 cylinder or sometimes it has two of the cranks separated by 45 deg instead. These values can either be in 
-Rad (default) or Deg.
+Rad (default) or Deg. The separations should be described around the full 360 deg of rotation, so for example, 
+a 3 cylinder locomotive would be - ORTSWheelCrankAngleDifference ( 0deg, 120deg, 240deg ).
 
 
 Engine -- Classes of Motive Power
