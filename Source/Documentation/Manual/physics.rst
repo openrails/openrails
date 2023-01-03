@@ -4313,12 +4313,16 @@ In real life, the battery switch may not
 close instantly, so you can add a delay with the optional parameter
 ``ORTSBattery( Delay ( ) )`` (by default in seconds).
 
+It is possible for the battery switch to be switched on at the start of the simulation.
+To activate this behaviour, you can add the optional parameter ``ORTSBattery( DefaultOn ( 1 ) )``
+
 Example::
 
     Engine (
       ORTSBattery (
         Mode ( PushButtons )
         Delay ( 2s )
+        DefaultOn ( 1 )
       )
     )
 
