@@ -120,7 +120,7 @@ namespace Orts.Viewer3D
                     for (int i=0; i<settings.UserCommands.Length; i++)
                     {
                         byte command = settings.UserCommands[i];
-                        if (command != 0 && command != byte.MaxValue) Commands.Add((UserCommand)i, new RailDriverButton(command));
+                        if (command >= 0 && command != byte.MaxValue) Commands.Add((UserCommand)i, new RailDriverButton(command));
                     }
                 }
             }
