@@ -136,7 +136,18 @@ namespace Orts.Viewer3D
 
         public SkyElement Element;
 
-        /* The sky dome is the top hemisphere of a globe, plus an extension
+        /*
+         * The sky is formed of 3 layers (back to front):
+         * - Cloud-less sky and night sky textures, blended according to time of day, and with sun effect added in (in the shader)
+         * - Moon textures (phase is random)
+         * - Clouds blended by overcast factor and animated by wind speed and direction
+         *
+         * Both the cloud-less sky and clouds use sky domes; the sky is
+         * perfectly spherical, while the cloud dome is squashed (see
+         * `CloudsFlatness`) to make it closer to a flat plane overhead,
+         * without losing the horizon connection.
+         *
+         * The sky dome is the top hemisphere of a globe, plus an extension
          * below the horizon to ensure we never get to see the edge. Both the
          * rotational (sides) and horizontal/vertical (steps) segments are
          * split so that the center angles are `DomeComponentDegrees`.
