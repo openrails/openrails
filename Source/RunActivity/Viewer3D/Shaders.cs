@@ -372,7 +372,7 @@ namespace Orts.Viewer3D
             set
             {
                 if (value < 0.2f)
-                    overcast.SetValue(new Vector4(4 * value + 0.2f, 0.0f, 0.0f, 0.0f));
+                    overcast.SetValue(new Vector4(5 * value, 0.0f, 0.0f, 0.0f));
                 else
                     // Coefficients selected by author to achieve the desired appearance
                     overcast.SetValue(new Vector4(MathHelper.Clamp(2 * value - 0.4f, 0, 1), 1.25f - 1.125f * value, 1.15f - 0.75f * value, 1f));
