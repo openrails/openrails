@@ -14,6 +14,11 @@
     <DocumentationFile>..\..\Program\Orts.Formats.Msts.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MonoGame.Framework">
+      <HintPath>..\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
     <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
     <ProjectReference Include="..\ORTS.IO\ORTS.IO.csproj" />

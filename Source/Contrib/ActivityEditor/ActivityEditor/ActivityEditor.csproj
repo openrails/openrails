@@ -16,6 +16,11 @@
     <DefineConstants>TRACE;WINDOWS;ACTIVITY_EDITOR</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MonoGame.Framework">
+      <HintPath>..\..\..\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Wizard\ActivityDescr.cs">
       <SubType>UserControl</SubType>
     </Compile>
