@@ -11,7 +11,8 @@
           <!-- <img class="totally_free_software" src="shared/now_at_version_1_1.png" alt="Now at Version 1.1"/>-->
           <!-- <img class="totally_free_software" src="shared/now_at_version_1_2.png" alt="Now at Version 1.2"/>-->
           <!-- <img class="totally_free_software" src="shared/now_at_version_1_3.png" alt="Now at Version 1.3"/> -->
-          <img class="totally_free_software" src="shared/now_at_version_1_4.png" alt="Now at Version 1.4"/>
+          <!-- <img class="totally_free_software" src="shared/now_at_version_1_4.png" alt="Now at Version 1.4"/> -->
+          <img class="totally_free_software" src="shared/now_at_version_1_5.png" alt="Now at Version 1.5"/>
           <a href="/">
             <img class="logo" src='shared/logos/or_logo.png' alt='logo for Open Rails'/>
           <div class="logo_text">Open Rails</div>
@@ -26,7 +27,7 @@
       </div>
 <?php include "shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRails-1.4-Setup.exe';
+  $download_stable = 'OpenRails-1.5-Setup.exe';
   $file_path = "files";
 ?>
       <div class="row">
@@ -44,7 +45,7 @@
             <!-- Button to trigger modal -->
             <a href="#modal1" role="button" class='btn download_button' data-toggle="modal">
               <span class='glyphicon glyphicon-download'></span>&nbsp; Download the installer
-              <?php echo '19 Oct 2021, ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB)'; ?>
+              <?php echo '27 Nov 2022, ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB)'; ?>
 			</a>
           </div>
         </div>
@@ -52,18 +53,16 @@
       <div class="row">
         <div class="col-md-4 divider">
           <div class="heading">
-            <h4>Key Changes in v1.4</h4>
+            <h4>Key Changes in v1.5.1</h4>
           </div>
           <p>
-            Monogame graphics replace XNA with support for <a href="https://reshade.me/">ReShade</a> and more memory
+            Container loading and unloading
           </p><p>
-            Web server providing train data for web pages on other devices
+           End Of Train (EOT) devices
           </p><p>
-            Map window for timetabled trains
+            64-bit compatibility lifting the 3GB RAM limit
           </p><p>
-            Vacuum braking
-          </p><p>
-            Many <a href="/discover/version-1-4/">more additions and improvements</a> are listed here.
+            Many <a href="/discover/version-1-5/">more additions and improvements</a> are listed here.
           </p>
         </div>
         <div class="col-md-4 divider">
@@ -72,14 +71,17 @@
           </div>
           <div style="background-color: #ffffcc; margin: 0 -5px; padding: 0 5px;">
             <p>
-              <strong>Summer 2022</strong>
-              Three new UK routes are now available for immediate download <a href="http://openrails.org/download/content/">here</a>.
+              <strong>Jan 2023</strong>
+              <a href="https://github.com/cpvirtual/OR_CPV.git">Portugal '79</a> has been published. 
             </p>
-          </div>
+            <p>
+              New commercial route <a href="http://www.hsb-simulator.com/">HSB Simulator</a> published. 
+            </p>
+            </div>
           <div style="background-color: #ffffee; margin: 0 -5px; padding: 0 5px;">
             <p>
-              <strong>Oct 2021</strong>
-              <a href="http://openrails.org/discover/version-1-4/">Version 1.4</a> is now available for immediate download <a href="http://openrails.org/download/program/">here</a>.
+              <strong>Summer 2022</strong>
+              Three new UK routes are now available for immediate download <a href="http://openrails.org/download/content/">here</a>.
             </p>
             <p>
               <strong>Oct 2021</strong>
@@ -100,18 +102,21 @@
             <h4>Videos</h4>
           </div>
           <div class="headed_content">
-            <h5><a href="https://youtu.be/8RGw7hKdNPM" target="_blank">New features in Release 1.4</a></h5>
+            <h5><a href="https://youtu.be/ZY2_UYvacXg" target="_blank">New features in Release 1.5.1</a></h5>
           </div>
           <p>&nbsp;</p>
+          <div>
+            <h5>UK New Forest Route</h5>
+            <p>
+              To accompany his release of the New Forest route, Rick Loader shows
+              <a href="https://youtu.be/mk2YQn271A4" target="_blank">
+              timetable mode in action on New Forest Route</a>.
+            </p>
+          </div>
           <p>&nbsp;</p>
           <div>
-            <h5>Video Review <a href="http://www.attherailyard.com" target="_blank">At The Railyard</a></h5>
             <p>
-              In his Series 5, Nicholas Ozorak publishes
-              <a href="http://www.attherailyard.com/seasonfiveepisodes.htm#openrails" target="_blank">
-                a review of the fictional Full Bucket Line running in Open Rails</a>.
-            </p><p>
-              See more with this <a href="https://www.youtube.com/results?search_query=open+rails" target="_blank">YouTube search</a>.
+              See more videos with this <a href="https://www.youtube.com/results?search_query=open+rails" target="_blank">YouTube search</a>.
             </p>
           </div>
         </div>
