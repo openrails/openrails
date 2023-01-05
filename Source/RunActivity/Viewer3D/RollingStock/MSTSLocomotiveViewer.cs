@@ -1811,7 +1811,7 @@ namespace Orts.Viewer3D.RollingStock
             if (!IsPowered && Control.ValueIfDisabled != null)
                 Num = (float)Control.ValueIfDisabled;
             else
-            Num = Locomotive.GetDataOf(Control);
+                Num = Locomotive.GetDataOf(Control);
 
             if (Gauge.Orientation == 0)  // gauge horizontal
             {
@@ -2996,7 +2996,7 @@ namespace Orts.Viewer3D.RollingStock
             if (!IsPowered && Control.ValueIfDisabled != null)
                 Num = (float)Control.ValueIfDisabled;
             else
-            Num = Locomotive.GetDataOf(Control);
+                Num = Locomotive.GetDataOf(Control);
 
             if (digital.MinValue < digital.MaxValue) Num = MathHelper.Clamp(Num, (float)digital.MinValue, (float)digital.MaxValue);
             if (Math.Abs(Num) < digital.AccuracySwitch)
@@ -3082,7 +3082,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (!IsPowered && Control.ValueIfDisabled != null)
                     Num = (float)Control.ValueIfDisabled;
                 else
-                Num = Locomotive.GetDataOf(Control);
+                    Num = Locomotive.GetDataOf(Control);
 
                 if (Math.Abs(Num) < digital.AccuracySwitch)
                     Format = Format2;
@@ -3160,7 +3160,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (!IsPowered && Control.ValueIfDisabled != null)
                     Num = (float)Control.ValueIfDisabled;
                 else
-                Num = Locomotive.GetDataOf(Control);
+                    Num = Locomotive.GetDataOf(Control);
 
                 if (digital.MinValue < digital.MaxValue) Num = MathHelper.Clamp(Num, (float)digital.MinValue, (float)digital.MaxValue);
                 if (Math.Abs(Num) < digital.AccuracySwitch)
@@ -3438,7 +3438,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     var doShow = true;
                     if (LocoViewer.ThreeDimentionCabRenderer.ControlMap.TryGetValue(p.Key, out var cabRenderer))
-                    { 
+                    {
                         if (!cabRenderer.IsPowered && cabRenderer.Control.HideIfDisabled)
                         {
                             doShow = false;
