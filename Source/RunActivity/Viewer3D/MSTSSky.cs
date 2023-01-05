@@ -57,7 +57,6 @@ namespace Orts.Viewer3D
         // Classes reqiring instantiation
         public MSTSSkyMesh MSTSSkyMesh;
         WorldLatLon mstsskyworldLoc; // Access to latitude and longitude calcs (MSTS routes only)
-        SunMoonPos MSTSSkyVectors;
 
         int mstsskyseasonType; //still need to remember it as MP now can change it.
         #region Class variables
@@ -66,9 +65,9 @@ namespace Orts.Viewer3D
         public double mstsskylatitude, mstsskylongitude;
         // Date of activity
 
-        public Orts.Viewer3D.SkyViewer.Date date;
+        public Orts.Viewer3D.SkyViewer.SkyDate date;
 
-        private SkySteps skySteps = new SkySteps();
+        private SkyInterpolation skySteps = new SkyInterpolation();
 
         // Phase of the moon
         public int mstsskymoonPhase;
@@ -100,7 +99,6 @@ namespace Orts.Viewer3D
             MSTSSkyMaterial = viewer.MaterialManager.Load("MSTSSky");
             // Instantiate classes
             MSTSSkyMesh = new MSTSSkyMesh(MSTSSkyViewer.RenderProcess);
-            MSTSSkyVectors = new SunMoonPos();
 
             //viewer.World.MSTSSky.MSTSSkyMaterial.Viewer.MaterialManager.sunDirection.Y < 0
             // Set starting value
@@ -134,11 +132,11 @@ namespace Orts.Viewer3D
                 if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
                 {
                     mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
-                    date.ordinalDate = mstsskylatitude >= 0 ? 82 + mstsskyseasonType * 91 : (82 + (mstsskyseasonType + 2) * 91) % 365;
+                    date.OrdinalDate = mstsskylatitude >= 0 ? 82 + mstsskyseasonType * 91 : (82 + (mstsskyseasonType + 2) * 91) % 365;
                     // TODO: Set the following three externally from ORTS route files (future)
-                    date.month = 1 + date.ordinalDate / 30;
-                    date.day = 21;
-                    date.year = 2017;
+                    date.Month = 1 + date.OrdinalDate / 30;
+                    date.Day = 21;
+                    date.Year = 2017;
                 }
                 // Fill in the sun- and moon-position lookup tables
                 for (int i = 0; i < skySteps.MaxSteps; i++)
@@ -148,7 +146,7 @@ namespace Orts.Viewer3D
                 }
                 // Phase of the moon is generated at random
                 mstsskymoonPhase = Viewer.Random.Next(8);
-                if (mstsskymoonPhase == 6 && date.ordinalDate > 45 && date.ordinalDate < 330)
+                if (mstsskymoonPhase == 6 && date.OrdinalDate > 45 && date.OrdinalDate < 330)
                     mstsskymoonPhase = 3; // Moon dog only occurs in winter
                 // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
                 //mstsskyovercastFactor = MSTSSkyViewer.World.WeatherControl.overcastFactor;
@@ -206,7 +204,7 @@ namespace Orts.Viewer3D
                 }
             }
 
-            skySteps.SetSunAndMoonDirection(ref mstsskysolarDirection, ref mstsskylunarDirection, ref mstsskysolarPosArray, ref mstsskylunarPosArray,
+            skySteps.SetSunAndMoonDirection(ref mstsskysolarDirection, ref mstsskylunarDirection, mstsskysolarPosArray, mstsskylunarPosArray,
                 MSTSSkyViewer.Simulator.ClockTime);
 
             frame.AddPrimitive(MSTSSkyMaterial, MSTSSkyMesh, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
@@ -218,10 +216,10 @@ namespace Orts.Viewer3D
             // Get the current latitude and longitude coordinates
             mstsskyworldLoc.ConvertWTC(MSTSSkyViewer.Camera.TileX, MSTSSkyViewer.Camera.TileZ, MSTSSkyViewer.Camera.Location, ref mstsskylatitude, ref mstsskylongitude);
             mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
-            date.ordinalDate = mstsskylatitude >= 0 ? 82 + mstsskyseasonType * 91 : (82 + (mstsskyseasonType + 2) * 91) % 365;
-            date.month = 1 + date.ordinalDate / 30;
-            date.day = 21;
-            date.year = 2017;
+            date.OrdinalDate = mstsskylatitude >= 0 ? 82 + mstsskyseasonType * 91 : (82 + (mstsskyseasonType + 2) * 91) % 365;
+            date.Month = 1 + date.OrdinalDate / 30;
+            date.Day = 21;
+            date.Year = 2017;
             float fractClockTime = (float)MSTSSkyViewer.Simulator.ClockTime / 86400;
             mstsskysolarDirection = SunMoonPos.SolarAngle(mstsskylatitude, mstsskylongitude, fractClockTime, date);
             mstsskyworldLoc = null;
