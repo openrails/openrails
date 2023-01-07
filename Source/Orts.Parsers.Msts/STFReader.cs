@@ -1564,6 +1564,37 @@ namespace Orts.Parsers.Msts
             ParseBlock(processors);
         }
 
+        /// <summary>
+        /// Parse an entire STF block containing a count (int) and repeated sub-blocks of name <param name="blockName" />.
+        /// </summary>
+        /// <param name="list">A list to receive the sub-blocks</param>
+        /// <param name="blockName">The name of the repeated sub-blocks</param>
+        /// <param name="constructor">A function which constructs an object for the list</param>
+        public void ParseBlockList<T>(ref List<T> list, string blockName, Func<STFReader, T> constructor)
+        {
+            MustMatch("(");
+            var count = ReadInt(null);
+            var listForLambda = list = new List<T>(count);
+            ParseBlock(new[]
+            {
+                new TokenProcessor(blockName, () =>
+                {
+                    if (count-- > 0)
+                    {
+                        listForLambda.Add(constructor(this));
+                    }
+                    else
+                    {
+                        STFException.TraceWarning(this, $"Skipped extra {blockName}");
+                    }
+                }),
+            });
+            if (count > 0)
+            {
+                STFException.TraceWarning(this, $"{count} missing {blockName}");
+            }
+        }
+
         #region *** Delegate and Structure definitions used by the Parse...() methods.
         /// <summary>This delegate definition is used by the ParseFile and ParseBlock methods, and is called when an associated matching token is found.
         /// </summary>

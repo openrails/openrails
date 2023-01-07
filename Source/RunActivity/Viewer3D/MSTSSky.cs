@@ -512,7 +512,7 @@ namespace Orts.Viewer3D
                         mstsskytexturey = mstsskytexture[i].TileY;
 
                     }
-                    else if(mstsskytexture[i].FadeinBeginTime != null)
+                    else if(mstsskytexture[i].FadeInBeginTime != null)
                     {
                         MSTSSkyStarTexture = MSTSSkyTexture[i];
                         mstsskytexturex = mstsskytexture[i].TileX;
@@ -536,9 +536,9 @@ namespace Orts.Viewer3D
                 MSTSSkyTexture.Add(SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png")));
                 MSTSSkyStarTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_N.png"));
             }
-            if (viewer.ENVFile.SkySatellite != null)
+            if (viewer.ENVFile.SkySatellites != null)
             {
-                var mstsskysatellitetexture = Viewer.ENVFile.SkySatellite.ToArray();
+                var mstsskysatellitetexture = Viewer.ENVFile.SkySatellites.ToArray();
 
                 string mstsSkySunTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[0].TextureName.ToString();
                 string mstsSkyMoonTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[1].TextureName.ToString();
