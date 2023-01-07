@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
+// COPYRIGHT 2009 - 2023 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -151,6 +151,9 @@ namespace Orts.Formats.Msts
 
         public class SkySatellite
         {
+            public int RiseTime;
+            public int SetTime;
+            public SkySatelliteType Type;
             public string TextureName;
             public string TextureMode;
 
@@ -158,6 +161,9 @@ namespace Orts.Formats.Msts
             {
                 stf.ParseWholeBlock(new[]
                 {
+                    new STFReader.TokenProcessor("world_sky_satellite_rise_time", () => RiseTime = ParseTime(stf.ReadStringBlock("00:00:00"))),
+                    new STFReader.TokenProcessor("world_sky_satellite_set_time", () => SetTime = ParseTime(stf.ReadStringBlock("00:00:00"))),
+                    new STFReader.TokenProcessor("world_sky_satellite_light", () => Type = (SkySatelliteType)stf.ReadIntBlock((int)SkySatelliteType.Unknown)),
                     new STFReader.TokenProcessor("world_anim_shader", () => stf.ParseWholeBlock(new[]
                     {
                         new STFReader.TokenProcessor("world_shader", () =>
@@ -184,6 +190,24 @@ namespace Orts.Formats.Msts
                         }),
                     })),
                 });
+            }
+
+            public enum SkySatelliteType
+            {
+                Unknown = -1,
+                Moon = 0,
+                Sun = 1,
+            }
+
+            int ParseTime(string time)
+            {
+                var timeParts = time.Split(':');
+                if (timeParts.Length != 3 || !byte.TryParse(timeParts[0], out var hours) || !byte.TryParse(timeParts[1], out var minutes) || !byte.TryParse(timeParts[2], out var seconds))
+                {
+                    return 0;
+                }
+
+                return (hours * 3600) + (minutes * 60) + seconds;
             }
         }
     }
