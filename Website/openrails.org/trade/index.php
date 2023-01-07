@@ -35,11 +35,12 @@ These vendors sell or create products suitable for Open Rails:
 </p>
 <ul>
   <li><a href="https://www.trainsimulations.net/">TrainSimulations</a> - Canada</li>
-  <li><a href="https://pikku.msts.cz">Pikku Locomotive Works</a> - Czechoslovakia</li>
+  <li><a href="https://pikku.msts.cz/">Pikku Locomotive Works</a> - Czechoslovakia</li>
+  <li><a href="http://www.hsb-simulator.com/" title="Harz narrow-gauge railways">HSB Simulator</a> - Germany</li>
   <li><a href="http://broadgaugeproduction.irts.in/">Broad Gauge Productions</a> - India</li>  
-  <li><a href="http://www.3dtrains.com" target="_blank">3DTrains</a> - USA</li>
-  <li><a href="https://dekogames.com/trains/">Deko Games</a> - USA</li>
   <li><a href="http://www.gabriele90.com/">Gabriele 90</a> - Italy</li>
+  <li><a href="http://www.3dtrains.com/" target="_blank">3DTrains</a> - USA</li>
+  <li><a href="https://dekogames.com/trains/">Deko Games</a> - USA</li>
 </ul>
 <p>&nbsp;</p>
 <h2>Vendors Supporting MSTS</h2>
@@ -47,12 +48,12 @@ These vendors sell or create products suitable for Open Rails:
 These vendors sell or distribute products suitable for MSTS:
 </p>
 <ul>
-  <li><a href="http://www.3dtrainstuff.com" target="_blank">3DTrainStuff</a> - USA and UK</li>
   <li><a href="http://www.valleypass.com/" target="_blank">BLW Productions</a> - Canada</li>
-  <li><a href="http://www.dieselswest.com" target="_blank">DieselsWest</a> - USA</li>
   <li><a href="http://www.mapleleaftracks.com" target="_blank">Maple Leaf Tracks</a> - Canada</li>
   <li><a href="https://www.simtrain.ch/" target="_blank">SimTrain.ch</a> - Switzerland</li>
   <li><a href="http://www.uktrainsim.com" target="_blank">UKTrainSim</a> - UK</li>
+  <li><a href="http://www.3dtrainstuff.com" target="_blank">3DTrainStuff</a> - USA and UK</li>
+  <li><a href="http://www.dieselswest.com" target="_blank">DieselsWest</a> - USA</li>
   <li><a href="http://www.vscalecreations.com" target="_blank">V Scale Creations</a> - USA</li>
 </ul>
 <p>

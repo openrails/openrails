@@ -40,7 +40,7 @@ There are many other elements which cannot fit into an overview and these can be
     </tr>
   </thead>
   <tbody>
-    <tr><td class=version> v1.6</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+    <tr><td class=version> v1.5</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
     <tr>
       <td class=blue><a href="https://trello.com/c/JGosmRnZ/159-consist-editor">consist editor</a></td>
       <td class=red><a href="https://trello.com/c/ZpMsbNDp/144-sets-of-1-10-cameras-that-players-can-switch-between">user-definable camera sets</a></td>
@@ -51,7 +51,7 @@ There are many other elements which cannot fit into an overview and these can be
       <td class=blue><a href="https://trello.com/c/ASuDPya7/283-wagon-editor">wagon parameters editor</a></td>
       <td class=red><a href="https://trello.com/c/awrukdfm/425-customise-freight-animations-for-2d-3d-cabs">custom animations</a></td>
       <td class=green><a href="https://trello.com/c/N05HMaKn/350-darkness-in-tunnels">darkness in tunnels</a></td>
-      <td class=orange><a href=""></a></td>
+      <td class=orange><a href="https://trello.com/c/Ql02djix/390-64bit-version-4gb-ram-usage">64-bit</a></td>
     </tr>
     <tr>
       <td class=blue><a href="https://trello.com/c/upvTt0M7/284-locomotive-editor">loco parameters editor</a></td>

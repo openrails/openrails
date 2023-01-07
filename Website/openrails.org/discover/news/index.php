@@ -15,6 +15,17 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
+        <h2>Jan 2023 - Portugal '79</h2>
+        <p>
+          <a href="https://github.com/cpvirtual/OR_CPV.git">Portugal '79</a> has been published. 
+          This provides 1775km of broad gauge track, with full detail on 91km between Entroncamento and Alfarelos.
+        </p>
+        <h2>Jan 2023 - HSB Simulator</h2>
+        <p>
+          New commercial route <a href="http://www.hsb-simulator.com/">HSB Simulator</a> published. 
+          This contains 87 miles of the Harz narrow-gauge railway, the longest narrow-gauge route network in Europe.
+        </p>
+        <hr /> 
         <h2>Nov 2022 - Version 1.5.1</h2>
         <p>
           <a href="/discover/version-1-5-1/">Open Rails 1.5.1</a> released to fix 3 bugs in v1.5.
