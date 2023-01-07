@@ -512,7 +512,7 @@ namespace Orts.Viewer3D
                         mstsskytexturey = mstsskytexture[i].TileY;
 
                     }
-                    else if(mstsskytexture[i].Fadein_Begin_Time != null)
+                    else if(mstsskytexture[i].FadeinBeginTime != null)
                     {
                         MSTSSkyStarTexture = MSTSSkyTexture[i];
                         mstsskytexturex = mstsskytexture[i].TileX;

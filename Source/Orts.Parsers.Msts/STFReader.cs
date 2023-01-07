@@ -1514,6 +1514,7 @@ namespace Orts.Parsers.Msts
                         tp.processor(); // Press F11 'Step Into' to debug the Processor delegate
             } // Press F10 'Step Over' to jump to the next token
         }
+
         /// <summary>Parse an STF file until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda
         /// </summary>
         /// <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
@@ -1530,6 +1531,7 @@ namespace Orts.Parsers.Msts
                         tp.processor(); // Press F11 'Step Into' to debug the Processor delegate
             } // Press F10 'Step Over' to jump to the next token
         }
+
         /// <summary>Parse an STF file until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda
         /// </summary>
         /// <param name="breakout">A delegate that returns true, if the processing should be halted prematurely</param>
@@ -1553,6 +1555,15 @@ namespace Orts.Parsers.Msts
                         tp.processor(); // Press F11 'Step Into' to debug the Processor delegate
             } // Press F10 'Step Over' to jump to the next token
         }
+
+        /// <summary>Parse an entire STF block from a '(' until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda</summary>
+        /// <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
+        public void ParseWholeBlock(TokenProcessor[] processors)
+        {
+            VerifyStartOfBlock();
+            ParseBlock(processors);
+        }
+
         #region *** Delegate and Structure definitions used by the Parse...() methods.
         /// <summary>This delegate definition is used by the ParseFile and ParseBlock methods, and is called when an associated matching token is found.
         /// </summary>
