@@ -79,12 +79,22 @@ The following controls are available for the cabview:
 - ``ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE`` and ``ORTS_BATTERY_SWITCH_COMMAND_BUTTON_OPEN`` can be used if the switch is controlled with two pushbuttons (one to close the switch and the other to open it)
 - ``ORTS_BATTERY_SWITCH_ON`` can be used to control a light on the cab showing the state of the battery switch
 
-Other controls can be hidden if the low voltage power supply is not available using the following parameter::
+Other controls can be disabled if the low voltage power supply is not available using the following parameter::
 
       TwoState (
-         Type ( ORTS_CIRCUIT_BREAKER_CLOSED TWO_STATE)
+         Type ( ORTS_CIRCUIT_BREAKER_CLOSED TWO_STATE )
          ...
          DisabledIfLowVoltagePowerSupplyOff ( 1 )
+      )
+
+By default, the cabview control will be completely hidden. You can also set a specific value for the control when it is disabled::
+
+      TwoState (
+         Type ( SPEEDOMETER DIAL )
+         ...
+         DisabledIfLowVoltagePowerSupplyOff ( 1 )
+         HideIfDisabled ( 0 )
+         ValueIfDisabled ( 0 )
       )
 
 .. _cabs-master-key:
@@ -105,12 +115,22 @@ The following controls are available for the cabview:
 - ``ORTS_CURRENT_CAB_IN_USE`` can be used to indicate that the current cab is active
 - ``ORTS_OTHER_CAB_IN_USE`` can be used to indicate that another cab of the train is active
 
-Other controls can be hidden if the cab power supply is not available using the following parameter::
+Other controls can be disabled if the cab power supply is not available using the following parameter::
 
       TwoState (
-         Type ( ORTS_CIRCUIT_BREAKER_CLOSED TWO_STATE)
+         Type ( ORTS_CIRCUIT_BREAKER_CLOSED TWO_STATE )
          ...
          DisabledIfCabPowerSupplyOff ( 1 )
+      )
+
+By default, the cabview control will be completely hidden. You can also set a specific value for the control when it is disabled::
+
+      TwoState (
+         Type ( SPEEDOMETER DIAL )
+         ...
+         DisabledIfCabPowerSupplyOff ( 1 )
+         HideIfDisabled ( 0 )
+         ValueIfDisabled ( 0 )
       )
 
 .. _cabs-service-retention:

@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
-using System;
 
 namespace ORTS.Scripting.Api
 {
@@ -25,21 +25,32 @@ namespace ORTS.Scripting.Api
     /// </summary>
     public abstract class TractionCutOffRelay : TractionCutOffSubsystem
     {
+        internal ScriptedTractionCutOffRelay TcorHost => Host as ScriptedTractionCutOffRelay;
+
         /// <summary>
         /// Current state of the circuit breaker
         /// </summary>
-        public Func<TractionCutOffRelayState> CurrentState;
+        protected TractionCutOffRelayState CurrentState() => TcorHost.State;
 
         /// <summary>
         /// Sets the current state of the circuit breaker
         /// </summary>
-        public Action<TractionCutOffRelayState> SetCurrentState;
+        protected void SetCurrentState(TractionCutOffRelayState state)
+        {
+            TcorHost.State = state;
+
+            TCSEvent tcsEvent = state == TractionCutOffRelayState.Closed ? TCSEvent.TractionCutOffRelayClosed : TCSEvent.TractionCutOffRelayOpen;
+            Locomotive.TrainControlSystem.HandleEvent(tcsEvent);
+        }
 
         /// <summary>
         /// Current state of the circuit breaker
         /// Only available on dual mode locomotives
         /// </summary>
-        public Func<CircuitBreakerState> CurrentCircuitBreakerState;
+        protected CircuitBreakerState CurrentCircuitBreakerState()
+        {
+            return PowerSupply.Type == PowerSupplyType.DualMode ? (PowerSupply as ScriptedDualModePowerSupply).CircuitBreaker.State : CircuitBreakerState.Unavailable;
+        }
     }
 
     public enum TractionCutOffRelayState
