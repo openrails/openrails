@@ -455,6 +455,16 @@ namespace Orts.Viewer3D.Popups
                     }
                 }
             }
+            if ((Viewer.PlayerLocomotive as MSTSLocomotive).CruiseControl != null)
+            {
+                var cc = ((MSTSLocomotive)Viewer.PlayerLocomotive).CruiseControl;
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Cruise control status"), "{0}", cc.SpeedRegMode.ToString());
+                if (cc.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto)
+                {
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Speed target"), "{0}", FormatStrings.FormatSpeedDisplay(cc.SelectedSpeedMpS, Viewer.PlayerLocomotive.IsMetric));
+                    TableAddLabelValue(table, Viewer.Catalog.GetString("Max acceleration"), "{0:F0}%", cc.SelectedMaxAccelerationPercent);
+                }
+            }
             if (multipleUnitsConfiguration != null)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Multiple Units"), "{0}", multipleUnitsConfiguration);
             TableAddLine(table);

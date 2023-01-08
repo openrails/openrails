@@ -217,6 +217,20 @@
         [GetString("Control AI Fire Off")] ControlAIFireOff,
         [GetString("Control AI Fire Reset")] ControlAIFireReset,
 
+        // Cruise Control
+        [GetString("Control Speed Regulator Mode Increase")] ControlSpeedRegulatorModeIncrease,
+        [GetString("Control Speed Regulator Mode Descrease")] ControlSpeedRegulatorModeDecrease,
+        [GetString("Control Selected Speed Increase")] ControlSpeedRegulatorSelectedSpeedIncrease,
+        [GetString("Control Selected Speed Decrease")] ControlSpeedRegulatorSelectedSpeedDecrease,
+        [GetString("Control Speed Regulator Max Acceleration Increase")] ControlSpeedRegulatorMaxAccelerationIncrease,
+        [GetString("Control Speed Regulator Max Acceleration Decrease")] ControlSpeedRegulatorMaxAccelerationDecrease,
+        [GetString("Control Number Of Axles Increase")] ControlNumberOfAxlesIncrease,
+        [GetString("Control Number Of Axles Decrease")] ControlNumberOfAxlesDecrease,
+        [GetString("Control Restricted Speed Zone Active")] ControlRestrictedSpeedZoneActive,
+        [GetString("Control Cruise Control Mode Increase")] ControlCruiseControlModeIncrease,
+        [GetString("Control Cruise Control Mode Decrease")] ControlCruiseControlModeDecrease,
+        [GetString("Control Train Type Change (Passenger/Cargo)")] ControlTrainTypePaxCargo,
+        [GetString("Control Selected Speed To Zero")] ControlSpeedRegulatorSelectedSpeedToZero,
         //Distributed power
         [GetString("Control DP Move To Front")] ControlDPMoveToFront,
         [GetString("Control DP Move To Back")] ControlDPMoveToBack,

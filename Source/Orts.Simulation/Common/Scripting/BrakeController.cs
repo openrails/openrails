@@ -15,124 +15,219 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using GNU.Gettext;
-using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using System;
 using System.Collections.Generic;
+using GNU.Gettext;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using ORTS.Common;
 
 namespace ORTS.Scripting.Api
 {
     public abstract class BrakeController : AbstractTrainScriptClass
     {
+        internal ScriptedBrakeController Host;
+        internal MSTSLocomotive Locomotive => Host.Locomotive;
+        internal ILocomotivePowerSupply LocomotivePowerSupply => Locomotive.PowerSupply as ILocomotivePowerSupply;
+
+        /// <summary>
+        /// Attaches the script to its host
+        /// </summary>
+        /// <param name="host">The hosting ScriptedBrakeController object</param>
+        internal void AttachToHost(ScriptedBrakeController host)
+        {
+            Host = host;
+        }
+
         /// <summary>
         /// True if the driver has asked for an emergency braking (push button)
         /// </summary>
-        public Func<bool> EmergencyBrakingPushButton;
+        public bool EmergencyBrakingPushButton() => Host.EmergencyBrakingPushButton;
+
         /// <summary>
         /// True if the TCS has asked for an emergency braking
         /// </summary>
-        public Func<bool> TCSEmergencyBraking;
+        public bool TCSEmergencyBraking() => Host.TCSEmergencyBraking;
+
         /// <summary>
         /// True if the TCS has asked for a full service braking
         /// </summary>
-        public Func<bool> TCSFullServiceBraking;
+        public bool TCSFullServiceBraking() => Host.TCSFullServiceBraking;
+
         /// <summary>
         /// True if the driver has pressed the Quick Release button
         /// </summary>
-        public Func<bool> QuickReleaseButtonPressed;
+        public bool QuickReleaseButtonPressed() => Host.QuickReleaseButtonPressed;
+
         /// <summary>
         /// True if the driver has pressed the Overcharge button
         /// </summary>
-        public Func<bool> OverchargeButtonPressed;
+        public bool OverchargeButtonPressed() => Host.OverchargeButtonPressed;
+
         /// <summary>
         /// True if low voltage power supply is switched on.
         /// </summary>
-        public Func<bool> IsLowVoltagePowerSupplyOn;
+        public bool IsLowVoltagePowerSupplyOn() => LocomotivePowerSupply.LowVoltagePowerSupplyOn;
+
         /// <summary>
         /// True if cab power supply is switched on.
         /// </summary>
-        public Func<bool> IsCabPowerSupplyOn;
+        public bool IsCabPowerSupplyOn() => LocomotivePowerSupply.CabPowerSupplyOn;
+
         /// <summary>
         /// Main reservoir pressure
         /// </summary>
-        public Func<float> MainReservoirPressureBar;
+        public float MainReservoirPressureBar()
+        {
+            if (Locomotive.Train != null)
+                return Bar.FromPSI(Locomotive.MainResPressurePSI);
+            else
+                return float.MaxValue;
+        }
+
         /// <summary>
         /// Maximum pressure in the brake pipes and the equalizing reservoir
         /// </summary>
-        public Func<float> MaxPressureBar;
+        public float MaxPressureBar() => Bar.FromPSI(Host.MaxPressurePSI);
+
         /// <summary>
         /// Maximum pressure in the brake pipes when they are overcharged
         /// </summary>
-        public Func<float> MaxOverchargePressureBar;
+        public float MaxOverchargePressureBar() => Bar.FromPSI(Host.MaxOverchargePressurePSI);
+
         /// <summary>
         /// Release rate of the equalizing reservoir
         /// </summary>
-        public Func<float> ReleaseRateBarpS;
+        public float ReleaseRateBarpS() => BarpS.FromPSIpS(Host.ReleaseRatePSIpS);
+
         /// <summary>
         /// Quick release rate of the equalizing reservoir
         /// </summary>
-        public Func<float> QuickReleaseRateBarpS;
+        public float QuickReleaseRateBarpS() => BarpS.FromPSIpS(Host.QuickReleaseRatePSIpS);
+
         /// <summary>
         /// Pressure decrease rate of equalizing reservoir when eliminating overcharge
         /// </summary>
-        public Func<float> OverchargeEliminationRateBarpS;
+        public float OverchargeEliminationRateBarpS() => BarpS.FromPSIpS(Host.OverchargeEliminationRatePSIpS);
+
         /// <summary>
         /// Slow application rate of the equalizing reservoir
         /// </summary>
-        public Func<float> SlowApplicationRateBarpS;
+        public float SlowApplicationRateBarpS() => BarpS.FromPSIpS(Host.SlowApplicationRatePSIpS);
+
         /// <summary>
         /// Apply rate of the equalizing reservoir
         /// </summary>
-        public Func<float> ApplyRateBarpS;
+        public float ApplyRateBarpS() => BarpS.FromPSIpS(Host.ApplyRatePSIpS);
+
         /// <summary>
         /// Emergency rate of the equalizing reservoir
         /// </summary>
-        public Func<float> EmergencyRateBarpS;
+        public float EmergencyRateBarpS() => BarpS.FromPSIpS(Host.EmergencyRatePSIpS);
+
         /// <summary>
         /// Depressure needed in order to obtain the full service braking
         /// </summary>
-        public Func<float> FullServReductionBar;
+        public float FullServReductionBar() => Bar.FromPSI(Host.FullServReductionPSI);
+
         /// <summary>
         /// Release rate of the equalizing reservoir
         /// </summary>
-        public Func<float> MinReductionBar;
+        public float MinReductionBar() => Bar.FromPSI(Host.MinReductionPSI);
+        
         /// <summary>
         /// Current value of the brake controller
         /// </summary>
-        public Func<float> CurrentValue;
+        public float CurrentValue() => Host.CurrentValue;
+
+        /// <summary>
+        /// Intermediate value of the brake controller
+        /// </summary>
+        public float IntermediateValue
+        {
+            get
+            {
+                return Host.IntermediateValue;
+            }
+            set
+            {
+                Host.IntermediateValue = value;
+            }
+        }
+
         /// <summary>
         /// Minimum value of the brake controller
         /// </summary>
-        public Func<float> MinimumValue;
+        public float MinimumValue() => Host.MinimumValue;
+
         /// <summary>
         /// Maximum value of the brake controller
         /// </summary>
-        public Func<float> MaximumValue;
+        public float MaximumValue() => Host.MaximumValue;
+
         /// <summary>
         /// Step size of the brake controller
         /// </summary>
-        public Func<float> StepSize;
+        public float StepSize() => Host.StepSize;
+
         /// <summary>
         /// State of the brake pressure (1 = increasing, -1 = decreasing)
         /// </summary>
-        public Func<float> UpdateValue;
+        public float UpdateValue() => Host.UpdateValue;
+
         /// <summary>
         /// Gives the list of notches
         /// </summary>
-        public Func<List<MSTSNotch>> Notches;
+        public List<MSTSNotch> Notches() => Host.Notches;
+
+        /// <summary>
+        /// Fraction of train brake demanded by cruise control
+        /// </summary>
+        public float CruiseControlBrakeDemand() => Locomotive.CruiseControl != null ? Locomotive.CruiseControl.TrainBrakePercent/100 : 0;
+
+        /// <summary>
+        /// Current notch of the brake controller
+        /// </summary>
+        public int CurrentNotch
+        {
+            get
+            {
+                return Host.CurrentNotch;
+            }
+            set
+            {
+                Host.CurrentNotch = value;
+            }
+        }
 
         /// <summary>
         /// Sets the current value of the brake controller lever
         /// </summary>
-        public Action<float> SetCurrentValue;
+        public void SetCurrentValue(float value)
+        {
+            Host.CurrentValue = value;
+        }
+
         /// <summary>
         /// Sets the state of the brake pressure (1 = increasing, -1 = decreasing)
         /// </summary>
-        public Action<float> SetUpdateValue;
+        public void SetUpdateValue(float value)
+        {
+            Host.UpdateValue = value;
+        }
+
         /// <summary>
         /// Sets the dynamic brake intervention value
         /// </summary>
-        public Action<float> SetDynamicBrakeIntervention;
+        public void SetDynamicBrakeIntervention(float value)
+        {
+            // TODO: Set dynamic brake intervention instead of controller position
+            // There are some issues that need to be identified and fixed before setting the intervention directly
+            if (Locomotive.DynamicBrakeController == null) return;
+            Locomotive.DynamicBrakeChangeActiveState(value > 0);
+            Locomotive.DynamicBrakeController.SetValue(value);
+        }
 
         /// <summary>
         /// Called once at initialization time.
