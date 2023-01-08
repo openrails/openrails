@@ -9,14 +9,16 @@
 <?php include "../../shared/menu.php" ?>
       <div class="row">
         <div class="col-md-12">
-          <h1>Discover > Version 1.5</h1>
+          <h1>Discover > Version 1.5.1</h1>
         </div>
       </div>
       <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-10">
-          <h2>New in Open Rails 1.5 (since 1.4)</h2>
+          <h2>New in Open Rails 1.5.1 (since 1.4)</h2>
           <p>
+            Note: Version 1.5.1 is the same as Version 1.5 but fixes an extra 3 bugs.
+          </p><p>
             A summary of the new and improved features can be found below. 
           </p><p>
             <a href="https://launchpad.net/or/+milestone/1.4">Important bugs</a> have been fixed in this release.
