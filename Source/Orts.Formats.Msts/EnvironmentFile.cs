@@ -1,4 +1,4 @@
-// COPYRIGHT 2009 - 2023 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Linq;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -47,6 +48,8 @@ namespace Orts.Formats.Msts
                 });
             }
         }
+
+        public SkySatellite Sun => SkySatellites.FirstOrDefault(s => s.Type == SkySatellite.SkySatelliteType.Sun);
 
         public class WaterLayer
         {

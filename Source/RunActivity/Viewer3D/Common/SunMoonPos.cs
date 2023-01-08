@@ -24,6 +24,7 @@
 
 using System;
 using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
 
 namespace Orts.Viewer3D.Common
 {
@@ -35,25 +36,17 @@ namespace Orts.Viewer3D.Common
         /// </summary>
         /// <param name="latitude">Latitude, radians.</param>
         /// <param name="longitude">Longitude, radians.</param>
+        /// <param name="sun">Sun satellite information (including rise/set time).</param>
         /// <param name="clockTime">Wall clock time since start of activity, days.</param>
         /// <param name="date">Structure made up of day, month, year and ordinal date.</param>
         /// <returns>A normalize 3D vector indicating the sun's position from the viewer's location.</returns>
-        public static Vector3 SolarAngle(double latitude, double longitude, float clockTime, SkyViewer.SkyDate date)
+        public static Vector3 SolarAngle(double latitude, double longitude, EnvironmentFile.SkySatellite sun, float clockTime, SkyViewer.SkyDate date)
         {
             Vector3 sunDirection;
-
-            // For these calculations, west longitude is in positive degrees
-            var noaaLongitude = -MathHelper.ToDegrees((float)longitude);
+            double solarHourAngle;
 
             // Fractional year, radians
             var fYear = (MathHelper.TwoPi / 365) * (date.OrdinalDate - 1 + (clockTime - 0.5));
-
-            // Equation of time, minutes
-            var eqTime = 229.18 * (0.000075
-                + (0.001868 * Math.Cos(fYear))
-                - (0.032077 * Math.Sin(fYear))
-                - (0.014615 * Math.Cos(2 * fYear))
-                - (0.040849 * Math.Sin(2 * fYear)));
 
             // Solar declination, radians
             var solarDeclination = 0.006918
@@ -64,14 +57,37 @@ namespace Orts.Viewer3D.Common
                 - (0.002697 * Math.Cos(3 * fYear))
                 + (0.001480 * Math.Sin(3 * fYear));
 
-            // Time offset at present longitude, minutes
-            var timeOffset = eqTime - (4 * noaaLongitude) + (60 * Math.Round(noaaLongitude / 15));
+            // How much the latitude and solar declination changes the horizon so that we can correctly calculate
+            // the solar angle based on sun rise/set times
+            var horizonSolarHourAngle = Math.Acos(-(Math.Sin(latitude) * Math.Sin(solarDeclination)) / (Math.Cos(latitude) * Math.Cos(solarDeclination)));
 
-            // True solar time, minutes (since midnight)
-            var trueSolar = (clockTime * 24 * 60) + timeOffset;
+            if (sun?.RiseTime != 0 && sun?.SetTime != 0 && sun?.RiseTime < sun?.SetTime && !double.IsNaN(horizonSolarHourAngle))
+            {
+                var noonTimeD = (float)(sun.RiseTime + sun.SetTime) / 2 / 86400;
+                var riseSetScale = 90 / (noonTimeD - ((float)sun.RiseTime / 86400));
+                solarHourAngle = MathHelper.ToRadians((clockTime - noonTimeD) * riseSetScale * (float)(horizonSolarHourAngle / MathHelper.PiOver2));
+            }
+            else
+            {
+                // For these calculations, west longitude is in positive degrees
+                var noaaLongitude = -MathHelper.ToDegrees((float)longitude);
 
-            // Solar hour angle, radians
-            var solarHourAngle = MathHelper.ToRadians((float)(trueSolar / 4) - 180);
+                // Equation of time, minutes
+                var eqTime = 229.18 * (0.000075
+                    + (0.001868 * Math.Cos(fYear))
+                    - (0.032077 * Math.Sin(fYear))
+                    - (0.014615 * Math.Cos(2 * fYear))
+                    - (0.040849 * Math.Sin(2 * fYear)));
+
+                // Time offset at present longitude, minutes
+                var timeOffset = eqTime - (4 * noaaLongitude) + (60 * Math.Round(noaaLongitude / 15));
+
+                // True solar time, minutes (since midnight)
+                var trueSolar = (clockTime * 24 * 60) + timeOffset;
+
+                // Solar hour angle, radians
+                solarHourAngle = MathHelper.ToRadians((float)(trueSolar / 4) - 180);
+            }
 
             // Solar zenith cosine. This is the Y COORDINATE of the solar Vector.
             var solarZenithCosine = (Math.Sin(latitude) * Math.Sin(solarDeclination))
