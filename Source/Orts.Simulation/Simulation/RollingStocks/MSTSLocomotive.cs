@@ -1161,7 +1161,7 @@ public List<CabView> CabViewList = new List<CabView>();
             EmergencyEngagesHorn = locoCopy.EmergencyEngagesHorn;
 
             WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
-            DriveWheelOnlyBrakes = locoCopy.DriveWheelOnlyBrakes;
+
             CompressorIsMechanical = locoCopy.CompressorIsMechanical;
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
             TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
@@ -1171,7 +1171,7 @@ public List<CabView> CabViewList = new List<CabView>();
             MainResVolumeM3 = locoCopy.MainResVolumeM3;
             MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
             BrakePipeDischargeTimeFactor = locoCopy.BrakePipeDischargeTimeFactor;
-
+            DriveWheelOnlyBrakes = locoCopy.DriveWheelOnlyBrakes;
             DynamicBrakeBlended = locoCopy.DynamicBrakeBlended;
             DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
             DynamicBrakeAvailable = locoCopy.DynamicBrakeAvailable;
