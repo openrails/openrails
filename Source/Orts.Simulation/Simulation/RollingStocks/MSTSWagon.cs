@@ -227,6 +227,7 @@ namespace Orts.Simulation.RollingStocks
             None,
             TripleValve, // Plain triple valve
             Distributor, // Triple valve with graduated release
+            DistributingValve, // Triple valve + driver brake valve control. Only for locomotives
         }
         /// <summary>
         /// Type of brake valve in the car
@@ -1190,6 +1191,7 @@ namespace Orts.Simulation.RollingStocks
                             case "triple_valve": BrakeValve = BrakeValveType.TripleValve; break;
                             case "distributor":
                             case "graduated_release_triple_valve": BrakeValve = BrakeValveType.Distributor; break;
+                            case "distributing_valve": BrakeValve = BrakeValveType.DistributingValve; break;
                             case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
                             case "handbrake": HandBrakePresent = true; break;
                             case "auxilary_reservoir": // MSTS legacy parameter - use is discouraged
