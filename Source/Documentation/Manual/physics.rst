@@ -339,6 +339,17 @@ The ``ORTSSlipControlSystem ( Full )``  parameter can be inserted
 into the engine section of the .eng file to indicate the presence of
 such system.
 
+Steam locomotives will have varying magnitude of rotational forces depending upon the separation 
+between the cylinder crank angles.
+
+The crank angles for example of a 2 cylinder locomotive has a 90 deg separation whereas a 3 cylinder locomotive 
+has a 120 deg variation. OR will default to a "common" value for the number of cylinders defined, but the user 
+can override this with "ORTSWheelCrankAngleDifference ( A B C D )", where A, B, C and D are the separations for 
+up to a 4 cylinder locomotive. For example, a 4 cylinder locomotive can have a separation of 90 deg for each 
+cylinder or sometimes it has two of the cranks separated by 45 deg instead. These values can either be in 
+Rad (default) or Deg. The separations should be described around the full 360 deg of rotation, so for example, 
+a 3 cylinder locomotive would be - ORTSWheelCrankAngleDifference ( 0deg, 120deg, 240deg ).
+
 
 Engine -- Classes of Motive Power
 =================================
@@ -2022,13 +2033,22 @@ of a relevant wagon (including diesel, steam or electric locomotives.
 
 OR supports the following special visual effects in a steam locomotive:
 
-- Steam cylinders (named ``CylindersFX`` and ``Cylinders2FX``) -- two effects
-  are provided which will represent the steam exhausted when the steam
-  cylinder cocks are opened.  Two effects are provided to represent the steam
-  exhausted at the front and rear of each piston stroke. These effects will
-  appear whenever the cylinder cocks are opened, and there is sufficient
-  steam pressure at the cylinder to cause the steam to exhaust, typically the
-  regulator is open (> 0%).
+- Steam cylinder cocks (named ``Cylinders11FX``, ``Cylinders12FX``, ``Cylinders21FX``, 
+  ``Cylinders22FX``, ``Cylinders31FX``, ``Cylinders32FX``, ``Cylinders41FX``, 
+  ``Cylinders42FX``) -- these effects are provided which will represent the steam 
+  exhausted when the steam cylinder cocks are opened.  The effects are provided to 
+  represent the steam exhausted at the front and rear of each piston stroke. The 
+  numbers in the value names represent firstly the cylinder and the second the 
+  cylinder position, ie "11" = cylinder 1, front stroke, "12" = cylinder 1, backward 
+  stroke. These effects will appear whenever the cylinder cocks are opened, and 
+  there is sufficient steam pressure at the cylinder to cause the steam to exhaust, 
+  typically when the regulator is open (> 0%). Note: ``CylindersFX`` and ``Cylinders2FX`` 
+  should now be considered legacy parameters and ideally should not be  used.
+- Cylinder Exhaust (named ``CylinderSteamExhaust1FX``, ``CylinderSteamExhaust2FX``, 
+  ``CylinderSteamExhaust3FX``, ``CylinderSteamExhaust4FX``) -- these effects represent 
+  the steam exhausted from the cylinders at the end of each stroke. Typically this 
+  steam is feed back through a blast pipe up the smoke stack to improve draught in the 
+  firebox and bolier. The above parameters represent up to 4 individual steam cylinders.
 - Stack (named ``StackFX``) -- represents the smoke stack emissions. This
   effect will appear all the time in different forms depending upon the firing
   and steaming conditions of the locomotive.
@@ -2085,7 +2105,7 @@ Similarly if any of the co-ordinates are zero, then the effect will not be displ
 Each effect is defined by inserting a code block into the ENG/WAG file similar to
 the one shown below::
 
-    CylindersFX (
+    Cylinders11FX (
         -1.0485 1.0 2.8
         -1  0  0
         0.1
@@ -2698,7 +2718,9 @@ Typically this happens with lightly loaded vehicles at lower speeds, and hence t
 
 When a vehicle experiences wheel skid, an indication is provided in the FORCES INFORMATION HUD. To correct the problem the brakes must be released, and then applied slowly to ensure that the wheels are not *locked* up. Wheel skid will only occur if ADVANCED adhesion is selected in the options menu.
 
-(Ref to *Wheel Skidding due to Excessive Brake Force* for additional information)
+On some steam locomotives brakes are not applied to all the wheels, possibly only the drive wheels have braking, and the other wheels do not. The following parameter can be set to reflect this for the calculation of skidding.
+
+``ORTSLocomotiveDriveWheelOnlyBraking ( x )`` - where x = 1 if brakes are only fitted to the drive wheels, set to 0 or leave blank if all wheels are braked.
 
 Using the F5 HUD Expanded Braking Information
 ---------------------------------------------
