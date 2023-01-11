@@ -517,36 +517,84 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (AutoCylPressurePSI < 0)
                 AutoCylPressurePSI = 0;
             
-            bool bailoff = false;
-
-            if (Car is MSTSLocomotive loco && loco.EngineType != TrainCar.EngineTypes.Control)  // TODO - Control cars ned to be linked to power suppy requirements.
+            if (Car is MSTSLocomotive && (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve)
             {
-                //    if (Car is MSTSLocomotive loco && loco.LocomotivePowerSupply.MainPowerSupplyOn)
-                if (loco.LocomotivePowerSupply.MainPowerSupplyOn)
+                // For distributing valves, we use AutoCylPressurePSI as "Application Chamber/Pipe" pressure
+                // CylPressurePSI is the actual pressure applied to cylinders
+                var loco = Car as MSTSLocomotive;
+                var engineBrakeStatus = loco.EngineBrakeController.Notches[loco.EngineBrakeController.CurrentNotch].Type;
+                var trainBrakeStatus = loco.TrainBrakeController.Notches[loco.TrainBrakeController.CurrentNotch].Type;
+                 // BailOff
+                if (engineBrakeStatus == ControllerState.Release)
                 {
-                    if (loco.Train.LeadLocomotiveIndex >= 0 && ((MSTSLocomotive)loco.Train.Cars[loco.Train.LeadLocomotiveIndex]).BailOff)
+                    AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
+                    if (AutoCylPressurePSI < 0) AutoCylPressurePSI = 0;
+                }
+                // Independent air brake application
+                if (engineBrakeStatus == ControllerState.Apply)
+                {
+                    if (AutoCylPressurePSI < BrakeLine3PressurePSI)
+                        AutoCylPressurePSI = BrakeLine3PressurePSI;
+                }
+                // Emergency application
+                if (trainBrakeStatus == ControllerState.Emergency)
+                {
+                    AutoCylPressurePSI = Math.Min(AutoCylPressurePSI + elapsedClockSeconds * MaxApplicationRatePSIpS, Math.Min(MaxCylPressurePSI, BrakeLine2PressurePSI));
+                }
+                // Release or application pipe open
+                if ((engineBrakeStatus == ControllerState.Running && trainBrakeStatus == ControllerState.Running) || engineBrakeStatus == ControllerState.Release)
+                {
+                    if (AutoCylPressurePSI < CylPressurePSI)
                     {
-                        bailoff = true;
                         CylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
-                        if (CylPressurePSI < 0) CylPressurePSI = 0;
-                    }
-                    else if (loco.DynamicBrakeAutoBailOff && loco.DynamicBrakePercent > 0 && Car.MaxBrakeForceN > 0)
-                    {
-                        bailoff = true;
-                        var requiredBrakeForce = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                        var airBrakeForce = requiredBrakeForce - loco.DynamicBrakeForceN;
-                        var requiredCylPressure = Math.Max(Math.Min(airBrakeForce / Car.MaxBrakeForceN * MaxCylPressurePSI, AutoCylPressurePSI), 0);
-                        if (requiredCylPressure > CylPressurePSI)
-                            CylPressurePSI = Math.Min(requiredCylPressure, CylPressurePSI + MaxApplicationRatePSIpS * elapsedClockSeconds);
-                        if (requiredCylPressure < CylPressurePSI)
-                            CylPressurePSI = Math.Max(requiredCylPressure, CylPressurePSI - MaxReleaseRatePSIpS * elapsedClockSeconds);
+                        if (CylPressurePSI < AutoCylPressurePSI) CylPressurePSI = AutoCylPressurePSI;
                     }
                 }
+                // Equalization between application chamber and brake cylinders
+                if (AutoCylPressurePSI > CylPressurePSI)
+                {
+                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+                    if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
+                        dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
+                    if (dp > MaxCylPressurePSI - AutoCylPressurePSI)
+                        dp = MaxCylPressurePSI - AutoCylPressurePSI;
+                    BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
+                    CylPressurePSI += dp;
+                }
             }
-            if (!bailoff)
-                CylPressurePSI = AutoCylPressurePSI;
-            if (CylPressurePSI < BrakeLine3PressurePSI) // Brake Cylinder pressure will be the greater of engine brake pressure or train brake pressure
-                CylPressurePSI = BrakeLine3PressurePSI;
+            else
+            {
+                bool bailoff = false;
+
+                if (Car is MSTSLocomotive loco && loco.EngineType != TrainCar.EngineTypes.Control)  // TODO - Control cars ned to be linked to power suppy requirements.
+                {
+                    //    if (Car is MSTSLocomotive loco && loco.LocomotivePowerSupply.MainPowerSupplyOn)
+                    if (loco.LocomotivePowerSupply.MainPowerSupplyOn)
+                    {
+                        if (loco.Train.LeadLocomotiveIndex >= 0 && ((MSTSLocomotive)loco.Train.Cars[loco.Train.LeadLocomotiveIndex]).BailOff)
+                        {
+                            bailoff = true;
+                            CylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
+                            if (CylPressurePSI < 0) CylPressurePSI = 0;
+                        }
+                        else if (loco.DynamicBrakeAutoBailOff && loco.DynamicBrakePercent > 0 && Car.MaxBrakeForceN > 0)
+                        {
+                            bailoff = true;
+                            var requiredBrakeForce = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
+                            var airBrakeForce = requiredBrakeForce - loco.DynamicBrakeForceN;
+                            var requiredCylPressure = Math.Max(Math.Min(airBrakeForce / Car.MaxBrakeForceN * MaxCylPressurePSI, AutoCylPressurePSI), 0);
+                            if (requiredCylPressure > CylPressurePSI)
+                                CylPressurePSI = Math.Min(requiredCylPressure, CylPressurePSI + MaxApplicationRatePSIpS * elapsedClockSeconds);
+                            if (requiredCylPressure < CylPressurePSI)
+                                CylPressurePSI = Math.Max(requiredCylPressure, CylPressurePSI - MaxReleaseRatePSIpS * elapsedClockSeconds);
+                        }
+                    }
+                }
+                if (!bailoff)
+                    CylPressurePSI = AutoCylPressurePSI;
+                if (CylPressurePSI < BrakeLine3PressurePSI) // Brake Cylinder pressure will be the greater of engine brake pressure or train brake pressure
+                    CylPressurePSI = BrakeLine3PressurePSI;
+            }
 
             // During braking wheelslide control is effected throughout the train by additional equipment on each vehicle. In the piping to each pair of brake cylinders are fitted electrically operated 
             // dump valves. When axle rotations which are sensed electrically, differ by a predetermined speed the dump valves are operated releasing brake cylinder pressure to both axles of the affected 
