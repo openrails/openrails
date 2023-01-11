@@ -359,6 +359,8 @@ namespace ORTS.Scripting.Api
         SMEFullServ,        // TrainBrakesControllerSMEFullServiceStart
         SMESelfLap,         // TrainBrakesControllerSMEHoldStart
         SMEReleaseStart,    // TrainBrakesControllerSMEReleaseStart
+        HoldEngine,        // TrainBrakesControllerHoldEngineStart
+        BailOff,            // EngineBrakesControllerBailOffStart
     };
 
     public static class ControllerStateDictionary
@@ -405,7 +407,9 @@ namespace ORTS.Scripting.Api
             {ControllerState.SMEOnly, Catalog.GetString("SME Service")},
             {ControllerState.SMEFullServ, Catalog.GetString("SME Full Service")},
             {ControllerState.SMESelfLap, Catalog.GetString("SME Self Lap")},
-            {ControllerState.SMEReleaseStart, Catalog.GetString("SME Release Start")}
+            {ControllerState.SMEReleaseStart, Catalog.GetString("SME Release Start")},
+            {ControllerState.HoldEngine, Catalog.GetString("Hold Engine")},
+            {ControllerState.BailOff, Catalog.GetString("Bail Off")}
         };
     }
 }
