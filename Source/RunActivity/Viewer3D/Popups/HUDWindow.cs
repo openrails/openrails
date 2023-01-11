@@ -1073,7 +1073,17 @@ namespace Orts.Viewer3D.Popups
                     if (mstsLocomotive.AdvancedAdhesionModel)
                     {
 
-
+                        if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) // For display of steam locomotive adhesion info
+                        {
+                            TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model)"));
+                            TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);
+                            TableAddLabelValue(table, Viewer.Catalog.GetString("Wag Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);
+                            TableAddLabelValue(table, Viewer.Catalog.GetString("Tang. Force"), "{0:F0}", FormatStrings.FormatForce(N.FromLbf(mstsLocomotive.SteamTangentialWheelForce), mstsLocomotive.IsMetric));
+                            TableAddLabelValue(table, Viewer.Catalog.GetString("Static Force"), "{0:F0}", FormatStrings.FormatForce(N.FromLbf(mstsLocomotive.SteamStaticWheelForce), mstsLocomotive.IsMetric));
+                            //  TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeForceN, mstsLocomotive.IsMetric));
+                        }
+                        else  // Advanced adhesion non steam locomotives HUD display
+                        {
                             TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model)"));
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel slip"), "{0:F0}% ({1:F0}%/{2})", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS, FormatStrings.s);
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
@@ -1088,13 +1098,12 @@ namespace Orts.Viewer3D.Popups
                                 FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.CompensatedAxleForceN, mstsLocomotive.IsMetric),
                                 FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.CompensatedAxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel Speed"), "{0} ({1})",
-                        FormatStrings.FormatSpeedDisplay((HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) ? mstsLocomotive.WheelSpeedSlipMpS : mstsLocomotive.AbsWheelSpeedMpS, mstsLocomotive.IsMetric),
+                                FormatStrings.FormatSpeedDisplay(mstsLocomotive.AbsWheelSpeedMpS, mstsLocomotive.IsMetric),
                                 FormatStrings.FormatSpeedDisplay(mstsLocomotive.LocomotiveAxle.SlipSpeedMpS, mstsLocomotive.IsMetric)
                                 );
-                        if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel ang. pos."), "{0}º", (int)(mstsLocomotive.LocomotiveAxle.AxlePositionRad * 180 / Math.PI + 180));
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);
                             TableAddLabelValue(table, Viewer.Catalog.GetString("Wagon Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);
-
+                        }
                     }
                     else
                     {

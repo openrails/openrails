@@ -494,14 +494,8 @@ namespace Orts.Simulation.RollingStocks
                 CarAirHoseHorizontalLengthM = 0.3862f; // 15.2 inches
             }
             
-            // Disable derailment coefficent on "dummy" cars. NB: Ideally this should never be used as "dummy" cars interfer with the overall train physics.
-            if (MSTSWagonNumWheels == 0 && InitWagonNumAxles == 0 )
-            {
-                DerailmentCoefficientEnabled = false;
-            }
-
             // Ensure Drive Axles is set to a default if no OR value added to WAG file
-            if (InitWagonNumAxles == 0 && WagonType != WagonTypes.Engine)
+            if (WagonNumAxles == 0 && WagonType != WagonTypes.Engine)
             {
                 if (MSTSWagonNumWheels != 0 && MSTSWagonNumWheels < 6)
                 {
@@ -516,10 +510,6 @@ namespace Orts.Simulation.RollingStocks
                 {
                     Trace.TraceInformation("Number of Wagon Axles set to default value of {0}", WagonNumAxles);
                 }
-            }
-            else
-            {
-                WagonNumAxles = InitWagonNumAxles;
             }
 
             // Should always be at least one bogie on rolling stock. If is zero then NaN error occurs.
@@ -1391,8 +1381,8 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(inside": HasInsideView = true; ParseWagonInside(stf); break;
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
-                case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(ortsnumberaxles": InitWagonNumAxles = stf.ReadIntBlock(null); break;
+                case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
+                case "wagon(ortsnumberaxles": WagonNumAxles = stf.ReadIntBlock(null); break;
                 case "wagon(ortsnumberbogies": WagonNumBogies = stf.ReadIntBlock(null); break;
                 case "wagon(ortspantographs":
                     Pantographs.Parse(lowercasetoken, stf);
@@ -1481,8 +1471,7 @@ namespace Orts.Simulation.RollingStocks
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
-            InitWagonNumAxles = copy.InitWagonNumAxles;
-            DerailmentCoefficientEnabled = copy.DerailmentCoefficientEnabled;
+            WagonNumAxles = copy.WagonNumAxles;
             WagonNumBogies = copy.WagonNumBogies;
             MSTSWagonNumWheels = copy.MSTSWagonNumWheels;
             MassKG = copy.MassKG;

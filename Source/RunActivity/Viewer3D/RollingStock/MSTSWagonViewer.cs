@@ -27,7 +27,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Common;
-using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Viewer3D.RollingStock.SubSystems;
@@ -737,16 +736,8 @@ namespace Orts.Viewer3D.RollingStock
 
             if (Car.BrakeSkid) // if car wheels are skidding because of brakes locking wheels up then stop wheels rotating.
             {
-                if ( ((MSTSLocomotive)MSTSWagon).DriveWheelOnlyBrakes)
-                {
-                    distanceTravelledDrivenM = 0.0f;
-                }
-                else
-                {
                 distanceTravelledM = 0.0f;
                 distanceTravelledDrivenM = 0.0f;
-            }
-
             }
 
             // Running gear and drive wheel rotation (animation) in steam locomotives
