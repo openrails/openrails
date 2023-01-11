@@ -263,7 +263,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         break;
                     case ControllerState.Apply:
                     case ControllerState.FullServ:
-                        IncreasePressure(ref pressureBar, x * (MaxPressureBar() - FullServReductionBar()), ApplyRateBarpS(), elapsedClockSeconds);
+                        IncreasePressure(ref pressureBar, MaxPressureBar() - FullServReductionBar(), x*ApplyRateBarpS(), elapsedClockSeconds);
                         break;
                     case ControllerState.ManualBraking:
                     case ControllerState.VacContServ:
