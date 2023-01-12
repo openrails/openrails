@@ -14,8 +14,7 @@
     <DocumentationFile>..\..\Program\Orts.Parsers.OR.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MonoGame.Framework, Version=3.7.1.189, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="MonoGame.Framework">
       <HintPath>..\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
     </Reference>
   </ItemGroup>
