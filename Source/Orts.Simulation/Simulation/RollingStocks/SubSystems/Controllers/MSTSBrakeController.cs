@@ -128,6 +128,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     switch (type)
                     {
                         case ControllerState.Release:
+                        case ControllerState.HoldEngine:
                             IncreasePressure(ref pressureBar, Math.Min(MaxPressureBar(), MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
                             epState = 0;
@@ -256,6 +257,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     case ControllerState.Lap:
                         break;
                     case ControllerState.FullQuickRelease:
+                    case ControllerState.BailOff:
                         pressureBar -= x * QuickReleaseRateBarpS() * elapsedClockSeconds;
                         break;
                     case ControllerState.Release:
