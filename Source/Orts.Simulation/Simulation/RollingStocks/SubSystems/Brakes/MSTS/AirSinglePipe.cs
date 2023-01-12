@@ -531,36 +531,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     if (AutoCylPressurePSI < 0) AutoCylPressurePSI = 0;
                 }
                 // Independent air brake application
-                if (engineBrakeStatus == ControllerState.Apply)
-                {
-                    if (AutoCylPressurePSI < BrakeLine3PressurePSI)
-                        AutoCylPressurePSI = BrakeLine3PressurePSI;
-                }
+                if (AutoCylPressurePSI < BrakeLine3PressurePSI)
+                    AutoCylPressurePSI = BrakeLine3PressurePSI;
+                BrakeLine3PressurePSI = AutoCylPressurePSI;
                 // Emergency application
                 if (trainBrakeStatus == ControllerState.Emergency)
                 {
-                    AutoCylPressurePSI = Math.Min(AutoCylPressurePSI + elapsedClockSeconds * MaxApplicationRatePSIpS, Math.Min(MaxCylPressurePSI, BrakeLine2PressurePSI));
-                }
-                // Release or application pipe open
-                if ((engineBrakeStatus == ControllerState.Running && trainBrakeStatus == ControllerState.Running) || engineBrakeStatus == ControllerState.Release)
-                {
-                    if (AutoCylPressurePSI < CylPressurePSI)
-                    {
-                        CylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
-                        if (CylPressurePSI < AutoCylPressurePSI) CylPressurePSI = AutoCylPressurePSI;
-                    }
-                }
-                // Equalization between application chamber and brake cylinders
-                if (AutoCylPressurePSI > CylPressurePSI)
-                {
                     float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                    if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
-                        dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
                     if (dp > MaxCylPressurePSI - AutoCylPressurePSI)
                         dp = MaxCylPressurePSI - AutoCylPressurePSI;
-                    BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
-                    CylPressurePSI += dp;
+                    AutoCylPressurePSI += dp;
                 }
+                // Release pipe open
+                HoldingValve = engineBrakeStatus == ControllerState.Running && trainBrakeStatus == ControllerState.Release ? ValveState.Release : ValveState.Lap;
+                // Equalization between application chamber and brake cylinders
+                // TODO: Drain air from main reservoir
+                CylPressurePSI = AutoCylPressurePSI;
             }
             else
             {
