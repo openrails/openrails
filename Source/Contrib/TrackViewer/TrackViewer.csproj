@@ -25,9 +25,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
     </Reference>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>..\..\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\activeBroken.png">

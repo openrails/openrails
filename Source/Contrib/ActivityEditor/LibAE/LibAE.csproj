@@ -13,11 +13,6 @@
     <DefineConstants>TRACE;WINDOWS;ACTIVITY_EDITOR;JSON_OR_XML</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>..\..\..\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Icon\Start.ico" />
     <EmbeddedResource Include="Icon\Stop.ico" />
     <EmbeddedResource Include="Icon\Wait.ico" />
