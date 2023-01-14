@@ -743,9 +743,9 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 else
                 {
-                distanceTravelledM = 0.0f;
-                distanceTravelledDrivenM = 0.0f;
-            }
+                    distanceTravelledM = 0.0f;
+                    distanceTravelledDrivenM = 0.0f;
+                }
 
             }
 

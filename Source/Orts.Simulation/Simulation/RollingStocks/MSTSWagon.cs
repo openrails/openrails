@@ -494,7 +494,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 CarAirHoseHorizontalLengthM = 0.3862f; // 15.2 inches
             }
-            
+
             // Disable derailment coefficent on "dummy" cars. NB: Ideally this should never be used as "dummy" cars interfer with the overall train physics.
             if (MSTSWagonNumWheels == 0 && InitWagonNumAxles == 0 )
             {

@@ -2440,34 +2440,34 @@ public List<CabView> CabViewList = new List<CabView>();
         /// </summary>
         protected virtual void ApplyDirectionToTractiveForce()
         {
-                if (Train.IsPlayerDriven)
+            if (Train.IsPlayerDriven)
+            {
+                switch (Direction)
                 {
-                    switch (Direction)
-                    {
-                        case Direction.Forward:
-                            //MotiveForceN *= 1;     //Not necessary
-                            break;
-                        case Direction.Reverse:
-                            TractiveForceN *= -1;
-                            break;
-                        case Direction.N:
-                        default:
-                            TractiveForceN *= 0;
-                            break;
-                    }
+                    case Direction.Forward:
+                        //MotiveForceN *= 1;     //Not necessary
+                        break;
+                    case Direction.Reverse:
+                        TractiveForceN *= -1;
+                        break;
+                    case Direction.N:
+                    default:
+                        TractiveForceN *= 0;
+                        break;
                 }
-                else // for AI locomotives
-                {
-                    switch (Direction)
-                    {
-                        case Direction.Reverse:
-                            TractiveForceN *= -1;
-                            break;
-                        default:
-                            break;
-                    }
-                }// end AI locomotive
             }
+            else // for AI locomotives
+            {
+                switch (Direction)
+                {
+                    case Direction.Reverse:
+                        TractiveForceN *= -1;
+                        break;
+                    default:
+                        break;
+                }
+            }// end AI locomotive            
+        }
 
         protected enum Wheelslip
         {
@@ -2803,24 +2803,24 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
 
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
-                }
+            }
 
-                //Set axle model parameters
+            //Set axle model parameters
 
-                // Inputs
-                LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
+            // Inputs
+            LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
             LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
-                LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
+            LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
             LocomotiveAxle.WheelRadiusM = DriverWheelRadiusM;
 
-                LocomotiveAxle.Update(elapsedClockSeconds); //Main updater of the axle model
+            LocomotiveAxle.Update(elapsedClockSeconds); //Main updater of the axle model
 
-                MotiveForceN = LocomotiveAxle.CompensatedAxleForceN;
-                if (elapsedClockSeconds > 0)
-                {
-                    WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
-                    WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning && SlipControlSystem != SlipControlType.Full;
-                }
+            MotiveForceN = LocomotiveAxle.CompensatedAxleForceN;
+            if (elapsedClockSeconds > 0)
+            {
+                WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
+                WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning && SlipControlSystem != SlipControlType.Full;
+            }
             
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
@@ -2829,7 +2829,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 {
                     WheelSpeedSlipMpS = SpeedMpS;
                     WheelSpeedMpS = SpeedMpS;
-            }
+                }
                 else
                 {
                     WheelSpeedSlipMpS = LocomotiveAxle.AxleSpeedMpS;

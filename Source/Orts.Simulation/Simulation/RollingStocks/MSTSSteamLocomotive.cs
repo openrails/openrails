@@ -1299,11 +1299,11 @@ namespace Orts.Simulation.RollingStocks
                 WheelCrankAngleDiffRad[3] = Cylinder4CrankAngleRad;
             }
 
-            // ******************  Test Locomotive and Gearing type *********************** 
+                // ******************  Test Locomotive and Gearing type *********************** 
 
-            // If the maximum cutoff for the locomotive is less then the default tractive effort constant value, then flag to the user to check. See this reference - 
-            // https://babel.hathitrust.org/cgi/pt?id=wu.89089676290&view=1up&seq=510&skin=2021&q1=booster
-            if (CutoffController.MaximumValue < TractiveEffortFactor && Simulator.Settings.VerboseConfigurationMessages && ( CutoffController.MaximumValue < 0.7 || TractiveEffortFactor >= 0.85))
+                // If the maximum cutoff for the locomotive is less then the default tractive effort constant value, then flag to the user to check. See this reference - 
+                // https://babel.hathitrust.org/cgi/pt?id=wu.89089676290&view=1up&seq=510&skin=2021&q1=booster
+                if (CutoffController.MaximumValue < TractiveEffortFactor && Simulator.Settings.VerboseConfigurationMessages && ( CutoffController.MaximumValue < 0.7 || TractiveEffortFactor >= 0.85))
             {
                 Trace.TraceInformation("Maximum Cutoff setting {0} is less then the TractiveEffortFactor {1}, is this correct?", CutoffController.MaximumValue, TractiveEffortFactor);
             }
@@ -2522,8 +2522,8 @@ namespace Orts.Simulation.RollingStocks
             else // Legacy smoke implementation
             {
                 float velocityRate = (float)Math.Sqrt(KPa.FromPSI(Pressure_c_AtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
-            StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(Pressure_c_AtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
-            StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
+                StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(Pressure_c_AtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
+                StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
                 StackSteamVolumeM3pS = StackSteamVolumeM3pS / StackCount + FireRatio;
                 StackParticleDurationS = Throttlepercent + FireRatio;
             //    Trace.TraceInformation("Legacy - cutoff {0} Throttle {1} Velocity {2} Volume {3} Duration {4} VelocityRate {5}", cutoff, throttle, StackSteamVelocityMpS.SmoothedValue, StackSteamVolumeM3pS, StackParticleDurationS, velocityRate);
@@ -5010,8 +5010,8 @@ namespace Orts.Simulation.RollingStocks
             // By default this model uses information based upon a "NYC 4-4-2 locomotive", for smaller locomotives this data is changed in the OR initialisation phase.
 
             if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && this.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && SteamEngineType != SteamEngineTypes.Geared)
-                // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is in the the player train, AI locomotive will not work to this model. 
-                // Don't use slip model when train is in auto pilot
+            // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is in the the player train, AI locomotive will not work to this model. 
+            // Don't use slip model when train is in auto pilot
             {
                 float slipCutoffPressureAtmPSI;
                 float slipCylinderReleasePressureAtmPSI;
@@ -5113,12 +5113,12 @@ namespace Orts.Simulation.RollingStocks
                     if (crankCylinderPosition < 0)
                     {
                         crankCylinderPosition *= -1;
-                }
+                    }
 
                     // work out whether angle is on forward or return stroke
 
                     if (crankAngleRad > 0 && crankAngleRad < Math.PI)
-                {
+                    {
                         forwardCylinderPosition = crankCylinderPosition;
                         backwardCylinderPosition = 1 - crankCylinderPosition;
                     }
@@ -5156,37 +5156,37 @@ namespace Orts.Simulation.RollingStocks
                     else // Pressure will be in the exhaust section of the cylinder
                     {
                         // In exhaust section of cylinder pressure follows a PV variation.
-                    // Crank pressure = Cutoff Pressure x Cylinder Volume (at cutoff point) / cylinder volume (at release)
+                        // Crank pressure = Cutoff Pressure x Cylinder Volume (at cutoff point) / cylinder volume (at release)
 
                         forwardCylinderPressure = slipCylinderReleasePressureAtmPSI * (CylinderExhaustOpenFactor + CylinderClearancePC) / (forwardCylinderPosition + CylinderClearancePC);
-                }
+                    }
 
                     // backward stroke
 
                     if (backwardCylinderPosition < CylinderAdmissionOpenFactor) // early part of cycle
-                {
+                    {
                         backwardCylinderPressure = slipBackPressureAtmPSI * (CylinderClearancePC) / (CylinderCompressionCloseFactor + CylinderClearancePC);  // Check factor to calculate volume of
-                }
+                    }
                     else if (backwardCylinderPosition < CylinderAdmissionOpenFactor && backwardCylinderPosition > CylinderCompressionCloseFactor)
-                {
+                    {
                         backwardCylinderPressure = slipBackPressureAtmPSI * (CylinderCompressionCloseFactor + CylinderClearancePC) / (CylinderAdmissionOpenFactor + CylinderClearancePC);  // Check factor to calculate volume of 
                     }
                     else // Pressure will be in the compression part of cylinder stroke
                     {
                         backwardCylinderPressure = slipBackPressureAtmPSI;
-                }
+                    }
 
                     // Combined cylinder pressure
                     crankCylinderPressure = forwardCylinderPressure - backwardCylinderPressure;
 
                     if (throttle < 0.01)
-                {
+                    {
                         crankCylinderPressure = 0;
-                }
+                    }
 
 #if DEBUG_STEAM_SLIP
                     if (throttle > 0.01 && (absSpeedMpS < 0.2 || absSpeedMpS > 17.9 && absSpeedMpS < 18.1 || absSpeedMpS > 35.5 && absSpeedMpS < 35.9))
-                {
+                    {
                         Trace.TraceInformation("Cylinder {0} CrankAngle {1} FwdCylPosition {2} FwdCylPressure {3} BwdCylPosition {4} BwdCylPressure {5} CrankPressure {6} ForwardStroke {7} Speed {8}", i, MathHelper.ToDegrees(crankAngleRad), forwardCylinderPosition, forwardCylinderPressure, backwardCylinderPosition, backwardCylinderPressure, crankCylinderPressure, forwardStroke, MpS.ToMpH(absSpeedMpS));
                     }
 #endif
@@ -5353,7 +5353,7 @@ namespace Orts.Simulation.RollingStocks
                 if (throttle > 0.01 && (absSpeedMpS < 0.2 || absSpeedMpS > 17.7 && absSpeedMpS < 18.2))
                 {
                     Trace.TraceInformation("RotationalForce {0} AdhesiveForce {1}", N.ToLbf(TractiveForceN), SteamStaticWheelForce);
-
+                    
 
                 }
 
@@ -5367,7 +5367,7 @@ namespace Orts.Simulation.RollingStocks
                 WheelSpeedMpS = SpeedMpS;
                 WheelSpeedSlipMpS = SpeedMpS;
             }
-
+          
 
             // Derate when priming is occurring.
             if (BoilerIsPriming)
