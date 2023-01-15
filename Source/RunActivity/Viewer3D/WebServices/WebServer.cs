@@ -30,12 +30,14 @@ using Orts.Common;
 using Orts.Simulation.Physics;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
+using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static Orts.Common.InfoApiMap;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -85,6 +87,14 @@ namespace Orts.Viewer3D.WebServices
                     Formatting = Formatting.Indented,
                     ContractResolver = new XnaFriendlyResolver()
                 }));
+            }
+        }
+
+        public static async Task<T> DeserializationCallback<T>(IHttpContext context)
+        {
+            using (var text = context.OpenRequestText())
+            {
+                return JsonConvert.DeserializeObject<T>(await text.ReadToEndAsync());
             }
         }
 
@@ -257,9 +267,45 @@ namespace Orts.Viewer3D.WebServices
         public double Time() => Viewer.Simulator.ClockTime;
         #endregion
 
+        #region /API/MAP/INIT
+        [Route(HttpVerbs.Get, "/MAP/INIT")]
+        public InfoApiMap apiMapInfo()
+        {
+            return getApiMapInfo(Viewer);
+        }
+        #endregion
+
+        public static InfoApiMap getApiMapInfo(Viewer viewer)
+        {
+            InfoApiMap infoApiMap = new InfoApiMap(
+                viewer.PlayerLocomotive.PowerSupply.GetType().Name, 
+                UserSettings.SettingsFilePath, UserSettings.RegistryKey);
+
+            viewer.Simulator.TDB.TrackDB.addTrNodesToPointsOnApiMap(infoApiMap);
+
+            viewer.Simulator.TDB.TrackDB.addTrItemsToPointsOnApiMap(infoApiMap);
+
+            return infoApiMap;
+        }
+
         #region /API/MAP
         [Route(HttpVerbs.Get, "/MAP")]
-        public LatLon LatLon() => Viewer.Simulator.PlayerLocomotive.GetLatLon();
+        public LatLonDirection LatLonDirection() => Viewer.Simulator.PlayerLocomotive.GetLatLonDirection();
         #endregion
+
+        #region /API/MAP
+        [Route(HttpVerbs.Post, "/MAP")]
+        public async Task StoreLayerChance()
+        {
+            var data = await HttpContext.GetRequestDataAsync<ApiMapLayerAction>(WebServer.DeserializationCallback<ApiMapLayerAction>);
+            storeLayerSetting(UserSettings.SettingsFilePath, UserSettings.RegistryKey, data.LayerAction, data.LayerName);
+        }
+        #endregion
+    }
+    
+    public class ApiMapLayerAction
+    {
+        public string LayerAction;
+        public string LayerName;
     }
 }
