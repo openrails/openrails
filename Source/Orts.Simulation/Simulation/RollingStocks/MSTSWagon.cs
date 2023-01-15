@@ -861,7 +861,7 @@ namespace Orts.Simulation.RollingStocks
                                 totalContainerMassKG += discreteAnim.Container.MassKG;
                             }
                     }
-                    MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight + totalContainerMassKG;
+                    CalculateTotalMass(totalContainerMassKG);
 
                     if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
                     {
@@ -948,6 +948,12 @@ namespace Orts.Simulation.RollingStocks
 
             if (BrakeSystem == null)
                 BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
+        }
+
+        // Compute total mass of wagon including freight animations and variable loads like containers
+        public void CalculateTotalMass(float totalContainerMassKG)
+        {
+            MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight + totalContainerMassKG;
         }
 
         public void GetMeasurementUnits()
@@ -1978,7 +1984,7 @@ namespace Orts.Simulation.RollingStocks
                 // Updates the mass of the wagon considering all types of loads
                 if (FreightAnimations != null && FreightAnimations.WagonEmptyWeight != -1)
                 {
-                    MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight + totalContainerMassKG;
+                    CalculateTotalMass(totalContainerMassKG);
                 }
             }
         }

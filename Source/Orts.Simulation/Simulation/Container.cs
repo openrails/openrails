@@ -279,6 +279,24 @@ namespace Orts.Simulation
             var invWagonMatrix = Matrix.Invert(freightAnimDiscrete.Wagon.WorldPosition.XNAMatrix);
             RelativeContainerMatrix = Matrix.Multiply(WorldPosition.XNAMatrix, invWagonMatrix);
         }
+
+        public void ComputeLoadWeight(LoadState loadState)
+        {
+            switch (loadState)
+            {
+                case LoadState.Empty:
+                    MassKG = EmptyMassKG;
+                    break;
+                case LoadState.Loaded:
+                    MassKG = MaxMassWhenLoadedKG;
+                    break;
+                case LoadState.Random:
+                    var loadPercent = Simulator.Random.Next(101);
+                    if (loadPercent < 30) MassKG = EmptyMassKG;
+                    else MassKG = MaxMassWhenLoadedKG * loadPercent / 100f;
+                    break;
+            }
+        }
     }
 
     public class ContainerManager
@@ -542,20 +560,8 @@ namespace Orts.Simulation
                 container.LoadFromContainerFile(loadFilePath, Simulator.BasePath + @"\trains\trainset\");
                 ContainerManager.LoadedContainers.Add(loadFilePath, container);
             }
-            switch (loadState)
-            {
-                case LoadState.Empty:
-                    container.MassKG = container.EmptyMassKG;
-                    break;
-                case LoadState.Loaded:
-                    container.MassKG = container.MaxMassWhenLoadedKG;
-                    break;
-                case LoadState.Random:
-                    var loadPercent = Simulator.Random.Next(101);
-                    if (loadPercent < 30) container.MassKG = container.EmptyMassKG;
-                    else container.MassKG = container.MaxMassWhenLoadedKG * loadPercent / 100f;
-                    break;
-            }
+            container.ComputeLoadWeight(loadState);
+
             var stackLocation = StackLocations[stackLocationIndex];
             if (stackLocation.Containers != null && stackLocation.Containers.Count >= stackLocation.MaxStackedContainers)
                 Trace.TraceWarning("Stack Location {0} is full, can't lay down container", stackLocationIndex);
