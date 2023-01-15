@@ -30,7 +30,7 @@ using System;
 
 namespace Orts.Viewer3D.Common
 {
-    class SunMoonPos
+    static class SunMoonPos
     {
         /// <summary>
         /// Calculates the solar direction vector.
@@ -40,14 +40,14 @@ namespace Orts.Viewer3D.Common
         /// <param name="longitude">longitude</param>
         /// <param name="clockTime">wall clock time since start of activity, days</param>
         /// <param name="date">structure made up of day, month, year and ordinal date</param>
-        public static Vector3 SolarAngle(double latitude, double longitude, float clockTime, SkyViewer.Date date)
+        public static Vector3 SolarAngle(double latitude, double longitude, float clockTime, SkyViewer.SkyDate date)
         {
             Vector3 sunDirection;
 
             // For these calculations, west longitude is in positive degrees,
             float NOAAlongitude = -MathHelper.ToDegrees((float)longitude);
             // Fractional year, radians
-            double fYear = (MathHelper.TwoPi / 365) * (date.ordinalDate - 1 + (clockTime - 0.5));
+            double fYear = (MathHelper.TwoPi / 365) * (date.OrdinalDate - 1 + (clockTime - 0.5));
             // Equation of time, minutes
             double eqTime = 229.18 * (0.000075
                 + 0.001868 * Math.Cos(fYear)
@@ -112,12 +112,12 @@ namespace Orts.Viewer3D.Common
         /// <param name="longitude">longitude</param>
         /// <param name="clockTime">wall clock time since start of activity</param>
         /// <param name="date">structure made up of day, month, year and ordinal date</param>
-        public static Vector3 LunarAngle(double latitude, double longitude, float clockTime, SkyViewer.Date date)
+        public static Vector3 LunarAngle(double latitude, double longitude, float clockTime, SkyViewer.SkyDate date)
         {
             Vector3 moonDirection;
 
             // Julian day.
-            double JEday = (float)367 * date.year - 7 * (date.year + (date.month + 9) / 12) / 4 + 275 * date.month / 9 + date.day - 730531.5 + clockTime;
+            double JEday = (float)367 * date.Year - 7 * (date.Year + (date.Month + 9) / 12) / 4 + 275 * date.Month / 9 + date.Day - 730531.5 + clockTime;
             // Fractional time within current 100-year epoch, days
             double Ftime = JEday / 36525;
             // Ecliptic longitude, radians

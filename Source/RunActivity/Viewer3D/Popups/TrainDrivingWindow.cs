@@ -119,6 +119,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("Boiler pressure")] = Viewer.Catalog.GetString("PRES"),
             [Viewer.Catalog.GetString("Boiler water glass")] = Viewer.Catalog.GetString("WATR"),
             [Viewer.Catalog.GetString("Boiler water level")] = Viewer.Catalog.GetString("LEVL"),
+            [Viewer.Catalog.GetString("CCStatus")] = Viewer.Catalog.GetString("CCST"),
             [Viewer.Catalog.GetString("Circuit breaker")] = Viewer.Catalog.GetString("CIRC"),
             [Viewer.Catalog.GetString("Cylinder cocks")] = Viewer.Catalog.GetString("CCOK"),
             [Viewer.Catalog.GetString("Direction")] = Viewer.Catalog.GetString("DIRC"),
@@ -136,6 +137,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("Grate limit")] = Viewer.Catalog.GetString("GRAT"),
             [Viewer.Catalog.GetString("Loco Groups")] = Viewer.Catalog.GetString("GRUP"),
             [Viewer.Catalog.GetString("Master key")] = Viewer.Catalog.GetString("MAST"),
+            [Viewer.Catalog.GetString("MaxAccel")] = Viewer.Catalog.GetString("MACC"),
             [Viewer.Catalog.GetString("Pantographs")] = Viewer.Catalog.GetString("PANT"),
             [Viewer.Catalog.GetString("Power")] = Viewer.Catalog.GetString("POWR"),
             [Viewer.Catalog.GetString("Regulator")] = Viewer.Catalog.GetString("REGL"),
@@ -145,6 +147,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("Sander")] = Viewer.Catalog.GetString("SAND"),
             [Viewer.Catalog.GetString("Speed")] = Viewer.Catalog.GetString("SPED"),
             [Viewer.Catalog.GetString("Steam usage")] = Viewer.Catalog.GetString("STEM"),
+            [Viewer.Catalog.GetString("Target")] = Viewer.Catalog.GetString("TARG"),
             [Viewer.Catalog.GetString("Throttle")] = Viewer.Catalog.GetString("THRO"),
             [Viewer.Catalog.GetString("Time")] = Viewer.Catalog.GetString("TIME"),
             [Viewer.Catalog.GetString("Traction cut-off relay")] = Viewer.Catalog.GetString("TRAC"),
@@ -1084,7 +1087,35 @@ namespace Orts.Viewer3D.Popups
 
             AddSeparator();
 
-           // EOT
+            // Cruise Control
+            if ((Owner.Viewer.PlayerLocomotive as MSTSLocomotive).CruiseControl != null)
+            {
+                var cc = (Owner.Viewer.PlayerLocomotive as MSTSLocomotive).CruiseControl;
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString("CCStatus"),
+                    LastCol = cc.SpeedRegMode.ToString() + ColorCode[Color.Cyan]//"%%%"
+                });
+
+                if (cc.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto)
+                {
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Target"),
+                        LastCol = $"{FormatStrings.FormatSpeedDisplay(cc.SelectedSpeedMpS, Owner.Viewer.PlayerLocomotive.IsMetric) + ColorCode[Color.Cyan]}"//"%%%"
+                    });
+
+                    var maxAcceleration = Math.Round(cc.SelectedMaxAccelerationPercent).ToString("0") + "% ";//, "", false, keyPressed);
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("MaxAccel"),
+                        LastCol = $"{maxAcceleration + ColorCode[Color.Cyan]}"//"%%%"
+                    });
+                }
+                AddSeparator();
+            }
+
+            // EOT
 
             if (locomotive.Train.EOT != null)
             {

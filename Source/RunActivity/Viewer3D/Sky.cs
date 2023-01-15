@@ -1,155 +1,51 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
-// 
+﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// This file is the responsibility of the 3D & Environment Team. 
-
+// This file is the responsibility of the 3D & Environment Team.
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
+using ORTS.Common;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Processes;
-using ORTS.Common;
-using System;
-using System.Collections.Generic;
 
 namespace Orts.Viewer3D
 {
-    static class SkyConstants
-    {
-        // Sky dome constants
-        public const int skyRadius = 6000;
-        public const int skySides = 24;
-        // <CScomment> added a belt of triangles just below 0 level to avoid empty sky below horizon
-        public const short skyLevels = 6;
-    }
-
-    public class SkySteps
-    {
-        // Size of the sun- and moon-position lookup table arrays.
-        // Must be an integral divisor of 1440 (which is the number of minutes in a day).
-        public int MaxSteps = 72;
-        public double OldClockTime;
-        public int Step1, Step2;
-
-        /// <summary>
-        /// Returns the advance of time in units of 20 mins (1200 seconds).
-        /// Allows for an offset in hours from a control in the DispatchViewer.
-        /// This is a user convenience to reveal in daylight what might be hard to see at night.
-        /// </summary>
-        /// <returns></returns>
-        private float CelestialDiff(double clockTime)
-        {
-            var diffS = clockTime - (OldClockTime - DaylightOffsetS);
-            return (float)diffS / 1200;
-        }
-
-        private float DaylightOffsetS
-        {
-            get
-            {
-                return (Program.DebugViewer == null) ? 0f : (float)Program.DebugViewer.DaylightOffsetHrs * 60 * 60;
-            }
-        }
-
-        public void SetSunAndMoonDirection(ref Vector3 solarDirection, ref Vector3 lunarDirection
-            , ref Vector3[] solarPosArray, ref Vector3[] lunarPosArray
-            , double clockTime)
-        {
-            // Current solar and lunar position are calculated by interpolation in the lookup arrays.
-            // The arrays have intervals of 1200 secs or 20 mins.
-            // Using the Lerp() function, so need to calculate the in-between differential
-            // The rest of this increments/decrements the array indices and checks for overshoot/undershoot.
-            while (clockTime >= (OldClockTime - DaylightOffsetS + 1200)) // Plus key, or normal forward in time; <CSComment> better so in case of fast forward
-            {
-                OldClockTime = OldClockTime + 1200;
-                Step1++;
-                Step2++;
-                if (Step2 >= MaxSteps) // Midnight.
-                {
-                    Step2 = 0;
-                }
-                if (Step1 >= MaxSteps) // Midnight.
-                {
-                    Step1 = 0;
-                }
-            }
-            if (clockTime <= (OldClockTime - DaylightOffsetS)) // Minus key
-            {
-                OldClockTime = OldClockTime - 1200;
-                Step1--;
-                Step2--;
-                if (Step1 < 0) // Midnight.
-                {
-                    Step1 = MaxSteps - 1;
-                }
-                if (Step2 < 0) // Midnight.
-                {
-                    Step2 = MaxSteps - 1;
-                }
-            }
-            var diff = CelestialDiff(clockTime);
-            solarDirection.X = MathHelper.Lerp(solarPosArray[Step1].X, solarPosArray[Step2].X, diff);
-            solarDirection.Y = MathHelper.Lerp(solarPosArray[Step1].Y, solarPosArray[Step2].Y, diff);
-            solarDirection.Z = MathHelper.Lerp(solarPosArray[Step1].Z, solarPosArray[Step2].Z, diff);
-            lunarDirection.X = MathHelper.Lerp(lunarPosArray[Step1].X, lunarPosArray[Step2].X, diff);
-            lunarDirection.Y = MathHelper.Lerp(lunarPosArray[Step1].Y, lunarPosArray[Step2].Y, diff);
-            lunarDirection.Z = MathHelper.Lerp(lunarPosArray[Step1].Z, lunarPosArray[Step2].Z, diff);
-        }
-    }
-
     public class SkyViewer
     {
-        Viewer Viewer;
-        Material Material;
+        internal readonly SkyPrimitive Primitive;
+        internal readonly float WindSpeed;
+        internal readonly float WindDirection;
+        internal int MoonPhase;
+        internal Vector3 SolarDirection;
+        internal Vector3 LunarDirection;
+        internal double Latitude; // Latitude of current route in radians. -pi/2 = south pole, 0 = equator, pi/2 = north pole.
+        internal double Longitude; // Longitude of current route in radians. -pi = west of prime, 0 = prime, pi = east of prime.
 
-        // Classes reqiring instantiation
-        public SkyPrimitive Primitive;
-        WorldLatLon worldLoc; // Access to latitude and longitude calcs (MSTS routes only)
-        SunMoonPos skyVectors;
+        static readonly WorldLatLon WorldLatLon = new WorldLatLon();
 
-        int seasonType; //still need to remember it as MP now can change it.
-        // Latitude of current route in radians. -pi/2 = south pole, 0 = equator, pi/2 = north pole.
-        // Longitude of current route in radians. -pi = west of prime, 0 = prime, pi = east of prime.
-        public double latitude, longitude;
-        // Date of activity
-        public struct Date
-        {
-            // Day, month, year. Format: DD MM YYYY, no leading zeros. 
-            public int year;
-            public int month;
-            public int day;
-            // Ordinal date. Range: 0 to 366.
-            public int ordinalDate;
-        };
-        public Date date;
-
-        private SkySteps skySteps = new SkySteps();
-
-        // Phase of the moon
-        public int moonPhase;
-        // Wind speed and direction
-        public float windSpeed;
-        public float windDirection;
-
-        // These arrays and vectors define the position of the sun and moon in the world
-        Vector3[] solarPosArray = new Vector3[72];
-        Vector3[] lunarPosArray = new Vector3[72];
-        public Vector3 solarDirection;
-        public Vector3 lunarDirection;
+        readonly Viewer Viewer;
+        readonly Material Material;
+        readonly Vector3[] SolarPositionCache = new Vector3[72];
+        readonly Vector3[] LunarPositionCache = new Vector3[72];
+        readonly SkyInterpolation SkyInterpolation = new SkyInterpolation();
 
         public SkyViewer(Viewer viewer)
         {
@@ -158,74 +54,38 @@ namespace Orts.Viewer3D
 
             // Instantiate classes
             Primitive = new SkyPrimitive(Viewer.RenderProcess);
-            skyVectors = new SunMoonPos();
 
-            // Set starting values
-            seasonType = -1;
             // Default wind speed and direction
-            windSpeed = 5.0f; // m/s (approx 11 mph)
-            windDirection = 4.7f; // radians (approx 270 deg, i.e. westerly)
+            // TODO: We should be using Viewer.Simulator.Weather instead of our own local weather fields
+            WindSpeed = 5.0f; // m/s (approx 11 mph)
+            WindDirection = 4.7f; // radians (approx 270 deg, i.e. westerly)
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // Adjust dome position so the bottom edge is not visible
-            Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y - 100, -Viewer.Camera.Location.Z);
-            Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);
+            SkyInterpolation.SetSunAndMoonDirection(ref SolarDirection, ref LunarDirection, SolarPositionCache, LunarPositionCache, Viewer.Simulator.ClockTime);
 
-            if (worldLoc == null)
-            {
-                // First time around, initialize the following items:
-                worldLoc = new WorldLatLon();
-                skySteps.OldClockTime = Viewer.Simulator.ClockTime % 86400;
-                while (skySteps.OldClockTime < 0) skySteps.OldClockTime += 86400;
-                skySteps.Step1 = skySteps.Step2 = (int)(skySteps.OldClockTime / 1200);
-                skySteps.Step2 = skySteps.Step2 < skySteps.MaxSteps - 1 ? skySteps.Step2 + 1 : 0; // limit to max. steps in case activity starts near midnight
-
-                // Get the current latitude and longitude coordinates
-                worldLoc.ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
-                if (seasonType != (int)Viewer.Simulator.Season)
-                {
-                    seasonType = (int)Viewer.Simulator.Season;
-                    date.ordinalDate = latitude >= 0 ? 82 + seasonType * 91 : (82 + (seasonType + 2) * 91) % 365;
-                    // TODO: Set the following three externally from ORTS route files (future)
-                    date.month = 1 + date.ordinalDate / 30;
-                    date.day = 21;
-                    date.year = 2017;
-                }
-                // Fill in the sun- and moon-position lookup tables
-                for (int i = 0; i < skySteps.MaxSteps; i++)
-                {
-                    solarPosArray[i] = SunMoonPos.SolarAngle(latitude, longitude, ((float)i / skySteps.MaxSteps), date);
-                    lunarPosArray[i] = SunMoonPos.LunarAngle(latitude, longitude, ((float)i / skySteps.MaxSteps), date);
-                }
-                // Phase of the moon is generated at random
-                moonPhase = Viewer.Random.Next(8);
-                if (moonPhase == 6 && date.ordinalDate > 45 && date.ordinalDate < 330)
-                    moonPhase = 3; // Moon dog only occurs in winter
-            }
-
-            skySteps.SetSunAndMoonDirection(ref solarDirection, ref lunarDirection, ref solarPosArray, ref lunarPosArray,
-                Viewer.Simulator.ClockTime);
-
-            frame.AddPrimitive(Material, Primitive, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
+            var xnaSkyWorldLocation = Matrix.CreateTranslation(Viewer.Camera.Location * new Vector3(1, 1, -1));
+            frame.AddPrimitive(Material, Primitive, RenderPrimitiveGroup.Sky, ref xnaSkyWorldLocation);
         }
 
         public void LoadPrep()
         {
-            worldLoc = new WorldLatLon();
-            // Get the current latitude and longitude coordinates
-            worldLoc.ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
-            seasonType = (int)Viewer.Simulator.Season;
-            date.ordinalDate = latitude >= 0 ? 82 + seasonType * 91 : (82 + (seasonType + 2) * 91) % 365;
-            date.month = 1 + date.ordinalDate / 30;
-            date.day = 21;
-            date.year = 2017;
-            float fractClockTime = (float)Viewer.Simulator.ClockTime / 86400;
-            solarDirection = SunMoonPos.SolarAngle(latitude, longitude, fractClockTime, date);
-            worldLoc = null;
-            latitude = 0;
-            longitude = 0;
+            WorldLatLon.ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref Latitude, ref Longitude);
+
+            // First time around, initialize the following items:
+            SkyInterpolation.OldClockTime = Viewer.Simulator.ClockTime % 86400;
+            while (SkyInterpolation.OldClockTime < 0)
+            {
+                SkyInterpolation.OldClockTime += 86400;
+            }
+
+            SkyInterpolation.Step1 = SkyInterpolation.Step2 = (int)(SkyInterpolation.OldClockTime / 1200);
+            SkyInterpolation.Step2 = SkyInterpolation.Step2 < SkyInterpolation.MaxSteps - 1 ? SkyInterpolation.Step2 + 1 : 0; // limit to max. steps in case activity starts near midnight
+
+            // And the rest depends on the weather (which is changeable)
+            Viewer.Simulator.WeatherChanged += (sender, e) => WeatherChanged();
+            WeatherChanged();
         }
 
         [CallOnThread("Loader")]
@@ -233,253 +93,266 @@ namespace Orts.Viewer3D
         {
             Material.Mark();
         }
+
+        void WeatherChanged()
+        {
+            // TODO: Allow setting the date from route files?
+            var seasonType = (int)Viewer.Simulator.Season;
+            var date = new SkyDate { OrdinalDate = Latitude >= 0 ? 82 + (seasonType * 91) : (82 + ((seasonType + 2) * 91)) % 365 };
+            date.Month = 1 + (date.OrdinalDate / 30);
+            date.Day = 21;
+            date.Year = 2017;
+
+            // Fill in the sun- and moon-position lookup tables
+            for (var i = 0; i < SkyInterpolation.MaxSteps; i++)
+            {
+                SolarPositionCache[i] = SunMoonPos.SolarAngle(Latitude, Longitude, (float)i / SkyInterpolation.MaxSteps, date);
+                LunarPositionCache[i] = SunMoonPos.LunarAngle(Latitude, Longitude, (float)i / SkyInterpolation.MaxSteps, date);
+            }
+
+            // Phase of the moon is generated at random, but moon dog only occurs in winter
+            MoonPhase = Viewer.Random.Next(8);
+            if (MoonPhase == 6 && date.OrdinalDate > 45 && date.OrdinalDate < 330)
+            {
+                MoonPhase = 3;
+            }
+        }
+
+        public struct SkyDate
+        {
+            public int Year;
+            public int Month;
+            public int Day;
+            public int OrdinalDate; // Ordinal date. Range: 0 to 366.
+        }
     }
 
     public class SkyPrimitive : RenderPrimitive
     {
-        private VertexBuffer SkyVertexBuffer;
-        private static IndexBuffer SkyIndexBuffer;
-        public int drawIndex;
+        public const float SkyRadius = 6020;
+        public const float MoonRadius = 6010;
+        public const float CloudsRadius = 6000;
+        public const float CloudsFlatness = 0.1f;
 
-        VertexPositionNormalTexture[] vertexList;
-        private static short[] triangleListIndices; // Trilist buffer.
+        public SkyElement Element;
 
-        // Sky dome geometry is based on two global variables: the radius and the number of sides
-        public int skyRadius = SkyConstants.skyRadius;
-        private static int skySides = SkyConstants.skySides;
-        public int cloudDomeRadiusDiff = 600; // Amount by which cloud dome radius is smaller than sky dome
-        // skyLevels: Used for iterating vertically through the "levels" of the hemisphere polygon
-        private static int skyLevels = SkyConstants.skyLevels;
-        // Number of vertices in the sky hemisphere. (each dome = 169 for 24-sided sky dome: 24 x 7 + 1)
-        // plus four more for the moon quad
-        private static int numVertices = 4 + 2 * ((skyLevels + 1) * skySides + 1);
-        // Number of point indices (each dome = 912 for 24 sides: 7 levels of 24 triangle pairs each
-        // plus 24 triangles at the zenith)
-        // plus six more for the moon quad
-        private static short indexCount = 6 + 2 * (SkyConstants.skySides * 6 *SkyConstants.skyLevels + 3 * SkyConstants.skySides);
+        /*
+         * The sky is formed of 3 layers (back to front):
+         * - Cloud-less sky and night sky textures, blended according to time of day, and with sun effect added in (in the shader)
+         * - Moon textures (phase is random)
+         * - Clouds blended by overcast factor and animated by wind speed and direction
+         *
+         * Both the cloud-less sky and clouds use sky domes; the sky is
+         * perfectly spherical, while the cloud dome is squashed (see
+         * `CloudsFlatness`) to make it closer to a flat plane overhead,
+         * without losing the horizon connection.
+         *
+         * The sky dome is the top hemisphere of a globe, plus an extension
+         * below the horizon to ensure we never get to see the edge. Both the
+         * rotational (sides) and horizontal/vertical (steps) segments are
+         * split so that the center angles are `DomeComponentDegrees`.
+         *
+         * It is important that there are enough sides for the texture mapping
+         * to look good; otherwise, smooth curves will render as wavy lines.
+         * Currently, testing shows 6° is the maximum reasonable angle.
+         */
+        const int TuneDomeComponentDegrees = 6;
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
+        const int DomeSides = 360 / TuneDomeComponentDegrees;
+        const int DomeStepsMain = 90 / TuneDomeComponentDegrees;
+        const int DomeStepsExtra = 1;
+        const int DomeSteps = DomeStepsMain + DomeStepsExtra;
+        const int DomePrimitives = (2 * DomeSides * DomeSteps) - DomeSides;
+        const int DomeVertices = 1 + (DomeSides * DomeSteps);
+        const int DomeIndexes = 3 * DomePrimitives;
+
+        const int MoonPrimitives = 2;
+        const int MoonVertices = 4;
+        const int MoonIndexes = 3 * MoonPrimitives;
+
+        const int VertexCount = (2 * DomeVertices) + MoonVertices;
+        const int IndexCount = DomeIndexes + MoonIndexes;
+
+        readonly VertexPositionNormalTexture[] VertexList;
+        readonly short[] IndexList;
+
+        VertexBuffer VertexBuffer;
+        IndexBuffer IndexBuffer;
+
         public SkyPrimitive(RenderProcess renderProcess)
         {
-            // Initialize the vertex and point-index buffers
-            vertexList = new VertexPositionNormalTexture[numVertices];
-            triangleListIndices = new short[indexCount];
-            // Sky dome
-            DomeVertexList(0, skyRadius, 1.0f);
-            DomeTriangleList(0, 0);
-            // Cloud dome
-            DomeVertexList((numVertices - 4) / 2, skyRadius - cloudDomeRadiusDiff, 0.4f);
-            DomeTriangleList((short)((indexCount - 6) / 2), 1);
-            // Moon quad
-            MoonLists(numVertices - 5, indexCount - 6);
+            // Initialize the vertex and index lists
+            VertexList = new VertexPositionNormalTexture[VertexCount];
+            IndexList = new short[IndexCount];
+            var vertexIndex = 0;
+            var indexIndex = 0;
+            InitializeDomeVertexList(ref vertexIndex, SkyRadius);
+            InitializeDomeVertexList(ref vertexIndex, CloudsRadius, CloudsFlatness);
+            InitializeDomeIndexList(ref indexIndex);
+            InitializeMoonLists(ref vertexIndex, ref indexIndex);
+            Debug.Assert(vertexIndex == VertexCount, $"Did not initialize all verticies; expected {VertexCount}, got {vertexIndex}");
+            Debug.Assert(indexIndex == IndexCount, $"Did not initialize all indexes; expected {IndexCount}, got {indexIndex}");
+
             // Meshes have now been assembled, so put everything into vertex and index buffers
             InitializeVertexBuffers(renderProcess.GraphicsDevice);
         }
 
+        public enum SkyElement
+        {
+            Sky,
+            Moon,
+            Clouds,
+        }
+
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.SetVertexBuffer(SkyVertexBuffer);
-            graphicsDevice.Indices = SkyIndexBuffer;
+            graphicsDevice.SetVertexBuffer(VertexBuffer);
+            graphicsDevice.Indices = IndexBuffer;
 
-            switch (drawIndex)
+            switch (Element)
             {
-                case 1: // Sky dome
+                case SkyElement.Sky:
                     graphicsDevice.DrawIndexedPrimitives(
                         PrimitiveType.TriangleList,
                         baseVertex: 0,
                         startIndex: 0,
-                        primitiveCount: (indexCount - 6) / 6);
+                        primitiveCount: DomePrimitives);
                     break;
-                case 2: // Moon
-                    graphicsDevice.DrawIndexedPrimitives(
-                    PrimitiveType.TriangleList,
-                    baseVertex: 0,
-                    startIndex: indexCount - 6,
-                    primitiveCount: 2);
-                    break;
-                case 3: // Clouds Dome
+                case SkyElement.Moon:
                     graphicsDevice.DrawIndexedPrimitives(
                         PrimitiveType.TriangleList,
-                        baseVertex: 0,
-                        startIndex: (indexCount - 6) / 2,
-                        primitiveCount: (indexCount - 6) / 6);
+                        baseVertex: DomeVertices * 2,
+                        startIndex: DomeIndexes,
+                        primitiveCount: MoonPrimitives);
                     break;
-                default:
+                case SkyElement.Clouds:
+                    graphicsDevice.DrawIndexedPrimitives(
+                        PrimitiveType.TriangleList,
+                        baseVertex: DomeVertices,
+                        startIndex: 0,
+                        primitiveCount: DomePrimitives);
                     break;
             }
         }
 
-        /// <summary>
-        /// Creates the vertex list for each sky dome.
-        /// </summary>
-        /// <param name="index">The starting vertex number</param>
-        /// <param name="radius">The radius of the dome</param>
-        /// <param name="oblate">The amount the dome is flattened</param>
-        private void DomeVertexList(int index, int radius, float oblate)
+        void InitializeDomeVertexList(ref int index, float radius, float flatness = 1)
         {
-            int vertexIndex = index;
-            // <CSComment> for night sky texture wrap to maintain stars position, for clouds no wrap for better appearance
-            int texDivisor = (oblate == 1.0f) ? skyLevels : skyLevels + 1;
+            // Single vertex at zenith
+            VertexList[index].Position = new Vector3(0, radius * flatness, 0);
+            VertexList[index].Normal = Vector3.Normalize(VertexList[index].Position);
+            VertexList[index].TextureCoordinate = new Vector2(0.5f, 0.5f);
+            index++;
 
-            // for each vertex
-            for (int i = 0; i <= (skyLevels); i++) // (=6 for 24 sides)
+            for (var step = 1; step <= DomeSteps; step++)
             {
-                // The "oblate" factor is used to flatten the dome to an ellipsoid. Used for the inner (cloud)
-                // dome only. Gives the clouds a flatter appearance.
-                float y = (float)Math.Sin(MathHelper.ToRadians((360 / skySides) * (i-1))) * radius * oblate;
-                float yRadius = radius * (float)Math.Cos(MathHelper.ToRadians((360 / skySides) * (i-1)));
-                for (int j = 0; j < skySides; j++) // (=24 for top overlay)
+                var stepCos = (float)Math.Cos(MathHelper.ToRadians(90f * step / DomeStepsMain));
+                var stepSin = (float)Math.Sin(MathHelper.ToRadians(90f * step / DomeStepsMain));
+
+                var y = radius * stepCos * flatness;
+                var d = radius * stepSin;
+
+                for (var side = 0; side < DomeSides; side++)
                 {
+                    var sideCos = (float)Math.Cos(MathHelper.ToRadians(360f * side / DomeSides));
+                    var sideSin = (float)Math.Sin(MathHelper.ToRadians(360f * side / DomeSides));
 
-                    float x = (float)Math.Cos(MathHelper.ToRadians((360 / skySides) * (skySides - j))) * yRadius;
-                    float z = (float)Math.Sin(MathHelper.ToRadians((360 / skySides) * (skySides - j))) * yRadius;
+                    var x = d * sideCos;
+                    var z = d * sideSin;
 
-                    // UV coordinates - top overlay
-                    float uvRadius;
-                    uvRadius = 0.5f - (float)(0.5f * (i - 1)) / texDivisor;
-                    float uv_u = 0.5f - ((float)Math.Cos(MathHelper.ToRadians((360 / skySides) * (skySides - j))) * uvRadius);
-                    float uv_v = 0.5f - ((float)Math.Sin(MathHelper.ToRadians((360 / skySides) * (skySides - j))) * uvRadius);
+                    var u = 0.5f + ((float)step / DomeStepsMain * sideCos / 2);
+                    var v = 0.5f + ((float)step / DomeStepsMain * sideSin / 2);
 
                     // Store the position, texture coordinates and normal (normalized position vector) for the current vertex
-                    vertexList[vertexIndex].Position = new Vector3(x, y, z);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_u, uv_v);
-                    vertexList[vertexIndex].Normal = Vector3.Normalize(new Vector3(x, y, z));
-                    vertexIndex++;
+                    VertexList[index].Position = new Vector3(x, y, z);
+                    VertexList[index].Normal = Vector3.Normalize(VertexList[index].Position);
+                    VertexList[index].TextureCoordinate = new Vector2(u, v);
+                    index++;
                 }
             }
-            // Single vertex at zenith
-            vertexList[vertexIndex].Position = new Vector3(0, radius, 0);
-            vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(0.5f, 0.5f); // (top overlay)
         }
 
-        /// <summary>
-        /// Creates the triangle index list for each dome.
-        /// </summary>
-        /// <param name="index">The starting triangle index number</param>
-        /// <param name="pass">A multiplier used to arrive at the starting vertex number</param>
-        static void DomeTriangleList(short index, short pass)
+        void InitializeDomeIndexList(ref int index)
         {
-            // ----------------------------------------------------------------------
-            // 24-sided sky dome mesh is built like this:        48 49 50
-            // Triangles are wound couterclockwise          71 o--o--o--o
-            // because we're looking at the inner              | /|\ | /|
-            // side of the hemisphere. Each time               |/ | \|/ |
-            // we circle around to the start point          47 o--o--o--o 26
-            // on the mesh we have to reset the                |\ | /|\ |
-            // vertex number back to the beginning.            | \|/ | \|
-            // Using WAC's sw,se,nw,ne coordinate    nw ne  23 o--o--o--o 
-            // convention.-->                        sw se        0  1  2
-            // ----------------------------------------------------------------------
-            short iIndex = index;
-            short baseVert = (short)(pass * (short)((numVertices - 4) / 2));
-            for (int i = 0; i < skyLevels; i++) // (=6 for 24 sides)
-                for (int j = 0; j < skySides; j++) // (=24 for 24 sides)
-                {
-                    // Vertex indices, beginning in the southwest corner
-                    short sw = (short)(baseVert + (j + i * (skySides)));
-                    short nw = (short)(sw + skySides); // top overlay mapping
-                    short ne = (short)(nw + 1);
-
-                    short se = (short)(sw + 1);
-
-                    if (((i & 1) == (j & 1)))  // triangles alternate
-                    {
-                        triangleListIndices[iIndex++] = sw;
-                        triangleListIndices[iIndex++] = ((ne - baseVert) % skySides == 0) ? (short)(ne - skySides) : ne;
-                        triangleListIndices[iIndex++] = nw;
-                        triangleListIndices[iIndex++] = sw;
-                        triangleListIndices[iIndex++] = ((se - baseVert) % skySides == 0) ? (short)(se - skySides) : se;
-                        triangleListIndices[iIndex++] = ((ne - baseVert) % skySides == 0) ? (short)(ne - skySides) : ne;
-                    }
-                    else
-                    {
-                        triangleListIndices[iIndex++] = sw;
-                        triangleListIndices[iIndex++] = ((se - baseVert) % skySides == 0) ? (short)(se - skySides) : se;
-                        triangleListIndices[iIndex++] = nw;
-                        triangleListIndices[iIndex++] = ((se - baseVert) % skySides == 0) ? (short)(se - skySides) : se;
-                        triangleListIndices[iIndex++] = ((ne - baseVert) % skySides == 0) ? (short)(ne - skySides) : ne;
-                        triangleListIndices[iIndex++] = nw;
-                    }
-                }
-            //Zenith triangles (=24 for 24 sides)
-            for (int i = 0; i < skySides; i++)
+            // Zenith triangles
+            for (var side = 0; side < DomeSides; side++)
             {
-                short sw = (short)(baseVert + (((skySides) * skyLevels) + i));
-                short se = (short)(sw + 1);
+                IndexList[index++] = 0;
+                IndexList[index++] = (short)(1 + ((side + 1) % DomeSides));
+                IndexList[index++] = (short)(1 + ((side + 0) % DomeSides));
+            }
 
-                triangleListIndices[iIndex++] = sw;
-                triangleListIndices[iIndex++] = ((se - baseVert) % skySides == 0) ? (short)(se - skySides) : se;
-                triangleListIndices[iIndex++] = (short)(baseVert + (short)((numVertices - 5) / 2)); // The zenith
+            for (var step = 1; step < DomeSteps; step++)
+            {
+                for (var side = 0; side < DomeSides; side++)
+                {
+                    IndexList[index++] = (short)(1 + ((step - 1) * DomeSides) + ((side + 0) % DomeSides));
+                    IndexList[index++] = (short)(1 + ((step - 0) * DomeSides) + ((side + 1) % DomeSides));
+                    IndexList[index++] = (short)(1 + ((step - 0) * DomeSides) + ((side + 0) % DomeSides));
+                    IndexList[index++] = (short)(1 + ((step - 1) * DomeSides) + ((side + 0) % DomeSides));
+                    IndexList[index++] = (short)(1 + ((step - 1) * DomeSides) + ((side + 1) % DomeSides));
+                    IndexList[index++] = (short)(1 + ((step - 0) * DomeSides) + ((side + 1) % DomeSides));
+                }
             }
         }
 
-        /// <summary>
-        /// Creates the moon vertex and triangle index lists.
-        /// <param name="vertexIndex">The starting vertex number</param>
-        /// <param name="iIndex">The starting triangle index number</param>
-        /// </summary>
-        private void MoonLists(int vertexIndex, int iIndex)
+        void InitializeMoonLists(ref int vertexIndex, ref int indexIndex)
         {
             // Moon vertices
-            for (int i = 0; i < 2; i++)
-                for (int j = 0; j < 2; j++)
+            for (var i = 0; i < 2; i++)
+            {
+                for (var j = 0; j < 2; j++)
                 {
+                    VertexList[vertexIndex].Position = new Vector3(i, j, 0);
+                    VertexList[vertexIndex].Normal = new Vector3(0, 0, 1);
+                    VertexList[vertexIndex].TextureCoordinate = new Vector2(i, j);
                     vertexIndex++;
-                    vertexList[vertexIndex].Position = new Vector3(i, j, 0);
-                    vertexList[vertexIndex].Normal = new Vector3(0, 0, 1);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(i, j);
                 }
+            }
 
             // Moon indices - clockwise winding
-            short msw = (short)(numVertices - 4);
-            short mnw = (short)(msw + 1);
-            short mse = (short)(mnw + 1);
-            short mne = (short)(mse + 1);
-            triangleListIndices[iIndex++] = msw;
-            triangleListIndices[iIndex++] = mnw;
-            triangleListIndices[iIndex++] = mse;
-            triangleListIndices[iIndex++] = mse;
-            triangleListIndices[iIndex++] = mnw;
-            triangleListIndices[iIndex++] = mne;
+            IndexList[indexIndex++] = 0;
+            IndexList[indexIndex++] = 1;
+            IndexList[indexIndex++] = 2;
+            IndexList[indexIndex++] = 1;
+            IndexList[indexIndex++] = 3;
+            IndexList[indexIndex++] = 2;
         }
 
-        /// <summary>
-        /// Initializes the sky dome, cloud dome and moon vertex and triangle index list buffers.
-        /// </summary>
-        private void InitializeVertexBuffers(GraphicsDevice graphicsDevice)
+        void InitializeVertexBuffers(GraphicsDevice graphicsDevice)
         {
-            // Initialize the vertex and index buffers, allocating memory for each vertex and index
-            SkyVertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), vertexList.Length, BufferUsage.WriteOnly);
-            SkyVertexBuffer.SetData(vertexList);
-            if (SkyIndexBuffer == null)
-            {
-                SkyIndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
-                SkyIndexBuffer.SetData(triangleListIndices);
-            }
+            VertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), VertexList.Length, BufferUsage.WriteOnly);
+            VertexBuffer.SetData(VertexList);
+            IndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), IndexCount, BufferUsage.WriteOnly);
+            IndexBuffer.SetData(IndexList);
         }
     }
 
-    public class SkyMaterial : Material
+    class SkyMaterial : Material
     {
-        SkyShader SkyShader;
-        Texture2D SkyTexture;
-        Texture2D StarTextureN;
-        Texture2D StarTextureS;
-        Texture2D MoonTexture;
-        Texture2D MoonMask;
-        Texture2D CloudTexture;
-        private Matrix XNAMoonMatrix;
-        IEnumerator<EffectPass> ShaderPassesSky;
-        IEnumerator<EffectPass> ShaderPassesMoon;
-        IEnumerator<EffectPass> ShaderPassesClouds;
+        const float NightStart = 0.15f; // The sun's Y value where it begins to get dark
+
+        const float NightFinish = -0.05f; // The Y value where darkest fog color is reached and held steady
+
+        // These should be user defined in the Environment files (future)
+        static readonly Vector3 StartColor = new Vector3(0.647f, 0.651f, 0.655f); // Original daytime fog color - must be preserved!
+        static readonly Vector3 FinishColor = new Vector3(0.05f, 0.05f, 0.05f); // Darkest night-time fog color
+
+        readonly SkyShader SkyShader;
+        readonly Texture2D SkyTexture;
+        readonly Texture2D StarTextureN;
+        readonly Texture2D StarTextureS;
+        readonly Texture2D MoonTexture;
+        readonly Texture2D MoonMask;
+        readonly Texture2D CloudTexture;
+        readonly IEnumerator<EffectPass> ShaderPassesSky;
+        readonly IEnumerator<EffectPass> ShaderPassesMoon;
+        readonly IEnumerator<EffectPass> ShaderPassesClouds;
 
         public SkyMaterial(Viewer viewer)
-            : base(viewer, null)
+           : base(viewer, null)
         {
             SkyShader = Viewer.MaterialManager.SkyShader;
+
             // TODO: This should happen on the loader thread.
             SkyTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png"));
             StarTextureN = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_N.png"));
@@ -502,45 +375,42 @@ namespace Orts.Viewer3D
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             // Adjust Fog color for day-night conditions and overcast
-            FogDay2Night(
-                Viewer.World.Sky.solarDirection.Y,
-                Viewer.Simulator.Weather.OvercastFactor);
+            FogDay2Night(Viewer.World.Sky.SolarDirection.Y, Viewer.Simulator.Weather.OvercastFactor);
 
-            //if (Viewer.Settings.DistantMountains) SharedMaterialManager.FogCoeff *= (3 * (5 - Viewer.Settings.DistantMountainsFogValue) + 0.5f);
+            // TODO: Use a dirty flag to determine if it is necessary to set the texture again
+            SkyShader.StarMapTexture = Viewer.World.Sky.Latitude > 0 ? StarTextureN : StarTextureS;
 
-            if (Viewer.World.Sky.latitude > 0) // TODO: Use a dirty flag to determine if it is necessary to set the texture again
-                SkyShader.StarMapTexture = StarTextureN;
-            else
-                SkyShader.StarMapTexture = StarTextureS;
-            SkyShader.Random = Viewer.World.Sky.moonPhase; // Keep setting this before LightVector for the preshader to work correctly
-            SkyShader.LightVector = Viewer.World.Sky.solarDirection;
+            SkyShader.Random = Viewer.World.Sky.MoonPhase; // Keep setting this before LightVector for the preshader to work correctly
+            SkyShader.LightVector = Viewer.World.Sky.SolarDirection;
             SkyShader.Time = (float)Viewer.Simulator.ClockTime / 100000;
-            SkyShader.MoonScale = SkyConstants.skyRadius / 20;
+            SkyShader.MoonScale = SkyPrimitive.SkyRadius / 20;
             SkyShader.Overcast = Viewer.Simulator.Weather.OvercastFactor;
             SkyShader.SetFog(Viewer.Simulator.Weather.FogDistance, ref SharedMaterialManager.FogColor);
-            SkyShader.WindSpeed = Viewer.World.Sky.windSpeed;
-            SkyShader.WindDirection = Viewer.World.Sky.windDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
+            SkyShader.WindSpeed = Viewer.World.Sky.WindSpeed;
+            SkyShader.WindDirection = Viewer.World.Sky.WindDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 
             for (var i = 0; i < 5; i++)
+            {
                 graphicsDevice.SamplerStates[i] = SamplerState.LinearWrap;
-            
+            }
+
+            var xnaSkyView = XNAViewMatrix * Camera.XNASkyProjection;
+            var xnaMoonMatrix = Matrix.CreateTranslation(Viewer.World.Sky.LunarDirection * SkyPrimitive.MoonRadius);
+            var xnaMoonView = xnaMoonMatrix * xnaSkyView;
+            SkyShader.SetViewMatrix(ref XNAViewMatrix);
+
             // Sky dome
+            SkyShader.CurrentTechnique = SkyShader.Techniques["Sky"];
+            Viewer.World.Sky.Primitive.Element = SkyPrimitive.SkyElement.Sky;
+            graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
 
-            SkyShader.CurrentTechnique = SkyShader.Techniques["Sky"];
-            Viewer.World.Sky.Primitive.drawIndex = 1;
-
-            graphicsDevice.BlendState = BlendState.Opaque;
-
-            Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
-
-            SkyShader.SetViewMatrix(ref XNAViewMatrix);
             ShaderPassesSky.Reset();
             while (ShaderPassesSky.MoveNext())
             {
                 foreach (var item in renderItems)
                 {
-                    Matrix wvp = item.XNAMatrix * viewXNASkyProj;
+                    var wvp = item.XNAMatrix * xnaSkyView;
                     SkyShader.SetMatrix(ref wvp);
                     ShaderPassesSky.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
@@ -549,23 +419,16 @@ namespace Orts.Viewer3D
 
             // Moon
             SkyShader.CurrentTechnique = SkyShader.Techniques["Moon"];
-            Viewer.World.Sky.Primitive.drawIndex = 2;
-
+            Viewer.World.Sky.Primitive.Element = SkyPrimitive.SkyElement.Moon;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
-
-            // Send the transform matrices to the shader
-            int skyRadius = Viewer.World.Sky.Primitive.skyRadius;
-            int cloudRadiusDiff = Viewer.World.Sky.Primitive.cloudDomeRadiusDiff;
-            XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.Sky.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
-            Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
             ShaderPassesMoon.Reset();
             while (ShaderPassesMoon.MoveNext())
             {
                 foreach (var item in renderItems)
                 {
-                    Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
+                    var wvp = item.XNAMatrix * xnaMoonView;
                     SkyShader.SetMatrix(ref wvp);
                     ShaderPassesMoon.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
@@ -574,8 +437,7 @@ namespace Orts.Viewer3D
 
             // Clouds
             SkyShader.CurrentTechnique = SkyShader.Techniques["Clouds"];
-            Viewer.World.Sky.Primitive.drawIndex = 3;
-
+            Viewer.World.Sky.Primitive.Element = SkyPrimitive.SkyElement.Clouds;
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
             ShaderPassesClouds.Reset();
@@ -583,7 +445,7 @@ namespace Orts.Viewer3D
             {
                 foreach (var item in renderItems)
                 {
-                    Matrix wvp = item.XNAMatrix * viewXNASkyProj;
+                    var wvp = item.XNAMatrix * xnaSkyView;
                     SkyShader.SetMatrix(ref wvp);
                     ShaderPassesClouds.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
@@ -602,40 +464,6 @@ namespace Orts.Viewer3D
             return false;
         }
 
-        const float nightStart = 0.15f; // The sun's Y value where it begins to get dark
-        const float nightFinish = -0.05f; // The Y value where darkest fog color is reached and held steady
-
-        // These should be user defined in the Environment files (future)
-        static Vector3 startColor = new Vector3(0.647f, 0.651f, 0.655f); // Original daytime fog color - must be preserved!
-        static Vector3 finishColor = new Vector3(0.05f, 0.05f, 0.05f); //Darkest nighttime fog color
-
-        /// <summary>
-        /// This function darkens the fog color as night begins to fall
-        /// as well as with increasing overcast.
-        /// </summary>
-        /// <param name="sunHeight">The Y value of the sunlight vector</param>
-        /// <param name="overcast">The amount of overcast</param>
-        static void FogDay2Night(float sunHeight, float overcast)
-        {
-            Vector3 floatColor;
-
-            if (sunHeight > nightStart)
-                floatColor = startColor;
-            else if (sunHeight < nightFinish)
-                floatColor = finishColor;
-            else
-            {
-                var amount = (sunHeight - nightFinish) / (nightStart - nightFinish);
-                floatColor = Vector3.Lerp(finishColor, startColor, amount);
-            }
-
-            // Adjust fog color for overcast
-            floatColor *= (1 - 0.5f * overcast);
-            SharedMaterialManager.FogColor.R = (byte)(floatColor.X * 255);
-            SharedMaterialManager.FogColor.G = (byte)(floatColor.Y * 255);
-            SharedMaterialManager.FogColor.B = (byte)(floatColor.Z * 255);
-        }
-
         public override void Mark()
         {
             Viewer.TextureManager.Mark(SkyTexture);
@@ -645,6 +473,37 @@ namespace Orts.Viewer3D
             Viewer.TextureManager.Mark(MoonMask);
             Viewer.TextureManager.Mark(CloudTexture);
             base.Mark();
+        }
+
+        /// <summary>
+        /// This function darkens the fog color as night begins to fall
+        /// as well as with increasing overcast.
+        /// </summary>
+        /// <param name="sunHeight">The Y value of the sunlight vector.</param>
+        /// <param name="overcast">The amount of overcast.</param>
+        static void FogDay2Night(float sunHeight, float overcast)
+        {
+            Vector3 floatColor;
+
+            if (sunHeight > NightStart)
+            {
+                floatColor = StartColor;
+            }
+            else if (sunHeight < NightFinish)
+            {
+                floatColor = FinishColor;
+            }
+            else
+            {
+                var amount = (sunHeight - NightFinish) / (NightStart - NightFinish);
+                floatColor = Vector3.Lerp(FinishColor, StartColor, amount);
+            }
+
+            // Adjust fog color for overcast
+            floatColor *= 1 - (0.5f * overcast);
+            SharedMaterialManager.FogColor.R = (byte)(floatColor.X * 255);
+            SharedMaterialManager.FogColor.G = (byte)(floatColor.Y * 255);
+            SharedMaterialManager.FogColor.B = (byte)(floatColor.Z * 255);
         }
     }
 }

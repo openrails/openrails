@@ -445,7 +445,7 @@ namespace Orts.Viewer3D
             if (Viewer.Settings.UseMSTSEnv == false)
             {
                 Viewer.World.Sky.LoadPrep();
-                sunDirection = Viewer.World.Sky.solarDirection;
+                sunDirection = Viewer.World.Sky.SolarDirection;
             }
             else
             {
@@ -472,7 +472,7 @@ namespace Orts.Viewer3D
         internal void UpdateShaders()
         {
             if(Viewer.Settings.UseMSTSEnv == false)
-                sunDirection = Viewer.World.Sky.solarDirection;
+                sunDirection = Viewer.World.Sky.SolarDirection;
             else
                 sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
 

@@ -446,7 +446,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
             }
 
-            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1);
+            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1); 
+
             float dt = elapsedClockSeconds / NumOfSubstepsPS;
             float hdt = dt / 2.0f;
             float axleInForceSumN = 0;
@@ -462,6 +463,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         dt = elapsedClockSeconds / NumOfSubstepsPS;
                         hdt = dt / 2;
                     }
+                  
                     if (Math.Sign(AxleSpeedMpS + k1.Item1 * dt) != Math.Sign(AxleSpeedMpS) && BrakeRetardForceN + frictionN > Math.Abs(driveForceN - k1.Item3))
                     {
                         AxlePositionRad += AxleSpeedMpS * hdt;
