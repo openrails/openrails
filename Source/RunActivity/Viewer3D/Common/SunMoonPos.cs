@@ -89,32 +89,16 @@ namespace Orts.Viewer3D.Common
                 solarHourAngle = MathHelper.ToRadians((float)(trueSolar / 4) - 180);
             }
 
-            // Solar zenith cosine. This is the Y COORDINATE of the solar Vector.
-            var solarZenithCosine = (Math.Sin(latitude) * Math.Sin(solarDeclination))
-                + (Math.Cos(latitude) * Math.Cos(solarDeclination) * Math.Cos(solarHourAngle));
+            var solarZenithCosine = (Math.Sin(latitude) * Math.Sin(solarDeclination)) + (Math.Cos(latitude) * Math.Cos(solarDeclination) * Math.Cos(solarHourAngle));
+            var solarZenithSine = Math.Sin(Math.Acos(solarZenithCosine));
+            var solarAzimuthCosine = (Math.Sin(solarDeclination) - (solarZenithCosine * Math.Sin(latitude))) / (Math.Sin(Math.Acos(solarZenithCosine)) * Math.Cos(latitude));
+            var solarAzimuthSine = -Math.Sin(solarHourAngle) * Math.Cos(solarDeclination) / Math.Sin(Math.Acos(solarZenithCosine));
 
-            // Solar elevation angle, radians. Currently not used.
-            //          double solarElevationAngle = MathHelper.PiOver2 - Math.Acos(solarZenithCosine);
-
-            // Solar azimuth cosine. This is the Z COORDINATE of the solar Vector.
-            var solarAzimuthCosine = -((Math.Sin(latitude) * solarZenithCosine) - Math.Sin(solarDeclination))
-                / (Math.Cos(latitude) * Math.Sin(Math.Acos(solarZenithCosine)));
-
-            // Running at 64 bit solarAzimuthCosine can be slightly below -1, generating NaN results
-            solarAzimuthCosine = MathHelper.Clamp((float)solarAzimuthCosine, -1, 1);
-
-            // Solar azimuth angle, radians. Currently not used.
-            //          double solarAzimuthAngle = Math.Acos(solarAzimuthCosine);
-            //          if (clockTime > 0.5)
-            //              solarAzimuthAngle = MathHelper.TwoPi - solarAzimuthAngle;
-
-            // Solar azimuth sine. This is the X COORDINATE of the solar Vector.
-            var solarAzimuthSine = Math.Sin(Math.Acos(solarAzimuthCosine)) * (clockTime > 0.5 ? 1 : -1);
-
-            sunDirection.X = -(float)solarAzimuthSine;
+            sunDirection.X = (float)solarZenithSine * (float)solarAzimuthSine;
             sunDirection.Y = (float)solarZenithCosine;
-            sunDirection.Z = -(float)solarAzimuthCosine;
+            sunDirection.Z = -(float)solarZenithSine * (float)solarAzimuthCosine;
             sunDirection.Normalize();
+
             return sunDirection;
         }
 
