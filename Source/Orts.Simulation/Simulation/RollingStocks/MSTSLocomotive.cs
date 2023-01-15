@@ -1830,7 +1830,7 @@ public List<CabView> CabViewList = new List<CabView>();
             // Pass Gearbox commands
             // Note - at the moment there is only one GearBox Controller created, but a gearbox for each diesel engine is created. 
             // This code keeps all gearboxes in the locomotive aligned with the first engine and gearbox.
-            if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
+            if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch && IsLeadLocomotive())
             {
                 // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive
 
@@ -3625,6 +3625,7 @@ public List<CabView> CabViewList = new List<CabView>();
         #region GearBoxController
         public virtual void ChangeGearUp()
         {
+
         }
 
         public virtual void StartGearBoxIncrease()
@@ -3690,6 +3691,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public virtual void ChangeGearDown()
         {
+            
         }
 
         public virtual void StartGearBoxDecrease()
@@ -3717,7 +3719,6 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (ThrottlePercent == 0)
                             {
                                 GearBoxController.StartDecrease();
-                                Trace.TraceInformation("Controller Decrease - Current Notch {0} Indication {1} GearIndex {2}", GearBoxController.CurrentNotch, dieselloco.DieselEngines[0].GearBox.GearIndication, dieselloco.DieselEngines[0].GearBox.CurrentGearIndex);
                                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, dieselloco.DieselEngines[0].GearBox.GearIndication);
                                 AlerterReset(TCSEvent.GearBoxChanged);
                                 SignalGearBoxChangeEvents();
@@ -3739,7 +3740,6 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                 }
             }
-
             ChangeGearDown();
         }
 

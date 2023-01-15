@@ -49,7 +49,12 @@ namespace Orts.Simulation.RollingStocks
     public class MSTSControlTrailerCar : MSTSLocomotive
     {
 
-        public int ControlGearBoxNumberOfGears = 1;
+        public int ControllerNumberOfGears = 1;
+        bool HasGearController = false;
+        bool ControlGearUp = false;
+        bool ControlGearDown = false;
+        int ControlGearIndex;
+        int ControlGearIndication;
 
 
         public MSTSControlTrailerCar(Simulator simulator, string wagFile)
@@ -63,18 +68,25 @@ namespace Orts.Simulation.RollingStocks
         public override void LoadFromWagFile(string wagFilePath)
         {
             base.LoadFromWagFile(wagFilePath);
-
-            Trace.TraceInformation("Control Trailer");
-
         }
 
 
         public override void Initialize()
         {
-            
-            base.Initialize();
 
-            
+
+            // Initialise gearbox controller
+            if (ControllerNumberOfGears > 0)
+            {
+                GearBoxController = new MSTSNotchController(ControllerNumberOfGears + 1);
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    HasGearController = true;
+                Trace.TraceInformation("Control Car Gear Controller created");
+                ControlGearIndex = 0;
+                Train.HasControlCarWithGear = true;
+            }
+
+            base.Initialize();
         }
 
 
@@ -101,7 +113,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
 
                 // to setup gearbox controller
-                case "engine(gearboxnumberofgears": ControlGearBoxNumberOfGears = stf.ReadIntBlock(1); break;
+                case "engine(gearboxcontrollernumberofgears": ControllerNumberOfGears = stf.ReadIntBlock(null); break;
 
 
                 default:
@@ -123,7 +135,7 @@ namespace Orts.Simulation.RollingStocks
 
             MSTSControlTrailerCar locoCopy = (MSTSControlTrailerCar)copy;
 
-            ControlGearBoxNumberOfGears = locoCopy.ControlGearBoxNumberOfGears;
+            ControllerNumberOfGears = locoCopy.ControllerNumberOfGears;
 
 
         }
@@ -135,6 +147,8 @@ namespace Orts.Simulation.RollingStocks
         public override void Save(BinaryWriter outf)
         {
             ControllerFactory.Save(GearBoxController, outf);
+            outf.Write(ControlGearIndication);
+            outf.Write(ControlGearIndex);
         }
 
         /// <summary>
@@ -145,7 +159,8 @@ namespace Orts.Simulation.RollingStocks
         {
             base.Restore(inf);
             ControllerFactory.Restore(GearBoxController, inf);
-
+            ControlGearIndication = inf.ReadInt32();
+            ControlGearIndex = inf.ReadInt32();
         }
 
 
@@ -159,14 +174,6 @@ namespace Orts.Simulation.RollingStocks
             WheelSpeedMpS = SpeedMpS;
 
             ThrottleController.SetValue(Train.MUThrottlePercent / 100);
-
-            // Initialise gearbox controller
-            if (ControlGearBoxNumberOfGears > 0)
-            {
-                GearBoxController = new MSTSNotchController(ControlGearBoxNumberOfGears + 1);
-            }
-
-
         }
 
         /// <summary>
@@ -177,6 +184,61 @@ namespace Orts.Simulation.RollingStocks
             base.Update(elapsedClockSeconds);
             WheelSpeedMpS = SpeedMpS; // Set wheel speed for control car, required to make wheels go around.
 
+
+            if (ControllerNumberOfGears > 0 && IsLeadLocomotive())
+            {
+                // pass gearbox command key to other locomotives in train, don't treat the player locomotive in this fashion.
+                foreach (TrainCar car in Train.Cars)
+                {
+
+
+                    var locog = car as MSTSDieselLocomotive;
+
+                    if (locog != null && car != this && !locog.IsLeadLocomotive() && GearBoxController != null)
+                    {
+
+                        if (ControlGearUp)
+                        {
+                         
+                            locog.GearBoxController.CurrentNotch = GearBoxController.CurrentNotch;
+                            locog.GearBoxController.SetValue((float)locog.GearBoxController.CurrentNotch);
+
+                            locog.ChangeGearUp();
+
+                            ControlGearUp = false;
+                        }
+
+
+                        if (ControlGearDown)
+                        {
+
+                            locog.GearBoxController.CurrentNotch = GearBoxController.CurrentNotch;
+                            locog.GearBoxController.SetValue((float)locog.GearBoxController.CurrentNotch);
+
+                            locog.ChangeGearDown();
+
+                            ControlGearDown = false;
+                        }
+
+                        // Read values for the HuD
+                        ControlGearIndex = locog.DieselEngines[0].GearBox.CurrentGearIndex;
+                        ControlGearIndication = locog.DieselEngines[0].GearBox.GearIndication;
+                    }
+
+                }
+            }
+
+        }
+
+        public override string GetStatus()
+        {
+            var status = new StringBuilder();
+            if (HasGearController)
+                status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"),
+                ControlGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (ControlGearIndication).ToString());
+            status.AppendLine();
+
+            return status.ToString();
         }
 
         /// <summary>
@@ -202,7 +264,42 @@ namespace Orts.Simulation.RollingStocks
         }
 
 
+        public override void ChangeGearUp()
+        {
 
+                       GearBoxController.CurrentNotch += 1;
+
+                        if(GearBoxController.CurrentNotch > ControllerNumberOfGears)
+                        {
+                            GearBoxController.CurrentNotch = ControllerNumberOfGears;
+                        }
+                        else if (GearBoxController.CurrentNotch < 0)
+                        {
+                            GearBoxController.CurrentNotch = 0;
+                        }
+            
+            ControlGearUp = true;
+            ControlGearDown = false;
+
+        }
+
+        public override void ChangeGearDown()
+        {
+            GearBoxController.CurrentNotch -= 1;
+
+            if (GearBoxController.CurrentNotch > ControllerNumberOfGears)
+            {
+                GearBoxController.CurrentNotch = ControllerNumberOfGears;
+            }
+            else if (GearBoxController.CurrentNotch < 0)
+            {
+                GearBoxController.CurrentNotch = 0;
+            }
+
+            ControlGearUp = false;
+            ControlGearDown = true;
+
+        }
 
 
 
