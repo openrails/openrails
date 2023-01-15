@@ -756,8 +756,8 @@ set as in the previous paragraph is as follows::
 
     ORTSFreightAnims (
 		  WagonEmptyWeight ( 12.575t )
-	  	LoadingAreaLength ( 14.6 )
-	  	AboveLoadingAreaLength ( 16.15 )
+		  LoadingAreaLength ( 14.6 )
+		  AboveLoadingAreaLength ( 16.15 )
 		  DoubleStacker ()
 		  Offset( 0 0.34 0 )
 		  IntakePoint ( 0 6.0 Container)
