@@ -309,20 +309,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     container.LoadFromContainerFile(loadFilePath, Wagon.Simulator.BasePath +@"\trains\trainset\");
                     ContainerManager.LoadedContainers.Add(loadFilePath, container);
                 }
-                switch (loadState)
-                {
-                    case LoadState.Empty:
-                        container.MassKG = container.EmptyMassKG;
-                        break;
-                    case LoadState.Loaded:
-                        container.MassKG = container.MaxMassWhenLoadedKG;
-                        break;
-                    case LoadState.Random:
-                        var loadPercent = Simulator.Random.Next(101);
-                        if (loadPercent < 30) container.MassKG = container.EmptyMassKG;
-                        else container.MassKG = container.MaxMassWhenLoadedKG * loadPercent / 100f;
-                        break;
-                }
+                container.ComputeLoadWeight(loadState);
 
                 Vector3 offset = new Vector3(0, 0, 0);
                 var validity = Validity(Wagon, container, loadPosition, Offset, LoadingAreaLength, out offset);
