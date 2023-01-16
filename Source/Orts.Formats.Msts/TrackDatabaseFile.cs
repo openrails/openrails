@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using Orts.Parsers.Msts;
 using ORTS.Common;
 using Microsoft.Xna.Framework;
+using Orts.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -95,7 +96,7 @@ namespace Orts.Formats.Msts
         /// Array of all TrackNodes in the track database
         /// Warning, the first TrackNode is always null.
         /// </summary>
-        public TrackNode[] TrackNodes;
+        public TrackNode[] TrackNodes; 
 
         /// <summary>
         /// Array of all Track Items (TrItem) in the road database
@@ -191,6 +192,119 @@ namespace Orts.Formats.Msts
             }
 
             TrItemTable = newTrItemTable;
+        }
+
+        public void addTrNodesToPointsOnApiMap(InfoApiMap apiMapInfo)
+        {
+            foreach (TrackNode trackNode in TrackNodes)
+            {
+                if (trackNode != null)
+                {
+                    try 
+                    {
+                        if (trackNode.UiD != null)
+                        {
+                            apiMapInfo.addToPointOnApiMap(
+                                trackNode.UiD.TileX, trackNode.UiD.TileZ,
+                                trackNode.UiD.X, trackNode.UiD.Y, trackNode.UiD.Z,
+                                "red", TypeOfPointOnApiMap.track, "track");
+                        }
+
+                        if ((trackNode.TrJunctionNode != null) && (trackNode.TrJunctionNode.TN.UiD != null))
+                        {
+                            apiMapInfo.addToPointOnApiMap(
+                                trackNode.TrJunctionNode.TN.UiD.TileX, trackNode.TrJunctionNode.TN.UiD.TileZ,
+                                trackNode.TrJunctionNode.TN.UiD.X, trackNode.TrJunctionNode.TN.UiD.Y, trackNode.TrJunctionNode.TN.UiD.Z,
+                                "red", TypeOfPointOnApiMap.track, "track");
+                        }
+
+                        if ((trackNode.TrVectorNode != null) && (trackNode.TrVectorNode.TrVectorSections != null))
+                        {
+                            bool first = true;
+                            LatLon latLonFrom = new LatLon(0, 0);
+                            TrVectorSection trVectorSectionLast = null;
+                            foreach (TrVectorSection trVectorSection in trackNode.TrVectorNode.TrVectorSections)
+                            {
+                                LatLon latLonTo = InfoApiMap.convertToLatLon(trVectorSection.TileX, trVectorSection.TileZ,
+                                    trVectorSection.X, trVectorSection.Y, trVectorSection.Z);
+                                apiMapInfo.addToPointOnApiMap(latLonTo, "red", TypeOfPointOnApiMap.track, "track");
+                                if (first)
+                                {
+                                    first = false;
+                                }
+                                else
+                                {
+                                    apiMapInfo.addToLineOnApiMap(latLonFrom, latLonTo);
+                                }
+                                latLonFrom = latLonTo;
+                                trVectorSectionLast = trVectorSection;
+                            }
+                            if (trVectorSectionLast != null)
+                            {
+                                if (trackNode.TrPins.Length == 2)
+                                {
+                                    int link = trackNode.TrPins[1].Link;
+                                    LatLon latLonTo = InfoApiMap.convertToLatLon(TrackNodes[link].UiD.TileX, TrackNodes[link].UiD.TileZ,
+                                        TrackNodes[link].UiD.X, TrackNodes[link].UiD.Y, TrackNodes[link].UiD.Z);
+                                    apiMapInfo.addToLineOnApiMap(latLonFrom, latLonTo);
+                                }
+                            }
+                        }
+
+                        if (trackNode.TrEndNode)
+                        {
+                            LatLon latLonFrom = InfoApiMap.convertToLatLon(
+                                trackNode.UiD.TileX, trackNode.UiD.TileZ,
+                                trackNode.UiD.X, trackNode.UiD.Y, trackNode.UiD.Z);
+                            int lastIndex = TrackNodes[trackNode.TrPins[0].Link].TrVectorNode.TrVectorSections.Length - 1;
+                            LatLon latLonTo = InfoApiMap.convertToLatLon(
+                                TrackNodes[trackNode.TrPins[0].Link].TrVectorNode.TrVectorSections[lastIndex].TileX,
+                                TrackNodes[trackNode.TrPins[0].Link].TrVectorNode.TrVectorSections[lastIndex].TileZ,
+                                TrackNodes[trackNode.TrPins[0].Link].TrVectorNode.TrVectorSections[lastIndex].X,
+                                TrackNodes[trackNode.TrPins[0].Link].TrVectorNode.TrVectorSections[lastIndex].Y,
+                                TrackNodes[trackNode.TrPins[0].Link].TrVectorNode.TrVectorSections[lastIndex].Z);
+                            apiMapInfo.addToLineOnApiMap(latLonFrom, latLonTo);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // just skip the trackNode with a problem,
+                        // better to skip this trackNode than to abort Open Rails
+                    }
+                }
+            }
+        }
+
+        public void addTrItemsToPointsOnApiMap(InfoApiMap apiMapInfo)
+        {
+            foreach (TrItem trItem in TrItemTable)
+            {
+                if ((trItem != null) && (trItem.TileX != 0))
+                {
+                    string itemType = trItem.ItemType.ToString().ToLower();
+                    if (itemType.StartsWith("tr"))
+                    {
+                        itemType = itemType.Substring(2);
+                    }
+                    if (itemType != "xing")
+                    {
+                        if (trItem.ItemName == null)
+                        {
+                            apiMapInfo.addToPointOnApiMap(
+                            trItem.TileX, trItem.TileZ,
+                            trItem.X, trItem.Y, trItem.Z,
+                            "blue", TypeOfPointOnApiMap.rest, $"{itemType}");
+                        }
+                        else
+                        {
+                            apiMapInfo.addToPointOnApiMap(
+                            trItem.TileX, trItem.TileZ,
+                            trItem.X, trItem.Y, trItem.Z,
+                            "green", TypeOfPointOnApiMap.named, $"{trItem.ItemName.Replace("'", "")}, {itemType}");
+                        }
+                    }
+                }
+            }
         }
     }
 
