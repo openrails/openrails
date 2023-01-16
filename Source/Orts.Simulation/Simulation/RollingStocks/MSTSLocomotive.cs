@@ -3101,7 +3101,7 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 var fogBaseFrictionCoefficientFactor = 1.0f;
                 var pricBaseFrictionCoefficientFactor = 1.0f;
-                float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
+                float pric = Simulator.Weather.PrecipitationIntensityPPSPM2 * 1000;
                 // precipitation will calculate a base coefficient value between 60% (light rain) and 90% (heavy rain) - this will be a factor that is used to adjust the base value 
                 // assume linear value between upper and lower precipitation values. Limits are set in the weather module, ie Rain = 0.01ppm (10) and Snow = 0.005ppm (5)
                 float precGrad = (0.2f - 0) / (10f - 5f);

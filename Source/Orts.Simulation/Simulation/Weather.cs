@@ -37,8 +37,8 @@ namespace Orts.Simulation
         // Overcast factor: 0.0 = almost no clouds; 0.1 = wispy clouds; 1.0 = total overcast.
         public float OvercastFactor;
 
-        // Pricipitation intensity in particles per second per meter^2 (PPSPM2).
-        public float PricipitationIntensityPPSPM2;
+        // Precipitation intensity in particles per second per meter^2 (PPSPM2).
+        public float PrecipitationIntensityPPSPM2;
 
         // Fog/visibility distance. Ranges from 10m (can't see anything), 5km (medium), 20km (clear) to 100km (clear arctic).
         public float FogDistance;

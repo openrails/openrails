@@ -68,7 +68,7 @@ namespace Orts.Viewer3D
         {
             var gameTime = (float)Viewer.Simulator.GameTime;
             Pricipitation.DynamicUpdate(WeatherControl, Weather, Viewer, ref Wind);
-            Pricipitation.Update(gameTime, elapsedTime, Weather.PricipitationIntensityPPSPM2, Viewer);
+            Pricipitation.Update(gameTime, elapsedTime, Weather.PrecipitationIntensityPPSPM2, Viewer);
 
             // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
             var XNAWorldLocation = Matrix.Identity;
@@ -89,7 +89,7 @@ namespace Orts.Viewer3D
             var gameTime = (float)Viewer.Simulator.GameTime;
             Pricipitation.Initialize(Viewer.Simulator.WeatherType, Wind);
             // Camera is null during first initialisation.
-            if (Viewer.Camera != null) Pricipitation.Update(gameTime, null, Weather.PricipitationIntensityPPSPM2, Viewer);
+            if (Viewer.Camera != null) Pricipitation.Update(gameTime, null, Weather.PrecipitationIntensityPPSPM2, Viewer);
         }
 
         [CallOnThread("Loader")]
