@@ -354,7 +354,7 @@ namespace Orts.Viewer3D
 
                     bool isDay;
                     if (Viewer.Settings.UseMSTSEnv == false)
-                        isDay = Viewer.World.Sky.solarDirection.Y > 0;
+                        isDay = Viewer.World.Sky.SolarDirection.Y > 0;
                     else
                         isDay = Viewer.World.MSTSSky.mstsskysolarDirection.Y > 0;
                     bool isPoorVisibility = Viewer.Simulator.Weather.FogDistance < 200;
@@ -746,7 +746,7 @@ namespace Orts.Viewer3D
             const float startNightTrans = 0.1f;
             const float finishNightTrans = -0.1f;
 
-            var sunDirection = Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.solarDirection;
+            var sunDirection = Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.SolarDirection;
             NightEffect = 1 - MathHelper.Clamp((sunDirection.Y - finishNightTrans) / (startNightTrans - finishNightTrans), 0, 1);
         }
 

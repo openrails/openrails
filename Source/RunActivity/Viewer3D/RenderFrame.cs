@@ -503,7 +503,7 @@ namespace Orts.Viewer3D
                 RenderSurfaceMaterial = new SpriteBatchMaterial(viewer, BlendState.Opaque);
 
             if (viewer.Settings.UseMSTSEnv == false)
-                SolarDirection = viewer.World.Sky.solarDirection;
+                SolarDirection = viewer.World.Sky.SolarDirection;
             else
                 SolarDirection = viewer.World.MSTSSky.mstsskysolarDirection;
 

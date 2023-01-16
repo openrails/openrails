@@ -295,6 +295,7 @@ namespace Orts.Simulation.RollingStocks
             }
        }
 
+        public bool DriveWheelOnlyBrakes = false;
         public bool SteamEngineBrakeFitted = false;
         public bool TrainBrakeFitted = false;
         public bool EngineBrakeFitted = false;
@@ -928,7 +929,13 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
-
+                case "engine(ortslocomotivedrivewheelonlybraking":
+                    var wheelbraking = stf.ReadIntBlock(null);
+                    if (wheelbraking == 1)
+                    {
+                        DriveWheelOnlyBrakes = true;
+                    }
+                    break;
                 case "engine(trainbrakescontrollermaxsystempressure":
                 case "engine(ortstrainbrakescontrollermaxoverchargepressure":
                 case "engine(trainbrakescontrollermaxreleaserate":
@@ -1178,7 +1185,7 @@ public List<CabView> CabViewList = new List<CabView>();
             MainResVolumeM3 = locoCopy.MainResVolumeM3;
             MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
             BrakePipeDischargeTimeFactor = locoCopy.BrakePipeDischargeTimeFactor;
-
+            DriveWheelOnlyBrakes = locoCopy.DriveWheelOnlyBrakes;
             DynamicBrakeBlended = locoCopy.DynamicBrakeBlended;
             DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
             DynamicBrakeAvailable = locoCopy.DynamicBrakeAvailable;
@@ -1524,8 +1531,8 @@ public List<CabView> CabViewList = new List<CabView>();
             // Initialise Brake Pipe Quick Charging Rate
             if (BrakePipeQuickChargingRatePSIpS == 0) BrakePipeQuickChargingRatePSIpS = BrakePipeChargingRatePSIorInHgpS;
 
-            // Initialise Exhauster Charging rate in diesel and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
-            if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
+            // Initialise Exhauster Charging rate in diesel, control cars and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
+            if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive || this is MSTSControlTrailerCar)
             {
                 ExhausterHighSBPChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS;
                 ExhausterLowSBPChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS / 5.0f; // Low speed exhauster setting is 1/5 of high speed
@@ -1896,7 +1903,7 @@ public List<CabView> CabViewList = new List<CabView>();
             // Pass Gearbox commands
             // Note - at the moment there is only one GearBox Controller created, but a gearbox for each diesel engine is created. 
             // This code keeps all gearboxes in the locomotive aligned with the first engine and gearbox.
-            if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
+            if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch && IsLeadLocomotive())
             {
                 // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive
 
@@ -2794,6 +2801,8 @@ public List<CabView> CabViewList = new List<CabView>();
                         if (LocomotiveAxle.IsWheelSlip) MotiveForceN = 0;
                     }
                 }
+
+                LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
             }
 
             //Set axle model parameters
@@ -2812,12 +2821,23 @@ public List<CabView> CabViewList = new List<CabView>();
                 WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
                 WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning && SlipControlSystem != SlipControlType.Full;
             }
+            
+            // This enables steam locomotives to have different speeds for driven and non-driven wheels.
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
             {
-                WheelSpeedSlipMpS = LocomotiveAxle.AxleSpeedMpS;
-                WheelSpeedMpS = SpeedMpS;
+                if (AbsSpeedMpS <= 0.15 && !WheelSlip)
+                {
+                    WheelSpeedSlipMpS = SpeedMpS;
+                    WheelSpeedMpS = SpeedMpS;
+                }
+                else
+                {
+                    WheelSpeedSlipMpS = LocomotiveAxle.AxleSpeedMpS;
+                    WheelSpeedMpS = SpeedMpS;
+                }
             }
-            else WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
+            else WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS; 
+
         }
 
         public void SimpleAdhesion()
@@ -3086,6 +3106,8 @@ public List<CabView> CabViewList = new List<CabView>();
         /// 
         /// The following values are indicatitive values only (sourced from Principles and Applications of Tribology).
         /// https://books.google.com.au/books?id=LtYgBQAAQBAJ&pg=PA312&lpg=PA312&dq=Principles+and+Applications+of+Tribology+table+14.1&source=bl&ots=2hfz1WpEsM&sig=ACfU3U3U9y9Lwov9GORLaKCO10SCFHvjhA&hl=en&sa=X&ved=2ahUKEwi82NCF_Yr0AhWNTX0KHcGfB3QQ6AF6BAgMEAM#v=onepage&q=Principles%20and%20Applications%20of%20Tribology%20table%2014.1&f=false
+        /// Dry (clean) - 0.25 to 0.3
+        /// Dry (sand) - 0.35 to 0.4
         /// Wet track (clean) = 0.18 <=> 0.2
         /// Wet track (sand) = 0.22 <=> 0.25
         /// Dew or fog = 0.09 <=> 0.15
@@ -3107,24 +3129,28 @@ public List<CabView> CabViewList = new List<CabView>();
             // note lowest friction will be for drizzle (light) rain; friction will increase for precipitation higher than drizzle rail
             if (!Simulator.Paused)
             {
-                var fogBaseFrictionCoefficientFactor = 0.0f;
-                var pricBaseFrictionCoefficientFactor = 0.0f;
+                var fogBaseFrictionCoefficientFactor = 1.0f;
+                var pricBaseFrictionCoefficientFactor = 1.0f;
                 float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
-                // precipitation will calculate a base coefficient value between 60% (light rain) and 80% (heavy rain) - this will be a factor that is used to adjust the base value - assume linear value between upper and lower precipitation values
-                if (pric >= 0.5)
-                    pricBaseFrictionCoefficientFactor = Math.Min((pric - 0.5f) * 0.0078f + 0.6f, 0.8f); // should give a value between 0.6 and 0.8
-                else
-                    pricBaseFrictionCoefficientFactor = 0.6f + 0.8f * (0.5f - pric); // should give a transition value between 1.0 and 0.6 as rain starts
+                // precipitation will calculate a base coefficient value between 60% (light rain) and 90% (heavy rain) - this will be a factor that is used to adjust the base value 
+                // assume linear value between upper and lower precipitation values. Limits are set in the weather module, ie Rain = 0.01ppm (10) and Snow = 0.005ppm (5)
+                float precGrad = (0.2f - 0) / (10f - 5f);
+
+                if (pric <= 1.0f)
+                {
+                    pricBaseFrictionCoefficientFactor = 1.0f;
+                }
+                else if (pric > 0)
+                {
+                    pricBaseFrictionCoefficientFactor = Math.Min((pric - 5f) * precGrad + 0.6f, 0.9f); 
+                    // should give a value between 0.6 and 0.9
+                }
 
                 // Adjust adhesion for impact of fog - default = 20000m = 20km
                 float fog = Simulator.Weather.FogDistance;
                 if (fog < 20000) // as fog thickens then decrease adhesion
                 {
                     fogBaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.6f), 1.0f); // If fog is less then 2km then it will impact friction, decrease adhesion to 60% (same as light rain transition)
-                }
-                else
-                {
-                    fogBaseFrictionCoefficientFactor = 1;
                 }
 
                 BaseFrictionCoefficientFactor = Math.Min(fogBaseFrictionCoefficientFactor, pricBaseFrictionCoefficientFactor);
@@ -3150,16 +3176,16 @@ public List<CabView> CabViewList = new List<CabView>();
 
             BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f); 
 
-            if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
+            // Snow covered track
+            if (Simulator.WeatherType == WeatherType.Snow)
             {
-                //sander - more effective in wet weather, so increases adhesion by more
                 if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
                 {
                     if (SanderSpeedEffectUpToMpS > 0.0f)
                     {
                         if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
                         {
-                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.75f;
+                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.50f;
                             BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
 
                         }
@@ -3168,15 +3194,19 @@ public List<CabView> CabViewList = new List<CabView>();
                     {
                         if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
                         {
-                            SandingFrictionCoefficientFactor = 1.75f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 175% adhesion (best case)
+                            SandingFrictionCoefficientFactor = 1.50f;
+                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 150% adhesion (best case)
                         }
                     }
                 }
+                else if (Sander && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
+                {
+                    SandingFrictionCoefficientFactor = 1.50f;
+                    BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 150% adhesion (best case)
+                }
             }
-            else // dry weather
+            else if (Simulator.WeatherType == WeatherType.Rain)
             {
-                //sander - not as effective in dry weather
                 if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
                 {
                     if (SanderSpeedEffectUpToMpS > 0.0f)
@@ -3185,6 +3215,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         {
                             SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.25f;
                             BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
+
                         }
                     }
                     else
@@ -3195,6 +3226,38 @@ public List<CabView> CabViewList = new List<CabView>();
                             BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 125% adhesion (best case)
                         }
                     }
+                }
+                else if (Sander && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
+                {
+                    SandingFrictionCoefficientFactor = 1.25f;
+                    BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 125% adhesion (best case)
+                }
+            }
+            else // dry weather
+            {
+                if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
+                {
+                    if (SanderSpeedEffectUpToMpS > 0.0f)
+                    {
+                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
+                        {
+                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.40f;
+                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
+                        }
+                    }
+                    else
+                    {
+                        if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
+                        {
+                            SandingFrictionCoefficientFactor = 1.40f;
+                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 140% adhesion (best case)
+                        }
+                    }
+                }
+                else if (Sander && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
+                {
+                    SandingFrictionCoefficientFactor = 1.40f;
+                    BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 140% adhesion (best case)
                 }
 
             }
@@ -3237,8 +3300,6 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 LocomotiveCoefficientFrictionHUD = LocomotiveAxle.AdhesionLimit; // Set display value for HUD - diesel
             }
-
-            
         }
 
         #endregion
@@ -3987,6 +4048,7 @@ public List<CabView> CabViewList = new List<CabView>();
         #region GearBoxController
         public virtual void ChangeGearUp()
         {
+
         }
 
         public virtual void StartGearBoxIncrease()
@@ -4052,6 +4114,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public virtual void ChangeGearDown()
         {
+            
         }
 
         public virtual void StartGearBoxDecrease()
@@ -4079,7 +4142,6 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (ThrottlePercent == 0)
                             {
                                 GearBoxController.StartDecrease();
-                                Trace.TraceInformation("Controller Decrease - Current Notch {0} Indication {1} GearIndex {2}", GearBoxController.CurrentNotch, dieselloco.DieselEngines[0].GearBox.GearIndication, dieselloco.DieselEngines[0].GearBox.CurrentGearIndex);
                                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, dieselloco.DieselEngines[0].GearBox.GearIndication);
                                 AlerterReset(TCSEvent.GearBoxChanged);
                                 SignalGearBoxChangeEvents();
@@ -4101,7 +4163,6 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                 }
             }
-
             ChangeGearDown();
         }
 
