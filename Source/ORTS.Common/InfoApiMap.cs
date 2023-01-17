@@ -22,66 +22,66 @@ using ORTS.Common;
 namespace Orts.Common
 {
     public enum TypeOfPointOnApiMap {
-        track,
-        named,
-        rest
+        Track,
+        Named,
+        Rest
     }
 
     public class PointOnApiMap
     {
-        public LatLon latLon;
-        public string color;
-        public TypeOfPointOnApiMap typeOfPointOnApiMap;
-        public string name;
+        public LatLon LatLon;
+        public string Color;
+        public TypeOfPointOnApiMap TypeOfPointOnApiMap;
+        public string Name;
     }
 
     public class LineOnApiMap
     {
-        public LatLon latLonFrom;
-        public LatLon latLonTo;
+        public LatLon LatLonFrom;
+        public LatLon LatLonTo;
     }
 
     public class InfoApiMap
     {
-        public string typeOfLocomotive;
+        public string TypeOfLocomotive;
 
-        public LinkedList<PointOnApiMap> pointOnApiMapList;
-        public LinkedList<LineOnApiMap> lineOnApiMapList;
+        public LinkedList<PointOnApiMap> PointOnApiMapList;
+        public LinkedList<LineOnApiMap> LineOnApiMapList;
 
-        public float latMin;
-        public float latMax;
-        public float lonMin;
-        public float lonMax;
+        public float LatMin;
+        public float LatMax;
+        public float LonMin;
+        public float LonMax;
 
-        public InfoApiMap(string powerSupplyName) 
+        public InfoApiMap(string PowerSupplyName) 
         {
-            initTypeOfLocomotive(powerSupplyName);
+            initTypeOfLocomotive(PowerSupplyName);
 
-            pointOnApiMapList = new LinkedList<PointOnApiMap>();
-            lineOnApiMapList = new LinkedList<LineOnApiMap>();
+            PointOnApiMapList = new LinkedList<PointOnApiMap>();
+            LineOnApiMapList = new LinkedList<LineOnApiMap>();
 
-            latMax = -999999f;
-            latMin = +999999f;
-            lonMax = -999999f;
-            lonMin = +999999f;
+            LatMax = -999999f;
+            LatMin = +999999f;
+            LonMax = -999999f;
+            LonMin = +999999f;
         }
 
-        private void initTypeOfLocomotive(string powerSupplyName)
+        private void initTypeOfLocomotive(string PowerSupplyName)
         {
-            string powerSupplyNameToLower = powerSupplyName.ToLower();
+            string powerSupplyNameToLower = PowerSupplyName.ToLower();
             if (powerSupplyNameToLower.Contains("steam"))
             {
-                typeOfLocomotive = "steam";
+                TypeOfLocomotive = "steam";
             }
             else
             {
                 if (powerSupplyNameToLower.Contains("diesel"))
                 {
-                    typeOfLocomotive = "diesel";
+                    TypeOfLocomotive = "diesel";
                 }
                 else
                 {
-                    typeOfLocomotive = "electric";
+                    TypeOfLocomotive = "electric";
                 }
             }
         }
@@ -100,62 +100,62 @@ namespace Orts.Common
 
         public void addToPointOnApiMap(
             int TileX, int TileZ, float X, float Y, float Z,
-            string color, TypeOfPointOnApiMap typeOfPointOnApiMap, string name)
+            string Color, TypeOfPointOnApiMap TypeOfPointOnApiMap, string Name)
         {
             LatLon latLon = InfoApiMap.convertToLatLon(TileX, TileZ, X, Y, Z);
 
             addToPointOnApiMap(latLon,
-                color, typeOfPointOnApiMap, name);
+                Color, TypeOfPointOnApiMap, Name);
         }
 
         public void addToPointOnApiMap(
-            LatLon latLon,
-            string color, TypeOfPointOnApiMap typeOfPointOnApiMap, string name)
+            LatLon LatLon,
+            string Color, TypeOfPointOnApiMap TypeOfPointOnApiMap, string Name)
         {
             PointOnApiMap pointOnApiMap = new PointOnApiMap
             {
-                latLon = latLon,
-                color = color,
-                typeOfPointOnApiMap = typeOfPointOnApiMap,
-                name = name
+                LatLon = LatLon,
+                Color = Color,
+                TypeOfPointOnApiMap = TypeOfPointOnApiMap,
+                Name = Name
             };
 
-            if (pointOnApiMap.typeOfPointOnApiMap == TypeOfPointOnApiMap.named)
+            if (pointOnApiMap.TypeOfPointOnApiMap == TypeOfPointOnApiMap.Named)
             {
                 // named last is the list so that they get displayed on top
-                pointOnApiMapList.AddLast(pointOnApiMap);
+                PointOnApiMapList.AddLast(pointOnApiMap);
             }
             else
             {
-                pointOnApiMapList.AddFirst(pointOnApiMap);
+                PointOnApiMapList.AddFirst(pointOnApiMap);
             }
 
-            if (pointOnApiMap.latLon.Lat > latMax)
+            if (pointOnApiMap.LatLon.Lat > LatMax)
             {
-                latMax = pointOnApiMap.latLon.Lat;
+                LatMax = pointOnApiMap.LatLon.Lat;
             }
-            if (pointOnApiMap.latLon.Lat < latMin)
+            if (pointOnApiMap.LatLon.Lat < LatMin)
             {
-                latMin = pointOnApiMap.latLon.Lat;
+                LatMin = pointOnApiMap.LatLon.Lat;
             }
-            if (pointOnApiMap.latLon.Lon > lonMax)
+            if (pointOnApiMap.LatLon.Lon > LonMax)
             {
-                lonMax = pointOnApiMap.latLon.Lon;
+                LonMax = pointOnApiMap.LatLon.Lon;
             }
-            if (pointOnApiMap.latLon.Lon < lonMin)
+            if (pointOnApiMap.LatLon.Lon < LonMin)
             {
-                lonMin = pointOnApiMap.latLon.Lon;
+                LonMin = pointOnApiMap.LatLon.Lon;
             }
         }
 
-        public void addToLineOnApiMap(LatLon latLonFrom, LatLon latLongTo)
+        public void addToLineOnApiMap(LatLon LatLonFrom, LatLon LatLongTo)
         {
             LineOnApiMap lineOnApiMap = new LineOnApiMap
             {
-                latLonFrom = latLonFrom,
-                latLonTo = latLongTo
+                LatLonFrom = LatLonFrom,
+                LatLonTo = LatLongTo
             };
-            lineOnApiMapList.AddLast(lineOnApiMap);
+            LineOnApiMapList.AddLast(lineOnApiMap);
         }
     }
 }

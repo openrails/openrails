@@ -261,20 +261,17 @@ namespace Orts.Viewer3D.WebServices
 
         #region /API/MAP/INIT
         [Route(HttpVerbs.Get, "/MAP/INIT")]
-        public InfoApiMap apiMapInfo()
-        {
-            return getApiMapInfo(Viewer);
-        }
+        public InfoApiMap InfoApiMap() => GetApiMapInfo(Viewer);
         #endregion
 
-        public static InfoApiMap getApiMapInfo(Viewer viewer)
+        public static InfoApiMap GetApiMapInfo(Viewer viewer)
         {
             InfoApiMap infoApiMap = new InfoApiMap(
                 viewer.PlayerLocomotive.PowerSupply.GetType().Name);
 
-            viewer.Simulator.TDB.TrackDB.addTrNodesToPointsOnApiMap(infoApiMap);
+            viewer.Simulator.TDB.TrackDB.AddTrNodesToPointsOnApiMap(infoApiMap);
 
-            viewer.Simulator.TDB.TrackDB.addTrItemsToPointsOnApiMap(infoApiMap);
+            viewer.Simulator.TDB.TrackDB.AddTrItemsToPointsOnApiMap(infoApiMap);
 
             return infoApiMap;
         }
