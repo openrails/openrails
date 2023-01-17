@@ -135,9 +135,14 @@ Some of these sample pages repeat data from the in-game panels to provide a more
   
 .. image:: images/web-page-both.png
 
-- The time page shows the simulation time as a digital clock and links to 3 versions of an analogue clock.
+- The Time page shows the simulation time as a digital clock and links to 3 versions of an analogue clock.
 
 .. image:: images/web-page-clock.png
+
+- The Map page shows the position and direction of the train in the real world on the 
+`OpenRailwayMap <https://www.openrailwaymap.org/`_. Different OpenRailwayMap layers are available.
+
+.. image:: images/web-page-map.png
 
 
 The sample pages can be found in the ``Content\Web`` subfolder of the OR
