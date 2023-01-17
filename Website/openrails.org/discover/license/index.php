@@ -41,7 +41,7 @@ CC BY-SA" which lets others remix, tweak, and build upon our work even for comme
           <p>
 Open Rails adopted the GPL in May 2013 after first securing permission from all the project's contributors. The previous license prevented anyone from taking the code and then distributing a modified version of Open Rails. The aim was to protect the project against splitting into competing versions (known as "forking") which would dilute the effort. 
 </p><p>
-Under this license, Open Rails was not legally <a href="http://opensource.org/">open source</a>; but now that the Open Rails project has gained some recognition, we can embrace the <a href="http://en.wikipedia.org/wiki/Free_software">free software</a> philosophy with little risk of forking.
+Under this license, Open Rails was not legally <a href="http://opensource.org/">open source</a>; but now that the Open Rails project has gained some recognition, we can embrace the <a href="http://en.wikipedia.org/wiki/Free_software">free software</a> philosophy and maybe benefit from forking.
           </p>
 			</div>
 			<div class="col-md-3"></div>

@@ -27,7 +27,7 @@
       </div>
 <?php include "shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRails-1.5-Setup.exe';
+  $download_stable = 'OpenRails-1.5.1-Setup.exe';
   $file_path = "files";
 ?>
       <div class="row">
@@ -79,6 +79,10 @@
             </p>
             </div>
           <div style="background-color: #ffffee; margin: 0 -5px; padding: 0 5px;">
+            <p>
+              <strong>Nov 2022</strong>
+              <a href="http://openrails.org/discover/version-1-5/">Version 1.5.1</a> is now available for immediate download <a href="http://openrails.org/download/program/">here</a>.
+            </p>
             <p>
               <strong>Summer 2022</strong>
               Three new UK routes are now available for immediate download <a href="http://openrails.org/download/content/">here</a>.
