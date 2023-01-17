@@ -22,6 +22,9 @@ const hr3 = new XMLHttpRequest;
 const httpCodeSuccess = 200;
 const xmlHttpRequestCodeDone = 4;
 
+const storageBaseLayerKey = "OpenRails/apimap/baseLayer";
+const storageLayersKey = "OpenRails/apimap/layers/";
+
 let map;
 let initToBeDone = true;
 let locomotiveMarker;
@@ -92,19 +95,6 @@ function ApiMapInit() {
 
     layerControl = L.control.layers(baseLayers, null).addTo(map);
 
-    if ((apiMapInitInfo.baseLayer == null) || (apiMapInitInfo.baseLayer == "standard")) {
-        orm.addTo(map);
-    }
-    if (apiMapInitInfo.baseLayer == "maximum speed") {
-        ormMaxSpeed.addTo(map);
-    }
-    if (apiMapInitInfo.baseLayer == "gauge") {
-        ormGauge.addTo(map);
-    }
-    if (apiMapInitInfo.baseLayer == "electrification") {
-        ormElectrification.addTo(map);
-    }
-
     trackLayerGroup = L.layerGroup();
     namedLayerGroup = L.layerGroup();
     restLayerGroup = L.layerGroup();
@@ -165,28 +155,47 @@ function ApiMapInit() {
     layerControl.addOverlay(namedLayerGroup, 'named');
     layerControl.addOverlay(restLayerGroup, 'rest');
 
-    if (apiMapInitInfo.overlayLayer != null) {
-        for (const layer of apiMapInitInfo.overlayLayer) {
-            if ((layer.name == "track") && (layer.show == 1)) {
-                trackLayerGroup.addTo(map);
+    baseLayerFound = false;
+    for (let i = 0; i < localStorage.length; i++) {
+        key = localStorage.key(i);
+
+        if (key == storageBaseLayerKey) {
+            if (value == "standard") {
+                orm.addTo(map);
             }
-            if ((layer.name == "named") && (layer.show == 1)) {
-                namedLayerGroup.addTo(map);
+            if (value == "maximum speed") {
+                ormMaxSpeed.addTo(map);
             }
-            if ((layer.name == "rest") && (layer.show == 1)) {
-                restLayerGroup.addTo(map);
+            if (value == "gauge") {
+                ormGauge.addTo(map);
+            }
+            if (value == "electrification") {
+                ormElectrification.addTo(map);
             }
         }
+
+        if ((key == storageLayersKey + "track") && (value == "true")) {
+            trackLayerGroup.addTo(map);
+        }
+        if ((key == storageLayersKey + "named") && (value == "true")) {
+            namedLayerGroup.addTo(map);
+        }
+        if ((key == storageLayersKey + "rest") && (value == "true")) {
+            restLayerGroup.addTo(map);
+        }
+    }
+    if (!baseLayerFound) {
+        orm.addTo(map);
     }
 
-    map.on('baselayerchange', function(e) {
-        ApiSendLayerChange('baseLayerChange', e.name);
+    map.on('baselayerchange', function (e) {
+        localStorage.setItem(storageBaseLayerKey, e.name);
     });
     map.on('overlayadd', function (e) {
-        ApiSendLayerChange('overlayAdd', e.name);
+        localStorage.setItem(storageLayersKey + e.name, "true");
     });
     map.on('overlayremove', function (e) {
-        ApiSendLayerChange('overlayRemove', e.name);
+        localStorage.setItem(storageLayersKey + e.name, "false");
     });
 }
 
@@ -236,17 +245,4 @@ function ApiMap() {
         }
     }
     hr1.send();
-}
-
-function ApiSendLayerChange(action, name) {
-
-    hr3.open("POST", "/API/MAP", true);
-    hr3.setRequestHeader("Content-Type", "application/json");
-    hr3.send
-        (JSON.stringify
-            ({
-                "LayerAction": action,
-                "LayerName": name
-            })
-        )
 }
