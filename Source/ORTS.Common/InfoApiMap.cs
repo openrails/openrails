@@ -21,12 +21,6 @@ using ORTS.Common;
 
 namespace Orts.Common
 {
-    public class OverlayLayer
-    {
-        public string name;
-        public bool show;
-    }
-
     public enum TypeOfPointOnApiMap {
         track,
         named,
@@ -50,8 +44,6 @@ namespace Orts.Common
     public class InfoApiMap
     {
         public string typeOfLocomotive;
-        public string baseLayer;
-        public OverlayLayer[] overlayLayer;
 
         public LinkedList<PointOnApiMap> pointOnApiMapList;
         public LinkedList<LineOnApiMap> lineOnApiMapList;
@@ -61,14 +53,9 @@ namespace Orts.Common
         public float lonMin;
         public float lonMax;
 
-        public const string RegistrySection = "ApiMap";
-        public const string RegistryKeyBaselayer = "baseLayer";
-        public const string RegistrySectionLayers = "ApiMap\\Layers";
-
-        public InfoApiMap(string powerSupplyName, string settingsFilePath, string registryKey) 
+        public InfoApiMap(string powerSupplyName) 
         {
             initTypeOfLocomotive(powerSupplyName);
-            initLayers(settingsFilePath, registryKey);
 
             pointOnApiMapList = new LinkedList<PointOnApiMap>();
             lineOnApiMapList = new LinkedList<LineOnApiMap>();
@@ -95,54 +82,6 @@ namespace Orts.Common
                 else
                 {
                     typeOfLocomotive = "electric";
-                }
-            }
-        }
-
-        private void initLayers(string settingsFilePath, string registryKey)
-        {
-            var store = SettingsStore.GetSettingStore(settingsFilePath, registryKey, RegistrySection);
-            baseLayer = (string)store.GetUserValue(RegistryKeyBaselayer, typeof(string));
-
-            overlayLayer = null;
-            store = SettingsStore.GetSettingStore(settingsFilePath, registryKey, RegistrySectionLayers);
-            string[] names = store.GetUserNames();
-            if (names.Length > 0)
-            {
-                overlayLayer = new OverlayLayer[names.Length];
-
-                int index = 0;
-                foreach (string name in names)
-                {
-                    overlayLayer[index] = new OverlayLayer
-                    {
-                        name = name,
-                        show = (bool)store.GetUserValue(name, typeof(bool))
-                    };
-                    index++;
-                }
-            }
-        }
-
-        public static void storeLayerSetting(
-            string settingsFilePath, string registryKey,
-            string layerAction, string layerName)
-        {
-            if (layerAction == "baseLayerChange")
-            {
-                var store = SettingsStore.GetSettingStore(settingsFilePath, registryKey, InfoApiMap.RegistrySection);
-                store.SetUserValue(InfoApiMap.RegistryKeyBaselayer, layerName);
-            }
-            else
-            {
-                var store = SettingsStore.GetSettingStore(settingsFilePath, registryKey, InfoApiMap.RegistrySectionLayers);
-                if (layerAction == "overlayAdd")
-                {
-                    store.SetUserValue(layerName, (bool)true);
-                }
-                if (layerAction == "overlayRemove")
-                {
-                    store.SetUserValue(layerName, (bool)false);
                 }
             }
         }

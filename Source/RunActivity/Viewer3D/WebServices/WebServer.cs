@@ -90,14 +90,6 @@ namespace Orts.Viewer3D.WebServices
             }
         }
 
-        public static async Task<T> DeserializationCallback<T>(IHttpContext context)
-        {
-            using (var text = context.OpenRequestText())
-            {
-                return JsonConvert.DeserializeObject<T>(await text.ReadToEndAsync());
-            }
-        }
-
         /// <summary>
         /// This contract resolver fixes JSON serialization for certain XNA classes.
         /// </summary>
@@ -278,8 +270,7 @@ namespace Orts.Viewer3D.WebServices
         public static InfoApiMap getApiMapInfo(Viewer viewer)
         {
             InfoApiMap infoApiMap = new InfoApiMap(
-                viewer.PlayerLocomotive.PowerSupply.GetType().Name, 
-                UserSettings.SettingsFilePath, UserSettings.RegistryKey);
+                viewer.PlayerLocomotive.PowerSupply.GetType().Name);
 
             viewer.Simulator.TDB.TrackDB.addTrNodesToPointsOnApiMap(infoApiMap);
 
@@ -292,20 +283,5 @@ namespace Orts.Viewer3D.WebServices
         [Route(HttpVerbs.Get, "/MAP")]
         public LatLonDirection LatLonDirection() => Viewer.Simulator.PlayerLocomotive.GetLatLonDirection();
         #endregion
-
-        #region /API/MAP
-        [Route(HttpVerbs.Post, "/MAP")]
-        public async Task StoreLayerChance()
-        {
-            var data = await HttpContext.GetRequestDataAsync<ApiMapLayerAction>(WebServer.DeserializationCallback<ApiMapLayerAction>);
-            storeLayerSetting(UserSettings.SettingsFilePath, UserSettings.RegistryKey, data.LayerAction, data.LayerName);
-        }
-        #endregion
-    }
-    
-    public class ApiMapLayerAction
-    {
-        public string LayerAction;
-        public string LayerName;
     }
 }
