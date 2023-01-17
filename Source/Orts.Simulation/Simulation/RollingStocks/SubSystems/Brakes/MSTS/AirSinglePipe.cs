@@ -561,9 +561,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {
+                bool isolateAutoBrake = false; 
                 if (Car is MSTSLocomotive loco && loco.EngineType != TrainCar.EngineTypes.Control)  // TODO - Control cars ned to be linked to power suppy requirements.
                 {
-                    bool isolateAutoBrake = false;
                     //    if (Car is MSTSLocomotive loco && loco.LocomotivePowerSupply.MainPowerSupplyOn)
                     if (loco.LocomotivePowerSupply.MainPowerSupplyOn)
                     {
@@ -588,20 +588,39 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (loco.DynamicBrakeAutoBailOff && loco.DynamicBrakePercent > 0 && Car.MaxBrakeForceN > 0)
                         {
                             var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                            var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(BrakeLine3PressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
+                            var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
                             if (localBrakeForceN > requiredBrakeForceN * 0.85f)
+                            {
                                 isolateAutoBrake = true;
+                                if (loco.DynamicBrakePartialBailOff)
+                                {
+                                    var compensatedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.MaxBrakeForceN*MaxCylPressurePSI, 0), MaxCylPressurePSI);
+                                    if (CylPressurePSI < BrakeLine3PressurePSI)
+                                        CylPressurePSI = BrakeLine3PressurePSI;
+                                    if (compensatedPressurePSI < CylPressurePSI)
+                                    {
+                                        CylPressurePSI = Math.Max(CylPressurePSI - MaxReleaseRatePSIpS * elapsedClockSeconds, BrakeLine3PressurePSI);
+                                    }
+                                    else if (compensatedPressurePSI > CylPressurePSI + 4)
+                                    {
+                                        float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+                                        if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < CylPressurePSI + dp)
+                                            dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
+                                        if (dp > compensatedPressurePSI - CylPressurePSI)
+                                            dp = compensatedPressurePSI - CylPressurePSI;
+                                        BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
+                                        CylPressurePSI += dp;
+                                    }
+                                }
+                                else
+                                {
+                                    CylPressurePSI = BrakeLine3PressurePSI;
+                                }
+                            }
                         }
                     }
-                    if (isolateAutoBrake)
-                        CylPressurePSI = BrakeLine3PressurePSI;
-                    else
-                        CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
                 }
-                else
-                {
-                    CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
-                }
+                if (!isolateAutoBrake) CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
             }
 
             // During braking wheelslide control is effected throughout the train by additional equipment on each vehicle. In the piping to each pair of brake cylinders are fitted electrically operated 
