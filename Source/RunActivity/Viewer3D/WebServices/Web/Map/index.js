@@ -99,7 +99,7 @@ function ApiMapInit() {
     namedLayerGroup = L.layerGroup();
     restLayerGroup = L.layerGroup();
 
-    let locomotiveFile = apiMapInitInfo.typeOfLocomotive.concat("-locomotive-icon.png");
+    let locomotiveFile = apiMapInitInfo.TypeOfLocomotive.concat("-locomotive-icon.png");
     locomotiveIcon = L.icon({
         iconUrl: locomotiveFile,
         iconSize: [30, 25],
@@ -111,35 +111,35 @@ function ApiMapInit() {
         iconAnchor: [15, 50],
     });
 
-    for (const pointOnMap of apiMapInitInfo.pointOnApiMapList) {
-        if (pointOnMap.typeOfPointOnApiMap == 0) { // track
-            L.circle([pointOnMap.latLon.Lat, pointOnMap.latLon.Lon], {
-                color: pointOnMap.color,
-                fillColor: pointOnMap.color,
+    for (const pointOnMap of apiMapInitInfo.PointOnApiMapList) {
+        if (pointOnMap.TypeOfPointOnApiMap == 0) { // Track
+            L.circle([pointOnMap.LatLon.Lat, pointOnMap.LatLon.Lon], {
+                color: pointOnMap.Color,
+                fillColor: pointOnMap.Color,
                 fillOpacity: 1,
                 radius: 1
             }).addTo(trackLayerGroup);
         }
-        if (pointOnMap.typeOfPointOnApiMap == 1) { // named
-            L.circle([pointOnMap.latLon.Lat, pointOnMap.latLon.Lon], {
-                color: pointOnMap.color,
-                fillColor: pointOnMap.color,
+        if (pointOnMap.TypeOfPointOnApiMap == 1) { // Named
+            L.circle([pointOnMap.LatLon.Lat, pointOnMap.LatLon.Lon], {
+                color: pointOnMap.Color,
+                fillColor: pointOnMap.Color,
                 fillOpacity: 1,
                 radius: 3
-            }).addTo(namedLayerGroup).bindPopup(pointOnMap.name);
+            }).addTo(namedLayerGroup).bindPopup(pointOnMap.Name);
         }
-        if (pointOnMap.typeOfPointOnApiMap == 2) { // rest
-            L.circle([pointOnMap.latLon.Lat, pointOnMap.latLon.Lon], {
-                color: pointOnMap.color,
-                fillColor: pointOnMap.color,
+        if (pointOnMap.TypeOfPointOnApiMap == 2) { // Rest
+            L.circle([pointOnMap.LatLon.Lat, pointOnMap.LatLon.Lon], {
+                color: pointOnMap.Color,
+                fillColor: pointOnMap.Color,
                 fillOpacity: 1,
                 radius: 3
-            }).addTo(restLayerGroup).bindPopup(pointOnMap.name);
+            }).addTo(restLayerGroup).bindPopup(pointOnMap.Name);
         }
     }
 
-    for (const lineOnMap of apiMapInitInfo.lineOnApiMapList) {
-        pointList = [[lineOnMap.latLonFrom.Lat, lineOnMap.latLonFrom.Lon], [lineOnMap.latLonTo.Lat, lineOnMap.latLonTo.Lon]];
+    for (const lineOnMap of apiMapInitInfo.LineOnApiMapList) {
+        pointList = [[lineOnMap.LatLonFrom.Lat, lineOnMap.LatLonFrom.Lon], [lineOnMap.LatLonTo.Lat, lineOnMap.LatLonTo.Lon]];
         polyline = new L.Polyline(pointList, {
             color: 'red',
             weight: 1,
@@ -149,7 +149,7 @@ function ApiMapInit() {
         polyline.addTo(trackLayerGroup);
     }
 
-    map.fitBounds([[apiMapInitInfo.latMin, apiMapInitInfo.lonMin], [apiMapInitInfo.latMax, apiMapInitInfo.lonMax]], null);
+    map.fitBounds([[apiMapInitInfo.LatMin, apiMapInitInfo.LonMin], [apiMapInitInfo.LatMax, apiMapInitInfo.LonMax]], null);
 
     layerControl.addOverlay(trackLayerGroup, 'track');
     layerControl.addOverlay(namedLayerGroup, 'named');
@@ -158,6 +158,7 @@ function ApiMapInit() {
     baseLayerFound = false;
     for (let i = 0; i < localStorage.length; i++) {
         key = localStorage.key(i);
+        value = localStorage.getItem(localStorage.key(i));
 
         if (key == storageBaseLayerKey) {
             if (value == "standard") {
@@ -209,7 +210,7 @@ function ApiMap() {
 
             if (latLonObj != null) {
 
-                let directionDeg = latLonObj.directionDeg;
+                let directionDeg = latLonObj.DirectionDeg;
                 let latLon = [latLonObj.LatLon.Lat, latLonObj.LatLon.Lon];
 
                 if (initToBeDone) {

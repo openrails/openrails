@@ -296,10 +296,10 @@ namespace Orts.Common
         public float Lat { get; }
         public float Lon { get; }
 
-        public LatLon(float lat, float lon)
+        public LatLon(float Lat, float Lon)
         {
-            Lat = lat;
-            Lon = lon;
+            this.Lat = Lat;
+            this.Lon = Lon;
         }
     }
 
@@ -309,12 +309,12 @@ namespace Orts.Common
     public class LatLonDirection
     {
         public LatLon LatLon { get; }
-        public float directionDeg { get; }
+        public float DirectionDeg { get; }
 
-        public LatLonDirection(LatLon latLon, float directionDeg)
+        public LatLonDirection(LatLon LatLon, float DirectionDeg)
         {
-            LatLon = latLon;
-            this.directionDeg = directionDeg;
+            this.LatLon = LatLon;
+            this.DirectionDeg = DirectionDeg;
         }
     }
 }

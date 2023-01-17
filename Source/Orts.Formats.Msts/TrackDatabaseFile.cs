@@ -194,7 +194,7 @@ namespace Orts.Formats.Msts
             TrItemTable = newTrItemTable;
         }
 
-        public void addTrNodesToPointsOnApiMap(InfoApiMap apiMapInfo)
+        public void AddTrNodesToPointsOnApiMap(InfoApiMap InfoApiMap)
         {
             foreach (TrackNode trackNode in TrackNodes)
             {
@@ -204,18 +204,18 @@ namespace Orts.Formats.Msts
                     {
                         if (trackNode.UiD != null)
                         {
-                            apiMapInfo.addToPointOnApiMap(
+                            InfoApiMap.addToPointOnApiMap(
                                 trackNode.UiD.TileX, trackNode.UiD.TileZ,
                                 trackNode.UiD.X, trackNode.UiD.Y, trackNode.UiD.Z,
-                                "red", TypeOfPointOnApiMap.track, "track");
+                                "red", TypeOfPointOnApiMap.Track, "track");
                         }
 
                         if ((trackNode.TrJunctionNode != null) && (trackNode.TrJunctionNode.TN.UiD != null))
                         {
-                            apiMapInfo.addToPointOnApiMap(
+                            InfoApiMap.addToPointOnApiMap(
                                 trackNode.TrJunctionNode.TN.UiD.TileX, trackNode.TrJunctionNode.TN.UiD.TileZ,
                                 trackNode.TrJunctionNode.TN.UiD.X, trackNode.TrJunctionNode.TN.UiD.Y, trackNode.TrJunctionNode.TN.UiD.Z,
-                                "red", TypeOfPointOnApiMap.track, "track");
+                                "red", TypeOfPointOnApiMap.Track, "track");
                         }
 
                         if ((trackNode.TrVectorNode != null) && (trackNode.TrVectorNode.TrVectorSections != null))
@@ -227,14 +227,14 @@ namespace Orts.Formats.Msts
                             {
                                 LatLon latLonTo = InfoApiMap.convertToLatLon(trVectorSection.TileX, trVectorSection.TileZ,
                                     trVectorSection.X, trVectorSection.Y, trVectorSection.Z);
-                                apiMapInfo.addToPointOnApiMap(latLonTo, "red", TypeOfPointOnApiMap.track, "track");
+                                InfoApiMap.addToPointOnApiMap(latLonTo, "red", TypeOfPointOnApiMap.Track, "track");
                                 if (first)
                                 {
                                     first = false;
                                 }
                                 else
                                 {
-                                    apiMapInfo.addToLineOnApiMap(latLonFrom, latLonTo);
+                                    InfoApiMap.addToLineOnApiMap(latLonFrom, latLonTo);
                                 }
                                 latLonFrom = latLonTo;
                                 trVectorSectionLast = trVectorSection;
@@ -246,7 +246,7 @@ namespace Orts.Formats.Msts
                                     int link = trackNode.TrPins[1].Link;
                                     LatLon latLonTo = InfoApiMap.convertToLatLon(TrackNodes[link].UiD.TileX, TrackNodes[link].UiD.TileZ,
                                         TrackNodes[link].UiD.X, TrackNodes[link].UiD.Y, TrackNodes[link].UiD.Z);
-                                    apiMapInfo.addToLineOnApiMap(latLonFrom, latLonTo);
+                                    InfoApiMap.addToLineOnApiMap(latLonFrom, latLonTo);
                                 }
                             }
                         }
@@ -263,7 +263,7 @@ namespace Orts.Formats.Msts
                                 TrackNodes[trackNode.TrPins[0].Link].TrVectorNode.TrVectorSections[lastIndex].X,
                                 TrackNodes[trackNode.TrPins[0].Link].TrVectorNode.TrVectorSections[lastIndex].Y,
                                 TrackNodes[trackNode.TrPins[0].Link].TrVectorNode.TrVectorSections[lastIndex].Z);
-                            apiMapInfo.addToLineOnApiMap(latLonFrom, latLonTo);
+                            InfoApiMap.addToLineOnApiMap(latLonFrom, latLonTo);
                         }
                     }
                     catch (Exception e)
@@ -275,7 +275,7 @@ namespace Orts.Formats.Msts
             }
         }
 
-        public void addTrItemsToPointsOnApiMap(InfoApiMap apiMapInfo)
+        public void AddTrItemsToPointsOnApiMap(InfoApiMap InfoApiMap)
         {
             foreach (TrItem trItem in TrItemTable)
             {
@@ -290,17 +290,17 @@ namespace Orts.Formats.Msts
                     {
                         if (trItem.ItemName == null)
                         {
-                            apiMapInfo.addToPointOnApiMap(
+                            InfoApiMap.addToPointOnApiMap(
                             trItem.TileX, trItem.TileZ,
                             trItem.X, trItem.Y, trItem.Z,
-                            "blue", TypeOfPointOnApiMap.rest, $"{itemType}");
+                            "blue", TypeOfPointOnApiMap.Rest, $"{itemType}");
                         }
                         else
                         {
-                            apiMapInfo.addToPointOnApiMap(
+                            InfoApiMap.addToPointOnApiMap(
                             trItem.TileX, trItem.TileZ,
                             trItem.X, trItem.Y, trItem.Z,
-                            "green", TypeOfPointOnApiMap.named, $"{trItem.ItemName.Replace("'", "")}, {itemType}");
+                            "green", TypeOfPointOnApiMap.Named, $"{trItem.ItemName.Replace("'", "")}, {itemType}");
                         }
                     }
                 }
