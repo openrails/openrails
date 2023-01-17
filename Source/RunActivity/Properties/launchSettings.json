@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "RunActivity": {
-      "commandName": "Project",
-      "commandLineArgs": "-start -exploreactivity C:\\OpenRails\\Ruebelandbahn\\ROUTES\\Ruebelandbahn\\PATHS\\WL_Test_C.pat C:\\OpenRails\\Ruebelandbahn\\TRAINS\\CONSISTS\\RLB_Schneepflug_flip.con 12:00 1 0"
-    }
-  }
-}
