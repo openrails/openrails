@@ -125,29 +125,29 @@ namespace Orts.Formats.Msts
                                 }),
                             })),
                         })),
-                    })),
-                    new STFReader.TokenProcessor("world_shader", () =>
-                    {
-                        stf.MustMatch("(");
-                        TextureMode = stf.ReadString();
-                        stf.ParseBlock(new[]
+                        new STFReader.TokenProcessor("world_shader", () =>
                         {
-                            new STFReader.TokenProcessor("terrain_texslots", () =>
+                            stf.MustMatch("(");
+                            TextureMode = stf.ReadString();
+                            stf.ParseBlock(new[]
                             {
-                                stf.MustMatch("(");
-                                stf.ReadInt(null) /*Count*/;
-                                stf.ParseBlock(new[]
+                                new STFReader.TokenProcessor("terrain_texslots", () =>
                                 {
-                                    new STFReader.TokenProcessor("terrain_texslot", () =>
+                                    stf.MustMatch("(");
+                                    stf.ReadInt(null) /*Count*/;
+                                    stf.ParseBlock(new[]
                                     {
-                                        stf.MustMatch("(");
-                                        TextureName = stf.ReadString();
-                                        stf.SkipRestOfBlock();
-                                    }),
-                                });
-                            }),
-                        });
-                    }),
+                                        new STFReader.TokenProcessor("terrain_texslot", () =>
+                                        {
+                                            stf.MustMatch("(");
+                                            TextureName = stf.ReadString();
+                                            stf.SkipRestOfBlock();
+                                        }),
+                                    });
+                                }),
+                            });
+                        }),
+                    })),
                 });
             }
         }
