@@ -3117,7 +3117,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
 
                 // Adjust adhesion for impact of fog - default = 20000m = 20km
-                float fog = Simulator.Weather.FogDistance;
+                float fog = Simulator.Weather.VisibilityM;
                 if (fog < 20000) // as fog thickens then decrease adhesion
                 {
                     fogBaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.6f), 1.0f); // If fog is less then 2km then it will impact friction, decrease adhesion to 60% (same as light rain transition)

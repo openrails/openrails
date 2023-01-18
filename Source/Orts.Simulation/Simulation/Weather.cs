@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using Microsoft.Xna.Framework;
 
 namespace Orts.Simulation
@@ -34,24 +35,20 @@ namespace Orts.Simulation
         //   Moderate     0.5-1.0km
         //   Heavy       <0.5km
 
-        // Overcast factor: 0.0 = almost no clouds; 0.1 = wispy clouds; 1.0 = total overcast.
-        public float OvercastFactor;
+        // Fog/visibility distance. Ranges from 10m (can't see anything), 5km (medium), 20km (clear) to 100km (clear arctic).
+        public float VisibilityM;
+
+        // Cloud cover factor: 0.0 = almost no clouds; 0.1 = wispy clouds; 1.0 = total overcast.
+        public float CloudCoverFactor;
 
         // Precipitation intensity in particles per second per meter^2 (PPSPM2).
         public float PrecipitationIntensityPPSPM2;
 
-        // Fog/visibility distance. Ranges from 10m (can't see anything), 5km (medium), 20km (clear) to 100km (clear arctic).
-        public float FogDistance;
-
-        // Precipitation liquidity; =1 for rain, =0 for snow; intermediate values possible with dynamic weather;
+        // Precipitation liquidity; 1 = rain, 0 = snow; intermediate values possible with dynamic weather.
         public float PrecipitationLiquidity;
-
-        public float CalculatedWindDirection;
 
         public Vector2 WindSpeedMpS;
 
-        public float WindSpeed => WindSpeedMpS.Length();
-
-        public float WindDirection => CalculatedWindDirection;
+        public float WindDirectionRad => (float)Math.Atan2(WindSpeedMpS.X, WindSpeedMpS.Y);
     }
 }

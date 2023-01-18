@@ -378,7 +378,7 @@ namespace Orts.Viewer3D
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             // Adjust Fog color for day-night conditions and overcast
-            FogDay2Night(Viewer.World.Sky.SolarDirection.Y, Viewer.Simulator.Weather.OvercastFactor);
+            FogDay2Night(Viewer.World.Sky.SolarDirection.Y, Viewer.Simulator.Weather.CloudCoverFactor);
 
             // TODO: Use a dirty flag to determine if it is necessary to set the texture again
             SkyShader.StarMapTexture = Viewer.World.Sky.Latitude > 0 ? StarTextureN : StarTextureS;
@@ -387,8 +387,8 @@ namespace Orts.Viewer3D
             SkyShader.LightVector = Viewer.World.Sky.SolarDirection;
             SkyShader.Time = (float)Viewer.Simulator.ClockTime / 100000;
             SkyShader.MoonScale = SkyPrimitive.RadiusM / 20;
-            SkyShader.Overcast = Viewer.Simulator.Weather.OvercastFactor;
-            SkyShader.SetFog(Viewer.Simulator.Weather.FogDistance, ref SharedMaterialManager.FogColor);
+            SkyShader.Overcast = Viewer.Simulator.Weather.CloudCoverFactor;
+            SkyShader.SetFog(Viewer.Simulator.Weather.VisibilityM, ref SharedMaterialManager.FogColor);
             SkyShader.WindSpeed = Viewer.World.Sky.WindSpeed;
             SkyShader.WindDirection = Viewer.World.Sky.WindDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 

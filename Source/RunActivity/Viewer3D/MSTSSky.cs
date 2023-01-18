@@ -150,7 +150,7 @@ namespace Orts.Viewer3D
                     mstsskymoonPhase = 3; // Moon dog only occurs in winter
                 // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
                 //mstsskyovercastFactor = MSTSSkyViewer.World.WeatherControl.overcastFactor;
-                mstsskyfogDistance = MSTSSkyViewer.Simulator.Weather.FogDistance;
+                mstsskyfogDistance = MSTSSkyViewer.Simulator.Weather.VisibilityM;
             }
 
             MPManager manager = MPManager.Instance();

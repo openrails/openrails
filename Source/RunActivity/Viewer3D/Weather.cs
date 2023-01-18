@@ -1,4 +1,4 @@
-// COPYRIGHT 2010, 2011, 2014 by the Open Rails project.
+// COPYRIGHT 2009 - 2023 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -60,10 +60,6 @@ namespace Orts.Viewer3D
         const float WindSpeedMaxMpS = 4.5f;
         float WindUpdateTimer = 0.0f;
         float WindGustUpdateTimeS = 1.0f;
-        bool InitialWind = true;
-        float BaseWindDirectionRad;
-        float WindDirectionVariationRad = (float)MathHelper.ToRadians(45.0f); // Set at 45 Deg
-        float calculatedWindDirection;
 
         public WeatherControl(Viewer viewer)
         {
@@ -125,8 +121,8 @@ namespace Orts.Viewer3D
         public virtual void SaveWeatherParameters(BinaryWriter outf)
         {
             outf.Write(0); // set fixed weather
-            outf.Write(Weather.FogDistance);
-            outf.Write(Weather.OvercastFactor);
+            outf.Write(Weather.VisibilityM);
+            outf.Write(Weather.CloudCoverFactor);
             outf.Write(Weather.PrecipitationIntensityPPSPM2);
             outf.Write(Weather.PrecipitationLiquidity);
             outf.Write(RandomizedWeather);
@@ -147,8 +143,8 @@ namespace Orts.Viewer3D
                 Trace.TraceError(Simulator.Catalog.GetString("Restoring wrong weather type : trying to restore dynamic weather but save contains user controlled weather"));
             }
 
-            Weather.FogDistance = inf.ReadSingle();
-            Weather.OvercastFactor = inf.ReadSingle();
+            Weather.VisibilityM = inf.ReadSingle();
+            Weather.CloudCoverFactor = inf.ReadSingle();
             Weather.PrecipitationIntensityPPSPM2 = inf.ReadSingle();
             Weather.PrecipitationLiquidity = inf.ReadSingle();
             RandomizedWeather = inf.ReadBoolean();
@@ -167,9 +163,9 @@ namespace Orts.Viewer3D
             // These values are defaults only; subsequent changes to the weather via debugging only change the components (weather, overcastFactor and fogDistance) individually.
             switch (Viewer.Simulator.WeatherType)
             {
-                case Orts.Formats.Msts.WeatherType.Clear: Weather.OvercastFactor = 0.05f; Weather.FogDistance = 20000; break;
-                case Orts.Formats.Msts.WeatherType.Rain: Weather.OvercastFactor = 0.7f; Weather.FogDistance = 1000; break;
-                case Orts.Formats.Msts.WeatherType.Snow: Weather.OvercastFactor = 0.6f; Weather.FogDistance = 500; break;
+                case Orts.Formats.Msts.WeatherType.Clear: Weather.CloudCoverFactor = 0.05f; Weather.VisibilityM = 20000; break;
+                case Orts.Formats.Msts.WeatherType.Rain: Weather.CloudCoverFactor = 0.7f; Weather.VisibilityM = 1000; break;
+                case Orts.Formats.Msts.WeatherType.Snow: Weather.CloudCoverFactor = 0.6f; Weather.VisibilityM = 500; break;
             }
         }
 
@@ -254,27 +250,6 @@ namespace Orts.Viewer3D
 
                 Weather.WindSpeedMpS = WindSpeedInternalMpS;
                 WindUpdateTimer = 0.0f; // Reset wind gust timer
-
-                if (InitialWind) // Record the initial wind direction.
-                {
-                    BaseWindDirectionRad = (float)Math.Atan2(Weather.WindSpeedMpS.X, Weather.WindSpeedMpS.Y);
-                    InitialWind = false; // set false so that base wind is not changed
-                }
-
-                calculatedWindDirection = (float)Math.Atan2(Weather.WindSpeedMpS.X, Weather.WindSpeedMpS.Y);
-
-                // Test to ensure wind direction stays within the direction bandwidth set, if out of bounds set new random direction
-                if (calculatedWindDirection > (BaseWindDirectionRad + WindDirectionVariationRad))
-                {
-                    calculatedWindDirection = BaseWindDirectionRad + (WindDirectionVariationRad * (float)Viewer.Random.NextDouble());
-                }
-
-                if (calculatedWindDirection < (BaseWindDirectionRad - WindDirectionVariationRad))
-                {
-                    calculatedWindDirection = BaseWindDirectionRad - (WindDirectionVariationRad * (float)Viewer.Random.NextDouble());
-                }
-
-                Weather.CalculatedWindDirection = calculatedWindDirection;
             }
         }
 
@@ -289,11 +264,11 @@ namespace Orts.Viewer3D
             // First define overcast
             var randValue = Viewer.Random.Next(170);
             var intermValue = randValue >= 50 ? (float)(randValue - 50f) : (float)randValue;
-            Weather.OvercastFactor = intermValue >= 20 ? (float)(intermValue - 20f) / 100f : (float)intermValue / 100f; // give more probability to less overcast
+            Weather.CloudCoverFactor = intermValue >= 20 ? (float)(intermValue - 20f) / 100f : (float)intermValue / 100f; // give more probability to less overcast
             Viewer.Simulator.WeatherType = Orts.Formats.Msts.WeatherType.Clear;
 
             // Then check if we are in precipitation zone
-            if (Weather.OvercastFactor > 0.5)
+            if (Weather.CloudCoverFactor > 0.5)
             {
                 randValue = Viewer.Random.Next(75);
                 if (randValue > 40)
@@ -322,14 +297,14 @@ namespace Orts.Viewer3D
 
             // and now define visibility
             randValue = Viewer.Random.Next(2000);
-            if (Weather.PrecipitationIntensityPPSPM2 > 0 || Weather.OvercastFactor > 0.7f)
+            if (Weather.PrecipitationIntensityPPSPM2 > 0 || Weather.CloudCoverFactor > 0.7f)
             {
                 // use first digit to define power of ten and the other three to define the multiplying number
-                Weather.FogDistance = Math.Max(100, (float)Math.Pow(10, (int)(randValue / 1000) + 2) * (float)(((randValue % 1000) + 1) / 100f));
+                Weather.VisibilityM = Math.Max(100, (float)Math.Pow(10, (int)(randValue / 1000) + 2) * (float)(((randValue % 1000) + 1) / 100f));
             }
             else
             {
-                Weather.FogDistance = Math.Max(500, (float)Math.Pow(10, (int)((randValue / 1000) + 3)) * (float)(((randValue % 1000) + 1) / 100f));
+                Weather.VisibilityM = Math.Max(500, (float)Math.Pow(10, (int)((randValue / 1000) + 3)) * (float)(((randValue % 1000) + 1) / 100f));
             }
 
             return true;
@@ -380,7 +355,7 @@ namespace Orts.Viewer3D
 
                 if (manager.overcastFactor >= 0)
                 {
-                    Weather.OvercastFactor = manager.overcastFactor;
+                    Weather.CloudCoverFactor = manager.overcastFactor;
                 }
 
                 if (manager.pricipitationIntensity >= 0)
@@ -391,7 +366,7 @@ namespace Orts.Viewer3D
 
                 if (manager.fogDistance >= 0)
                 {
-                    Weather.FogDistance = manager.fogDistance;
+                    Weather.VisibilityM = manager.fogDistance;
                 }
 
                 // Reset the message now that we've applied all the changes.
@@ -441,7 +416,7 @@ namespace Orts.Viewer3D
                 // Overcast ranges from 0 (completely clear) to 1 (completely overcast).
                 if (UserInput.IsDown(UserCommand.DebugOvercastIncrease))
                 {
-                    Weather.OvercastFactor = MathHelper.Clamp(Weather.OvercastFactor + (elapsedTime.RealSeconds / 10), 0, 1);
+                    Weather.CloudCoverFactor = MathHelper.Clamp(Weather.CloudCoverFactor + (elapsedTime.RealSeconds / 10), 0, 1);
                     weatherChangeOn = false;
                     if (dynamicWeather != null)
                     {
@@ -451,7 +426,7 @@ namespace Orts.Viewer3D
 
                 if (UserInput.IsDown(UserCommand.DebugOvercastDecrease))
                 {
-                    Weather.OvercastFactor = MathHelper.Clamp(Weather.OvercastFactor - (elapsedTime.RealSeconds / 10), 0, 1);
+                    Weather.CloudCoverFactor = MathHelper.Clamp(Weather.CloudCoverFactor - (elapsedTime.RealSeconds / 10), 0, 1);
                     weatherChangeOn = false;
                     if (dynamicWeather != null)
                     {
@@ -558,7 +533,7 @@ namespace Orts.Viewer3D
                 // Fog ranges from 10m (can't see anything) to 100km (clear arctic conditions).
                 if (UserInput.IsDown(UserCommand.DebugFogIncrease))
                 {
-                    Weather.FogDistance = MathHelper.Clamp(Weather.FogDistance - (elapsedTime.RealSeconds * Weather.FogDistance), 10, 100000);
+                    Weather.VisibilityM = MathHelper.Clamp(Weather.VisibilityM - (elapsedTime.RealSeconds * Weather.VisibilityM), 10, 100000);
                     weatherChangeOn = false;
                     if (dynamicWeather != null)
                     {
@@ -568,7 +543,7 @@ namespace Orts.Viewer3D
 
                 if (UserInput.IsDown(UserCommand.DebugFogDecrease))
                 {
-                    Weather.FogDistance = MathHelper.Clamp(Weather.FogDistance + (elapsedTime.RealSeconds * Weather.FogDistance), 10, 100000);
+                    Weather.VisibilityM = MathHelper.Clamp(Weather.VisibilityM + (elapsedTime.RealSeconds * Weather.VisibilityM), 10, 100000);
                     if (dynamicWeather != null)
                     {
                         dynamicWeather.ORTSFog = -1;
@@ -601,8 +576,8 @@ namespace Orts.Viewer3D
                     || UserInput.IsReleased(UserCommand.DebugPrecipitationIncrease) || UserInput.IsReleased(UserCommand.DebugPrecipitationDecrease)
                     || UserInput.IsReleased(UserCommand.DebugFogIncrease) || UserInput.IsReleased(UserCommand.DebugFogDecrease))
                 {
-                    manager.SetEnvInfo(Weather.OvercastFactor, Weather.FogDistance);
-                    MPManager.Notify(new MSGWeather(-1, Weather.OvercastFactor, Weather.PrecipitationIntensityPPSPM2, Weather.FogDistance).ToString());
+                    manager.SetEnvInfo(Weather.CloudCoverFactor, Weather.VisibilityM);
+                    MPManager.Notify(new MSGWeather(-1, Weather.CloudCoverFactor, Weather.PrecipitationIntensityPPSPM2, Weather.VisibilityM).ToString());
                 }
             }
 
@@ -728,7 +703,7 @@ namespace Orts.Viewer3D
                     ORTSOvercast = eventWeatherChange.ORTSOvercast;
                     ORTSOvercastTransitionTimeS = eventWeatherChange.ORTSOvercastTransitionTimeS;
                     overcastTimer = (float)ORTSOvercastTransitionTimeS;
-                    overcastChangeRate = overcastTimer > 0 ? (MathHelper.Clamp(ORTSOvercast, 0, 1.0f) - weatherControl.Weather.OvercastFactor) / ORTSOvercastTransitionTimeS : 0;
+                    overcastChangeRate = overcastTimer > 0 ? (MathHelper.Clamp(ORTSOvercast, 0, 1.0f) - weatherControl.Weather.CloudCoverFactor) / ORTSOvercastTransitionTimeS : 0;
                     wChangeOn = true;
                 }
 
@@ -739,14 +714,14 @@ namespace Orts.Viewer3D
                     fogTimer = (float)ORTSFogTransitionTimeS;
                     var fogFinalValue = MathHelper.Clamp(ORTSFog, 10, 100000);
                     fogDistanceIncreasing = false;
-                    fogChangeRate = fogTimer > 0 ? (fogFinalValue - weatherControl.Weather.FogDistance) / (ORTSFogTransitionTimeS * ORTSFogTransitionTimeS) : 0;
-                    if (fogFinalValue > weatherControl.Weather.FogDistance)
+                    fogChangeRate = fogTimer > 0 ? (fogFinalValue - weatherControl.Weather.VisibilityM) / (ORTSFogTransitionTimeS * ORTSFogTransitionTimeS) : 0;
+                    if (fogFinalValue > weatherControl.Weather.VisibilityM)
                     {
                         fogDistanceIncreasing = true;
                         fogChangeRate = -fogChangeRate;
                         if (fogTimer > 0)
                         {
-                            ORTSFog = weatherControl.Weather.FogDistance;
+                            ORTSFog = weatherControl.Weather.VisibilityM;
                         }
                     }
 
@@ -803,7 +778,7 @@ namespace Orts.Viewer3D
                         wChangeOn = true;
                     }
 
-                    weatherControl.Weather.OvercastFactor = ORTSOvercast - (overcastTimer * overcastChangeRate);
+                    weatherControl.Weather.CloudCoverFactor = ORTSOvercast - (overcastTimer * overcastChangeRate);
                     if (overcastTimer == 0)
                     {
                         ORTSOvercast = -1;
@@ -824,12 +799,12 @@ namespace Orts.Viewer3D
 
                     if (!fogDistanceIncreasing)
                     {
-                        weatherControl.Weather.FogDistance = ORTSFog - (fogTimer * fogTimer * fogChangeRate);
+                        weatherControl.Weather.VisibilityM = ORTSFog - (fogTimer * fogTimer * fogChangeRate);
                     }
                     else
                     {
                         var fogTimerDifference = ORTSFogTransitionTimeS - fogTimer;
-                        weatherControl.Weather.FogDistance = ORTSFog - (fogTimerDifference * fogTimerDifference * fogChangeRate);
+                        weatherControl.Weather.VisibilityM = ORTSFog - (fogTimerDifference * fogTimerDifference * fogChangeRate);
                     }
 
                     if (fogTimer == 0)
@@ -963,7 +938,7 @@ namespace Orts.Viewer3D
                 ORTSOvercast = intermValue >= 20 ? (float)(intermValue - 20f) / 100f : (float)intermValue / 100f; // give more probability to less overcast
                 ORTSOvercastTransitionTimeS = weatherChangeTimer;
                 overcastTimer = (float)ORTSOvercastTransitionTimeS;
-                overcastChangeRate = overcastTimer > 0 ? (MathHelper.Clamp(ORTSOvercast, 0, 1.0f) - weatherControl.Weather.OvercastFactor) / ORTSOvercastTransitionTimeS : 0;
+                overcastChangeRate = overcastTimer > 0 ? (MathHelper.Clamp(ORTSOvercast, 0, 1.0f) - weatherControl.Weather.CloudCoverFactor) / ORTSOvercastTransitionTimeS : 0;
 
                 // Then check if we are in precipitation zone
                 if (ORTSOvercast > 0.5)
@@ -988,13 +963,13 @@ namespace Orts.Viewer3D
                     ORTSPrecipitationIntensity = 0;
 
                     // must return to zero before overcast < 0.5
-                    ORTSPrecipitationIntensityTransitionTimeS = (int)((0.5 - weatherControl.Weather.OvercastFactor) / overcastChangeRate);
+                    ORTSPrecipitationIntensityTransitionTimeS = (int)((0.5 - weatherControl.Weather.CloudCoverFactor) / overcastChangeRate);
                 }
 
-                if (weatherControl.Weather.PrecipitationIntensityPPSPM2 == 0 && ORTSPrecipitationIntensity > 0 && weatherControl.Weather.OvercastFactor < 0.5)
+                if (weatherControl.Weather.PrecipitationIntensityPPSPM2 == 0 && ORTSPrecipitationIntensity > 0 && weatherControl.Weather.CloudCoverFactor < 0.5)
                 {
                     // we will have precipitation now, but it must start after overcast is over 0.5
-                    precipitationIntensityDelayTimer = (0.5f - weatherControl.Weather.OvercastFactor) / overcastChangeRate;
+                    precipitationIntensityDelayTimer = (0.5f - weatherControl.Weather.CloudCoverFactor) / overcastChangeRate;
                 }
 
                 if (ORTSPrecipitationIntensity > 0)
@@ -1025,12 +1000,12 @@ namespace Orts.Viewer3D
                 fogTimer = (float)ORTSFogTransitionTimeS;
                 var fogFinalValue = MathHelper.Clamp(ORTSFog, 10, 100000);
                 fogDistanceIncreasing = false;
-                fogChangeRate = fogTimer > 0 ? (fogFinalValue - weatherControl.Weather.FogDistance) / (ORTSFogTransitionTimeS * ORTSFogTransitionTimeS) : 0;
-                if (fogFinalValue > weatherControl.Weather.FogDistance)
+                fogChangeRate = fogTimer > 0 ? (fogFinalValue - weatherControl.Weather.VisibilityM) / (ORTSFogTransitionTimeS * ORTSFogTransitionTimeS) : 0;
+                if (fogFinalValue > weatherControl.Weather.VisibilityM)
                 {
                     fogDistanceIncreasing = true;
                     fogChangeRate = -fogChangeRate;
-                    ORTSFog = weatherControl.Weather.FogDistance;
+                    ORTSFog = weatherControl.Weather.VisibilityM;
                 }
 
                 weatherControl.weatherChangeOn = true;
@@ -1264,7 +1239,7 @@ namespace Orts.Viewer3D
                 WeatherSettingOvercast lastWeatherOvercast = lastWeather as WeatherSettingOvercast;
                 AWOvercastCloudcover = Math.Max(0, Math.Min(1, (lastWeatherOvercast.Overcast / 100) +
                     ((float)Viewer.Random.Next((int)(-0.5f * lastWeatherOvercast.OvercastVariation), (int)(0.5f * lastWeatherOvercast.OvercastVariation)) / 100)));
-                AWActualVisibility = Weather.FogDistance = lastWeatherOvercast.OvercastVisibilityM;
+                AWActualVisibility = Weather.VisibilityM = lastWeatherOvercast.OvercastVisibilityM;
 
 #if DEBUG_AUTOWEATHER
                 Trace.TraceInformation("Visibility : {0}", Weather.FogDistance);
@@ -1280,8 +1255,8 @@ namespace Orts.Viewer3D
             {
                 case WeatherType.Rain:
                     Weather.PrecipitationIntensityPPSPM2 = AWPrecipitationActualPPSPM2;
-                    Weather.OvercastFactor = AWOvercastCloudcover;
-                    Weather.FogDistance = AWActualVisibility;
+                    Weather.CloudCoverFactor = AWOvercastCloudcover;
+                    Weather.VisibilityM = AWActualVisibility;
                     Viewer.SoundProcess.AddSoundSources(this, RainSound);
                     foreach (var soundSource in RainSound)
                     {
@@ -1294,8 +1269,8 @@ namespace Orts.Viewer3D
 
                 case WeatherType.Snow:
                     Weather.PrecipitationIntensityPPSPM2 = AWPrecipitationActualPPSPM2;
-                    Weather.OvercastFactor = AWOvercastCloudcover;
-                    Weather.FogDistance = AWActualVisibility;
+                    Weather.CloudCoverFactor = AWOvercastCloudcover;
+                    Weather.VisibilityM = AWActualVisibility;
                     Viewer.SoundProcess.AddSoundSources(this, SnowSound);
                     foreach (var soundSource in SnowSound)
                     {
@@ -1309,8 +1284,8 @@ namespace Orts.Viewer3D
                 default:
                     Weather.PrecipitationIntensityPPSPM2 = 0;
                     Viewer.SoundProcess.AddSoundSources(this, ClearSound);
-                    Weather.OvercastFactor = AWOvercastCloudcover;
-                    Weather.FogDistance = AWActualVisibility;
+                    Weather.CloudCoverFactor = AWOvercastCloudcover;
+                    Weather.VisibilityM = AWActualVisibility;
 #if DEBUG_AUTOWEATHER
                     Trace.TraceInformation("Weather type CLEAR");
 #endif
@@ -1383,13 +1358,13 @@ namespace Orts.Viewer3D
                     else
                     {
                         AWOvercastCloudcover = CalculateOvercast(lastWeatherPrecipitation.Overcast, lastWeatherPrecipitation.OvercastVariation, lastWeatherPrecipitation.OvercastRateOfChange, elapsedTime);
-                        if (Weather.FogDistance > lastWeatherPrecipitation.OvercastVisibilityM)
+                        if (Weather.VisibilityM > lastWeatherPrecipitation.OvercastVisibilityM)
                         {
-                            AWActualVisibility = Weather.FogDistance - (40 * elapsedTime.RealSeconds); // reduce visibility by 40 m/s
+                            AWActualVisibility = Weather.VisibilityM - (40 * elapsedTime.RealSeconds); // reduce visibility by 40 m/s
                         }
-                        else if (Weather.FogDistance < lastWeatherPrecipitation.OvercastVisibilityM)
+                        else if (Weather.VisibilityM < lastWeatherPrecipitation.OvercastVisibilityM)
                         {
-                            AWActualVisibility = Weather.FogDistance + (40 * elapsedTime.RealSeconds); // increase visibility by 40 m/s
+                            AWActualVisibility = Weather.VisibilityM + (40 * elapsedTime.RealSeconds); // increase visibility by 40 m/s
                         }
                     }
                 }
@@ -1442,8 +1417,8 @@ namespace Orts.Viewer3D
             {
                 case WeatherType.Rain:
                     Weather.PrecipitationIntensityPPSPM2 = AWPrecipitationActualPPSPM2;
-                    Weather.OvercastFactor = AWOvercastCloudcover;
-                    Weather.FogDistance = AWActualVisibility;
+                    Weather.CloudCoverFactor = AWOvercastCloudcover;
+                    Weather.VisibilityM = AWActualVisibility;
                     Viewer.SoundProcess.AddSoundSources(this, RainSound);
                     foreach (var soundSource in RainSound)
                     {
@@ -1454,8 +1429,8 @@ namespace Orts.Viewer3D
 
                 case WeatherType.Snow:
                     Weather.PrecipitationIntensityPPSPM2 = AWPrecipitationActualPPSPM2;
-                    Weather.OvercastFactor = AWOvercastCloudcover;
-                    Weather.FogDistance = AWActualVisibility;
+                    Weather.CloudCoverFactor = AWOvercastCloudcover;
+                    Weather.VisibilityM = AWActualVisibility;
                     Viewer.SoundProcess.AddSoundSources(this, SnowSound);
                     foreach (var soundSource in SnowSound)
                     {
@@ -1467,8 +1442,8 @@ namespace Orts.Viewer3D
                 default:
                     Weather.PrecipitationIntensityPPSPM2 = 0;
                     Viewer.SoundProcess.AddSoundSources(this, ClearSound);
-                    Weather.OvercastFactor = AWOvercastCloudcover;
-                    Weather.FogDistance = AWActualVisibility;
+                    Weather.CloudCoverFactor = AWOvercastCloudcover;
+                    Weather.VisibilityM = AWActualVisibility;
                     break;
             }
 
@@ -1484,8 +1459,8 @@ namespace Orts.Viewer3D
                 else
                 {
                     // set final values of last weather
-                    lastWeather.GenOvercast = Weather.OvercastFactor;
-                    lastWeather.GenVisibility = AWLastVisibility = Weather.FogDistance;
+                    lastWeather.GenOvercast = Weather.CloudCoverFactor;
+                    lastWeather.GenVisibility = AWLastVisibility = Weather.VisibilityM;
                     //lastWeater.AWGenWind = ??
 
                     AWActiveIndex++;
@@ -1510,7 +1485,7 @@ namespace Orts.Viewer3D
 
         float GetWeatherVisibility(WeatherSetting weatherDetail)
         {
-            float nextVisibility = Weather.FogDistance; // present visibility
+            float nextVisibility = Weather.VisibilityM; // present visibility
             if (weatherDetail is WeatherSettingFog)
             {
                 WeatherSettingFog weatherFog = weatherDetail as WeatherSettingFog;
@@ -1692,7 +1667,7 @@ namespace Orts.Viewer3D
             AWPrecipitationRequiredPPSPM2 = MathHelper.Clamp(
                 (1.0f + ((float)Viewer.Random.Next(-precvariation, precvariation) / 100)) * baseDensitiy,
                 PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2);
-            AWLastVisibility = Weather.FogDistance;
+            AWLastVisibility = Weather.VisibilityM;
 
             // rate of change at start is max. difference over defined time span +- 10%, scaled between 1/2 and 4 mins
             float startphase = MathHelper.Clamp(lastWeatherPrecipitation.PrecipitationStartPhaseS * (0.9f + (Viewer.Random.Next(100) / 1000)), 30, 240);
@@ -1785,12 +1760,12 @@ namespace Orts.Viewer3D
 
             if (AWOvercastCloudcover < requiredOvercastFactor)
             {
-                float newOvercast = Math.Min(requiredOvercastFactor, Weather.OvercastFactor + (AWOvercastCloudRateOfChangepS * elapsedTime.RealSeconds));
+                float newOvercast = Math.Min(requiredOvercastFactor, Weather.CloudCoverFactor + (AWOvercastCloudRateOfChangepS * elapsedTime.RealSeconds));
                 return newOvercast;
             }
-            else if (Weather.OvercastFactor > requiredOvercastFactor)
+            else if (Weather.CloudCoverFactor > requiredOvercastFactor)
             {
-                float newOvercast = Math.Max(requiredOvercastFactor, Weather.OvercastFactor - (AWOvercastCloudRateOfChangepS * elapsedTime.RealSeconds));
+                float newOvercast = Math.Max(requiredOvercastFactor, Weather.CloudCoverFactor - (AWOvercastCloudRateOfChangepS * elapsedTime.RealSeconds));
                 return newOvercast;
             }
             else
@@ -1849,8 +1824,8 @@ namespace Orts.Viewer3D
             outf.Write(AWOvercastCloudcover);
             outf.Write(AWOvercastCloudRateOfChangepS);
 
-            outf.Write(Weather.OvercastFactor);
-            outf.Write(Weather.FogDistance);
+            outf.Write(Weather.CloudCoverFactor);
+            outf.Write(Weather.VisibilityM);
             outf.Write(Weather.PrecipitationIntensityPPSPM2);
         }
 
@@ -1924,8 +1899,8 @@ namespace Orts.Viewer3D
             AWOvercastCloudcover = inf.ReadSingle();
             AWOvercastCloudRateOfChangepS = inf.ReadSingle();
 
-            Weather.OvercastFactor = inf.ReadSingle();
-            Weather.FogDistance = inf.ReadSingle();
+            Weather.CloudCoverFactor = inf.ReadSingle();
+            Weather.VisibilityM = inf.ReadSingle();
             Weather.PrecipitationIntensityPPSPM2 = inf.ReadSingle();
 
             Time = (float)Viewer.Simulator.ClockTime;
