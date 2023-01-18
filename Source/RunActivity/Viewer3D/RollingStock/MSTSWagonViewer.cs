@@ -27,6 +27,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Common;
+using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Viewer3D.RollingStock.SubSystems;
@@ -408,8 +409,8 @@ namespace Orts.Viewer3D.RollingStock
             Pantograph2.SetState(MSTSWagon.Pantographs[2].CommandUp);
             if (MSTSWagon.Pantographs.List.Count > 2) Pantograph3.SetState(MSTSWagon.Pantographs[3].CommandUp);
             if (MSTSWagon.Pantographs.List.Count > 3) Pantograph4.SetState(MSTSWagon.Pantographs[4].CommandUp);
-            LeftDoor.SetState(MSTSWagon.DoorLeftOpen);
-            RightDoor.SetState(MSTSWagon.DoorRightOpen);
+            LeftDoor.SetState(MSTSWagon.LeftDoor.State >= DoorState.Opening);
+            RightDoor.SetState(MSTSWagon.RightDoor.State >= DoorState.Opening);
             Mirrors.SetState(MSTSWagon.MirrorOpen);
             Item1TwoState.SetState(MSTSWagon.GenericItem1);
             Item2TwoState.SetState(MSTSWagon.GenericItem2);
@@ -614,8 +615,8 @@ namespace Orts.Viewer3D.RollingStock
             Pantograph2.UpdateState(MSTSWagon.Pantographs[2].CommandUp, elapsedTime);
             if (MSTSWagon.Pantographs.List.Count > 2) Pantograph3.UpdateState(MSTSWagon.Pantographs[3].CommandUp, elapsedTime);
             if (MSTSWagon.Pantographs.List.Count > 3) Pantograph4.UpdateState(MSTSWagon.Pantographs[4].CommandUp, elapsedTime);
-            LeftDoor.UpdateState(MSTSWagon.DoorLeftOpen, elapsedTime);
-            RightDoor.UpdateState(MSTSWagon.DoorRightOpen, elapsedTime);
+            LeftDoor.UpdateState(MSTSWagon.LeftDoor.State >= DoorState.Opening, elapsedTime);
+            RightDoor.UpdateState(MSTSWagon.RightDoor.State >= DoorState.Opening, elapsedTime);
             Mirrors.UpdateState(MSTSWagon.MirrorOpen, elapsedTime);
             UnloadingParts.UpdateState(MSTSWagon.UnloadingPartsOpen, elapsedTime);
             Item1TwoState.UpdateState(MSTSWagon.GenericItem1, elapsedTime);
@@ -736,8 +737,16 @@ namespace Orts.Viewer3D.RollingStock
 
             if (Car.BrakeSkid) // if car wheels are skidding because of brakes locking wheels up then stop wheels rotating.
             {
-                distanceTravelledM = 0.0f;
-                distanceTravelledDrivenM = 0.0f;
+                if ( ((MSTSLocomotive)MSTSWagon).DriveWheelOnlyBrakes)
+                {
+                    distanceTravelledDrivenM = 0.0f;
+                }
+                else
+                {
+                    distanceTravelledM = 0.0f;
+                    distanceTravelledDrivenM = 0.0f;
+                }
+
             }
 
             // Running gear and drive wheel rotation (animation) in steam locomotives

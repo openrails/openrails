@@ -68,8 +68,9 @@ namespace Orts.Simulation.RollingStocks
     {
         public Pantographs Pantographs;
         public ScriptedPassengerCarPowerSupply PassengerCarPowerSupply => PowerSupply as ScriptedPassengerCarPowerSupply;
-        public bool DoorLeftOpen;
-        public bool DoorRightOpen;
+        public Doors Doors;        
+        public Door RightDoor => Doors.RightDoor;
+        public Door LeftDoor => Doors.LeftDoor;
         public bool MirrorOpen;
         public bool UnloadingPartsOpen;
         public bool WaitForAnimationReady; // delay counter to start loading/unliading is on;
@@ -345,6 +346,7 @@ namespace Orts.Simulation.RollingStocks
             : base(simulator, wagFilePath)
         {
             Pantographs = new Pantographs(this);
+            Doors = new Doors(this);
         }
 
         public void Load()
@@ -491,9 +493,15 @@ namespace Orts.Simulation.RollingStocks
             {
                 CarAirHoseHorizontalLengthM = 0.3862f; // 15.2 inches
             }
-            
+
+            // Disable derailment coefficent on "dummy" cars. NB: Ideally this should never be used as "dummy" cars interfer with the overall train physics.
+            if (MSTSWagonNumWheels == 0 && InitWagonNumAxles == 0 )
+            {
+                DerailmentCoefficientEnabled = false;
+            }
+
             // Ensure Drive Axles is set to a default if no OR value added to WAG file
-            if (WagonNumAxles == 0 && WagonType != WagonTypes.Engine)
+            if (InitWagonNumAxles == 0 && WagonType != WagonTypes.Engine)
             {
                 if (MSTSWagonNumWheels != 0 && MSTSWagonNumWheels < 6)
                 {
@@ -508,6 +516,10 @@ namespace Orts.Simulation.RollingStocks
                 {
                     Trace.TraceInformation("Number of Wagon Axles set to default value of {0}", WagonNumAxles);
                 }
+            }
+            else
+            {
+                WagonNumAxles = InitWagonNumAxles;
             }
 
             // Should always be at least one bogie on rolling stock. If is zero then NaN error occurs.
@@ -849,30 +861,39 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 if (!FreightAnimations.MSTSFreightAnimEnabled) FreightShapeFileName = null;
-                    if (FreightAnimations.WagonEmptyWeight != -1)
+                if (FreightAnimations.WagonEmptyWeight != -1)
+                {
+                    // Computes mass when it carries containers
+                    float totalContainerMassKG = 0;
+                    if (FreightAnimations.Animations != null)
                     {
+                        foreach (var anim in FreightAnimations.Animations)
+                            if (anim is FreightAnimationDiscrete discreteAnim && discreteAnim.Container != null)
+                            {
+                                totalContainerMassKG += discreteAnim.Container.MassKG;
+                            }
+                    }
+                    CalculateTotalMass(totalContainerMassKG);
 
-                        MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
+                    if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
+                    {
+                        // Update brake parameters   
+                        MaxBrakeForceN = LoadFullMaxBrakeForceN;
+                        MaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
 
-                        if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
-                        {
-                            // Update brake parameters   
-                            MaxBrakeForceN = LoadFullMaxBrakeForceN;
-                            MaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
+                        // Update friction related parameters
+                        DavisAN = LoadFullORTSDavis_A;
+                        DavisBNSpM = LoadFullORTSDavis_B;
+                        DavisCNSSpMM = LoadFullORTSDavis_C;
+                        DavisDragConstant = LoadFullDavisDragConstant;
+                        WagonFrontalAreaM2 = LoadFullWagonFrontalAreaM2;
 
-                            // Update friction related parameters
-                            DavisAN = LoadFullORTSDavis_A;
-                            DavisBNSpM = LoadFullORTSDavis_B;
-                            DavisCNSSpMM = LoadFullORTSDavis_C;
-                            DavisDragConstant = LoadFullDavisDragConstant;
-                            WagonFrontalAreaM2 = LoadFullWagonFrontalAreaM2;
-
-                            // Update CoG related parameters
-                            CentreOfGravityM.Y = LoadFullCentreOfGravityM_Y;
-
-                        }
+                        // Update CoG related parameters
+                        CentreOfGravityM.Y = LoadFullCentreOfGravityM_Y;
 
                     }
+
+                }
                 if (FreightAnimations.LoadedOne != null) // If it is a Continuouos freight animation, set freight wagon parameters to FullatStart
                 {
                     WeightLoadController.CurrentValue = FreightAnimations.LoadedOne.LoadPerCent / 100;
@@ -941,6 +962,12 @@ namespace Orts.Simulation.RollingStocks
                 BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
         }
 
+        // Compute total mass of wagon including freight animations and variable loads like containers
+        public void CalculateTotalMass(float totalContainerMassKG)
+        {
+            MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight + totalContainerMassKG;
+        }
+
         public void GetMeasurementUnits()
         {
             IsMetric = Simulator.Settings.Units == "Metric" || (Simulator.Settings.Units == "Automatic" && System.Globalization.RegionInfo.CurrentRegion.IsMetric) ||
@@ -951,6 +978,7 @@ namespace Orts.Simulation.RollingStocks
         public override void Initialize()
         {
             Pantographs.Initialize();
+            Doors.Initialize();
             PassengerCarPowerSupply?.Initialize();
 
             base.Initialize();
@@ -1369,13 +1397,16 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(inside": HasInsideView = true; ParseWagonInside(stf); break;
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
-                case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
-                case "wagon(ortsnumberaxles": WagonNumAxles = stf.ReadIntBlock(null); break;
+                case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsnumberaxles": InitWagonNumAxles = stf.ReadIntBlock(null); break;
                 case "wagon(ortsnumberbogies": WagonNumBogies = stf.ReadIntBlock(null); break;
                 case "wagon(ortspantographs":
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
-
+                case "wagon(ortsdoors(closingdelay":
+                case "wagon(ortsdoors(openingdelay":
+                    Doors.Parse(lowercasetoken, stf);
+                    break;
                 case "wagon(ortspowersupply":
                 case "wagon(ortspowerondelay":
                 case "wagon(ortsbattery(mode":
@@ -1455,7 +1486,8 @@ namespace Orts.Simulation.RollingStocks
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
-            WagonNumAxles = copy.WagonNumAxles;
+            InitWagonNumAxles = copy.InitWagonNumAxles;
+            DerailmentCoefficientEnabled = copy.DerailmentCoefficientEnabled;
             WagonNumBogies = copy.WagonNumBogies;
             MSTSWagonNumWheels = copy.MSTSWagonNumWheels;
             MassKG = copy.MassKG;
@@ -1540,6 +1572,7 @@ namespace Orts.Simulation.RollingStocks
             foreach (MSTSCoupling coupler in copy.Couplers)
                 Couplers.Add(coupler);
             Pantographs.Copy(copy.Pantographs);
+            Doors.Copy(copy.Doors);
             if (copy.FreightAnimations != null)
             {
                 FreightAnimations = new FreightAnimations(copy.FreightAnimations, this);
@@ -1673,6 +1706,7 @@ namespace Orts.Simulation.RollingStocks
             foreach (MSTSCoupling coupler in Couplers)
                 coupler.Save(outf);
             Pantographs.Save(outf);
+            Doors.Save(outf);
             PassengerCarPowerSupply?.Save(outf);
             if (FreightAnimations != null)
             {
@@ -1725,6 +1759,7 @@ namespace Orts.Simulation.RollingStocks
             MaxHandbrakeForceN = inf.ReadSingle();
             Couplers = ReadCouplersFromSave(inf).ToList();
             Pantographs.Restore(inf);
+            Doors.Restore(inf);
             PassengerCarPowerSupply?.Restore(inf);
             if (FreightAnimations != null)
             {
@@ -1897,6 +1932,8 @@ namespace Orts.Simulation.RollingStocks
 
             Pantographs.Update(elapsedClockSeconds);
 
+            Doors.Update(elapsedClockSeconds);
+
             MSTSBrakeSystem.Update(elapsedClockSeconds);
 
             // Updates freight load animations when defined in WAG file - Locomotive and Tender load animation are done independently in UpdateTenderLoad() & UpdateLocomotiveLoadPhysics()
@@ -1944,13 +1981,32 @@ namespace Orts.Simulation.RollingStocks
                     FreightAnimations.LoadedOne = null;
                     FreightAnimations.FreightType = PickupType.None;
                 }
-                if (FreightAnimations.WagonEmptyWeight != -1) MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
-                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
+                                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
                 {
                     WaitForAnimationReady = false;
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Starting unload"));
                     if (FreightAnimations.LoadedOne is FreightAnimationContinuous)
                         WeightLoadController.StartDecrease(WeightLoadController.MinimumValue);
+                }
+            }
+
+            if (WagonType != WagonTypes.Tender && AuxWagonType != "AuxiliaryTender" && WagonType != WagonTypes.Engine)
+            {
+                // Updates mass when it carries containers
+                float totalContainerMassKG = 0;
+                if (FreightAnimations?.Animations != null)
+                {
+                    foreach (var anim in FreightAnimations.Animations)
+                        if (anim is FreightAnimationDiscrete discreteAnim && discreteAnim.Container != null)
+                        {
+                            totalContainerMassKG += discreteAnim.Container.MassKG;
+                        }
+                }
+
+                // Updates the mass of the wagon considering all types of loads
+                if (FreightAnimations != null && FreightAnimations.WagonEmptyWeight != -1)
+                {
+                    CalculateTotalMass(totalContainerMassKG);
                 }
             }
         }
@@ -3343,70 +3399,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             base.SignalEvent(evt, id);
-        }
-
-        public void ToggleDoorsLeft()
-        {
-            DoorLeftOpen = !DoorLeftOpen;
-            if (Simulator.PlayerLocomotive == this || Train.LeadLocomotive == this) // second part for remote trains
-            {//inform everyone else in the train
-                foreach (var car in Train.Cars)
-                {
-                    var mstsWagon = car as MSTSWagon;
-                    if (car != this && mstsWagon != null)
-                    {
-                        if (!car.Flipped ^ Flipped)
-                        {
-                            mstsWagon.DoorLeftOpen = DoorLeftOpen;
-                            mstsWagon.SignalEvent(DoorLeftOpen ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
-                        }
-                        else
-                        {
-                            mstsWagon.DoorRightOpen = DoorLeftOpen;
-                            mstsWagon.SignalEvent(DoorLeftOpen ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
-                        }
-                    }
-                }
-                if (DoorLeftOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
-                else SignalEvent(Event.DoorClose);
-                if (Simulator.PlayerLocomotive == this)
-                {
-                    if (!GetCabFlipped()) Simulator.Confirmer.Confirm(CabControl.DoorsLeft, DoorLeftOpen ? CabSetting.On : CabSetting.Off);
-                    else Simulator.Confirmer.Confirm(CabControl.DoorsRight, DoorLeftOpen ? CabSetting.On : CabSetting.Off);
-                }
-            }
-        }
-
-        public void ToggleDoorsRight()
-        {
-            DoorRightOpen = !DoorRightOpen;
-            if (Simulator.PlayerLocomotive == this || Train.LeadLocomotive == this) // second part for remote trains
-            { //inform everyone else in the train
-                foreach (TrainCar car in Train.Cars)
-                {
-                    var mstsWagon = car as MSTSWagon;
-                    if (car != this && mstsWagon != null)
-                    {
-                        if (!car.Flipped ^ Flipped)
-                        {
-                            mstsWagon.DoorRightOpen = DoorRightOpen;
-                            mstsWagon.SignalEvent(DoorRightOpen ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
-                        }
-                        else
-                        {
-                            mstsWagon.DoorLeftOpen = DoorRightOpen;
-                            mstsWagon.SignalEvent(DoorRightOpen ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
-                        }
-                    }
-                }
-                if (DoorRightOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
-                else SignalEvent(Event.DoorClose);
-                if (Simulator.PlayerLocomotive == this)
-                {
-                    if (!GetCabFlipped()) Simulator.Confirmer.Confirm(CabControl.DoorsRight, DoorRightOpen ? CabSetting.On : CabSetting.Off);
-                    else Simulator.Confirmer.Confirm(CabControl.DoorsLeft, DoorRightOpen ? CabSetting.On : CabSetting.Off);
-                }
-            }
         }
 
         public void ToggleMirrors()

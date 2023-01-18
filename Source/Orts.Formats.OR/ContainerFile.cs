@@ -65,7 +65,8 @@ namespace Orts.Formats.OR
         public string ShapeFileName;  
         public string ContainerType;  
         public Vector3 IntrinsicShapeOffset = new Vector3(0f, 1.17f, 0f);
-
+        public float EmptyMassKG = -1;
+        public float MaxMassWhenLoadedKG = -1;
 
         public ContainerParameters(JsonReader json)
         {
@@ -80,6 +81,8 @@ namespace Orts.Formats.OR
                 case "Shape": ShapeFileName = item.AsString(ShapeFileName); break;
                 case "ContainerType": ContainerType = item.AsString("40ftHC"); break;
                 case "IntrinsicShapeOffset[]": IntrinsicShapeOffset = item.AsVector3(Vector3.Zero); break;
+                case "EmptyMassKG": EmptyMassKG = item.AsFloat(-1); break;
+                case "MaxMassWhenLoadedKG": MaxMassWhenLoadedKG = item.AsFloat(-1); break;
                 default: return false;
             }
             return true;
