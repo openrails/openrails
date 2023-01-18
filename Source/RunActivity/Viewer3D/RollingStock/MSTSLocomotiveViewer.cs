@@ -2487,7 +2487,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_LEFTDOOR:
                 case CABViewControlTypes.ORTS_RIGHTDOOR:
                     {
-                        bool right = (Control.ControlType == CABViewControlTypes.ORTS_RIGHTDOOR) ^ Locomotive.Flipped ^ Locomotive.GetCabFlipped();
+                        bool right = (Control.ControlType.Type == CABViewControlTypes.ORTS_RIGHTDOOR) ^ Locomotive.Flipped ^ Locomotive.GetCabFlipped();
                         var state = Locomotive.Train.DoorState(right ? DoorSide.Right : DoorSide.Left);
                         int open = state >= DoorState.Opening ? 1 : 0;
                         if (open != ChangedValue(open))
@@ -3313,7 +3313,7 @@ namespace Orts.Viewer3D.RollingStock
                         case CABViewControlTypes.LEFTDOOR:
                         case CABViewControlTypes.RIGHTDOOR:
                             {
-                                bool right = (p.Value.Type == CABViewControlTypes.RIGHTDOOR) ^ Locomotive.Flipped ^ Locomotive.GetCabFlipped();
+                                bool right = (p.Value.Type.Type == CABViewControlTypes.RIGHTDOOR) ^ Locomotive.Flipped ^ Locomotive.GetCabFlipped();
                                 var state = (right ? Locomotive.RightDoor : Locomotive.LeftDoor).State;
                                 p.Value.UpdateState(state >= DoorState.Opening, elapsedTime);
                             }

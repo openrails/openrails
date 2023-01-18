@@ -5777,7 +5777,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 case CABViewControlTypes.ORTS_LEFTDOOR:
                 case CABViewControlTypes.ORTS_RIGHTDOOR:
                     {
-                        bool right = (cvc.ControlType == CABViewControlTypes.ORTS_RIGHTDOOR) ^ Flipped ^ GetCabFlipped();
+                        bool right = (cvc.ControlType.Type == CABViewControlTypes.ORTS_RIGHTDOOR) ^ Flipped ^ GetCabFlipped();
                         var state = Train.DoorState(right ? DoorSide.Right : DoorSide.Left);
                         data = state >= DoorState.Opening ? 1 : 0;
                     }
