@@ -1217,6 +1217,22 @@ shape movement, however for greater accuracy the modeler can add specific values
 ``ORTSLengthAirHose``. In addition the length values suggested in the Derailment Coefficient should 
 also be added.
 
+Passenger doors
+===============
+
+.. index:: ORTSDoors
+
+Passenger doors are opened and closed (by default) using the ``<Q>`` and ``<Shift+Q>`` keys.
+It is possible to add opening and closing delays, which can be useful to delay the indication of
+"Doors closed" until all doors are fully closed.
+The delays can be added inserting the following block in the wagon section of any
+ENG or WAG file::
+
+  ORTSDoors (
+    ClosingDelay ( 5s )
+    OpeningDelay ( 1s )
+  )
+
 
 C# engine scripting
 ===================

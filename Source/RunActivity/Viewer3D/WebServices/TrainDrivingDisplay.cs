@@ -17,6 +17,7 @@
 
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using ORTS.Common;
 using ORTS.Common.Input;
@@ -770,16 +771,18 @@ namespace Orts.Viewer3D.WebServices
 
             // Doors
             var wagon = (MSTSWagon)locomotive;
-            if (wagon.DoorLeftOpen || wagon.DoorRightOpen)
+            var flipped = locomotive.Flipped ^ locomotive.GetCabFlipped();
+            var doorLeftOpen = train.DoorState(flipped ? DoorSide.Right : DoorSide.Left) != DoorState.Closed;
+            var doorRightOpen = train.DoorState(flipped ? DoorSide.Left : DoorSide.Right) != DoorState.Closed;
+            if (doorLeftOpen || doorRightOpen)
             {
                 var status = new List<string>();
-                var flipped = locomotive.GetCabFlipped();
                 doorsLabelVisible = true;
                 clockDoorsTime = viewer.Simulator.ClockTime;
-                if (wagon.DoorLeftOpen)
-                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString(flipped ? "Right" : "Left")));
-                if (wagon.DoorRightOpen)
-                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString(flipped ? "Left" : "Right")));
+                if (doorLeftOpen)
+                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString("Left")));
+                if (doorRightOpen)
+                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString("Right")));
 
                 AddLabel(new ListLabel
                 {

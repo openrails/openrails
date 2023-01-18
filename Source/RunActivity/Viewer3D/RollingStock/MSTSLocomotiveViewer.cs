@@ -2530,11 +2530,18 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_CABLIGHT:
                     if ((Locomotive.CabLightOn ? 1 : 0) != ChangedValue(Locomotive.CabLightOn ? 1 : 0)) new ToggleCabLightCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_LEFTDOOR:
-                    if ((Locomotive.GetCabFlipped() ? (Locomotive.DoorRightOpen ? 1 : 0) : Locomotive.DoorLeftOpen ? 1 : 0)
-                        != ChangedValue(Locomotive.GetCabFlipped() ? (Locomotive.DoorRightOpen ? 1 : 0) : Locomotive.DoorLeftOpen ? 1 : 0)) new ToggleDoorsLeftCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_RIGHTDOOR:
-                    if ((Locomotive.GetCabFlipped() ? (Locomotive.DoorLeftOpen ? 1 : 0) : Locomotive.DoorRightOpen ? 1 : 0)
-                         != ChangedValue(Locomotive.GetCabFlipped() ? (Locomotive.DoorLeftOpen ? 1 : 0) : Locomotive.DoorRightOpen ? 1 : 0)) new ToggleDoorsRightCommand(Viewer.Log); break;
+                    {
+                        bool right = (Control.ControlType == CABViewControlTypes.ORTS_RIGHTDOOR) ^ Locomotive.Flipped ^ Locomotive.GetCabFlipped();
+                        var state = Locomotive.Train.DoorState(right ? DoorSide.Right : DoorSide.Left);
+                        int open = state >= DoorState.Opening ? 1 : 0;
+                        if (open != ChangedValue(open))
+                        {
+                            if (right) new ToggleDoorsRightCommand(Viewer.Log);
+                            else new ToggleDoorsLeftCommand(Viewer.Log);
+                        }
+                    }
+                    break;
                 case CABViewControlTypes.ORTS_MIRRORS:
                     if ((Locomotive.MirrorOpen ? 1 : 0) != ChangedValue(Locomotive.MirrorOpen ? 1 : 0)) new ToggleMirrorsCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_COMMAND_SWITCH:
@@ -3399,10 +3406,12 @@ namespace Orts.Viewer3D.RollingStock
                             p.Value.UpdateLoop(Locomotive.Wiper, elapsedTime);
                             break;
                         case CABViewControlTypes.LEFTDOOR:
-                            p.Value.UpdateState(Locomotive.DoorLeftOpen, elapsedTime);
-                            break;
                         case CABViewControlTypes.RIGHTDOOR:
-                            p.Value.UpdateState(Locomotive.DoorRightOpen, elapsedTime);
+                            {
+                                bool right = (p.Value.Type == CABViewControlTypes.RIGHTDOOR) ^ Locomotive.Flipped ^ Locomotive.GetCabFlipped();
+                                var state = (right ? Locomotive.RightDoor : Locomotive.LeftDoor).State;
+                                p.Value.UpdateState(state >= DoorState.Opening, elapsedTime);
+                            }
                             break;
                         case CABViewControlTypes.MIRRORS:
                             p.Value.UpdateState(Locomotive.MirrorOpen, elapsedTime);

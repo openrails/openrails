@@ -23,6 +23,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
@@ -491,14 +492,17 @@ namespace Orts.Viewer3D.Popups
                     TableAddLine(table, Viewer.Catalog.GetString("Sander on") + "???");
             }
 
-            if ((Viewer.PlayerLocomotive as MSTSWagon).DoorLeftOpen || (Viewer.PlayerLocomotive as MSTSWagon).DoorRightOpen)
+                bool flipped = (Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped() ^ (Viewer.PlayerLocomotive as MSTSLocomotive).Flipped;
+            var doorLeftOpen = Viewer.PlayerLocomotive.Train.DoorState(flipped ? DoorSide.Right : DoorSide.Left) != DoorState.Closed;
+            var doorRightOpen = Viewer.PlayerLocomotive.Train.DoorState(flipped ? DoorSide.Left : DoorSide.Right) != DoorState.Closed;
+            if (doorLeftOpen || doorRightOpen)
             {
                 var color = Math.Abs(Viewer.PlayerLocomotive.SpeedMpS) > 0.1f ? "!!!" : "???";
                 var status = "";
-                if ((Viewer.PlayerLocomotive as MSTSWagon).DoorLeftOpen)
-                    status += Viewer.Catalog.GetString((Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped()? "Right" : "Left");
-                if ((Viewer.PlayerLocomotive as MSTSWagon).DoorRightOpen)
-                    status += string.Format(status == "" ? "{0}" : " {0}", Viewer.Catalog.GetString((Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped() ? "Left" : "Right"));
+                if (doorLeftOpen)
+                    status += Viewer.Catalog.GetString("Left");
+                if (doorRightOpen)
+                    status += string.Format(status == "" ? "{0}" : " {0}", Viewer.Catalog.GetString("Right"));
                 status += color;
 
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Doors open") + color, status);
