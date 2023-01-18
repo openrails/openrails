@@ -286,7 +286,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && Car.CarLengthM <= 1)
             EmergResVolumeM3 = Math.Min (0.02f, EmergResVolumeM3);
 
-            if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.None)
+            // Install a plain triple valve if no brake valve defined
+            // Do not install it for tenders if not defined, to allow tenders with straight brake only
+            if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.None && (Car as MSTSWagon).WagonType != TrainCar.WagonTypes.Tender)
             {
                 (Car as MSTSWagon).BrakeValve = MSTSWagon.BrakeValveType.TripleValve;
                 Trace.TraceWarning("{0} does not define a brake valve, defaulting to a plain triple valve", (Car as MSTSWagon).WagFilePath);
@@ -442,7 +444,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // triple valve set to release pressure in brake cylinder and EP valve set
-            if (TripleValveState == ValveState.Release)
+            if (TripleValveState == ValveState.Release && (Car as MSTSWagon).BrakeValve != MSTSWagon.BrakeValveType.None)
             {
                 if ((Car as MSTSWagon).EmergencyReservoirPresent)
 				{
@@ -561,9 +563,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {
+                bool isolateAutoBrake = false; 
                 if (Car is MSTSLocomotive loco && loco.EngineType != TrainCar.EngineTypes.Control)  // TODO - Control cars ned to be linked to power suppy requirements.
                 {
-                    bool isolateAutoBrake = false;
                     //    if (Car is MSTSLocomotive loco && loco.LocomotivePowerSupply.MainPowerSupplyOn)
                     if (loco.LocomotivePowerSupply.MainPowerSupplyOn)
                     {
@@ -588,20 +590,39 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (loco.DynamicBrakeAutoBailOff && loco.DynamicBrakePercent > 0 && Car.MaxBrakeForceN > 0)
                         {
                             var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                            var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(BrakeLine3PressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
+                            var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
                             if (localBrakeForceN > requiredBrakeForceN * 0.85f)
+                            {
                                 isolateAutoBrake = true;
+                                if (loco.DynamicBrakePartialBailOff)
+                                {
+                                    var compensatedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.MaxBrakeForceN*MaxCylPressurePSI, 0), MaxCylPressurePSI);
+                                    if (CylPressurePSI < BrakeLine3PressurePSI)
+                                        CylPressurePSI = BrakeLine3PressurePSI;
+                                    if (compensatedPressurePSI < CylPressurePSI)
+                                    {
+                                        CylPressurePSI = Math.Max(CylPressurePSI - MaxReleaseRatePSIpS * elapsedClockSeconds, BrakeLine3PressurePSI);
+                                    }
+                                    else if (compensatedPressurePSI > CylPressurePSI + 4)
+                                    {
+                                        float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+                                        if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < CylPressurePSI + dp)
+                                            dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
+                                        if (dp > compensatedPressurePSI - CylPressurePSI)
+                                            dp = compensatedPressurePSI - CylPressurePSI;
+                                        BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
+                                        CylPressurePSI += dp;
+                                    }
+                                }
+                                else
+                                {
+                                    CylPressurePSI = BrakeLine3PressurePSI;
+                                }
+                            }
                         }
                     }
-                    if (isolateAutoBrake)
-                        CylPressurePSI = BrakeLine3PressurePSI;
-                    else
-                        CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
                 }
-                else
-                {
-                    CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
-                }
+                if (!isolateAutoBrake) CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
             }
 
             // During braking wheelslide control is effected throughout the train by additional equipment on each vehicle. In the piping to each pair of brake cylinders are fitted electrically operated 
