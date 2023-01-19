@@ -1721,8 +1721,8 @@ interface), which can include a (touch screen) display and buttons.
 Being the display fields and icons and the buttons specific of every TCS, 
 a set of generic cabview controls are available, which can be customized 
 within the TCS script.
-More precisely 48 generic cabview controls, named from ORTS_TCS1 to ORTS_TCS48 
-are available. All 48 may be used as two state or multistate controls,  
+Generic cabview controls, named ORTS_TCS1, ORTS_TCS2, and so on
+are available. All of them may be used as two state or multistate controls,  
 like e.g.::
 
     MultiStateDisplay (
@@ -1766,7 +1766,7 @@ like e.g.::
    single: Style
    single: MouseControl
 
-Each one of the first 32 can be also used as Two-state commands/displays, like e.g.::
+They can be also used as Two-state commands/displays, like e.g.::
 
 		TwoState (
 			Type ( ORTS_TCS7 TWO_STATE )
@@ -1784,8 +1784,8 @@ The commands are received asynchronously by the script through this method:
     public override void HandleEvent(TCSEvent evt, string message)
 
 Where evt may be TCSEvent.GenericTCSButtonPressed or TCSEvent.GenericTCSButtonReleased 
-and message is a string ranging from "0" to "31", which correspond to controls from 
-ORTS_TCS1 to ORTS_TCS32.
+and message is a string representing the control number with zero-base indexing
+(e.g. "5" corresponds to ORTS_TCS6).
 The commands may only be triggered by the mouse, except the first two which may also be 
 triggered by key combinations ``Ctrl,`` (comma) and ``Ctrl.`` (period).
 Here's a code excerpt from the script which manages the commands:
@@ -1846,14 +1846,14 @@ To request a display of a cabview control, method:
 
     public Action<int, float> SetCabDisplayControl; 
 
-has to be used, where ``int`` is the index of the cab control (from 0 to 47 
-corresponding from ORTS_TCS1 to ORTS_TCS48), and ``float`` is the value to be 
+has to be used, where ``int`` is the index of the cab control (starting from 0
+which corresponds to ORTS_TCS1), and ``float`` is the value to be 
 used to select among frames.
 
 When the player moves the mouse over the cabview controls linked to commands, 
 the name of such control shortly appears on the display, like e.g. "speedometer", 
 as a reminder to the player. 
-In case of these generic commands, strings from "ORTS_TCS1" to "ORTS_TCS32" would 
+In case of these generic commands, strings like "ORTS_TCS1" or "ORTS_TCS32" would 
 appear, which aren't mnemonic at all. Therefore following method is available:
 
 .. code-block:: csharp
