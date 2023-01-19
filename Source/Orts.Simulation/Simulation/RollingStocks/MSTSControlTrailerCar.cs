@@ -186,29 +186,26 @@ namespace Orts.Simulation.RollingStocks
             WheelSpeedMpS = SpeedMpS; // Set wheel speed for control car, required to make wheels go around.
 
 
-            if (ControllerNumberOfGears > 0 && IsLeadLocomotive())
+            if (ControllerNumberOfGears > 0 && IsLeadLocomotive() && GearBoxController != null)
             {
-                // pass gearbox command key to other locomotives in train, don't treat the player locomotive in this fashion.
+                // Pass gearbox command key to other locomotives in train, don't treat the player locomotive in this fashion.
+                // This assumes that Contol cars have been "matched" with motor cars. Also return values will be on thebasis of the last motor car in the train.         
+
                 foreach (TrainCar car in Train.Cars)
                 {
-
-
                     var locog = car as MSTSDieselLocomotive;
 
-                    if (locog != null && car != this && !locog.IsLeadLocomotive() && GearBoxController != null)
+                    if (locog != null && car != this && !locog.IsLeadLocomotive() && (ControlGearDown || ControlGearUp))
                     {
 
                         if (ControlGearUp)
                         {
-                         
+
                             locog.GearBoxController.CurrentNotch = GearBoxController.CurrentNotch;
                             locog.GearBoxController.SetValue((float)locog.GearBoxController.CurrentNotch);
 
-                            locog.ChangeGearUp();
-
-                            ControlGearUp = false;
+                            locog.ChangeGearUp();                                                        
                         }
-
 
                         if (ControlGearDown)
                         {
@@ -216,17 +213,23 @@ namespace Orts.Simulation.RollingStocks
                             locog.GearBoxController.CurrentNotch = GearBoxController.CurrentNotch;
                             locog.GearBoxController.SetValue((float)locog.GearBoxController.CurrentNotch);
 
-                            locog.ChangeGearDown();
-
-                            ControlGearDown = false;
+                            locog.ChangeGearDown();                            
                         }
+                    }
 
-                        // Read values for the HuD
+                    // Read values for the HuD, will be based upon the last motorcar
+                    if (locog != null)
+                    {
                         ControlGearIndex = locog.DieselEngines[0].GearBox.CurrentGearIndex;
                         ControlGearIndication = locog.DieselEngines[0].GearBox.GearIndication;
                     }
-
                 }
+           
+                
+                // Rest gear flags once all the cars have been processed
+                ControlGearUp = false;
+                ControlGearDown = false;
+
             }
 
         }
