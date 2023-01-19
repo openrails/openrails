@@ -53,9 +53,9 @@ namespace Orts.Common
         public float LonMin;
         public float LonMax;
 
-        public InfoApiMap(string PowerSupplyName) 
+        public InfoApiMap(string powerSupplyName) 
         {
-            initTypeOfLocomotive(PowerSupplyName);
+            InitTypeOfLocomotive(powerSupplyName);
 
             PointOnApiMapList = new LinkedList<PointOnApiMap>();
             LineOnApiMapList = new LinkedList<LineOnApiMap>();
@@ -66,9 +66,9 @@ namespace Orts.Common
             LonMin = +999999f;
         }
 
-        private void initTypeOfLocomotive(string PowerSupplyName)
+        private void InitTypeOfLocomotive(string powerSupplyName)
         {
-            string powerSupplyNameToLower = PowerSupplyName.ToLower();
+            string powerSupplyNameToLower = powerSupplyName.ToLower();
             if (powerSupplyNameToLower.Contains("steam"))
             {
                 TypeOfLocomotive = "steam";
@@ -86,38 +86,38 @@ namespace Orts.Common
             }
         }
 
-        public static LatLon convertToLatLon(int TileX, int TileZ, float X, float Y, float Z)
+        public static LatLon ConvertToLatLon(int tileX, int tileZ, float x, float y, float z)
         {
             double latitude = 1f;
             double longitude = 1f;
 
-            WorldLocation mstsLocation = new WorldLocation(TileX, TileZ, X, Y, Z);
-            new WorldLatLon().ConvertWTC(TileX, TileZ, mstsLocation.Location, ref latitude, ref longitude);
+            WorldLocation mstsLocation = new WorldLocation(tileX, tileZ, x, y, z);
+            new WorldLatLon().ConvertWTC(tileX, tileZ, mstsLocation.Location, ref latitude, ref longitude);
             LatLon latLon = new LatLon(MathHelper.ToDegrees((float)latitude), MathHelper.ToDegrees((float)longitude));
 
             return latLon;
         }
 
-        public void addToPointOnApiMap(
-            int TileX, int TileZ, float X, float Y, float Z,
-            string Color, TypeOfPointOnApiMap TypeOfPointOnApiMap, string Name)
+        public void AddToPointOnApiMap(
+            int tileX, int tileZ, float x, float y, float z,
+            string Color, TypeOfPointOnApiMap typeOfPointOnApiMap, string name)
         {
-            LatLon latLon = InfoApiMap.convertToLatLon(TileX, TileZ, X, Y, Z);
+            LatLon latLon = InfoApiMap.ConvertToLatLon(tileX, tileZ, x, y, z);
 
-            addToPointOnApiMap(latLon,
-                Color, TypeOfPointOnApiMap, Name);
+            AddToPointOnApiMap(latLon,
+                Color, typeOfPointOnApiMap, name);
         }
 
-        public void addToPointOnApiMap(
-            LatLon LatLon,
-            string Color, TypeOfPointOnApiMap TypeOfPointOnApiMap, string Name)
+        public void AddToPointOnApiMap(
+            LatLon latLon,
+            string color, TypeOfPointOnApiMap typeOfPointOnApiMap, string name)
         {
             PointOnApiMap pointOnApiMap = new PointOnApiMap
             {
-                LatLon = LatLon,
-                Color = Color,
-                TypeOfPointOnApiMap = TypeOfPointOnApiMap,
-                Name = Name
+                LatLon = latLon,
+                Color = color,
+                TypeOfPointOnApiMap = typeOfPointOnApiMap,
+                Name = name
             };
 
             if (pointOnApiMap.TypeOfPointOnApiMap == TypeOfPointOnApiMap.Named)
@@ -148,12 +148,12 @@ namespace Orts.Common
             }
         }
 
-        public void addToLineOnApiMap(LatLon LatLonFrom, LatLon LatLongTo)
+        public void AddToLineOnApiMap(LatLon latLonFrom, LatLon latLongTo)
         {
             LineOnApiMap lineOnApiMap = new LineOnApiMap
             {
-                LatLonFrom = LatLonFrom,
-                LatLonTo = LatLongTo
+                LatLonFrom = latLonFrom,
+                LatLonTo = latLongTo
             };
             LineOnApiMapList.AddLast(lineOnApiMap);
         }
