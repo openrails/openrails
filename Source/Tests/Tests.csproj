@@ -14,11 +14,6 @@
     <DocumentationFile>..\..\Program\Tests.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>..\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
       <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
       <Name>Orts.Parsers.Msts</Name>
@@ -42,14 +37,15 @@
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902">
-      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
 </Project>
