@@ -3375,10 +3375,6 @@ namespace Orts.Simulation.RollingStocks
             {
                 directionDeg += 180.0f;
             }
-            if (Flipped)
-            {
-                directionDeg += 180.0f;
-            }
             var loco = this as MSTSLocomotive;
             if (loco.UsingRearCab)
             {
