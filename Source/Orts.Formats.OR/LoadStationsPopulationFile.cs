@@ -22,7 +22,9 @@ using System.Diagnostics;
 using System.Text;
 using System.IO;
 using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
 using Orts.Parsers.OR;
+using ORTS.Common;
 
 namespace Orts.Formats.OR
 {
@@ -113,6 +115,7 @@ namespace Orts.Formats.OR
         public string FileName;
         public string FolderName;
         public int StackLocation;
+        public LoadState LoadState;
 
         public LoadDataEntry(JsonReader json)
         {
@@ -126,6 +129,7 @@ namespace Orts.Formats.OR
                 case "File": FileName = item.AsString(""); break;
                 case "Folder": FolderName = item.AsString(""); break;
                 case "StackLocation": StackLocation = item.AsInteger(0); break;
+                case "LoadState": Enum.TryParse(item.AsString(""), out LoadState); break;
                 default: return false;
             }
             return true;

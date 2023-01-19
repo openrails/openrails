@@ -114,27 +114,11 @@ namespace Orts.Viewer3D.WebServices
         /// The Viewer to serve train data from.
         /// </summary>
         private readonly Viewer Viewer;
-        private bool latLongCorrToBeRead = true;
         protected WorldLocation cameraLocation = new WorldLocation();
 
         public ORTSApiController(Viewer viewer)
         {
             Viewer = viewer;
-        }
-
-        public string getLatLong()
-        {
-            double latitude = 0;
-            double longitude = 0;
-
-            var playerLocation = Viewer.Simulator.PlayerLocomotive.WorldPosition.WorldLocation;
-
-            new WorldLatLon().ConvertWTC(playerLocation.TileX, playerLocation.TileZ, playerLocation.Location, ref latitude, ref longitude);;
-
-            string latitudeStr = (MathHelper.ToDegrees((float)latitude)).ToString("F6").Replace(',', '.');
-            string longitudeStr = (MathHelper.ToDegrees((float)longitude)).ToString("F6").Replace(',', '.');
-
-            return (latitudeStr + " " + longitudeStr);
         }
 
         #region /API/APISAMPLE
@@ -275,7 +259,7 @@ namespace Orts.Viewer3D.WebServices
 
         #region /API/MAP
         [Route(HttpVerbs.Get, "/MAP")]
-        public string LatLong() => getLatLong();
+        public LatLon LatLon() => Viewer.Simulator.PlayerLocomotive.GetLatLon();
         #endregion
     }
 }

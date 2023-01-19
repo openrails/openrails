@@ -66,6 +66,8 @@ namespace Orts.Simulation
         public string ShapeFileName;
         public string BaseShapeFileFolderSlash;
         public float MassKG = 2000;
+        public float EmptyMassKG;
+        public float MaxMassWhenLoadedKG;
         public float WidthM = 2.44f;
         public float LengthM = 12.19f;       
         public float HeightM = 2.59f;
@@ -73,7 +75,8 @@ namespace Orts.Simulation
         public bool Flipped = false;
         public static float Length20ftM = 6.095f;
         public static float Length40ftM = 12.19f;
-
+        public static float[] DefaultEmptyMassKG = { 0, 2160, 3900, 4100, 4500, 4700, 4900, 5040 };
+        public static float[] DefaultMaxMassWhenLoadedKG = { 0, 24000, 30500, 30500, 30500, 30500, 30500, 30500 };
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the container
         public float RealRelativeYOffset = 0;
         public float RealRelativeZOffset = 0;
@@ -117,6 +120,8 @@ namespace Orts.Simulation
             ComputeDimensions();
             Flipped = containerCopy.Flipped;
             MassKG = containerCopy.MassKG;
+            EmptyMassKG = containerCopy.EmptyMassKG;
+            MaxMassWhenLoadedKG = containerCopy.MaxMassWhenLoadedKG;
         }
 
         public Container(BinaryReader inf, FreightAnimationDiscrete freightAnimDiscrete, ContainerHandlingItem containerStation, bool fromContainerStation, int stackLocationIndex = 0)
@@ -134,6 +139,8 @@ namespace Orts.Simulation
             ComputeDimensions();
             Flipped = inf.ReadBoolean();
             MassKG = inf.ReadSingle();
+            EmptyMassKG = inf.ReadSingle();
+            MaxMassWhenLoadedKG = inf.ReadSingle();
             if (fromContainerStation)
             {
                 // compute WorldPosition starting from offsets and position of container station
@@ -231,6 +238,8 @@ namespace Orts.Simulation
             outf.Write((int)ContainerType);
             outf.Write(Flipped);
             outf.Write(MassKG);
+            outf.Write(EmptyMassKG);
+            outf.Write(MaxMassWhenLoadedKG);
             if (fromContainerStation)
             {
 
@@ -254,6 +263,8 @@ namespace Orts.Simulation
             ComputeDimensions();
             IntrinsicShapeOffset = containerParameters.IntrinsicShapeOffset;
             IntrinsicShapeOffset.Z *= -1;
+            EmptyMassKG = containerParameters.EmptyMassKG != -1 ? containerParameters.EmptyMassKG : DefaultEmptyMassKG[(int)ContainerType] ;
+            MaxMassWhenLoadedKG = containerParameters.MaxMassWhenLoadedKG != -1 ? containerParameters.MaxMassWhenLoadedKG : DefaultMaxMassWhenLoadedKG[(int)ContainerType];
         }
 
         public void ComputeWorldPosition (FreightAnimationDiscrete freightAnimDiscrete)
@@ -267,6 +278,24 @@ namespace Orts.Simulation
             WorldPosition.XNAMatrix = translation * WorldPosition.XNAMatrix;
             var invWagonMatrix = Matrix.Invert(freightAnimDiscrete.Wagon.WorldPosition.XNAMatrix);
             RelativeContainerMatrix = Matrix.Multiply(WorldPosition.XNAMatrix, invWagonMatrix);
+        }
+
+        public void ComputeLoadWeight(LoadState loadState)
+        {
+            switch (loadState)
+            {
+                case LoadState.Empty:
+                    MassKG = EmptyMassKG;
+                    break;
+                case LoadState.Loaded:
+                    MassKG = MaxMassWhenLoadedKG;
+                    break;
+                case LoadState.Random:
+                    var loadPercent = Simulator.Random.Next(101);
+                    if (loadPercent < 30) MassKG = EmptyMassKG;
+                    else MassKG = MaxMassWhenLoadedKG * loadPercent / 100f;
+                    break;
+            }
         }
     }
 
@@ -511,14 +540,14 @@ namespace Orts.Simulation
                             Trace.TraceWarning($"Ignored missing load {loadFilePath}");
                             continue;
                         }
-                        Preload(loadFilePath, loadDataEntry.StackLocation);
+                        Preload(loadFilePath, loadDataEntry.StackLocation, loadDataEntry.LoadState);
                     }
                     break;
                 }
             }
          }
 
-        public void Preload(string loadFilePath, int stackLocationIndex)
+        public void Preload(string loadFilePath, int stackLocationIndex, LoadState loadState)
         {
             Container container;
             container = new Container(null, loadFilePath, this);
@@ -531,6 +560,8 @@ namespace Orts.Simulation
                 container.LoadFromContainerFile(loadFilePath, Simulator.BasePath + @"\trains\trainset\");
                 ContainerManager.LoadedContainers.Add(loadFilePath, container);
             }
+            container.ComputeLoadWeight(loadState);
+
             var stackLocation = StackLocations[stackLocationIndex];
             if (stackLocation.Containers != null && stackLocation.Containers.Count >= stackLocation.MaxStackedContainers)
                 Trace.TraceWarning("Stack Location {0} is full, can't lay down container", stackLocationIndex);

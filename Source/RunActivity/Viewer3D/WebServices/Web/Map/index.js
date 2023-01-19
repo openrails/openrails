@@ -16,17 +16,17 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-var hr = new XMLHttpRequest;
-var httpCodeSuccess = 200;
-var xmlHttpRequestCodeDone = 4;
+const hr = new XMLHttpRequest;
+const httpCodeSuccess = 200;
+const xmlHttpRequestCodeDone = 4;
 
-var locomotivMarker;
+var locomotiveMarker;
 var map;
-var latLongPrev = [0, 0];
+var latLonPrev = [0, 0];
 
-function MapInit(latLong) {
+function MapInit(latLon) {
 
-    map = L.map('map').setView(latLong, 13);
+    map = L.map('map').setView(latLon, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -44,35 +44,36 @@ function ApiMap() {
     hr.send();
     hr.onreadystatechange = function () {
         if (this.readyState == xmlHttpRequestCodeDone && this.status == httpCodeSuccess) {
-            var responseText = JSON.parse(hr.responseText);
-            if (responseText.length > 0) {
-                latLong = responseText.split(" ");
-                if (typeof locomotivMarker !== 'undefined') {
-                    if ((latLong[0] != latLongPrev[0]) && (latLong[1] != latLongPrev[1])) {
-                        map.panTo(latLong);
-                    }
-                } else {
-                    MapInit(latLong);
-                }
 
-                if ((latLong[0] != latLongPrev[0]) && (latLong[1] != latLongPrev[1])) {
-                    if (typeof locomotivMarker !== 'undefined') {
-                        locomotivMarker.removeFrom(map);
-                    }
-                    locomotivMarker = L.marker(
-                        latLong,
+            let latLonObj = JSON.parse(hr.responseText);
+
+            if (latLonObj != null) {
+
+                let latLon = [latLonObj.Lat, latLonObj.Lon];
+
+                if (typeof locomotiveMarker == 'undefined') {
+                    // init
+                    MapInit(latLon);
+                    locomotiveMarker = L.marker(
+                        latLon,
                         { icon: myIcon }
                     ).addTo(map);
-                    latLongPrev[0] = latLong[0];
-                    latLongPrev[1] = latLong[1];
+                } else {
+                    if ((latLon[0] != latLonPrev[0]) || (latLon[1] != latLonPrev[1])) {
+                        // changed
+                        map.panTo(latLon);
+                        locomotiveMarker.setLatLng(latLon).update();
+                    }
                 }
+                latLonPrev[0] = latLon[0];
+                latLonPrev[1] = latLon[1];
             }
         }
     }
 }
 
 var myIcon = L.icon({
-    iconUrl: 'locomotiv.png',
+    iconUrl: 'locomotive.png',
     iconSize: [29, 24],
     iconAnchor: [9, 21],
 })

@@ -51,7 +51,8 @@ namespace Orts.Viewer3D.Common
         {
             var texturePath = Path.GetDirectoryName(textureFilePath);
             var textureName = Path.GetFileName(textureFilePath);
-            var nightTexturePath = !File.Exists(texturePath + @"\Night\" + textureName) ? Path.GetDirectoryName(texturePath) + @"\Night\" : texturePath + @"\Night\";
+            var nightTexturePath = !File.Exists(texturePath + @"\Night\" + textureName) &&
+                !File.Exists(texturePath + @"\Night\" + Path.ChangeExtension(textureName, ".dds")) ? Path.GetDirectoryName(texturePath) + @"\Night\" : texturePath + @"\Night\";
 
             if (!String.IsNullOrEmpty(nightTexturePath + textureName) && Path.GetExtension(nightTexturePath + textureName) == ".dds" && File.Exists(nightTexturePath + textureName))
             {

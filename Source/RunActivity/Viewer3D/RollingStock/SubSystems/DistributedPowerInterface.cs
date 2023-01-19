@@ -540,7 +540,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (!IsPowered)
+            if (!IsPowered && Control.HideIfDisabled)
                 return;
 
             base.PrepareFrame(frame, elapsedTime);
@@ -974,7 +974,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (!CVFR.IsPowered)
+            if (!CVFR.IsPowered && CVFR.Control.HideIfDisabled)
                 return;
 
             Update3DDPITable();

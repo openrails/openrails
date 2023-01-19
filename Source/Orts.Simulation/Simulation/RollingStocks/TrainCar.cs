@@ -34,6 +34,7 @@
 //#define DEBUG_BRAKE_SLIDE
 
 using Microsoft.Xna.Framework;
+using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.AIs;
@@ -198,6 +199,7 @@ namespace Orts.Simulation.RollingStocks
         public float CarCouplerFaceLengthM;
         public float DerailmentCoefficient;
         public float NadalDerailmentCoefficient;
+        public bool DerailmentCoefficientEnabled = true;
         public float MaximumWheelFlangeAngleRad;
         public float WheelFlangeLengthM;
         public float AngleOfAttackRad;
@@ -630,7 +632,8 @@ namespace Orts.Simulation.RollingStocks
         protected float RouteSpeedMpS; // Max Route Speed Limit
         protected const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
         protected int WagonNumAxles; // Number of axles on a wagon
-        protected float MSTSWagonNumWheels; // Number of axless on a wagon - used to read MSTS value as default
+        protected int InitWagonNumAxles; // Initial read of number of axles on a wagon
+        protected float MSTSWagonNumWheels; // Number of axles on a wagon - used to read MSTS value as default
         protected int LocoNumDrvAxles; // Number of drive axles on locomotive
         protected float MSTSLocoNumDrvWheels; // Number of drive axles on locomotive - used to read MSTS value as default
         public float DriverWheelRadiusM = Me.FromIn(30.0f); // Drive wheel radius of locomotive wheels - Wheel radius of loco drive wheels can be anywhere from about 10" to 40".
@@ -1484,7 +1487,7 @@ namespace Orts.Simulation.RollingStocks
             // To calculate vertical force on outer wheel = (WagMass / NumWheels) * gravity + WagMass / NumAxles * ( (Speed^2 / CurveRadius) - (gravity * superelevation angle)) * (height * track width)
             // Equation 5
 
-            if (IsPlayerTrain)
+            if (IsPlayerTrain && DerailmentCoefficientEnabled)
             {
                 if (CouplerForceU > 0 && CouplerSlackM < 0) // If car coupler is in compression, use the buff angle
                 {
@@ -3347,6 +3350,25 @@ namespace Orts.Simulation.RollingStocks
             float HeatLossInfiltrationW = W.FromKW(SpecificHeatCapacityAirKJpKgK * DensityAirKgpM3 * NumAirShiftspSec * CarHeatVolumeM3 * (CarInsideTempC - CarOutsideTempC));
 
             TotalCarCompartmentHeatLossW = HeatLossTransmissionW + HeatLossInfiltrationW + HeatLossVentilationW;
+        }
+
+        /// <summary>
+        /// Determine latitude/longitude position of the current TrainCar
+        /// </summary>
+        public LatLon GetLatLon()
+        {
+            double lat = 0;
+            double lon = 0;
+
+            var playerLocation = WorldPosition.WorldLocation;
+
+            new WorldLatLon().ConvertWTC(playerLocation.TileX, playerLocation.TileZ, playerLocation.Location, ref lat, ref lon);
+
+            LatLon latLon = new LatLon(
+                MathHelper.ToDegrees((float)lat),
+                MathHelper.ToDegrees((float)lon));
+
+            return (latLon);
         }
     }
 
