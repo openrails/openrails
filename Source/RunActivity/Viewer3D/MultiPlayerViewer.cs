@@ -29,8 +29,6 @@ namespace Orts.Viewer3D
         static int PantoThirdCount;
         static int WiperCount;
         static int HeadLightCount;
-        static int DoorLeftCount;
-        static int DoorRightCount;
         static int MirrorsCount;
 
         public static void HandleUserInput()
@@ -51,10 +49,6 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.ControlPantograph3)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO3", (++PantoThirdCount) % 2)).ToString());
 
             if (UserInput.IsPressed(UserCommand.ControlWiper)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommand.ControlDoorLeft)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "DOORL", (++DoorLeftCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommand.ControlDoorRight)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "DOORR", (++DoorRightCount) % 2)).ToString());
 
             if (UserInput.IsPressed(UserCommand.ControlMirror)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "MIRRORS", (++MirrorsCount) % 2)).ToString());
 

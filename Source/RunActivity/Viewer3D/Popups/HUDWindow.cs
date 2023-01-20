@@ -23,6 +23,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
@@ -491,14 +492,17 @@ namespace Orts.Viewer3D.Popups
                     TableAddLine(table, Viewer.Catalog.GetString("Sander on") + "???");
             }
 
-            if ((Viewer.PlayerLocomotive as MSTSWagon).DoorLeftOpen || (Viewer.PlayerLocomotive as MSTSWagon).DoorRightOpen)
+                bool flipped = (Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped() ^ (Viewer.PlayerLocomotive as MSTSLocomotive).Flipped;
+            var doorLeftOpen = Viewer.PlayerLocomotive.Train.DoorState(flipped ? DoorSide.Right : DoorSide.Left) != DoorState.Closed;
+            var doorRightOpen = Viewer.PlayerLocomotive.Train.DoorState(flipped ? DoorSide.Left : DoorSide.Right) != DoorState.Closed;
+            if (doorLeftOpen || doorRightOpen)
             {
                 var color = Math.Abs(Viewer.PlayerLocomotive.SpeedMpS) > 0.1f ? "!!!" : "???";
                 var status = "";
-                if ((Viewer.PlayerLocomotive as MSTSWagon).DoorLeftOpen)
-                    status += Viewer.Catalog.GetString((Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped()? "Right" : "Left");
-                if ((Viewer.PlayerLocomotive as MSTSWagon).DoorRightOpen)
-                    status += string.Format(status == "" ? "{0}" : " {0}", Viewer.Catalog.GetString((Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped() ? "Left" : "Right"));
+                if (doorLeftOpen)
+                    status += Viewer.Catalog.GetString("Left");
+                if (doorRightOpen)
+                    status += string.Format(status == "" ? "{0}" : " {0}", Viewer.Catalog.GetString("Right"));
                 status += color;
 
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Doors open") + color, status);
@@ -1064,37 +1068,28 @@ namespace Orts.Viewer3D.Popups
                     if (mstsLocomotive.AdvancedAdhesionModel)
                     {
 
-                        if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) // For display of steam locomotive adhesion info
-                        {
-                            TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model)"));
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Wag Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Tang. Force"), "{0:F0}", FormatStrings.FormatForce(N.FromLbf(mstsLocomotive.SteamTangentialWheelForce), mstsLocomotive.IsMetric));
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Static Force"), "{0:F0}", FormatStrings.FormatForce(N.FromLbf(mstsLocomotive.SteamStaticWheelForce), mstsLocomotive.IsMetric));
-                            //  TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeForceN, mstsLocomotive.IsMetric));
-                        }
-                        else  // Advanced adhesion non steam locomotives HUD display
-                        {
-                            TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model)"));
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel slip"), "{0:F0}% ({1:F0}%/{2})", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS, FormatStrings.s);
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Axle drive force"), "{0} ({1})", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.DriveForceN, mstsLocomotive.IsMetric),
-                            FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeRetardForceN, mstsLocomotive.IsMetric));
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Number of substeps"), "{0:F0}", mstsLocomotive.LocomotiveAxle.NumOfSubstepsPS);
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0} ({1})",
-                                FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.AxleForceN, mstsLocomotive.IsMetric),
-                                FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.AxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Comp Axle out force"), "{0} ({1})",
-                                FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.CompensatedAxleForceN, mstsLocomotive.IsMetric),
-                                FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.CompensatedAxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel Speed"), "{0} ({1})",
-                                FormatStrings.FormatSpeedDisplay(mstsLocomotive.AbsWheelSpeedMpS, mstsLocomotive.IsMetric),
-                                FormatStrings.FormatSpeedDisplay(mstsLocomotive.LocomotiveAxle.SlipSpeedMpS, mstsLocomotive.IsMetric)
-                                );
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);
-                            TableAddLabelValue(table, Viewer.Catalog.GetString("Wagon Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);
-                        }
+
+                        TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model)"));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel slip"), "{0:F0}% ({1:F0}%/{2})", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS, FormatStrings.s);
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Conditions"), "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Axle drive force"), "{0} ({1})", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.DriveForceN, mstsLocomotive.IsMetric),
+                        FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Axle brake force"), "{0}", FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.BrakeRetardForceN, mstsLocomotive.IsMetric));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Number of substeps"), "{0:F0}", mstsLocomotive.LocomotiveAxle.NumOfSubstepsPS);
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0} ({1})",
+                        FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.AxleForceN, mstsLocomotive.IsMetric),
+                        FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.AxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Comp Axle out force"), "{0} ({1})",
+                        FormatStrings.FormatForce(mstsLocomotive.LocomotiveAxle.CompensatedAxleForceN, mstsLocomotive.IsMetric),
+                        FormatStrings.FormatPower(mstsLocomotive.LocomotiveAxle.CompensatedAxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel Speed"), "{0} ({1})",
+                        FormatStrings.FormatSpeedDisplay((HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) ? mstsLocomotive.WheelSpeedSlipMpS : mstsLocomotive.AbsWheelSpeedMpS, mstsLocomotive.IsMetric),
+                        FormatStrings.FormatSpeedDisplay(mstsLocomotive.LocomotiveAxle.SlipSpeedMpS, mstsLocomotive.IsMetric)
+                                                    );
+                        if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel ang. pos."), "{0}º", (int)(mstsLocomotive.LocomotiveAxle.AxlePositionRad * 180 / Math.PI + 180));
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);
+                        TableAddLabelValue(table, Viewer.Catalog.GetString("Wagon Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);
+
                     }
                     else
                     {
