@@ -55,6 +55,7 @@ namespace Orts.Simulation.RollingStocks
         bool ControlGearDown = false;
         int ControlGearIndex;
         int ControlGearIndication;
+        string ControlGearBoxType;
 
 
         public MSTSControlTrailerCar(Simulator simulator, string wagFile)
@@ -216,11 +217,15 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
 
-                    // Read values for the HuD, will be based upon the last motorcar
+                    // Read values for the HuD and other requirements, will be based upon the last motorcar
                     if (locog != null)
                     {
                         ControlGearIndex = locog.DieselEngines[0].GearBox.CurrentGearIndex;
                         ControlGearIndication = locog.DieselEngines[0].GearBox.GearIndication;
+                        if (locog.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.C)
+                        {
+                            ControlGearBoxType = "C";
+                        }
                     }
                 }
            
@@ -270,17 +275,31 @@ namespace Orts.Simulation.RollingStocks
         public override void ChangeGearUp()
         {
 
-                       GearBoxController.CurrentNotch += 1;
+            if (ControlGearBoxType == "C")
+            {
+                if (ThrottlePercent == 0)
+                {
+                    GearBoxController.CurrentNotch += 1;
+                }
+                else
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Throttle must be reduced to Idle before gear change can happen."));
+                }
+            }
+            else
+            {
+                GearBoxController.CurrentNotch += 1;
+            }
 
-                        if(GearBoxController.CurrentNotch > ControllerNumberOfGears)
-                        {
-                            GearBoxController.CurrentNotch = ControllerNumberOfGears;
-                        }
-                        else if (GearBoxController.CurrentNotch < 0)
-                        {
-                            GearBoxController.CurrentNotch = 0;
-                        }
-            
+            if (GearBoxController.CurrentNotch > ControllerNumberOfGears)
+            {
+                GearBoxController.CurrentNotch = ControllerNumberOfGears;
+            }
+            else if (GearBoxController.CurrentNotch < 0)
+            {
+                GearBoxController.CurrentNotch = 0;
+            }
+
             ControlGearUp = true;
             ControlGearDown = false;
 
@@ -288,7 +307,21 @@ namespace Orts.Simulation.RollingStocks
 
         public override void ChangeGearDown()
         {
-            GearBoxController.CurrentNotch -= 1;
+            if (ControlGearBoxType == "C")
+            {
+                if (ThrottlePercent == 0)
+                {
+                    GearBoxController.CurrentNotch -= 1;
+                }
+                else
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Throttle must be reduced to Idle before gear change can happen."));
+                }
+            }
+            else
+            {
+                GearBoxController.CurrentNotch -= 1;
+            }
 
             if (GearBoxController.CurrentNotch > ControllerNumberOfGears)
             {
@@ -303,9 +336,5 @@ namespace Orts.Simulation.RollingStocks
             ControlGearDown = true;
 
         }
-
-
-
-
     }
 }

@@ -3637,10 +3637,9 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             if (GearBoxController != null)
             {
-                
+
                 if (this is MSTSDieselLocomotive)
                 {
-
                     var dieselloco = this as MSTSDieselLocomotive;
 
                     if (dieselloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
