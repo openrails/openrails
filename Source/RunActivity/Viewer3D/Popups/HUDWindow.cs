@@ -1102,11 +1102,10 @@ namespace Orts.Viewer3D.Popups
 
                 TableAddLine(table);
 
-                TableAddLine(table, $"{Viewer.Catalog.GetString("Wind Speed:")} {Viewer.Catalog.GetStringFmt("{0:N2} mph", Me.ToMi(pS.TopH(train.PhysicsWindSpeedMpS)))}   " +
-                                    $"{Viewer.Catalog.GetString("Wind Direction:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.PhysicsWindDirectionDeg)}   " +
-                                    $"{Viewer.Catalog.GetString("Train Direction:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.PhysicsTrainLocoDirectionDeg)}   " +
-                                    $"{Viewer.Catalog.GetString("ResWind:")} {Viewer.Catalog.GetStringFmt("{0:N2} Deg", train.ResultantWindComponentDeg)}   " +
-                                    $"{Viewer.Catalog.GetString("ResSpeed:")} {Viewer.Catalog.GetStringFmt("{0:N2} mph", Me.ToMi(pS.TopH(train.WindResultantSpeedMpS)))}");
+                TableSetCells(table, 0, Viewer.Catalog.GetString("Wind"), string.Empty, FormatStrings.FormatSpeedDisplay(train.PhysicsWindSpeedMpS, mstsLocomotive.IsMetric), FormatStrings.FormatAngleDeg(train.PhysicsWindDirectionDeg));
+                TableSetCells(table, 4, Viewer.Catalog.GetString("Train"), FormatStrings.FormatAngleDeg(train.PhysicsTrainLocoDirectionDeg));
+                TableSetCells(table, 6, Viewer.Catalog.GetString("Result"), FormatStrings.FormatSpeedDisplay(train.WindResultantSpeedMpS, mstsLocomotive.IsMetric), FormatStrings.FormatAngleDeg(train.ResultantWindComponentDeg));
+                TableAddLine(table);
                 TableAddLine(table);
             }
 
