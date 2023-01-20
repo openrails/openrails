@@ -49,8 +49,8 @@ namespace Orts.Viewer3D
         static bool MouseButtonsSwapped;
         public static int MouseSpeedX;
         public static int MouseSpeedY;
-
         public static RailDriverState RDState;
+        public static ExternalDeviceState WebDeviceState = new ExternalDeviceState();
 
         static InputSettings InputSettings;
 
@@ -136,8 +136,8 @@ namespace Orts.Viewer3D
 
         public static void Handled()
         {
-            if (RDState != null)
-                RDState.Handled();
+            RDState?.Handled();
+            WebDeviceState?.Handled();
         }
 
         public static bool IsPressed(UserCommand command)
