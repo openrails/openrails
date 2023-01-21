@@ -1408,6 +1408,12 @@ namespace Orts.Simulation.AIs
 
         public void InsertTrain(AITrain thisTrain)
         {
+            if (thisTrain.StartTime == null)
+            {
+                Trace.TraceInformation("Train : " + thisTrain.Name + " : missing start time, train not included");
+                return;
+            }
+            
             if (this.Count == 0)
             {
                 this.AddFirst(thisTrain);
