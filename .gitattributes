@@ -35,16 +35,6 @@
 *.svg text
 *.eps binary
 
-
-# https://github.com/Danimoth/gitattributes/blob/master/VisualStudio.gitattributes
-# Custom for Visual Studio
-*.sln text eol=crlf merge=union
-*.csproj merge=union
-*.vbproj merge=union
-*.fsproj merge=union
-*.dbproj merge=union
-
-
 # https://github.com/Danimoth/gitattributes/blob/master/CSharp.gitattributes
 # Custom for C#
 *.cs diff=csharp
