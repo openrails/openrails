@@ -183,7 +183,6 @@ namespace Orts.Simulation.Timetables
                             if (pathValid)
                             {
                                 Train.TCRoutePath fullRoute = new Train.TCRoutePath(newPath, -2, 1, Simulatorref.Signals, -1, Simulatorref.Settings);
-
                                 // if first element is end of track, remove it from path (path is defined outbound)
                                 Train.TCSubpathRoute usedRoute = fullRoute.TCRouteSubpaths[0];
                                 if (Simulatorref.Signals.TrackCircuitList[usedRoute.First().TCSectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
@@ -1357,15 +1356,6 @@ namespace Orts.Simulation.Timetables
 
                     train.PoolStorageIndex = poolStorageIndex = reqPool;
                 }
-            }
-
-            // if route is valid, set state for last section to approach moving table
-            // also add unit to storage as claim
-            if (newRoute != null)
-            {
-                newRoute.Last().MovingTableApproachPath = reqPath;
-                AddUnit(train, true);
-                StoragePool[poolStorageIndex].ClaimUnits.Add(train.Number);
             }
             return (newRoute);
         }
