@@ -257,6 +257,10 @@ namespace Orts.Simulation.Timetables
                 {
                     Trace.TraceInformation("Player trains " + reqPlayerTrain.Name + " defined without engine, engine assumed to be attached later");
                 }
+                else if (reqPlayerTrain.FormedOf >= 0)
+                {
+                    Trace.TraceInformation("Player trains " + reqPlayerTrain.Name + " defined without engine, train is assumed to be formed out of other train");
+                }
                 else
                 {
                     throw new InvalidDataException("Can't find player locomotive in " + reqPlayerTrain.Name);
