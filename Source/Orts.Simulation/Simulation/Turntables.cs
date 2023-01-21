@@ -352,6 +352,7 @@ namespace Orts.Simulation
         public List<float> Angles = new List<float>();
         public float StartingY = 0; // starting yaw angle
         public float ThresholdForTarget; // Threshold to check if we can now go to the target
+        public float MaxAngle = -1; // max angle extension for partial turntables (in radians)
         // Dynamic data
         public bool Clockwise; // clockwise motion on
         public bool Counterclockwise; // counterclockwise motion on
@@ -392,6 +393,7 @@ namespace Orts.Simulation
                     TrackShapeIndex = stf.ReadIntBlock(-1);
                     InitializeAnglesAndTrackNodes();
                 }),
+                new STFReader.TokenProcessor("maxangle", ()=>{ MaxAngle = MathHelper.ToRadians(stf.ReadFloatBlock(STFReader.UNITS.None , null));}),
              });
         }
 
@@ -636,6 +638,18 @@ namespace Orts.Simulation
 
         public void GeneralStartContinuous(bool isClockwise)
         {
+            if (MaxAngle > 0)
+            {
+                var positiveYAngle = YAngle >= 0 ? YAngle : YAngle + 2 * (float)Math.PI;
+                if (!isClockwise && positiveYAngle < 0.2 || isClockwise && positiveYAngle <= 2 * (float)Math.PI - MaxAngle && positiveYAngle > 0.2)
+                {
+                    Clockwise = false;
+                    Counterclockwise = false;
+                    Continuous = false;
+                    if (SendNotifications) Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Turntable is at its bound, can't rotate"));
+                    return;
+                }
+            }
             if (TrainsOnMovingTable.Count > 1 || (TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].FrontOnBoard ^ TrainsOnMovingTable[0].BackOnBoard))
             {
                 Clockwise = false;

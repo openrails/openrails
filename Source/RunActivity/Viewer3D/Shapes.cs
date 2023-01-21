@@ -1594,6 +1594,17 @@ namespace Orts.Viewer3D
                 AnimationKey = nextKey % animation.FrameCount;
                 if (AnimationKey < 0)
                     AnimationKey += animation.FrameCount;
+                // used if Turntable cannot turn 360 degrees
+                if (Turntable.MaxAngle > 0 && AnimationKey != 0)
+                {
+                    if (AnimationKey < -SharedShape.Animations[0].FrameCount * Turntable.MaxAngle / (2 * Math.PI) + animation.FrameCount)
+                    {
+                        if (AnimationKey > 20)
+                            AnimationKey = -SharedShape.Animations[0].FrameCount * Turntable.MaxAngle / (float)(2 * Math.PI) + animation.FrameCount;
+                        else
+                            AnimationKey = 0;
+                    }
+                }
                 Turntable.YAngle = MathHelper.WrapAngle(nextKey / animation.FrameCount * 2 * (float)Math.PI);
 
                 if ((Turntable.Clockwise || Turntable.Counterclockwise || Turntable.AutoClockwise || Turntable.AutoCounterclockwise) && !Rotating)
