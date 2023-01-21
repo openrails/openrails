@@ -5453,7 +5453,10 @@ namespace Orts.Simulation.AIs
                 if (thisItem.ActiveItem.signal_state == MstsSignalAspect.STOP &&
                     thisItem.ActiveItem.ObjectDetails.holdState == HoldState.StationStop)
                 {
-                    actionValid = false;
+                    // check if train is approaching or standing at station and has not yet departed
+                    if (StationStops != null && StationStops.Count >= 1 && AtStation && StationStops[0].ExitSignal == thisItem.ActiveItem.ObjectDetails.thisRef)
+                    {
+                        actionValid = false;
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -5461,14 +5464,30 @@ namespace Orts.Simulation.AIs
                             thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
                             thisItem.ActivateDistanceM.ToString() + " is held for station stop\n");
 #endif
-                    if (CheckTrain)
-                    {
-                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
-                                Number.ToString() + " : signal " +
-                                thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
-                                thisItem.ActivateDistanceM.ToString() + " is held for station stop\n");
+                        if (CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
+                                    Number.ToString() + " : signal " +
+                                    thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
+                                    thisItem.ActivateDistanceM.ToString() + " is held for station stop\n");
+                        }
                     }
-
+                    else
+                    {
+#if DEBUG_REPORTS
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
+                            Number.ToString() + " : signal " +
+                            thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
+                            thisItem.ActivateDistanceM.ToString() + " is held for station stop but train is no longer stopped in station\n");
+#endif
+                        if (CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
+                                    Number.ToString() + " : signal " +
+                                    thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
+                                    thisItem.ActivateDistanceM.ToString() + " is held for station stop but train is no longer stopped in station\n");
+                        }
+                    }
                 }
 
                 // check if cleared
