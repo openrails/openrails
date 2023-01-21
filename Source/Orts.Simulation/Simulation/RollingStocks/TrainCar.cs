@@ -898,7 +898,7 @@ namespace Orts.Simulation.RollingStocks
             double latitude = 0;
             double longitude = 0;
 
-            new Orts.Common.WorldLatLon().ConvertWTC(WorldPosition.TileX, WorldPosition.TileZ, WorldPosition.Location, ref latitude, ref longitude);
+            new WorldLatLon().ConvertWTC(WorldPosition.TileX, WorldPosition.TileZ, WorldPosition.Location, ref latitude, ref longitude);
             
             float LatitudeDeg = MathHelper.ToDegrees((float)latitude);
                       
@@ -3355,7 +3355,7 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// Determine latitude/longitude position of the current TrainCar
         /// </summary>
-        public LatLon GetLatLon()
+        public LatLonDirection GetLatLonDirection()
         {
             double lat = 0;
             double lon = 0;
@@ -3368,7 +3368,24 @@ namespace Orts.Simulation.RollingStocks
                 MathHelper.ToDegrees((float)lat),
                 MathHelper.ToDegrees((float)lon));
 
-            return (latLon);
+            float direction = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
+            float directionDeg = MathHelper.ToDegrees((float)direction);
+
+            if (Direction == Direction.Reverse)
+            {
+                directionDeg += 180.0f;
+            }
+            var loco = this as MSTSLocomotive;
+            if (loco.UsingRearCab)
+            {
+                directionDeg += 180.0f;
+            }
+            while (directionDeg > 360)
+            {
+                directionDeg -= 360;
+            }
+
+            return new LatLonDirection(latLon, directionDeg); ;
         }
     }
 

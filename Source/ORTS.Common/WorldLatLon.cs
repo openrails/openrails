@@ -35,7 +35,7 @@ using System;
 namespace Orts.Common
 {
     public class WorldLatLon
-    {      
+    {
         int earthRadius = 6370997; // Average radius of the earth, meters
         double Epsilon = 0.0000000001; // Error factor (arbitrary)
         double[] Lon_Center = new double[12];
@@ -159,7 +159,7 @@ namespace Orts.Common
             switch (region)
             {
                 case 1:
-                case 3: 
+                case 3:
                 case 4:
                 case 5:
                 case 8:
@@ -289,20 +289,33 @@ namespace Orts.Common
     }
 
     /// <summary>
-    /// Class to store the latitude and longitude values of a point on the map
+    /// Class to store the latitude and longitude of a position on the webpage map
     /// </summary>
     public class LatLon
     {
-        private readonly float _lat;
-        private readonly float _lon;
+        public float Lat { get; }
+        public float Lon { get; }
 
         public LatLon(float lat, float lon)
         {
-            this._lat = lat;
-            this._lon = lon;
+            this.Lat = lat;
+            this.Lon = lon;
         }
+    }
 
-        public float Lat => _lat;
-        public float Lon => _lon;
+    /// <summary>
+    /// Class to store the latitude, longitude and direction of a locomotive on the webpage map
+    /// </summary>
+    public class LatLonDirection
+    {
+        public LatLon LatLon { get; }
+        public float DirectionDeg { get; }
+
+        public LatLonDirection(LatLon latLon, float directionDeg)
+        {
+            this.LatLon = latLon;
+            this.DirectionDeg = directionDeg;
+        }
     }
 }
+
