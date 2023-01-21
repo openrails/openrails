@@ -15837,7 +15837,7 @@ namespace Orts.Simulation.Physics
                                 {
                                     int otherSectionIndex = thisElement.Direction == 0 ?
                                         otherPlatform.TCSectionIndex[0] :
-                                        otherPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+                                        otherPlatform.TCSectionIndex[otherPlatform.TCSectionIndex.Count - 1];
                                     if (otherSectionIndex == beginSectionIndex)
                                     {
                                         if (otherPlatform.TCOffset[0, thisElement.Direction] < actualBegin)
@@ -19169,7 +19169,7 @@ namespace Orts.Simulation.Physics
             {
                 float totalLength = startOffset;
 
-                if (startSectionIndex == endSectionIndex)
+                if (startSectionIndex == endSectionIndex && startSectionIndex > -1)
                 {
                     TrackCircuitSection thisSection = signals.TrackCircuitList[this[startSectionIndex].TCSectionIndex];
                     totalLength = startOffset - (thisSection.Length - endOffset);
