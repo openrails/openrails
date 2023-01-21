@@ -1405,7 +1405,13 @@ namespace Orts.Simulation.Signalling
                 // switchstand
 
                 case SignalScripts.SCRExternalFunctions.SWITCHSTAND:
-                    return_value = thisHead.switchstand(parameter1_value, parameter2_value);
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc, "printproc.txt");
+                    }
+#endif
+                    return_value = thisHead.switchstand(parameter1_value, parameter2_value, dumpfile);
                     break;
 
                 // def_draw_state
