@@ -1554,11 +1554,11 @@ namespace Orts.Simulation.AIs
             LinkedListNode<AITrain> AITrainNode = First;
             while (AITrainNode != null)
             {
-                if (AITrainNode.Value.Number == reqNumber)
+                TTTrain tttrain = AITrainNode.Value as TTTrain;
+                if (tttrain.Number == reqNumber || tttrain.OrgAINumber == reqNumber)
                 {
-                    TTTrain reqTrain = AITrainNode.Value as TTTrain;
                     if (remove) Remove(AITrainNode);
-                    return (reqTrain);
+                    return (tttrain);
                 }
                 else
                 {
