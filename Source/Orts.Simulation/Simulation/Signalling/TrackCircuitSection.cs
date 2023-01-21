@@ -1795,8 +1795,35 @@ namespace Orts.Simulation.Signalling
                 }
                 else
                 {
-                    distanceTrainAheadM = offset; // train is off its route - assume full section occupied, offset is deducted later //
-                    trainFound = nextTrain.Train;
+                    distanceTrainAheadM = offset; // train is off its route - check if track occupied by train is ahead or behind us //
+
+                    if (thisTrain != null)
+                    {
+                        int presentFront = thisTrain.PresentPosition[0].RouteListIndex;
+
+                        foreach (TrackCircuitSection occSection in nextTrain.Train.OccupiedTrack)
+                        {
+                            int otherSectionIndex = thisTrain.TCRoute.TCRouteSubpaths[thisTrain.TCRoute.activeSubpath].GetRouteIndex(occSection.Index, 0);
+
+                            // other index is lower - train is behind us
+                            if (otherSectionIndex >= 0 && otherSectionIndex < presentFront)
+                            {
+                                trainFound = null;
+                                continue;
+                            }
+                            // other index is higher - train is in front of us
+                            else if (otherSectionIndex >= 0 && otherSectionIndex > presentFront)
+                            {
+                                trainFound = nextTrain.Train;
+                                continue;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // else assume ahead of us - assume full section occupied, offset is deducted later //
+                        trainFound = nextTrain.Train;
+                    }
                 }
             }
 

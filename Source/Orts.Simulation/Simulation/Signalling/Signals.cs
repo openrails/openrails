@@ -3894,7 +3894,7 @@ namespace Orts.Simulation.Signalling
                             if (considerSpeedReset)
                             {
                                 var speed_infoR = thisSpeedpost.this_sig_speed(SignalFunction.SPEED);
-                                speed_info.speed_reset = speed_infoR.speed_reset;
+                                if (speed_infoR != null) speed_info.speed_reset = speed_infoR.speed_reset;
                             }
                             if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0) || speed_info.speed_reset == 1)
                             {
