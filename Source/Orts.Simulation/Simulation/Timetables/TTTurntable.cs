@@ -1847,16 +1847,15 @@ namespace Orts.Simulation.Timetables
                     // check if train position on turntable
                     if (!trainOnTable.FrontOnBoard)
                     {
-                        if (WorldLocation.Within(parentTrain.FrontTDBTraveller.WorldLocation, parentTurntable.WorldPosition.WorldLocation, parentTurntable.Length / 2))
+                        if (parentTurntable.CheckOnSection(parentTrain.FrontTDBTraveller))
                         {
                             trainOnTable.SetFrontState(true);
                             parentTrain.Simulator.Confirmer.Information("Front of train is on table");
-
                         }
                     }
                     else if (!trainOnTable.BackOnBoard)
                     {
-                        if (WorldLocation.Within(parentTrain.RearTDBTraveller.WorldLocation, parentTurntable.WorldPosition.WorldLocation, parentTurntable.Length / 2))
+                        if (parentTurntable.CheckOnSection(parentTrain.RearTDBTraveller))
                         {
                             trainOnTable.SetBackState(true);
                             parentTrain.Simulator.Confirmer.Information("Rear of train is on table");
@@ -1871,12 +1870,12 @@ namespace Orts.Simulation.Timetables
                         if (loco.ThrottlePercent < 1 && Math.Abs(loco.SpeedMpS) < 0.05 && (loco.Direction == Direction.N || Math.Abs(parentTrain.MUReverserPercent) <= 1))
                         {
                             // check if train still on turntable
-                            if (!WorldLocation.Within(parentTrain.FrontTDBTraveller.WorldLocation, parentTurntable.WorldPosition.WorldLocation, parentTurntable.Length / 2))
+                            if (!parentTurntable.CheckOnSection(parentTrain.FrontTDBTraveller))
                             {
                                 trainOnTable.SetFrontState(false);
                                 parentTrain.Simulator.Confirmer.Information("Front of train slipped off table");
                             }
-                            if (!WorldLocation.Within(parentTrain.RearTDBTraveller.WorldLocation, parentTurntable.WorldPosition.WorldLocation, parentTurntable.Length / 2))
+                            if (!parentTurntable.CheckOnSection(parentTrain.RearTDBTraveller))
                             {
                                 trainOnTable.SetBackState(false);
                                 parentTrain.Simulator.Confirmer.Information("Rear of train slipped off table");
@@ -1904,7 +1903,7 @@ namespace Orts.Simulation.Timetables
                     // check if train position on turntable
                     if (!trainOnTable.FrontOnBoard)
                     {
-                        if (WorldLocation.Within(parentTrain.FrontTDBTraveller.WorldLocation, parentTurntable.WorldPosition.WorldLocation, parentTurntable.Length / 2))
+                        if (parentTurntable.CheckOnSection(parentTrain.FrontTDBTraveller))
                         {
                             trainOnTable.SetFrontState(true);
                             parentTrain.Simulator.Confirmer.Information("Front of train is on table");
@@ -1913,7 +1912,7 @@ namespace Orts.Simulation.Timetables
                     }
                     else if (!trainOnTable.BackOnBoard)
                     {
-                        if (WorldLocation.Within(parentTrain.RearTDBTraveller.WorldLocation, parentTurntable.WorldPosition.WorldLocation, parentTurntable.Length / 2))
+                        if (parentTurntable.CheckOnSection(parentTrain.RearTDBTraveller))
                         {
                             trainOnTable.SetBackState(true);
                             parentTrain.Simulator.Confirmer.Information("Rear of train is on table");
@@ -1928,12 +1927,12 @@ namespace Orts.Simulation.Timetables
                         if (loco.ThrottlePercent < 1 && Math.Abs(loco.SpeedMpS) < 0.05 && (loco.Direction == Direction.N || Math.Abs(parentTrain.MUReverserPercent) <= 1))
                         {
                             // check if train still on turntable
-                            if (!WorldLocation.Within(parentTrain.FrontTDBTraveller.WorldLocation, parentTurntable.WorldPosition.WorldLocation, parentTurntable.Length / 2))
+                            if (!parentTurntable.CheckOnSection(parentTrain.FrontTDBTraveller))
                             {
                                 trainOnTable.SetFrontState(false);
                                 parentTrain.Simulator.Confirmer.Information("Front of train slipped off table");
                             }
-                            if (!WorldLocation.Within(parentTrain.RearTDBTraveller.WorldLocation, parentTurntable.WorldPosition.WorldLocation, parentTurntable.Length / 2))
+                            if (!parentTurntable.CheckOnSection(parentTrain.RearTDBTraveller))
                             {
                                 trainOnTable.SetBackState(false);
                                 parentTrain.Simulator.Confirmer.Information("Rear of train slipped off table");
