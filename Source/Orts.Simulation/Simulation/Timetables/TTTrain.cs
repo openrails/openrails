@@ -7075,7 +7075,7 @@ namespace Orts.Simulation.Timetables
                                 {
                                     if (String.Compare(StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0)
                                     {
-                                        intoPlatform = true;
+                                        intoPlatform = StationStops[0].CallOnAllowed;
                                     }
                                 }
                             }
@@ -10750,6 +10750,8 @@ namespace Orts.Simulation.Timetables
 
                         if (AtStation)
                         {
+                            MovementState = AI_MOVEMENT_STATE.STATION_STOP;
+
                             int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                             StationStops[0].ActualArrival = presentTime;
                             StationStops[0].CalculateDepartTime(presentTime, this);
@@ -13774,6 +13776,12 @@ namespace Orts.Simulation.Timetables
                             train.LeadLocomotiveIndex = newLocoIndex;
                             train.Simulator.Confirmer.Information(train.DetachUnits.ToString() + " units detached as train : " + newTrain.Name);
                             train.DetachActive[1] = -1;
+
+                            // set proper details for new train
+                            newTrain.SetFormedOccupied();
+                            newTrain.ControlMode = Train.TRAIN_CONTROL.INACTIVE;
+                            newTrain.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
+                            newTrain.SetupStationStopHandling();
                         }
                         // keep portion has no power, so detach immediately and switch to new train
                         else
