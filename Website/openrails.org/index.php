@@ -46,7 +46,12 @@
             <a href="#modal1" role="button" class='btn download_button' data-toggle="modal">
               <span class='glyphicon glyphicon-download'></span>&nbsp; Download the installer
               <?php echo '27 Nov 2022, ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB)'; ?>
-			</a>
+      			</a>
+          </div>
+          <div class="download">
+            <a href="/learn/build-route/" role="button" class='btn download_button'>
+              Build your own route
+      			</a>
           </div>
         </div>
       </div>
@@ -193,7 +198,7 @@ include "download/program/preamble.php";
                 <h1>New to Open Rails?</h1>
                 <h1>This <strong><a href="http://www.zigzag.coalstonewcastle.com.au/route/downloads/" title="Tutorials in this kit will help you to learn the rudimentary controls in Open Rails, how to drive a steam locomotive, operate the air brakes to stop the train, to turn the locomotive on a turntable, to fuel locomotive with water and coal, and also how to shunt cars and wagons">Starter Kit</a></strong> is for you</h1>
                 <p>Quickest way to get started with Open Rails</p>
-                <p>Download installs both Open Rails v1.3.1 and the Zig Zag Railway route with tutorial activities</p>
+                <p>Download installs both Open Rails and the Zig Zag Railway route with tutorial activities</p>
                 <a href="http://www.zigzag.coalstonewcastle.com.au/route/downloads/" title="Tutorials in this kit will help you to learn the rudimentary controls in Open Rails, how to drive a steam locomotive, operate the air brakes to stop the train, to turn the locomotive on a turntable, to fuel locomotive with water and coal, and also how to shunt cars and wagons"><img src="landing_page_ctn.png"></a>
               </div>
             </div>
