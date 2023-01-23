@@ -56,6 +56,7 @@ function in_directory($cwd, $name) {
               <ul class="dropdown-menu">
                 <li><a href="/learn/faq/">FAQ</a></li>
                 <li><a href="/learn/manual-and-tutorials/">Manual and Tutorials</a></li>
+                <li><a href="/learn/build-route/">Build Your Own Route</a></li>
                 <li><a href="/learn/physics/">OR Physics</a></li>
                 <li><a href="/learn/activities/">Activities</a></li>
               </ul>
