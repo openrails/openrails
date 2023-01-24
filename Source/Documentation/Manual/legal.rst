@@ -27,7 +27,7 @@ Copyright Acknowledgment and License
 
 .. include:: <isonum.txt>
 
-|copy| 2009-2021 openrails.org. This document is part of Open Rails.
+|copy| 2009-2022 openrails.org. This document is part of Open Rails.
 Open Rails is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
 Software Foundation, either version 3 of the License, or any later version.

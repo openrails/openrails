@@ -446,6 +446,19 @@ namespace Orts.Viewer3D
                 var x = (int)((location.Location.X + 1024) / BlockSize);
                 var z = (int)((location.Location.Z + 1024) / BlockSize);
 
+                // Trace the case where x or z are out of bounds and fix
+                var xSize = tile.Height.GetLength(0);
+                var zSize = tile.Height.GetLength(1);
+                if (x < 0 || x >= xSize || z < 0 || z >= zSize)
+                {
+                    Trace.TraceWarning("At least one precipitation index is out of bounds:  x = {0}, z = {1}, Location.X = {2}, Location.Z = {3}, BlockSize = {4}, HeightDimensionX = {5}, HeightDimensionZ = {6} ; fixing it",
+                        x, z, location.Location.X, location.Location.Z, BlockSize, xSize, zSize);
+                    if (x >= xSize) x = xSize - 1;
+                    if (z >= zSize) z = zSize - 1;
+                    if (x < 0) x = 0;
+                    if (z < 0) z = 0;
+                }
+
                 // If we don't have it cached, load it.
                 if (tile.Height[x, z] == float.MinValue)
                 {
@@ -506,7 +519,7 @@ namespace Orts.Viewer3D
             shader.CurrentTechnique = shader.Techniques["Pricipitation"];
             if (ShaderPasses == null) ShaderPasses = shader.Techniques["Pricipitation"].Passes.GetEnumerator();
 
-            shader.LightVector.SetValue(Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.solarDirection);
+            shader.LightVector.SetValue(Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.SolarDirection);
             shader.particleSize.SetValue(1f);
             if (Viewer.Simulator.Weather.PrecipitationLiquidity == 0 || Viewer.Simulator.Weather.PrecipitationLiquidity == 1)
             {

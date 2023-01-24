@@ -68,8 +68,9 @@ namespace Orts.Simulation.RollingStocks
     {
         public Pantographs Pantographs;
         public ScriptedPassengerCarPowerSupply PassengerCarPowerSupply => PowerSupply as ScriptedPassengerCarPowerSupply;
-        public bool DoorLeftOpen;
-        public bool DoorRightOpen;
+        public Doors Doors;        
+        public Door RightDoor => Doors.RightDoor;
+        public Door LeftDoor => Doors.LeftDoor;
         public bool MirrorOpen;
         public bool UnloadingPartsOpen;
         public bool WaitForAnimationReady; // delay counter to start loading/unliading is on;
@@ -345,6 +346,7 @@ namespace Orts.Simulation.RollingStocks
             : base(simulator, wagFilePath)
         {
             Pantographs = new Pantographs(this);
+            Doors = new Doors(this);
         }
 
         public void Load()
@@ -422,28 +424,28 @@ namespace Orts.Simulation.RollingStocks
                 InteriorShapeFileName = null;
             }
 
-            if (FrontCouplerShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCouplerShapeFileName))
+            if (FrontCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCouplerShapeFileName);
-                FrontCouplerShapeFileName = null;
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
+                FrontCoupler.Closed.ShapeFileName = null;
             }
 
-            if (RearCouplerShapeFileName != null && !File.Exists(wagonFolderSlash + RearCouplerShapeFileName))
+            if (RearCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCouplerShapeFileName);
-                RearCouplerShapeFileName = null;
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
+                RearCoupler.Closed.ShapeFileName = null;
             }
 
-            if (FrontAirHoseShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHoseShapeFileName))
+            if (FrontAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHoseShapeFileName);
-                FrontAirHoseShapeFileName = null;
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
+                FrontAirHose.Connected.ShapeFileName = null;
             }
 
-            if (RearAirHoseShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHoseShapeFileName))
+            if (RearAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHoseShapeFileName);
-                RearAirHoseShapeFileName = null;
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
+                RearAirHose.Connected.ShapeFileName = null;
             }
 
             // If trailing loco resistance constant has not been  defined in WAG/ENG file then assign default value based upon orig Davis values
@@ -491,9 +493,15 @@ namespace Orts.Simulation.RollingStocks
             {
                 CarAirHoseHorizontalLengthM = 0.3862f; // 15.2 inches
             }
-            
+
+            // Disable derailment coefficent on "dummy" cars. NB: Ideally this should never be used as "dummy" cars interfer with the overall train physics.
+            if (MSTSWagonNumWheels == 0 && InitWagonNumAxles == 0 )
+            {
+                DerailmentCoefficientEnabled = false;
+            }
+
             // Ensure Drive Axles is set to a default if no OR value added to WAG file
-            if (WagonNumAxles == 0 && WagonType != WagonTypes.Engine)
+            if (InitWagonNumAxles == 0 && WagonType != WagonTypes.Engine)
             {
                 if (MSTSWagonNumWheels != 0 && MSTSWagonNumWheels < 6)
                 {
@@ -508,6 +516,10 @@ namespace Orts.Simulation.RollingStocks
                 {
                     Trace.TraceInformation("Number of Wagon Axles set to default value of {0}", WagonNumAxles);
                 }
+            }
+            else
+            {
+                WagonNumAxles = InitWagonNumAxles;
             }
 
             // Should always be at least one bogie on rolling stock. If is zero then NaN error occurs.
@@ -849,30 +861,39 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 if (!FreightAnimations.MSTSFreightAnimEnabled) FreightShapeFileName = null;
-                    if (FreightAnimations.WagonEmptyWeight != -1)
+                if (FreightAnimations.WagonEmptyWeight != -1)
+                {
+                    // Computes mass when it carries containers
+                    float totalContainerMassKG = 0;
+                    if (FreightAnimations.Animations != null)
                     {
+                        foreach (var anim in FreightAnimations.Animations)
+                            if (anim is FreightAnimationDiscrete discreteAnim && discreteAnim.Container != null)
+                            {
+                                totalContainerMassKG += discreteAnim.Container.MassKG;
+                            }
+                    }
+                    CalculateTotalMass(totalContainerMassKG);
 
-                        MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
+                    if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
+                    {
+                        // Update brake parameters   
+                        MaxBrakeForceN = LoadFullMaxBrakeForceN;
+                        MaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
 
-                        if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
-                        {
-                            // Update brake parameters   
-                            MaxBrakeForceN = LoadFullMaxBrakeForceN;
-                            MaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
+                        // Update friction related parameters
+                        DavisAN = LoadFullORTSDavis_A;
+                        DavisBNSpM = LoadFullORTSDavis_B;
+                        DavisCNSSpMM = LoadFullORTSDavis_C;
+                        DavisDragConstant = LoadFullDavisDragConstant;
+                        WagonFrontalAreaM2 = LoadFullWagonFrontalAreaM2;
 
-                            // Update friction related parameters
-                            DavisAN = LoadFullORTSDavis_A;
-                            DavisBNSpM = LoadFullORTSDavis_B;
-                            DavisCNSSpMM = LoadFullORTSDavis_C;
-                            DavisDragConstant = LoadFullDavisDragConstant;
-                            WagonFrontalAreaM2 = LoadFullWagonFrontalAreaM2;
-
-                            // Update CoG related parameters
-                            CentreOfGravityM.Y = LoadFullCentreOfGravityM_Y;
-
-                        }
+                        // Update CoG related parameters
+                        CentreOfGravityM.Y = LoadFullCentreOfGravityM_Y;
 
                     }
+
+                }
                 if (FreightAnimations.LoadedOne != null) // If it is a Continuouos freight animation, set freight wagon parameters to FullatStart
                 {
                     WeightLoadController.CurrentValue = FreightAnimations.LoadedOne.LoadPerCent / 100;
@@ -941,6 +962,12 @@ namespace Orts.Simulation.RollingStocks
                 BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
         }
 
+        // Compute total mass of wagon including freight animations and variable loads like containers
+        public void CalculateTotalMass(float totalContainerMassKG)
+        {
+            MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight + totalContainerMassKG;
+        }
+
         public void GetMeasurementUnits()
         {
             IsMetric = Simulator.Settings.Units == "Metric" || (Simulator.Settings.Units == "Automatic" && System.Globalization.RegionInfo.CurrentRegion.IsMetric) ||
@@ -951,6 +978,7 @@ namespace Orts.Simulation.RollingStocks
         public override void Initialize()
         {
             Pantographs.Initialize();
+            Doors.Initialize();
             PassengerCarPowerSupply?.Initialize();
 
             base.Initialize();
@@ -976,7 +1004,7 @@ namespace Orts.Simulation.RollingStocks
                         break;
                 }
             }
-            FreightAnimations?.Load(this, FreightAnimations.LoadDataList, true);
+            FreightAnimations?.Load(FreightAnimations.LoadDataList, true);
             InitializeLoadPhysics();
         }
 
@@ -1224,37 +1252,29 @@ namespace Orts.Simulation.RollingStocks
 
                 case "wagon(coupling(frontcoupleranim":
                     stf.MustMatch("(");
-                    FrontCouplerShapeFileName = stf.ReadString();
-                    FrontCouplerAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontCouplerAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontCouplerAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontCoupler.Closed.ShapeFileName = stf.ReadString();
+                    FrontCoupler.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(frontairhoseanim":
                     stf.MustMatch("(");
-                    FrontAirHoseShapeFileName = stf.ReadString();
-                    FrontAirHoseAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontAirHoseAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontAirHoseAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHose.Connected.ShapeFileName = stf.ReadString();
+                    FrontAirHose.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(rearcoupleranim":
                     stf.MustMatch("(");
-                    RearCouplerShapeFileName = stf.ReadString();
-                    RearCouplerAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearCouplerAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearCouplerAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearCoupler.Closed.ShapeFileName = stf.ReadString();
+                    RearCoupler.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(rearairhoseanim":
                     stf.MustMatch("(");
-                    RearAirHoseShapeFileName = stf.ReadString();
-                    RearAirHoseAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearAirHoseAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearAirHoseAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHose.Connected.ShapeFileName = stf.ReadString();
+                    RearAirHose.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1266,39 +1286,29 @@ namespace Orts.Simulation.RollingStocks
 
                case "wagon(coupling(frontcoupleropenanim":
                     stf.MustMatch("(");
-                    FrontCouplerOpenFitted = true;
-                    FrontCouplerOpenShapeFileName = stf.ReadString();
-                    FrontCouplerOpenAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontCouplerOpenAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontCouplerOpenAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontCoupler.Open.ShapeFileName = stf.ReadString();
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
                     
                case "wagon(coupling(rearcoupleropenanim":
                     stf.MustMatch("(");
-                    RearCouplerOpenFitted = true;
-                    RearCouplerOpenShapeFileName = stf.ReadString();
-                    RearCouplerOpenAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearCouplerOpenAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearCouplerOpenAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearCoupler.Open.ShapeFileName = stf.ReadString();
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(frontairhosediconnectedanim":
                     stf.MustMatch("(");
-                    FrontAirHoseDisconnectedShapeFileName = stf.ReadString();
-                    FrontAirHoseDisconnectedAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontAirHoseDisconnectedAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FrontAirHoseDisconnectedAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontAirHose.Disconnected.ShapeFileName = stf.ReadString();
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
                     
                 case "wagon(coupling(rearairhosediconnectedanim":
                     stf.MustMatch("(");
-                    RearAirHoseDisconnectedShapeFileName = stf.ReadString();
-                    RearAirHoseDisconnectedAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearAirHoseDisconnectedAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    RearAirHoseDisconnectedAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearAirHose.Disconnected.ShapeFileName = stf.ReadString();
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1387,17 +1397,21 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(inside": HasInsideView = true; ParseWagonInside(stf); break;
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
-                case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
-                case "wagon(ortsnumberaxles": WagonNumAxles = stf.ReadIntBlock(null); break;
+                case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsnumberaxles": InitWagonNumAxles = stf.ReadIntBlock(null); break;
                 case "wagon(ortsnumberbogies": WagonNumBogies = stf.ReadIntBlock(null); break;
                 case "wagon(ortspantographs":
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
-
+                case "wagon(ortsdoors(closingdelay":
+                case "wagon(ortsdoors(openingdelay":
+                    Doors.Parse(lowercasetoken, stf);
+                    break;
                 case "wagon(ortspowersupply":
                 case "wagon(ortspowerondelay":
                 case "wagon(ortsbattery(mode":
                 case "wagon(ortsbattery(delay":
+                case "wagon(ortsbattery(defaulton":
                 case "wagon(ortspowersupplycontinuouspower":
                 case "wagon(ortspowersupplyheatingpower":
                 case "wagon(ortspowersupplyairconditioningpower":
@@ -1450,44 +1464,10 @@ namespace Orts.Simulation.RollingStocks
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
             FreightAnimFlag = copy.FreightAnimFlag;
-            FrontCouplerShapeFileName = copy.FrontCouplerShapeFileName;
-            FrontCouplerAnimWidthM = copy.FrontCouplerAnimWidthM;
-            FrontCouplerAnimHeightM = copy.FrontCouplerAnimHeightM;
-            FrontCouplerAnimLengthM = copy.FrontCouplerAnimLengthM;
-            FrontCouplerOpenShapeFileName = copy.FrontCouplerOpenShapeFileName;
-            FrontCouplerOpenAnimWidthM = copy.FrontCouplerOpenAnimWidthM;
-            FrontCouplerOpenAnimHeightM = copy.FrontCouplerOpenAnimHeightM;
-            FrontCouplerOpenAnimLengthM = copy.FrontCouplerOpenAnimLengthM;
-            FrontCouplerOpenFitted = copy.FrontCouplerOpenFitted;
-            RearCouplerShapeFileName = copy.RearCouplerShapeFileName;
-            RearCouplerAnimWidthM = copy.RearCouplerAnimWidthM;
-            RearCouplerAnimHeightM = copy.RearCouplerAnimHeightM;
-            RearCouplerAnimLengthM = copy.RearCouplerAnimLengthM;
-            RearCouplerOpenShapeFileName = copy.RearCouplerOpenShapeFileName;
-            RearCouplerOpenAnimWidthM = copy.RearCouplerOpenAnimWidthM;
-            RearCouplerOpenAnimHeightM = copy.RearCouplerOpenAnimHeightM;
-            RearCouplerOpenAnimLengthM = copy.RearCouplerOpenAnimLengthM;
-            RearCouplerOpenFitted = copy.RearCouplerOpenFitted;
-
-            FrontAirHoseShapeFileName = copy.FrontAirHoseShapeFileName;
-            FrontAirHoseAnimWidthM = copy.FrontAirHoseAnimWidthM;
-            FrontAirHoseAnimHeightM = copy.FrontAirHoseAnimHeightM;
-            FrontAirHoseAnimLengthM = copy.FrontAirHoseAnimLengthM;
-            
-            FrontAirHoseDisconnectedShapeFileName = copy.FrontAirHoseDisconnectedShapeFileName;
-            FrontAirHoseDisconnectedAnimWidthM = copy.FrontAirHoseDisconnectedAnimWidthM;
-            FrontAirHoseDisconnectedAnimHeightM = copy.FrontAirHoseDisconnectedAnimHeightM;
-            FrontAirHoseDisconnectedAnimLengthM = copy.FrontAirHoseDisconnectedAnimLengthM;
-            
-            RearAirHoseShapeFileName = copy.RearAirHoseShapeFileName;
-            RearAirHoseAnimWidthM = copy.RearAirHoseAnimWidthM;
-            RearAirHoseAnimHeightM = copy.RearAirHoseAnimHeightM;
-            RearAirHoseAnimLengthM = copy.RearAirHoseAnimLengthM;
-            
-            RearAirHoseDisconnectedShapeFileName = copy.RearAirHoseDisconnectedShapeFileName;
-            RearAirHoseDisconnectedAnimWidthM = copy.RearAirHoseDisconnectedAnimWidthM;
-            RearAirHoseDisconnectedAnimHeightM = copy.RearAirHoseDisconnectedAnimHeightM;
-            RearAirHoseDisconnectedAnimLengthM = copy.RearAirHoseDisconnectedAnimLengthM;
+            FrontCoupler = copy.FrontCoupler;
+            RearCoupler = copy.RearCoupler;
+            FrontAirHose = copy.FrontAirHose;
+            RearAirHose = copy.RearAirHose;
 
             CarWidthM = copy.CarWidthM;
             CarHeightM = copy.CarHeightM;
@@ -1507,7 +1487,8 @@ namespace Orts.Simulation.RollingStocks
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
-            WagonNumAxles = copy.WagonNumAxles;
+            InitWagonNumAxles = copy.InitWagonNumAxles;
+            DerailmentCoefficientEnabled = copy.DerailmentCoefficientEnabled;
             WagonNumBogies = copy.WagonNumBogies;
             MSTSWagonNumWheels = copy.MSTSWagonNumWheels;
             MassKG = copy.MassKG;
@@ -1592,6 +1573,7 @@ namespace Orts.Simulation.RollingStocks
             foreach (MSTSCoupling coupler in copy.Couplers)
                 Couplers.Add(coupler);
             Pantographs.Copy(copy.Pantographs);
+            Doors.Copy(copy.Doors);
             if (copy.FreightAnimations != null)
             {
                 FreightAnimations = new FreightAnimations(copy.FreightAnimations, this);
@@ -1725,6 +1707,7 @@ namespace Orts.Simulation.RollingStocks
             foreach (MSTSCoupling coupler in Couplers)
                 coupler.Save(outf);
             Pantographs.Save(outf);
+            Doors.Save(outf);
             PassengerCarPowerSupply?.Save(outf);
             if (FreightAnimations != null)
             {
@@ -1777,6 +1760,7 @@ namespace Orts.Simulation.RollingStocks
             MaxHandbrakeForceN = inf.ReadSingle();
             Couplers = ReadCouplersFromSave(inf).ToList();
             Pantographs.Restore(inf);
+            Doors.Restore(inf);
             PassengerCarPowerSupply?.Restore(inf);
             if (FreightAnimations != null)
             {
@@ -1949,6 +1933,8 @@ namespace Orts.Simulation.RollingStocks
 
             Pantographs.Update(elapsedClockSeconds);
 
+            Doors.Update(elapsedClockSeconds);
+
             MSTSBrakeSystem.Update(elapsedClockSeconds);
 
             // Updates freight load animations when defined in WAG file - Locomotive and Tender load animation are done independently in UpdateTenderLoad() & UpdateLocomotiveLoadPhysics()
@@ -1996,13 +1982,32 @@ namespace Orts.Simulation.RollingStocks
                     FreightAnimations.LoadedOne = null;
                     FreightAnimations.FreightType = PickupType.None;
                 }
-                if (FreightAnimations.WagonEmptyWeight != -1) MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
-                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
+                                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
                 {
                     WaitForAnimationReady = false;
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Starting unload"));
                     if (FreightAnimations.LoadedOne is FreightAnimationContinuous)
                         WeightLoadController.StartDecrease(WeightLoadController.MinimumValue);
+                }
+            }
+
+            if (WagonType != WagonTypes.Tender && AuxWagonType != "AuxiliaryTender" && WagonType != WagonTypes.Engine)
+            {
+                // Updates mass when it carries containers
+                float totalContainerMassKG = 0;
+                if (FreightAnimations?.Animations != null)
+                {
+                    foreach (var anim in FreightAnimations.Animations)
+                        if (anim is FreightAnimationDiscrete discreteAnim && discreteAnim.Container != null)
+                        {
+                            totalContainerMassKG += discreteAnim.Container.MassKG;
+                        }
+                }
+
+                // Updates the mass of the wagon considering all types of loads
+                if (FreightAnimations != null && FreightAnimations.WagonEmptyWeight != -1)
+                {
+                    CalculateTotalMass(totalContainerMassKG);
                 }
             }
         }
@@ -3395,70 +3400,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             base.SignalEvent(evt, id);
-        }
-
-        public void ToggleDoorsLeft()
-        {
-            DoorLeftOpen = !DoorLeftOpen;
-            if (Simulator.PlayerLocomotive == this || Train.LeadLocomotive == this) // second part for remote trains
-            {//inform everyone else in the train
-                foreach (var car in Train.Cars)
-                {
-                    var mstsWagon = car as MSTSWagon;
-                    if (car != this && mstsWagon != null)
-                    {
-                        if (!car.Flipped ^ Flipped)
-                        {
-                            mstsWagon.DoorLeftOpen = DoorLeftOpen;
-                            mstsWagon.SignalEvent(DoorLeftOpen ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
-                        }
-                        else
-                        {
-                            mstsWagon.DoorRightOpen = DoorLeftOpen;
-                            mstsWagon.SignalEvent(DoorLeftOpen ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
-                        }
-                    }
-                }
-                if (DoorLeftOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
-                else SignalEvent(Event.DoorClose);
-                if (Simulator.PlayerLocomotive == this)
-                {
-                    if (!GetCabFlipped()) Simulator.Confirmer.Confirm(CabControl.DoorsLeft, DoorLeftOpen ? CabSetting.On : CabSetting.Off);
-                    else Simulator.Confirmer.Confirm(CabControl.DoorsRight, DoorLeftOpen ? CabSetting.On : CabSetting.Off);
-                }
-            }
-        }
-
-        public void ToggleDoorsRight()
-        {
-            DoorRightOpen = !DoorRightOpen;
-            if (Simulator.PlayerLocomotive == this || Train.LeadLocomotive == this) // second part for remote trains
-            { //inform everyone else in the train
-                foreach (TrainCar car in Train.Cars)
-                {
-                    var mstsWagon = car as MSTSWagon;
-                    if (car != this && mstsWagon != null)
-                    {
-                        if (!car.Flipped ^ Flipped)
-                        {
-                            mstsWagon.DoorRightOpen = DoorRightOpen;
-                            mstsWagon.SignalEvent(DoorRightOpen ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
-                        }
-                        else
-                        {
-                            mstsWagon.DoorLeftOpen = DoorRightOpen;
-                            mstsWagon.SignalEvent(DoorRightOpen ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
-                        }
-                    }
-                }
-                if (DoorRightOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
-                else SignalEvent(Event.DoorClose);
-                if (Simulator.PlayerLocomotive == this)
-                {
-                    if (!GetCabFlipped()) Simulator.Confirmer.Confirm(CabControl.DoorsRight, DoorRightOpen ? CabSetting.On : CabSetting.Off);
-                    else Simulator.Confirmer.Confirm(CabControl.DoorsLeft, DoorRightOpen ? CabSetting.On : CabSetting.Off);
-                }
-            }
         }
 
         public void ToggleMirrors()

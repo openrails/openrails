@@ -35,7 +35,7 @@ using System;
 namespace Orts.Common
 {
     public class WorldLatLon
-    {      
+    {
         int earthRadius = 6370997; // Average radius of the earth, meters
         double Epsilon = 0.0000000001; // Error factor (arbitrary)
         double[] Lon_Center = new double[12];
@@ -45,8 +45,8 @@ namespace Orts.Common
 
         // The upper left corner of the Goode projection is ul_x,ul_y
         // The bottom right corner of the Goode projection is -ul_x,-ul_y
-        int ul_x = -20015000; // -180 deg in Goode projection
-        int ul_y = 8673000; // +90 deg lat in Goode projection
+        int ul_x = -20013965; // -180 deg in Goode projection
+        int ul_y = 8674008; // +90 deg lat in Goode projection
 
         // Offsets to convert Goode raster coordinates to MSTS world tile coordinates
         int wt_ew_offset = -16385;
@@ -159,7 +159,7 @@ namespace Orts.Common
             switch (region)
             {
                 case 1:
-                case 3: 
+                case 3:
                 case 4:
                 case 5:
                 case 8:
@@ -287,4 +287,35 @@ namespace Orts.Common
         }
 
     }
+
+    /// <summary>
+    /// Class to store the latitude and longitude of a position on the webpage map
+    /// </summary>
+    public class LatLon
+    {
+        public float Lat { get; }
+        public float Lon { get; }
+
+        public LatLon(float lat, float lon)
+        {
+            this.Lat = lat;
+            this.Lon = lon;
+        }
+    }
+
+    /// <summary>
+    /// Class to store the latitude, longitude and direction of a locomotive on the webpage map
+    /// </summary>
+    public class LatLonDirection
+    {
+        public LatLon LatLon { get; }
+        public float DirectionDeg { get; }
+
+        public LatLonDirection(LatLon latLon, float directionDeg)
+        {
+            this.LatLon = latLon;
+            this.DirectionDeg = directionDeg;
+        }
+    }
 }
+

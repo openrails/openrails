@@ -29,6 +29,12 @@
 // #define DEBUG_TTANALYSIS
 // DEBUG flag for debug prints
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Simulation.AIs;
@@ -36,12 +42,6 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.Timetables
@@ -3446,7 +3446,7 @@ namespace Orts.Simulation.Timetables
                                 {
                                     // set this signal as passed, and next signal as waiting
                                     signalCleared = false;   // signal is not clear
-                                    int nextSignalIndex = NextSignalObject[0].sigfound[(int)MstsSignalFunction.NORMAL];
+                                    int nextSignalIndex = NextSignalObject[0].sigfound[SignalFunction.NORMAL];
                                     if (nextSignalIndex >= 0)
                                     {
                                         NextSignalObject[0] = signalRef.SignalObjects[nextSignalIndex];
@@ -4254,7 +4254,7 @@ namespace Orts.Simulation.Timetables
                 {
                     nextActionInfo.NextAction = AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED;
                     if (((nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM) ||
-                         nextActionInfo.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(MstsSignalFunction.NORMAL))
+                         nextActionInfo.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(SignalFunction.NORMAL))
                     {
                         clearAction = true;
 #if DEBUG_REPORTS
@@ -4286,7 +4286,7 @@ namespace Orts.Simulation.Timetables
             {
                 if ((nextActionInfo.ActiveItem.signal_state >= MstsSignalAspect.APPROACH_1) ||
                    ((nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM) ||
-                   (nextActionInfo.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(MstsSignalFunction.NORMAL)))
+                   (nextActionInfo.ActiveItem.ObjectDetails.this_sig_noSpeedReduction(SignalFunction.NORMAL)))
                 {
                     clearAction = true;
 #if DEBUG_REPORTS

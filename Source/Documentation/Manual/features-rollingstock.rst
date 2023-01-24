@@ -599,6 +599,8 @@ Here below a sample of a ``.load-or`` file::
 	  	"Shape" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.s",
 	  	"ContainerType" : "C40ftHC",
 	  	"IntrinsicShapeOffset": [0,1.175,0],
+   		"EmptyMassKG": 2100.,
+		  "MaxMassWhenLoadedKG": 28000.,
 	  }
   }
 
@@ -621,6 +623,13 @@ Here below a sample of a ``.load-or`` file::
   container with respect to the container shape file coordinates. Unfortunately often such 
   offset is not [0,0,0], which would be advisable for newly produced containers. A simple way to 
   state such offset is to use the ``Show Bounding Info`` of ``Shape Viewer``.
+- "EmptyMassKG" is an optional parameter that defines the tare (weight when empty) of the 
+  container. If the parameter is not present, OR uses a default parameter, specific for that 
+  ContainerType.
+- "MaxMassWhenLoadedKG" is an optional parameter that defines the sum of the tare plus the maximum 
+  allowed payload. As above, if the parameter is not present, OR uses a default parameter, specific for that 
+  ContainerType.
+
 
 Pre-setting a .wag file to accommodate containers
 -------------------------------------------------
@@ -628,6 +637,7 @@ Pre-setting a .wag file to accommodate containers
 As a minimum following block must be present in the .wag file for a double stacker::
 
   ORTSFreightAnims (
+		WagonEmptyWeight ( 12.575t )
 		LoadingAreaLength ( 12.20 )
 		AboveLoadingAreaLength ( 12.20 )
 		DoubleStacker ()
@@ -635,6 +645,8 @@ As a minimum following block must be present in the .wag file for a double stack
 		IntakePoint ( 0 6.0 Container)
 		)
 
+- WagonEmptyWeight is the weight of the wagon, when it has neither containers nor other 
+  weighing freight animations on board
 - LoadingAreaLength is the length in meters of the loading area available for containers
 - AboveLoadingAreaLength is the length in meters of the above loading area available 
   for containers (parameter not needed if not double stacker)
@@ -694,9 +706,9 @@ shown here::
 
   		Wagon (
 			  WagonData ( DTTX_620040_A ATW.DTTX_620040 )
-			  LoadData ( 20cmacgm common.containerdata CenterFront)
-			  LoadData ( 20hamburgsud common.containerdata CenterRear)
-			  LoadData ( 40msc common.containerdata Above)			
+			  LoadData ( 20cmacgm common.containerdata CenterFront Empty)
+			  LoadData ( 20hamburgsud common.containerdata CenterRear Loaded)
+			  LoadData ( 40msc common.containerdata Above Random)			
 			  UiD ( 11 )
 		)
 
@@ -707,7 +719,17 @@ present. The meaning of the parameters is as follows:
 - The first parameter is the name of the ``.load-or`` file 
 - The second parameter is the path (having ``Trainset`` as base path) where the ``.load-or``
   file resides 
-- The third parameter indicates where the container is allocated on the wagon.
+- The third parameter indicates where the container is allocated on the wagon
+- The fourth parameter, which is optional, defines the load state of the related container, 
+  which is used to derive the weight of the container. If ``Empty`` is present, the weight 
+  of the empty container is used as actual weight; if ``Loaded`` is present, the maximum 
+  weight (tare + payload) of the container is used; if ``Random`` is present, the weight 
+  is computed as follows: a random number between 0 and 100 is generated. If the number is 
+  below 31, the container is considered empty; else the number is used as percentage of the 
+  maximum weight of the container (tare + payload). The weight of the containers are added to 
+  the empty weight of the wagon, to compute the total weight of the wagon. If the parameter 
+  is not present, the ``Random`` value is assumed.
+
 
 The entry for the container allocated ``Above`` must be the last one.
 
@@ -733,18 +755,19 @@ A minimum ``FreightAnimations`` entry in a ``.wag`` file to have the same pre-lo
 set as in the previous paragraph is as follows::
 
     ORTSFreightAnims (
-	  	LoadingAreaLength ( 14.6 )
-	  	AboveLoadingAreaLength ( 16.15 )
+		  WagonEmptyWeight ( 12.575t )
+		  LoadingAreaLength ( 14.6 )
+		  AboveLoadingAreaLength ( 16.15 )
 		  DoubleStacker ()
 		  Offset( 0 0.34 0 )
 		  IntakePoint ( 0 6.0 Container)
-		  LoadData ( 20cmacgm common.containerdata CenterFront)
-		  LoadData ( 20hamburgsud common.containerdata CenterRear)
-		  LoadData ( 40msc common.containerdata Above)
+		  LoadData ( 20cmacgm common.containerdata CenterFront Empty)
+		  LoadData ( 20hamburgsud common.containerdata CenterRear Loaded)
+		  LoadData ( 40msc common.containerdata Above Random)
 		)
 
 As can be seen, the syntax of the ``LoadData`` entries is the same as in the case of 
-the ``.con``  file.
+the ``.con``  file. Also here the fourth parameter is optional.
 
 Obviously, using ``.wag`` files for this type of info, a different ``.wag`` file must 
 be created for every desired pre-loaded set of containers.
@@ -1048,9 +1071,9 @@ The ``.load-stations-loads-or`` file is a Json file. An example is shown here be
 		{
 			"LoadStationID" : { "wfile" : "w-005354+014849.w", "UiD" :  21, },
 			"LoadData" : [
-				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, },
-				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, },
-				{ "File" : "20cmacgm", "Folder" : "common.containerdata", "StackLocation" : 2, },
+				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, "LoadState" : "Empty"},
+				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, "LoadState" : "Loaded"},
+				{ "File" : "20cmacgm", "Folder" : "common.containerdata", "StackLocation" : 2, "LoadState" : "Random"},
 				{ "File" : "20kline", "Folder" : "common.containerdata", "StackLocation" : 2, },
 				{ "File" : "45HCtriton", "Folder" : "common.containerdata", "StackLocation" : 5, },
 				{ "File" : "45HCtriton", "Folder" : "common.containerdata", "StackLocation" : 5, },
@@ -1081,6 +1104,8 @@ The file can define the population at startup of many container stations.
   index refers to a child stack location.
 - If more than a container is defined for a stack location, they are stacked one above the 
   other.
+- The ``LoadState`` parameter is optional, and has the same meaning and values as the 
+  parameter of the same name which can be present in .con or .wag files.
 
 The container station population file must be written taking into account the constraints 
 of the stack locations (container length must be smaller than stack location lenght, 
@@ -1191,6 +1216,22 @@ Open rails uses some defaults to calculate the required movement and angles for 
 shape movement, however for greater accuracy the modeler can add specific values such as 
 ``ORTSLengthAirHose``. In addition the length values suggested in the Derailment Coefficient should 
 also be added.
+
+Passenger doors
+===============
+
+.. index:: ORTSDoors
+
+Passenger doors are opened and closed (by default) using the ``<Q>`` and ``<Shift+Q>`` keys.
+It is possible to add opening and closing delays, which can be useful to delay the indication of
+"Doors closed" until all doors are fully closed.
+The delays can be added inserting the following block in the wagon section of any
+ENG or WAG file::
+
+  ORTSDoors (
+    ClosingDelay ( 5s )
+    OpeningDelay ( 1s )
+  )
 
 
 C# engine scripting
@@ -1680,8 +1721,8 @@ interface), which can include a (touch screen) display and buttons.
 Being the display fields and icons and the buttons specific of every TCS, 
 a set of generic cabview controls are available, which can be customized 
 within the TCS script.
-More precisely 48 generic cabview controls, named from ORTS_TCS1 to ORTS_TCS48 
-are available. All 48 may be used as two state or multistate controls,  
+Generic cabview controls, named ORTS_TCS1, ORTS_TCS2, and so on
+are available. All of them may be used as two state or multistate controls,  
 like e.g.::
 
     MultiStateDisplay (
@@ -1725,7 +1766,7 @@ like e.g.::
    single: Style
    single: MouseControl
 
-Each one of the first 32 can be also used as Two-state commands/displays, like e.g.::
+They can be also used as Two-state commands/displays, like e.g.::
 
 		TwoState (
 			Type ( ORTS_TCS7 TWO_STATE )
@@ -1743,8 +1784,8 @@ The commands are received asynchronously by the script through this method:
     public override void HandleEvent(TCSEvent evt, string message)
 
 Where evt may be TCSEvent.GenericTCSButtonPressed or TCSEvent.GenericTCSButtonReleased 
-and message is a string ranging from "0" to "31", which correspond to controls from 
-ORTS_TCS1 to ORTS_TCS32.
+and message is a string representing the control number with zero-base indexing
+(e.g. "5" corresponds to ORTS_TCS6).
 The commands may only be triggered by the mouse, except the first two which may also be 
 triggered by key combinations ``Ctrl,`` (comma) and ``Ctrl.`` (period).
 Here's a code excerpt from the script which manages the commands:
@@ -1805,14 +1846,14 @@ To request a display of a cabview control, method:
 
     public Action<int, float> SetCabDisplayControl; 
 
-has to be used, where ``int`` is the index of the cab control (from 0 to 47 
-corresponding from ORTS_TCS1 to ORTS_TCS48), and ``float`` is the value to be 
+has to be used, where ``int`` is the index of the cab control (starting from 0
+which corresponds to ORTS_TCS1), and ``float`` is the value to be 
 used to select among frames.
 
 When the player moves the mouse over the cabview controls linked to commands, 
 the name of such control shortly appears on the display, like e.g. "speedometer", 
 as a reminder to the player. 
-In case of these generic commands, strings from "ORTS_TCS1" to "ORTS_TCS32" would 
+In case of these generic commands, strings like "ORTS_TCS1" or "ORTS_TCS32" would 
 appear, which aren't mnemonic at all. Therefore following method is available:
 
 .. code-block:: csharp

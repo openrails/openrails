@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using ORTS.Common;
 
 namespace DataValidator
 {
@@ -38,12 +39,19 @@ namespace DataValidator
 
         static void ShowHelp()
         {
-            Console.WriteLine("Open Rails Data Validator utility");
+            var version = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location);
+            Console.WriteLine("{0} {1}", version.FileDescription, VersionInfo.VersionOrBuild);
             Console.WriteLine();
-            Console.WriteLine("{0} [/verbose] PATH [...]", Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName));
+            Console.WriteLine("Usage:");
+            Console.WriteLine("  {0} [options] <FILE> [...]", Path.GetFileNameWithoutExtension(version.FileName));
             Console.WriteLine();
-            //                "1234567890123456789012345678901234567890123456789012345678901234567890123456789"
-            Console.WriteLine("    /verbose  Displays all expected/valid values in addition to any errors.");
+            Console.WriteLine("Arguments:");
+            Console.WriteLine("  <FILE>    Data files to validate; may contain wildcards");
+            Console.WriteLine();
+            Console.WriteLine("Options:");
+            Console.WriteLine("  /verbose  Displays all expected/valid values in addition to any errors");
+            Console.WriteLine("  /help     Show help and usage information");
+            Console.WriteLine();
         }
 
         static void Validate(bool verbose, IEnumerable<string> files)

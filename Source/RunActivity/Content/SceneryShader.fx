@@ -52,9 +52,19 @@ texture  ImageTexture; // .s: linear RGBA, glTF (PBR): 8 bit sRGB + linear A
 texture  OverlayTexture;
 float	 OverlayScale;
 
-// Defines are set in the Shaders.cs, leave these commented out:
-//#define MAX_LIGHTS 20
-//#define MAX_BONES 50
+// When compiling the shaders at runtime, these defines can be set in the Shaders.cs, commenting these out.
+// Currently the shaders are being precombiled, so these must be defined here as well.
+// Keep them in sync with the values defined in RenderProcess.cs
+// MAX_LIGHTS must not be less than 2
+//#define LEVEL_9_3
+#ifdef LEVEL_9_3
+#define MAX_LIGHTS 2
+#define MAX_BONES 1
+#else
+#define MAX_LIGHTS 20
+#define MAX_BONES 50
+#define CLEARCOAT
+#endif
 
 float4x4 Bones[MAX_BONES]; // model -> world [max number of bones]
 float4   BaseColorFactor; // glTF linear color multiplier

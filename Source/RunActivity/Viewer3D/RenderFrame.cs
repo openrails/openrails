@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -540,7 +540,7 @@ namespace Orts.Viewer3D
                 RenderSurfaceMaterial = new SpriteBatchMaterial(viewer, BlendState.Opaque);
 
             if (viewer.Settings.UseMSTSEnv == false)
-                SolarDirection = viewer.World.Sky.solarDirection;
+                SolarDirection = viewer.World.Sky.SolarDirection;
             else
                 SolarDirection = viewer.World.MSTSSky.mstsskysolarDirection;
 
@@ -554,7 +554,7 @@ namespace Orts.Viewer3D
                 AddLight(-SolarDirection, SunColor, SunIntensity);
             else
             {
-                var moonDirection = viewer.Settings.UseMSTSEnv ? viewer.World.MSTSSky.mstsskylunarDirection : viewer.World.Sky.lunarDirection;
+                var moonDirection = viewer.Settings.UseMSTSEnv ? viewer.World.MSTSSky.mstsskylunarDirection : viewer.World.Sky.LunarDirection;
                 AddLight(-moonDirection, MoonGlow, MoonIntensity);
             }
 

@@ -19,6 +19,7 @@ Open Rails Manual
     driving
     physics
     features-rollingstock
+    cruisecontrol
     operation
     timetable
     multiplayer

@@ -1583,38 +1583,47 @@ namespace Orts.Viewer3D
         {
             float nextKey;
             var animation = SharedShape.Animations[0];
-            if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
+            if (Turntable.AlignToRemote)
             {
-                nextKey = Turntable.TargetY / (2 * (float)Math.PI) * animation.FrameCount;
+                AnimationKey = (Turntable.YAngle / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
+                if (AnimationKey < 0)
+                    AnimationKey += animation.FrameCount;
+                Turntable.AlignToRemote = false;
             }
             else
             {
-                float moveFrames;
-                if (Turntable.Counterclockwise)
-                    moveFrames = animation.FrameRate * elapsedTime.ClockSeconds;
-                else if (Turntable.Clockwise)
-                    moveFrames = -animation.FrameRate * elapsedTime.ClockSeconds;
+                if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
+                {
+                    nextKey = Turntable.TargetY / (2 * (float)Math.PI) * animation.FrameCount;
+                }
                 else
-                    moveFrames = 0;
-                nextKey = AnimationKey + moveFrames;
-            }
-            AnimationKey = nextKey % animation.FrameCount;
-            if (AnimationKey < 0)
-                AnimationKey += animation.FrameCount;
-            Turntable.YAngle = MathHelper.WrapAngle(nextKey / animation.FrameCount * 2 * (float)Math.PI);
+                {
+                    float moveFrames;
+                    if (Turntable.Counterclockwise)
+                        moveFrames = animation.FrameRate * elapsedTime.ClockSeconds;
+                    else if (Turntable.Clockwise)
+                        moveFrames = -animation.FrameRate * elapsedTime.ClockSeconds;
+                    else
+                        moveFrames = 0;
+                    nextKey = AnimationKey + moveFrames;
+                }
+                AnimationKey = nextKey % animation.FrameCount;
+                if (AnimationKey < 0)
+                    AnimationKey += animation.FrameCount;
+                Turntable.YAngle = MathHelper.WrapAngle(nextKey / animation.FrameCount * 2 * (float)Math.PI);
 
-            if ((Turntable.Clockwise || Turntable.Counterclockwise || Turntable.AutoClockwise || Turntable.AutoCounterclockwise) && !Rotating)
-            {
-                Rotating = true;
-                if (Sound != null) Sound.HandleEvent(Turntable.TrainsOnMovingTable.Count == 1 &&
-                    Turntable.TrainsOnMovingTable[0].FrontOnBoard && Turntable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
+                if ((Turntable.Clockwise || Turntable.Counterclockwise || Turntable.AutoClockwise || Turntable.AutoCounterclockwise) && !Rotating)
+                {
+                    Rotating = true;
+                    if (Sound != null) Sound.HandleEvent(Turntable.TrainsOnMovingTable.Count == 1 &&
+                        Turntable.TrainsOnMovingTable[0].FrontOnBoard && Turntable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
+                }
+                else if ((!Turntable.Clockwise && !Turntable.Counterclockwise && !Turntable.AutoClockwise && !Turntable.AutoCounterclockwise && Rotating))
+                {
+                    Rotating = false;
+                    if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
+                }
             }
-            else if ((!Turntable.Clockwise && !Turntable.Counterclockwise && !Turntable.AutoClockwise && !Turntable.AutoCounterclockwise && Rotating))
-            {
-                Rotating = false;
-                if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
-            }
-
             // Update the pose for each matrix
             for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
                 AnimateMatrix(matrix, AnimationKey);
@@ -1682,34 +1691,45 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (Transfertable.GoToTarget)
+            var animation = SharedShape.Animations[0];
+            if (Transfertable.AlignToRemote)
             {
-                AnimationKey = (Transfertable.TargetOffset - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
+                AnimationKey = (Transfertable.OffsetPos - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
+                if (AnimationKey < 0)
+                    AnimationKey = 0;
+                Transfertable.AlignToRemote = false;
             }
+            else
+            {
+                if (Transfertable.GoToTarget)
+                {
+                    AnimationKey = (Transfertable.TargetOffset - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
+                }
 
-            else if (Transfertable.Forward)
-            {
-                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
-            }
-            else if (Transfertable.Reverse)
-            {
-                AnimationKey -= SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
-            }
-            if (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey = SharedShape.Animations[0].FrameCount;
-            if (AnimationKey < 0) AnimationKey = 0;
+                else if (Transfertable.Forward)
+                {
+                    AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+                }
+                else if (Transfertable.Reverse)
+                {
+                    AnimationKey -= SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+                }
+                if (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey = SharedShape.Animations[0].FrameCount;
+                if (AnimationKey < 0) AnimationKey = 0;
 
-            Transfertable.OffsetPos = AnimationKey / SharedShape.Animations[0].FrameCount * Transfertable.Span + Transfertable.CenterOffsetComponent;
+                Transfertable.OffsetPos = AnimationKey / SharedShape.Animations[0].FrameCount * Transfertable.Span + Transfertable.CenterOffsetComponent;
 
-            if ((Transfertable.Forward || Transfertable.Reverse) && !Translating)
-            {
-                Translating = true;
-                if (Sound != null) Sound.HandleEvent(Transfertable.TrainsOnMovingTable.Count == 1 &&
-                    Transfertable.TrainsOnMovingTable[0].FrontOnBoard && Transfertable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
-            }
-            else if ((!Transfertable.Forward && !Transfertable.Reverse && Translating))
-            {
-                Translating = false;
-                if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
+                if ((Transfertable.Forward || Transfertable.Reverse) && !Translating)
+                {
+                    Translating = true;
+                    if (Sound != null) Sound.HandleEvent(Transfertable.TrainsOnMovingTable.Count == 1 &&
+                        Transfertable.TrainsOnMovingTable[0].FrontOnBoard && Transfertable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
+                }
+                else if ((!Transfertable.Forward && !Transfertable.Reverse && Translating))
+                {
+                    Translating = false;
+                    if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
+                }
             }
 
             // Update the pose for each matrix

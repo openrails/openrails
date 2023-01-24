@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -156,6 +156,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortstractioncutoffrelayclosingdelay":
                 case "engine(ortsbattery(mode":
                 case "engine(ortsbattery(delay":
+                case "engine(ortsbattery(defaulton":
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
                 case "engine(ortsmasterkey(headlightcontrol":
@@ -189,6 +190,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "engine(ortsdieselengines":
                 case "engine(gearboxnumberofgears":
+                case "engine(ortsreversegearboxindication":
                 case "engine(gearboxdirectdrivegear":
                 case "engine(ortsmainclutchtype":
                 case "engine(ortsgearboxtype":
@@ -847,11 +849,11 @@ namespace Orts.Simulation.RollingStocks
         {
             float data = 0;
 
-            switch (cvc.ControlType)
+            switch (cvc.ControlType.Type)
             {
                 case CABViewControlTypes.GEARS:
                     if (DieselEngines.HasGearBox)
-                        data = DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        data = DieselEngines[0].GearBox.GearIndication;
                     break;
 
                 case CABViewControlTypes.FUEL_GAUGE:
@@ -937,7 +939,7 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(DieselEngines[0].State)));
             if (DieselEngines.HasGearBox)
                 status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"),
-                DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString());
+                DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (DieselEngines[0].GearBox.GearIndication).ToString());
             status.AppendLine();
             status.AppendFormat("{0} = {1}\n",
                 Simulator.Catalog.GetString("Battery switch"),
@@ -964,7 +966,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (DieselEngines.HasGearBox && DieselTransmissionType == DieselTransmissionTypes.Mechanic)
             {
-                status.AppendFormat("\t{0} {1}-{2}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString(), DieselEngines[0].GearBox.GearBoxType);
+                    status.AppendFormat("\t{0} {1}-{2}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.GearIndication).ToString(), DieselEngines[0].GearBox.GearBoxType);
             }
                 status.AppendFormat("\t{0} {1}\t\t{2}\n",
                 Simulator.Catalog.GetString("Fuel"),
@@ -1441,7 +1443,7 @@ namespace Orts.Simulation.RollingStocks
                         {
                             foreach ( var control in cabView.CVFFile.CabViewControls)
                             {
-                                if (control is CVCDiscrete && control.ControlType == CABViewControlTypes.THROTTLE && (control as CVCDiscrete).Values.Count > 0 && (control as CVCDiscrete).Values[(control as CVCDiscrete).Values.Count - 1] > 1)
+                                if (control is CVCDiscrete && control.ControlType.Type == CABViewControlTypes.THROTTLE && (control as CVCDiscrete).Values.Count > 0 && (control as CVCDiscrete).Values[(control as CVCDiscrete).Values.Count - 1] > 1)
                                 {
                                     var discreteControl = (CVCDiscrete)control;
                                     for (var i = 0; i < discreteControl.Values.Count; i++)

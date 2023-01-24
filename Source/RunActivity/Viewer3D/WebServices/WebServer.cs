@@ -26,14 +26,18 @@ using EmbedIO.WebApi;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Orts.Common;
 using Orts.Simulation.Physics;
 using Orts.Viewer3D.RollingStock;
+using ORTS.Common;
+using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static Orts.Common.InfoApiMap;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -112,12 +116,12 @@ namespace Orts.Viewer3D.WebServices
         /// The Viewer to serve train data from.
         /// </summary>
         private readonly Viewer Viewer;
+        protected WorldLocation cameraLocation = new WorldLocation();
 
         public ORTSApiController(Viewer viewer)
         {
             Viewer = viewer;
         }
-
 
         #region /API/APISAMPLE
         public struct Embedded
@@ -253,6 +257,28 @@ namespace Orts.Viewer3D.WebServices
         #region /API/TIME
         [Route(HttpVerbs.Get, "/TIME")]
         public double Time() => Viewer.Simulator.ClockTime;
+        #endregion
+
+        #region /API/MAP/INIT
+        [Route(HttpVerbs.Get, "/MAP/INIT")]
+        public InfoApiMap InfoApiMap() => GetApiMapInfo(Viewer);
+        #endregion
+
+        public static InfoApiMap GetApiMapInfo(Viewer viewer)
+        {
+            InfoApiMap infoApiMap = new InfoApiMap(
+                viewer.PlayerLocomotive.PowerSupply.GetType().Name);
+
+            viewer.Simulator.TDB.TrackDB.AddTrNodesToPointsOnApiMap(infoApiMap);
+
+            viewer.Simulator.TDB.TrackDB.AddTrItemsToPointsOnApiMap(infoApiMap);
+
+            return infoApiMap;
+        }
+
+        #region /API/MAP
+        [Route(HttpVerbs.Get, "/MAP")]
+        public LatLonDirection LatLonDirection() => Viewer.Simulator.PlayerLocomotive.GetLatLonDirection();
         #endregion
     }
 }
