@@ -49,7 +49,7 @@ namespace Orts.Formats.Msts
             }
         }
 
-        public SkySatellite Sun => SkySatellites.FirstOrDefault(s => s.Type == SkySatellite.SkySatelliteType.Sun);
+        public SkySatellite Sun => SkySatellites?.FirstOrDefault(s => s.Type == SkySatellite.SkySatelliteType.Sun);
 
         public class WaterLayer
         {
