@@ -179,9 +179,9 @@ namespace Orts.Simulation
             }
 
             int trainsInQ = inf.ReadInt32();
-            for (int iQ = 0; iQ < trainsInQ - 1; iQ++)
+            for (int iQ = 0; iQ < trainsInQ; iQ++)
             {
-                Q.Enqueue(iQ);
+                Q.Enqueue(inf.ReadInt32());
             }
         }
 
@@ -723,11 +723,14 @@ namespace Orts.Simulation
                 var iRelativeCarPositions = 0;
                 foreach (TrainCar traincar in TrainsOnMovingTable[0].Train.Cars)
                 {
+                    if (RelativeCarPositions != null)
+                    {
                     traincar.WorldPosition.XNAMatrix = Matrix.Multiply(RelativeCarPositions[iRelativeCarPositions], AnimationXNAMatrix);
                     traincar.UpdateFreightAnimationDiscretePositions();
                     iRelativeCarPositions++;
                 }
             }
+        }
         }
 
         public void AutoRotateTable(float elapsedClockSeconds)
@@ -868,7 +871,30 @@ namespace Orts.Simulation
             return false;
         }
 
+        /// <summary>
+        /// Check if train position is on turntable track section
+        /// </summary>
  
+        public bool CheckOnSection(Traveller trainPosition)
+        {
+            bool onTable = false;
+            int nodeIndex = -1;
+
+            for (int inode = 0; inode < MyTrackNodesIndex.Length && nodeIndex == -1; inode++)
+            {
+                if (MyTrackNodesIndex[inode] == trainPosition.TrackNodeIndex)
+                {
+                    nodeIndex = inode;
+                }
+            }
+
+            if (nodeIndex >= 0)
+            {
+                onTable = (trainPosition.TrackVectorSectionIndex == MyTrVectorSectionsIndex[nodeIndex]);
+            }
+
+            return (onTable);
+        }
 
         /// <summary>
         /// PerformUpdateActions: actions to be performed at every animation step

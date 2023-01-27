@@ -904,6 +904,10 @@ namespace Orts.Simulation.Physics
                         requiredActions.InsertAction(auxAction);
                         Trace.TraceWarning("DistanceTravelledItem type 4 restored as AuxActionItem");
                         break;
+                    case 5:
+                        ClearMovingTableAction cmtAction = new ClearMovingTableAction(inf);
+                        requiredActions.InsertAction(cmtAction);
+                        break;
                     default:
                         Trace.TraceWarning("Unknown type of DistanceTravelledItem (type {0}",
                                 actionType.ToString());
@@ -11044,7 +11048,7 @@ namespace Orts.Simulation.Physics
                 else
                     AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSLimit, Math.Min(allowedMaxSpeedSignalMpS, allowedMaxTempSpeedLimitMpS));
             }
-            if (speedInfo.MaxTempSpeedMpSLimit > 0 && !Simulator.TimetableMode)
+            if (speedInfo.MaxTempSpeedMpSLimit > 0)
             {
                 allowedMaxTempSpeedLimitMpS = allowedAbsoluteMaxTempSpeedLimitMpS;
                 AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxTempSpeedMpSLimit, Math.Min(allowedMaxSpeedSignalMpS, allowedMaxSpeedLimitMpS));
@@ -11220,18 +11224,16 @@ namespace Orts.Simulation.Physics
             LastReservedSection[0] = -1;
             LastReservedSection[1] = -1;
 
-            // clear outstanding clear sections
+            // clear outstanding clear sections and remove them from queue as they are no longer required
 
-            foreach (DistanceTravelledItem thisAction in requiredActions)
-            {
-                if (thisAction is ClearSectionItem)
+            List<DistanceTravelledItem> activeActions = requiredActions.GetActions(99999999f, typeof(ClearSectionItem));
+            foreach (DistanceTravelledItem thisAction in activeActions)
                 {
                     ClearSectionItem thisItem = thisAction as ClearSectionItem;
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisItem.TrackSectionIndex];
                     thisSection.ClearOccupied(this, true);
                 }
             }
-        }
 
         //================================================================================================//
         //
@@ -15844,7 +15846,7 @@ namespace Orts.Simulation.Physics
                                 {
                                     int otherSectionIndex = thisElement.Direction == 0 ?
                                         otherPlatform.TCSectionIndex[0] :
-                                        otherPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+                                        otherPlatform.TCSectionIndex[otherPlatform.TCSectionIndex.Count - 1];
                                     if (otherSectionIndex == beginSectionIndex)
                                     {
                                         if (otherPlatform.TCOffset[0, thisElement.Direction] < actualBegin)
@@ -16242,7 +16244,7 @@ namespace Orts.Simulation.Physics
         /// Clear moving table after moving table actions
         /// Dummy method to allow virtualization by child classes
         /// </summary>
-        public virtual void ClearMovingTable()
+        public virtual void ClearMovingTable(DistanceTravelledItem action)
         {
         }
 
@@ -19176,7 +19178,7 @@ namespace Orts.Simulation.Physics
             {
                 float totalLength = startOffset;
 
-                if (startSectionIndex == endSectionIndex)
+                if (startSectionIndex == endSectionIndex && startSectionIndex > -1)
                 {
                     TrackCircuitSection thisSection = signals.TrackCircuitList[this[startSectionIndex].TCSectionIndex];
                     totalLength = startOffset - (thisSection.Length - endOffset);
@@ -20352,6 +20354,13 @@ namespace Orts.Simulation.Physics
                     outf.Write(4);
                     outf.Write(RequiredDistance);
                     AuxActionItem thisAction = this as AuxActionItem;
+                    thisAction.SaveItem(outf);
+                }
+                else if (this is ClearMovingTableAction)
+                {
+                    outf.Write(5);
+                    outf.Write(RequiredDistance);
+                    ClearMovingTableAction thisAction = this as ClearMovingTableAction;
                     thisAction.SaveItem(outf);
                 }
                 else
