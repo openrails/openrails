@@ -307,9 +307,9 @@ namespace Orts.Simulation.Signalling
             return 0;
         }
 
-        public int switchstand(int aspect1, int aspect2)
+        public int switchstand(int aspect1, int aspect2, string dumpfile)
         {
-            return mainSignal.switchstand(aspect1, aspect2);
+            return mainSignal.switchstand(aspect1, aspect2, dumpfile);
         }
 
         /// <summary>

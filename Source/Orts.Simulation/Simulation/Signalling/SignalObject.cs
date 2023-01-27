@@ -1159,7 +1159,7 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// switchstand : link signal with next switch and set aspect according to switch state
         /// </summary>
-        public int switchstand(int aspect1, int aspect2)
+        public int switchstand(int aspect1, int aspect2, string dumpfile)
         {
             // if switch index not yet set, find first switch in path
             if (!nextSwitchIndex.HasValue)
@@ -1206,6 +1206,10 @@ namespace Orts.Simulation.Signalling
 
                 if (!switchFound)
                 {
+                    if (dumpfile.Length > 1)
+                    {
+                        File.AppendAllText(dumpfile, "SWITCHSTAND : no switch found /n");
+                    }
                     nextSwitchIndex = -1;
                 }
             }
@@ -1213,6 +1217,12 @@ namespace Orts.Simulation.Signalling
             if (nextSwitchIndex >= 0)
             {
                 TrackCircuitSection switchSection = signalRef.TrackCircuitList[nextSwitchIndex.Value];
+                if (dumpfile.Length > 1)
+                {
+                    File.AppendAllText(dumpfile,
+                        String.Format("SWITCHSTAND : switch found : {0}, switch state {1} \n", switchSection.Index, switchSection.JunctionLastRoute));
+                }
+
                 return switchSection.JunctionLastRoute == 0 ? aspect1 : aspect2;
             }
 

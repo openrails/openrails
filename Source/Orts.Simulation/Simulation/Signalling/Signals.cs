@@ -3011,13 +3011,13 @@ namespace Orts.Simulation.Signalling
             thisNode.TrJunctionNode.SelectedRoute = switchPos;
             thisSection.JunctionLastRoute = switchPos;
 
-            // update any linked signals
+            // update any linked signals - perform state update only (to avoid problems with route setting)
             if (thisSection.LinkedSignals != null)
             {
                 foreach (int thisSignalIndex in thisSection.LinkedSignals)
                 {
                     SignalObject thisSignal = SignalObjects[thisSignalIndex];
-                    thisSignal.Update();
+                    thisSignal.StateUpdate();
                 }
             }
         }
