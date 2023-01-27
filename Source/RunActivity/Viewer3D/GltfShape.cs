@@ -1668,25 +1668,27 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
         /// <summary>
         /// This method is part of the animation handling. Gets the parent that will be animated, for finding a bogie for wheels.
         /// </summary>
-        public override int GetParentMatrix(int animationNumber)
+        public override int GetParentAnimation(int animationNumber)
         {
             var node = GltfAnimations.ElementAtOrDefault(animationNumber)?.Channels?.FirstOrDefault()?.TargetNode ?? 0;
-            var nodeAdnimation = -1;
+            var nodeAnimation = -1;
             do
             {
                 node = LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.FirstOrDefault()?.
                     Hierarchy?.ElementAtOrDefault(node) ?? -1;
-                nodeAdnimation = GltfAnimations.FindIndex(a => a.Channels?.FirstOrDefault()?.TargetNode == node);
+                nodeAnimation = GltfAnimations.FindIndex(a => a.Channels?.FirstOrDefault()?.TargetNode == node);
             }
-            while (node > -1 && nodeAdnimation == -1);
-            return nodeAdnimation;
+            while (node > -1 && nodeAnimation == -1);
+            return nodeAnimation;
         }
 
+        public override Matrix GetMatrixProduct(int iNode) => base.GetMatrixProduct(iNode) * PlusZToForward;
+        public override bool AnimationIsArticulation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault()?.TimeArray == null;
+        public override int GetArticulationTargetNode(int animationId) => GltfAnimations?.ElementAtOrDefault(animationId)?.Channels?.FirstOrDefault()?.TargetNode ?? 0;
+        public override int GetAnimationNamesCount() => GltfAnimations?.Count ?? 0;
+
         public bool HasAnimation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
-        public bool AnimationIsArticulation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault()?.TimeArray == null;
         public float GetAnimationLength(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TimeMax).Max() ?? 0;
-        public int GetAnimationCount() => GltfAnimations?.Count ?? 0;
-        public IEnumerable<int> GetArticulationTargetNodes(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TargetNode);
 
         /// <summary>
         /// Calculate the animation matrices of a glTF animation.
