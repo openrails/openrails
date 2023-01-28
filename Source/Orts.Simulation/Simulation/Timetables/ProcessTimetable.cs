@@ -148,7 +148,7 @@ namespace Orts.Simulation.Timetables
 
             // reduce trainlist using player train info and parameters
             bool addPathNoLoadFailure;
-            trainList = BuildAITrains(trainInfoList, playerTrain, arguments, out addPathNoLoadFailure);
+            trainList = BuildAITrains(cancellation, trainInfoList, playerTrain, arguments, out addPathNoLoadFailure);
             if (!addPathNoLoadFailure) loadPathNoFailure = false;
 
             // set references (required to process commands)
@@ -752,13 +752,15 @@ namespace Orts.Simulation.Timetables
         /// <param name="allTrains"></param>
         /// <param name="playerTrain"></param>
         /// <param name="arguments"></param>
-        private List<TTTrain> BuildAITrains(List<TTTrainInfo> allTrains, TTTrainInfo playerTrain, string[] arguments, out bool allPathsLoaded)
+        private List<TTTrain> BuildAITrains(CancellationToken cancellation, List<TTTrainInfo> allTrains, TTTrainInfo playerTrain, string[] arguments, out bool allPathsLoaded)
         {
             allPathsLoaded = true;
             List<TTTrain> trainList = new List<TTTrain>();
 
             foreach (TTTrainInfo reqTrain in allTrains)
             {
+                if (cancellation.IsCancellationRequested) continue;  // ping watchdog token
+
                 // create train route
                 if (TrainRouteXRef.ContainsKey(reqTrain.Index) && Paths.ContainsKey(TrainRouteXRef[reqTrain.Index]))
                 {
