@@ -28,42 +28,31 @@
  * 
  */
 
-using Microsoft.Xna.Framework;
-using Orts.Formats.Msts;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
-using ORTS.Common;
-using System.Diagnostics;
-using System;
-using System.IO;
-using System.Text;
-using Event = Orts.Common.Event;
-using ORTS.Scripting.Api;
-using static Orts.Simulation.RollingStocks.MSTSDieselLocomotive;
 
 namespace Orts.Simulation.RollingStocks
 {
     public class MSTSControlTrailerCar : MSTSLocomotive
     {
-
         public int ControllerNumberOfGears = 1;
         bool HasGearController = false;
         bool ControlGearUp = false;
         bool ControlGearDown = false;
         int ControlGearIndex;
         int ControlGearIndication;
-        string ControlGearBoxType;
-
+        TypesGearBox ControlGearBoxType;
 
         public MSTSControlTrailerCar(Simulator simulator, string wagFile)
-    : base(simulator, wagFile)
+            : base(simulator, wagFile)
         {
-
             PowerSupply = new ScriptedControlCarPowerSupply(this);
-
         }
 
         public override void LoadFromWagFile(string wagFilePath)
@@ -71,11 +60,8 @@ namespace Orts.Simulation.RollingStocks
             base.LoadFromWagFile(wagFilePath);
         }
 
-
         public override void Initialize()
         {
-
-
             // Initialise gearbox controller
             if (ControllerNumberOfGears > 0)
             {
@@ -89,7 +75,6 @@ namespace Orts.Simulation.RollingStocks
 
             base.Initialize();
         }
-
 
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
@@ -117,11 +102,9 @@ namespace Orts.Simulation.RollingStocks
                 // to setup gearbox controller
                 case "engine(gearboxcontrollernumberofgears": ControllerNumberOfGears = stf.ReadIntBlock(null); break;
 
-
                 default:
                     base.Parse(lowercasetoken, stf); break;
             }
-
         }
 
         /// <summary>
@@ -132,14 +115,11 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Copy(MSTSWagon copy)
         {
-            
             base.Copy(copy);  // each derived level initializes its own variables
 
             MSTSControlTrailerCar locoCopy = (MSTSControlTrailerCar)copy;
 
             ControllerNumberOfGears = locoCopy.ControllerNumberOfGears;
-
-
         }
 
         /// <summary>
@@ -165,11 +145,9 @@ namespace Orts.Simulation.RollingStocks
             ControlGearIndex = inf.ReadInt32();
         }
 
-
         /// <summary>
         /// Set starting conditions  when initial speed > 0 
         /// 
-
         public override void InitializeMoving()
         {
             base.InitializeMoving();
@@ -186,7 +164,6 @@ namespace Orts.Simulation.RollingStocks
             base.Update(elapsedClockSeconds);
             WheelSpeedMpS = SpeedMpS; // Set wheel speed for control car, required to make wheels go around.
 
-
             if (ControllerNumberOfGears > 0 && IsLeadLocomotive() && GearBoxController != null)
             {
                 // Pass gearbox command key to other locomotives in train, don't treat the player locomotive in this fashion.
@@ -198,10 +175,8 @@ namespace Orts.Simulation.RollingStocks
 
                     if (locog != null && car != this && !locog.IsLeadLocomotive() && (ControlGearDown || ControlGearUp))
                     {
-
                         if (ControlGearUp)
                         {
-
                             locog.GearBoxController.CurrentNotch = GearBoxController.CurrentNotch;
                             locog.GearBoxController.SetValue((float)locog.GearBoxController.CurrentNotch);
 
@@ -210,7 +185,6 @@ namespace Orts.Simulation.RollingStocks
 
                         if (ControlGearDown)
                         {
-
                             locog.GearBoxController.CurrentNotch = GearBoxController.CurrentNotch;
                             locog.GearBoxController.SetValue((float)locog.GearBoxController.CurrentNotch);
 
@@ -225,18 +199,15 @@ namespace Orts.Simulation.RollingStocks
                         ControlGearIndication = locog.DieselEngines[0].GearBox.GearIndication;
                         if (locog.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.C)
                         {
-                            ControlGearBoxType = "C";
+                            ControlGearBoxType = TypesGearBox.C;
                         }
                     }
                 }
-           
                 
                 // Rest gear flags once all the cars have been processed
                 ControlGearUp = false;
                 ControlGearDown = false;
-
             }
-
         }
 
         public override string GetStatus()
@@ -255,28 +226,18 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected override void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
-
-
-
-
         }
-
 
         /// <summary>
         /// This function updates periodically the locomotive's sound variables.
         /// </summary>
         protected override void UpdateSoundVariables(float elapsedClockSeconds)
         {
-
-
-
         }
-
 
         public override void ChangeGearUp()
         {
-
-            if (ControlGearBoxType == "C")
+            if (ControlGearBoxType == TypesGearBox.C)
             {
                 if (ThrottlePercent == 0)
                 {
@@ -303,12 +264,11 @@ namespace Orts.Simulation.RollingStocks
 
             ControlGearUp = true;
             ControlGearDown = false;
-
         }
 
         public override void ChangeGearDown()
         {
-            if (ControlGearBoxType == "C")
+            if (ControlGearBoxType == TypesGearBox.C)
             {
                 if (ThrottlePercent == 0)
                 {
@@ -335,7 +295,6 @@ namespace Orts.Simulation.RollingStocks
 
             ControlGearUp = false;
             ControlGearDown = true;
-
         }
     }
 }
