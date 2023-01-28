@@ -74,7 +74,7 @@ namespace Orts.Simulation.RollingStocks
 
         public override void Initialize()
         {
-            
+
 
             // Initialise gearbox controller
             if (ControllerNumberOfGears > 0)
@@ -304,7 +304,7 @@ namespace Orts.Simulation.RollingStocks
             ControlGearUp = true;
             ControlGearDown = false;
 
-    }
+        }
 
         public override void ChangeGearDown()
         {

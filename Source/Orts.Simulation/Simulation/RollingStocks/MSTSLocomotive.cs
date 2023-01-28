@@ -1909,21 +1909,21 @@ public List<CabView> CabViewList = new List<CabView>();
             // This code keeps all gearboxes in the locomotive aligned with the first engine and gearbox.
             if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
             {
-                // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive
+                // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive             
 
-                    int ii = 0;
-                    foreach (var eng in gearloco.DieselEngines.DEList)
+                int ii = 0;
+                foreach (var eng in gearloco.DieselEngines.DEList)
+                {
+                    // don't change the first engine as this is the reference for all the others
+                    if (ii != 0)
                     {
-                        // don't change the first engine as this is the reference for all the others
-                        if (ii != 0)
-                        {
-                            gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
-                        }
-
-                        ii = ii + 1;
+                        gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
                     }
-
+                    
+                    ii = ii + 1;
                 }
+
+            }
 
             // The lead locomotive passes gearbox commands position to other locomotives in train, don't treat the player locomotive in this fashion.
 
@@ -4062,7 +4062,7 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             if (GearBoxController != null)
             {
-                
+
                 if (this is MSTSDieselLocomotive)
                 {
                     var dieselloco = this as MSTSDieselLocomotive;
