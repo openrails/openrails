@@ -271,7 +271,7 @@ public Gear NextGear
             }
             set
             {
-                switch(GearBoxOperation)
+                switch (GearBoxOperation)
                 {
                     case GearBoxOperation.Manual:
                     case GearBoxOperation.Semiautomatic:
