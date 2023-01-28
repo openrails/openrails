@@ -365,7 +365,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS"))
                     if (TrainCarShape.SharedShape.MatrixNames[i].Length == 8)
                     {
-                        var tpmatrix = TrainCarShape.SharedShape.GetParentAnimation(i);
+                        var tpmatrix = TrainCarShape.SharedShape.GetAnimationParent(i);
                         if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS11") && tpmatrix == bogieMatrix1)
                             bogie1Axles += 1;
                         if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS12") && tpmatrix == bogieMatrix1)
@@ -397,7 +397,7 @@ namespace Orts.Viewer3D.RollingStock
             // Using only animations not parented by other animations, thus wheels part of a bogie will be enumerated in another round.
             // Match up all the matrices with their parts.
             for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
-                if (TrainCarShape.SharedShape.GetParentAnimation(i) == -1)
+                if (TrainCarShape.SharedShape.GetAnimationParent(i) == -1)
                     MatchMatrixToPart(car, i, 0);
 
             car.SetUpWheels();
@@ -429,9 +429,9 @@ namespace Orts.Viewer3D.RollingStock
         void MatchMatrixToPart(MSTSWagon car, int matrix, int bogieMatrix)
         {
             var matrixName = TrainCarShape.SharedShape.MatrixNames[matrix].ToUpper();
-            var targetNode = TrainCarShape.SharedShape.GetArticulationTargetNode(matrix);
+            var targetNode = TrainCarShape.SharedShape.GetAnimationTargetNode(matrix);
             // Gate all RunningGearPartIndexes on this!
-            var matrixAnimated = !TrainCarShape.SharedShape.AnimationIsArticulation(matrix);
+            var matrixAnimated = !TrainCarShape.SharedShape.IsAnimationArticulation(matrix);
             if (matrixName.StartsWith("WHEELS") && (matrixName.Length == 7 || matrixName.Length == 8 || matrixName.Length == 9))
             {
                 // Standard WHEELS length would be 8 to test for WHEELS11. Came across WHEELS tag that used a period(.) between the last 2 numbers, changing max length to 9.
@@ -452,7 +452,7 @@ namespace Orts.Viewer3D.RollingStock
                     var id = 0;
                     if (matrixName.Length == 8 || matrixName.Length == 9)
                         Int32.TryParse(matrixName.Substring(6, 1), out id);
-                    var pmatrix = TrainCarShape.SharedShape.GetArticulationTargetNode(TrainCarShape.SharedShape.GetParentAnimation(matrix));
+                    var pmatrix = TrainCarShape.SharedShape.GetAnimationTargetNode(TrainCarShape.SharedShape.GetAnimationParent(matrix));
                     car.AddWheelSet(m.M43, id, pmatrix, matrixName.ToString(), bogie1Axles, bogie2Axles);
                 }
                 // Standard wheels are processed above, but wheels used as animated fans that are greater than 3m are processed here.
@@ -469,7 +469,7 @@ namespace Orts.Viewer3D.RollingStock
                 bogieMatrix = targetNode; // Bogie matrix needs to be saved for test with axles.
                 // Bogies contain wheels!
                 for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
-                    if (TrainCarShape.SharedShape.GetParentAnimation(i) == matrix)
+                    if (TrainCarShape.SharedShape.GetAnimationParent(i) == matrix)
                         MatchMatrixToPart(car, i, bogieMatrix);
             }
             else if (matrixName.StartsWith("WIPER")) // wipers
@@ -578,7 +578,7 @@ namespace Orts.Viewer3D.RollingStock
                     RunningGear.AddMatrix(matrix);
 
                 for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
-                    if (TrainCarShape.SharedShape.GetParentAnimation(i) == targetNode)
+                    if (TrainCarShape.SharedShape.GetAnimationParent(i) == targetNode)
                         MatchMatrixToPart(car, i, 0);
             }
         }
