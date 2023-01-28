@@ -2651,7 +2651,7 @@ namespace Orts.Viewer3D
 
         public virtual Matrix GetMatrixProduct(int iNode)
         {
-            var h = LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.FirstOrDefault()?.Hierarchy;
+            var h = GetModelHierarchy();
             Matrix matrix = Matrix.Identity;
             if (h != null && h.Length > iNode)
             {
@@ -2664,34 +2664,33 @@ namespace Orts.Viewer3D
             return matrix;
         }
 
+        public int[] GetModelHierarchy() => LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.FirstOrDefault()?.Hierarchy;
+
         /// <summary>
         /// This method is part of the animation handling. Gets the parent that will be animated, for finding a bogie for wheels.
         /// </summary>
-        public int GetParentMatrix(int iNode)
-        {
-            return LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.FirstOrDefault()?.Hierarchy?.ElementAtOrDefault(iNode) ?? -1;
-        }
+        public int GetParentMatrix(int iNode) => GetModelHierarchy()?.ElementAtOrDefault(iNode) ?? -1;
 
         /// <summary>
         /// Searches for the parent animation.
         /// </summary>
         /// <param name="animationId">For stf files it is the node id, for gltf files it is the animation id.</param>
         /// <returns>The parent animation id.</returns>
-        public virtual int GetParentAnimation(int animationId) => GetParentMatrix(animationId);
+        public virtual int GetAnimationParent(int animationId) => GetParentMatrix(animationId);
 
         /// <summary>
         /// Tells whether the animation is an internal sequence defined within the shape, or is just a tag that needs external animation.
         /// </summary>
         /// <param name="animationId">For stf files it is the node id, for gltf files it is the animation id.</param>
         /// <returns>true if there is no internal seqence defined in the shape.</returns>
-        public virtual bool AnimationIsArticulation(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers.Count == 0;
+        public virtual bool IsAnimationArticulation(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers.Count == 0;
 
         /// <summary>
         /// Returns the parent animation id.
         /// </summary>
         /// <param name="animationId">For stf files it is the node id, for gltf files it is the animation id.</param>
         /// <returns>Returns for stf files the node id itself, for gltf files the target node id of the animation.</returns>
-        public virtual int GetArticulationTargetNode(int animationId) => animationId;
+        public virtual int GetAnimationTargetNode(int animationId) => animationId;
 
         public virtual int GetAnimationNamesCount() => LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault().ShapePrimitives?.FirstOrDefault()?.Hierarchy?.Length ?? 0;
 

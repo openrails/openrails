@@ -205,6 +205,8 @@ namespace ORTS.Settings
         public int DayAmbientLight { get; set; }
         [Default(AntiAliasingMethod.MSAA2x)]
         public int AntiAliasing { get; set; }
+        [Default(false)]
+        public bool GltfAnimations { get; set; }
 
         // Simulation settings:
 

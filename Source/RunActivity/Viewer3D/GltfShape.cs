@@ -35,6 +35,8 @@ namespace Orts.Viewer3D
 {
     public class GltfShape : SharedShape
     {
+        public static bool EnableAnimations { get; set; }
+
         public static List<string> ExtensionsSupported = new List<string>
         {
             "KHR_lights_punctual",
@@ -91,6 +93,7 @@ namespace Orts.Viewer3D
         {
             // In glTF the animation frames are measured in seconds, so the default FPS value must be 1 second per second.
             CustomAnimationFPS = 1;
+            EnableAnimations = viewer.Game.Settings.GltfAnimations;
         }
 
         protected override void LoadContent()
@@ -1668,14 +1671,14 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
         /// <summary>
         /// This method is part of the animation handling. Gets the parent that will be animated, for finding a bogie for wheels.
         /// </summary>
-        public override int GetParentAnimation(int animationNumber)
+        public override int GetAnimationParent(int animationNumber)
         {
-            var node = GltfAnimations.ElementAtOrDefault(animationNumber)?.Channels?.FirstOrDefault()?.TargetNode ?? 0;
+            var node = GetAnimationTargetNode(animationNumber);
             var nodeAnimation = -1;
+            var h = GetModelHierarchy();
             do
             {
-                node = LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.FirstOrDefault()?.
-                    Hierarchy?.ElementAtOrDefault(node) ?? -1;
+                node = h?.ElementAtOrDefault(node) ?? -1;
                 nodeAnimation = GltfAnimations.FindIndex(a => a.Channels?.FirstOrDefault()?.TargetNode == node);
             }
             while (node > -1 && nodeAnimation == -1);
@@ -1683,9 +1686,9 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
         }
 
         public override Matrix GetMatrixProduct(int iNode) => base.GetMatrixProduct(iNode) * PlusZToForward;
-        public override bool AnimationIsArticulation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault()?.TimeArray == null;
-        public override int GetArticulationTargetNode(int animationId) => GltfAnimations?.ElementAtOrDefault(animationId)?.Channels?.FirstOrDefault()?.TargetNode ?? 0;
-        public override int GetAnimationNamesCount() => GltfAnimations?.Count ?? 0;
+        public override bool IsAnimationArticulation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault()?.TimeArray == null;
+        public override int GetAnimationTargetNode(int animationId) => GltfAnimations?.ElementAtOrDefault(animationId)?.Channels?.FirstOrDefault()?.TargetNode ?? 0;
+        public override int GetAnimationNamesCount() => EnableAnimations ? GltfAnimations?.Count ?? 0 : 0;
 
         public bool HasAnimation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
         public float GetAnimationLength(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TimeMax).Max() ?? 0;
@@ -1697,6 +1700,9 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
         /// <param name="time">Actual time in the animation clip in seconds.</param>
         public void Animate(int animationNumber, float time, Matrix[] animatedMatrices)
         {
+            if (!EnableAnimations)
+                return;
+
             // Start with the intial pose in the shape file.
             Matrices.CopyTo(animatedMatrices, 0);
 
