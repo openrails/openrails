@@ -72,7 +72,7 @@ namespace Orts.Viewer3D
             ["nz"] = CubeMapFace.NegativeZ
         };
 
-        List<GltfAnimation> GltfAnimations = new List<GltfAnimation>();
+        readonly List<GltfAnimation> GltfAnimations = new List<GltfAnimation>();
         
         public float[] MinimumScreenCoverages = new[] { 0f };
         public readonly Vector4[] BoundingBoxNodes = new Vector4[8];
@@ -195,8 +195,8 @@ namespace Orts.Viewer3D
             }
         }
 
-        static internal Func<BinaryReader, ushort> GetIntegerReader(AccessorSparseIndices.ComponentTypeEnum componentTypeEnum) => GetIntegerReader((Accessor.ComponentTypeEnum)componentTypeEnum);
-        static internal Func<BinaryReader, ushort> GetIntegerReader(Accessor.ComponentTypeEnum componentTypeEnum)
+        internal static Func<BinaryReader, ushort> GetIntegerReader(AccessorSparseIndices.ComponentTypeEnum componentTypeEnum) => GetIntegerReader((Accessor.ComponentTypeEnum)componentTypeEnum);
+        internal static Func<BinaryReader, ushort> GetIntegerReader(Accessor.ComponentTypeEnum componentTypeEnum)
         {
             switch (componentTypeEnum)
             {
@@ -236,8 +236,8 @@ namespace Orts.Viewer3D
 
         public class GltfLodControl : LodControl
         {
-            Dictionary<string, Gltf> Gltfs = new Dictionary<string, Gltf>();
-            static readonly float[] defaultScreenCoverages = new[] { 0.2f, 0.05f, 0.001f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
+            readonly Dictionary<string, Gltf> Gltfs = new Dictionary<string, Gltf>();
+            static readonly float[] DefaultScreenCoverages = new[] { 0.2f, 0.05f, 0.001f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
 
             public GltfLodControl(GltfShape shape, Dictionary<int, string> externalLods)
             {
@@ -276,7 +276,7 @@ namespace Orts.Viewer3D
                                 var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString());
                                 if (ext?.Ids != null)
                                     internalLodsNumber = ext.Ids.Length + 1;
-                                var screenCoverages = defaultScreenCoverages;
+                                var screenCoverages = DefaultScreenCoverages;
                                 if (rootNode.Extras?.TryGetValue("MSFT_screencoverage", out extension) ?? false)
                                     screenCoverages = Newtonsoft.Json.JsonConvert.DeserializeObject<float[]>(extension.ToString());
                                 shape.MinimumScreenCoverages = new float[internalLodsNumber];
@@ -306,9 +306,9 @@ namespace Orts.Viewer3D
         public class GltfDistanceLevel : DistanceLevel
         {
             // See the glTF specification at https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html
-            Gltf Gltf;
-            string GltfDir;
-            string GltfFileName;
+            readonly Gltf Gltf;
+            readonly string GltfDir;
+            readonly string GltfFileName;
             Dictionary<int, byte[]> BinaryBuffers => Shape.BinaryBuffers;
 
             /// <summary>
@@ -433,7 +433,7 @@ namespace Orts.Viewer3D
                     {
                         var minPosition = Vector4.Transform(gltfSubObject.MinPosition, Matrices[gltfSubObject.HierarchyIndex]);
                         var maxPosition = Vector4.Transform(gltfSubObject.MaxPosition, Matrices[gltfSubObject.HierarchyIndex]);
-                        foreach (GltfSubObject subObject in SubObjects)
+                        foreach (GltfSubObject subObject in SubObjects.Cast<GltfSubObject>())
                         {
                             var soMinPosition = Vector4.Transform(subObject.MinPosition, Matrices[subObject.HierarchyIndex]);
                             var soMaxPosition = Vector4.Transform(subObject.MaxPosition, Matrices[subObject.HierarchyIndex]);
@@ -456,7 +456,7 @@ namespace Orts.Viewer3D
 
                         // Use MatrixNames for storing animation and articulation names.
                         // Here the MatrixNames are not bound to nodes (and matrices), but rather to the animation number.
-                        shape.MatrixNames[j] = gltfAnimation.Name;
+                        shape.MatrixNames[j] = gltfAnimation.Name ?? "";
                         var animation = new GltfAnimation(gltfAnimation.Name);
 
                         for (var k = 0; k < gltfAnimation.Channels.Length; k++)
@@ -519,7 +519,7 @@ namespace Orts.Viewer3D
                             {
                                 animation = new GltfAnimation(articulations[nodeNumber].name) { ExtrasWheelRadius = articulations[nodeNumber].radius };
                                 shape.GltfAnimations.Add(animation);
-                                shape.MatrixNames[shape.GltfAnimations.Count - 1] = articulations[nodeNumber].name;
+                                shape.MatrixNames[shape.GltfAnimations.Count - 1] = articulations[nodeNumber].name ?? "";
                             }
                             animation.Channels.Add(new GltfAnimationChannel() { TargetNode = nodeNumber });
                         }
@@ -814,10 +814,10 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
                 Vector4 texCoords1 = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
                 Vector4 texCoords2 = Vector4.Zero; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
 
-                object extension = null;
                 MaterialNormalTextureInfo msftNormalInfo = null;
                 TextureInfo msftOrmInfo = null;
                 TextureInfo msftRmoInfo = null;
+                object extension = null;
                 if (material.Extensions?.TryGetValue("MSFT_packing_normalRoughnessMetallic", out extension) ?? false)
                     msftNormalInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_normalRoughnessMetallic>(extension.ToString())?.NormalRoughnessMetallicTexture;
                 else if (material.Extensions?.TryGetValue("MSFT_packing_occlusionRoughnessMetallic", out extension) ?? false)
@@ -1332,7 +1332,7 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
                 {
                     Name = light.name,
                     Type = light.type,
-                    Color = new Vector3(light.color[0], light.color[1], light.color[2]),
+                    Color = light.color != null && light.color.Length > 2 ? new Vector3(light.color[0], light.color[1], light.color[2]) : Vector3.Zero,
                     Intensity = light.intensity,
                     Range = light.range,
                 };
@@ -1475,55 +1475,55 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
         
         public struct VertexPosition : IVertexType
         {
-            Vector3 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector3 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0));
-            public VertexPosition(Vector3 data) { vertexData = data; }
-            public Vector3 Position { get { return vertexData; } set { vertexData = value; } }
+            public VertexPosition(Vector3 data) { VertexData = data; }
+            public Vector3 Position { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 3;
         }
         
         public struct VertexNormal : IVertexType
         {
-            Vector3 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector3 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0));
-            public VertexNormal(Vector3 data) { vertexData = data; }
-            public Vector3 Normal { get { return vertexData; } set { vertexData = value; } }
+            public VertexNormal(Vector3 data) { VertexData = data; }
+            public Vector3 Normal { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 3;
         }
 
         public struct VertexColor3 : IVertexType
         {
-            Vector3 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector3 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Color, 0));
-            public VertexColor3(Vector3 data) { vertexData = data; }
-            public Vector3 Color { get { return vertexData; } set { vertexData = value; } }
+            public VertexColor3(Vector3 data) { VertexData = data; }
+            public Vector3 Color { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 3;
         }
 
         public struct VertexColor4 : IVertexType
         {
-            Vector4 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector4 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Color, 0));
-            public VertexColor4(Vector4 data) { vertexData = data; }
-            public Vector4 Color { get { return vertexData; } set { vertexData = value; } }
+            public VertexColor4(Vector4 data) { VertexData = data; }
+            public Vector4 Color { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 4;
         }
 
         public struct VertexJoint : IVertexType
         {
-            Vector4 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector4 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.BlendIndices, 0));
-            public VertexJoint(Vector4 data) { vertexData = data; }
-            public Vector4 Joint { get { return vertexData; } set { vertexData = value; } }
+            public VertexJoint(Vector4 data) { VertexData = data; }
+            public Vector4 Joint { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 4;
         }
@@ -1540,66 +1540,66 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
 
         public struct VertexWeight : IVertexType
         {
-            Vector4 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector4 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 0));
-            public VertexWeight(Vector4 data) { vertexData = data; }
-            public Vector4 Weight { get { return vertexData; } set { vertexData = value; } }
+            public VertexWeight(Vector4 data) { VertexData = data; }
+            public Vector4 Weight { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 4;
         }
 
         public struct VertexTangent : IVertexType
         {
-            Vector4 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector4 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Tangent, 0));
-            public VertexTangent(Vector4 data) { vertexData = data; }
-            public Vector4 Tangent { get { return vertexData; } set { vertexData = value; } }
+            public VertexTangent(Vector4 data) { VertexData = data; }
+            public Vector4 Tangent { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 4;
         }
 
         public struct VertexTextureDiffuse : IVertexType
         {
-            Vector2 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector2 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0));
-            public VertexTextureDiffuse(Vector2 data) { vertexData = data; }
-            public Vector2 TextureCoordinate { get { return vertexData; } set { vertexData = value; } }
+            public VertexTextureDiffuse(Vector2 data) { VertexData = data; }
+            public Vector2 TextureCoordinate { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 2;
         }
 
         public struct VertexTextureMetallic : IVertexType
         {
-            Vector2 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector2 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 1));
-            public VertexTextureMetallic(Vector2 data) { vertexData = data; }
-            public Vector2 TextureCoordinate { get { return vertexData; } set { vertexData = value; } }
+            public VertexTextureMetallic(Vector2 data) { VertexData = data; }
+            public Vector2 TextureCoordinate { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 2;
         }
 
         public struct VertexTextureNormalMap : IVertexType
         {
-            Vector2 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector2 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 5));
-            public VertexTextureNormalMap(Vector2 data) { vertexData = data; }
-            public Vector2 TextureCoordinate { get { return vertexData; } set { vertexData = value; } }
+            public VertexTextureNormalMap(Vector2 data) { VertexData = data; }
+            public Vector2 TextureCoordinate { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 2;
         }
 
         public struct VertexTextureSpecularMap : IVertexType
         {
-            Vector2 vertexData;
-            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
+            Vector2 VertexData;
+            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
                 new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 6));
-            public VertexTextureSpecularMap(Vector2 data) { vertexData = data; }
-            public Vector2 TextureCoordinate { get { return vertexData; } set { vertexData = value; } }
+            public VertexTextureSpecularMap(Vector2 data) { VertexData = data; }
+            public Vector2 TextureCoordinate { get { return VertexData; } set { VertexData = value; } }
             VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
             public const int SizeInBytes = sizeof(float) * 2;
         }
@@ -1727,7 +1727,7 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
                 var time1 = channel.TimeArray[frame1];
                 var time2 = channel.TimeArray[frame2];
 
-                var amount = 0.0f;
+                float amount;
                 switch (channel.Interpolation)
                 {
                     // See the formula for cubic spline: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic
@@ -1772,14 +1772,14 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
         }
 
         // Cubic spline helpers
-        readonly static Func<int, int> InTangent = (frame) => frame * 3;
-        readonly static Func<int, int> Property = (frame) => frame * 3 + 1;
-        readonly static Func<int, int> OutTangent = (frame) => frame * 3 + 2;
-        readonly static Func<float, float> A = (t) => 2*t*t*t - 3*t*t + 1;
-        readonly static Func<float, float> B = (t) => t*t*t - 2*t*t + t;
-        readonly static Func<float, float> C = (t) => -2*t*t*t + 3*t*t;
-        readonly static Func<float, float> D = (t) => t*t*t - t*t;
-        readonly static Func<Quaternion, Quaternion, Quaternion, Quaternion, float, Quaternion> CsInterp = (v1, b1, v2, a2, t) =>
+        static readonly Func<int, int> InTangent = (frame) => frame * 3;
+        static readonly Func<int, int> Property = (frame) => frame * 3 + 1;
+        static readonly Func<int, int> OutTangent = (frame) => frame * 3 + 2;
+        static readonly Func<float, float> A = (t) => 2*t*t*t - 3*t*t + 1;
+        static readonly Func<float, float> B = (t) => t*t*t - 2*t*t + t;
+        static readonly Func<float, float> C = (t) => -2*t*t*t + 3*t*t;
+        static readonly Func<float, float> D = (t) => t*t*t - t*t;
+        static readonly Func<Quaternion, Quaternion, Quaternion, Quaternion, float, Quaternion> CsInterp = (v1, b1, v2, a2, t) =>
             Quaternion.Normalize(Quaternion.Multiply(v1, A(t)) + Quaternion.Multiply(b1, B(t)) + Quaternion.Multiply(v2, C(t)) + Quaternion.Multiply(a2, D(t)));
     }
 
