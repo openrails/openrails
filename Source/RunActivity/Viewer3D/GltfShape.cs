@@ -30,6 +30,7 @@ using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using glTFLoader.Schema;
+using Orts.Simulation.AIs;
 
 namespace Orts.Viewer3D
 {
@@ -168,6 +169,11 @@ namespace Orts.Viewer3D
                     hi = shapePrimitive.Hierarchy[hi];
                 }
                 Matrix.Multiply(ref bones[j], ref PlusZToForward, out bones[j]);
+
+                // The ConsistGenerator is used to show all the Khronos sample models for testing purposes. However they need adjustments to show them all at once.
+                if (ConsistGenerator.GeneratedRun && SampleModelsAdjustments.TryGetValue(Path.GetFileNameWithoutExtension(FilePath), out var adjustment))
+                    Matrix.Multiply(ref bones[j], ref adjustment, out bones[j]);
+                
                 Matrix.Multiply(ref bones[j], ref tileTranslation, out bones[j]);
             }
 
@@ -525,7 +531,7 @@ namespace Orts.Viewer3D
                         }
                     }
 
-if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimations[0]); shape.MatrixNames[shape.GltfAnimations.Count - 1] = "ORTSITEM1CONTINUOUS"; }
+//if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimations[0]); shape.MatrixNames[shape.GltfAnimations.Count - 1] = "ORTSITEM1CONTINUOUS"; }
                 }
             }
 
@@ -1781,6 +1787,63 @@ if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimati
         static readonly Func<float, float> D = (t) => t*t*t - t*t;
         static readonly Func<Quaternion, Quaternion, Quaternion, Quaternion, float, Quaternion> CsInterp = (v1, b1, v2, a2, t) =>
             Quaternion.Normalize(Quaternion.Multiply(v1, A(t)) + Quaternion.Multiply(b1, B(t)) + Quaternion.Multiply(v2, C(t)) + Quaternion.Multiply(a2, D(t)));
+
+        /// <summary>
+        /// It is used to store the adjustments needed for the Khronos sample models for being able to show them all at once in a single consist.
+        /// For this to work 'git clone https://github.com/KhronosGroup/glTF-Sample-Models.git' to the MSTS/TRAINS/TRAINSET folder, so that the
+        /// models will be available in e.g. MSTS/TRAINS/TRAINSET/glTF-Sample-Models/2.0/... folder. Then start like:
+        /// RunActivity.exe -start -explorer "C:\Devel\MSTS\ROUTES\USA2\PATHS\tut6path.pat" "glTF-Sample-Models" 12:00 1 0
+        /// </summary>
+        static readonly Dictionary<string, Matrix> SampleModelsAdjustments = new Dictionary<string, Matrix>
+        {
+            { "2CylinderEngine".ToLower(), Matrix.CreateScale(0.01f) * Matrix.CreateTranslation(0, 2, 0) },
+            { "ABeautifulGame".ToLower(), Matrix.CreateScale(10) },
+            { "AnimatedCube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "AnimatedMorphCube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "AnimatedMorphSphere".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "AntiqueCamera".ToLower(), Matrix.CreateScale(0.5f) },
+            { "AttenuationTest".ToLower(), Matrix.CreateScale(0.3f) * Matrix.CreateTranslation(0, 4, 0) },
+            { "Avocado".ToLower(), Matrix.CreateScale(50) },
+            { "BarramundiFish".ToLower(), Matrix.CreateScale(10) },
+            { "BoomBox".ToLower(), Matrix.CreateScale(100) * Matrix.CreateTranslation(0, 2, 0) },
+            { "BoomBoxWithAxes".ToLower(), Matrix.CreateScale(100) * Matrix.CreateTranslation(0, 2, 0) },
+            { "Box".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "Box With Spaces".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "BoxAnimated".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "BoxInterleaved".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "BoxTextured".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "BoxTexturedNonPowerOfTwo".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "BoxVertexColors".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "Buggy".ToLower(), Matrix.CreateScale(0.02f) * Matrix.CreateTranslation(0, 1, 0) },
+            { "ClearCoatTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 3, 0) },
+            { "Corset".ToLower(), Matrix.CreateScale(40) * Matrix.CreateTranslation(0, 1, 0) },
+            { "Cube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "DamagedHelmet".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "DragonAttenuation".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "EmissiveStrengthTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 3, 0) },
+            { "FlightHelmet".ToLower(), Matrix.CreateScale(5) },
+            { "Fox".ToLower(), Matrix.CreateScale(0.02f) },
+            { "GearboxAssy".ToLower(), Matrix.CreateTranslation(100, 0, 0) },
+            { "GlamVelvetSofa".ToLower(), Matrix.CreateScale(2) },
+            { "InterpolationTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 2, 0) },
+            { "IridescenceDielectricSpheres".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 4, 0) },
+            { "IridescenceLamp".ToLower(), Matrix.CreateScale(5) },
+            { "IridescenceMetallicSpheres".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 4, 0) },
+            { "IridescenceSuzanne".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "IridescentDishWithOlives".ToLower(), Matrix.CreateScale(10) },
+            { "Lantern".ToLower(), Matrix.CreateScale(0.2f) },
+            { "MaterialsVariantsShoe".ToLower(), Matrix.CreateScale(5) },
+            { "MetalRoughSpheres".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
+            { "MetalRoughSpheresNoTextures".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
+            { "MorphPrimitivesTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 1, 0) },
+            { "MosquitoInAmber".ToLower(), Matrix.CreateScale(25) * Matrix.CreateTranslation(0, 1, 0) },
+            { "MultiUVTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "NormalTangentMirrorTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
+            { "NormalTangentTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
+            { "OrientationTest".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 2, 0) },
+            { "ReciprocatingSaw".ToLower(), Matrix.CreateScale(0.02f) * Matrix.CreateTranslation(0, 3, 0) },
+            { "RecursiveSkeletons".ToLower(), Matrix.CreateScale(0.02f) },
+        };
     }
 
     class GltfAnimation
