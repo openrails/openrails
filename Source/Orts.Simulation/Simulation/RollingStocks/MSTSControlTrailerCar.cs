@@ -42,11 +42,21 @@ using System.IO;
 using System.Text;
 using Event = Orts.Common.Event;
 using ORTS.Scripting.Api;
+using static Orts.Simulation.RollingStocks.MSTSDieselLocomotive;
 
 namespace Orts.Simulation.RollingStocks
 {
     public class MSTSControlTrailerCar : MSTSLocomotive
     {
+
+        public int ControllerNumberOfGears = 1;
+        bool HasGearController = false;
+        bool ControlGearUp = false;
+        bool ControlGearDown = false;
+        int ControlGearIndex;
+        int ControlGearIndication;
+        string ControlGearBoxType;
+
 
         public MSTSControlTrailerCar(Simulator simulator, string wagFile)
     : base(simulator, wagFile)
@@ -59,18 +69,25 @@ namespace Orts.Simulation.RollingStocks
         public override void LoadFromWagFile(string wagFilePath)
         {
             base.LoadFromWagFile(wagFilePath);
-
-            Trace.TraceInformation("Control Trailer");
-
         }
 
 
         public override void Initialize()
         {
-            
-            base.Initialize();
 
-            
+
+            // Initialise gearbox controller
+            if (ControllerNumberOfGears > 0)
+            {
+                GearBoxController = new MSTSNotchController(ControllerNumberOfGears + 1);
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    HasGearController = true;
+                Trace.TraceInformation("Control Car Gear Controller created");
+                ControlGearIndex = 0;
+                Train.HasControlCarWithGear = true;
+            }
+
+            base.Initialize();
         }
 
 
@@ -97,11 +114,57 @@ namespace Orts.Simulation.RollingStocks
                     LocomotivePowerSupply.Parse(lowercasetoken, stf);
                     break;
 
+                // to setup gearbox controller
+                case "engine(gearboxcontrollernumberofgears": ControllerNumberOfGears = stf.ReadIntBlock(null); break;
+
+
                 default:
                     base.Parse(lowercasetoken, stf); break;
             }
 
         }
+
+        /// <summary>
+        /// This initializer is called when we are making a new copy of a locomotive already
+        /// loaded in memory.  We use this one to speed up loading by eliminating the
+        /// need to parse the wag file multiple times.
+        /// NOTE:  you must initialize all the same variables as you parsed above
+        /// </summary>
+        public override void Copy(MSTSWagon copy)
+        {
+            
+            base.Copy(copy);  // each derived level initializes its own variables
+
+            MSTSControlTrailerCar locoCopy = (MSTSControlTrailerCar)copy;
+
+            ControllerNumberOfGears = locoCopy.ControllerNumberOfGears;
+
+
+        }
+
+        /// <summary>
+        /// We are saving the game.  Save anything that we'll need to restore the 
+        /// status later.
+        /// </summary>
+        public override void Save(BinaryWriter outf)
+        {
+            ControllerFactory.Save(GearBoxController, outf);
+            outf.Write(ControlGearIndication);
+            outf.Write(ControlGearIndex);
+        }
+
+        /// <summary>
+        /// We are restoring a saved game.  The TrainCar class has already
+        /// been initialized.   Restore the game state.
+        /// </summary>
+        public override void Restore(BinaryReader inf)
+        {
+            base.Restore(inf);
+            ControllerFactory.Restore(GearBoxController, inf);
+            ControlGearIndication = inf.ReadInt32();
+            ControlGearIndex = inf.ReadInt32();
+        }
+
 
         /// <summary>
         /// Set starting conditions  when initial speed > 0 
@@ -123,6 +186,68 @@ namespace Orts.Simulation.RollingStocks
             base.Update(elapsedClockSeconds);
             WheelSpeedMpS = SpeedMpS; // Set wheel speed for control car, required to make wheels go around.
 
+
+            if (ControllerNumberOfGears > 0 && IsLeadLocomotive() && GearBoxController != null)
+            {
+                // Pass gearbox command key to other locomotives in train, don't treat the player locomotive in this fashion.
+                // This assumes that Contol cars have been "matched" with motor cars. Also return values will be on thebasis of the last motor car in the train.         
+
+                foreach (TrainCar car in Train.Cars)
+                {
+                    var locog = car as MSTSDieselLocomotive;
+
+                    if (locog != null && car != this && !locog.IsLeadLocomotive() && (ControlGearDown || ControlGearUp))
+                    {
+
+                        if (ControlGearUp)
+                        {
+
+                            locog.GearBoxController.CurrentNotch = GearBoxController.CurrentNotch;
+                            locog.GearBoxController.SetValue((float)locog.GearBoxController.CurrentNotch);
+
+                            locog.ChangeGearUp();                                                        
+                        }
+
+                        if (ControlGearDown)
+                        {
+
+                            locog.GearBoxController.CurrentNotch = GearBoxController.CurrentNotch;
+                            locog.GearBoxController.SetValue((float)locog.GearBoxController.CurrentNotch);
+
+                            locog.ChangeGearDown();                            
+                        }
+                    }
+
+                    // Read values for the HuD and other requirements, will be based upon the last motorcar
+                    if (locog != null)
+                    {
+                        ControlGearIndex = locog.DieselEngines[0].GearBox.CurrentGearIndex;
+                        ControlGearIndication = locog.DieselEngines[0].GearBox.GearIndication;
+                        if (locog.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.C)
+                        {
+                            ControlGearBoxType = "C";
+                        }
+                    }
+                }
+           
+                
+                // Rest gear flags once all the cars have been processed
+                ControlGearUp = false;
+                ControlGearDown = false;
+
+            }
+
+        }
+
+        public override string GetStatus()
+        {
+            var status = new StringBuilder();
+            if (HasGearController)
+                status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"),
+                ControlGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (ControlGearIndication).ToString());
+            status.AppendLine();
+
+            return status.ToString();
         }
 
         /// <summary>
@@ -148,10 +273,69 @@ namespace Orts.Simulation.RollingStocks
         }
 
 
+        public override void ChangeGearUp()
+        {
 
+            if (ControlGearBoxType == "C")
+            {
+                if (ThrottlePercent == 0)
+                {
+                    GearBoxController.CurrentNotch += 1;
+                }
+                else
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Throttle must be reduced to Idle before gear change can happen."));
+                }
+            }
+            else
+            {
+                GearBoxController.CurrentNotch += 1;
+            }
 
+            if (GearBoxController.CurrentNotch > ControllerNumberOfGears)
+            {
+                GearBoxController.CurrentNotch = ControllerNumberOfGears;
+            }
+            else if (GearBoxController.CurrentNotch < 0)
+            {
+                GearBoxController.CurrentNotch = 0;
+            }
 
+            ControlGearUp = true;
+            ControlGearDown = false;
 
+        }
 
+        public override void ChangeGearDown()
+        {
+            if (ControlGearBoxType == "C")
+            {
+                if (ThrottlePercent == 0)
+                {
+                    GearBoxController.CurrentNotch -= 1;
+                }
+                else
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Throttle must be reduced to Idle before gear change can happen."));
+                }
+            }
+            else
+            {
+                GearBoxController.CurrentNotch -= 1;
+            }
+
+            if (GearBoxController.CurrentNotch > ControllerNumberOfGears)
+            {
+                GearBoxController.CurrentNotch = ControllerNumberOfGears;
+            }
+            else if (GearBoxController.CurrentNotch < 0)
+            {
+                GearBoxController.CurrentNotch = 0;
+            }
+
+            ControlGearUp = false;
+            ControlGearDown = true;
+
+        }
     }
 }

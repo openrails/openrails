@@ -1525,8 +1525,8 @@ public List<CabView> CabViewList = new List<CabView>();
             // Initialise Brake Pipe Quick Charging Rate
             if (BrakePipeQuickChargingRatePSIpS == 0) BrakePipeQuickChargingRatePSIpS = BrakePipeChargingRatePSIorInHgpS;
 
-            // Initialise Exhauster Charging rate in diesel and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
-            if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
+            // Initialise Exhauster Charging rate in diesel, control cars and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
+            if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive || this is MSTSControlTrailerCar)
             {
                 ExhausterHighSBPChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS;
                 ExhausterLowSBPChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS / 5.0f; // Low speed exhauster setting is 1/5 of high speed
@@ -1878,42 +1878,47 @@ public List<CabView> CabViewList = new List<CabView>();
             var gearloco = this as MSTSDieselLocomotive;
 
             // Pass Gearbox commands
+
+
+
+
             // Note - at the moment there is only one GearBox Controller created, but a gearbox for each diesel engine is created. 
             // This code keeps all gearboxes in the locomotive aligned with the first engine and gearbox.
             if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
             {
-                // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive
+                // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive             
 
-                if (gearloco == this)
+                int ii = 0;
+                foreach (var eng in gearloco.DieselEngines.DEList)
                 {
-
-                    int ii = 0;
-                    foreach (var eng in gearloco.DieselEngines.DEList)
+                    // don't change the first engine as this is the reference for all the others
+                    if (ii != 0)
                     {
-                        // don't change the first engine as this is the reference for all the others
-                        if (ii != 0)
-                        {
-                            gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
-                        }
-
-                        ii = ii + 1;
+                        gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
                     }
+                    
+                    ii = ii + 1;
                 }
 
-                // pass gearbox command key to other locomotives in train, don't treat the player locomotive in this fashion.
+            }
+
+            // The lead locomotive passes gearbox commands position to other locomotives in train, don't treat the player locomotive in this fashion.
+
+            if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch && IsLeadLocomotive())
+            {
+ 
                 foreach (TrainCar car in Train.Cars)
                 {
-                    var dieselloco = this as MSTSDieselLocomotive;
                     var locog = car as MSTSDieselLocomotive;
 
-                    if (locog != null && dieselloco != null && car != this && !locog.IsLeadLocomotive())
+                    if (locog != null && gearloco != null && car != this && !locog.IsLeadLocomotive())
                     {
 
-                        locog.DieselEngines[0].GearBox.currentGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex;
+                        locog.DieselEngines[0].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
 
-                        locog.GearBoxController.CurrentNotch = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
-                        locog.GearboxGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
-                        locog.GearBoxController.SetValue((float)dieselloco.GearBoxController.CurrentNotch);
+                        locog.GearBoxController.CurrentNotch = gearloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        locog.GearboxGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        locog.GearBoxController.SetValue((float)gearloco.GearBoxController.CurrentNotch);
 
                         locog.Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, locog.GearBoxController.CurrentNotch);
                         locog.AlerterReset(TCSEvent.GearBoxChanged);
@@ -4013,16 +4018,16 @@ public List<CabView> CabViewList = new List<CabView>();
         #region GearBoxController
         public virtual void ChangeGearUp()
         {
+
         }
 
         public virtual void StartGearBoxIncrease()
         {
             if (GearBoxController != null)
             {
-                
+
                 if (this is MSTSDieselLocomotive)
                 {
-
                     var dieselloco = this as MSTSDieselLocomotive;
 
                     if (dieselloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
@@ -4078,6 +4083,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public virtual void ChangeGearDown()
         {
+            
         }
 
         public virtual void StartGearBoxDecrease()
@@ -4105,7 +4111,6 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (ThrottlePercent == 0)
                             {
                                 GearBoxController.StartDecrease();
-                                Trace.TraceInformation("Controller Decrease - Current Notch {0} Indication {1} GearIndex {2}", GearBoxController.CurrentNotch, dieselloco.DieselEngines[0].GearBox.GearIndication, dieselloco.DieselEngines[0].GearBox.CurrentGearIndex);
                                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, dieselloco.DieselEngines[0].GearBox.GearIndication);
                                 AlerterReset(TCSEvent.GearBoxChanged);
                                 SignalGearBoxChangeEvents();
@@ -4127,7 +4132,6 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                 }
             }
-
             ChangeGearDown();
         }
 

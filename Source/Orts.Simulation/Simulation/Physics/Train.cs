@@ -192,6 +192,7 @@ namespace Orts.Simulation.Physics
         bool AuxTenderFound = false;
         string PrevWagonType;
 
+        public bool HasControlCarWithGear = false;
 
         //To investigate coupler breaks on route
         private bool numOfCouplerBreaksNoted = false;
