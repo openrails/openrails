@@ -398,7 +398,9 @@ namespace Orts.Simulation.RollingStocks
             if (File.Exists(orFile))
                 wagFilePath = orFile;
 
-            using (STFReader stf = new STFReader(wagFilePath, true))
+            using (STFReader stf = ConsistGenerator.IsWagonRecognized(wagFilePath)
+                ? new STFReader(ConsistGenerator.GetWagon(wagFilePath), wagFilePath, System.Text.Encoding.UTF8, true)
+                : new STFReader(wagFilePath, true))
             {
                 while (!stf.Eof)
                 {
