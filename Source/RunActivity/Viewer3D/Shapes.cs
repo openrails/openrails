@@ -1806,8 +1806,8 @@ namespace Orts.Viewer3D
 
         public void Dispose()
         {
-            VertexBuffer.Dispose();
-            IndexBuffer.Dispose();
+            VertexBuffer?.Dispose();
+            IndexBuffer?.Dispose();
             PrimitiveCount = 0;
         }
     }
