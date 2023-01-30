@@ -51,14 +51,17 @@ namespace ORTS.Common
             )";
 
         static readonly Dictionary<string, string> Wagons = new Dictionary<string, string>();
-        static readonly Dictionary<string, string> Ext = new Dictionary<string, string>
+        static readonly Dictionary<string, string> SubDirectories = new Dictionary<string, string>
         {
-            { "glTF-Sample-Models", ".gltf"},
-            { "glTF-Sample-Models-Binary", ".glb"},
-            { "glTF-Sample-Models-Embedded", ".gltf"},
+            { "glTF-Sample-Models", "glTF"},
+            { "glTF-Sample-Models-Binary", "glTF-Binary"},
+            { "glTF-Sample-Models-Embedded", "glTF-Embedded"},
+            { "glTF-Sample-Models-Draco", "glTF-Draco"},
+            { "glTF-Sample-Models-Quantized", "glTF-Quantized"},
         };
 
-        static string RequestedType(string requestedPath) => Ext.FirstOrDefault(ext => ext.Key == Path.GetFileNameWithoutExtension(requestedPath)).Key;
+        static string GltfExtension(string keyword) => keyword == "glTF-Sample-Models-Binary" ? ".glb" : ".gltf";
+        static string RequestedType(string requestedPath) => SubDirectories.FirstOrDefault(ext => ext.Key == Path.GetFileNameWithoutExtension(requestedPath).Split('#').FirstOrDefault()).Key;
         
         public static bool IsConsistRecognized(string requestedPath) => RequestedType(requestedPath) != null;
         public static bool IsWagonRecognized(string requestedPath) => Wagons.ContainsKey(Path.GetFileName(requestedPath));
@@ -78,38 +81,43 @@ namespace ORTS.Common
                 return Stream.Null;
             }
 
-            var k = RequestedType(requestedPath);
-            Debug.Assert(k != null);
+            var keyword = RequestedType(requestedPath);
+            Debug.Assert(keyword != null);
 
             GeneratedRun = true;
 
-            var consist = ConsistTemplateStart.Replace("trainname", k);
+            var consist = ConsistTemplateStart.Replace("trainname", keyword);
 
-            var i = 0;
-            foreach (var model in Directory.EnumerateDirectories(Path.Combine(baseDir, "2.0")))
+            if (keyword.StartsWith("glTF"))
             {
-                var dir = Path.Combine(model, k.Replace("-Sample-Models", ""));
-                if (Directory.Exists(dir))
+                var requestedModel = Path.GetFileNameWithoutExtension(requestedPath).Split('#').ElementAtOrDefault(1);
+                var models = requestedModel == null ? Directory.EnumerateDirectories(Path.Combine(baseDir, "2.0")) : new List<string>() { Path.Combine(baseDir, "2.0", requestedModel) };
+
+                var i = 0;
+                foreach (var model in models)
                 {
-                    var file = Directory.EnumerateFiles(dir).FirstOrDefault(f => f.EndsWith(Ext[k]));
-                    if (file != null)
+                    var dir = Path.Combine(model, SubDirectories[keyword]);
+                    if (Directory.Exists(dir))
                     {
-                        var f = file.Substring(baseDir.Length + 1);
+                        var file = Directory.EnumerateFiles(dir).FirstOrDefault(f => f.EndsWith(GltfExtension(keyword)));
+                        if (file != null)
+                        {
+                            var f = file.Substring(baseDir.Length + 1);
 
-                        var eng = $"{k}_{Path.GetFileNameWithoutExtension(f)}.eng";
-                        Wagons.Add(eng, EngineTemplate
-                            .Replace("shapefilename", f.Replace(@"\", "/"))
-                            .Replace("enginname", Path.GetFileNameWithoutExtension(f)));
+                            var eng = $"{keyword}_{Path.GetFileNameWithoutExtension(f)}.eng";
+                            Wagons.Add(eng, EngineTemplate
+                                .Replace("shapefilename", f.Replace(@"\", "/"))
+                                .Replace("enginname", Path.GetFileNameWithoutExtension(f)));
 
-                        consist += ConsistTemplateRecord
-                            .Replace("xx", i.ToString())
-                            .Replace("engfile", Path.GetFileNameWithoutExtension(eng))
-                            .Replace("trainsetdir", trainsetDir);
-                        i++;
+                            consist += ConsistTemplateRecord
+                                .Replace("xx", i.ToString())
+                                .Replace("engfile", Path.GetFileNameWithoutExtension(eng))
+                                .Replace("trainsetdir", trainsetDir);
+                            i++;
+                        }
                     }
                 }
             }
-
             consist += ConsistTemplateEnd;
 
             var stream = new MemoryStream();

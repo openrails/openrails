@@ -53,6 +53,10 @@ namespace Orts.Viewer3D
         int SkeletonRootNode;
         public bool MsfsFlavoured;
 
+        internal Vector3[] Scales;
+        internal Quaternion[] Rotations;
+        internal Vector3[] Translations;
+
         /// <summary>
         /// glTF specification declares that the model's forward is +Z. However OpenRails uses -Z as forward,
         /// so we need to apply a 180 degree rotation to turn around every model matrix to conform the spec.
@@ -322,7 +326,11 @@ namespace Orts.Viewer3D
             /// </summary>
             internal Dictionary<int, Matrix[]> AllInverseBindMatrices = new Dictionary<int, Matrix[]>();
 
-            public Matrix[] Matrices = new Matrix[0];
+            internal Matrix[] Matrices = new Matrix[0];
+            Vector3[] Scales;
+            Quaternion[] Rotations;
+            Vector3[] Translations;
+
             internal Viewer Viewer;
             internal GltfShape Shape;
 
@@ -352,7 +360,10 @@ namespace Orts.Viewer3D
                 TempStack.Clear();
                 Array.ForEach(gltfFile.Scenes.ElementAtOrDefault(gltfFile.Scene ?? 0).Nodes, node => TempStack.Push(node));
                 var hierarchy = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray();
-                var matrices = Enumerable.Repeat(Matrix.Identity, gltfFile.Nodes.Length).ToArray();
+                Matrices = Enumerable.Repeat(Matrix.Identity, gltfFile.Nodes.Length).ToArray();
+                Scales = new Vector3[gltfFile.Nodes.Length];
+                Rotations = new Quaternion[gltfFile.Nodes.Length];
+                Translations = new Vector3[gltfFile.Nodes.Length];
                 var parents = new Dictionary<int, int>();
                 var lods = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray(); // -1: common; 0, 1, 3, etc.: the lod the node belongs to
                 while (TempStack.Any())
@@ -363,7 +374,7 @@ namespace Orts.Viewer3D
                     if (parent > -1 && lods[parent] > -1)
                         lods[nodeNumber] = lods[parent];
                     
-                    matrices[nodeNumber] = GetMatrix(node);
+                    (Matrices[nodeNumber], Scales[nodeNumber], Rotations[nodeNumber], Translations[nodeNumber]) = SetTransforms(node);
                     if (node.Children != null)
                     {
                         foreach (var child in node.Children)
@@ -414,7 +425,6 @@ namespace Orts.Viewer3D
                         }
                     }
                 }
-                Matrices = matrices;
                 var subObjects = new List<SubObject>();
                 foreach (var hierIndex in meshes.Keys)
                 {
@@ -433,7 +443,10 @@ namespace Orts.Viewer3D
 
                 if (lodId == 0)
                 {
-                    shape.Matrices = matrices;
+                    shape.Matrices = Matrices;
+                    shape.Scales = Scales;
+                    shape.Rotations = Rotations;
+                    shape.Translations = Translations;
 
                     if (SubObjects.FirstOrDefault() is GltfSubObject gltfSubObject)
                     {
@@ -664,7 +677,7 @@ namespace Orts.Viewer3D
                 return defaultTexture;
             }
 
-            internal Matrix GetMatrix(Node node)
+            internal (Matrix, Vector3, Quaternion, Vector3) SetTransforms(Node node)
             {
                 var matrix = node.Matrix == null ? Matrix.Identity : new Matrix(
                     node.Matrix[0], node.Matrix[1], node.Matrix[2], node.Matrix[3],
@@ -672,11 +685,15 @@ namespace Orts.Viewer3D
                     node.Matrix[8], node.Matrix[9], node.Matrix[10], node.Matrix[11],
                     node.Matrix[12], node.Matrix[13], node.Matrix[14], node.Matrix[15]);
 
-                var scale = node.Scale == null ? Matrix.Identity : Matrix.CreateScale(node.Scale[0], node.Scale[1], node.Scale[2]);
-                var rotation = node.Rotation == null ? Matrix.Identity : Matrix.CreateFromQuaternion(new Quaternion(node.Rotation[0], node.Rotation[1], node.Rotation[2], node.Rotation[3]));
-                var transtaion = node.Translation == null ? Matrix.Identity : Matrix.CreateTranslation(node.Translation[0], node.Translation[1], node.Translation[2]);
+                var scale = node.Scale == null ? Vector3.One : new Vector3(node.Scale[0], node.Scale[1], node.Scale[2]);
+                var rotation = node.Rotation == null ? Quaternion.Identity : new Quaternion(node.Rotation[0], node.Rotation[1], node.Rotation[2], node.Rotation[3]);
+                var transtaion = node.Translation == null ? Vector3.Zero : new Vector3(node.Translation[0], node.Translation[1], node.Translation[2]);
 
-                return matrix * scale * rotation * transtaion;
+                var scaleM = node.Scale == null ? Matrix.Identity : Matrix.CreateScale(scale);
+                var rotationM = node.Rotation == null ? Matrix.Identity : Matrix.CreateFromQuaternion(rotation);
+                var transtaionM = node.Translation == null ? Matrix.Identity : Matrix.CreateTranslation(transtaion);
+
+                return (matrix * scaleM * rotationM * transtaionM, scale, rotation, transtaion);
             }
 
             internal Sampler GetSampler(Gltf gltf, int? textureIndex)
@@ -1709,26 +1726,16 @@ namespace Orts.Viewer3D
             if (!EnableAnimations)
                 return;
 
-            // Start with the intial pose in the shape file.
-            Matrices.CopyTo(animatedMatrices, 0);
-
-            var channels = GltfAnimations[animationNumber].Channels;
-            foreach (var channel in channels)
+            foreach (var channel in GltfAnimations[animationNumber].Channels)
             {
-                var scaleM = new Matrix();
-                var rotationM = new Matrix();
-                var translationM = new Matrix();
-                bool s = false, r = false, t = false;
-
                 // Interpolating between two frames
-                var index = 0;
+                var frame1 = 0;
                 for (var i = 0; i < channel.TimeArray.Length; i++)
                     if (channel.TimeArray[i] <= time)
-                        index = i;
+                        frame1 = i;
                     else if (channel.TimeArray[i] > time)
                         break;
 
-                var frame1 = index;
                 var frame2 = Math.Min(channel.TimeArray.Length - 1, frame1 + 1);
                 var time1 = channel.TimeArray[frame1];
                 var time2 = channel.TimeArray[frame2];
@@ -1742,38 +1749,31 @@ namespace Orts.Viewer3D
                     case AnimationSampler.InterpolationEnum.STEP: amount = 0; break;
                     default: amount = 0; break;
                 }
+                // Matrix.Decompose() gives wrong result, so must go with the individually stored transforms. It is guaranteed by the spec that the animation targeted nodes have these set.
+                var scale = Scales[channel.TargetNode];
+                var rotation = Rotations[channel.TargetNode];
+                var translation = Translations[channel.TargetNode];
                 switch (channel.Path)
                 {
                     case AnimationChannelTarget.PathEnum.translation:
-                        var outputT = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                        translation = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
                             ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
                             : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
-                        translationM = Matrix.CreateTranslation(outputT);
-                        t = true;
                         break;
                     case AnimationChannelTarget.PathEnum.rotation:
-                        var outputR = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                        rotation = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
                             ? CsInterp(channel.OutputQuaternion[Property(frame1)], channel.OutputQuaternion[OutTangent(frame2)], channel.OutputQuaternion[Property(frame2)], channel.OutputQuaternion[InTangent(frame2)], amount)
                             : Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount);
-                        rotationM = Matrix.CreateFromQuaternion(outputR);
-                        r = true;
                         break;
                     case AnimationChannelTarget.PathEnum.scale:
-                        var outputS = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                         scale = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
                             ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
                             : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
-                        scaleM = Matrix.CreateScale(outputS);
-                        s = true;
                         break;
                     case AnimationChannelTarget.PathEnum.weights:
                     default: break;
                 }
-                animatedMatrices[channel.TargetNode].Decompose(out var scale, out var rotation, out var translation);
-                if (!s) scaleM = Matrix.CreateScale(scale);
-                if (!r) rotationM = Matrix.CreateFromQuaternion(rotation);
-                if (!t) translationM = Matrix.CreateTranslation(translation);
-
-                animatedMatrices[channel.TargetNode] = scaleM * rotationM * translationM;
+                animatedMatrices[channel.TargetNode] = Matrix.CreateScale(scale) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(translation);
             }
         }
 
@@ -1823,7 +1823,7 @@ namespace Orts.Viewer3D
             { "EmissiveStrengthTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 3, 0) },
             { "FlightHelmet".ToLower(), Matrix.CreateScale(5) },
             { "Fox".ToLower(), Matrix.CreateScale(0.02f) },
-            { "GearboxAssy".ToLower(), Matrix.CreateTranslation(100, 0, 0) },
+            { "GearboxAssy".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(100, -5, 0) },
             { "GlamVelvetSofa".ToLower(), Matrix.CreateScale(2) },
             { "InterpolationTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 2, 0) },
             { "IridescenceDielectricSpheres".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 4, 0) },
