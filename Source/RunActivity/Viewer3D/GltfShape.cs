@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -53,9 +54,10 @@ namespace Orts.Viewer3D
         int SkeletonRootNode;
         public bool MsfsFlavoured;
 
-        internal Vector3[] Scales;
-        internal Quaternion[] Rotations;
-        internal Vector3[] Translations;
+        internal ImmutableArray<Vector3> Scales;
+        internal ImmutableArray<Quaternion> Rotations;
+        internal ImmutableArray<Vector3> Translations;
+        internal ImmutableArray<float[]> Weights;
 
         /// <summary>
         /// glTF specification declares that the model's forward is +Z. However OpenRails uses -Z as forward,
@@ -257,8 +259,8 @@ namespace Orts.Viewer3D
                     var gltfFile = glTFLoader.Interface.LoadModel(externalLods[id]);
                     Gltfs.Add(externalLods[id], gltfFile);
 
-                    if (shape.MatrixNames.Count < gltfFile.Nodes.Length)
-                        shape.MatrixNames.AddRange(Enumerable.Repeat("", gltfFile.Nodes.Length - shape.MatrixNames.Count));
+                    if (shape.MatrixNames.Count < (gltfFile.Animations?.Length ?? 0))
+                        shape.MatrixNames.AddRange(Enumerable.Repeat("", gltfFile.Animations.Length - shape.MatrixNames.Count));
 
                     if (gltfFile.ExtensionsRequired != null)
                     {
@@ -326,13 +328,14 @@ namespace Orts.Viewer3D
             /// </summary>
             internal Dictionary<int, Matrix[]> AllInverseBindMatrices = new Dictionary<int, Matrix[]>();
 
-            internal Matrix[] Matrices = new Matrix[0];
-            Vector3[] Scales;
-            Quaternion[] Rotations;
-            Vector3[] Translations;
+            internal readonly ImmutableArray<Matrix> Matrices;
+            readonly ImmutableArray<Vector3> Scales;
+            readonly ImmutableArray<Quaternion> Rotations;
+            readonly ImmutableArray<Vector3> Translations;
+            readonly ImmutableArray<float[]> Weights;
 
-            internal Viewer Viewer;
-            internal GltfShape Shape;
+            internal readonly Viewer Viewer;
+            internal readonly GltfShape Shape;
 
             static readonly Stack<int> TempStack = new Stack<int>(); // (nodeNumber, parentIndex)
 
@@ -354,18 +357,26 @@ namespace Orts.Viewer3D
                 if (gltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
                     gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString());
 
+                Weights = gltfFile.Nodes.Select(node => gltfFile.Meshes?.ElementAtOrDefault(node.Mesh ?? -1)?.Weights).ToImmutableArray();
+                Scales = gltfFile.Nodes.Select(node => node.Scale == null ? Vector3.One : new Vector3(node.Scale[0], node.Scale[1], node.Scale[2])).ToImmutableArray();
+                Rotations = gltfFile.Nodes.Select(node => node.Rotation == null ? Quaternion.Identity : new Quaternion(node.Rotation[0], node.Rotation[1], node.Rotation[2], node.Rotation[3])).ToImmutableArray();
+                Translations = gltfFile.Nodes.Select(node => node.Translation == null ? Vector3.Zero : new Vector3(node.Translation[0], node.Translation[1], node.Translation[2])).ToImmutableArray();
+                Matrices = gltfFile.Nodes.Select((node, i) => node.Matrix == null ? Matrix.Identity : new Matrix(
+                    node.Matrix[0], node.Matrix[1], node.Matrix[2], node.Matrix[3],
+                    node.Matrix[4], node.Matrix[5], node.Matrix[6], node.Matrix[7],
+                    node.Matrix[8], node.Matrix[9], node.Matrix[10], node.Matrix[11],
+                    node.Matrix[12], node.Matrix[13], node.Matrix[14], node.Matrix[15])
+                    * Matrix.CreateScale(Scales[i]) * Matrix.CreateFromQuaternion(Rotations[i]) * Matrix.CreateTranslation(Translations[i])).ToImmutableArray();
+
+                var hierarchy = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray();
+                var parents = new Dictionary<int, int>();
+                var lods = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray(); // -1: common; 0, 1, 3, etc.: the lod the node belongs to
                 Dictionary<int, (string name, float radius)> articulations = null;
                 var meshes = new Dictionary<int, Node>();
                 var lights = new Dictionary<int, KHR_lights_punctual>();
+
                 TempStack.Clear();
                 Array.ForEach(gltfFile.Scenes.ElementAtOrDefault(gltfFile.Scene ?? 0).Nodes, node => TempStack.Push(node));
-                var hierarchy = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray();
-                Matrices = Enumerable.Repeat(Matrix.Identity, gltfFile.Nodes.Length).ToArray();
-                Scales = new Vector3[gltfFile.Nodes.Length];
-                Rotations = new Quaternion[gltfFile.Nodes.Length];
-                Translations = new Vector3[gltfFile.Nodes.Length];
-                var parents = new Dictionary<int, int>();
-                var lods = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray(); // -1: common; 0, 1, 3, etc.: the lod the node belongs to
                 while (TempStack.Any())
                 {
                     var nodeNumber = TempStack.Pop();
@@ -374,7 +385,6 @@ namespace Orts.Viewer3D
                     if (parent > -1 && lods[parent] > -1)
                         lods[nodeNumber] = lods[parent];
                     
-                    (Matrices[nodeNumber], Scales[nodeNumber], Rotations[nodeNumber], Translations[nodeNumber]) = SetTransforms(node);
                     if (node.Children != null)
                     {
                         foreach (var child in node.Children)
@@ -443,10 +453,11 @@ namespace Orts.Viewer3D
 
                 if (lodId == 0)
                 {
-                    shape.Matrices = Matrices;
+                    shape.Matrices = Matrices.ToArray();
                     shape.Scales = Scales;
                     shape.Rotations = Rotations;
                     shape.Translations = Translations;
+                    shape.Weights = Weights;
 
                     if (SubObjects.FirstOrDefault() is GltfSubObject gltfSubObject)
                     {
@@ -531,6 +542,9 @@ namespace Orts.Viewer3D
 
                     if (articulations != null)
                     {
+                        if (shape.MatrixNames.Count < (gltfFile.Animations?.Length ?? 0) + articulations.Count)
+                            shape.MatrixNames.AddRange(Enumerable.Repeat("", (gltfFile.Animations?.Length ?? 0) + articulations.Count - shape.MatrixNames.Count));
+
                         foreach (var nodeNumber in articulations.Keys)
                         {
                             var animation = shape.GltfAnimations.FirstOrDefault(a => a.Name == articulations[nodeNumber].name);
@@ -644,7 +658,16 @@ namespace Orts.Viewer3D
                         {
                             var imagePath = source != null ? Path.Combine(GltfDir, Uri.UnescapeDataString(image.Uri)) : "";
                             if (File.Exists(imagePath))
-                                return Viewer.TextureManager.Get(imagePath, defaultTexture, false, extensionFilter);
+                            {
+                                // We refuse to load textures containing "../" in their path, because although it would be possible,
+                                // it would break compatibility with the existing glTF viewers, including the Windows 3D Viewer,
+                                // the VS Code glTF Tools and the reference Khronos glTF-Sample-Viewer.
+                                var strippedImagePath = imagePath.Replace("../", "").Replace(@"..\", "").Replace("..", "");
+                                if (File.Exists(strippedImagePath))
+                                    return Viewer.TextureManager.Get(strippedImagePath, defaultTexture, false, extensionFilter);
+                                else
+                                    Trace.TraceWarning($"glTF: refusing to load texture {imagePath} in file {GltfFileName}, using \"../\" in the path is discouraged due to compatibility reasons.");
+                            }
                             else
                             {
                                 try
@@ -654,8 +677,7 @@ namespace Orts.Viewer3D
                                 }
                                 catch
                                 {
-                                    Trace.TraceWarning($"glTF missing texture {imagePath} in file {GltfFileName}");
-                                    return SharedMaterialManager.MissingTexture;
+                                    Trace.TraceWarning($"glTF: missing texture {imagePath} in file {GltfFileName}");
                                 }
                             }
                         }
@@ -668,38 +690,12 @@ namespace Orts.Viewer3D
                             }
                             catch
                             {
-                                Trace.TraceWarning($"glTF missing image {image.BufferView} in file {GltfFileName}");
-                                return SharedMaterialManager.MissingTexture;
+                                Trace.TraceWarning($"glTF: missing image {image.BufferView} in file {GltfFileName}");
                             }
                         }
                     }
                 }
                 return defaultTexture;
-            }
-
-            internal (Matrix, Vector3, Quaternion, Vector3) SetTransforms(Node node)
-            {
-                var matrix = node.Matrix == null ? Matrix.Identity : new Matrix(
-                    node.Matrix[0], node.Matrix[1], node.Matrix[2], node.Matrix[3],
-                    node.Matrix[4], node.Matrix[5], node.Matrix[6], node.Matrix[7],
-                    node.Matrix[8], node.Matrix[9], node.Matrix[10], node.Matrix[11],
-                    node.Matrix[12], node.Matrix[13], node.Matrix[14], node.Matrix[15]);
-
-                var scale = node.Scale == null ? Vector3.One : new Vector3(node.Scale[0], node.Scale[1], node.Scale[2]);
-                var rotation = node.Rotation == null ? Quaternion.Identity : new Quaternion(node.Rotation[0], node.Rotation[1], node.Rotation[2], node.Rotation[3]);
-                var transtaion = node.Translation == null ? Vector3.Zero : new Vector3(node.Translation[0], node.Translation[1], node.Translation[2]);
-
-                var scaleM = node.Scale == null ? Matrix.Identity : Matrix.CreateScale(scale);
-                var rotationM = node.Rotation == null ? Matrix.Identity : Matrix.CreateFromQuaternion(rotation);
-                var transtaionM = node.Translation == null ? Matrix.Identity : Matrix.CreateTranslation(transtaion);
-
-                return (matrix * scaleM * rotationM * transtaionM, scale, rotation, transtaion);
-            }
-
-            internal Sampler GetSampler(Gltf gltf, int? textureIndex)
-            {
-                var samplerIndex = textureIndex == null ? null : gltf.Textures[(int)textureIndex].Sampler;
-                return samplerIndex == null ? GltfSubObject.DefaultGltfSampler : gltf.Samplers[(int)samplerIndex];
             }
 
             internal TextureFilter GetTextureFilter(Sampler sampler)
@@ -733,32 +729,19 @@ namespace Orts.Viewer3D
                 return TextureFilter.Linear;
             }
 
+            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, int? texCoord, int? index, Texture2D defaultTexture)
+            {
+                var texture = GetTexture(gltf, index, defaultTexture);
+                var sampler = gltf.Samplers?.ElementAtOrDefault(gltf.Textures?.ElementAtOrDefault(index ?? -1)?.Sampler ?? -1) ?? GltfSubObject.DefaultGltfSampler;
+                var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
+                return (texCoord ?? 0, texture, samplerState);
+            }
             internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, TextureInfo textureInfo, Texture2D defaultTexture)
-            {
-                var texCoord = textureInfo?.TexCoord ?? 0;
-                var texture = GetTexture(gltf, textureInfo?.Index, defaultTexture);
-                var sampler = GetSampler(gltf, textureInfo?.Index);
-                var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
-                return (texCoord, texture, samplerState);
-            }
-
+                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture);
             internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, MaterialNormalTextureInfo textureInfo, Texture2D defaultTexture)
-            {
-                var texCoord = textureInfo?.TexCoord ?? 0;
-                var texture = GetTexture(gltf, textureInfo?.Index, defaultTexture);
-                var sampler = GetSampler(gltf, textureInfo?.Index);
-                var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
-                return (texCoord, texture, samplerState);
-            }
-
+                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture);
             internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, MaterialOcclusionTextureInfo textureInfo, Texture2D defaultTexture)
-            {
-                var texCoord = textureInfo?.TexCoord ?? 0;
-                var texture = GetTexture(gltf, textureInfo?.Index, defaultTexture);
-                var sampler = GetSampler(gltf, textureInfo?.Index);
-                var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
-                return (texCoord, texture, samplerState);
-            }
+                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture);
 
             internal TextureAddressMode GetTextureAddressMode(Sampler.WrapTEnum wrapEnum) => GetTextureAddressMode((Sampler.WrapSEnum)wrapEnum);
             internal TextureAddressMode GetTextureAddressMode(Sampler.WrapSEnum wrapEnum)
@@ -779,7 +762,7 @@ namespace Orts.Viewer3D
             public readonly Vector4 MaxPosition;
             public readonly int HierarchyIndex;
 
-            public static glTFLoader.Schema.Material DefaultGltfMaterial = new glTFLoader.Schema.Material
+            public static readonly glTFLoader.Schema.Material DefaultGltfMaterial = new glTFLoader.Schema.Material
             {
                 AlphaCutoff = 0.5f,
                 DoubleSided = false,
@@ -787,7 +770,7 @@ namespace Orts.Viewer3D
                 EmissiveFactor = new[] {0f, 0f, 0f},
                 Name = nameof(DefaultGltfMaterial)
             };
-            public static glTFLoader.Schema.Sampler DefaultGltfSampler = new glTFLoader.Schema.Sampler
+            public static readonly glTFLoader.Schema.Sampler DefaultGltfSampler = new glTFLoader.Schema.Sampler
             {
                 MagFilter = Sampler.MagFilterEnum.LINEAR,
                 MinFilter = Sampler.MinFilterEnum.LINEAR_MIPMAP_LINEAR,
@@ -1823,7 +1806,7 @@ namespace Orts.Viewer3D
             { "EmissiveStrengthTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 3, 0) },
             { "FlightHelmet".ToLower(), Matrix.CreateScale(5) },
             { "Fox".ToLower(), Matrix.CreateScale(0.02f) },
-            { "GearboxAssy".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(100, -5, 0) },
+            { "GearboxAssy".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(80, -5, 0) },
             { "GlamVelvetSofa".ToLower(), Matrix.CreateScale(2) },
             { "InterpolationTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 2, 0) },
             { "IridescenceDielectricSpheres".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 4, 0) },
@@ -1842,7 +1825,17 @@ namespace Orts.Viewer3D
             { "NormalTangentTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
             { "OrientationTest".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 2, 0) },
             { "ReciprocatingSaw".ToLower(), Matrix.CreateScale(0.02f) * Matrix.CreateTranslation(0, 3, 0) },
-            { "RecursiveSkeletons".ToLower(), Matrix.CreateScale(0.02f) },
+            { "RecursiveSkeletons".ToLower(), Matrix.CreateScale(0.05f) },
+            { "RiggedSimple".ToLower(), Matrix.CreateTranslation(0, 8, 0) },
+            { "SciFiHelmet".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "SheenChair".ToLower(), Matrix.CreateScale(2) },
+            { "SheenCloth".ToLower(), Matrix.CreateScale(20) },
+            { "SpecGlossVsMetalRough".ToLower(), Matrix.CreateScale(5) },
+            { "SpecularTest".ToLower(), Matrix.CreateScale(3) },
+            { "StainedGlassLamp".ToLower(), Matrix.CreateScale(3) },
+            { "Suzanne".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "TextureCoordinateTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "TextureEncodingTest".ToLower(), Matrix.CreateTranslation(0, 6, 0) },
         };
     }
 
