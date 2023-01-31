@@ -61,7 +61,7 @@ namespace ORTS.Common
         };
 
         static string GltfExtension(string keyword) => keyword == "glTF-Sample-Models-Binary" ? ".glb" : ".gltf";
-        static string RequestedType(string requestedPath) => SubDirectories.FirstOrDefault(ext => ext.Key == Path.GetFileNameWithoutExtension(requestedPath).Split('#').FirstOrDefault()).Key;
+        static string RequestedType(string requestedPath) => SubDirectories.FirstOrDefault(ext => ext.Key == Path.GetFileNameWithoutExtension(requestedPath).Split('#', '&').FirstOrDefault()).Key;
         
         public static bool IsConsistRecognized(string requestedPath) => RequestedType(requestedPath) != null;
         public static bool IsWagonRecognized(string requestedPath) => Wagons.ContainsKey(Path.GetFileName(requestedPath));
@@ -90,32 +90,36 @@ namespace ORTS.Common
 
             if (keyword.StartsWith("glTF"))
             {
-                var requestedModel = Path.GetFileNameWithoutExtension(requestedPath).Split('#').ElementAtOrDefault(1);
-                var models = requestedModel == null ? Directory.EnumerateDirectories(Path.Combine(baseDir, "2.0")) : new List<string>() { Path.Combine(baseDir, "2.0", requestedModel) };
+                var models = Directory.EnumerateFileSystemEntries(baseDir, "*.*", SearchOption.AllDirectories)
+                    .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
+                    .Select(f => Path.GetFileNameWithoutExtension(f))
+                    .Concat(Directory.EnumerateDirectories(Path.Combine(baseDir, "2.0")))
+                    .Where((m, n) => m == (Path.GetFileNameWithoutExtension(requestedPath).Split('&').ElementAtOrDefault(1) ?? m) &&
+                        n == (int.TryParse(Path.GetFileNameWithoutExtension(requestedPath).Split('#').ElementAtOrDefault(1), out var requestedModelNumber) ? requestedModelNumber : n));
 
-                var i = 0;
+                var uid = 0;
                 foreach (var model in models)
                 {
                     var dir = Path.Combine(model, SubDirectories[keyword]);
-                    if (Directory.Exists(dir))
-                    {
-                        var file = Directory.EnumerateFiles(dir).FirstOrDefault(f => f.EndsWith(GltfExtension(keyword)));
-                        if (file != null)
-                        {
-                            var f = file.Substring(baseDir.Length + 1);
+                    var file = (Directory.Exists(dir)
+                        ? Directory.EnumerateFiles(dir).FirstOrDefault(f => f.EndsWith(GltfExtension(keyword)))
+                        : Directory.EnumerateFiles(baseDir).FirstOrDefault(f => f.Contains(model)))
+                        ?.Substring(baseDir.Length + 1)
+                        ?.Replace(@"\", "/");
 
-                            var eng = $"{keyword}_{Path.GetFileNameWithoutExtension(f)}.eng";
-                            Wagons.Add(eng, EngineTemplate
-                                .Replace("shapefilename", f.Replace(@"\", "/"))
-                                .Replace("enginname", Path.GetFileNameWithoutExtension(f)));
+                    if (file == null)
+                        continue;
 
-                            consist += ConsistTemplateRecord
-                                .Replace("xx", i.ToString())
-                                .Replace("engfile", Path.GetFileNameWithoutExtension(eng))
-                                .Replace("trainsetdir", trainsetDir);
-                            i++;
-                        }
-                    }
+                    var eng = $"{keyword}_{Path.GetFileNameWithoutExtension(file)}.eng";
+                    Wagons.Add(eng, EngineTemplate
+                        .Replace("shapefilename", file)
+                        .Replace("enginname", Path.GetFileNameWithoutExtension(file)));
+
+                    consist += ConsistTemplateRecord
+                        .Replace("xx", uid.ToString())
+                        .Replace("engfile", Path.GetFileNameWithoutExtension(eng))
+                        .Replace("trainsetdir", trainsetDir);
+                    uid++;
                 }
             }
             consist += ConsistTemplateEnd;
