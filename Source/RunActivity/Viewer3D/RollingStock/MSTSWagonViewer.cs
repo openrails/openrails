@@ -574,7 +574,7 @@ namespace Orts.Viewer3D.RollingStock
             }
             else
             {
-                if (matrixAnimated && matrix != 0)
+                if (matrixAnimated && matrix != 0 && !ConsistGenerator.GltfVisualTestRun)
                     RunningGear.AddMatrix(matrix);
 
                 for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)

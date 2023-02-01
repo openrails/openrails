@@ -177,7 +177,7 @@ namespace Orts.Viewer3D
                 Matrix.Multiply(ref bones[j], ref PlusZToForward, out bones[j]);
 
                 // The ConsistGenerator is used to show all the Khronos sample models for testing purposes. However they need adjustments to show them all at once.
-                if (ConsistGenerator.GeneratedRun && SampleModelsAdjustments.TryGetValue(Path.GetFileNameWithoutExtension(FilePath), out var adjustment))
+                if (ConsistGenerator.GltfVisualTestRun && SampleModelsAdjustments.TryGetValue(Path.GetFileNameWithoutExtension(FilePath), out var adjustment))
                     Matrix.Multiply(ref bones[j], ref adjustment, out bones[j]);
                 
                 Matrix.Multiply(ref bones[j], ref tileTranslation, out bones[j]);
@@ -338,6 +338,7 @@ namespace Orts.Viewer3D
             internal readonly GltfShape Shape;
 
             static readonly Stack<int> TempStack = new Stack<int>(); // (nodeNumber, parentIndex)
+            static readonly string[] TestControls = new[] { "WIPER", "ORTSBELL", "ORTSITEM1CONTINUOUS", "ORTSITEM1CONTINUOUS" };
 
             public GltfDistanceLevel(GltfShape shape, int lodId, Gltf gltfFile, string gltfFileName)
             {
@@ -487,7 +488,7 @@ namespace Orts.Viewer3D
                         // Use MatrixNames for storing animation and articulation names.
                         // Here the MatrixNames are not bound to nodes (and matrices), but rather to the animation number.
                         shape.MatrixNames[j] = gltfAnimation.Name ?? "";
-                        var animation = new GltfAnimation(gltfAnimation.Name);
+                        var animation = new GltfAnimation(shape.MatrixNames[j]);
 
                         for (var k = 0; k < gltfAnimation.Channels.Length; k++)
                         {
@@ -558,7 +559,14 @@ namespace Orts.Viewer3D
                         }
                     }
 
-//if (shape.GltfAnimations.Count > 0) { shape.GltfAnimations.Add(shape.GltfAnimations[0]); shape.MatrixNames[shape.GltfAnimations.Count - 1] = "ORTSITEM1CONTINUOUS"; }
+                    if (ConsistGenerator.GltfVisualTestRun)
+                    {
+                        // Assign the first four animations to Wipers [V], Bell [Shift+B], Item1Continuous [Shift+,], Item2Continuous [Shift+.] respectively,
+                        // because these are the ones capable of playing a loop.
+                        for (var i = 0; i < shape.GltfAnimations.Count; i++)
+                            if (i < TestControls.Length)
+                                shape.MatrixNames[i] = TestControls[i];
+                    }
                 }
             }
 
@@ -1784,6 +1792,7 @@ namespace Orts.Viewer3D
             { "AnimatedCube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "AnimatedMorphCube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "AnimatedMorphSphere".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "AnimatedTriangle".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
             { "AntiqueCamera".ToLower(), Matrix.CreateScale(0.5f) },
             { "AttenuationTest".ToLower(), Matrix.CreateScale(0.3f) * Matrix.CreateTranslation(0, 4, 0) },
             { "Avocado".ToLower(), Matrix.CreateScale(50) },
@@ -1826,16 +1835,27 @@ namespace Orts.Viewer3D
             { "OrientationTest".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 2, 0) },
             { "ReciprocatingSaw".ToLower(), Matrix.CreateScale(0.02f) * Matrix.CreateTranslation(0, 3, 0) },
             { "RecursiveSkeletons".ToLower(), Matrix.CreateScale(0.05f) },
-            { "RiggedSimple".ToLower(), Matrix.CreateTranslation(0, 8, 0) },
+            { "RiggedSimple".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
             { "SciFiHelmet".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "SheenChair".ToLower(), Matrix.CreateScale(2) },
-            { "SheenCloth".ToLower(), Matrix.CreateScale(20) },
-            { "SpecGlossVsMetalRough".ToLower(), Matrix.CreateScale(5) },
-            { "SpecularTest".ToLower(), Matrix.CreateScale(3) },
+            { "SheenCloth".ToLower(), Matrix.CreateScale(50) },
+            { "SpecGlossVsMetalRough".ToLower(), Matrix.CreateScale(7) * Matrix.CreateTranslation(0, 2, 0) },
+            { "SpecularTest".ToLower(), Matrix.CreateScale(3) * Matrix.CreateTranslation(0, 2, 0) },
             { "StainedGlassLamp".ToLower(), Matrix.CreateScale(3) },
             { "Suzanne".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "TextureCoordinateTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
-            { "TextureEncodingTest".ToLower(), Matrix.CreateTranslation(0, 6, 0) },
+            { "TextureEncodingTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 3, 0) },
+            { "TextureLinearInterpolationTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "TextureSettingsTest".ToLower(), Matrix.CreateTranslation(0, 6, 0) },
+            { "TextureTransformMultiTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 4, 0) },
+            { "TextureTransformTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "ToyCar".ToLower(), Matrix.CreateScale(80) * Matrix.CreateTranslation(0, 2, 0)},
+            { "TransmissionRoughnessTest".ToLower(), Matrix.CreateScale(5) * Matrix.CreateTranslation(0, 3, 0) },
+            { "TransmissionTest".ToLower(), Matrix.CreateScale(3) * Matrix.CreateTranslation(0, 2, 0) },
+            { "TwoSidedPlane".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "UnlitTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "VertexColorTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
+            { "WaterBottle".ToLower(), Matrix.CreateScale(7) * Matrix.CreateTranslation(0, 2, 0) },
         };
     }
 
