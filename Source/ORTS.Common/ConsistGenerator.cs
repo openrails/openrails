@@ -29,7 +29,10 @@ namespace ORTS.Common
     /// </summary>
     public class ConsistGenerator
     {
-        public static bool GeneratedRun;
+        /// <summary>
+        /// Indicates if the current run is a glTF visual test only. It is possible to generate an on-the-fly consist of all the Khronos test models.
+        /// </summary>
+        public static bool GltfVisualTestRun;
 
         const string ConsistTemplateStart = @"Train (
             TrainCfg ( ""trainname""
@@ -84,12 +87,12 @@ namespace ORTS.Common
             var keyword = RequestedType(requestedPath);
             Debug.Assert(keyword != null);
 
-            GeneratedRun = true;
-
             var consist = ConsistTemplateStart.Replace("trainname", keyword);
 
             if (keyword.StartsWith("glTF"))
             {
+                GltfVisualTestRun = true;
+
                 var models = Directory.EnumerateFileSystemEntries(baseDir, "*.*", SearchOption.AllDirectories)
                     .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
                     .Select(f => Path.GetFileNameWithoutExtension(f))

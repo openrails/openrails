@@ -2688,11 +2688,13 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 SignalEvent(Event.BellOn);
                 if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
+                if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(Event.BellOn);
             }
             else if (!Bell && PreviousBell)
             {
                 SignalEvent(Event.BellOff);
                 if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
+                if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(Event.BellOff);
             }
 
             PreviousHorn = Horn;
@@ -4835,6 +4837,7 @@ public List<CabView> CabViewList = new List<CabView>();
         public void ToggleWipers(bool newState)
         {
             SignalEvent(newState ? Event.WiperOn : Event.WiperOff);
+            if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(newState ? Event.WiperOn : Event.WiperOff);
         }
 
         public void SetBailOff(bool bailOff)
@@ -4902,12 +4905,14 @@ public List<CabView> CabViewList = new List<CabView>();
         {
             GenericItem1 = !GenericItem1;
             SignalEvent(GenericItem1? Event.GenericItem1On : Event.GenericItem1Off); // hook for sound trigger
+            if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(GenericItem1 ? Event.GenericItem1On : Event.GenericItem1Off);
         }
 
         public void GenericItem2Toggle()
         {
             GenericItem2 = !GenericItem2;
             SignalEvent(GenericItem2 ? Event.GenericItem2On : Event.GenericItem2Off); // hook for sound trigger
+            if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(GenericItem2 ? Event.GenericItem2On : Event.GenericItem2Off);
         }
 
         public override bool GetCabFlipped()
