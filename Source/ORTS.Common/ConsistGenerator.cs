@@ -93,11 +93,18 @@ namespace ORTS.Common
             {
                 GltfVisualTestRun = true;
 
+                var mm = Path.GetFileNameWithoutExtension(requestedPath).Split('&').ElementAtOrDefault(1);
+                var nn = int.TryParse(Path.GetFileNameWithoutExtension(requestedPath).Split('#').ElementAtOrDefault(1), out var requestedModelNumberrrr);
+                var mmm = Directory.EnumerateFileSystemEntries(baseDir, "*.*", SearchOption.AllDirectories)
+                    .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
+                    .Select(f => Path.GetFileNameWithoutExtension(f))
+                    .Concat(Directory.EnumerateDirectories(Path.Combine(baseDir, "2.0")));
+
                 var models = Directory.EnumerateFileSystemEntries(baseDir, "*.*", SearchOption.AllDirectories)
                     .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
                     .Select(f => Path.GetFileNameWithoutExtension(f))
                     .Concat(Directory.EnumerateDirectories(Path.Combine(baseDir, "2.0")))
-                    .Where((m, n) => m == (Path.GetFileNameWithoutExtension(requestedPath).Split('&').ElementAtOrDefault(1) ?? m) &&
+                    .Where((m, n) => Path.GetFileName(m) == (Path.GetFileNameWithoutExtension(requestedPath).Split('&').ElementAtOrDefault(1) ?? Path.GetFileName(m)) &&
                         n == (int.TryParse(Path.GetFileNameWithoutExtension(requestedPath).Split('#').ElementAtOrDefault(1), out var requestedModelNumber) ? requestedModelNumber : n));
 
                 var uid = 0;

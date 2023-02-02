@@ -54,10 +54,10 @@ namespace Orts.Viewer3D
         int SkeletonRootNode;
         public bool MsfsFlavoured;
 
-        internal ImmutableArray<Vector3> Scales;
-        internal ImmutableArray<Quaternion> Rotations;
-        internal ImmutableArray<Vector3> Translations;
-        internal ImmutableArray<float[]> Weights;
+        internal Vector3[] Scales;
+        internal Quaternion[] Rotations;
+        internal Vector3[] Translations;
+        internal float[][] Weights;
 
         /// <summary>
         /// glTF specification declares that the model's forward is +Z. However OpenRails uses -Z as forward,
@@ -338,7 +338,7 @@ namespace Orts.Viewer3D
             internal readonly GltfShape Shape;
 
             static readonly Stack<int> TempStack = new Stack<int>(); // (nodeNumber, parentIndex)
-            static readonly string[] TestControls = new[] { "WIPER", "ORTSBELL", "ORTSITEM1CONTINUOUS", "ORTSITEM1CONTINUOUS" };
+            static readonly string[] TestControls = new[] { "WIPER", "ORTSITEM1CONTINUOUS", "ORTSITEM2CONTINUOUS" };
 
             public GltfDistanceLevel(GltfShape shape, int lodId, Gltf gltfFile, string gltfFileName)
             {
@@ -455,10 +455,10 @@ namespace Orts.Viewer3D
                 if (lodId == 0)
                 {
                     shape.Matrices = Matrices.ToArray();
-                    shape.Scales = Scales;
-                    shape.Rotations = Rotations;
-                    shape.Translations = Translations;
-                    shape.Weights = Weights;
+                    shape.Scales = Scales.ToArray();
+                    shape.Rotations = Rotations.ToArray();
+                    shape.Translations = Translations.ToArray();
+                    shape.Weights = Weights.ToArray();
 
                     if (SubObjects.FirstOrDefault() is GltfSubObject gltfSubObject)
                     {
@@ -561,11 +561,10 @@ namespace Orts.Viewer3D
 
                     if (ConsistGenerator.GltfVisualTestRun)
                     {
-                        // Assign the first four animations to Wipers [V], Bell [Shift+B], Item1Continuous [Shift+,], Item2Continuous [Shift+.] respectively,
+                        // Assign the first four animations to Wipers [V], Item1Continuous [Shift+,], Item2Continuous [Shift+.] respectively,
                         // because these are the ones capable of playing a loop.
                         for (var i = 0; i < shape.GltfAnimations.Count; i++)
-                            if (i < TestControls.Length)
-                                shape.MatrixNames[i] = TestControls[i];
+                            shape.MatrixNames[i] = TestControls[i % TestControls.Length];
                     }
                 }
             }
@@ -1702,7 +1701,7 @@ namespace Orts.Viewer3D
         public override Matrix GetMatrixProduct(int iNode) => base.GetMatrixProduct(iNode) * PlusZToForward;
         public override bool IsAnimationArticulation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault()?.TimeArray == null;
         public override int GetAnimationTargetNode(int animationId) => GltfAnimations?.ElementAtOrDefault(animationId)?.Channels?.FirstOrDefault()?.TargetNode ?? 0;
-        public override int GetAnimationNamesCount() => EnableAnimations ? GltfAnimations?.Count ?? 0 : 0;
+        public override int GetAnimationNamesCount() => EnableAnimations || ConsistGenerator.GltfVisualTestRun ? GltfAnimations?.Count ?? 0 : 0;
 
         public bool HasAnimation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
         public float GetAnimationLength(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TimeMax).Max() ?? 0;
@@ -1714,7 +1713,7 @@ namespace Orts.Viewer3D
         /// <param name="time">Actual time in the animation clip in seconds.</param>
         public void Animate(int animationNumber, float time, Matrix[] animatedMatrices)
         {
-            if (!EnableAnimations)
+            if (!EnableAnimations && !ConsistGenerator.GltfVisualTestRun)
                 return;
 
             foreach (var channel in GltfAnimations[animationNumber].Channels)
@@ -1740,31 +1739,27 @@ namespace Orts.Viewer3D
                     case AnimationSampler.InterpolationEnum.STEP: amount = 0; break;
                     default: amount = 0; break;
                 }
-                // Matrix.Decompose() gives wrong result, so must go with the individually stored transforms. It is guaranteed by the spec that the animation targeted nodes have these set.
-                var scale = Scales[channel.TargetNode];
-                var rotation = Rotations[channel.TargetNode];
-                var translation = Translations[channel.TargetNode];
                 switch (channel.Path)
                 {
                     case AnimationChannelTarget.PathEnum.translation:
-                        translation = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                        Translations[channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
                             ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
                             : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
                         break;
                     case AnimationChannelTarget.PathEnum.rotation:
-                        rotation = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                        Rotations[channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
                             ? CsInterp(channel.OutputQuaternion[Property(frame1)], channel.OutputQuaternion[OutTangent(frame2)], channel.OutputQuaternion[Property(frame2)], channel.OutputQuaternion[InTangent(frame2)], amount)
                             : Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount);
                         break;
                     case AnimationChannelTarget.PathEnum.scale:
-                         scale = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                         Scales[channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
                             ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
                             : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
                         break;
                     case AnimationChannelTarget.PathEnum.weights:
                     default: break;
                 }
-                animatedMatrices[channel.TargetNode] = Matrix.CreateScale(scale) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(translation);
+                animatedMatrices[channel.TargetNode] = Matrix.CreateScale(Scales[channel.TargetNode]) * Matrix.CreateFromQuaternion(Rotations[channel.TargetNode]) * Matrix.CreateTranslation(Translations[channel.TargetNode]);
             }
         }
 
@@ -1840,13 +1835,13 @@ namespace Orts.Viewer3D
             { "SheenChair".ToLower(), Matrix.CreateScale(2) },
             { "SheenCloth".ToLower(), Matrix.CreateScale(50) },
             { "SpecGlossVsMetalRough".ToLower(), Matrix.CreateScale(7) * Matrix.CreateTranslation(0, 2, 0) },
-            { "SpecularTest".ToLower(), Matrix.CreateScale(3) * Matrix.CreateTranslation(0, 2, 0) },
+            { "SpecularTest".ToLower(), Matrix.CreateScale(5) * Matrix.CreateTranslation(0, 2, 0) },
             { "StainedGlassLamp".ToLower(), Matrix.CreateScale(3) },
             { "Suzanne".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "TextureCoordinateTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "TextureEncodingTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 3, 0) },
             { "TextureLinearInterpolationTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
-            { "TextureSettingsTest".ToLower(), Matrix.CreateTranslation(0, 6, 0) },
+            { "TextureSettingsTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 4, 0) },
             { "TextureTransformMultiTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 4, 0) },
             { "TextureTransformTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "ToyCar".ToLower(), Matrix.CreateScale(80) * Matrix.CreateTranslation(0, 2, 0)},
