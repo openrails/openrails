@@ -2723,13 +2723,11 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 SignalEvent(Event.BellOn);
                 if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
-                if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(Event.BellOn);
             }
             else if (!Bell && PreviousBell)
             {
                 SignalEvent(Event.BellOff);
                 if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
-                if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(Event.BellOff);
             }
 
             PreviousHorn = Horn;
@@ -5027,6 +5025,10 @@ public List<CabView> CabViewList = new List<CabView>();
                         }
                         break;
                     }
+                case Event.GenericItem1On: if (ConsistGenerator.GltfVisualTestRun) GenericItem1 = true; break;
+                case Event.GenericItem1Off: if (ConsistGenerator.GltfVisualTestRun) GenericItem1 = false; break;
+                case Event.GenericItem2On: if (ConsistGenerator.GltfVisualTestRun) GenericItem2 = true; break;
+                case Event.GenericItem2Off: if (ConsistGenerator.GltfVisualTestRun) GenericItem2 = false; break;
             }
 
             base.SignalEvent(evt);
