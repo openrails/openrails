@@ -47,6 +47,10 @@ namespace Orts.Viewer3D
         public readonly List<SoundSourceBase> SnowSound;
         public readonly List<SoundSourceBase> WeatherSounds = new List<SoundSourceBase>();
 
+        public Vector4 CloudScalePosition { get => new Vector4(CloudScale.X, CloudScale.Y, CloudPositionM.X / SkyPrimitive.RadiusM, CloudPositionM.Y / SkyPrimitive.RadiusM); }
+
+        Vector2 CloudScale;
+        Vector2 CloudPositionM;
         WorldLocation CameraWorldLocation;
 
         public bool weatherChangeOn = false;
@@ -186,6 +190,7 @@ namespace Orts.Viewer3D
 
             Weather.WindAverageDirectionRad = (float)Viewer.Random.NextDouble() * MathHelper.TwoPi;
             Weather.WindAverageSpeedMpS = (float)Viewer.Random.NextDouble() * WeatherConstants.WindSpeedBeaufortMpS[WindSpeedBeaufort];
+            CloudScale = new Vector2(4, 4);
         }
 
         void UpdateSoundSources()
@@ -242,6 +247,8 @@ namespace Orts.Viewer3D
                 WindUpdateTimer -= WindGustUpdateTimeS;
             }
 
+            WorldLocation.GetDistance(CameraWorldLocation, Viewer.Camera.CameraWorldLocation).Deconstruct(out var x, out var _, out var y);
+            CloudPositionM += elapsedTime.ClockSeconds * Weather.WindAverageDirection * Weather.WindAverageSpeedMpS - new Vector2(x, y);
             CameraWorldLocation = Viewer.Camera.CameraWorldLocation;
         }
 

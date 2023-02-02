@@ -585,8 +585,7 @@ namespace Orts.Viewer3D
             MSTSSkyShader.MoonScale = MSTSSkyConstants.skyRadius / 20;
             MSTSSkyShader.Overcast = Viewer.World.MSTSSky.mstsskyovercastFactor;
             MSTSSkyShader.SetFog(Viewer.World.MSTSSky.mstsskyfogDistance, ref SharedMaterialManager.FogColor);
-            MSTSSkyShader.WindSpeed = Viewer.World.MSTSSky.mstsskywindSpeed;
-            MSTSSkyShader.WindDirection = Viewer.World.MSTSSky.mstsskywindDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
+            MSTSSkyShader.CloudScalePosition = Viewer.World.WeatherControl.CloudScalePosition;
 
             for (var i = 0; i < 5; i++)
                 graphicsDevice.SamplerStates[i] = SamplerState.LinearWrap;
