@@ -2116,8 +2116,8 @@ namespace Orts.Simulation.Physics
             // Wind and train direction to be converted to an angle between 0 and 360 deg.
             // Calculate Wind speed and direction, and train direction
             // Update the value of the Wind Speed and Direction for the train
-            PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindDirectionRad);
-            PhysicsWindSpeedMpS = Simulator.Weather.WindSpeedMpS.Length();
+            PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindInstantaneousDirectionRad);
+            PhysicsWindSpeedMpS = Simulator.Weather.WindInstantaneousSpeedMpS;
             var speedMpS = Math.Abs(SpeedMpS);
 
             // If a westerly direction (ie -ve) convert to an angle between 0 and 360

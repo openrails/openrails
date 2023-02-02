@@ -1325,7 +1325,7 @@ namespace Orts.Viewer3D.Popups
             TableAddLabelValue(table, Viewer.Catalog.GetString("Cloud cover"), Viewer.Catalog.GetStringFmt("{0:F0} %", Viewer.Simulator.Weather.CloudCoverFactor * 100));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Intensity"), Viewer.Catalog.GetStringFmt("{0:F4} p/s/m^2", Viewer.Simulator.Weather.PrecipitationIntensityPPSPM2));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Liquidity"), Viewer.Catalog.GetStringFmt("{0:F0} %", Viewer.Simulator.Weather.PrecipitationLiquidity * 100));
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Wind"), Viewer.Catalog.GetStringFmt("{0:F1},{1:F1} m/s", Viewer.Simulator.Weather.WindSpeedMpS.X, Viewer.Simulator.Weather.WindSpeedMpS.Y));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Wind"), Viewer.Catalog.GetStringFmt("{0:F0} ° / {1:F1} m/s ({2:F0} ° / {3:F1} m/s gusts)", MathHelper.ToDegrees(Viewer.Simulator.Weather.WindAverageDirectionRad), Viewer.Simulator.Weather.WindAverageSpeedMpS, MathHelper.ToDegrees(Viewer.Simulator.Weather.WindInstantaneousDirectionRad), Viewer.Simulator.Weather.WindInstantaneousSpeedMpS));
             // TODO: Move ambient temperature into Orts.Simulation.Weather
             TableAddLabelValue(table, Viewer.Catalog.GetString("Amb Temp"), FormatStrings.FormatTemperature(Viewer.PlayerLocomotive.CarOutsideTempC, Viewer.PlayerLocomotive.IsMetric, false));
         }

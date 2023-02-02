@@ -36,6 +36,7 @@ using Events = Orts.Common.Events;
 
 namespace Orts.Viewer3D
 {
+    // TODO: Probably everything in here, except sounds, should be in the simulator
     public class WeatherControl
     {
         public readonly Viewer Viewer;
@@ -46,20 +47,24 @@ namespace Orts.Viewer3D
         public readonly List<SoundSourceBase> SnowSound;
         public readonly List<SoundSourceBase> WeatherSounds = new List<SoundSourceBase>();
 
+        WorldLocation CameraWorldLocation;
+
         public bool weatherChangeOn = false;
         public DynamicWeather dynamicWeather;
         public bool RandomizedWeather;
         public bool DesertZone; // we are in a desert zone, so no randomized weather change...
         private float[,] DesertZones = { { 30, 45, -120, -105 } }; // minlat, maxlat, minlong, maxlong
+        public float Time;
 
         // Variables used for wind calculations
-        Vector2 WindSpeedInternalMpS;
-        Vector2[] windSpeedMpS = new Vector2[2];
-        public float Time;
-        readonly float[] WindChangeMpSS = { 40, 5 }; // Flurry, steady
-        const float WindSpeedMaxMpS = 4.5f;
+        const int WindSpeedBeaufort = 6;
+        const float WindInstantaneousDirectionLimitRad = (float)(45 * Math.PI / 180);
+        static readonly float WindInstantaneousSpeedLimit = WeatherConstants.WindSpeedGustMpS[(int)WeatherConstants.Condition.Light];
+        const float WindNoiseScale = 10;
+        readonly float WindInstantaneousDirectionNoiseStart = (float)Viewer.Random.NextDouble() * WindNoiseScale;
+        readonly float WindInstantaneousSpeedNoiseStart = (float)Viewer.Random.NextDouble() * WindNoiseScale;
+        const float WindGustUpdateTimeS = 0.25f;
         float WindUpdateTimer = 0.0f;
-        float WindGustUpdateTimeS = 1.0f;
 
         public WeatherControl(Viewer viewer)
         {
@@ -178,6 +183,9 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.WeatherType.Rain: Weather.PrecipitationLiquidity = 1; Weather.PrecipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSources(this, RainSound); break;
                 case Orts.Formats.Msts.WeatherType.Snow: Weather.PrecipitationLiquidity = 0; Weather.PrecipitationIntensityPPSPM2 = 0.0050f; Viewer.SoundProcess.AddSoundSources(this, SnowSound); break;
             }
+
+            Weather.WindAverageDirectionRad = (float)Viewer.Random.NextDouble() * MathHelper.TwoPi;
+            Weather.WindAverageSpeedMpS = (float)Viewer.Random.NextDouble() * WeatherConstants.WindSpeedBeaufortMpS[WindSpeedBeaufort];
         }
 
         void UpdateSoundSources()
@@ -225,32 +233,16 @@ namespace Orts.Viewer3D
 
             if (WindUpdateTimer > WindGustUpdateTimeS)
             {
-                WindSpeedInternalMpS = Vector2.Zero;
-                for (var i = 0; i < windSpeedMpS.Length; i++)
-                {
-                    windSpeedMpS[i].X += (((float)Viewer.Random.NextDouble() * 2) - 1) * WindChangeMpSS[i] * WindUpdateTimer;
-                    windSpeedMpS[i].Y += (((float)Viewer.Random.NextDouble() * 2) - 1) * WindChangeMpSS[i] * WindUpdateTimer;
+                // Adjust instantaneous wind speed and direction
+                var noisePos = (float)Viewer.Simulator.ClockTime / WindNoiseScale;
+                Weather.WindInstantaneousDirectionRad = Weather.WindAverageDirectionRad + WindInstantaneousDirectionLimitRad * Noise.Generate(WindInstantaneousDirectionNoiseStart + noisePos);
+                Weather.WindInstantaneousSpeedMpS = Math.Max(0, Weather.WindAverageSpeedMpS + WindInstantaneousSpeedLimit * Noise.Generate(WindInstantaneousSpeedNoiseStart + noisePos));
 
-                    var windMagnitude = windSpeedMpS[i].Length() / (i == 0 ? Weather.WindSpeedMpS.Length() * 0.4f : WindSpeedMaxMpS);
-
-                    if (windMagnitude > 1)
-                    {
-                        windSpeedMpS[i] /= windMagnitude;
-                    }
-
-                    WindSpeedInternalMpS += windSpeedMpS[i];
-                }
-
-                var TotalwindMagnitude = WindSpeedInternalMpS.Length() / WindSpeedMaxMpS;
-
-                if (TotalwindMagnitude > 1)
-                {
-                    WindSpeedInternalMpS /= TotalwindMagnitude;
-                }
-
-                Weather.WindSpeedMpS = WindSpeedInternalMpS;
-                WindUpdateTimer = 0.0f; // Reset wind gust timer
+                // Reset wind gust timer
+                WindUpdateTimer -= WindGustUpdateTimeS;
             }
+
+            CameraWorldLocation = Viewer.Camera.CameraWorldLocation;
         }
 
         private bool RandomizeInitialWeather()

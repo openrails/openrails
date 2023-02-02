@@ -321,8 +321,8 @@ namespace Orts.Viewer3D
 
         public void Update(float currentTime, ElapsedTime elapsedTime)
         {
-            windDisplacementX = viewer.Simulator.Weather.WindSpeedMpS.X * 0.25f;
-            windDisplacementZ = viewer.Simulator.Weather.WindSpeedMpS.Y * 0.25f;
+            windDisplacementX = viewer.Simulator.Weather.WindInstantaneousDirection.X * 0.25f;
+            windDisplacementZ = viewer.Simulator.Weather.WindInstantaneousDirection.Y * 0.25f;
 
             var velocity = WorldPosition.Location - LastWorldPosition.Location;
             velocity.X += (WorldPosition.TileX - LastWorldPosition.TileX) * 2048;
