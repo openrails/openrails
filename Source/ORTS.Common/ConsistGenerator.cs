@@ -93,13 +93,6 @@ namespace ORTS.Common
             {
                 GltfVisualTestRun = true;
 
-                var mm = Path.GetFileNameWithoutExtension(requestedPath).Split('&').ElementAtOrDefault(1);
-                var nn = int.TryParse(Path.GetFileNameWithoutExtension(requestedPath).Split('#').ElementAtOrDefault(1), out var requestedModelNumberrrr);
-                var mmm = Directory.EnumerateFileSystemEntries(baseDir, "*.*", SearchOption.AllDirectories)
-                    .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
-                    .Select(f => Path.GetFileNameWithoutExtension(f))
-                    .Concat(Directory.EnumerateDirectories(Path.Combine(baseDir, "2.0")));
-
                 var models = Directory.EnumerateFileSystemEntries(baseDir, "*.*", SearchOption.AllDirectories)
                     .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
                     .Select(f => Path.GetFileNameWithoutExtension(f))
@@ -118,7 +111,13 @@ namespace ORTS.Common
                         ?.Replace(@"\", "/");
 
                     if (file == null)
-                        continue;
+                    {
+                        file = Directory.GetFiles(baseDir, "*" + model + "*.gl*", SearchOption.AllDirectories).FirstOrDefault()
+                            ?.Substring(baseDir.Length + 1)
+                            ?.Replace(@"\", "/");
+                        if (file == null)
+                            continue;
+                    }
 
                     var eng = $"{keyword}_{Path.GetFileNameWithoutExtension(file)}.eng";
                     Wagons.Add(eng, EngineTemplate
