@@ -524,6 +524,7 @@ namespace Orts.Viewer3D
             shader.OverlayScale = OverlayScale;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
