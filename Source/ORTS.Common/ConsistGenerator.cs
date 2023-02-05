@@ -44,7 +44,7 @@ namespace ORTS.Common
         const string EngineTemplate = @"Wagon ( ""enginname""
                 Type ( Engine )
                 WagonShape ( ""shapefilename"" )
-                Size (100m 100m 100m )
+                Size (100m 7m 100m )
             )
             Engine ( ""enginname""
                 Wagon ( ""enginname"" )
