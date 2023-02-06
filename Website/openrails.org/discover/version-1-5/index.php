@@ -22,7 +22,7 @@
             A summary of the new and improved features can be found below. 
           </p><p>
             <a href="https://launchpad.net/or/+milestone/1.4">Important bugs</a> have been fixed in this release.
-            Please keep <a href="http://openrails.org/contribute/reporting-bugs/">reporting bugs and suggesting new features</a> 
+            Please keep <a href="https://github.com/openrails/openrails/issues/">reporting bugs and suggesting new features</a> 
             so Open Rails can continue to improve.
           </p>
         </div>

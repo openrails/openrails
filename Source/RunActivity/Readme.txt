@@ -22,7 +22,7 @@ If not, then you will need to install some models bought from a vendor or free f
 Or you can try out the 2 self-installing models on our home page - both free of charge.
 
 SUPPORT
-Please send bug reports and feature requests to our Bug Tracker at https://launchpad.net/or
+Please send bug reports and feature requests to our Issue Tracker at https://github.com/openrails/openrails
 
 UPDATES
 Open Rails checks once a day for new versions and, if found, adds an Update link in the top right of its main menu. 
