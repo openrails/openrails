@@ -297,16 +297,19 @@ namespace Orts.Viewer3D.Processes
                             var openTracker = MessageBox.Show(String.Format(
                                     "A fatal error has occured and {0} cannot continue.\n\n" +
                                     "    {1}\n\n" +
-                                    "This error may be due to bad data or a bug. You can help improve {0} by reporting this error in our bug tracker at http://launchpad.net/or and attaching the log file {2}.\n\n" +
-                                    ">>> Click OK to report this error on the {0} bug tracker <<<",
+                                    "This error may be due to bad data or a bug. You can help improve {0} by reporting this error in our issue tracker at https://github.com/openrails/openrails/issues and attaching the log file {2}.\n\n" +
+                                    ">>> Click OK to report this error on the {0} issue tracker <<<",
                                     Application.ProductName, errorSummary, logFile),
                                     Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
                             if (openTracker == DialogResult.OK)
-                                Process.Start("http://launchpad.net/or");
-                            // James Ross would prefer to do this:
-                            //   Process.Start("http://bugs.launchpad.net/or/+filebug?field.title=" + Uri.EscapeDataString(errorSummary));
-                            // but unfortunately if you need to log in (as most people might), Launchpad munges the title
-                            // and leaves you with garbage. Plus, landing straight on a login page might confuse some people.
+                            {
+                                // Opens the form "create new issue" and gives it a useful title.
+                                //Chris Jakeman: Of course, this skips any test for duplicate messages. I guess the GitHub API might be needed for that. 
+                                // See https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue#creating-an-issue-from-a-url-query
+                                var title = Uri.EscapeDataString(errorSummary).Replace(" ", "+");
+                                var body = "Please attach your log file and describe your issue.".Replace(" ", "+");
+                                Process.Start($"https://github.com/openrails/openrails/issues/new?labels=bug&title={title}&body={body}");
+                            }
                         }
                     }
                     // Make sure we quit after handling an error.

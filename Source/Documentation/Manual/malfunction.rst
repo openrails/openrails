@@ -23,8 +23,8 @@ The development team uses two ways of keeping track of bugs:
    filter out problems caused by circumstances the development team cannot 
    control such as corrupted content.
 2. Decided Bugs are issues a developer has looked at and has found to be a 
-   real issue in the program code of Open Rails. They are reported at our Bug 
-   Tracker at https://bugs.Launchpad.net/or/ (registration is required).
+   real issue in the program code of Open Rails. They are reported at our Issue 
+   Tracker at https://github.com/openrails/openrails/issues/.
 
 Maybe-Bugs
 ==========
@@ -92,7 +92,7 @@ Many bug reports never even make it to the status of a Decided Bug, being a cont
 be declared Decided Bugs. Such secured bugs should be reported at our Bug 
 Tracker, when the developer taking the report asks you to.
 
-The Open Rails Bug Tracker is found at `<https://bugs.Launchpad.net/or/>`_, 
+The Open Rails Issue Tracker is found at `<https://github.com/openrails/openrails/issues/>`_, 
 following the "Report a bug" link in the upper half to the right of the 
 screen. You will need to register at Launchpad in order to be able to report 
 a bug.
@@ -131,8 +131,8 @@ before a developer has declared your Maybe-Bug a real bug!
 Additional Notes
 ================
 
-Please do not post feature requests as a Maybe-Bug to the Bug Tracker on 
-Launchpad!
+Please do not post feature requests as a Maybe-Bug to the Issue Tracker on 
+GitHub!
 
 Please do not report the same bug multiple times, just because the first 
 report did not get attention within a short time. Sorting out the resulting 
@@ -178,7 +178,7 @@ Summary: Bug Report Checklists
 Decided Bug
 
 - Report to Bug Tracker only if asked to do so
-- https://bugs.Launchpad.net/or/ (Registration required) -> "Report a bug"
+- https://github.com/openrails/openrails/issues/
 - "Summary": Description from the topic title of the Maybe-Bug report
 - Look for similar, already reported bugs
 - Condense whole Maybe-Bug thread into "Further information" field
@@ -187,8 +187,8 @@ Decided Bug
 - Add further info only in additional posts
 - Be patient
 
-Bug Status in Launchpad
-=======================
+Issue Status in GitHub
+======================
 
 - **New** -- this is where all bugs start. At this point, the bug has not been 
   looked at by the right people to check whether it is complete or if more 
@@ -225,7 +225,7 @@ Bug Status in Launchpad
 Disclaimer
 ==========
 
-Having posted a bug report in a forum or in Launchpad does not generate any 
+Having posted a bug report in a forum or on GitHub does not generate any 
 obligation or liability or commitment for the OR development team to examine 
 and fix the bug. The OR development team decides whether it will examine and 
 fix the bug on a completely voluntary and autonomous basis.

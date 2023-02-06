@@ -8,7 +8,7 @@ Please see the [Community](http://openrails.org/share/community/) page on our we
 
 ## Reporting a bug
 
-If you've found a bug in Open Rails, please report it in [our bug tracker on Launchpad](https://bugs.launchpad.net/or).
+If you've found a bug or other issue in Open Rails, please report it in [our issue tracker at GitHub](https://github.com/openrails/openrails/issues/).
 
 ## Suggesting a feature
 
@@ -16,7 +16,7 @@ If you've got a feature suggestion for Open Rails, please report it in [our road
 
 ## Making changes
 
-You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, if you'd like your feature to be included in the official version, there is a process to ensure that the community agrees and to review the code for potential issues prior to inclusion.
+You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, if you'ld like your feature to be included in the official version, there is a process to ensure that the community agrees and to review the code for potential issues prior to inclusion.
 
 In most cases, you can get started immediately with making the changes and creating a pull request. We do ask for some additional steps to be taken for some bugs and all new features, but they can come before or after the pull request. Please feel free to share ideas and proposals as pull requests!
 
@@ -28,15 +28,15 @@ If you'd like to improve the [documentation](./), [manual](../Source/Documentati
 
 There are no requirements for the pull request.
 
-### Bug process
+### Process for bugs and other issues
 
-If you'd like to fix a bug, you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our bug tracker on Launchpad](https://bugs.launchpad.net/or). If it has not, you can report the bug *and* fix it!
+If you'd like to fix an issue, you can get started immediately. If the fix turns out to be very small, you do not even need an bug report. Otherwise, you will need to make sure it has been reported on [our issue tracker on GitHub](https://github.com/openrails/openrails/issues/). If it has not, you can report the issue *and* fix it!
 
 There are no requirements for creating the pull request.
 
 These things must be done in the required order:
 
-1. If the changes adds or removes more than 10 lines each, a bug report must be linked in the description before it can be approved
+1. If the changes adds or removes more than 10 lines each, an issue report must be linked in the description before it can be approved
 
 ### Feature process
 
@@ -156,13 +156,13 @@ When we start preparing for a new Stable Version, all code in the Testing Versio
 
 When you're done writing code, you should make a pull request on GitHub. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
 
-* Bug report
+* Issue report
 * Road-map card
 * Blueprint
 
 ## How bugs and features are accepted
 
-### Bug reports
+### Issue reports
 
 A member of [our developer team](https://launchpad.net/~ordevs/+members) will mark the bug as "Triaged" once they have confirmed that the problem is real and needs fixing.
 
@@ -182,9 +182,9 @@ A member of [our management team](https://launchpad.net/~orsupervisors/+members)
 
 If you are reviewing someone else's code for Open Rails, you will need to ensure that they have met the above "Making changes" guidelines as best as possible. This will necessitate, at minimum:
 
-* Check for linked bug report or feature request
-* Check bug report is triaged, and feature request is approved
-  * For a bug report, it should have status "Triaged"
+* Check for linked issue report or feature request
+* Check issue report is triaged, and feature request is approved
+  * For an issue report, it should have status "Triaged"
   * For a road-map card, it should be in an N.M or N.x list
   * For a blueprint, it should have direction "Approved"
 * Read through all of the changes to the code
