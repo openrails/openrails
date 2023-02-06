@@ -52,19 +52,12 @@ texture  ImageTexture; // .s: linear RGBA, glTF (PBR): 8 bit sRGB + linear A
 texture  OverlayTexture;
 float	 OverlayScale;
 
-// When compiling the shaders at runtime, these defines can be set in the Shaders.cs, commenting these out.
-// Currently the shaders are being precombiled, so these must be defined here as well.
-// Keep them in sync with the values defined in RenderProcess.cs
+// Keep these in sync with the values defined in RenderProcess.cs
 // MAX_LIGHTS must not be less than 2
-//#define LEVEL_9_3
-#ifdef LEVEL_9_3
-#define MAX_LIGHTS 2
-#define MAX_BONES 1
-#else
+// MAX_BONES must not be less than 1
 #define MAX_LIGHTS 20
 #define MAX_BONES 50
 #define CLEARCOAT
-#endif
 
 float4x4 Bones[MAX_BONES]; // model -> world [max number of bones]
 float4   BaseColorFactor; // glTF linear color multiplier
@@ -104,7 +97,7 @@ static const float MinRoughness = 0.04;
 static const int LightType_Directional = 0;
 static const int LightType_Point = 1;
 static const int LightType_Spot = 2;
-static const int LightType_Headlight = 3;
+static const int LightType_Headlight = 3; // Pre-PBR linear attenuated headlight. Kept for testing purposes.
 
 static const float FullBrightness = 1.0;
 static const float ShadowBrightness = 0.5;
@@ -1221,13 +1214,8 @@ float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 
 technique Image {
 	pass Pass_0 {
-#ifdef LEVEL_9_3
 		VertexShader = compile vs_4_0 VSGeneral();
 		PixelShader = compile ps_4_0 PSImageNoClamp();
-#else
-		VertexShader = compile vs_4_0 VSGeneral();
-		PixelShader = compile ps_4_0 PSImageNoClamp();
-#endif
 	}
 }
 
@@ -1254,41 +1242,22 @@ technique PbrSkinned {
 
 technique Transfer {
 	pass Pass_0 {
-#ifdef LEVEL_9_3
-		// I can't make it work. Reports error X5589: Invalid const register num: 32. Max allowed is 31.
-		// But I brought the number below 31 as far as I can tell, so it must indicate something unrelevant, not making sense to me...
-		//VertexShader = compile vs_4_0_level_9_3 VSTransfer();
-		//PixelShader = compile ps_4_0_level_9_3 PSImageClamp();
 		VertexShader = compile vs_4_0 VSTransfer();
 		PixelShader = compile ps_4_0 PSImageClamp();
-#else
-		VertexShader = compile vs_4_0 VSTransfer();
-		PixelShader = compile ps_4_0 PSImageClamp();
-#endif
 	}
 }
 
 technique Forest {
 	pass Pass_0 {
-#ifdef LEVEL_9_3
-		VertexShader = compile vs_4_0_level_9_3 VSForest();
-		PixelShader = compile ps_4_0_level_9_3 PSVegetation();
-#else
 		VertexShader = compile vs_4_0 VSForest();
 		PixelShader = compile ps_4_0 PSVegetation();
-#endif
 	}
 }
 
 technique Vegetation {
 	pass Pass_0 {
-#ifdef LEVEL_9_3
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral();
-		PixelShader = compile ps_4_0_level_9_3 PSVegetation();
-#else
 		VertexShader = compile vs_4_0 VSGeneral();
 		PixelShader = compile ps_4_0 PSVegetation();
-#endif
 	}
 }
 
@@ -1301,37 +1270,22 @@ technique Terrain {
 
 technique DarkShade {
 	pass Pass_0 {
-#ifdef LEVEL_9_3
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral();
-		PixelShader = compile ps_4_0_level_9_3 PSDarkShade();
-#else
 		VertexShader = compile vs_4_0 VSGeneral();
 		PixelShader = compile ps_4_0 PSDarkShade();
-#endif
 	}
 }
 
 technique HalfBright {
 	pass Pass_0 {
-#ifdef LEVEL_9_3
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral();
-		PixelShader = compile ps_4_0_level_9_3 PSHalfBright();
-#else
 		VertexShader = compile vs_4_0 VSGeneral();
 		PixelShader = compile ps_4_0 PSHalfBright();
-#endif
 	}
 }
 
 technique FullBright {
 	pass Pass_0 {
-#ifdef LEVEL_9_3
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral();
-		PixelShader = compile ps_4_0_level_9_3 PSFullBright();
-#else
 		VertexShader = compile vs_4_0 VSGeneral();
 		PixelShader = compile ps_4_0 PSFullBright();
-#endif
 	}
 }
 
