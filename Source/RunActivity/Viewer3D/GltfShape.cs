@@ -561,7 +561,7 @@ namespace Orts.Viewer3D
 
                     if (ConsistGenerator.GltfVisualTestRun)
                     {
-                        // Assign the first four animations to Wipers [V], Item1Continuous [Shift+,], Item2Continuous [Shift+.] respectively,
+                        // Assign the first three animations to Wipers [V], Item1Continuous [Shift+,], Item2Continuous [Shift+.] respectively,
                         // because these are the ones capable of playing a loop.
                         for (var i = 0; i < shape.GltfAnimations.Count; i++)
                             shape.MatrixNames[i] = TestControls[i % TestControls.Length];

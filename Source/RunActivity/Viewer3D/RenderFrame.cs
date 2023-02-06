@@ -608,12 +608,7 @@ namespace Orts.Viewer3D
                 intensity *= HeadLightIntensity;
 
                 if (intensity > 0)
-                {
-                    // The original shader used linear range attenuation with full-lit pixels within the range, that's what the LightManager.LightType.Headlight simulates:
-                    //AddLight((LightMode)3, lightDrawer.LightConePosition, lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
-                    // The PBR spot light uses invere-sqared attenuation with realisticcaly lit pixels within the range, use LightManager.LightType.Spot for that:
                     AddLight(LightMode.Spot, lightDrawer.LightConePosition, lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
-                }
             }
         }
 
@@ -1078,7 +1073,8 @@ namespace Orts.Viewer3D
 
         public void AddLight(ShapeLight light, ref Matrix worldMatrix, float lodBias)
         {
-            if (light != null)
+            // Do not allow directional light injection. That is reserved to the sun and the moon.
+            if (light != null && light.Type != LightMode.Directional)
                 AddLight(light.Type, worldMatrix.Translation, Vector3.TransformNormal(-Vector3.UnitZ, worldMatrix), light.Color, light.Intensity, light.Range, light.InnerConeCos, light.OuterConeCos);
         }
         public void AddLight(Vector3 direction, Vector3 color, float intensity) => AddLight(LightMode.Directional, Vector3.Zero, direction, color, intensity, -1, 0, 0);
