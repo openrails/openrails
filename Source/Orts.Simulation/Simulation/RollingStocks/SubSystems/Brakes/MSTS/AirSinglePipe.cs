@@ -981,15 +981,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 if (dp < 0) dp = 0;
                                 loco.MainResPressurePSI -= dp * volumeRatio;
                             }
-                            else // Otherwise, drain from train pipe
+                            else // Otherwise, drain from locomotive engine brake pipe
                             {
-                                float volumeRatio = brakeSystem.GetCylVolumeM3() / brakeSystem.BrakePipeVolumeM3;
-                                if (brakeSystem.BrakeLine2PressurePSI - dp * volumeRatio < p + dp)
+                                if (lead.BrakeSystem.BrakeLine3PressurePSI - dp < p + dp)
                                 {
-                                    dp = (brakeSystem.BrakeLine2PressurePSI - p) / (1 + volumeRatio);
+                                    dp = (lead.BrakeSystem.BrakeLine3PressurePSI - p) / 2;
                                 }
                                 if (dp < 0) dp = 0;
-                                brakeSystem.BrakeLine2PressurePSI -= dp * volumeRatio;
+                                lead.BrakeSystem.BrakeLine3PressurePSI -= dp;
                             }
                             p += dp;
                             lead.EngineBrakeState = ValveState.Apply;
