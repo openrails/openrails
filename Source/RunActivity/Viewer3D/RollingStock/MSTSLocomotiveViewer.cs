@@ -292,8 +292,8 @@ namespace Orts.Viewer3D.RollingStock
                         // Other controls can hopefully be controlled faking mouse input
                         // TODO: refactor HandleUserInput() 
                         default:
-                            var renderer = ThreeDimentionCabRenderer ?? _CabRenderer;
-                            if (renderer != null && renderer.ControlMap.TryGetValue(kvp.Key, out var renderer) && renderer is CabViewDiscreteRenderer discrete)
+                            var cabRenderer = ThreeDimentionCabRenderer ?? _CabRenderer;
+                            if (cabRenderer != null && cabRenderer.ControlMap.TryGetValue(kvp.Key, out var renderer) && renderer is CabViewDiscreteRenderer discrete)
                             {
                                 var oldChanged = discrete.ChangedValue;
                                 discrete.ChangedValue = (oldval) => val;
