@@ -243,7 +243,6 @@ namespace Orts.Viewer3D.RollingStock
                 // Handle other cabcontrols
                 foreach (var kvp in external.CabControls)
                 {
-                    if (_CabRenderer == null) break;
                     if (!kvp.Value.Changed) continue;
                     float val = kvp.Value.Value;
                     switch (kvp.Key.Item1.Type)
@@ -293,7 +292,8 @@ namespace Orts.Viewer3D.RollingStock
                         // Other controls can hopefully be controlled faking mouse input
                         // TODO: refactor HandleUserInput() 
                         default:
-                            if (_CabRenderer.ControlMap.TryGetValue(kvp.Key, out var renderer) && renderer is CabViewDiscreteRenderer discrete)
+                            var renderer = ThreeDimentionCabRenderer ?? _CabRenderer;
+                            if (renderer != null && renderer.ControlMap.TryGetValue(kvp.Key, out var renderer) && renderer is CabViewDiscreteRenderer discrete)
                             {
                                 var oldChanged = discrete.ChangedValue;
                                 discrete.ChangedValue = (oldval) => val;
