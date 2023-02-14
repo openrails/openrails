@@ -25,13 +25,13 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using glTFLoader.Schema;
-using Orts.Simulation.AIs;
 
 namespace Orts.Viewer3D
 {
@@ -89,6 +89,8 @@ namespace Orts.Viewer3D
         /// </summary>
         internal Dictionary<int, VertexBufferBinding> VertexBuffers = new Dictionary<int, VertexBufferBinding>();
         internal Dictionary<int, byte[]> BinaryBuffers = new Dictionary<int, byte[]>();
+        Dictionary<int, VertexBufferBinding> VertexBufferBindings = new Dictionary<int, VertexBufferBinding>();
+        Dictionary<int, IndexBuffer> IndexBuffers = new Dictionary<int, IndexBuffer>();
 
         /// <summary>
         /// glTF shape from file
@@ -106,9 +108,8 @@ namespace Orts.Viewer3D
         protected override void LoadContent()
         {
             Trace.Write("G");
-            var textureFlags = Helpers.TextureFlags.None;
 
-            Dictionary<int, string> externalLods = new Dictionary<int, string>();
+            var externalLods = new Dictionary<int, string>();
 
             FileDir = Path.GetDirectoryName(FilePath);
             var inputFilename = Path.GetFileNameWithoutExtension(FilePath).ToUpper();
@@ -132,8 +133,8 @@ namespace Orts.Viewer3D
             if (EnvironmentMapSpecularDay == null)
             {
                 // TODO: split the equirectangular specular panorama image to a cube map for saving the pixel shader instructions of converting the
-                // cartesian cooridinates to polar for sampling. Couldn't find a converter though, that also supports RGBD color encoding.
-                // RGBD is an encoding where a divider is stored in the alpha channel to reconstruct the High Dynamic Range of the RGB colors.
+                // cartesian cooridinates to polar for sampling. Couldn't find a converter though that also supports RGBD color encoding.
+                // RGBD is an encoding where a divider [0..1] is stored in the alpha channel to reconstruct the High Dynamic Range of the RGB colors.
                 // A HDR to TGA-RGBD converter is available here: https://seenax.com/portfolio/cpp.php , this can be further converted to PNG by e.g. GIMP.
                 EnvironmentMapSpecularDay = Texture2D.FromStream(Viewer.GraphicsDevice, File.OpenRead(Path.Combine(Viewer.Game.ContentPath, "EnvMapDay/specular-RGBD.png")));
                 // Possible TODO: replace the diffuse map with spherical harmonics coefficients (9x float3), as defined in EXT_lights_image_based.
@@ -191,59 +192,6 @@ namespace Orts.Viewer3D
             var matrix = bones[0];
             bones = null;
             return matrix;
-        }
-
-        internal Func<BinaryReader, float> GetNormalizedReader(Accessor.ComponentTypeEnum componentType)
-        {
-            switch (componentType)
-            {
-                case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return (br) => br.ReadByte() / 255.0f;
-                case Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return (br) => br.ReadUInt16() / 65535.0f;
-                case Accessor.ComponentTypeEnum.BYTE: return (br) => Math.Max(br.ReadSByte() / 127.0f, -1.0f);
-                // Component type 5122 "SHORT" is a 16 bit int by the glTF specification, but is used as a 16 bit float (half) by asobo-msfs: 
-                case Accessor.ComponentTypeEnum.SHORT: return (br) => MsfsFlavoured ? ToTwoByteFloat(br.ReadBytes(2)) : Math.Max(br.ReadInt16() / 32767.0f, -1.0f); // the prior is br.ReadHalf() in fact
-                case Accessor.ComponentTypeEnum.FLOAT:
-                default: return (br) => br.ReadSingle();
-            }
-        }
-
-        internal static Func<BinaryReader, ushort> GetIntegerReader(AccessorSparseIndices.ComponentTypeEnum componentTypeEnum) => GetIntegerReader((Accessor.ComponentTypeEnum)componentTypeEnum);
-        internal static Func<BinaryReader, ushort> GetIntegerReader(Accessor.ComponentTypeEnum componentTypeEnum)
-        {
-            switch (componentTypeEnum)
-            {
-                case Accessor.ComponentTypeEnum.BYTE: return (br) => (ushort)br.ReadSByte();
-                case Accessor.ComponentTypeEnum.UNSIGNED_INT: return (br) => (ushort)br.ReadUInt32();
-                case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return (br) => br.ReadByte();
-                case Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
-                default: return (br) => br.ReadUInt16();
-            }
-        }
-
-        static float ToTwoByteFloat(byte[] bytes) // Hi, Lo
-        {
-            var intVal = BitConverter.ToInt32(new byte[] { bytes[0], bytes[1], 0, 0 }, 0);
-
-            int mant = intVal & 0x03ff;
-            int exp = intVal & 0x7c00;
-            if (exp == 0x7c00) exp = 0x3fc00;
-            else if (exp != 0)
-            {
-                exp += 0x1c000;
-                if (mant == 0 && exp > 0x1c400)
-                    return BitConverter.ToSingle(BitConverter.GetBytes((intVal & 0x8000) << 16 | exp << 13 | 0x3ff), 0);
-            }
-            else if (mant != 0)
-            {
-                exp = 0x1c400;
-                do
-                {
-                    mant <<= 1;
-                    exp -= 0x400;
-                } while ((mant & 0x400) == 0);
-                mant &= 0x3ff;
-            }
-            return BitConverter.ToSingle(BitConverter.GetBytes((intVal & 0x8000) << 16 | (exp | mant) << 13), 0);
         }
 
         public class GltfLodControl : LodControl
@@ -322,6 +270,8 @@ namespace Orts.Viewer3D
             readonly string GltfDir;
             readonly string GltfFileName;
             Dictionary<int, byte[]> BinaryBuffers => Shape.BinaryBuffers;
+            internal Dictionary<int, VertexBufferBinding> VertexBufferBindings => Shape.VertexBufferBindings;
+            internal Dictionary<int, IndexBuffer> IndexBuffers => Shape.IndexBuffers;
 
             /// <summary>
             /// All inverse bind matrices in a gltf file. The key is the accessor number.
@@ -337,8 +287,11 @@ namespace Orts.Viewer3D
             internal readonly Viewer Viewer;
             internal readonly GltfShape Shape;
 
-            static readonly Stack<int> TempStack = new Stack<int>(); // (nodeNumber, parentIndex)
             static readonly string[] TestControls = new[] { "WIPER", "ORTSITEM1CONTINUOUS", "ORTSITEM2CONTINUOUS" };
+            readonly Stack<int> TempStack = new Stack<int>();
+            readonly List<VertexElement> VertexElements = new List<VertexElement>();
+            readonly List<int> Accessors = new List<int>();
+            string DebugName = "";
 
             public GltfDistanceLevel(GltfShape shape, int lodId, Gltf gltfFile, string gltfFileName)
             {
@@ -362,12 +315,146 @@ namespace Orts.Viewer3D
                 Scales = gltfFile.Nodes.Select(node => node.Scale == null ? Vector3.One : new Vector3(node.Scale[0], node.Scale[1], node.Scale[2])).ToImmutableArray();
                 Rotations = gltfFile.Nodes.Select(node => node.Rotation == null ? Quaternion.Identity : new Quaternion(node.Rotation[0], node.Rotation[1], node.Rotation[2], node.Rotation[3])).ToImmutableArray();
                 Translations = gltfFile.Nodes.Select(node => node.Translation == null ? Vector3.Zero : new Vector3(node.Translation[0], node.Translation[1], node.Translation[2])).ToImmutableArray();
+                //Matrices = gltfFile.Nodes.Select((node, i) => node.Matrix == null ? Matrix.Identity : MemoryMarshal.Cast<float, Matrix>(node.Matrix.AsSpan())[0]
+                //    * Matrix.CreateScale(Scales[i]) * Matrix.CreateFromQuaternion(Rotations[i]) * Matrix.CreateTranslation(Translations[i])).ToImmutableArray();
                 Matrices = gltfFile.Nodes.Select((node, i) => node.Matrix == null ? Matrix.Identity : new Matrix(
                     node.Matrix[0], node.Matrix[1], node.Matrix[2], node.Matrix[3],
                     node.Matrix[4], node.Matrix[5], node.Matrix[6], node.Matrix[7],
                     node.Matrix[8], node.Matrix[9], node.Matrix[10], node.Matrix[11],
                     node.Matrix[12], node.Matrix[13], node.Matrix[14], node.Matrix[15])
                     * Matrix.CreateScale(Scales[i]) * Matrix.CreateFromQuaternion(Rotations[i]) * Matrix.CreateTranslation(Translations[i])).ToImmutableArray();
+
+                // Substitute the sparse data to its place.
+                for (var a = 0; a < gltfFile.Accessors.Length; a++)
+                {
+                    if (lodId == 0 && gltfFile.Accessors[a] is var accessor && accessor.Sparse != null)
+                    {
+                        // Sparse buffers may index into a null buffer, so create a real one for these.
+                        if (GetBufferViewSpan(accessor.BufferView, 0) is var buffer && buffer.IsEmpty)
+                        {
+                            BinaryBuffers.Add(1000 + a, new byte[accessor.Count * GetSizeInBytes(accessor)]);
+                            buffer = BinaryBuffers[1000 + a].AsSpan();
+                        }
+                        // It might have already been processed in another distance level.
+                        var sparseValues = GetBufferViewSpan(accessor.Sparse?.Values);
+                        var sparseIndices = GetBufferViewSpan(accessor.Sparse?.Indices);
+                        var byteOffset = accessor.BufferView != null ? accessor.ByteOffset : 0;
+                        var byteStride = gltfFile.BufferViews.ElementAtOrDefault(accessor.BufferView ?? -1)?.ByteStride ?? GetSizeInBytes(accessor);
+                        switch (accessor.Sparse.Indices.ComponentType)
+                        {
+                            case AccessorSparseIndices.ComponentTypeEnum.UNSIGNED_BYTE:
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                    sparseValues.Slice(i * byteStride, byteStride).CopyTo(buffer.Slice(byteOffset + sparseIndices[i] * byteStride, byteStride));
+                                break;
+                            case AccessorSparseIndices.ComponentTypeEnum.UNSIGNED_INT:
+                                var indicesUi = MemoryMarshal.Cast<byte, uint>(sparseIndices);
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                    sparseValues.Slice(i * byteStride, byteStride).CopyTo(buffer.Slice(byteOffset + (int)indicesUi[i] * byteStride, byteStride));
+                                break;
+                            case AccessorSparseIndices.ComponentTypeEnum.UNSIGNED_SHORT:
+                                var indicesUs = MemoryMarshal.Cast<byte, ushort>(sparseIndices);
+                                for (var i = 0; i < accessor.Sparse.Count; i++)
+                                    sparseValues.Slice(i * byteStride, byteStride).CopyTo(buffer.Slice(byteOffset + indicesUs[i] * byteStride, byteStride));
+                                break;
+                        }
+                    }
+                }
+
+                // Shovel all binary index & vertex attribute data over to the GPU. Such bufferViews are VertexBuffers/IndexBuffers in fact, the byteStride is the same throughout a bufferView.
+                // An accessor is the vertex attribute, is has a byteOffset within the bufferView. If byteOffset < byteStride, then the accessors are interleaved.
+                var bufferViews = gltfFile.Meshes
+                    .SelectMany(m => m.Primitives)
+                    .SelectMany(p => p.Attributes)
+                    .OrderBy(a => gltfFile.Accessors[a.Value].ByteOffset)
+                    .Distinct()
+                    .GroupBy(a => gltfFile.Accessors[a.Value].BufferView ?? -1);
+
+                foreach (var bufferView in bufferViews)
+                {
+                    var byteStride = gltfFile.BufferViews.ElementAtOrDefault(bufferView.Key)?.ByteStride ?? GetSizeInBytes(gltfFile.Accessors[bufferView.First().Value]);
+                    
+                    if (GetBufferViewSpan(bufferView.Key, 0) is var buffer && buffer.IsEmpty)
+                        buffer = new Span<byte>(new byte[gltfFile.BufferViews.ElementAtOrDefault(bufferView.Key).ByteLength]);
+                    
+                    var previousOffset = 0;
+                    var attributes = bufferView.GetEnumerator();
+                    var loop = attributes.MoveNext();
+                    do
+                    {
+                        DebugName = "";
+                        VertexElements.Clear();
+                        Accessors.Clear();
+                        // For interleaved data, multiple vertexElements and multiple accessors will be in a single vertexBuffer.
+                        // For non-interleaved data, we create a distinct vertexBuffer for each accessor.
+                        // A bufferView may consist of a series of (non-interleaved) accessors of POSITION:NORMAL:POSITION:NORMAL:POSITION:NORMAL etc.
+                        // Also e.g. TEXCOORDS_0 and TEXCOORDS_1 may refer to the same accessor.
+                        do
+                        {
+                            if (!Accessors.Contains(attributes.Current.Value) && !VertexBufferBindings.ContainsKey(attributes.Current.Value))
+                            {
+                                VertexElements.Add(new VertexElement(gltfFile.Accessors[attributes.Current.Value].ByteOffset - previousOffset,
+                                    GetVertexElementFormat(gltfFile.Accessors[attributes.Current.Value], shape.MsfsFlavoured),
+                                    GetVertexElementSemantic(attributes.Current.Key, out var index), index));
+                                Accessors.Add(attributes.Current.Value);
+                                if (Debugger.IsAttached) DebugName += string.Join(":", attributes.Current.Key, Path.GetFileNameWithoutExtension(gltfFileName));
+                            }
+                            loop = attributes.MoveNext();
+                        }
+                        while (loop && gltfFile.Accessors[attributes.Current.Value].ByteOffset < previousOffset + byteStride);
+
+                        if (Accessors.All(a => VertexBufferBindings.ContainsKey(a)))
+                            continue;
+
+                        var vertexCount = gltfFile.Accessors[Accessors.First()].Count;
+                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, new VertexDeclaration(byteStride, VertexElements.ToArray()), vertexCount, BufferUsage.None) { Name = DebugName };
+
+                        if (gltfFile.BufferViews.ElementAtOrDefault(bufferView.Key) is var bv && bv != null)
+                        {
+                            var byteOffset = bv.ByteOffset + gltfFile.Accessors[Accessors.First()].ByteOffset;
+                            vertexBuffer.SetData(BinaryBuffers[bv.Buffer], byteOffset, vertexCount * byteStride);
+                        }
+                        else if (BinaryBuffers.TryGetValue(1000 + Accessors.First(), out var binaryBuffer))
+                        {
+                            vertexBuffer.SetData(binaryBuffer);
+                        }
+                        else
+                        {
+                            // This shouldn't happen, just in case...
+                            vertexBuffer.Dispose();
+                            continue;
+                        }
+
+                        var vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
+                        foreach (var a in Accessors)
+                            if (!VertexBufferBindings.ContainsKey(a))
+                                VertexBufferBindings.Add(a, vertexBufferBinding);
+
+                        previousOffset = gltfFile.Accessors[attributes.Current.Value].ByteOffset;
+                    }
+                    while (loop);
+                }
+
+                var indexBufferViews = gltfFile.Meshes
+                    .SelectMany(m => m.Primitives)
+                    .OrderBy(p => gltfFile.Accessors?.ElementAtOrDefault(p.Indices ?? -1)?.ByteOffset ?? -1)
+                    .GroupBy(p => gltfFile.Accessors?.ElementAtOrDefault(p.Indices ?? -1)?.BufferView ?? -1)
+                    .Where(i => i.Key != -1 && !IndexBuffers.ContainsKey(i.Key));
+
+                foreach (var indexBufferView in indexBufferViews)
+                {
+                    var accessor = gltfFile.Accessors?.ElementAtOrDefault((int)indexBufferView.First().Indices);
+                    var bufferView = gltfFile.BufferViews?.ElementAtOrDefault(indexBufferView.Key);
+                    var componentSizeInBytes = GetComponentSizeInBytes(accessor.ComponentType);
+                    var indexBuffer = new IndexBuffer(shape.Viewer.GraphicsDevice, GetIndexElementSize(accessor.ComponentType), bufferView.ByteLength / componentSizeInBytes, BufferUsage.None);
+
+                    // 8 bit indices are unsupported in MonoGame, so we must convert them to 16 bits. GetIndexElementSize() reports twice the length automatically.
+                    if (accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE)
+                        indexBuffer.SetData(BinaryBuffers[bufferView.Buffer].Skip(bufferView.ByteOffset).Take(bufferView.ByteLength).Select(b => (ushort)b).ToArray());
+                    else
+                        indexBuffer.SetData(BinaryBuffers[bufferView.Buffer], bufferView.ByteOffset, bufferView.ByteLength);
+
+                    IndexBuffers.Add(indexBufferView.Key, indexBuffer);
+                }
 
                 var hierarchy = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray();
                 var parents = new Dictionary<int, int>();
@@ -404,7 +491,7 @@ namespace Orts.Viewer3D
                             lods[nodeNumber] = 0;
                             for (var j = 0; j < ids.Length; j++)
                             {
-                                // The node defined in the MSFT_lod extension is a substitute of the current one, not an additional new step-to.
+                                // The node defined in the MSFT_lod extension is a substitute to the actual one, not an additional new step-to.
                                 lods[ids[j]] = j + 1;
                                 hierarchy[ids[j]] = parent;
                                 TempStack.Push(ids[j]);
@@ -436,6 +523,7 @@ namespace Orts.Viewer3D
                         }
                     }
                 }
+
                 var subObjects = new List<SubObject>();
                 foreach (var hierIndex in meshes.Keys)
                 {
@@ -507,7 +595,7 @@ namespace Orts.Viewer3D
                             channel.TimeArray = new float[inputAccessor.Count];
                             channel.TimeMin = inputAccessor.Min[0];
                             channel.TimeMax = inputAccessor.Max[0];
-                            var readInput = shape.GetNormalizedReader(inputAccessor.ComponentType);
+                            var readInput = GetNormalizedReader(inputAccessor.ComponentType, shape.MsfsFlavoured);
                             using (var br = new BinaryReader(GetBufferView(inputAccessor, out _)))
                             {
                                 for (var i = 0; i < inputAccessor.Count; i++)
@@ -522,7 +610,7 @@ namespace Orts.Viewer3D
                                 case AnimationChannelTarget.PathEnum.translation: channel.OutputVector3 = new Vector3[outputAccessor.Count]; break;
                                 case AnimationChannelTarget.PathEnum.weights: channel.OutputWeights = new float[outputAccessor.Count]; break;
                             }
-                            var readOutput = shape.GetNormalizedReader(outputAccessor.ComponentType);
+                            var readOutput = GetNormalizedReader(outputAccessor.ComponentType, shape.MsfsFlavoured);
                             using (var br = new BinaryReader(GetBufferView(outputAccessor, out _)))
                             {
                                 for (var i = 0; i < outputAccessor.Count; i++)
@@ -569,6 +657,19 @@ namespace Orts.Viewer3D
                 }
             }
 
+            internal Span<byte> GetBufferViewSpan(AccessorSparseIndices accessor) => GetBufferViewSpan(accessor?.BufferView, accessor?.ByteOffset ?? 0);
+            internal Span<byte> GetBufferViewSpan(AccessorSparseValues accessor) => GetBufferViewSpan(accessor?.BufferView, accessor?.ByteOffset ?? 0);
+            internal Span<byte> GetBufferViewSpan(Accessor accessor) => GetBufferViewSpan(accessor.BufferView, accessor.ByteOffset);
+            internal Span<byte> GetBufferViewSpan(int? bufferViewNumber, int accessorByteOffset)
+            {
+                if (bufferViewNumber == null)
+                    return Span<byte>.Empty;
+                var bufferView = Gltf.BufferViews[(int)bufferViewNumber];
+                if (!BinaryBuffers.TryGetValue(bufferView.Buffer, out var bytes))
+                    BinaryBuffers.Add(bufferView.Buffer, bytes = glTFLoader.Interface.LoadBinaryBuffer(Gltf, bufferView.Buffer, GltfFileName));
+                return bytes.AsSpan(bufferView.ByteOffset + accessorByteOffset);
+            }
+
             internal Stream GetBufferView(AccessorSparseIndices accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
             internal Stream GetBufferView(AccessorSparseValues accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
             internal Stream GetBufferView(Accessor accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
@@ -586,7 +687,7 @@ namespace Orts.Viewer3D
                 return stream;
             }
 
-            internal int GetSizeInBytes(Accessor accessor) => GetComponentNumber(accessor.Type) * GetCompenentSizeInBytes(accessor.ComponentType);
+            internal int GetSizeInBytes(Accessor accessor) => GetComponentNumber(accessor.Type) * GetComponentSizeInBytes(accessor.ComponentType);
             
             int GetComponentNumber(Accessor.TypeEnum type)
             {
@@ -603,7 +704,7 @@ namespace Orts.Viewer3D
                 }
             }
 
-            int GetCompenentSizeInBytes(Accessor.ComponentTypeEnum componentType)
+            internal int GetComponentSizeInBytes(Accessor.ComponentTypeEnum componentType)
             {
                 switch (componentType)
                 {
@@ -616,6 +717,114 @@ namespace Orts.Viewer3D
                     default: return 4;
                 }
             }
+
+            IndexElementSize GetIndexElementSize(Accessor.ComponentTypeEnum componentType)
+            {
+                switch (componentType)
+                {
+                    case Accessor.ComponentTypeEnum.UNSIGNED_INT: return IndexElementSize.ThirtyTwoBits;
+                    case Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return IndexElementSize.SixteenBits;
+                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: Trace.TraceWarning($"glTF: Unsupported 8 bit index size in file {GltfFileName}, converting it to 16 bits."); return IndexElementSize.SixteenBits;
+                    default: return IndexElementSize.SixteenBits;
+                }
+            }
+
+            VertexElementFormat GetVertexElementFormat(Accessor accessor, bool msfsFlavoured = false)
+            {
+                // UNSIGNED_INT is reserved for the index buffers.
+                switch (accessor.Type)
+                {
+                    case Accessor.TypeEnum.SCALAR when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Single;
+
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : msfsFlavoured ? VertexElementFormat.HalfVector2 : VertexElementFormat.Short2;
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector2;
+
+                    case Accessor.TypeEnum.VEC3 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector3;
+
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : msfsFlavoured ? VertexElementFormat.HalfVector4 : VertexElementFormat.Short4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector4;
+
+                    default: Trace.TraceWarning($"glTF: Unknown vertex attribute format is found in file {GltfFileName}"); return VertexElementFormat.Single;
+                }
+            }
+
+            internal static Func<BinaryReader, float> GetNormalizedReader(Accessor.ComponentTypeEnum componentType, bool msfsFlavoured)
+            {
+                switch (componentType)
+                {
+                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return (br) => br.ReadByte() / 255.0f;
+                    case Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return (br) => br.ReadUInt16() / 65535.0f;
+                    case Accessor.ComponentTypeEnum.BYTE: return (br) => Math.Max(br.ReadSByte() / 127.0f, -1.0f);
+                    // Component type 5122 "SHORT" is a 16 bit int by the glTF specification, but is used as a 16 bit float (half) by asobo-msfs: 
+                    case Accessor.ComponentTypeEnum.SHORT: return (br) => msfsFlavoured ? ToTwoByteFloat(br.ReadBytes(2)) : Math.Max(br.ReadInt16() / 32767.0f, -1.0f); // the prior is br.ReadHalf() in fact
+                    case Accessor.ComponentTypeEnum.FLOAT:
+                    default: return (br) => br.ReadSingle();
+                }
+            }
+
+            internal static Func<BinaryReader, ushort> GetIntegerReader(AccessorSparseIndices.ComponentTypeEnum componentType) => GetIntegerReader((Accessor.ComponentTypeEnum)componentType);
+            internal static Func<BinaryReader, ushort> GetIntegerReader(Accessor.ComponentTypeEnum componentType)
+            {
+                switch (componentType)
+                {
+                    case Accessor.ComponentTypeEnum.BYTE: return (br) => (ushort)br.ReadSByte();
+                    case Accessor.ComponentTypeEnum.UNSIGNED_INT: return (br) => (ushort)br.ReadUInt32();
+                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return (br) => br.ReadByte();
+                    case Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
+                    default: return (br) => br.ReadUInt16();
+                }
+            }
+
+            static float ToTwoByteFloat(byte[] bytes) // Hi, Lo
+            {
+                var intVal = BitConverter.ToInt32(new byte[] { bytes[0], bytes[1], 0, 0 }, 0);
+
+                int mant = intVal & 0x03ff;
+                int exp = intVal & 0x7c00;
+                if (exp == 0x7c00) exp = 0x3fc00;
+                else if (exp != 0)
+                {
+                    exp += 0x1c000;
+                    if (mant == 0 && exp > 0x1c400)
+                        return BitConverter.ToSingle(BitConverter.GetBytes((intVal & 0x8000) << 16 | exp << 13 | 0x3ff), 0);
+                }
+                else if (mant != 0)
+                {
+                    exp = 0x1c400;
+                    do
+                    {
+                        mant <<= 1;
+                        exp -= 0x400;
+                    } while ((mant & 0x400) == 0);
+                    mant &= 0x3ff;
+                }
+                return BitConverter.ToSingle(BitConverter.GetBytes((intVal & 0x8000) << 16 | (exp | mant) << 13), 0);
+            }
+
+            static VertexElementUsage GetVertexElementSemantic(string semantic, out int index)
+            {
+                var split = semantic.Split('_');
+                if (!int.TryParse(split.ElementAtOrDefault(1), out index))
+                    index = 0;
+                if (!VertexElementSemantic.TryGetValue(split.FirstOrDefault(), out var result))
+                    result = VertexElementUsage.TextureCoordinate;
+                return result;
+            }
+
+            static readonly Dictionary<string, VertexElementUsage> VertexElementSemantic = new Dictionary<string, VertexElementUsage>
+            {
+                ["POSITION"] = VertexElementUsage.Position,
+                ["NORMAL"] = VertexElementUsage.Normal,
+                ["TANGENT"] = VertexElementUsage.Tangent,
+                ["TEXCOORD"] = VertexElementUsage.TextureCoordinate,
+                ["COLOR"] = VertexElementUsage.Color,
+                ["JOINTS"] = VertexElementUsage.BlendIndices,
+                ["WEIGHTS"] = VertexElementUsage.BlendWeight,
+            };
 
             readonly List<float> BufferValues = new List<float>();
             void ReadBuffer(Func<BinaryReader, float> read, BinaryReader br, Accessor.TypeEnum sourceType, int seek)
@@ -824,8 +1033,8 @@ namespace Orts.Viewer3D
                     default: break;
                 }
 
-                Vector4 texCoords1 = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
-                Vector4 texCoords2 = Vector4.Zero; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
+                var texCoords1 = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
+                var texCoords2 = Vector4.Zero; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
 
                 MaterialNormalTextureInfo msftNormalInfo = null;
                 TextureInfo msftOrmInfo = null;
@@ -852,12 +1061,12 @@ namespace Orts.Viewer3D
                                           msftNormalInfo != null ? 2 : 0;
 
                 // baseColor texture is 8 bit sRGB + A. Needs decoding to linear in the shader.
-                // metallicRoughness texture G = roughness, B = metalness, linear, may be > 8 bit
+                // metallicRoughness texture: G = roughness, B = metalness, linear, may be > 8 bit.
                 // normal texture is RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
-                // occlusion texture R channel only, = 1.0 + strength * (sampledValue - 1.0)
-                // emissive texture 8 bit sRGB. Needs decoding to linear in the shader.
-                // clearcoat texture R channel only
-                // clearcoatRoughness texture G channel only
+                // occlusion texture is R channel only, = 1.0 + strength * (sampledValue - 1.0)
+                // emissive texture is 8 bit sRGB. Needs decoding to linear in the shader.
+                // clearcoat texture is R channel only.
+                // clearcoatRoughness texture is G channel only.
                 Texture2D baseColorTexture = null, metallicRoughnessTexture = null, normalTexture = null, occlusionTexture = null, emissiveTexture = null, clearcoatTexture = null, clearcoatRoughnessTexture = null, clearcoatNormalTexture = null;
                 (TextureFilter, TextureAddressMode, TextureAddressMode) baseColorSamplerState = default, metallicRoughnessSamplerState = default, normalSamplerState = default, occlusionSamplerState = default, emissiveSamplerState = default, clearcoatSamplerState = default, clearcoatRoughnessSamplerState = default, clearcoatNormalSamplerState = default;
 
@@ -896,391 +1105,108 @@ namespace Orts.Viewer3D
                 }
 
                 var indexBufferSet = new GltfIndexBufferSet();
-                ushort[] indexData = null;
+                var indexCount = 0;
 
-                if (meshPrimitive.Indices != null)
+                if (gltfFile.Accessors.ElementAtOrDefault(meshPrimitive.Indices ?? -1) is var accessor && accessor != null)
                 {
-                    var accessor = gltfFile.Accessors[(int)meshPrimitive.Indices];
-                    indexData = new ushort[accessor.Count];
-                    var read = GetIntegerReader(accessor.ComponentType);
-                    using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out _)))
-                    {
-                        for (var i = 0; i < indexData.Length; i++)
-                            indexData[i] = read(br);
-                    }
-                    if (accessor.Sparse != null)
-                    {
-                        var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
-                        using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out _)))
-                        {
-                            for (var i = 0; i < accessor.Sparse.Count; i++)
-                                indexData[readI(bri)] = read(br);
-                        }
-                    }
-                    indexBufferSet.IndexBuffer = new IndexBuffer(shape.Viewer.GraphicsDevice, typeof(ushort), indexData.Length, BufferUsage.None);
-                    indexBufferSet.IndexBuffer.SetData(indexData);
-                    indexBufferSet.IndexBuffer.Name = name;
+                    indexBufferSet.IndexBuffer = distanceLevel.IndexBuffers[(int)accessor.BufferView];
+                    indexBufferSet.PrimitiveOffset = accessor.ByteOffset / distanceLevel.GetComponentSizeInBytes(accessor.ComponentType);
+                    indexCount = accessor.Count;
                     options |= SceneryMaterialOptions.PbrHasIndices;
                 }
 
-                var vertexAttributes = new List<VertexBufferBinding>();
+                var vertexAttributes = meshPrimitive.Attributes.SelectMany(a => distanceLevel.VertexBufferBindings.Where(kvp => kvp.Key == a.Value).Select(kvp => kvp.Value)).ToList();
 
-                VertexPosition[] vertexPositions = null;
-                VertexNormal[] vertexNormals = null;
-                VertexTextureDiffuse[] vertexTextureUvs = null;
-                VertexBuffer vertexBufferTextureUvs = null;
+                // These might be needed for the tangents calculations
+                var normals = Span<Vector3>.Empty;
+                var texcoords = Span<Vector2>.Empty;
+                var vertexCount = vertexAttributes.FirstOrDefault().VertexBuffer?.VertexCount ?? 0;
 
-                if (meshPrimitive.Attributes.TryGetValue("POSITION", out var accessorNumber))
+                // Currently three PBR vertex input combinations are possible. Any model must use either of those.
+                // If a vertex attribute buffer is missing to match one of the three, a dummy one must be added.
+                // The order of the vertex buffers is unimportant, the shader will attach by semantics.
+                // If more combinations to be added in the future, there must be support for them both in SceneryShader and ShadowMapShader.
+                //
+                // ================================================================
+                // PositionNormalTexture | NormalMap          | Skinned            
+                // ================================================================
+                //  Position             | Position           | Position           
+                //  Normal               | Normal             | Normal             
+                //  TexCoords_0          | TexCoords_0        | TexCoords_0        
+                //                       | Tangent            | Tangent            
+                //                       | TexCoords_1        | TexCoords_1        
+                //                       | Color_0            | Color_0            
+                //                       |                    | Joints_0           
+                //                       |                    | Weights_0          
+                // ================================================================
+                //
+                // So e.g. for a primitive with only Position, Normal, Color_0 attributes present,
+                // dummy TexCoord_0, TexCoord_1 and Tangent buffers have to be added to match the NormalMap pipeline.
+
+                // Cannot proceed without Normal at all, must add a dummy one.
+                if (!meshPrimitive.Attributes.TryGetValue("NORMAL", out var accessorNormals))
                 {
-                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding) || meshPrimitive.Attributes.ContainsKey("COLOR_0"))
-                    {
-                        // The condition COLOR_0 is here to allow the mesh to go through the normalmap pipeline with calculating tangents, where the positions are needed anyways.
-                        var accessor = gltfFile.Accessors[accessorNumber];
-                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
-                        vertexPositions = new VertexPosition[accessor.Count];
-                        var read = shape.GetNormalizedReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
-                        {
-                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                            for (var i = 0; i < vertexPositions.Length; i++)
-                                vertexPositions[i] = new VertexPosition(distanceLevel.ReadVector3(read, br, accessor.Type, seek));
-                        }
-                        if (accessor.Sparse != null)
-                        {
-                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
-                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
-                            {
-                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                                for (var i = 0; i < accessor.Sparse.Count; i++)
-                                    vertexPositions[readI(bri)] = new VertexPosition(distanceLevel.ReadVector3(read, br, accessor.Type, seek));
-                            }
-                        }
-                        if (vertexBufferBinding.VertexBuffer == null)
-                        {
-                            var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexPosition), vertexPositions.Length, BufferUsage.None);
-                            vertexBuffer.SetData(vertexPositions);
-                            vertexBuffer.Name = "POSITION";
-                            vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        }
-                        if (!shape.VertexBuffers.ContainsKey(accessorNumber))
-                            shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
-                        MinPosition = new Vector4(accessor.Min[0], accessor.Min[1], accessor.Min[2], 1);
-                        MaxPosition = new Vector4(accessor.Max[0], accessor.Max[1], accessor.Max[2], 1);
-                        HierarchyIndex = hierarchyIndex;
-                    }
-                    vertexAttributes.Add(vertexBufferBinding);
+                    var vertexArray = new float[vertexCount * 3];
+                    var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice,
+                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0)), vertexCount, BufferUsage.None) { Name = "NORMAL_DUMMY" };
+                    vertexBuffer.SetData(vertexArray);
+                    vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
+                    normals = MemoryMarshal.Cast<float, Vector3>(vertexArray.AsSpan());
+                    // Do not set the SceneryMaterialOptions.PbrHasNormals flag here, so that the shader will know to calculate its own normals.
                 }
                 else
-                {
-                    throw new NotImplementedException("One of the glTF mesh primitives has no positions.");
-                }
-
-                if (meshPrimitive.Attributes.TryGetValue("NORMAL", out accessorNumber))
-                {
-                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
-                    {
-                        var accessor = gltfFile.Accessors[accessorNumber];
-                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
-                        vertexNormals = new VertexNormal[accessor.Count];
-                        var read = shape.GetNormalizedReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
-                        {
-                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                            for (var i = 0; i < vertexNormals.Length; i++)
-                                vertexNormals[i] = new VertexNormal(distanceLevel.ReadVector3(read, br, accessor.Type, seek));
-                        }
-                        if (accessor.Sparse != null)
-                        {
-                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
-                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
-                            {
-                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                                for (var i = 0; i < accessor.Sparse.Count; i++)
-                                    vertexNormals[readI(bri)] = new VertexNormal(distanceLevel.ReadVector3(read, br, accessor.Type, seek));
-                            }
-                        }
-                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexNormal), vertexNormals.Length, BufferUsage.None);
-                        vertexBuffer.SetData(vertexNormals);
-                        vertexBuffer.Name = "NORMAL";
-                        vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
-                    }
-                    vertexAttributes.Add(vertexBufferBinding);
                     options |= SceneryMaterialOptions.PbrHasNormals;
-                }
-                else
-                {
-                    vertexNormals = new VertexNormal[vertexAttributes.First().VertexBuffer.VertexCount];
-                    vertexNormals.Initialize();
-                    var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexNormal), vertexNormals.Length, BufferUsage.None);
-                    vertexBuffer.SetData(vertexNormals);
-                    vertexBuffer.Name = "NORMAL_DUMMY";
-                    vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
-                }
 
-                if (meshPrimitive.Attributes.TryGetValue("TEXCOORD_0", out accessorNumber))
+                // Cannot proceed without TexCoord_0 at all, must add a dummy one.
+                if (!meshPrimitive.Attributes.TryGetValue("TEXCOORD_0", out var accessorTexcoords))
                 {
-                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
-                    {
-                        var accessor = gltfFile.Accessors[accessorNumber];
-                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
-                        vertexTextureUvs = new VertexTextureDiffuse[accessor.Count];
-                        var read = shape.GetNormalizedReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
-                        {
-                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                            for (var i = 0; i < vertexTextureUvs.Length; i++)
-                                vertexTextureUvs[i] = new VertexTextureDiffuse(distanceLevel.ReadVector2(read, br, accessor.Type, seek));
-                        }
-                        if (accessor.Sparse != null)
-                        {
-                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
-                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
-                            {
-                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                                for (var i = 0; i < accessor.Sparse.Count; i++)
-                                    vertexTextureUvs[readI(bri)] = new VertexTextureDiffuse(distanceLevel.ReadVector2(read, br, accessor.Type, seek));
-                            }
-                        }
-                        vertexBufferTextureUvs = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureDiffuse), vertexTextureUvs.Length, BufferUsage.None);
-                        vertexBufferTextureUvs.SetData(vertexTextureUvs);
-                        vertexBufferTextureUvs.Name = "TEXCOORD_0";
-                        vertexBufferBinding = new VertexBufferBinding(vertexBufferTextureUvs);
-                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
-                    }
-                    vertexAttributes.Add(vertexBufferBinding);
-                }
-                else
-                {
-                    vertexTextureUvs = new VertexTextureDiffuse[vertexAttributes.First().VertexBuffer.VertexCount];
-                    vertexTextureUvs.Initialize();
-                    vertexBufferTextureUvs = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureDiffuse), vertexTextureUvs.Length, BufferUsage.None);
+                    var vertexTextureUvs = new float[vertexCount * 2];
+                    var vertexBufferTextureUvs = new VertexBuffer(shape.Viewer.GraphicsDevice,
+                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_0_DUMMY" };
                     vertexBufferTextureUvs.SetData(vertexTextureUvs);
-                    vertexBufferTextureUvs.Name = "TEXCOORD_DUMMY";
                     vertexAttributes.Add(new VertexBufferBinding(vertexBufferTextureUvs));
+                    texcoords = MemoryMarshal.Cast<float, Vector2>(vertexTextureUvs.AsSpan());
                 }
 
-                if (meshPrimitive.Attributes.TryGetValue("TANGENT", out accessorNumber))
+                // If we have a normal map or Color_0 or TexCoord_1, but don't have Tangent, then we must calculate them to run it through the NormalMap pipeline. (See: MorphStressTest with spare TexCoord_1)
+                if (!meshPrimitive.Attributes.ContainsKey("TANGENT") && normalScale != 0 || (options & SceneryMaterialOptions.PbrHasSkin) != 0
+                    || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
                 {
-                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
-                    {
-                        var accessor = gltfFile.Accessors[accessorNumber];
-                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
-                        var vertexData = new VertexTangent[accessor.Count];
-                        var read = shape.GetNormalizedReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
-                        {
-                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                            for (var i = 0; i < vertexData.Length; i++)
-                                vertexData[i] = new VertexTangent(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
-                        }
-                        if (accessor.Sparse != null)
-                        {
-                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
-                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
-                            {
-                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                                for (var i = 0; i < accessor.Sparse.Count; i++)
-                                    vertexData[readI(bri)] = new VertexTangent(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
-                            }
-                        }
-                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTangent), vertexData.Length, BufferUsage.None);
-                        vertexBuffer.SetData(vertexData);
-                        vertexBuffer.Name = "TANGENT";
-                        vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
-                    }
-                    vertexAttributes.Add(vertexBufferBinding);
-                    options |= SceneryMaterialOptions.PbrHasTangents;
-                }
-                else if (vertexTextureUvs != null && normalScale != 0
-                    || (options & SceneryMaterialOptions.PbrHasSkin) != 0 || meshPrimitive.Attributes.ContainsKey("COLOR_0"))
-                {
-                    // The condition of "COLOR_0" above is just because in the current state we can run the vertex colors through the VERTEX_INPUT_NORMALMAP pipeline.
-                    // More vertex and shadowmap shader iterations would be needed to opt this out, but "COLOR_0" is assumed to be rare, so we go this way...
-                    var vertexData = CalculateTangents(indexData, vertexPositions, vertexNormals, vertexTextureUvs);
-                    var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTangent), vertexData.Length, BufferUsage.WriteOnly);
-                    vertexBuffer.SetData(vertexData);
-                    vertexBuffer.Name = "TANGENT_CALCULATED";
+                    var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice,
+                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Tangent, 0)), vertexCount, BufferUsage.WriteOnly) { Name = "TANGENT_CALCULATED" };
+                    vertexBuffer.SetData(CalculateTangents(normals, texcoords, gltfFile, meshPrimitive, distanceLevel));
                     vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
+                    options |= SceneryMaterialOptions.PbrHasTangents; // By setting this we instruct the program to call the NormalMap pipeline, this will not pass through to the shader.
+                }
+                if (meshPrimitive.Attributes.ContainsKey("TANGENT"))
                     options |= SceneryMaterialOptions.PbrHasTangents;
-                }
 
-                if (meshPrimitive.Attributes.TryGetValue("TEXCOORD_1", out accessorNumber) &&
-                    (texCoords1.X == 1 || texCoords1.Y == 1 || texCoords1.Z == 1 || texCoords1.W == 1) && // To eliminate possible spare buffers (model problem actually)
-                    (options & SceneryMaterialOptions.PbrHasTangents) != 0) // This is just because currently we can use the texcoords 1 only through the VERTEX_INPUT_NORMALMAP pipeline.
+                // When we have a Tangent, must also make sure to have TexCoord_1 and Color_0
+                if ((options & (SceneryMaterialOptions.PbrHasTangents | SceneryMaterialOptions.PbrHasSkin)) != 0)
                 {
-                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
+                    if (!meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
                     {
-                        var accessor = gltfFile.Accessors[accessorNumber];
-                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
-                        var vertexData = new VertexTextureMetallic[accessor.Count];
-                        var read = shape.GetNormalizedReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
-                        {
-                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                            for (var i = 0; i < vertexData.Length; i++)
-                                vertexData[i] = new VertexTextureMetallic(distanceLevel.ReadVector2(read, br, accessor.Type, seek));
-                        }
-                        if (accessor.Sparse != null)
-                        {
-                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
-                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
-                            {
-                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                                for (var i = 0; i < accessor.Sparse.Count; i++)
-                                    vertexData[readI(bri)] = new VertexTextureMetallic(distanceLevel.ReadVector2(read, br, accessor.Type, seek));
-                            }
-                        }
-                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureMetallic), vertexData.Length, BufferUsage.None);
-                        vertexBuffer.SetData(vertexData);
-                        vertexBuffer.Name = "TEXCOORD_1";
-                        vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
+                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice,
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 1)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_1_DUMMY" };
+                        vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
                     }
-                    vertexAttributes.Add(vertexBufferBinding);
-                }
-                else if ((options & SceneryMaterialOptions.PbrHasTangents) != 0)
-                {
-                    // In the shader pipeline, where the tangents are defined, also needs to be a secondary texture coordinate
-                    var vertexBufferBindings = vertexAttributes.Where(va => va.VertexBuffer.Name == "TEXCOORD_0");
-                    if (vertexBufferBindings.Any())
-                        vertexAttributes.Add(vertexBufferBindings.First());
-                    else
+                    if (!meshPrimitive.Attributes.ContainsKey("COLOR_0"))
                     {
-                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexTextureMetallic), vertexAttributes.First().VertexBuffer.VertexCount, BufferUsage.None);
-                        vertexBuffer.Name = "TEXCOORD_1_DUMMY";
+                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice,
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Color, 0)), vertexCount, BufferUsage.None) { Name = "COLOR_0_DUMMY" };
+                        vertexBuffer.SetData(Enumerable.Repeat(byte.MaxValue, vertexCount * 4).ToArray()); // Init the colors with white, because it is a multiplier to the sampled colors.
                         vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
                     }
                 }
 
-                if (meshPrimitive.Attributes.TryGetValue("JOINTS_0", out accessorNumber))
-                {
-                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
-                    {
-                        var accessor = gltfFile.Accessors[accessorNumber];
-                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
-                        var vertexData = new VertexJoint[accessor.Count];
-                        var read = GetIntegerReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
-                        {
-                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                            for (var i = 0; i < vertexData.Length; i++)
-                            {
-                                if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                vertexData[i] = new VertexJoint(new Vector4(read(br), read(br), read(br), read(br)));
-                            }
-                        }
-                        if (accessor.Sparse != null)
-                        {
-                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
-                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
-                            {
-                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                                for (var i = 0; i < accessor.Sparse.Count; i++)
-                                {
-                                    if (i > 0 && seek > 0) br.BaseStream.Seek(seek, SeekOrigin.Current);
-                                    vertexData[readI(bri)] = new VertexJoint(new Vector4(read(br), read(br), read(br), read(br)));
-                                }
-                            }
-                        }
-                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexJoint), vertexData.Length, BufferUsage.None);
-                        vertexBuffer.SetData(vertexData);
-                        vertexBuffer.Name = "JOINTS_0";
-                        vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
-                    }
-                    vertexAttributes.Add(vertexBufferBinding);
-                }
-
-                if (meshPrimitive.Attributes.TryGetValue("WEIGHTS_0", out accessorNumber))
-                {
-                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
-                    {
-                        var accessor = gltfFile.Accessors[accessorNumber];
-                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
-                        var vertexData = new VertexWeight[accessor.Count];
-                        var read = shape.GetNormalizedReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
-                        {
-                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                            for (var i = 0; i < vertexData.Length; i++)
-                                vertexData[i] = new VertexWeight(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
-                        }
-                        if (accessor.Sparse != null)
-                        {
-                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
-                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
-                            {
-                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                                for (var i = 0; i < accessor.Sparse.Count; i++)
-                                    vertexData[readI(bri)] = new VertexWeight(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
-                            }
-                        }
-                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexWeight), vertexData.Length, BufferUsage.None);
-                        vertexBuffer.SetData(vertexData);
-                        vertexBuffer.Name = "WEIGHTS_0";
-                        vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
-                    }
-                    vertexAttributes.Add(vertexBufferBinding);
-                }
-
-                if (meshPrimitive.Attributes.TryGetValue("COLOR_0", out accessorNumber))
-                {
-                    if (!shape.VertexBuffers.TryGetValue(accessorNumber, out var vertexBufferBinding))
-                    {
-                        var accessor = gltfFile.Accessors[accessorNumber];
-                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
-                        var vertexData = new VertexColor4[accessor.Count];
-                        var read = shape.GetNormalizedReader(accessor.ComponentType);
-                        using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)))
-                        {
-                            var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                            for (var i = 0; i < vertexData.Length; i++)
-                                vertexData[i] = new VertexColor4(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
-                        }
-                        if (accessor.Sparse != null)
-                        {
-                            var readI = GetIntegerReader(accessor.Sparse.Indices.ComponentType);
-                            using (var bri = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Indices, out _)))
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor.Sparse.Values, out var byteStride)))
-                            {
-                                var seek = byteStride != null ? (int)byteStride - componentSizeInBytes : 0;
-                                for (var i = 0; i < accessor.Sparse.Count; i++)
-                                    vertexData[readI(bri)] = new VertexColor4(distanceLevel.ReadVector4(read, br, accessor.Type, seek));
-                            }
-                        }
-                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexColor4), vertexData.Length, BufferUsage.None);
-                        vertexBuffer.SetData(vertexData);
-                        vertexBuffer.Name = "COLOR_0";
-                        vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        shape.VertexBuffers.Add(accessorNumber, vertexBufferBinding);
-                    }
-                    vertexAttributes.Add(vertexBufferBinding);
-                }
-                else if ((options & (SceneryMaterialOptions.PbrHasTangents | SceneryMaterialOptions.PbrHasSkin)) != 0)
-                {
-                    // In the shader where the tangents are defined also needs to be a COLOR_0
-                    var vertexData = Enumerable.Repeat(new VertexColor4(Vector4.One), vertexAttributes.First().VertexBuffer.VertexCount).ToArray();
-                    var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, typeof(VertexColor4), vertexData.Length, BufferUsage.None);
-                    vertexBuffer.SetData(vertexData);
-                    vertexBuffer.Name = "COLOR_DUMMY";
-                    vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
-                }
+                // Remove the unused TexCoord_2, _3, etc. attributes, because they might create display artifacts. Most probably these are model errors anyway. (See: MosquitoInAmber with spare TexCoord_2)
+                vertexAttributes.RemoveAll(b => b.VertexBuffer.VertexDeclaration.GetVertexElements()
+                    .Any(e => e.VertexElementUsage == VertexElementUsage.TextureCoordinate && e.UsageIndex > 1));
 
                 // This is the dummy instance buffer at the end of the vertex buffers
                 vertexAttributes.Add(new VertexBufferBinding(RenderPrimitive.GetDummyVertexBuffer(shape.Viewer.GraphicsDevice)));
 
-                var verticesDrawn = meshPrimitive.Indices == null ? vertexAttributes.First().VertexBuffer.VertexCount : indexData.Length;
+                var verticesDrawn = indexCount > 0 ? indexCount : vertexCount;
                 switch (meshPrimitive.Mode)
                 {
                     case MeshPrimitive.ModeEnum.TRIANGLE_STRIP: indexBufferSet.PrimitiveType = PrimitiveType.TriangleStrip; indexBufferSet.PrimitiveCount = verticesDrawn - 2; break;
@@ -1314,8 +1240,134 @@ namespace Orts.Viewer3D
                 ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords1, texCoords2, texturePacking) };
                 ShapePrimitives[0].SortIndex = 0;
             }
+
+            Vector4[] CalculateTangents(Span<Vector3> normals, Span<Vector2> texcoords, Gltf gltfFile, MeshPrimitive meshPrimitive, GltfDistanceLevel distanceLevel)
+            {
+                var accessor = gltfFile.Accessors[meshPrimitive.Attributes["POSITION"]];
+                var bufferView = gltfFile.BufferViews[(int)accessor.BufferView];
+                var positions = MemoryMarshal.Cast<byte, Vector3>(distanceLevel.Shape.BinaryBuffers[bufferView.Buffer].AsSpan().Slice(bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * 3 * sizeof(float)));
+
+                if (normals.IsEmpty)
+                {
+                    accessor = gltfFile.Accessors[meshPrimitive.Attributes["NORMAL"]];
+                    bufferView = gltfFile.BufferViews[(int)accessor.BufferView];
+                    normals = MemoryMarshal.Cast<byte, Vector3>(distanceLevel.Shape.BinaryBuffers[bufferView.Buffer].AsSpan().Slice(bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * 3 * sizeof(float)));
+                }
+
+                if (texcoords.IsEmpty)
+                {
+                    accessor = gltfFile.Accessors[meshPrimitive.Attributes["TEXCOORD_0"]];
+                    if (accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT)
+                    {
+                        bufferView = gltfFile.BufferViews[(int)accessor.BufferView];
+                        texcoords = MemoryMarshal.Cast<byte, Vector2>(distanceLevel.Shape.BinaryBuffers[bufferView.Buffer].AsSpan().Slice(bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * 2 * sizeof(float)));
+                    }
+                    else
+                    {
+                        // The uv's are in normalized short or byte integer form, transcoding them for calculation.
+                        var read = GltfDistanceLevel.GetNormalizedReader(accessor.ComponentType, distanceLevel.Shape.MsfsFlavoured);
+                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
+                        var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)); // With a MemoryStream there is no need for "using".
+                        var seek = byteStride ?? componentSizeInBytes - componentSizeInBytes;
+                        texcoords = new Span<Vector2>(new IEnumerable<Vector2>[accessor.Count].Select(i => distanceLevel.ReadVector2(read, br, accessor.Type, seek)).ToArray());
+                        // Sparse data were already inserted before.
+                    }
+                }
+
+                var indices = Span<ushort>.Empty;
+                if (meshPrimitive.Indices != null)
+                {
+                    accessor = gltfFile.Accessors[(int)meshPrimitive.Indices];
+                    if (accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT)
+                    {
+                        bufferView = gltfFile.BufferViews[(int)accessor.BufferView];
+                        indices = MemoryMarshal.Cast<byte, ushort>(distanceLevel.Shape.BinaryBuffers[bufferView.Buffer].AsSpan().Slice(bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * sizeof(ushort)));
+                    }
+                    else
+                    {
+                        // We have a non-ushort format index buffer, so transcode it
+                        var read = GltfDistanceLevel.GetIntegerReader(accessor.ComponentType);
+                        var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out _));
+                        indices = new Span<ushort>(new IEnumerable<ushort>[accessor.Count].Select(i => read(br)).ToArray());
+                    }
+                }
+
+                return CalculateTangents(indices, positions, normals, texcoords);
+            }
+
+            static Vector4[] CalculateTangents(Span<ushort> indices, Span<Vector3> vertexPosition, Span<Vector3> vertexNormal, Span<Vector2> vertexTexture)
+            {
+                var vertexCount = vertexPosition.Length;
+
+                var tan1 = new Vector3[vertexCount];
+                var tan2 = new Vector3[vertexCount];
+
+                var indicesLength = indices.IsEmpty ? vertexPosition.Length : indices.Length;
+
+                for (var a = 0; a < indicesLength; a += 3)
+                {
+                    var i1 = indices.IsEmpty ? a + 0 : indices[a + 0];
+                    var i2 = indices.IsEmpty ? a + 1 : indices[a + 1];
+                    var i3 = indices.IsEmpty ? a + 2 : indices[a + 2];
+
+                    var v1 = vertexPosition[i1];
+                    var v2 = vertexPosition[i2];
+                    var v3 = vertexPosition[i3];
+
+                    var w1 = vertexTexture[i1];
+                    var w2 = vertexTexture[i2];
+                    var w3 = vertexTexture[i3];
+
+                    // Need to invert the normal map Y coordinates to pass the test
+                    // https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/NormalTangentTest
+                    w1.Y = -w1.Y;
+                    w2.Y = -w2.Y;
+                    w3.Y = -w3.Y;
+
+                    float x1 = v2.X - v1.X;
+                    float x2 = v3.X - v1.X;
+                    float y1 = v2.Y - v1.Y;
+                    float y2 = v3.Y - v1.Y;
+                    float z1 = v2.Z - v1.Z;
+                    float z2 = v3.Z - v1.Z;
+
+                    float s1 = w2.X - w1.X;
+                    float s2 = w3.X - w1.X;
+                    float t1 = w2.Y - w1.Y;
+                    float t2 = w3.Y - w1.Y;
+
+                    float div = s1 * t2 - s2 * t1;
+                    float r = div == 0.0f ? 0.0f : 1.0f / div;
+
+                    Vector3 sdir = new Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+                    Vector3 tdir = new Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+
+                    tan1[i1] += sdir;
+                    tan1[i2] += sdir;
+                    tan1[i3] += sdir;
+
+                    tan2[i1] += tdir;
+                    tan2[i2] += tdir;
+                    tan2[i3] += tdir;
+                }
+
+                var tangents = new Vector4[vertexCount];
+
+                for (var a = 0; a < vertexCount; ++a)
+                {
+                    Vector3 n = vertexNormal[a];
+                    Vector3 t = tan1[a];
+
+                    var tangentsW = Vector3.Dot(Vector3.Cross(n, t), tan2[a]) < 0.0f ? -1.0f : 1.0f;
+
+                    var tangent = Vector3.Normalize(t - n * Vector3.Dot(n, t));
+                    tangents[a] = new Vector4(tangent, tangentsW);
+                }
+
+                return tangents;
+            }
         }
-        
+
         public class GltfPrimitive : ShapePrimitive
         {
             public readonly int[] Joints; // Replaces ShapePrimitive.HierarchyIndex for non-skinned primitives
@@ -1362,6 +1414,7 @@ namespace Orts.Viewer3D
                 Material = material;
                 IndexBuffer = indexBufferSet.IndexBuffer;
                 PrimitiveCount = indexBufferSet.PrimitiveCount;
+                PrimitiveOffset = indexBufferSet.PrimitiveOffset;
                 PrimitiveType = indexBufferSet.PrimitiveType;
                 Hierarchy = hierarchy;
                 HierarchyIndex = hierarchyIndex;
@@ -1390,7 +1443,7 @@ namespace Orts.Viewer3D
                         {
                             var accessor = gltfFile.Accessors[(int)skin.InverseBindMatrices];
                             InverseBindMatrices = new Matrix[accessor.Count];
-                            var read = distanceLevel.Shape.GetNormalizedReader(accessor.ComponentType);
+                            var read = GltfDistanceLevel.GetNormalizedReader(accessor.ComponentType, distanceLevel.Shape.MsfsFlavoured);
                             using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out _)))
                             {
                                 for (var i = 0; i < InverseBindMatrices.Length; i++)
@@ -1406,217 +1459,15 @@ namespace Orts.Viewer3D
                 }
             }
         }
-        
-        public static VertexTangent[] CalculateTangents(ushort[] indices, VertexPosition[] vertexPosition, VertexNormal[] vertexNormal, VertexTextureDiffuse[] vertexTexture)
-        {
-            var vertexCount = vertexPosition.Length;
-
-            var tan1 = new Vector3[vertexCount];
-            var tan2 = new Vector3[vertexCount];
-
-            var indicesLength = indices?.Length ?? vertexPosition.Length;
-
-            for (var a = 0; a < indicesLength; a += 3)
-            {
-                var i1 = indices?[a + 0] ?? a + 0;
-                var i2 = indices?[a + 1] ?? a + 1;
-                var i3 = indices?[a + 2] ?? a + 2;
-
-                var v1 = vertexPosition[i1].Position;
-                var v2 = vertexPosition[i2].Position;
-                var v3 = vertexPosition[i3].Position;
-
-                var w1 = vertexTexture[i1].TextureCoordinate;
-                var w2 = vertexTexture[i2].TextureCoordinate;
-                var w3 = vertexTexture[i3].TextureCoordinate;
-
-                // Need to invert the normal map Y coordinates to pass the test
-                // https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/NormalTangentTest
-                w1.Y = -w1.Y;
-                w2.Y = -w2.Y;
-                w3.Y = -w3.Y;
-
-                float x1 = v2.X - v1.X;
-                float x2 = v3.X - v1.X;
-                float y1 = v2.Y - v1.Y;
-                float y2 = v3.Y - v1.Y;
-                float z1 = v2.Z - v1.Z;
-                float z2 = v3.Z - v1.Z;
-
-                float s1 = w2.X - w1.X;
-                float s2 = w3.X - w1.X;
-                float t1 = w2.Y - w1.Y;
-                float t2 = w3.Y - w1.Y;
-
-                float div = s1 * t2 - s2 * t1;
-                float r = div == 0.0f ? 0.0f : 1.0f / div; 
-
-                Vector3 sdir = new Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
-                Vector3 tdir = new Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
-
-                tan1[i1] += sdir;
-                tan1[i2] += sdir;
-                tan1[i3] += sdir;
-
-                tan2[i1] += tdir;
-                tan2[i2] += tdir;
-                tan2[i3] += tdir;
-            }
-
-            var tangents = new VertexTangent[vertexCount];
-            
-            for (var a = 0; a < vertexCount; ++a)
-            {
-                Vector3 n = vertexNormal[a].Normal;
-                Vector3 t = tan1[a];
-
-                var tangentsW = Vector3.Dot(Vector3.Cross(n, t), tan2[a]) < 0.0f ? -1.0f : 1.0f;
-
-                var tangent = Vector3.Normalize(t - n * Vector3.Dot(n, t));
-                tangents[a] = new VertexTangent(new Vector4(tangent, tangentsW));
-            }
-
-            return tangents;
-        }
 
         public struct GltfIndexBufferSet
         {
             public IndexBuffer IndexBuffer;
+            public int PrimitiveOffset;
             public int PrimitiveCount;
             public PrimitiveType PrimitiveType;
         }
         
-        public struct VertexPosition : IVertexType
-        {
-            Vector3 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0));
-            public VertexPosition(Vector3 data) { VertexData = data; }
-            public Vector3 Position { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 3;
-        }
-        
-        public struct VertexNormal : IVertexType
-        {
-            Vector3 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0));
-            public VertexNormal(Vector3 data) { VertexData = data; }
-            public Vector3 Normal { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 3;
-        }
-
-        public struct VertexColor3 : IVertexType
-        {
-            Vector3 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Color, 0));
-            public VertexColor3(Vector3 data) { VertexData = data; }
-            public Vector3 Color { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 3;
-        }
-
-        public struct VertexColor4 : IVertexType
-        {
-            Vector4 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Color, 0));
-            public VertexColor4(Vector4 data) { VertexData = data; }
-            public Vector4 Color { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 4;
-        }
-
-        public struct VertexJoint : IVertexType
-        {
-            Vector4 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.BlendIndices, 0));
-            public VertexJoint(Vector4 data) { VertexData = data; }
-            public Vector4 Joint { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 4;
-        }
-
-        public struct UIntVector4
-        {
-            public uint X;
-            public uint Y;
-            public uint Z;
-            public uint W;
-
-            public UIntVector4(uint x, uint y, uint z, uint w) => (X, Y, Z, W) = (x, y, z, w);
-        }
-
-        public struct VertexWeight : IVertexType
-        {
-            Vector4 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 0));
-            public VertexWeight(Vector4 data) { VertexData = data; }
-            public Vector4 Weight { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 4;
-        }
-
-        public struct VertexTangent : IVertexType
-        {
-            Vector4 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Tangent, 0));
-            public VertexTangent(Vector4 data) { VertexData = data; }
-            public Vector4 Tangent { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 4;
-        }
-
-        public struct VertexTextureDiffuse : IVertexType
-        {
-            Vector2 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0));
-            public VertexTextureDiffuse(Vector2 data) { VertexData = data; }
-            public Vector2 TextureCoordinate { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 2;
-        }
-
-        public struct VertexTextureMetallic : IVertexType
-        {
-            Vector2 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 1));
-            public VertexTextureMetallic(Vector2 data) { VertexData = data; }
-            public Vector2 TextureCoordinate { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 2;
-        }
-
-        public struct VertexTextureNormalMap : IVertexType
-        {
-            Vector2 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 5));
-            public VertexTextureNormalMap(Vector2 data) { VertexData = data; }
-            public Vector2 TextureCoordinate { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 2;
-        }
-
-        public struct VertexTextureSpecularMap : IVertexType
-        {
-            Vector2 VertexData;
-            public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(SizeInBytes,
-                new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 6));
-            public VertexTextureSpecularMap(Vector2 data) { VertexData = data; }
-            public Vector2 TextureCoordinate { get { return VertexData; } set { VertexData = value; } }
-            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
-            public const int SizeInBytes = sizeof(float) * 2;
-        }
-
         class MSFT_texture_dds
         {
             public int Source { get; set; }
@@ -1779,6 +1630,8 @@ namespace Orts.Viewer3D
         /// For this to work 'git clone https://github.com/KhronosGroup/glTF-Sample-Models.git' to the MSTS/TRAINS/TRAINSET folder, so that the
         /// models will be available in e.g. MSTS/TRAINS/TRAINSET/glTF-Sample-Models/2.0/... folder. Then start like:
         /// RunActivity.exe -start -explorer "C:\Devel\MSTS\ROUTES\USA2\PATHS\tut6path.pat" "glTF-Sample-Models" 12:00 1 0
+        /// RunActivity.exe -start -explorer "C:\Devel\MSTS\ROUTES\USA2\PATHS\tut6path.pat" "glTF-Sample-Models&AnimatedTriangle" 12:00 1 0
+        /// RunActivity.exe -start -explorer "C:\Devel\MSTS\ROUTES\USA2\PATHS\tut6path.pat" "glTF-Sample-Models#2" 12:00 1 0
         /// </summary>
         static readonly Dictionary<string, Matrix> SampleModelsAdjustments = new Dictionary<string, Matrix>
         {
