@@ -1753,6 +1753,7 @@ namespace Orts.Viewer3D
         protected internal VertexBuffer VertexBuffer;
         protected internal IndexBuffer IndexBuffer;
         protected internal int PrimitiveCount;
+        protected internal int PrimitiveOffset;
         protected internal PrimitiveType PrimitiveType;
 
         protected readonly VertexBufferBinding[] VertexBufferBindings;
@@ -1789,7 +1790,7 @@ namespace Orts.Viewer3D
                 if (IndexBuffer != null)
                 {
                     graphicsDevice.Indices = IndexBuffer;
-                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: 0, startIndex: 0, primitiveCount: PrimitiveCount);
+                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: 0, startIndex: PrimitiveOffset, primitiveCount: PrimitiveCount);
                 }
                 else
                 {
@@ -1875,6 +1876,7 @@ namespace Orts.Viewer3D
         protected int VertexBufferStride;
         protected IndexBuffer IndexBuffer;
         protected int PrimitiveCount;
+        protected internal int PrimitiveOffset;
 
         protected VertexBuffer InstanceBuffer;
         protected VertexDeclaration InstanceDeclaration;
@@ -1893,6 +1895,7 @@ namespace Orts.Viewer3D
             VertexDeclaration = shapePrimitive.VertexBuffer.VertexDeclaration;
             IndexBuffer = shapePrimitive.IndexBuffer;
             PrimitiveCount = shapePrimitive.PrimitiveCount;
+            PrimitiveOffset = shapePrimitive.PrimitiveOffset;
 
             InstanceDeclaration = new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements);
             InstanceBuffer = new VertexBuffer(graphicsDevice, InstanceDeclaration, positions.Length, BufferUsage.WriteOnly);
@@ -1906,7 +1909,7 @@ namespace Orts.Viewer3D
         {
             graphicsDevice.Indices = IndexBuffer;
             graphicsDevice.SetVertexBuffers(VertexBufferBindings);
-            graphicsDevice.DrawInstancedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, PrimitiveCount, InstanceCount);
+            graphicsDevice.DrawInstancedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: PrimitiveOffset, PrimitiveCount, InstanceCount);
         }
     }
 
