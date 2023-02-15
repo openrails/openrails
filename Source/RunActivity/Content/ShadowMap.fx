@@ -72,7 +72,7 @@ struct VERTEX_INPUT_BLUR
 struct VERTEX_INPUT_NORMALMAP
 {
 	float4 Position    : POSITION;
-	float2 TexCoord   : TEXCOORD0;
+	float2 TexCoord    : TEXCOORD0;
 	float3 Normal      : NORMAL;
 	float4 Tangent     : TANGENT;
 	float2 TexCoordsPbr: TEXCOORD1;
@@ -83,11 +83,11 @@ struct VERTEX_INPUT_NORMALMAP
 struct VERTEX_INPUT_SKINNED
 {
 	float4 Position    : POSITION;
-	float2 TexCoord   : TEXCOORD0;
+	float2 TexCoord    : TEXCOORD0;
 	float3 Normal      : NORMAL;
 	float4 Tangent     : TANGENT;
 	float2 TexCoordsPbr: TEXCOORD1;
-	float4 Joints      : BLENDINDICES0;
+	uint4 Joints       : BLENDINDICES0;
 	float4 Weights     : BLENDWEIGHT0;
 	float4 Color       : COLOR0;
 	float4x4 Instance  : TEXCOORD2;

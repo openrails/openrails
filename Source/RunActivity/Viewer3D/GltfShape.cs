@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -38,6 +37,7 @@ namespace Orts.Viewer3D
     public class GltfShape : SharedShape
     {
         public static bool EnableAnimations { get; set; }
+        public static bool ShapeWarnings { get; set; }
 
         public static List<string> ExtensionsSupported = new List<string>
         {
@@ -103,6 +103,7 @@ namespace Orts.Viewer3D
             // In glTF the animation frames are measured in seconds, so the default FPS value must be 1 second per second.
             CustomAnimationFPS = 1;
             EnableAnimations = viewer.Game.Settings.GltfAnimations;
+            ShapeWarnings = !viewer.Game.Settings.SuppressShapeWarnings;
         }
 
         protected override void LoadContent()
@@ -216,7 +217,7 @@ namespace Orts.Viewer3D
                         foreach (var extensionRequired in gltfFile.ExtensionsRequired)
                             if (!ExtensionsSupported.Contains(extensionRequired))
                                 unsupportedExtensions.Add($"\"{extensionRequired}\"");
-                        if (unsupportedExtensions.Any())
+                        if (unsupportedExtensions.Any() && ShapeWarnings)
                             Trace.TraceWarning($"glTF required extension {string.Join(", ", unsupportedExtensions)} is unsupported in file {externalLods[id]}");
                     }
 
@@ -278,11 +279,11 @@ namespace Orts.Viewer3D
             /// </summary>
             internal Dictionary<int, Matrix[]> AllInverseBindMatrices = new Dictionary<int, Matrix[]>();
 
-            internal readonly ImmutableArray<Matrix> Matrices;
-            readonly ImmutableArray<Vector3> Scales;
-            readonly ImmutableArray<Quaternion> Rotations;
-            readonly ImmutableArray<Vector3> Translations;
-            readonly ImmutableArray<float[]> Weights;
+            internal readonly IEnumerable<Matrix> Matrices;
+            readonly IEnumerable<Vector3> Scales;
+            readonly IEnumerable<Quaternion> Rotations;
+            readonly IEnumerable<Vector3> Translations;
+            readonly IEnumerable<float[]> Weights;
 
             internal readonly Viewer Viewer;
             internal readonly GltfShape Shape;
@@ -311,18 +312,12 @@ namespace Orts.Viewer3D
                 if (gltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
                     gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString());
 
-                Weights = gltfFile.Nodes.Select(node => gltfFile.Meshes?.ElementAtOrDefault(node.Mesh ?? -1)?.Weights).ToImmutableArray();
-                Scales = gltfFile.Nodes.Select(node => node.Scale == null ? Vector3.One : new Vector3(node.Scale[0], node.Scale[1], node.Scale[2])).ToImmutableArray();
-                Rotations = gltfFile.Nodes.Select(node => node.Rotation == null ? Quaternion.Identity : new Quaternion(node.Rotation[0], node.Rotation[1], node.Rotation[2], node.Rotation[3])).ToImmutableArray();
-                Translations = gltfFile.Nodes.Select(node => node.Translation == null ? Vector3.Zero : new Vector3(node.Translation[0], node.Translation[1], node.Translation[2])).ToImmutableArray();
-                //Matrices = gltfFile.Nodes.Select((node, i) => node.Matrix == null ? Matrix.Identity : MemoryMarshal.Cast<float, Matrix>(node.Matrix.AsSpan())[0]
-                //    * Matrix.CreateScale(Scales[i]) * Matrix.CreateFromQuaternion(Rotations[i]) * Matrix.CreateTranslation(Translations[i])).ToImmutableArray();
-                Matrices = gltfFile.Nodes.Select((node, i) => node.Matrix == null ? Matrix.Identity : new Matrix(
-                    node.Matrix[0], node.Matrix[1], node.Matrix[2], node.Matrix[3],
-                    node.Matrix[4], node.Matrix[5], node.Matrix[6], node.Matrix[7],
-                    node.Matrix[8], node.Matrix[9], node.Matrix[10], node.Matrix[11],
-                    node.Matrix[12], node.Matrix[13], node.Matrix[14], node.Matrix[15])
-                    * Matrix.CreateScale(Scales[i]) * Matrix.CreateFromQuaternion(Rotations[i]) * Matrix.CreateTranslation(Translations[i])).ToImmutableArray();
+                Weights = gltfFile.Nodes.Select(node => gltfFile.Meshes?.ElementAtOrDefault(node.Mesh ?? -1)?.Weights);
+                Scales = gltfFile.Nodes.Select(node => node.Scale == null ? Vector3.One : MemoryMarshal.Cast<float, Vector3>(node.Scale)[0]);
+                Rotations = gltfFile.Nodes.Select(node => node.Rotation == null ? Quaternion.Identity : MemoryMarshal.Cast<float, Quaternion>(node.Rotation)[0]);
+                Translations = gltfFile.Nodes.Select(node => node.Translation == null ? Vector3.Zero : MemoryMarshal.Cast<float, Vector3>(node.Translation)[0]);
+                Matrices = gltfFile.Nodes.Select((node, i) => node.Matrix == null ? Matrix.Identity : MemoryMarshal.Cast<float, Matrix>(node.Matrix)[0]
+                    * Matrix.CreateScale(Scales.ElementAt(i)) * Matrix.CreateFromQuaternion(Rotations.ElementAt(i)) * Matrix.CreateTranslation(Translations.ElementAt(i)));
 
                 // Substitute the sparse data to its place.
                 for (var a = 0; a < gltfFile.Accessors.Length; a++)
@@ -333,28 +328,27 @@ namespace Orts.Viewer3D
                         if (GetBufferViewSpan(accessor.BufferView, 0) is var buffer && buffer.IsEmpty)
                         {
                             BinaryBuffers.Add(1000 + a, new byte[accessor.Count * GetSizeInBytes(accessor)]);
-                            buffer = BinaryBuffers[1000 + a].AsSpan();
+                            buffer = BinaryBuffers.Last().Value.AsSpan();
                         }
                         // It might have already been processed in another distance level.
                         var sparseValues = GetBufferViewSpan(accessor.Sparse?.Values);
                         var sparseIndices = GetBufferViewSpan(accessor.Sparse?.Indices);
-                        var byteOffset = accessor.BufferView != null ? accessor.ByteOffset : 0;
                         var byteStride = gltfFile.BufferViews.ElementAtOrDefault(accessor.BufferView ?? -1)?.ByteStride ?? GetSizeInBytes(accessor);
                         switch (accessor.Sparse.Indices.ComponentType)
                         {
                             case AccessorSparseIndices.ComponentTypeEnum.UNSIGNED_BYTE:
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
-                                    sparseValues.Slice(i * byteStride, byteStride).CopyTo(buffer.Slice(byteOffset + sparseIndices[i] * byteStride, byteStride));
+                                    sparseValues.Slice(i * byteStride, byteStride).CopyTo(buffer.Slice(accessor.ByteOffset + sparseIndices[i] * byteStride, byteStride));
                                 break;
                             case AccessorSparseIndices.ComponentTypeEnum.UNSIGNED_INT:
                                 var indicesUi = MemoryMarshal.Cast<byte, uint>(sparseIndices);
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
-                                    sparseValues.Slice(i * byteStride, byteStride).CopyTo(buffer.Slice(byteOffset + (int)indicesUi[i] * byteStride, byteStride));
+                                    sparseValues.Slice(i * byteStride, byteStride).CopyTo(buffer.Slice(accessor.ByteOffset + (int)indicesUi[i] * byteStride, byteStride));
                                 break;
                             case AccessorSparseIndices.ComponentTypeEnum.UNSIGNED_SHORT:
                                 var indicesUs = MemoryMarshal.Cast<byte, ushort>(sparseIndices);
                                 for (var i = 0; i < accessor.Sparse.Count; i++)
-                                    sparseValues.Slice(i * byteStride, byteStride).CopyTo(buffer.Slice(byteOffset + indicesUs[i] * byteStride, byteStride));
+                                    sparseValues.Slice(i * byteStride, byteStride).CopyTo(buffer.Slice(accessor.ByteOffset + indicesUs[i] * byteStride, byteStride));
                                 break;
                         }
                     }
@@ -550,12 +544,12 @@ namespace Orts.Viewer3D
 
                     if (SubObjects.FirstOrDefault() is GltfSubObject gltfSubObject)
                     {
-                        var minPosition = Vector4.Transform(gltfSubObject.MinPosition, Matrices[gltfSubObject.HierarchyIndex]);
-                        var maxPosition = Vector4.Transform(gltfSubObject.MaxPosition, Matrices[gltfSubObject.HierarchyIndex]);
+                        var minPosition = Vector4.Transform(gltfSubObject.MinPosition, Matrices.ElementAt(gltfSubObject.HierarchyIndex));
+                        var maxPosition = Vector4.Transform(gltfSubObject.MaxPosition, Matrices.ElementAt(gltfSubObject.HierarchyIndex));
                         foreach (GltfSubObject subObject in SubObjects.Cast<GltfSubObject>())
                         {
-                            var soMinPosition = Vector4.Transform(subObject.MinPosition, Matrices[subObject.HierarchyIndex]);
-                            var soMaxPosition = Vector4.Transform(subObject.MaxPosition, Matrices[subObject.HierarchyIndex]);
+                            var soMinPosition = Vector4.Transform(subObject.MinPosition, Matrices.ElementAt(subObject.HierarchyIndex));
+                            var soMaxPosition = Vector4.Transform(subObject.MaxPosition, Matrices.ElementAt(subObject.HierarchyIndex));
                             minPosition = Vector4.Min(minPosition, soMinPosition);
                             maxPosition = Vector4.Max(maxPosition, soMaxPosition);
                         }
@@ -626,7 +620,7 @@ namespace Orts.Viewer3D
                         }
                         shape.GltfAnimations.Add(animation);
                     }
-                    if (morphWarning)
+                    if (morphWarning && ShapeWarnings)
                         Trace.TraceInformation($"glTF morphing animation is unsupported in file {gltfFileName}");
 
                     if (articulations != null)
@@ -670,8 +664,6 @@ namespace Orts.Viewer3D
                 return bytes.AsSpan(bufferView.ByteOffset + accessorByteOffset);
             }
 
-            internal Stream GetBufferView(AccessorSparseIndices accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
-            internal Stream GetBufferView(AccessorSparseValues accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
             internal Stream GetBufferView(Accessor accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
             internal Stream GetBufferView(int? bufferViewNumber, int accessorByteOffset, out int? byteStride)
             {
@@ -724,7 +716,7 @@ namespace Orts.Viewer3D
                 {
                     case Accessor.ComponentTypeEnum.UNSIGNED_INT: return IndexElementSize.ThirtyTwoBits;
                     case Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return IndexElementSize.SixteenBits;
-                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: Trace.TraceWarning($"glTF: Unsupported 8 bit index size in file {GltfFileName}, converting it to 16 bits."); return IndexElementSize.SixteenBits;
+                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: if (ShapeWarnings) Trace.TraceInformation($"glTF: Unsupported 8 bit index size in file {GltfFileName}, converting it to 16 bits."); return IndexElementSize.SixteenBits;
                     default: return IndexElementSize.SixteenBits;
                 }
             }
@@ -1002,6 +994,8 @@ namespace Orts.Viewer3D
 
             public GltfSubObject(MeshPrimitive meshPrimitive, string name, int hierarchyIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel, Skin skin)
             {
+                HierarchyIndex = hierarchyIndex;
+                
                 var material = meshPrimitive.Material == null ? DefaultGltfMaterial : gltfFile.Materials[(int)meshPrimitive.Material];
 
                 var options = SceneryMaterialOptions.None;
@@ -1015,10 +1009,10 @@ namespace Orts.Viewer3D
                     shape.SkeletonRootNode = skin.Skeleton ?? 0;
                 }
 
-                if (!shape.MsfsFlavoured && distanceLevel.Matrices[hierarchyIndex].Determinant() > 0)
+                if (!shape.MsfsFlavoured && distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant() > 0)
                     // This is according to the glTF spec
                     options |= SceneryMaterialOptions.PbrCullClockWise;
-                else if (shape.MsfsFlavoured && distanceLevel.Matrices[hierarchyIndex].Determinant() < 0)
+                else if (shape.MsfsFlavoured && distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant() < 0)
                     // Msfs seems to be using this reversed
                     options |= SceneryMaterialOptions.PbrCullClockWise;
 
@@ -1142,6 +1136,16 @@ namespace Orts.Viewer3D
                 //
                 // So e.g. for a primitive with only Position, Normal, Color_0 attributes present,
                 // dummy TexCoord_0, TexCoord_1 and Tangent buffers have to be added to match the NormalMap pipeline.
+
+                // Cannot proceed without vertex Positions, nor can add fake ones, exiting.
+                if (!meshPrimitive.Attributes.TryGetValue("POSITION", out var accessorPosition))
+                    throw new InvalidDataException("One of the glTF mesh primitives has no positions.");
+                else
+                {
+                    var a = gltfFile.Accessors[accessorPosition];
+                    MinPosition = new Vector4(a.Min[0], a.Min[1], a.Min[2], 1);
+                    MaxPosition = new Vector4(a.Max[0], a.Max[1], a.Max[2], 1);
+                }
 
                 // Cannot proceed without Normal at all, must add a dummy one.
                 if (!meshPrimitive.Attributes.TryGetValue("NORMAL", out var accessorNormals))
@@ -1267,7 +1271,7 @@ namespace Orts.Viewer3D
                         // The uv's are in normalized short or byte integer form, transcoding them for calculation.
                         var read = GltfDistanceLevel.GetNormalizedReader(accessor.ComponentType, distanceLevel.Shape.MsfsFlavoured);
                         var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
-                        var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride)); // With a MemoryStream there is no need for "using".
+                        var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride));
                         var seek = byteStride ?? componentSizeInBytes - componentSizeInBytes;
                         texcoords = new Span<Vector2>(new IEnumerable<Vector2>[accessor.Count].Select(i => distanceLevel.ReadVector2(read, br, accessor.Type, seek)).ToArray());
                         // Sparse data were already inserted before.
