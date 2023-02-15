@@ -287,6 +287,12 @@ namespace Orts.Viewer3D.RollingStock
                         case CABViewControlTypes.ORTS_SELECTED_SPEED_SELECTOR:
                             Locomotive.CruiseControl.SelectedSpeedMpS = val;
                             break;
+                        case CABViewControlTypes.WIPERS:
+                            if (val == 0 && Locomotive.Wiper)
+                                Locomotive.SignalEvent(Event.WiperOff);
+                            if (val != 0 && !Locomotive.Wiper)
+                                Locomotive.SignalEvent(Event.WiperOn);
+                            break;
                         // Other controls can hopefully be controlled faking mouse input
                         // TODO: refactor HandleUserInput() 
                         default:

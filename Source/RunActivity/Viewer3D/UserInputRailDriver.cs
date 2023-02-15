@@ -47,9 +47,9 @@ namespace Orts.Viewer3D
         public ExternalDeviceCabControl DynamicBrake = new ExternalDeviceCabControl();   // 0 to 100 if active otherwise less than 0
         public ExternalDeviceCabControl TrainBrake = new ExternalDeviceCabControl();     // 0 (release) to 100 (CS), does not include emergency
         public ExternalDeviceCabControl EngineBrake = new ExternalDeviceCabControl();    // 0 to 100
+        public ExternalDeviceCabControl Wipers = new ExternalDeviceCabControl();                  // wiper rotary, 1 off, 2 slow, 3 full
         public ExternalDeviceCabControl Lights = new ExternalDeviceCabControl();                  // lights rotary, 1 off, 2 dim, 3 full
         ExternalDeviceButton BailOff;
-        ExternalDeviceButton Wiper;
         public RailDriverState(Game game)
         {
             try
@@ -140,15 +140,14 @@ namespace Orts.Viewer3D
             }
             
             BailOff = new ExternalDeviceButton();
-            Wiper = new ExternalDeviceButton();
             RegisterCommand(UserCommand.ControlBailOff, BailOff);
-            RegisterCommand(UserCommand.ControlWiper, Wiper);
 
             CabControls[(new CabViewControlType(CABViewControlTypes.DIRECTION), -1)] = Direction;
             CabControls[(new CabViewControlType(CABViewControlTypes.THROTTLE), -1)] = Throttle;
             CabControls[(new CabViewControlType(CABViewControlTypes.TRAIN_BRAKE), -1)] = TrainBrake;
             CabControls[(new CabViewControlType(CABViewControlTypes.ENGINE_BRAKE), -1)] = EngineBrake;
             CabControls[(new CabViewControlType(CABViewControlTypes.DYNAMIC_BRAKE), -1)] = DynamicBrake;
+            CabControls[(new CabViewControlType(CABViewControlTypes.WIPERS), -1)] = Wipers;
             CabControls[(new CabViewControlType(CABViewControlTypes.FRONT_HLIGHT), -1)] = Lights;
         }
         public void Update()
@@ -171,7 +170,7 @@ namespace Orts.Viewer3D
                     float calOff = (1 - a) * bailoffDisengaged.Item1 + a * bailoffDisengaged.Item2;
                     float calOn = (1 - a) * bailoffEngaged.Item1 + a * bailoffEngaged.Item2;
                     BailOff.IsDown = Percentage(readBuffer[5], calOff, calOn) > 50;
-                    Wiper.IsDown = (int)(.01 * Percentage(readBuffer[6], wipers) + 2.5) != 1;
+                    Wipers.Value = (int)(.01 * Percentage(readBuffer[6], wipers) + 2.5) == 1 ? 0 : 1;
                     Lights.Value = (int)(.01 * Percentage(readBuffer[7], headlight) + 2.5);
 
                     foreach (var buttonList in Commands.Values)
