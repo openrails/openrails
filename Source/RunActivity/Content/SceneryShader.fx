@@ -58,7 +58,7 @@ float	 OverlayScale;
 #define MAX_LIGHTS 20
 #define MAX_BONES 50
 #define CLEARCOAT
-static const bool HasTangents = true; // true: tangents are calculated per-vertex, false: tangents are calculated per-pixel
+static const bool HasTangents = false; // true: tangents are calculated per-vertex, false: tangents are calculated per-pixel
 
 float4x4 Bones[MAX_BONES]; // model -> world [max number of bones]
 float4   BaseColorFactor; // glTF linear color multiplier
@@ -744,16 +744,17 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, float normalScale
 		
 		if (hasNormalMap)
 		{
-			float3 tex_dx = ddx(float3(-In.TexCoords.xy, 0.0));
-			float3 tex_dy = ddy(float3(-In.TexCoords.xy, 0.0));
-			float3 t = (tex_dy.y * pos_dx - tex_dx.y * pos_dy) / (tex_dx.x * tex_dy.y - tex_dy.x * tex_dx.y);
+			float3 tex_dx = -ddx(float3(In.TexCoords.xy, 0.0));
+			float3 tex_dy = -ddy(float3(In.TexCoords.xy, 0.0));
+            float tex_dxy = tex_dx.x * tex_dy.y - tex_dy.x * tex_dx.y;
+            float3 t = (tex_dy.y * pos_dx - tex_dx.y * pos_dy) / tex_dxy;
 
 			if (hasTangents)
 				t = In.Tangent.xyz;
 			else
 				t = normalize(t - ng * dot(ng, t));
 			tbn[0].xyz = t;
-			tbn[1].xyz = normalize(cross(ng, t));
+			tbn[1].xyz = sign(tex_dxy) * normalize(cross(ng, t));
 		}
     }
 	if (isFrontFace) // Does it work reversed?! We should negate in case of back face...
