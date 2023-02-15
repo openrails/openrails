@@ -380,7 +380,7 @@ namespace Orts.Viewer3D
                         Accessors.Clear();
                         // For interleaved data, multiple vertexElements and multiple accessors will be in a single vertexBuffer.
                         // For non-interleaved data, we create a distinct vertexBuffer for each accessor.
-                        // A bufferView may consist of a series of (non-interleaved) accessors of POSITION:NORMAL:POSITION:NORMAL:POSITION:NORMAL etc.
+                        // A bufferView may consist of a series of (non-interleaved) accessors of POSITION:NORMAL:POSITION:NORMAL:POSITION:NORMAL etc. (See: 2CylinderEngine)
                         // Also e.g. TEXCOORDS_0 and TEXCOORDS_1 may refer to the same accessor.
                         do
                         {
@@ -432,22 +432,29 @@ namespace Orts.Viewer3D
                     .SelectMany(m => m.Primitives)
                     .OrderBy(p => gltfFile.Accessors?.ElementAtOrDefault(p.Indices ?? -1)?.ByteOffset ?? -1)
                     .GroupBy(p => gltfFile.Accessors?.ElementAtOrDefault(p.Indices ?? -1)?.BufferView ?? -1)
-                    .Where(i => i.Key != -1 && !IndexBuffers.ContainsKey(i.Key));
+                    .Where(i => i.Key != -1);
 
                 foreach (var indexBufferView in indexBufferViews)
                 {
-                    var accessor = gltfFile.Accessors?.ElementAtOrDefault((int)indexBufferView.First().Indices);
-                    var bufferView = gltfFile.BufferViews?.ElementAtOrDefault(indexBufferView.Key);
-                    var componentSizeInBytes = GetComponentSizeInBytes(accessor.ComponentType);
-                    var indexBuffer = new IndexBuffer(shape.Viewer.GraphicsDevice, GetIndexElementSize(accessor.ComponentType), bufferView.ByteLength / componentSizeInBytes, BufferUsage.None);
+                    // Both uint and ushort type indices may exist in a single bufferView, so byteStride is not constant. (See: ToyCar)
+                    // In MonoGame we cannot create a hybrid buffer, so creating the buffer on a per-accessor basis.
+                    foreach (var p in indexBufferView)
+                    {
+                        if (IndexBuffers.ContainsKey((int)p.Indices))
+                            continue;
+                        var accessor = gltfFile.Accessors?.ElementAtOrDefault((int)p.Indices);
+                        var bufferView = gltfFile.BufferViews?.ElementAtOrDefault(indexBufferView.Key);
+                        var componentSizeInBytes = GetComponentSizeInBytes(accessor.ComponentType);
+                        var indexBuffer = new IndexBuffer(shape.Viewer.GraphicsDevice, GetIndexElementSize(accessor.ComponentType), accessor.Count, BufferUsage.None);
 
-                    // 8 bit indices are unsupported in MonoGame, so we must convert them to 16 bits. GetIndexElementSize() reports twice the length automatically.
-                    if (accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE)
-                        indexBuffer.SetData(BinaryBuffers[bufferView.Buffer].Skip(bufferView.ByteOffset).Take(bufferView.ByteLength).Select(b => (ushort)b).ToArray());
-                    else
-                        indexBuffer.SetData(BinaryBuffers[bufferView.Buffer], bufferView.ByteOffset, bufferView.ByteLength);
+                        // 8 bit indices are unsupported in MonoGame, so we must convert them to 16 bits. GetIndexElementSize() reports twice the length automatically in this case.
+                        if (accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE)
+                            indexBuffer.SetData(BinaryBuffers[bufferView.Buffer].Skip(bufferView.ByteOffset + accessor.ByteOffset).Take(accessor.Count * componentSizeInBytes).Select(b => (ushort)b).ToArray());
+                        else
+                            indexBuffer.SetData(BinaryBuffers[bufferView.Buffer], bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * componentSizeInBytes);
 
-                    IndexBuffers.Add(indexBufferView.Key, indexBuffer);
+                        IndexBuffers.Add((int)p.Indices, indexBuffer);
+                    }
                 }
 
                 var hierarchy = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray();
@@ -1103,8 +1110,8 @@ namespace Orts.Viewer3D
 
                 if (gltfFile.Accessors.ElementAtOrDefault(meshPrimitive.Indices ?? -1) is var accessor && accessor != null)
                 {
-                    indexBufferSet.IndexBuffer = distanceLevel.IndexBuffers[(int)accessor.BufferView];
-                    indexBufferSet.PrimitiveOffset = accessor.ByteOffset / distanceLevel.GetComponentSizeInBytes(accessor.ComponentType);
+                    indexBufferSet.IndexBuffer = distanceLevel.IndexBuffers[(int)meshPrimitive.Indices];
+                    indexBufferSet.PrimitiveOffset = 0;
                     indexCount = accessor.Count;
                     options |= SceneryMaterialOptions.PbrHasIndices;
                 }
@@ -1322,8 +1329,7 @@ namespace Orts.Viewer3D
                     var w2 = vertexTexture[i2];
                     var w3 = vertexTexture[i3];
 
-                    // Need to invert the normal map Y coordinates to pass the test
-                    // https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/NormalTangentTest
+                    // Need to invert the normal map Y coordinates to pass the NormalTangentTest
                     w1.Y = -w1.Y;
                     w2.Y = -w2.Y;
                     w3.Y = -w3.Y;
