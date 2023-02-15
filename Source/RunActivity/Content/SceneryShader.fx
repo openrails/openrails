@@ -58,6 +58,7 @@ float	 OverlayScale;
 #define MAX_LIGHTS 20
 #define MAX_BONES 50
 #define CLEARCOAT
+static const bool HasTangents = true; // true: tangents are calculated per-vertex, false: tangents are calculated per-pixel
 
 float4x4 Bones[MAX_BONES]; // model -> world [max number of bones]
 float4   BaseColorFactor; // glTF linear color multiplier
@@ -743,8 +744,8 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, float normalScale
 		
 		if (hasNormalMap)
 		{
-			float3 tex_dx = ddx(float3(In.TexCoords.xy, 0.0));
-			float3 tex_dy = ddy(float3(In.TexCoords.xy, 0.0));
+			float3 tex_dx = ddx(float3(-In.TexCoords.xy, 0.0));
+			float3 tex_dy = ddy(float3(-In.TexCoords.xy, 0.0));
 			float3 t = (tex_dy.y * pos_dx - tex_dx.y * pos_dy) / (tex_dx.x * tex_dy.y - tex_dy.x * tex_dx.y);
 
 			if (hasTangents)
@@ -955,7 +956,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
     float3 specularEnvironmentR0 = specularColor.rgb;
     float3 specularEnvironmentR90 = float3(1.0, 1.0, 1.0) * reflectance90;
 	
-	float3 n = _PSGetNormal(In, true, NormalScale, Normal, TextureCoordinates1.z, isFrontFace);
+	float3 n = _PSGetNormal(In, HasTangents, NormalScale, Normal, TextureCoordinates1.z, isFrontFace);
 	float3 v = normalize(-In.RelPosition.xyz);
 
 	float NdotV = abs(dot(n, v)) + 0.001;
@@ -987,7 +988,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 		clearcoatRoughnessSq = clearcoatAlphaRoughness * clearcoatAlphaRoughness;
 
 		// TODO: implement clearcoat texturepacking for being able to check whether the clearcoat normal is the same as the base normal
-		clearcoatNormal = _PSGetNormal(In, true, ClearcoatNormalScale, ClearcoatNormal, TextureCoordinates2.z, isFrontFace);
+		clearcoatNormal = _PSGetNormal(In, HasTangents, ClearcoatNormalScale, ClearcoatNormal, TextureCoordinates2.z, isFrontFace);
 		clearcoatNdotV = abs(dot(clearcoatNormal, v)) + 0.001;
 
 		float3 Fr = max((float3)(1.0 - clearcoatRoughness), f0) - f0;

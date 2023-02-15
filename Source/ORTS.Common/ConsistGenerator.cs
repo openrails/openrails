@@ -94,7 +94,7 @@ namespace ORTS.Common
                 GltfVisualTestRun = true;
 
                 var models = Directory.EnumerateFileSystemEntries(baseDir, "*.*", SearchOption.AllDirectories)
-                    .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
+                    .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && !f.Contains(Path.Combine(baseDir, "1.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
                     .Select(f => Path.GetFileNameWithoutExtension(f))
                     .Concat(Directory.EnumerateDirectories(Path.Combine(baseDir, "2.0")))
                     .Where((m, n) => Path.GetFileName(m) == (Path.GetFileNameWithoutExtension(requestedPath).Split('&').ElementAtOrDefault(1) ?? Path.GetFileName(m)) &&
