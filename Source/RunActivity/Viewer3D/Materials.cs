@@ -1294,6 +1294,12 @@ namespace Orts.Viewer3D
                 }
             }
         }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            base.ResetState(graphicsDevice);
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        }
     }
 
     public class ShadowMapMaterial : Material
