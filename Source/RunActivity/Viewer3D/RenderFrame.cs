@@ -747,7 +747,7 @@ namespace Orts.Viewer3D
         {
             if (material is PbrMaterial skinnedMaterial && (skinnedMaterial.Options & SceneryMaterialOptions.PbrHasSkin) != 0)
                 RenderShadowPbrSkinnedItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
-            else if (material is PbrMaterial pbrMaterial && (pbrMaterial.Options & SceneryMaterialOptions.PbrHasTangents) != 0)
+            else if (material is PbrMaterial pbrMaterial && (pbrMaterial.Options & SceneryMaterialOptions.PbrHasTexCoord1) != 0)
                 RenderShadowPbrNormalMapItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
             else if (material is SceneryMaterial)
                 RenderShadowSceneryItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));

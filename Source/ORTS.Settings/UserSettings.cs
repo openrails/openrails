@@ -207,6 +207,8 @@ namespace ORTS.Settings
         public int AntiAliasing { get; set; }
         [Default(false)]
         public bool GltfAnimations { get; set; }
+        [Default(true)]
+        public bool GltfTangentsAlwaysCalculatedPerPixel { get; set; }
 
         // Simulation settings:
 
