@@ -58,7 +58,6 @@ float	 OverlayScale;
 #define MAX_LIGHTS 20
 #define MAX_BONES 50
 #define CLEARCOAT
-static const bool HasTangents = false; // true: tangents are calculated per-vertex, false: tangents are calculated per-pixel
 
 float4x4 Bones[MAX_BONES]; // model -> world [max number of bones]
 float4   BaseColorFactor; // glTF linear color multiplier
@@ -79,6 +78,7 @@ float4   TextureCoordinates1; // x: baseColor, y: roughness-metallic, z: normal,
 float4   TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
 float    TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic, 4: roughnessMetallicOcclusion + normal (RG) 2 channel separate, 5: occlusionRoughnessMetallic + normal (RG) 2 channel separate
 bool     HasNormals; // 0: no, 1: yes
+bool     HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
 
 int		NumLights; // The number of the lights used
 float	LightTypes[MAX_LIGHTS]; // 0: directional, 1: point, 2: spot

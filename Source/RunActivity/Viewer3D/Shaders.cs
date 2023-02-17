@@ -120,6 +120,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter textureCoordinates2;
         readonly EffectParameter texturePacking;
         readonly EffectParameter hasNormals;
+        readonly EffectParameter hasTangents;
         // Per-frame PBR uniforms:
         readonly EffectParameter environmentMapSpecularTexture;
         readonly EffectParameter environmentMapDiffuseTexture;
@@ -299,6 +300,8 @@ namespace Orts.Viewer3D
 
         public bool HasNormals { set { hasNormals.SetValue(value); } }
 
+        public bool HasTangents { set { hasTangents.SetValue(value); } }
+
         public int NumLights { set { numLights.SetValue(value); } }
         public Vector3[] LightPositions { set { lightPositions.SetValue(value); } }
         public Vector3[] LightDirections { set { lightDirections.SetValue(value); } }
@@ -357,6 +360,7 @@ namespace Orts.Viewer3D
             textureCoordinates2 = Parameters["TextureCoordinates2"];
             texturePacking = Parameters["TexturePacking"];
             hasNormals = Parameters["HasNormals"];
+            hasTangents = Parameters["HasTangents"];
             environmentMapSpecularTexture = Parameters["EnvironmentMapSpecularTexture"];
             environmentMapDiffuseTexture = Parameters["EnvironmentMapDiffuseTexture"];
             brdfLutTexture = Parameters["BrdfLutTexture"];

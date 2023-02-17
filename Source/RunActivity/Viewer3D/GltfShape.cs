@@ -31,6 +31,7 @@ using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using glTFLoader.Schema;
+using System.Collections.Concurrent;
 
 namespace Orts.Viewer3D
 {
@@ -38,6 +39,7 @@ namespace Orts.Viewer3D
     {
         public static bool EnableAnimations { get; set; }
         public static bool ShapeWarnings { get; set; }
+        public static bool TangentsAlwaysCalculatedPerPixel { get; set; }
 
         public static List<string> ExtensionsSupported = new List<string>
         {
@@ -109,6 +111,8 @@ namespace Orts.Viewer3D
         protected override void LoadContent()
         {
             Trace.Write("G");
+
+            TangentsAlwaysCalculatedPerPixel = Viewer.Game.Settings.GltfTangentsAlwaysCalculatedPerPixel;
 
             var externalLods = new Dictionary<int, string>();
 
@@ -977,6 +981,8 @@ namespace Orts.Viewer3D
             public readonly Vector4 MaxPosition;
             public readonly int HierarchyIndex;
 
+            static readonly ConcurrentQueue<VertexBuffer> Disposables = new ConcurrentQueue<VertexBuffer>();
+
             public static readonly glTFLoader.Schema.Material DefaultGltfMaterial = new glTFLoader.Schema.Material
             {
                 AlphaCutoff = 0.5f,
@@ -1086,14 +1092,12 @@ namespace Orts.Viewer3D
                 (texCoords2.Y, clearcoatRoughnessTexture, clearcoatRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatRoughnessTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords2.Z, clearcoatNormalTexture, clearcoatNormalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatNormalTexture, SharedMaterialManager.WhiteTexture);
 
-                var baseColorFactor = material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f };
-                var baseColorFactorVector = new Vector4(baseColorFactor[0], baseColorFactor[1], baseColorFactor[2], baseColorFactor[3]);
+                var baseColorFactor = MemoryMarshal.Cast<float, Vector4>(material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f })[0];
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
                 var normalScale = material.NormalTexture?.Scale ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
                 var occlusionStrength = material.OcclusionTexture?.Strength ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
-                var emissiveFactor = material.EmissiveFactor ?? new[] { 0f, 0f, 0f };
-                var emissiveFactorVector = new Vector3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
+                var emissiveFactor = MemoryMarshal.Cast<float, Vector3>(material.EmissiveFactor ?? new[] { 0f, 0f, 0f })[0];
                 var clearcoatFactor = clearcoat?.ClearcoatFactor ?? 0;
                 var clearcoatRoughnessFactor = clearcoat?.ClearcoatRoughnessFactor ?? 0;
                 var clearcoatNormalScale = clearcoat?.ClearcoatNormalTexture?.Scale ?? 1;
@@ -1117,10 +1121,6 @@ namespace Orts.Viewer3D
                 }
 
                 var vertexAttributes = meshPrimitive.Attributes.SelectMany(a => distanceLevel.VertexBufferBindings.Where(kvp => kvp.Key == a.Value).Select(kvp => kvp.Value)).ToList();
-
-                // These might be needed for the tangents calculations
-                var normals = Span<Vector3>.Empty;
-                var texcoords = Span<Vector2>.Empty;
                 var vertexCount = vertexAttributes.FirstOrDefault().VertexBuffer?.VertexCount ?? 0;
 
                 // Currently three PBR vertex input combinations are possible. Any model must use either of those.
@@ -1129,7 +1129,7 @@ namespace Orts.Viewer3D
                 // If more combinations to be added in the future, there must be support for them both in SceneryShader and ShadowMapShader.
                 //
                 // ================================================================
-                // PositionNormalTexture | NormalMap          | Skinned            
+                // PositionNormalTexture | NormalMapColor     | Skinned            
                 // ================================================================
                 //  Position             | Position           | Position           
                 //  Normal               | Normal             | Normal             
@@ -1142,7 +1142,7 @@ namespace Orts.Viewer3D
                 // ================================================================
                 //
                 // So e.g. for a primitive with only Position, Normal, Color_0 attributes present,
-                // dummy TexCoord_0, TexCoord_1 and Tangent buffers have to be added to match the NormalMap pipeline.
+                // dummy TexCoord_0, TexCoord_1 and Tangent buffers have to be added to match the NormalMapColor pipeline.
 
                 // Cannot proceed without vertex Positions, nor can add fake ones, exiting.
                 if (!meshPrimitive.Attributes.TryGetValue("POSITION", out var accessorPosition))
@@ -1157,12 +1157,8 @@ namespace Orts.Viewer3D
                 // Cannot proceed without Normal at all, must add a dummy one.
                 if (!meshPrimitive.Attributes.TryGetValue("NORMAL", out var accessorNormals))
                 {
-                    var vertexArray = new float[vertexCount * 3];
-                    var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice,
-                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0)), vertexCount, BufferUsage.None) { Name = "NORMAL_DUMMY" };
-                    vertexBuffer.SetData(vertexArray);
-                    vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
-                    normals = MemoryMarshal.Cast<float, Vector3>(vertexArray.AsSpan());
+                    vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
+                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Normal, 0)), vertexCount, BufferUsage.None) { Name = "NORMAL_DUMMY" }));
                     // Do not set the SceneryMaterialOptions.PbrHasNormals flag here, so that the shader will know to calculate its own normals.
                 }
                 else
@@ -1171,35 +1167,47 @@ namespace Orts.Viewer3D
                 // Cannot proceed without TexCoord_0 at all, must add a dummy one.
                 if (!meshPrimitive.Attributes.TryGetValue("TEXCOORD_0", out var accessorTexcoords))
                 {
-                    var vertexTextureUvs = new float[vertexCount * 2];
-                    var vertexBufferTextureUvs = new VertexBuffer(shape.Viewer.GraphicsDevice,
-                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_0_DUMMY" };
-                    vertexBufferTextureUvs.SetData(vertexTextureUvs);
-                    vertexAttributes.Add(new VertexBufferBinding(vertexBufferTextureUvs));
-                    texcoords = MemoryMarshal.Cast<float, Vector2>(vertexTextureUvs.AsSpan());
+                    vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
+                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 0)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_0_DUMMY" }));
                 }
 
-                // If we have a normal map or Color_0 or TexCoord_1, but don't have Tangent, then we must calculate them to run it through the NormalMap pipeline. (See: MorphStressTest with spare TexCoord_1)
-                if (!meshPrimitive.Attributes.ContainsKey("TANGENT") && normalScale != 0 || (options & SceneryMaterialOptions.PbrHasSkin) != 0
-                    || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
+                // If we have skins or Color_0 or TexCoord_1, but don't have Tangent, then we must add a dummy one to run through the NormalMapColor pipeline. (See: MorphStressTest with spare TexCoord_1)
+                if ((options & SceneryMaterialOptions.PbrHasSkin) != 0 || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
                 {
-                    var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice,
-                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Tangent, 0)), vertexCount, BufferUsage.WriteOnly) { Name = "TANGENT_CALCULATED" };
-                    vertexBuffer.SetData(CalculateTangents(normals, texcoords, gltfFile, meshPrimitive, distanceLevel));
-                    vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
-                    options |= SceneryMaterialOptions.PbrHasTangents; // By setting this we instruct the program to call the NormalMap pipeline, this will not pass through to the shader.
+                    options |= SceneryMaterialOptions.PbrHasTexCoord1; // With this we request to call the NormalMapColor pipeline
+
+                    if (!meshPrimitive.Attributes.ContainsKey("TANGENT"))
+                        vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Tangent, 0)), vertexCount, BufferUsage.WriteOnly)
+                        { Name = "TANGENT_DUMMY" })); // VertexElementFormat.Color is actually unsigned Byte4 normalized.
+                    else if (!TangentsAlwaysCalculatedPerPixel)
+                        options |= SceneryMaterialOptions.PbrHasTangents;
                 }
-                if (meshPrimitive.Attributes.ContainsKey("TANGENT"))
-                    options |= SceneryMaterialOptions.PbrHasTangents;
+                else if (normalScale != 0)
+                {
+                    if (meshPrimitive.Attributes.ContainsKey("TANGENT"))
+                    {
+                        // Per-pixel tangent calculation gives better result. In that case we are not using the provided Tangent vertex attribute at all, so it can be removed. (See BoomBox)
+                        if (TangentsAlwaysCalculatedPerPixel)
+                        {
+                            var removables = vertexAttributes.Where(b => b.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.Tangent));
+                            foreach (var r in removables)
+                                Disposables.Enqueue(r.VertexBuffer);
+                            vertexAttributes.RemoveAll(b => removables.Contains(b));
+                        }
+                        else
+                            options |= SceneryMaterialOptions.PbrHasTangents;
+                    }
+                }
 
                 // When we have a Tangent, must also make sure to have TexCoord_1 and Color_0
-                if ((options & (SceneryMaterialOptions.PbrHasTangents | SceneryMaterialOptions.PbrHasSkin)) != 0)
+                if ((options & (SceneryMaterialOptions.PbrHasTangents | SceneryMaterialOptions.PbrHasSkin)) != 0
+                    || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
                 {
                     if (!meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
                     {
-                        var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice,
-                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 1)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_1_DUMMY" };
-                        vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
+                        vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 1)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_1_DUMMY" }));
                     }
                     if (!meshPrimitive.Attributes.ContainsKey("COLOR_0"))
                     {
@@ -1208,11 +1216,18 @@ namespace Orts.Viewer3D
                         vertexBuffer.SetData(Enumerable.Repeat(byte.MaxValue, vertexCount * 4).ToArray()); // Init the colors with white, because it is a multiplier to the sampled colors.
                         vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
                     }
+                    options |= SceneryMaterialOptions.PbrHasTexCoord1;
                 }
 
                 // Remove the unused TexCoord_2, _3, etc. attributes, because they might create display artifacts. Most probably these are model errors anyway. (See: MosquitoInAmber with spare TexCoord_2)
-                vertexAttributes.RemoveAll(b => b.VertexBuffer.VertexDeclaration.GetVertexElements()
-                    .Any(e => e.VertexElementUsage == VertexElementUsage.TextureCoordinate && e.UsageIndex > 1));
+                var remove = vertexAttributes.Where(b => b.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.TextureCoordinate && e.UsageIndex > 1));
+                foreach (var r in remove)
+                    Disposables.Enqueue(r.VertexBuffer);
+                vertexAttributes.RemoveAll(b => remove.Contains(b));
+
+                // Sweep
+                while (Disposables.TryDequeue(out var vb))
+                    vb.Dispose();
 
                 // This is the dummy instance buffer at the end of the vertex buffers
                 vertexAttributes.Add(new VertexBufferBinding(RenderPrimitive.GetDummyVertexBuffer(shape.Viewer.GraphicsDevice)));
@@ -1230,11 +1245,11 @@ namespace Orts.Viewer3D
                 var key = $"{shape.FilePath}#{material.Name}#{meshPrimitive.Material ?? -1}";
 
                 var sceneryMaterial = shape.Viewer.MaterialManager.Load("PBR", key, (int)options, 0,
-                    baseColorTexture, baseColorFactorVector,
+                    baseColorTexture, baseColorFactor,
                     metallicRoughnessTexture, metallicFactor, roughtnessFactor,
                     normalTexture, normalScale,
                     occlusionTexture, occlusionStrength,
-                    emissiveTexture, emissiveFactorVector,
+                    emissiveTexture, emissiveFactor,
                     clearcoatTexture, clearcoatFactor,
                     clearcoatRoughnessTexture, clearcoatRoughnessFactor,
                     clearcoatNormalTexture, clearcoatNormalScale,
@@ -1252,131 +1267,8 @@ namespace Orts.Viewer3D
                 ShapePrimitives[0].SortIndex = 0;
             }
 
-            Vector4[] CalculateTangents(Span<Vector3> normals, Span<Vector2> texcoords, Gltf gltfFile, MeshPrimitive meshPrimitive, GltfDistanceLevel distanceLevel)
-            {
-                var accessor = gltfFile.Accessors[meshPrimitive.Attributes["POSITION"]];
-                var bufferView = gltfFile.BufferViews[(int)accessor.BufferView];
-                var positions = MemoryMarshal.Cast<byte, Vector3>(distanceLevel.Shape.BinaryBuffers[bufferView.Buffer].AsSpan().Slice(bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * 3 * sizeof(float)));
-
-                if (normals.IsEmpty)
-                {
-                    accessor = gltfFile.Accessors[meshPrimitive.Attributes["NORMAL"]];
-                    bufferView = gltfFile.BufferViews[(int)accessor.BufferView];
-                    normals = MemoryMarshal.Cast<byte, Vector3>(distanceLevel.Shape.BinaryBuffers[bufferView.Buffer].AsSpan().Slice(bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * 3 * sizeof(float)));
-                }
-
-                if (texcoords.IsEmpty)
-                {
-                    accessor = gltfFile.Accessors[meshPrimitive.Attributes["TEXCOORD_0"]];
-                    if (accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT)
-                    {
-                        bufferView = gltfFile.BufferViews[(int)accessor.BufferView];
-                        texcoords = MemoryMarshal.Cast<byte, Vector2>(distanceLevel.Shape.BinaryBuffers[bufferView.Buffer].AsSpan().Slice(bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * 2 * sizeof(float)));
-                    }
-                    else
-                    {
-                        // The uv's are in normalized short or byte integer form, transcoding them for calculation.
-                        var read = GltfDistanceLevel.GetNormalizedReader(accessor.ComponentType, distanceLevel.Shape.MsfsFlavoured);
-                        var componentSizeInBytes = distanceLevel.GetSizeInBytes(accessor);
-                        var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out var byteStride));
-                        var seek = byteStride ?? componentSizeInBytes - componentSizeInBytes;
-                        texcoords = new Span<Vector2>(new IEnumerable<Vector2>[accessor.Count].Select(i => distanceLevel.ReadVector2(read, br, accessor.Type, seek)).ToArray());
-                        // Sparse data were already inserted before.
-                    }
-                }
-
-                var indices = Span<ushort>.Empty;
-                if (meshPrimitive.Indices != null)
-                {
-                    accessor = gltfFile.Accessors[(int)meshPrimitive.Indices];
-                    if (accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT)
-                    {
-                        bufferView = gltfFile.BufferViews[(int)accessor.BufferView];
-                        indices = MemoryMarshal.Cast<byte, ushort>(distanceLevel.Shape.BinaryBuffers[bufferView.Buffer].AsSpan().Slice(bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * sizeof(ushort)));
-                    }
-                    else
-                    {
-                        // We have a non-ushort format index buffer, so transcode it
-                        var read = GltfDistanceLevel.GetIntegerReader(accessor.ComponentType);
-                        var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out _));
-                        indices = new Span<ushort>(new IEnumerable<ushort>[accessor.Count].Select(i => read(br)).ToArray());
-                    }
-                }
-
-                return CalculateTangents(indices, positions, normals, texcoords);
-            }
-
-            static Vector4[] CalculateTangents(Span<ushort> indices, Span<Vector3> vertexPosition, Span<Vector3> vertexNormal, Span<Vector2> vertexTexture)
-            {
-                var vertexCount = vertexPosition.Length;
-
-                var tan1 = new Vector3[vertexCount];
-                var tan2 = new Vector3[vertexCount];
-
-                var indicesLength = indices.IsEmpty ? vertexPosition.Length : indices.Length;
-
-                for (var a = 0; a < indicesLength; a += 3)
-                {
-                    var i1 = indices.IsEmpty ? a + 0 : indices[a + 0];
-                    var i2 = indices.IsEmpty ? a + 1 : indices[a + 1];
-                    var i3 = indices.IsEmpty ? a + 2 : indices[a + 2];
-
-                    var v1 = vertexPosition[i1];
-                    var v2 = vertexPosition[i2];
-                    var v3 = vertexPosition[i3];
-
-                    var w1 = vertexTexture[i1];
-                    var w2 = vertexTexture[i2];
-                    var w3 = vertexTexture[i3];
-
-                    // Need to invert the normal map Y coordinates to pass the NormalTangentTest
-                    w1.Y = -w1.Y;
-                    w2.Y = -w2.Y;
-                    w3.Y = -w3.Y;
-
-                    float x1 = v2.X - v1.X;
-                    float x2 = v3.X - v1.X;
-                    float y1 = v2.Y - v1.Y;
-                    float y2 = v3.Y - v1.Y;
-                    float z1 = v2.Z - v1.Z;
-                    float z2 = v3.Z - v1.Z;
-
-                    float s1 = w2.X - w1.X;
-                    float s2 = w3.X - w1.X;
-                    float t1 = w2.Y - w1.Y;
-                    float t2 = w3.Y - w1.Y;
-
-                    float div = s1 * t2 - s2 * t1;
-                    float r = div == 0.0f ? 0.0f : 1.0f / div;
-
-                    Vector3 sdir = new Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
-                    Vector3 tdir = new Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
-
-                    tan1[i1] += sdir;
-                    tan1[i2] += sdir;
-                    tan1[i3] += sdir;
-
-                    tan2[i1] += tdir;
-                    tan2[i2] += tdir;
-                    tan2[i3] += tdir;
-                }
-
-                var tangents = new Vector4[vertexCount];
-
-                for (var a = 0; a < vertexCount; ++a)
-                {
-                    Vector3 n = vertexNormal[a];
-                    Vector3 t = tan1[a];
-
-                    var tangentsW = Vector3.Dot(Vector3.Cross(n, t), tan2[a]) < 0.0f ? -1.0f : 1.0f;
-
-                    var tangent = Vector3.Normalize(t - n * Vector3.Dot(n, t));
-                    tangents[a] = new Vector4(tangent, tangentsW);
-                }
-
-                return tangents;
-            }
         }
+
 
         public class GltfPrimitive : ShapePrimitive
         {

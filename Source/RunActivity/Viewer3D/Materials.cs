@@ -777,6 +777,7 @@ namespace Orts.Viewer3D
         PbrHasTangents = 0x04000,
         PbrHasSkin = 0x08000,
         PbrCullClockWise = 0x10000,
+        PbrHasTexCoord1 = 0x20000,
 
         // Texture to be shown in tunnels and underground (used for 3D cab night textures)
         UndergroundTexture = 0x40000000,
@@ -1206,7 +1207,7 @@ namespace Orts.Viewer3D
                 shader.CurrentTechnique = shader.Techniques["PbrSkinned"];
                 ShaderPasses = ShaderPassesPbrSkinned;
             }
-            else if ((Options & SceneryMaterialOptions.PbrHasTangents) != 0)
+            else if ((Options & SceneryMaterialOptions.PbrHasTexCoord1) != 0)
             {
                 shader.CurrentTechnique = shader.Techniques["PbrNormalMap"];
                 ShaderPasses = ShaderPassesPbrNormalMap;
@@ -1226,6 +1227,7 @@ namespace Orts.Viewer3D
             shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
             shader.OcclusionFactor = new Vector3(OcclusionStrength, RoughnessFactor, MetallicFactor);
             shader.HasNormals = (Options & SceneryMaterialOptions.PbrHasNormals) != 0;
+            shader.HasTangents = (Options & SceneryMaterialOptions.PbrHasTangents) != 0;
             shader.ClearcoatFactor = ClearcoatFactor;
             if (ClearcoatFactor > 0 && RenderProcess.CLEARCOAT)
             {
@@ -1291,6 +1293,12 @@ namespace Orts.Viewer3D
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            base.ResetState(graphicsDevice);
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         }
     }
 
