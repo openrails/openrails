@@ -423,9 +423,7 @@ namespace Orts.Viewer3D
                         }
 
                         var vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        foreach (var a in Accessors)
-                            if (!VertexBufferBindings.ContainsKey(a))
-                                VertexBufferBindings.Add(a, vertexBufferBinding);
+                        VertexBufferBindings.Add(Accessors.First(), vertexBufferBinding);
 
                         previousOffset = gltfFile.Accessors[attributes.Current.Value].ByteOffset;
                     }
