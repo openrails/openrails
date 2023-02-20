@@ -2171,7 +2171,16 @@ namespace Orts.Simulation.RollingStocks
             SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp(SmokeColorUnits, 0.25f, 1));
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
-            var variable1 = Math.Abs(WheelSpeedSlipMpS / DriverWheelRadiusM / MathHelper.Pi * 5);
+            // If whel is not slipping then use normal wheel speed, this reduces oscillations in variable1 which causes issues with sounds.
+            var variable1 = 0.0f;
+            if (WheelSlip)
+            {
+                variable1 = Math.Abs(WheelSpeedSlipMpS / DriverWheelRadiusM / MathHelper.Pi * 5);
+            }
+            else
+            {
+                variable1 = Math.Abs(WheelSpeedMpS / DriverWheelRadiusM / MathHelper.Pi * 5);
+            }
             Variable1 = ThrottlePercent == 0 ? 0 : variable1;
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmoothed * 100;
