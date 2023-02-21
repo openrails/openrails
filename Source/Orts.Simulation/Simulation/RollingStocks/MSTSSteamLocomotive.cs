@@ -584,7 +584,6 @@ namespace Orts.Simulation.RollingStocks
         public float MaxTractiveEffortLbf;     // Maximum theoritical tractive effort for locomotive
         public float DisplayMaxTractiveEffortLbf;     // HuD display value of maximum theoritical tractive effort for locomotive
 
-        float DisplayTractiveEffortLbsF; // Value of Tractive effort to display in HUD
         float MaxCriticalSpeedTractiveEffortLbf;  // Maximum power value @ critical speed of piston
         float DisplayCriticalSpeedTractiveEffortLbf;  // Display power value @ speed of piston
         float absStartTractiveEffortN = 0.0f;      // Record starting tractive effort
@@ -4885,8 +4884,7 @@ namespace Orts.Simulation.RollingStocks
                     TractiveEffortLbsF = 0.0f; 
                 }
                 TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
-                DisplayTractiveEffortLbsF = TractiveEffortLbsF;
-
+                
                 // Calculate IHP
                 // IHP = (MEP x CylStroke(ft) x cylArea(sq in) x No Strokes (/min)) / 33000) - this is per cylinder
 
@@ -4994,25 +4992,6 @@ namespace Orts.Simulation.RollingStocks
 
             if (absSpeedMpS == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
                 TractiveForceN = 0;
-
-            // Based upon max IHP, limit motive force.
-
-            if (IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
-            {
-                TractiveForceN = N.FromLbf((MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(SpeedMpS)));
-                IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
-                IsCritTELimit = true; // Flag if limiting TE
-            }
-            else
-            {
-                IsCritTELimit = false; // Reset flag if limiting TE
-            }
-
-            DrawBarPullLbsF = N.ToLbf(Math.Abs(TractiveForceN) - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
-            DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
-
-            DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(absSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
-            DrawbarHorsePowerHP = MathHelper.Clamp(DrawbarHorsePowerHP, 0, DrawbarHorsePowerHP); // clamp value so it doesn't go negative
 
             #region - Steam Adhesion Model Input for Steam Locomotives
 
@@ -5393,7 +5372,21 @@ namespace Orts.Simulation.RollingStocks
                 TractiveForceN = 0.5f;
             }
 
-#endregion
+            #endregion
+
+
+            // Based upon max IHP, limit motive force.
+
+            if (IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
+            {
+                TractiveForceN = N.FromLbf((MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(SpeedMpS)));
+                IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
+                IsCritTELimit = true; // Flag if limiting TE
+            }
+            else
+            {
+                IsCritTELimit = false; // Reset flag if limiting TE
+            }
 
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (absSpeedMpS < 1.0)
@@ -6322,6 +6315,14 @@ namespace Orts.Simulation.RollingStocks
 
         public override string GetDebugStatus()
         {
+
+
+            DrawBarPullLbsF = N.ToLbf(Math.Abs(MotiveForceN) - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
+            DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
+
+            DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(absSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
+            DrawbarHorsePowerHP = MathHelper.Clamp(DrawbarHorsePowerHP, 0, DrawbarHorsePowerHP); // clamp value so it doesn't go negative
+
             var status = new StringBuilder(base.GetDebugStatus());
 
             status.AppendFormat("\n\n\t\t === {0} === \t\t\n", Simulator.Catalog.GetString("Key Inputs"));
@@ -6764,7 +6765,7 @@ namespace Orts.Simulation.RollingStocks
                          Simulator.Catalog.GetString("StartTE"),
                          FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
                          Simulator.Catalog.GetString("TE"),
-                         FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
+                         FormatStrings.FormatForce(MotiveForceN, IsMetric),
                          Simulator.Catalog.GetString("Draw"),
                          FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
                          Simulator.Catalog.GetString("CritSpeed"),
@@ -6809,7 +6810,7 @@ namespace Orts.Simulation.RollingStocks
                          Simulator.Catalog.GetString("StartTE"),
                          FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
                          Simulator.Catalog.GetString("TE"),
-                         FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
+                         FormatStrings.FormatForce(MotiveForceN, IsMetric),
                          Simulator.Catalog.GetString("Draw"),
                          FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
                          Simulator.Catalog.GetString("CritSpeed"),
