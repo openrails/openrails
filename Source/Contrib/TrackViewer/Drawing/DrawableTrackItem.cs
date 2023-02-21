@@ -70,6 +70,7 @@ namespace ORTS.TrackViewer.Drawing
             if (originalTrItem is RoadLevelCrItem){ return new DrawableRoadLevelCrItem(originalTrItem); }
             if (originalTrItem is CarSpawnerItem) { return new DrawableCarSpawnerItem(originalTrItem); }
             if (originalTrItem is CrossoverItem)  { return new DrawableCrossoverItem(originalTrItem); }
+            if (originalTrItem is EventItem)      { return new DrawableEvent(originalTrItem); }
             return new DrawableEmptyItem(originalTrItem);
         }
 
@@ -602,6 +603,53 @@ namespace ORTS.TrackViewer.Drawing
                 return true;
             }
             return false;
+        }
+    }
+    #endregion
+
+    #region DrawableEvent
+    /// <summary>
+    /// Represents a drawable event
+    /// </summary>
+    class DrawableEvent : DrawableTrackItem
+    {
+        private string ItemName;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="originalTrItem">The original track item that we are representing for drawing</param>
+        public DrawableEvent(TrItem originalTrItem)
+            : base(originalTrItem)
+        {
+            Description = "event";
+            ItemName = originalTrItem.ItemName;
+        }
+
+        /// <summary>
+        /// Draw an event
+        /// </summary>
+        /// <param name="drawArea">The area to draw upon</param>
+        /// <param name="colors">The colorscheme to use</param>
+        /// <param name="drawAlways">Do we need to draw anyway, independent of settings?</param>
+        internal override bool Draw(DrawArea drawArea, ColorScheme colors, bool drawAlways)
+        {
+            bool returnValue = false;
+            if (String.IsNullOrEmpty(Properties.Settings.Default.CurrentActivityName) ||
+                (ItemName.StartsWith(Properties.Settings.Default.CurrentActivityName + ":")))
+            {
+                if (Properties.Settings.Default.showEvents || drawAlways)
+                {
+                    drawArea.DrawTexture(WorldLocation, "disc", 6f, 0, colors.Event);
+                    returnValue = true;
+                }
+                if (Properties.Settings.Default.showEventNames || drawAlways)
+                {
+                    drawArea.DrawExpandingString(this.WorldLocation, ItemName);
+                    returnValue = true;
+                }
+            }
+            return returnValue;
         }
     }
     #endregion
