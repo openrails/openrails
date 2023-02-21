@@ -790,7 +790,6 @@ namespace Orts.Simulation.RollingStocks
                     Cylinder2CrankAngleRad = stf.ReadFloat(STFReader.UNITS.Angle, 0.0f);
                     Cylinder3CrankAngleRad = stf.ReadFloat(STFReader.UNITS.Angle, 0.0f);
                     Cylinder4CrankAngleRad = stf.ReadFloat(STFReader.UNITS.Angle, 0.0f);
-                    Trace.TraceInformation("Input - CrankAngle {0} {1} {2} {3}", Cylinder1CrankAngleRad, Cylinder2CrankAngleRad, Cylinder3CrankAngleRad, Cylinder4CrankAngleRad);
                     stf.SkipRestOfBlock();
                     break;
                 case "engine(cylinderstroke": CylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1290,6 +1289,9 @@ namespace Orts.Simulation.RollingStocks
                     WheelCrankAngleDiffRad[0] = MathHelper.ToRadians(0.0f);
                     WheelCrankAngleDiffRad[1] = MathHelper.ToRadians(90.0f);
                 }
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("CrankAngle set to default values {0} rad {1} rad {2} rad {3} rad", WheelCrankAngleDiffRad[0], WheelCrankAngleDiffRad[1], WheelCrankAngleDiffRad[2], WheelCrankAngleDiffRad[3]);
             }
             else // set values set by user
             {
@@ -1297,6 +1299,10 @@ namespace Orts.Simulation.RollingStocks
                 WheelCrankAngleDiffRad[1] = Cylinder2CrankAngleRad;
                 WheelCrankAngleDiffRad[2] = Cylinder3CrankAngleRad;
                 WheelCrankAngleDiffRad[3] = Cylinder4CrankAngleRad;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("CrankAngle set to user values {0} rad {1} rad {2} rad {3} rad", WheelCrankAngleDiffRad[0], WheelCrankAngleDiffRad[1], WheelCrankAngleDiffRad[2], WheelCrankAngleDiffRad[3]);
+
             }
 
                 // ******************  Test Locomotive and Gearing type *********************** 
@@ -2534,7 +2540,7 @@ namespace Orts.Simulation.RollingStocks
             SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp(SmokeColorUnits, 0.25f, 1));
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
-            // If whel is not slipping then use normal wheel speed, this reduces oscillations in variable1 which causes issues with sounds.
+            // If wheel is not slipping then use normal wheel speed, this reduces oscillations in variable1 which causes issues with sounds.
             var variable1 = 0.0f;
             if (WheelSlip)
             {
