@@ -632,8 +632,8 @@ public List<CabView> CabViewList = new List<CabView>();
                 {
                     msDisplay = (CVCMultiStateDisplay) cabView.CVFFile.CabViewControls.Where(
                         control => control is CVCMultiStateDisplay &&
-                        (((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY ||
-                        ((CVCMultiStateDisplay) control).ControlType == CABViewControlTypes.CPH_DISPLAY)).First();
+                        (((CVCMultiStateDisplay) control).ControlType.Type == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY ||
+                        ((CVCMultiStateDisplay) control).ControlType.Type == CABViewControlTypes.CPH_DISPLAY)).First();
                 }
                 catch
                 {
@@ -641,7 +641,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 if (msDisplay != null)
                 {
-                    if (msDisplay.ControlType == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY)
+                    if (msDisplay.ControlType.Type == CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY)
                     {
                         foreach (var switchval in msDisplay.Values)
                             dpDynController.AddNotch((float) switchval);
@@ -703,11 +703,8 @@ public List<CabView> CabViewList = new List<CabView>();
                         CabViewControls cvcList = CabViewList[0].CVFFile.CabViewControls;
                         foreach (CabViewControl cvc in cvcList)
                         {
-                            if (brakeSystemComponents.ContainsKey(cvc.ControlType) && pressureUnits.ContainsKey(cvc.Units))
+                            if (brakeSystemComponents.TryGetValue(cvc.ControlType.Type, out var component) && pressureUnits.TryGetValue(cvc.Units, out var unit))
                             {
-                                BrakeSystemComponent component = brakeSystemComponents[cvc.ControlType];
-                                PressureUnit unit = pressureUnits[cvc.Units];
-
                                 BrakeSystemPressureUnits[component] = unit;
                             }
                         }
@@ -1528,8 +1525,8 @@ public List<CabView> CabViewList = new List<CabView>();
             // Initialise Brake Pipe Quick Charging Rate
             if (BrakePipeQuickChargingRatePSIpS == 0) BrakePipeQuickChargingRatePSIpS = BrakePipeChargingRatePSIorInHgpS;
 
-            // Initialise Exhauster Charging rate in diesel and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
-            if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
+            // Initialise Exhauster Charging rate in diesel, control cars and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
+            if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive || this is MSTSControlTrailerCar)
             {
                 ExhausterHighSBPChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS;
                 ExhausterLowSBPChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS / 5.0f; // Low speed exhauster setting is 1/5 of high speed
@@ -1881,42 +1878,47 @@ public List<CabView> CabViewList = new List<CabView>();
             var gearloco = this as MSTSDieselLocomotive;
 
             // Pass Gearbox commands
+
+
+
+
             // Note - at the moment there is only one GearBox Controller created, but a gearbox for each diesel engine is created. 
             // This code keeps all gearboxes in the locomotive aligned with the first engine and gearbox.
             if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
             {
-                // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive
+                // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive             
 
-                if (gearloco == this)
+                int ii = 0;
+                foreach (var eng in gearloco.DieselEngines.DEList)
                 {
-
-                    int ii = 0;
-                    foreach (var eng in gearloco.DieselEngines.DEList)
+                    // don't change the first engine as this is the reference for all the others
+                    if (ii != 0)
                     {
-                        // don't change the first engine as this is the reference for all the others
-                        if (ii != 0)
-                        {
-                            gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
-                        }
-
-                        ii = ii + 1;
+                        gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
                     }
+                    
+                    ii = ii + 1;
                 }
 
-                // pass gearbox command key to other locomotives in train, don't treat the player locomotive in this fashion.
+            }
+
+            // The lead locomotive passes gearbox commands position to other locomotives in train, don't treat the player locomotive in this fashion.
+
+            if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch && IsLeadLocomotive())
+            {
+ 
                 foreach (TrainCar car in Train.Cars)
                 {
-                    var dieselloco = this as MSTSDieselLocomotive;
                     var locog = car as MSTSDieselLocomotive;
 
-                    if (locog != null && dieselloco != null && car != this && !locog.IsLeadLocomotive())
+                    if (locog != null && gearloco != null && car != this && !locog.IsLeadLocomotive())
                     {
 
-                        locog.DieselEngines[0].GearBox.currentGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex;
+                        locog.DieselEngines[0].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
 
-                        locog.GearBoxController.CurrentNotch = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
-                        locog.GearboxGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
-                        locog.GearBoxController.SetValue((float)dieselloco.GearBoxController.CurrentNotch);
+                        locog.GearBoxController.CurrentNotch = gearloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        locog.GearboxGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        locog.GearBoxController.SetValue((float)gearloco.GearBoxController.CurrentNotch);
 
                         locog.Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, locog.GearBoxController.CurrentNotch);
                         locog.AlerterReset(TCSEvent.GearBoxChanged);
@@ -4016,16 +4018,16 @@ public List<CabView> CabViewList = new List<CabView>();
         #region GearBoxController
         public virtual void ChangeGearUp()
         {
+
         }
 
         public virtual void StartGearBoxIncrease()
         {
             if (GearBoxController != null)
             {
-                
+
                 if (this is MSTSDieselLocomotive)
                 {
-
                     var dieselloco = this as MSTSDieselLocomotive;
 
                     if (dieselloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
@@ -4081,6 +4083,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public virtual void ChangeGearDown()
         {
+            
         }
 
         public virtual void StartGearBoxDecrease()
@@ -4108,7 +4111,6 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (ThrottlePercent == 0)
                             {
                                 GearBoxController.StartDecrease();
-                                Trace.TraceInformation("Controller Decrease - Current Notch {0} Indication {1} GearIndex {2}", GearBoxController.CurrentNotch, dieselloco.DieselEngines[0].GearBox.GearIndication, dieselloco.DieselEngines[0].GearBox.CurrentGearIndex);
                                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, dieselloco.DieselEngines[0].GearBox.GearIndication);
                                 AlerterReset(TCSEvent.GearBoxChanged);
                                 SignalGearBoxChangeEvents();
@@ -4130,7 +4132,6 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                 }
             }
-
             ChangeGearDown();
         }
 
@@ -4992,7 +4993,7 @@ public List<CabView> CabViewList = new List<CabView>();
         public virtual float GetDataOf(CabViewControl cvc)
         {
             float data = 0;
-            switch (cvc.ControlType)
+            switch (cvc.ControlType.Type)
             {
                 case CABViewControlTypes.SPEEDOMETER:
                     {
@@ -5090,7 +5091,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                             {
                                 float rangeFactor;
-                                if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS)
+                                if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS)
                                 {
                                     if (DynamicBrakeMaxCurrentA == 0)
                                         rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
@@ -5108,11 +5109,11 @@ public List<CabView> CabViewList = new List<CabView>();
                             }
                             if (direction == 1)
                                 data = -data;
-                            if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
+                            if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
                             break;
                         }
                         data = this.MotiveForceN / MaxForceN * MaxCurrentA;
-                        if (cvc.ControlType == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
+                        if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
                         break;
                     }
                 case CABViewControlTypes.LOAD_METER:
@@ -5561,7 +5562,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                 case CABViewControlTypes.DOORS_DISPLAY:
                     {
-                        data = DoorLeftOpen | DoorRightOpen ? 1 : 0;
+                        data = Train.DoorState(DoorSide.Both) != DoorState.Closed ? 1 : 0;
                         break;
                     }
                 case CABViewControlTypes.SANDERS:
@@ -5778,10 +5779,12 @@ public List<CabView> CabViewList = new List<CabView>();
                     data = CabLightOn ? 1 : 0;
                     break;
                 case CABViewControlTypes.ORTS_LEFTDOOR:
-                    data = GetCabFlipped() ? (DoorRightOpen ? 1 : 0) : DoorLeftOpen ? 1 : 0;
-                    break;
                 case CABViewControlTypes.ORTS_RIGHTDOOR:
-                    data = GetCabFlipped() ? (DoorLeftOpen ? 1 : 0) : DoorRightOpen ? 1 : 0;
+                    {
+                        bool right = (cvc.ControlType.Type == CABViewControlTypes.ORTS_RIGHTDOOR) ^ Flipped ^ GetCabFlipped();
+                        var state = Train.DoorState(right ? DoorSide.Right : DoorSide.Left);
+                        data = state >= DoorState.Opening ? 1 : 0;
+                    }
                     break;
                 case CABViewControlTypes.ORTS_MIRRORS:
                     data = MirrorOpen ? 1 : 0;
@@ -5818,56 +5821,8 @@ public List<CabView> CabViewList = new List<CabView>();
                         break;
                     }
 
-                // Train Control System controls
-                case CABViewControlTypes.ORTS_TCS1:
-                case CABViewControlTypes.ORTS_TCS2:
-                case CABViewControlTypes.ORTS_TCS3:
-                case CABViewControlTypes.ORTS_TCS4:
-                case CABViewControlTypes.ORTS_TCS5:
-                case CABViewControlTypes.ORTS_TCS6:
-                case CABViewControlTypes.ORTS_TCS7:
-                case CABViewControlTypes.ORTS_TCS8:
-                case CABViewControlTypes.ORTS_TCS9:
-                case CABViewControlTypes.ORTS_TCS10:
-                case CABViewControlTypes.ORTS_TCS11:
-                case CABViewControlTypes.ORTS_TCS12:
-                case CABViewControlTypes.ORTS_TCS13:
-                case CABViewControlTypes.ORTS_TCS14:
-                case CABViewControlTypes.ORTS_TCS15:
-                case CABViewControlTypes.ORTS_TCS16:
-                case CABViewControlTypes.ORTS_TCS17:
-                case CABViewControlTypes.ORTS_TCS18:
-                case CABViewControlTypes.ORTS_TCS19:
-                case CABViewControlTypes.ORTS_TCS20:
-                case CABViewControlTypes.ORTS_TCS21:
-                case CABViewControlTypes.ORTS_TCS22:
-                case CABViewControlTypes.ORTS_TCS23:
-                case CABViewControlTypes.ORTS_TCS24:
-                case CABViewControlTypes.ORTS_TCS25:
-                case CABViewControlTypes.ORTS_TCS26:
-                case CABViewControlTypes.ORTS_TCS27:
-                case CABViewControlTypes.ORTS_TCS28:
-                case CABViewControlTypes.ORTS_TCS29:
-                case CABViewControlTypes.ORTS_TCS30:
-                case CABViewControlTypes.ORTS_TCS31:
-                case CABViewControlTypes.ORTS_TCS32:
-                case CABViewControlTypes.ORTS_TCS33:
-                case CABViewControlTypes.ORTS_TCS34:
-                case CABViewControlTypes.ORTS_TCS35:
-                case CABViewControlTypes.ORTS_TCS36:
-                case CABViewControlTypes.ORTS_TCS37:
-                case CABViewControlTypes.ORTS_TCS38:
-                case CABViewControlTypes.ORTS_TCS39:
-                case CABViewControlTypes.ORTS_TCS40:
-                case CABViewControlTypes.ORTS_TCS41:
-                case CABViewControlTypes.ORTS_TCS42:
-                case CABViewControlTypes.ORTS_TCS43:
-                case CABViewControlTypes.ORTS_TCS44:
-                case CABViewControlTypes.ORTS_TCS45:
-                case CABViewControlTypes.ORTS_TCS46:
-                case CABViewControlTypes.ORTS_TCS47:
-                case CABViewControlTypes.ORTS_TCS48:
-                    data = TrainControlSystem.CabDisplayControls[(int)cvc.ControlType - (int)CABViewControlTypes.ORTS_TCS1];
+                case CABViewControlTypes.ORTS_TCS:
+                    TrainControlSystem.CabDisplayControls.TryGetValue(cvc.ControlType.Id - 1, out data);
                     break;
 
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_COMMAND_SWITCH:

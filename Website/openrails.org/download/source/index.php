@@ -7,7 +7,7 @@
 <?php include "../../shared/banners/show_banner.php" ?>
 <?php include "../../shared/menu.php" ?>
 <?php
-  $source_stable = 'OpenRails-1.4-Source.zip';
+  $source_stable = 'OpenRails-1.5.1-Source.zip';
   $source_testing = 'OpenRails-Testing-Source.zip';
   $file_path = "../../files";
 ?>
@@ -19,7 +19,7 @@
       <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-4">
-          <h1>Stable Version 1.4</h1>
+          <h1>Stable Version 1.5.1</h1>
           <br>
           <a href='<?php echo "$file_path/$source_stable" ?>' class='btn download_button btn-lg btn-block'>
             <h2><span class='glyphicon glyphicon-download'></span> &nbsp; Download the source code</h2>
@@ -28,7 +28,7 @@
             </p>
           </a>
           <p style="text-align: center;">
-          <?php echo '19 Oct 2021, ' . round(filesize("$file_path/$source_stable") / 1024 / 1024) . 'MB'; ?>
+          <?php echo '27 Nov 2022, ' . round(filesize("$file_path/$source_stable") / 1024 / 1024) . 'MB'; ?>
           </p>
         </div>
         <div class="col-md-2"></div>

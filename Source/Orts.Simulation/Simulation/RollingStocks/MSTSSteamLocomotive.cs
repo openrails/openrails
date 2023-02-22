@@ -878,6 +878,7 @@ namespace Orts.Simulation.RollingStocks
 
                 case "engine(ortsbattery(mode":
                 case "engine(ortsbattery(delay":
+                case "engine(ortsbattery(defaulton":
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
                 case "engine(ortsmasterkey(headlightcontrol":
@@ -6177,7 +6178,7 @@ namespace Orts.Simulation.RollingStocks
         {
             float data;
 
-            switch (cvc.ControlType)
+            switch (cvc.ControlType.Type)
             {
                 case CABViewControlTypes.WHISTLE:
                     data = Horn ? 1 : 0;

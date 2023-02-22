@@ -734,7 +734,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         {
             string imageName = "";
             string globalText = Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\";
-            CABViewControlTypes controltype = CVFR.GetControlType();
+            CABViewControlTypes controltype = CVFR.GetControlType().Type;
             Material material = null;
 
             if (AceFile != "")

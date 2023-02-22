@@ -171,7 +171,7 @@ namespace Orts.Viewer3D
         public void ScreenChanged()
         {
             var aspectRatio = (float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y;
-            var farPlaneDistance = SkyPrimitive.SkyRadius + 100;  // so far the sky is the biggest object in view
+            var farPlaneDistance = SkyPrimitive.RadiusM + 100;  // so far the sky is the biggest object in view
             var fovWidthRadians = MathHelper.ToRadians(FieldOfView);
             if (Viewer.Settings.DistantMountains)
                 XnaDistantMountainProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, MathHelper.Clamp(Viewer.Settings.ViewingDistance - 500, 500, 1500), Viewer.Settings.DistantMountainsViewingDistance);

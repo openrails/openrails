@@ -2159,6 +2159,10 @@ as the compressor and main air reservoir, and some of the diesel effects (as it 
 Some of the cab monitoring gauges provide visibility of what is happening on the powered car. To do this OR searches for 
 the "closest" powered car near the Control car and uses its information.
 
+If the Control Car is "linked" with a geared power car then it will be necessary for the control car to have a gear box 
+controller. To get OR to set it up, it will be necessary for the ``GearBoxControllerNumberofGears ( x )``, where x = number 
+of gears in the associated power car, to be added to the engine section of the ENG file.
+
 
 Multiple Units of Locomotives in Same Consist
 =============================================
@@ -4313,12 +4317,16 @@ In real life, the battery switch may not
 close instantly, so you can add a delay with the optional parameter
 ``ORTSBattery( Delay ( ) )`` (by default in seconds).
 
+It is possible for the battery switch to be switched on at the start of the simulation.
+To activate this behaviour, you can add the optional parameter ``ORTSBattery( DefaultOn ( 1 ) )``
+
 Example::
 
     Engine (
       ORTSBattery (
         Mode ( PushButtons )
         Delay ( 2s )
+        DefaultOn ( 1 )
       )
     )
 

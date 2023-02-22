@@ -6,9 +6,10 @@ It does not work on Windows XBox, Windows Phone or non-Windows platforms.
 * <small>Windows 7 requires Service Pack 1 (SP1).</small>
 </p>
 <h3>32-bit or 64-bit Windows?</h3>
-<p>Open Rails is currently a 32-bit program that will run on either 32-bit Windows or 64-bit Windows. When run on a 64-bit Windows system there are some benefits as follows.
+<p>Open Rails is an "AnyCPU" program which will run as a 32-bit program on 32-bit Windows and as a 64-bit program
+  on 64-bit Windows.
 </p><p>
-Programs compiled for 32-bit Windows are always limited to using a maximum of 2GB of memory. Many current PCs, especially 64-bit systems, have more than this. Fortunately it is possible to compile a program, for 64-bit systems only, which can use up to 4GB of memory and this is called a Large Address Aware (LAA) option. The downloads include both the usual version and the LAA version and you choose between them in the Options form.
+Programs compiled for 32-bit Windows are always limited to using a maximum of 2GB of memory. 
 </p>
 <h3><span id="hardware_requirements">What hardware does Open Rails require?</span></h3>
 <ul>
@@ -21,7 +22,7 @@ Programs compiled for 32-bit Windows are always limited to using a maximum of 2G
 <p>
 You do not need Microsoft Train Simulator installed in order to use Open Rails. 
 </p><p>
-When Microsoft Train Simulator is installed, then Open Rails can safely make use of all the Microsoft Train Simulator content as it does not change any Microsoft Train Simulator files.
+If Microsoft Train Simulator is installed, then Open Rails can safely make use of all the Microsoft Train Simulator content as it does not change any Microsoft Train Simulator files.
 </p><p>
 Most non-Microsoft Train Simulator routes, activities and rolling stock make use of some Microsoft Train Simulator content, usually sound files, textures and cab interiors. If products designed for Microsoft Train Simulator are used on a PC with Open Rails but not Microsoft Train Simulator, then they are likely to work but some sounds and textures will be missing. Such files will be listed with warnings in the Open Rails log file.
 </p>

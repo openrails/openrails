@@ -229,7 +229,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float GetDataOf(CabViewControl cvc)
         {
             float data = 0;
-            switch (cvc.ControlType)
+            switch (cvc.ControlType.Type)
             {
                 case CABViewControlTypes.ORTS_EOT_ID:
                     data = ID;

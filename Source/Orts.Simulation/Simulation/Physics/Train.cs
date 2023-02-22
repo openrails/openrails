@@ -192,6 +192,7 @@ namespace Orts.Simulation.Physics
         bool AuxTenderFound = false;
         string PrevWagonType;
 
+        public bool HasControlCarWithGear = false;
 
         //To investigate coupler breaks on route
         private bool numOfCouplerBreaksNoted = false;
@@ -16275,25 +16276,74 @@ namespace Orts.Simulation.Physics
         }
 
         /// <summary>
-        /// ToggleDoors
-        /// Toggles status of doors of a train
-        /// Parameters: right = true if right doors; open = true if opening
+        /// SetDoors
+        /// Sets status of doors of a train
         /// </summary>
-        public void ToggleDoors(bool right, bool open)
+        public void SetDoors(DoorSide side, bool open)
         {
             foreach (TrainCar car in Cars)
             {
                 var mstsWagon = car as MSTSWagon;
-                if (!car.Flipped && right || car.Flipped && !right)
+                var carSide = car.Flipped ? Doors.FlippedDoorSide(side) : side;
+                if (carSide != DoorSide.Left)
                 {
-                    mstsWagon.DoorRightOpen = open;
+                    mstsWagon.RightDoor.SetDoor(open);
                 }
-                else
+                if (carSide != DoorSide.Right)
                 {
-                    mstsWagon.DoorLeftOpen = open;
+                    mstsWagon.LeftDoor.SetDoor(open);
                 }
-                mstsWagon.SignalEvent(open ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
             }
+            if (Simulator.PlayerLocomotive?.Train == this && MPManager.IsMultiPlayer())
+            {
+                if (side != DoorSide.Left) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "DOORR", open ? 1 : 0)).ToString());
+                if (side != DoorSide.Right) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "DOORL", open ? 1 : 0)).ToString());
+            }
+        }
+
+        /// <summary>
+        /// LockDoors
+        /// Locks doors of a train so they cannot be opened
+        /// Parameters: right = true if right doors; lck = true if locking
+        /// </summary>
+        public void LockDoors(DoorSide side, bool lck)
+        {
+            foreach (TrainCar car in Cars)
+            {
+                var mstsWagon = car as MSTSWagon;
+                var carSide = car.Flipped ? Doors.FlippedDoorSide(side) : side;
+                if (carSide != DoorSide.Left)
+                {
+                    mstsWagon.RightDoor.SetDoorLock(lck);
+                }
+                if (carSide != DoorSide.Right)
+                {
+                    mstsWagon.LeftDoor.SetDoorLock(lck);
+                }
+            }
+        }
+
+        /// <summary>
+        /// DoorState
+        /// Returns status of doors of a train
+        /// </summary>
+        public DoorState DoorState(DoorSide side)
+        {
+            return Cars.Select(car => {
+                var wagon = (car as MSTSWagon);
+                var carSide = car.Flipped ? Doors.FlippedDoorSide(side) : side;
+                switch(carSide)
+                {
+                    case DoorSide.Left:
+                        return wagon.Doors.LeftDoor.State;
+                    case DoorSide.Right:
+                        return wagon.Doors.RightDoor.State;
+                    default:
+                        var left = wagon.Doors.LeftDoor.State;
+                        var right = wagon.Doors.RightDoor.State;
+                        return left < right ? right : left;
+                }
+            }).Max();
         }
 
         /// <summary>

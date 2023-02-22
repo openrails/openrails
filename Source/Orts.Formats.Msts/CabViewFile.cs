@@ -215,54 +215,7 @@ namespace Orts.Formats.Msts
         ORTS_EOT_EMERGENCY_BRAKE,
 
         // TCS Controls
-        ORTS_TCS1,
-        ORTS_TCS2,
-        ORTS_TCS3,
-        ORTS_TCS4,
-        ORTS_TCS5,
-        ORTS_TCS6,
-        ORTS_TCS7,
-        ORTS_TCS8,
-        ORTS_TCS9,
-        ORTS_TCS10,
-        ORTS_TCS11,
-        ORTS_TCS12,
-        ORTS_TCS13,
-        ORTS_TCS14,
-        ORTS_TCS15,
-        ORTS_TCS16,
-        ORTS_TCS17,
-        ORTS_TCS18,
-        ORTS_TCS19,
-        ORTS_TCS20,
-        ORTS_TCS21,
-        ORTS_TCS22,
-        ORTS_TCS23,
-        ORTS_TCS24,
-        ORTS_TCS25,
-        ORTS_TCS26,
-        ORTS_TCS27,
-        ORTS_TCS28,
-        ORTS_TCS29,
-        ORTS_TCS30,
-        ORTS_TCS31,
-        ORTS_TCS32,
-        ORTS_TCS33,
-        ORTS_TCS34,
-        ORTS_TCS35,
-        ORTS_TCS36,
-        ORTS_TCS37,
-        ORTS_TCS38,
-        ORTS_TCS39,
-        ORTS_TCS40,
-        ORTS_TCS41,
-        ORTS_TCS42,
-        ORTS_TCS43,
-        ORTS_TCS44,
-        ORTS_TCS45,
-        ORTS_TCS46,
-        ORTS_TCS47,
-        ORTS_TCS48,
+        ORTS_TCS,
         ORTS_ETCS,
 
         // Cruise Control
@@ -386,6 +339,30 @@ namespace Orts.Formats.Msts
         CAB_SIGNAL_DISPLAY
     }
 
+    public struct CabViewControlType
+    {
+        public CABViewControlTypes Type;
+        public int Id;
+        public CabViewControlType(string name)
+        {
+            Type = CABViewControlTypes.NONE;
+            Id = 0;
+            if (name != null && name.ToUpperInvariant().StartsWith("ORTS_TCS"))
+            {
+                if (int.TryParse(name.Substring(8), out Id))
+                {
+                    Type = CABViewControlTypes.ORTS_TCS;
+                }
+            }
+            else Enum.TryParse(name, true, out Type);
+        }
+        public override string ToString()
+        {
+            if (Type == CABViewControlTypes.ORTS_TCS) return Type.ToString() + Id;
+            return Type.ToString();
+        }
+    }
+
     public class CabViewControls : List<CabViewControl>
     {
         public CabViewControls(STFReader stf, string basepath)
@@ -451,7 +428,7 @@ namespace Orts.Formats.Msts
         public List<string> Screens;
         public int CabViewpoint;
 
-        public CABViewControlTypes ControlType = CABViewControlTypes.NONE;
+        public CabViewControlType ControlType;
         public CABViewControlStyles ControlStyle = CABViewControlStyles.NONE;
         public CABViewControlUnits Units = CABViewControlUnits.NONE;
 
@@ -463,15 +440,11 @@ namespace Orts.Formats.Msts
         protected void ParseType(STFReader stf)
         {
             stf.MustMatch("(");
-            try
+            string name = stf.ReadString();
+            ControlType = new CabViewControlType(name);
+            if (ControlType.Type == CABViewControlTypes.NONE)
             {
-                ControlType = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), stf.ReadString());
-            }
-            catch(ArgumentException)
-            {
-                stf.StepBackOneItem();
-                STFException.TraceInformation(stf, "Skipped unknown ControlType " + stf.ReadString());
-                ControlType = CABViewControlTypes.NONE;
+                STFException.TraceInformation(stf, "Skipped unknown ControlType " + name);
             }
             //stf.ReadItem(); // Skip repeated Class Type 
             stf.SkipRestOfBlock();
@@ -631,7 +604,11 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("pivot", ()=>{ Center = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 });
-            ControlType = dialtype;
+            ControlType = new CabViewControlType()
+            {
+                Type = dialtype,
+                Id = 0,
+            };
             ControlStyle = CABViewControlStyles.NEEDLE;
             Direction = 0;
             MaxValue = maxvalue;
@@ -1318,15 +1295,15 @@ namespace Orts.Formats.Msts
                 }
 
                 // MSTS ignores/overrides various settings by the following exceptional cases:
-                if (ControlType == CABViewControlTypes.CP_HANDLE)
+                if (ControlType.Type == CABViewControlTypes.CP_HANDLE)
                     ControlStyle = CABViewControlStyles.NOT_SPRUNG;
-                if (ControlType == CABViewControlTypes.PANTOGRAPH || ControlType == CABViewControlTypes.PANTOGRAPH2 ||
-                    ControlType == CABViewControlTypes.ORTS_PANTOGRAPH3 || ControlType == CABViewControlTypes.ORTS_PANTOGRAPH4)
+                if (ControlType.Type == CABViewControlTypes.PANTOGRAPH || ControlType.Type == CABViewControlTypes.PANTOGRAPH2 ||
+                    ControlType.Type == CABViewControlTypes.ORTS_PANTOGRAPH3 || ControlType.Type == CABViewControlTypes.ORTS_PANTOGRAPH4)
                     ControlStyle = CABViewControlStyles.ONOFF;
-                if (ControlType == CABViewControlTypes.HORN || ControlType == CABViewControlTypes.SANDERS || ControlType == CABViewControlTypes.BELL 
-                    || ControlType == CABViewControlTypes.RESET || ControlType == CABViewControlTypes.VACUUM_EXHAUSTER)
+                if (ControlType.Type == CABViewControlTypes.HORN || ControlType.Type == CABViewControlTypes.SANDERS || ControlType.Type == CABViewControlTypes.BELL 
+                    || ControlType.Type == CABViewControlTypes.RESET || ControlType.Type == CABViewControlTypes.VACUUM_EXHAUSTER)
                     ControlStyle = CABViewControlStyles.WHILE_PRESSED;
-                if (ControlType == CABViewControlTypes.DIRECTION && Orientation == 0)
+                if (ControlType.Type == CABViewControlTypes.DIRECTION && Orientation == 0)
                     Direction = 1 - Direction;
 
                 switch (discreteState)

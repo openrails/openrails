@@ -39,14 +39,16 @@ echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_p
 			<div class="col-md-2">&nbsp;</div>
 			<div class="col-md-4">
 				<h2>Tutorials</h2>
-				<p>
-				  We need tutorials for all aspects of Open Rails on:
+        <p>
+          The comprehensive "Build your own route" tutorial <a href="/learn/build-route">is introduced here</a>.
+        </p>
+        <p>
+				  We need tutorials for other aspects of Open Rails on:
         </p>
         <ul>
           <li>Driving Trains</li>
           <li>Building Activities and Timetables</li>
           <li>Creating Rolling Stock and Static Objects</li>
-          <li>Building Routes</li>
         </ul>
         <p>
           such as the tutorials on <a href="http://msts-roundhouse.vnxglobal.com/" target="_blank">Eric Conrad's blog</a>.

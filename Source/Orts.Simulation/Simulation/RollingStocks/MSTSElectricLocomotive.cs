@@ -74,6 +74,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortscircuitbreakerclosingdelay":
                 case "engine(ortsbattery(mode":
                 case "engine(ortsbattery(delay":
+                case "engine(ortsbattery(defaulton":
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
                 case "engine(ortsmasterkey(headlightcontrol":
@@ -221,7 +222,7 @@ namespace Orts.Simulation.RollingStocks
         {
             float data = 0;
 
-            switch (cvc.ControlType)
+            switch (cvc.ControlType.Type)
             {
                 case CABViewControlTypes.LINE_VOLTAGE:
                     data = ElectricPowerSupply.PantographVoltageV;

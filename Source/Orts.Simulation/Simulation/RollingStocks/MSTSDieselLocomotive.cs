@@ -156,6 +156,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortstractioncutoffrelayclosingdelay":
                 case "engine(ortsbattery(mode":
                 case "engine(ortsbattery(delay":
+                case "engine(ortsbattery(defaulton":
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
                 case "engine(ortsmasterkey(headlightcontrol":
@@ -848,7 +849,7 @@ namespace Orts.Simulation.RollingStocks
         {
             float data = 0;
 
-            switch (cvc.ControlType)
+            switch (cvc.ControlType.Type)
             {
                 case CABViewControlTypes.GEARS:
                     if (DieselEngines.HasGearBox)
@@ -1442,7 +1443,7 @@ namespace Orts.Simulation.RollingStocks
                         {
                             foreach ( var control in cabView.CVFFile.CabViewControls)
                             {
-                                if (control is CVCDiscrete && control.ControlType == CABViewControlTypes.THROTTLE && (control as CVCDiscrete).Values.Count > 0 && (control as CVCDiscrete).Values[(control as CVCDiscrete).Values.Count - 1] > 1)
+                                if (control is CVCDiscrete && control.ControlType.Type == CABViewControlTypes.THROTTLE && (control as CVCDiscrete).Values.Count > 0 && (control as CVCDiscrete).Values[(control as CVCDiscrete).Values.Count - 1] > 1)
                                 {
                                     var discreteControl = (CVCDiscrete)control;
                                     for (var i = 0; i < discreteControl.Values.Count; i++)

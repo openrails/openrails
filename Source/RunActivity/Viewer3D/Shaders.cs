@@ -17,39 +17,27 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Content.Pipeline;
-using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
-using Microsoft.Xna.Framework.Content.Pipeline.Processors;
-using Orts.Viewer3D.Processes;
-using ORTS.Common;
 using System;
 using System.IO;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content.Pipeline;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Viewer3D.Processes;
+using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
     public abstract class Shader : Effect
     {
-        public Shader(GraphicsDevice graphicsDevice, string filename)
+        protected Shader(GraphicsDevice graphicsDevice, string filename)
             : base(graphicsDevice, GetEffectCode(filename))
         {
         }
 
         static byte[] GetEffectCode(string filename)
         {
-            var basePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
-            var effectFileName = System.IO.Path.Combine(basePath, filename + ".fx");
-
-            var input = new EffectContent()
-            {
-                // Bizarrely, MonoGame loads the content from the identity's filename and ignores the EffectCode property, so we don't need to bother loading the file ourselves
-                Identity = new ContentIdentity(effectFileName),
-            };
-            var context = new ProcessorContext();
-            var processor = new EffectProcessor();
-            var effect = processor.Process(input, context);
-            return effect.GetEffectCode();
+            string filePath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content", filename + ".mgfx");
+            return File.ReadAllBytes(filePath);
         }
     }
 
@@ -384,7 +372,7 @@ namespace Orts.Viewer3D
             set
             {
                 if (value < 0.2f)
-                    overcast.SetValue(new Vector4(4 * value + 0.2f, 0.0f, 0.0f, 0.0f));
+                    overcast.SetValue(new Vector4(5 * value, 0.0f, 0.0f, 0.0f));
                 else
                     // Coefficients selected by author to achieve the desired appearance
                     overcast.SetValue(new Vector4(MathHelper.Clamp(2 * value - 0.4f, 0, 1), 1.25f - 1.125f * value, 1.15f - 0.75f * value, 1f));
