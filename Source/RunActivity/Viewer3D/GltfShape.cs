@@ -346,7 +346,7 @@ namespace Orts.Viewer3D
                 TempStack.Clear();
                 Array.ForEach(GltfFile.Scenes.ElementAtOrDefault(GltfFile.Scene ?? 0).Nodes, node => TempStack.Push(node));
                 KHR_lights gltfLights = null;
-                object extension;
+                object extension = null;
                 if (GltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
                     gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString());
 
@@ -657,7 +657,7 @@ namespace Orts.Viewer3D
                 if (morphWarning && ShapeWarnings)
                     Trace.TraceInformation($"glTF morphing animation is unsupported in file {gltfFileName}");
 
-                object extension;
+                object extension = null;
                 var names = gltfFile.Nodes.Select((n, i) => ((n.Extras?.TryGetValue("OPENRAILS_animation_name", out extension) ?? false) && extension is string a ? a : null, i)).Where(n => n.Item1 != null);
                 var dimensions = gltfFile.Nodes.Select(n => (n.Extras?.TryGetValue("OPENRAILS_animation_wheelradius", out extension) ?? false) && extension is string dim && float.TryParse(dim, out var d) ? d : 0f);
                 GltfAnimations.AddRange(names.Select(n => new GltfAnimation(n.Item1) { ExtrasWheelRadius = dimensions.ElementAt(n.i), Channels = { new GltfAnimationChannel() { TargetNode = n.i } } }));
