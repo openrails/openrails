@@ -81,18 +81,13 @@ namespace Orts.Viewer3D
             ["nz"] = CubeMapFace.NegativeZ
         };
 
-        readonly List<GltfAnimation> GltfAnimations = new List<GltfAnimation>();
-        
-        public float[] MinimumScreenCoverages = new[] { 0f };
-        public readonly Vector4[] BoundingBoxNodes = new Vector4[8];
+        List<GltfAnimation> GltfAnimations;
+        public Vector4[] BoundingBoxNodes;
 
-        /// <summary>
-        /// All vertex buffers in a gltf file. The key is the accessor number.
-        /// </summary>
-        internal Dictionary<int, VertexBufferBinding> VertexBuffers = new Dictionary<int, VertexBufferBinding>();
-        internal Dictionary<int, byte[]> BinaryBuffers = new Dictionary<int, byte[]>();
-        Dictionary<int, VertexBufferBinding> VertexBufferBindings = new Dictionary<int, VertexBufferBinding>();
-        Dictionary<int, IndexBuffer> IndexBuffers = new Dictionary<int, IndexBuffer>();
+        Dictionary<int, string> ExternalLods = new Dictionary<int, string>();
+        public float[] MinimumScreenCoverages = new[] { 0f };
+        internal int LastLod = -1;
+        internal bool LodChanged;
 
         /// <summary>
         /// glTF shape from file
@@ -114,8 +109,6 @@ namespace Orts.Viewer3D
 
             TangentsAlwaysCalculatedPerPixel = Viewer.Game.Settings.GltfTangentsAlwaysCalculatedPerPixel;
 
-            var externalLods = new Dictionary<int, string>();
-
             FileDir = Path.GetDirectoryName(FilePath);
             var inputFilename = Path.GetFileNameWithoutExtension(FilePath).ToUpper();
             if (inputFilename.Contains("_LOD"))
@@ -127,13 +120,14 @@ namespace Orts.Viewer3D
                 if ((match = Regex.Match(Path.GetFileName(file.ToUpper()), inputFilename + @"_LOD(\d\d).GLTF$")).Success)
                 {
                     if (int.TryParse(match.Groups[1].Value, out var lod))
-                        externalLods[lod] = file;
+                        ExternalLods[lod] = file;
                 }
             }
 
-            if (!externalLods.Any())
-                externalLods.Add(0, FilePath);
-            LodControls = new[] { new GltfLodControl(this, externalLods) };
+            if (!ExternalLods.Any())
+                ExternalLods.Add(0, FilePath);
+            LodControls = new[] { new GltfLodControl(this, ExternalLods) };
+            SetLod(0);
 
             if (EnvironmentMapSpecularDay == null)
             {
@@ -171,9 +165,17 @@ namespace Orts.Viewer3D
         {
             var shapePrimitive = baseShapePrimitive as GltfPrimitive;
             bones = Enumerable.Repeat(Matrix.Identity, Math.Min(RenderProcess.MAX_BONES, shapePrimitive.Joints.Length)).ToArray();
+
+            if (LodChanged && ExternalLods.Count > 1)
+            {
+                Array.Resize(ref animatedMatrices, Matrices.Length);
+                Array.Copy(Matrices, animatedMatrices, Matrices.Length);
+            }
+            LodChanged = false;
+
             for (var j = 0; j < bones.Length; j++)
             {
-                bones[j] = shapePrimitive.InverseBindMatrices[j];
+                bones[j] = MsfsFlavoured ? Matrix.Identity : shapePrimitive.InverseBindMatrices[j];
                 var hi = shapePrimitive.Joints[j];
                 while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
                 {
@@ -199,6 +201,25 @@ namespace Orts.Viewer3D
             return matrix;
         }
 
+        public GltfDistanceLevel SetLod(int lodId)
+        {
+            var lod = LodControls.FirstOrDefault()?.DistanceLevels?.ElementAtOrDefault(lodId) as GltfDistanceLevel;
+            if (lodId != LastLod)
+            {
+                Matrices = lod.Matrices;
+                Scales = lod.Scales; ;
+                Rotations = lod.Rotations;
+                Translations = lod.Translations;
+                Weights = lod.Weights;
+                MatrixNames = lod.MatrixNames;
+                BoundingBoxNodes = lod.BoundingBoxNodes;
+                GltfAnimations = lod.GltfAnimations;
+                LodChanged = true;
+                LastLod = lodId;
+            }
+            return lod;
+        }
+
         public class GltfLodControl : LodControl
         {
             readonly Dictionary<string, Gltf> Gltfs = new Dictionary<string, Gltf>();
@@ -211,9 +232,6 @@ namespace Orts.Viewer3D
                 {
                     var gltfFile = glTFLoader.Interface.LoadModel(externalLods[id]);
                     Gltfs.Add(externalLods[id], gltfFile);
-
-                    if (shape.MatrixNames.Count < (gltfFile.Animations?.Length ?? 0))
-                        shape.MatrixNames.AddRange(Enumerable.Repeat("", gltfFile.Animations.Length - shape.MatrixNames.Count));
 
                     if (gltfFile.ExtensionsRequired != null)
                     {
@@ -247,86 +265,219 @@ namespace Orts.Viewer3D
                                 shape.MinimumScreenCoverages = new float[internalLodsNumber];
                                 Array.Copy(screenCoverages, shape.MinimumScreenCoverages, internalLodsNumber);
                             }
+                            else
+                            {
+                                shape.MinimumScreenCoverages = new float[externalLods.Count];
+                                Array.Copy(DefaultScreenCoverages, shape.MinimumScreenCoverages, shape.MinimumScreenCoverages.Length);
+                            }
                         }
                     }
                     if (internalLodsNumber > 0)
                     {
                         for (var i = 0; i < internalLodsNumber; i++)
-                            distanceLevels.Add(new GltfDistanceLevel(shape, i, gltfFile, externalLods[id]));
+                            distanceLevels.Add(new GltfDistanceLevel(shape, i, gltfFile, externalLods[id], distanceLevels.FirstOrDefault()));
                         // Use the internal lods instead of the externals, if available.
+                        // Sweep the resources not used anymore
+                        distanceLevels.Last().BinaryBuffers.Clear();
                         break;
                     }
-                    distanceLevels.Add(new GltfDistanceLevel(shape, id, gltfFile, externalLods[id]));
-                    shape.BinaryBuffers.Clear();
-                    shape.VertexBuffers.Clear();
+                    distanceLevels.Add(new GltfDistanceLevel(shape, id, gltfFile, externalLods[id], null));
+                    distanceLevels.Last().BinaryBuffers.Clear();
                 }
                 DistanceLevels = distanceLevels.ToArray();
-
-                // Sweep the resources not used anymore
-                shape.BinaryBuffers = null;
-                shape.VertexBuffers = null;
             }
         }
 
         public class GltfDistanceLevel : DistanceLevel
         {
             // See the glTF specification at https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html
-            readonly Gltf Gltf;
+            readonly Gltf GltfFile;
             readonly string GltfDir;
             readonly string GltfFileName;
-            Dictionary<int, byte[]> BinaryBuffers => Shape.BinaryBuffers;
-            internal Dictionary<int, VertexBufferBinding> VertexBufferBindings => Shape.VertexBufferBindings;
-            internal Dictionary<int, IndexBuffer> IndexBuffers => Shape.IndexBuffers;
+            
+            internal Dictionary<int, VertexBufferBinding> VertexBufferBindings;
+            internal Dictionary<int, IndexBuffer> IndexBuffers;
+            internal Dictionary<int, byte[]> BinaryBuffers;
 
             /// <summary>
             /// All inverse bind matrices in a gltf file. The key is the accessor number.
             /// </summary>
-            internal Dictionary<int, Matrix[]> AllInverseBindMatrices = new Dictionary<int, Matrix[]>();
+            internal Dictionary<int, Matrix[]> InverseBindMatrices = new Dictionary<int, Matrix[]>();
 
-            internal readonly IEnumerable<Matrix> Matrices;
-            readonly IEnumerable<Vector3> Scales;
-            readonly IEnumerable<Quaternion> Rotations;
-            readonly IEnumerable<Vector3> Translations;
-            readonly IEnumerable<float[]> Weights;
+            // When setting the actual distance level, these collections need to be assigned to the shape
+            internal Matrix[] Matrices;
+            internal Vector3[] Scales;
+            internal Quaternion[] Rotations;
+            internal Vector3[] Translations;
+            internal float[][] Weights;
+            internal List<string> MatrixNames;
+            internal Vector4[] BoundingBoxNodes;
+            internal List<GltfAnimation> GltfAnimations;
 
             internal readonly Viewer Viewer;
             internal readonly GltfShape Shape;
 
             static readonly string[] TestControls = new[] { "WIPER", "ORTSITEM1CONTINUOUS", "ORTSITEM2CONTINUOUS" };
+
+            // These are only temporary variables needed during the construction
             readonly Stack<int> TempStack = new Stack<int>();
             readonly List<VertexElement> VertexElements = new List<VertexElement>();
             readonly List<int> Accessors = new List<int>();
             string DebugName = "";
 
-            public GltfDistanceLevel(GltfShape shape, int lodId, Gltf gltfFile, string gltfFileName)
+            public GltfDistanceLevel(GltfShape shape, int lodId, Gltf gltfFile, string gltfFileName, GltfDistanceLevel lod0DetailLevel)
             {
                 ViewingDistance = float.MaxValue; // glTF is using screen coverage, so this one is set for not getting into the way accidentally
                 ViewSphereRadius = 100;
-                var morphWarning = false;
-
                 Shape = shape;
                 Viewer = shape.Viewer;
-
-                Gltf = gltfFile;
+                GltfFile = gltfFile;
                 GltfDir = Path.GetDirectoryName(gltfFileName);
                 GltfFileName = gltfFileName;
 
+                GetBinaryData(shape, gltfFile, gltfFileName, lod0DetailLevel);
+
+                var hierarchy = Enumerable.Repeat(-1, GltfFile.Nodes.Length).ToArray();
+                var parents = new Dictionary<int, int>();
+                var lods = Enumerable.Repeat(-1, GltfFile.Nodes.Length).ToArray(); // -1: common; 0, 1, 3, etc.: the lod the node belongs to
+                var meshes = new Dictionary<int, Node>();
+                var lights = new Dictionary<int, KHR_lights_punctual>();
+
+                TempStack.Clear();
+                Array.ForEach(GltfFile.Scenes.ElementAtOrDefault(GltfFile.Scene ?? 0).Nodes, node => TempStack.Push(node));
                 KHR_lights gltfLights = null;
-                object extension = null;
-                if (gltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
+                object extension;
+                if (GltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
                     gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString());
 
-                Weights = gltfFile.Nodes.Select(node => gltfFile.Meshes?.ElementAtOrDefault(node.Mesh ?? -1)?.Weights);
-                Scales = gltfFile.Nodes.Select(node => node.Scale == null ? Vector3.One : MemoryMarshal.Cast<float, Vector3>(node.Scale)[0]);
-                Rotations = gltfFile.Nodes.Select(node => node.Rotation == null ? Quaternion.Identity : MemoryMarshal.Cast<float, Quaternion>(node.Rotation)[0]);
-                Translations = gltfFile.Nodes.Select(node => node.Translation == null ? Vector3.Zero : MemoryMarshal.Cast<float, Vector3>(node.Translation)[0]);
+                while (TempStack.Any())
+                {
+                    var nodeNumber = TempStack.Pop();
+                    var node = GltfFile.Nodes[nodeNumber];
+                    var parent = hierarchy[nodeNumber];
+                    if (parent > -1 && lods[parent] > -1)
+                        lods[nodeNumber] = lods[parent];
+
+                    if (node.Children != null)
+                    {
+                        foreach (var child in node.Children)
+                        {
+                            hierarchy[child] = nodeNumber;
+                            TempStack.Push(child);
+                        }
+                    }
+
+                    if (node.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
+                    {
+                        var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString());
+                        var ids = ext?.Ids;
+                        if (ids.Any())
+                        {
+                            lods[nodeNumber] = 0;
+                            for (var j = 0; j < ids.Length; j++)
+                            {
+                                // The node defined in the MSFT_lod extension is a substitute to the actual one, not an additional new step-to.
+                                lods[ids[j]] = j + 1;
+                                hierarchy[ids[j]] = parent;
+                                TempStack.Push(ids[j]);
+                            }
+                        }
+                    }
+
+                    // Collect meshes and lights belonging to the common root or the specific lod only:
+                    if (lods[nodeNumber] == -1 || lods[nodeNumber] == lodId)
+                    {
+                        if (node.Mesh != null)
+                            meshes.Add(nodeNumber, node);
+
+                        if (node.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
+                        {
+                            var lightId = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual_index>(extension.ToString())?.light;
+                            if (lightId != null)
+                                lights.Add(nodeNumber, gltfLights.lights[(int)lightId]);
+                        }
+                    }
+                }
+
+                var subObjects = new List<SubObject>();
+                foreach (var hierIndex in meshes.Keys)
+                {
+                    var node = meshes[hierIndex];
+                    var mesh = GltfFile.Meshes[(int)node.Mesh];
+                    var skin = node.Skin != null ? GltfFile.Skins[(int)node.Skin] : null;
+
+                    for (var i = 0; i < mesh.Primitives.Length; i++)
+                        subObjects.Add(new GltfSubObject(mesh.Primitives[i], $"{mesh.Name}[{i}]", hierIndex, hierarchy, Helpers.TextureFlags.None, GltfFile, Shape, this, skin));
+                }
+                foreach (var hierIndex in lights.Keys)
+                {
+                    subObjects.Add(new GltfSubObject(lights[hierIndex], hierIndex, hierarchy, GltfFile, Shape, this));
+                }
+                SubObjects = subObjects.ToArray();
+
+                var minPosition = SubObjects.Cast<GltfSubObject>().Select(so => Vector4.Transform(so.MinPosition, Matrices.ElementAt(so.HierarchyIndex)))
+                    .Aggregate((pos1, pos2) => Vector4.Min(pos1, pos2));
+                var maxPosition = SubObjects.Cast<GltfSubObject>().Select(so => Vector4.Transform(so.MaxPosition, Matrices.ElementAt(so.HierarchyIndex)))
+                    .Aggregate((pos1, pos2) => Vector4.Max(pos1, pos2));
+
+                BoundingBoxNodes[0] = minPosition;
+                BoundingBoxNodes[1] = new Vector4(minPosition.X, minPosition.Y, maxPosition.Z, 1);
+                BoundingBoxNodes[2] = new Vector4(minPosition.X, maxPosition.Y, maxPosition.Z, 1);
+                BoundingBoxNodes[3] = new Vector4(minPosition.X, maxPosition.Y, minPosition.Z, 1);
+                BoundingBoxNodes[4] = new Vector4(maxPosition.X, minPosition.Y, minPosition.Z, 1);
+                BoundingBoxNodes[5] = new Vector4(maxPosition.X, minPosition.Y, maxPosition.Z, 1);
+                BoundingBoxNodes[6] = new Vector4(maxPosition.X, maxPosition.Y, minPosition.Z, 1);
+                BoundingBoxNodes[7] = maxPosition;
+
+                if (ConsistGenerator.GltfVisualTestRun)
+                {
+                    // Assign the first three animations to Wipers [V], Item1Continuous [Shift+,], Item2Continuous [Shift+.] respectively,
+                    // because these are the ones capable of playing a loop.
+                    for (var i = 0; i < GltfAnimations.Count; i++)
+                        MatrixNames[i] = TestControls[i % TestControls.Length];
+                }
+            }
+
+            void GetBinaryData(GltfShape shape, Gltf gltfFile, string gltfFileName, GltfDistanceLevel lod0DetailLevel)
+            {
+                if (lod0DetailLevel == null)
+                    GetBinaryData(shape, gltfFile, gltfFileName);
+                else
+                {
+                    Weights = lod0DetailLevel.Weights;
+                    Scales = lod0DetailLevel.Scales; ;
+                    Rotations = lod0DetailLevel.Rotations;
+                    Translations = lod0DetailLevel.Translations;
+                    Matrices = lod0DetailLevel.Matrices;
+                    BoundingBoxNodes = lod0DetailLevel.BoundingBoxNodes;
+                    GltfAnimations = lod0DetailLevel.GltfAnimations;
+                    MatrixNames = lod0DetailLevel.MatrixNames;
+                    IndexBuffers = lod0DetailLevel.IndexBuffers;
+                    VertexBufferBindings = lod0DetailLevel.VertexBufferBindings;
+                    BinaryBuffers = lod0DetailLevel.BinaryBuffers;
+                }
+            }
+
+            void GetBinaryData(GltfShape shape, Gltf gltfFile, string gltfFileName)
+            {
+                MatrixNames = new List<string>();
+                BoundingBoxNodes = new Vector4[8];
+                GltfAnimations = new List<GltfAnimation>();
+                VertexBufferBindings = new Dictionary<int, VertexBufferBinding>();
+                IndexBuffers = new Dictionary<int, IndexBuffer>();
+                BinaryBuffers = new Dictionary<int, byte[]>();
+
+                Weights = gltfFile.Nodes.Select(node => gltfFile.Meshes?.ElementAtOrDefault(node.Mesh ?? -1)?.Weights).ToArray();
+                Scales = gltfFile.Nodes.Select(node => node.Scale == null ? Vector3.One : MemoryMarshal.Cast<float, Vector3>(node.Scale)[0]).ToArray();
+                Rotations = gltfFile.Nodes.Select(node => node.Rotation == null ? Quaternion.Identity : MemoryMarshal.Cast<float, Quaternion>(node.Rotation)[0]).ToArray();
+                Translations = gltfFile.Nodes.Select(node => node.Translation == null ? Vector3.Zero : MemoryMarshal.Cast<float, Vector3>(node.Translation)[0]).ToArray();
                 Matrices = gltfFile.Nodes.Select((node, i) => node.Matrix == null ? Matrix.Identity : MemoryMarshal.Cast<float, Matrix>(node.Matrix)[0]
-                    * Matrix.CreateScale(Scales.ElementAt(i)) * Matrix.CreateFromQuaternion(Rotations.ElementAt(i)) * Matrix.CreateTranslation(Translations.ElementAt(i)));
+                    * Matrix.CreateScale(Scales.ElementAt(i)) * Matrix.CreateFromQuaternion(Rotations.ElementAt(i)) * Matrix.CreateTranslation(Translations.ElementAt(i))).ToArray();
 
                 // Substitute the sparse data to its place.
                 for (var a = 0; a < gltfFile.Accessors.Length; a++)
                 {
-                    if (lodId == 0 && gltfFile.Accessors[a] is var accessor && accessor.Sparse != null)
+                    if (gltfFile.Accessors[a] is var accessor && accessor.Sparse != null)
                     {
                         // Sparse buffers may index into a null buffer, so create a real one for these.
                         if (GetBufferViewSpan(accessor.BufferView, 0) is var buffer && buffer.IsEmpty)
@@ -459,205 +610,58 @@ namespace Orts.Viewer3D
                     }
                 }
 
-                var hierarchy = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray();
-                var parents = new Dictionary<int, int>();
-                var lods = Enumerable.Repeat(-1, gltfFile.Nodes.Length).ToArray(); // -1: common; 0, 1, 3, etc.: the lod the node belongs to
-                Dictionary<int, (string name, float radius)> articulations = null;
-                var meshes = new Dictionary<int, Node>();
-                var lights = new Dictionary<int, KHR_lights_punctual>();
+                var morphWarning = false;
 
-                TempStack.Clear();
-                Array.ForEach(gltfFile.Scenes.ElementAtOrDefault(gltfFile.Scene ?? 0).Nodes, node => TempStack.Push(node));
-                while (TempStack.Any())
+                for (var j = 0; j < (gltfFile.Animations?.Length ?? 0); j++)
                 {
-                    var nodeNumber = TempStack.Pop();
-                    var node = gltfFile.Nodes[nodeNumber];
-                    var parent = hierarchy[nodeNumber];
-                    if (parent > -1 && lods[parent] > -1)
-                        lods[nodeNumber] = lods[parent];
-                    
-                    if (node.Children != null)
+                    var gltfAnimation = gltfFile.Animations[j];
+
+                    // Use MatrixNames for storing animation and articulation names.
+                    // Here the MatrixNames are not bound to nodes (and matrices), but rather to the animation number.
+                    var animation = new GltfAnimation(gltfAnimation.Name ?? "");
+                    MatrixNames.Add(animation.Name);
+
+                    for (var k = 0; k < gltfAnimation.Channels.Length; k++)
                     {
-                        foreach (var child in node.Children)
+                        var gltfChannel = gltfAnimation.Channels[k];
+                        if (gltfChannel.Target.Node == null) // then this is defined by an extension, which is not supported here.
+                            continue;
+
+                        var sampler = gltfAnimation.Samplers[gltfChannel.Sampler];
+                        var inputAccessor = gltfFile.Accessors[sampler.Input];
+                        var readInput = GetNormalizedReader(inputAccessor.ComponentType, shape.MsfsFlavoured);
+                        var bri = new BinaryReader(GetBufferView(inputAccessor, out _));
+                        var outputAccessor = gltfFile.Accessors[sampler.Output];
+                        var readOutput = GetNormalizedReader(outputAccessor.ComponentType, shape.MsfsFlavoured);
+                        var bro = new BinaryReader(GetBufferView(outputAccessor, out _));
+
+                        animation.Channels.Add(new GltfAnimationChannel
                         {
-                            hierarchy[child] = nodeNumber;
-                            TempStack.Push(child);
-                        }
+                            Interpolation = shape.MsfsFlavoured ? AnimationSampler.InterpolationEnum.LINEAR : sampler.Interpolation,
+                            Path = gltfChannel.Target.Path,
+                            TargetNode = (int)gltfChannel.Target.Node,
+                            TimeArray = new float[inputAccessor.Count].Select(_ => readInput(bri)).ToArray(),
+                            TimeMin = inputAccessor.Min[0],
+                            TimeMax = inputAccessor.Max[0],
+                            OutputQuaternion = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.rotation ?
+                                new Quaternion[outputAccessor.Count].Select(_ => new Quaternion(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray() : null,
+                            OutputVector3 = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.scale || gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.translation ?
+                                new Vector3[outputAccessor.Count].Select(_ => new Vector3(readOutput(bro), readOutput(bro), readOutput(bro))).ToArray() : null,
+                            OutputWeights = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.weights ?
+                                new float[outputAccessor.Count].Select(_ => readOutput(bro)).ToArray() : null,
+                        });
+                        morphWarning |= gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.weights;
                     }
-
-                    if (node.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
-                    {
-                        var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString());
-                        var ids = ext?.Ids;
-                        if (ids.Any())
-                        {
-                            lods[nodeNumber] = 0;
-                            for (var j = 0; j < ids.Length; j++)
-                            {
-                                // The node defined in the MSFT_lod extension is a substitute to the actual one, not an additional new step-to.
-                                lods[ids[j]] = j + 1;
-                                hierarchy[ids[j]] = parent;
-                                TempStack.Push(ids[j]);
-                            }
-                        }
-                    }
-
-                    // Collect meshes and lights belonging to the common root or the specific lod only:
-                    if (lods[nodeNumber] == -1 || lods[nodeNumber] == lodId)
-                    {
-                        if (node.Mesh != null)
-                            meshes.Add(nodeNumber, node);
-
-                        if (node.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
-                        {
-                            var lightId = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual_index>(extension.ToString())?.light;
-                            if (lightId != null)
-                                lights.Add(nodeNumber, gltfLights.lights[(int)lightId]);
-                        }
-
-                        if ((node.Extras?.TryGetValue("OPENRAILS_animation_name", out extension) ?? false) && extension is string name)
-                        {
-                            var radius = 0f;
-                            if ((node.Extras?.TryGetValue("OPENRAILS_animation_wheelradius", out extension) ?? false) && extension is string wheelRadius)
-                                float.TryParse(wheelRadius, out radius);
-
-                            articulations = articulations ?? new Dictionary<int, (string, float)>();
-                            articulations.Add(nodeNumber, (name, radius));
-                        }
-                    }
+                    GltfAnimations.Add(animation);
                 }
+                if (morphWarning && ShapeWarnings)
+                    Trace.TraceInformation($"glTF morphing animation is unsupported in file {gltfFileName}");
 
-                var subObjects = new List<SubObject>();
-                foreach (var hierIndex in meshes.Keys)
-                {
-                    var node = meshes[hierIndex];
-                    var mesh = gltfFile.Meshes[(int)node.Mesh];
-                    var skin = node.Skin != null ? gltfFile.Skins[(int)node.Skin] : null;
-
-                    for (var i = 0; i < mesh.Primitives.Length; i++)
-                        subObjects.Add(new GltfSubObject(mesh.Primitives[i], $"{mesh.Name}[{i}]", hierIndex, hierarchy, Helpers.TextureFlags.None, gltfFile, shape, this, skin));
-                }
-                foreach (var hierIndex in lights.Keys)
-                {
-                    subObjects.Add(new GltfSubObject(lights[hierIndex], hierIndex, hierarchy, gltfFile, shape, this));
-                }
-                SubObjects = subObjects.ToArray();
-
-                if (lodId == 0)
-                {
-                    shape.Matrices = Matrices.ToArray();
-                    shape.Scales = Scales.ToArray();
-                    shape.Rotations = Rotations.ToArray();
-                    shape.Translations = Translations.ToArray();
-                    shape.Weights = Weights.ToArray();
-
-                    if (SubObjects.FirstOrDefault() is GltfSubObject gltfSubObject)
-                    {
-                        var minPosition = Vector4.Transform(gltfSubObject.MinPosition, Matrices.ElementAt(gltfSubObject.HierarchyIndex));
-                        var maxPosition = Vector4.Transform(gltfSubObject.MaxPosition, Matrices.ElementAt(gltfSubObject.HierarchyIndex));
-                        foreach (GltfSubObject subObject in SubObjects.Cast<GltfSubObject>())
-                        {
-                            var soMinPosition = Vector4.Transform(subObject.MinPosition, Matrices.ElementAt(subObject.HierarchyIndex));
-                            var soMaxPosition = Vector4.Transform(subObject.MaxPosition, Matrices.ElementAt(subObject.HierarchyIndex));
-                            minPosition = Vector4.Min(minPosition, soMinPosition);
-                            maxPosition = Vector4.Max(maxPosition, soMaxPosition);
-                        }
-                        shape.BoundingBoxNodes[0] = minPosition;
-                        shape.BoundingBoxNodes[1] = new Vector4(minPosition.X, minPosition.Y, maxPosition.Z, 1);
-                        shape.BoundingBoxNodes[2] = new Vector4(minPosition.X, maxPosition.Y, maxPosition.Z, 1);
-                        shape.BoundingBoxNodes[3] = new Vector4(minPosition.X, maxPosition.Y, minPosition.Z, 1);
-                        shape.BoundingBoxNodes[4] = new Vector4(maxPosition.X, minPosition.Y, minPosition.Z, 1);
-                        shape.BoundingBoxNodes[5] = new Vector4(maxPosition.X, minPosition.Y, maxPosition.Z, 1);
-                        shape.BoundingBoxNodes[6] = new Vector4(maxPosition.X, maxPosition.Y, minPosition.Z, 1);
-                        shape.BoundingBoxNodes[7] = maxPosition;
-                    }
-
-                    for (var j = 0; j < (gltfFile.Animations?.Length ?? 0); j++)
-                    {
-                        var gltfAnimation = gltfFile.Animations[j];
-
-                        // Use MatrixNames for storing animation and articulation names.
-                        // Here the MatrixNames are not bound to nodes (and matrices), but rather to the animation number.
-                        shape.MatrixNames[j] = gltfAnimation.Name ?? "";
-                        var animation = new GltfAnimation(shape.MatrixNames[j]);
-
-                        for (var k = 0; k < gltfAnimation.Channels.Length; k++)
-                        {
-                            var gltfChannel = gltfAnimation.Channels[k];
-                            if (gltfChannel.Target.Node == null) // then this is defined by an extension, which is not supported here.
-                                continue;
-
-                            var channel = new GltfAnimationChannel();
-                            animation.Channels.Add(channel);
-
-                            channel.Path = gltfChannel.Target.Path;
-                            channel.TargetNode = (int)gltfChannel.Target.Node;
-
-                            var sampler = gltfAnimation.Samplers[gltfChannel.Sampler];
-                            var inputAccessor = gltfFile.Accessors[sampler.Input];
-                            channel.TimeArray = new float[inputAccessor.Count];
-                            channel.TimeMin = inputAccessor.Min[0];
-                            channel.TimeMax = inputAccessor.Max[0];
-                            var readInput = GetNormalizedReader(inputAccessor.ComponentType, shape.MsfsFlavoured);
-                            using (var br = new BinaryReader(GetBufferView(inputAccessor, out _)))
-                            {
-                                for (var i = 0; i < inputAccessor.Count; i++)
-                                    channel.TimeArray[i] = readInput(br);
-                            }
-
-                            var outputAccessor = gltfFile.Accessors[sampler.Output];
-                            switch (channel.Path)
-                            {
-                                case AnimationChannelTarget.PathEnum.rotation: channel.OutputQuaternion = new Quaternion[outputAccessor.Count]; break;
-                                case AnimationChannelTarget.PathEnum.scale:
-                                case AnimationChannelTarget.PathEnum.translation: channel.OutputVector3 = new Vector3[outputAccessor.Count]; break;
-                                case AnimationChannelTarget.PathEnum.weights: channel.OutputWeights = new float[outputAccessor.Count]; break;
-                            }
-                            var readOutput = GetNormalizedReader(outputAccessor.ComponentType, shape.MsfsFlavoured);
-                            using (var br = new BinaryReader(GetBufferView(outputAccessor, out _)))
-                            {
-                                for (var i = 0; i < outputAccessor.Count; i++)
-                                    switch (channel.Path)
-                                    {
-                                        case AnimationChannelTarget.PathEnum.rotation: channel.OutputQuaternion[i] = new Quaternion(readOutput(br), readOutput(br), readOutput(br), readOutput(br)); break;
-                                        case AnimationChannelTarget.PathEnum.scale:
-                                        case AnimationChannelTarget.PathEnum.translation: channel.OutputVector3[i] = new Vector3(readOutput(br), readOutput(br), readOutput(br)); break;
-                                        case AnimationChannelTarget.PathEnum.weights: channel.OutputWeights[i] = readOutput(br); morphWarning = true; break;
-                                    }
-                            }
-                            channel.Interpolation = sampler.Interpolation;
-                        }
-                        shape.GltfAnimations.Add(animation);
-                    }
-                    if (morphWarning && ShapeWarnings)
-                        Trace.TraceInformation($"glTF morphing animation is unsupported in file {gltfFileName}");
-
-                    if (articulations != null)
-                    {
-                        if (shape.MatrixNames.Count < (gltfFile.Animations?.Length ?? 0) + articulations.Count)
-                            shape.MatrixNames.AddRange(Enumerable.Repeat("", (gltfFile.Animations?.Length ?? 0) + articulations.Count - shape.MatrixNames.Count));
-
-                        foreach (var nodeNumber in articulations.Keys)
-                        {
-                            var animation = shape.GltfAnimations.FirstOrDefault(a => a.Name == articulations[nodeNumber].name);
-                            if (animation == null)
-                            {
-                                animation = new GltfAnimation(articulations[nodeNumber].name) { ExtrasWheelRadius = articulations[nodeNumber].radius };
-                                shape.GltfAnimations.Add(animation);
-                                shape.MatrixNames[shape.GltfAnimations.Count - 1] = articulations[nodeNumber].name ?? "";
-                            }
-                            animation.Channels.Add(new GltfAnimationChannel() { TargetNode = nodeNumber });
-                        }
-                    }
-
-                    if (ConsistGenerator.GltfVisualTestRun)
-                    {
-                        // Assign the first three animations to Wipers [V], Item1Continuous [Shift+,], Item2Continuous [Shift+.] respectively,
-                        // because these are the ones capable of playing a loop.
-                        for (var i = 0; i < shape.GltfAnimations.Count; i++)
-                            shape.MatrixNames[i] = TestControls[i % TestControls.Length];
-                    }
-                }
+                object extension;
+                var names = gltfFile.Nodes.Select((n, i) => ((n.Extras?.TryGetValue("OPENRAILS_animation_name", out extension) ?? false) && extension is string a ? a : null, i)).Where(n => n.Item1 != null);
+                var dimensions = gltfFile.Nodes.Select(n => (n.Extras?.TryGetValue("OPENRAILS_animation_wheelradius", out extension) ?? false) && extension is string dim && float.TryParse(dim, out var d) ? d : 0f);
+                GltfAnimations.AddRange(names.Select(n => new GltfAnimation(n.Item1) { ExtrasWheelRadius = dimensions.ElementAt(n.i), Channels = { new GltfAnimationChannel() { TargetNode = n.i } } }));
+                MatrixNames.AddRange(names.Select(n => n.Item1));
             }
 
             internal Span<byte> GetBufferViewSpan(AccessorSparseIndices accessor) => GetBufferViewSpan(accessor?.BufferView, accessor?.ByteOffset ?? 0);
@@ -667,9 +671,9 @@ namespace Orts.Viewer3D
             {
                 if (bufferViewNumber == null)
                     return Span<byte>.Empty;
-                var bufferView = Gltf.BufferViews[(int)bufferViewNumber];
+                var bufferView = GltfFile.BufferViews[(int)bufferViewNumber];
                 if (!BinaryBuffers.TryGetValue(bufferView.Buffer, out var bytes))
-                    BinaryBuffers.Add(bufferView.Buffer, bytes = glTFLoader.Interface.LoadBinaryBuffer(Gltf, bufferView.Buffer, GltfFileName));
+                    BinaryBuffers.Add(bufferView.Buffer, bytes = glTFLoader.Interface.LoadBinaryBuffer(GltfFile, bufferView.Buffer, GltfFileName));
                 return bytes.AsSpan(bufferView.ByteOffset + accessorByteOffset);
             }
 
@@ -679,10 +683,10 @@ namespace Orts.Viewer3D
                 byteStride = null;
                 if (bufferViewNumber == null)
                     return Stream.Null;
-                var bufferView = Gltf.BufferViews[(int)bufferViewNumber];
+                var bufferView = GltfFile.BufferViews[(int)bufferViewNumber];
                 byteStride = bufferView.ByteStride;
                 if (!BinaryBuffers.TryGetValue(bufferView.Buffer, out var bytes))
-                    BinaryBuffers.Add(bufferView.Buffer, bytes = glTFLoader.Interface.LoadBinaryBuffer(Gltf, bufferView.Buffer, GltfFileName));
+                    BinaryBuffers.Add(bufferView.Buffer, bytes = glTFLoader.Interface.LoadBinaryBuffer(GltfFile, bufferView.Buffer, GltfFileName));
                 var stream = new MemoryStream(bytes);
                 stream.Seek(bufferView.ByteOffset + accessorByteOffset, SeekOrigin.Begin);
                 return stream;
@@ -737,17 +741,25 @@ namespace Orts.Viewer3D
                 {
                     case Accessor.TypeEnum.SCALAR when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Single;
 
-                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : msfsFlavoured ? VertexElementFormat.HalfVector2 : VertexElementFormat.Short2;
-                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
                     case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector2;
 
                     case Accessor.TypeEnum.VEC3 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector3;
 
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : msfsFlavoured ? VertexElementFormat.HalfVector4 : VertexElementFormat.Short4;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
                     case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector4;
+
+                    // MSFS twisted out, reversed definitions:
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT && msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Short2 : VertexElementFormat.HalfVector2;
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT && msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Short2 : VertexElementFormat.HalfVector2;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE && msfsFlavoured: return VertexElementFormat.Color;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE && msfsFlavoured: return VertexElementFormat.Color;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT && msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Short4 : VertexElementFormat.HalfVector4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT && msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Short4 : VertexElementFormat.HalfVector4;
 
                     default: Trace.TraceWarning($"glTF: Unknown vertex attribute format is found in file {GltfFileName}"); return VertexElementFormat.Single;
                 }
@@ -963,6 +975,7 @@ namespace Orts.Viewer3D
             internal TextureAddressMode GetTextureAddressMode(Sampler.WrapTEnum wrapEnum) => GetTextureAddressMode((Sampler.WrapSEnum)wrapEnum);
             internal TextureAddressMode GetTextureAddressMode(Sampler.WrapSEnum wrapEnum)
             {
+                if (Shape.MsfsFlavoured) return TextureAddressMode.Clamp;
                 switch (wrapEnum)
                 {
                     case Sampler.WrapSEnum.REPEAT: return TextureAddressMode.Wrap;
@@ -1333,7 +1346,7 @@ namespace Orts.Viewer3D
                     // Skinned model
                     Joints = skin.Joints;
 
-                    if (!distanceLevel.AllInverseBindMatrices.TryGetValue((int)skin.InverseBindMatrices, out InverseBindMatrices))
+                    if (!distanceLevel.InverseBindMatrices.TryGetValue((int)skin.InverseBindMatrices, out InverseBindMatrices))
                     {
                         if (skin.InverseBindMatrices == null)
                         {
@@ -1354,7 +1367,7 @@ namespace Orts.Viewer3D
                                         read(br), read(br), read(br), read(br));
                             }
                         }
-                        distanceLevel.AllInverseBindMatrices.Add((int)skin.InverseBindMatrices, InverseBindMatrices);
+                        distanceLevel.InverseBindMatrices.Add((int)skin.InverseBindMatrices, InverseBindMatrices);
                     }
                 }
             }

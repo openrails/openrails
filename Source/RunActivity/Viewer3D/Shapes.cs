@@ -2591,6 +2591,7 @@ namespace Orts.Viewer3D
                         // Checking from level 0 to less detailed
                         while (displayDetailLevel > 0 && Viewer.Camera.BiggerThan(xnaDTileTranslation, gltfShape.BoundingBoxNodes, gltfShape.MinimumScreenCoverages[displayDetailLevel - 1]))
                             displayDetailLevel--;
+                        gltfShape.SetLod(displayDetailLevel);
                     }
                     else
                     {
