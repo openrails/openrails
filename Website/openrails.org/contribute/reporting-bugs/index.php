@@ -18,16 +18,17 @@
 <p>
 The Open Rails team, like all coding teams, cannot guarantee bullet-proof code. There are so many variables - so many routes and activities and locos - that our testing procedures cannot consider them all. We rely on our users to let us know when something unexpected happens.
 </p>
-<h2>Bugs</h2>
+<h2>Bugs And Other Issues</h2>
 <p>
-	We use the <a href="https://bugs.launchpad.net/or" target="_blank">Launchpad bugs</a> site to track all of our bugs. After submitting a bug, our team will evaluate it and respond; you'll be kept informed as the bug is updated.
+	We use the <a href="https://github.com/openrails/openrails/issues/" target="_blank">GitHub</a> site to track all of our issues. After submitting an issue, our team will evaluate it and respond; you'll be kept informed as the issue is updated.
 </p>
 <p>
 	Before you submit a new bug, please consider:
 </p>
 <ul>
 	<li>
-		Is the problem already reported? <i>Please don't submit duplicates</i> - you can use "Does this bug affect you?" to tell us that an existing bug affects more people.
+		Is the problem already reported? <i>Please don't submit duplicates</i>. 
+		You can use the drop-down filter <a href="https://github.com/openrails/openrails/issues/">here</a> to search for "open isssues".
 	</li>
 	<li>
 		Is the problem really caused by a bug in Open Rails? <i>Please don't submit problems with your computer or Microsoft Train Simulator</i>.
