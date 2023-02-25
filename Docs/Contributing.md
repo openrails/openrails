@@ -30,7 +30,7 @@ There are no requirements for the pull request.
 
 ### Process for bugs and other issues
 
-If you'd like to fix an issue, you can get started immediately. If the fix turns out to be very small, you do not even need an bug report. Otherwise, you will need to make sure it has been reported on [our issue tracker on GitHub](https://github.com/openrails/openrails/issues/). If it has not, you can report the issue *and* fix it!
+If you'd like to fix an issue, you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our issue tracker on GitHub](https://github.com/openrails/openrails/issues/). If it has not, you can report the issue *and* fix it!
 
 There are no requirements for creating the pull request.
 
