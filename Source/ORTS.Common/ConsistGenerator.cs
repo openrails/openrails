@@ -112,7 +112,10 @@ namespace ORTS.Common
 
                     if (file == null)
                     {
-                        file = Directory.GetFiles(baseDir, "*" + model + "*.gl*", SearchOption.AllDirectories).FirstOrDefault()
+                        // When gltf files got dropped into the sample directory, show that ones too.
+                        file = Directory.GetFiles(baseDir, Path.GetFileNameWithoutExtension(model) + "*.gl*", SearchOption.AllDirectories)
+                            .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && !f.Contains(Path.Combine(baseDir, "1.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
+                            .FirstOrDefault()
                             ?.Substring(baseDir.Length + 1)
                             ?.Replace(@"\", "/");
                         if (file == null)
