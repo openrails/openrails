@@ -16,7 +16,7 @@ If you've got a feature suggestion for Open Rails, please report it in [our road
 
 ## Making changes
 
-You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, if you'ld like your feature to be included in the official version, there is a process to ensure that the community agrees and to review the code for potential issues prior to inclusion.
+You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, if you'd like your feature to be included in the official version, there is a process to ensure that the community agrees and to review the code for potential issues prior to inclusion.
 
 In most cases, you can get started immediately with making the changes and creating a pull request. We do ask for some additional steps to be taken for some bugs and all new features, but they can come before or after the pull request. Please feel free to share ideas and proposals as pull requests!
 
