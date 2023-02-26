@@ -160,13 +160,13 @@ information of train positions. If two player trains couple together, one of
 them will become a helper, and a message will be shown on the left indicating 
 that the player is in Helper mode.  A player in Helper mode cannot control 
 his consist as it falls under control of the lead locomotive. By pressing 
-``<Shift+E>`` you can swap Helper status with another player on the train. 
+``<Alt+E>`` you can swap Helper status with another player on the train. 
 Always press ``<\>`` and ``<Shift+/>`` to reset brakes each time after 
 coupling/uncoupling. Note that two trains can't couple together before two 
 minutes are passed from their presence in the Dispatcher's computer.
 
 Players can uncouple their own trains. Players in the uncoupled trains may 
-need to press ``<Shift+E>`` to gain control; otherwise, the uncoupled 
+need to press ``<Alt+E>`` to gain control; otherwise, the uncoupled 
 trains may become a loose consist. Always stop completely before uncoupling, 
 otherwise weird things may happen. Players may also need to press keys for 
 resetting brake state after uncoupling (see :ref:`here <driving-brakes-init>`).
@@ -248,7 +248,7 @@ Summary of Multi-Player Procedures
 8.  Use ``<\>`` and ``<Shift+/>`` (on English keyboards) just after your 
     train is coupled or uncoupled, or when you just gain back the control of 
     your own train.
-9.  Use ``<Shift+E>`` to gain control of your own train after uncoupling.
+9.  Use ``<Alt+E>`` to gain control of your own train after uncoupling.
 10. Use other communication tools (such as Ventrillo or Skype) to communicate 
     with other players.
 11. Always completely stop before uncoupling trains with two players coupled 
