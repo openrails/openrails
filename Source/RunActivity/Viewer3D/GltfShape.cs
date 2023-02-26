@@ -46,6 +46,7 @@ namespace Orts.Viewer3D
             "KHR_lights_punctual",
             "KHR_materials_unlit",
             "KHR_materials_clearcoat",
+            "KHR_materials_emissive_strength",
             "MSFT_lod",
             "MSFT_texture_dds",
             "MSFT_packing_normalRoughnessMetallic",
@@ -1092,6 +1093,10 @@ namespace Orts.Viewer3D
                 if (material.Extensions?.TryGetValue("KHR_materials_clearcoat", out extension) ?? false)
                     clearcoat = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_clearcoat>(extension.ToString());
 
+                var emissiveStrength = 1f;
+                if (material.Extensions?.TryGetValue("KHR_materials_emissive_strength", out extension) ?? false)
+                    emissiveStrength = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_emissive_strength>(extension.ToString())?.EmissiveStrength ?? 1;
+
                 (texCoords1.X, baseColorTexture, baseColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords1.Y, metallicRoughnessTexture, metallicRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, msftRmoInfo ?? msftOrmInfo ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords1.Z, normalTexture, normalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, msftNormalInfo ?? material.NormalTexture, SharedMaterialManager.WhiteTexture);
@@ -1108,7 +1113,7 @@ namespace Orts.Viewer3D
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
                 var normalScale = material.NormalTexture?.Scale ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
                 var occlusionStrength = material.OcclusionTexture?.Strength ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
-                var emissiveFactor = MemoryMarshal.Cast<float, Vector3>(material.EmissiveFactor ?? new[] { 0f, 0f, 0f })[0];
+                var emissiveFactor = MemoryMarshal.Cast<float, Vector3>(material.EmissiveFactor ?? new[] { 0f, 0f, 0f })[0] * emissiveStrength;
                 var clearcoatFactor = clearcoat?.ClearcoatFactor ?? 0;
                 var clearcoatRoughnessFactor = clearcoat?.ClearcoatRoughnessFactor ?? 0;
                 var clearcoatNormalScale = clearcoat?.ClearcoatNormalTexture?.Scale ?? 1;
@@ -1443,6 +1448,12 @@ namespace Orts.Viewer3D
             public float ClearcoatRoughnessFactor { get; set; }
             public TextureInfo ClearcoatRoughnessTexture { get; set; }
             public MaterialNormalTextureInfo ClearcoatNormalTexture { get; set; }
+        }
+
+        public class KHR_materials_emissive_strength
+        {
+            [DefaultValue(1)]
+            public float EmissiveStrength { get; set; }
         }
 
         /// <summary>
