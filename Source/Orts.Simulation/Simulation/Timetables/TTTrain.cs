@@ -1273,7 +1273,7 @@ namespace Orts.Simulation.Timetables
 
                 File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "PostInit at " + actTime.ToString("HH:mm:ss") + "\n");
-                File.AppendAllText(@"C:\temp\checktrain.txt", "Train : " + Number.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Train : " + Number.ToString() + " ( AI : " + OrgAINumber.ToString() + " )\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Name  : " + Name + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Frght : " + IsFreight.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Length: " + Length.ToString() + "\n");
@@ -3318,16 +3318,9 @@ namespace Orts.Simulation.Timetables
                             CheckReadyToAttach();
 
                             // check attach details
-                            if (AttachDetails != null && AttachDetails.Valid && AttachDetails.ReadyToAttach)
+                            if (AttachDetails != null && AttachDetails.Valid && AttachDetails.ReadyToAttach && AttachDetails.AttachTrain == OtherTrain.OrgAINumber)
                             {
-                                if (AttachDetails.AttachTrain == OtherTrain.Number)
-                                {
-                                    attachToTrain = true;
-                                }
-                                else if (OtherTrain.TrainType == TRAINTYPE.PLAYER && AttachDetails.AttachTrain == OtherTrain.OrgAINumber)
-                                {
-                                    attachToTrain = true;
-                                }
+                                attachToTrain = true;
                             }
 
                             if (!attachToTrain)
@@ -3900,7 +3893,7 @@ namespace Orts.Simulation.Timetables
                         {
                             foreach (TTTrain wtrain in AI.TrainsToAdd)
                             {
-                                if (wtrain.Number == AttachDetails.AttachTrain)
+                                if (wtrain.Number == AttachDetails.AttachTrain || wtrain.OrgAINumber == AttachDetails.AttachTrain)
                                 {
                                     return;  // found train - just wait a little longer
                                 }
@@ -5268,16 +5261,9 @@ namespace Orts.Simulation.Timetables
                         int? transferTrainIndex = null;
 
                         // check attach details
-                        if (AttachDetails != null && AttachDetails.Valid && AttachDetails.ReadyToAttach)
+                        if (AttachDetails != null && AttachDetails.Valid && AttachDetails.ReadyToAttach && AttachDetails.AttachTrain == OtherTrain.OrgAINumber)
                         {
-                            if (AttachDetails.AttachTrain == OtherTrain.Number)
-                            {
-                                attachToTrain = true;
-                            }
-                            else if (OtherTrain.TrainType == TRAINTYPE.PLAYER && AttachDetails.AttachTrain == OtherTrain.OrgAINumber)
-                            {
-                                attachToTrain = true;
-                            }
+                            attachToTrain = true;
                         }
 
                         // check pickup details
@@ -6646,7 +6632,7 @@ namespace Orts.Simulation.Timetables
                         foreach (TrainRouted routedTrain in allTrains)
                         {
                             TTTrain otherTrain = routedTrain.Train as TTTrain;
-                            if (otherTrain.Number == AttachDetails.AttachTrain && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
+                            if (otherTrain.OrgAINumber == AttachDetails.AttachTrain && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
                             {
                                 AttachDetails.ReadyToAttach = true;
                             }
@@ -6931,11 +6917,7 @@ namespace Orts.Simulation.Timetables
                         }
 
                         bool goingToAttach = false;
-                        if (AttachDetails != null && AttachDetails.Valid && AttachDetails.ReadyToAttach && AttachDetails.AttachTrain == occTTTrain.Number)
-                        {
-                            goingToAttach = true;
-                        }
-                        else if (occTTTrain.TrainType == TRAINTYPE.PLAYER && AttachDetails != null && AttachDetails.Valid && AttachDetails.ReadyToAttach && AttachDetails.AttachTrain == occTTTrain.OrgAINumber)
+                        if (AttachDetails != null && AttachDetails.Valid && AttachDetails.ReadyToAttach && AttachDetails.AttachTrain == occTTTrain.OrgAINumber)
                         {
                             goingToAttach = true;
                         }
@@ -7121,12 +7103,7 @@ namespace Orts.Simulation.Timetables
                         foreach (TrainRouted routedTrain in allTrains)
                         {
                             TTTrain otherTrain = routedTrain.Train as TTTrain;
-                            if (otherTrain.Number == AttachDetails.AttachTrain && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
-                            {
-                                AttachDetails.ReadyToAttach = true;
-                                break;
-                            }
-                            else if (otherTrain.TrainType == TRAINTYPE.PLAYER && otherTrain.OrgAINumber == AttachDetails.AttachTrain && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
+                            if (otherTrain.OrgAINumber == AttachDetails.AttachTrain && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
                             {
                                 AttachDetails.ReadyToAttach = true;
                                 break;
@@ -7157,16 +7134,10 @@ namespace Orts.Simulation.Timetables
             if (Math.Abs(otherTrain.SpeedMpS) < 0.1f && otherTrain.ControlMode == TRAIN_CONTROL.INACTIVE && otherTrain.ActivateTime == null)
             {
                 // check train
-                if (PickUpTrains.Contains(otherTrain.Number))
+                if (PickUpTrains.Contains(otherTrain.OrgAINumber))
                 {
                     pickUpTrain = true;
                     PickUpTrains.Remove(otherTrain.Number);
-                    NeedPickUp = true;
-                }
-                else if (otherTrain.TrainType == TRAINTYPE.PLAYER && PickUpTrains.Contains(otherTrain.OrgAINumber))
-                {
-                    pickUpTrain = true;
-                    PickUpTrains.Remove(otherTrain.OrgAINumber);
                     NeedPickUp = true;
                 }
 
@@ -7301,12 +7272,7 @@ namespace Orts.Simulation.Timetables
             // train transfer
             if (otherTrain.ControlMode == TRAIN_CONTROL.INACTIVE)
             {
-                if (TransferTrainDetails.ContainsKey(otherTrain.Number))
-                {
-                    transferTrain = true;
-                    trainTransferIndex = otherTrain.Number;
-                }
-                else if (otherTrain.TrainType == TRAINTYPE.PLAYER && TransferTrainDetails.ContainsKey(otherTrain.OrgAINumber))
+                if (TransferTrainDetails.ContainsKey(otherTrain.OrgAINumber))
                 {
                     transferTrain = true;
                     trainTransferIndex = otherTrain.OrgAINumber;
@@ -7314,10 +7280,10 @@ namespace Orts.Simulation.Timetables
                 // static transfer required and train is static, set this train number
                 else if (TransferTrainDetails.ContainsKey(-99) && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.Forms < 0)
                 {
-                    TransferTrainDetails.Add(otherTrain.Number, TransferTrainDetails[-99]);
+                    TransferTrainDetails.Add(otherTrain.OrgAINumber, TransferTrainDetails[-99]);
                     TransferTrainDetails.Remove(-99);
                     transferTrain = true;
-                    trainTransferIndex = otherTrain.Number;
+                    trainTransferIndex = otherTrain.OrgAINumber;
                 }
                 
                 // if found, no need to look any further
@@ -7336,12 +7302,7 @@ namespace Orts.Simulation.Timetables
                     if (TransferStationDetails.ContainsKey(stationIndex))
                     {
                         TransferInfo thisTransfer = TransferStationDetails[stationIndex];
-                        if (thisTransfer.TransferTrain == otherTrain.Number)
-                        {
-                            transferTrain = true;
-                            stationTransferIndex = stationIndex;
-                        }
-                        else if (otherTrain.TrainType == TRAINTYPE.PLAYER && thisTransfer.TransferTrain == otherTrain.OrgAINumber)
+                        if (thisTransfer.TransferTrain == otherTrain.OrgAINumber)
                         {
                             transferTrain = true;
                             stationTransferIndex = stationIndex;
@@ -7353,14 +7314,14 @@ namespace Orts.Simulation.Timetables
             // transfer at dispose - check if train in required section
             if (!transferTrain)
             {
-                if (TransferTrainDetails.ContainsKey(otherTrain.Number))
+                if (TransferTrainDetails.ContainsKey(otherTrain.OrgAINumber))
                 {
                     foreach (TrackCircuitSection occSection in otherTrain.OccupiedTrack)
                     {
                         if (otherTrain.NeedTrainTransfer.ContainsKey(occSection.Index))
                         {
                             transferTrain = true;
-                            trainTransferIndex = otherTrain.Number;
+                            trainTransferIndex = otherTrain.OrgAINumber;
                             break;
                         }
                     }
@@ -8455,8 +8416,7 @@ namespace Orts.Simulation.Timetables
                     newItem.activeRouteIndex = sectionfound[0, 1];
                     newItem.activeSectionIndex = TCRoute.TCRouteSubpaths[newItem.activeSubrouteIndex][newItem.activeRouteIndex].TCSectionIndex;
 
-                    newItem.waitTrainNumber = otherTrain.Number;
-                    if (otherTrain.Number == 0) newItem.waitTrainNumber = otherTrain.OrgAINumber;
+                    newItem.waitTrainNumber = otherTrain.OrgAINumber;
                     newItem.waitTrainSubpathIndex = sectionfound[1, 0];
                     newItem.waitTrainRouteIndex = sectionfound[1, 1];
                     newItem.maxDelayS = reqWait.maxDelayS;
@@ -8739,8 +8699,7 @@ namespace Orts.Simulation.Timetables
             if (otherStationStopIndex >= 0) // if other stop is found
             {
                 WaitInfo newWait = reqWait.CreateCopy();
-                newWait.waitTrainNumber = otherTrain.Number;
-                if (otherTrain.Number == 0) newWait.waitTrainNumber = otherTrain.OrgAINumber;
+                newWait.waitTrainNumber = otherTrain.OrgAINumber;
                 StationStop otherTrainStationStop = otherTrain.StationStops[otherStationStopIndex];
                 otherTrainStationStop.ConnectionsWaiting.Add(Number);
                 newWait.waitTrainSubpathIndex = otherTrainStationStop.SubrouteIndex;
@@ -9587,15 +9546,11 @@ namespace Orts.Simulation.Timetables
                         {
                             return (false);
                         }
-                        else if (TransferTrainDetails.ContainsKey(otherTTTrain.Number))
+                        else if (TransferTrainDetails.ContainsKey(otherTTTrain.OrgAINumber))
                         {
                             return (false);
                         }
-                        else if (AttachDetails != null && AttachDetails.Valid && AttachDetails.AttachTrain == otherTTTrain.Number)
-                        {
-                            return (false);
-                        }
-                        else if (AttachDetails != null && AttachDetails.Valid && otherTTTrain.TrainType == TRAINTYPE.PLAYER && AttachDetails.AttachTrain == otherTTTrain.OrgAINumber)
+                        else if (AttachDetails != null && AttachDetails.Valid && AttachDetails.AttachTrain == otherTTTrain.OrgAINumber)
                         {
                             return (false);
                         }
@@ -10419,14 +10374,10 @@ namespace Orts.Simulation.Timetables
                             {
                                 foreach (StationStop otherStop in otherTrain.StationStops)
                                 {
-                                    if (String.Compare(StationStops[0].PlatformItem.Name, otherStop.PlatformItem.Name) == 0)
+                                    if (String.Compare(StationStops[0].PlatformItem.Name, otherStop.PlatformItem.Name) == 0 && otherStop.ConnectionsAwaited.ContainsKey(OrgAINumber))
                                     {
-                                        int RefNumber = OrgAINumber > 0 ? OrgAINumber : Number;
-                                        if (otherStop.ConnectionsAwaited.ContainsKey(RefNumber))
-                                        {
-                                            otherStop.ConnectionsAwaited.Remove(RefNumber);
-                                            otherStop.ConnectionsAwaited.Add(RefNumber, StationStops[0].ActualArrival);
-                                        }
+                                        otherStop.ConnectionsAwaited.Remove(OrgAINumber);
+                                        otherStop.ConnectionsAwaited.Add(OrgAINumber, StationStops[0].ActualArrival);
                                     }
                                 }
                             }
@@ -10765,14 +10716,10 @@ namespace Orts.Simulation.Timetables
                                     {
                                         foreach (StationStop otherStop in otherTrain.StationStops)
                                         {
-                                            if (String.Compare(StationStops[0].PlatformItem.Name, otherStop.PlatformItem.Name) == 0)
+                                            if (String.Compare(StationStops[0].PlatformItem.Name, otherStop.PlatformItem.Name) == 0 && otherStop.ConnectionsAwaited.ContainsKey(OrgAINumber))
                                             {
-                                                int RefNumber = OrgAINumber > 0 ? OrgAINumber : Number;
-                                                if (otherStop.ConnectionsAwaited.ContainsKey(RefNumber))
-                                                {
-                                                    otherStop.ConnectionsAwaited.Remove(RefNumber);
-                                                    otherStop.ConnectionsAwaited.Add(RefNumber, StationStops[0].ActualArrival);
-                                                }
+                                                otherStop.ConnectionsAwaited.Remove(OrgAINumber);
+                                                otherStop.ConnectionsAwaited.Add(OrgAINumber, StationStops[0].ActualArrival);
                                             }
                                         }
                                     }
@@ -10845,21 +10792,16 @@ namespace Orts.Simulation.Timetables
                         foreach (TrainRouted routedTrain in allTrains)
                         {
                             TTTrain otherTrain = routedTrain.Train as TTTrain;
-                            if (otherTrain.Number == AttachDetails.AttachTrain && otherTrain.AtStation)
+                            if (otherTrain.OrgAINumber == AttachDetails.AttachTrain)
                             {
-                                AttachDetails.ReadyToAttach = true;
-                            }
-                            else if (otherTrain.TrainType == TRAINTYPE.PLAYER && otherTrain.OrgAINumber == AttachDetails.AttachTrain && otherTrain.AtStation)
-                            {
-                                AttachDetails.ReadyToAttach = true;
-                            }
-                            else if (otherTrain.Number == AttachDetails.AttachTrain && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
-                            {
-                                AttachDetails.ReadyToAttach = true;
-                            }
-                            else if (otherTrain.TrainType == TRAINTYPE.PLAYER && otherTrain.OrgAINumber == AttachDetails.AttachTrain && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
-                            {
-                                AttachDetails.ReadyToAttach = true;
+                                if (otherTrain.AtStation)
+                                {
+                                    AttachDetails.ReadyToAttach = true;
+                                }
+                                else if (otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
+                                {
+                                    AttachDetails.ReadyToAttach = true;
+                                }
                             }
                         }
                     }
@@ -10967,16 +10909,6 @@ namespace Orts.Simulation.Timetables
                 // check if train exists and if so, check its delay
                 {
                     TTTrain otherTrain = GetOtherTTTrainByNumber(otherTrainNumber);
-
-                    // if train not found, check player train
-                    if (otherTrain == null)
-                    {
-                        otherTrain = GetOtherTTTrainByNumber(0);
-                        if (otherTrain.OrgAINumber != otherTrainNumber)
-                        {
-                            otherTrain = null;   // not player train, so reset
-                        }
-                    }
 
                     if (otherTrain != null)
                     {
@@ -11834,10 +11766,10 @@ namespace Orts.Simulation.Timetables
                 if (attachTrain.NeedAttach.ContainsKey(stationPlatformIndex))
                 {
                     List<int> trainList = attachTrain.NeedAttach[stationPlatformIndex];
-                    if (trainList.Contains(Number))
+                    if (trainList.Contains(OrgAINumber))
                     {
                         needAttachFound = true;
-                        trainList.Remove(Number);
+                        trainList.Remove(OrgAINumber);
                         if (trainList.Count < 1)
                         {
                             attachTrain.NeedAttach.Remove(stationPlatformIndex);
@@ -11854,12 +11786,7 @@ namespace Orts.Simulation.Timetables
                 {
                     int foundKey = thisNeedAttach.Key;
                     List<int> trainList = thisNeedAttach.Value;
-                    if (trainList.Contains(Number))
-                    {
-                        trainList.Remove(Number);
-                        needAttachFound = true;
-                    }
-                    else if (TrainType == TRAINTYPE.PLAYER && trainList.Contains(OrgAINumber))
+                    if (trainList.Contains(OrgAINumber))
                     {
                         trainList.Remove(OrgAINumber);
                         needAttachFound = true;
@@ -14402,7 +14329,7 @@ namespace Orts.Simulation.Timetables
             {
                 if (String.Compare(otherTrain.Name, AttachTrainName, true) == 0)
                 {
-                    AttachTrain = otherTrain.Number;
+                    AttachTrain = otherTrain.OrgAINumber;
                     attachedTrain = otherTrain;
                     trainFound = true;
                     break;
@@ -14453,12 +14380,12 @@ namespace Orts.Simulation.Timetables
                 if (attachedTrain.NeedAttach.ContainsKey(StationPlatformReference))
                 {
                     List<int> needAttachList = attachedTrain.NeedAttach[StationPlatformReference];
-                    needAttachList.Add(dettrain.Number);
+                    needAttachList.Add(dettrain.OrgAINumber);
                 }
                 else
                 {
                     List<int> needAttachList = new List<int>();
-                    needAttachList.Add(dettrain.Number);
+                    needAttachList.Add(dettrain.OrgAINumber);
                     attachedTrain.NeedAttach.Add(StationPlatformReference, needAttachList);
                 }
             }
@@ -14630,7 +14557,7 @@ namespace Orts.Simulation.Timetables
                 {
                     if (String.Compare(otherTrain.Name, PickUpTrainName, true) == 0)
                     {
-                        PickUpTrain = otherTrain.Number;
+                        PickUpTrain = otherTrain.OrgAINumber;
                         pickUpTrain = otherTrain;
                         trainFound = true;
                         break;
@@ -14642,7 +14569,7 @@ namespace Orts.Simulation.Timetables
                 {
                     if (playerTrain != null && String.Compare(playerTrain.Name, PickUpTrainName, true) == 0)
                     {
-                        PickUpTrain = playerTrain.Number;
+                        PickUpTrain = playerTrain.OrgAINumber;
                         pickUpTrain = playerTrain;
                         trainFound = true;
                     }
@@ -15124,7 +15051,7 @@ namespace Orts.Simulation.Timetables
             else if (iunits == GivingTrain.Cars.Count)
             {
                 Trace.TraceInformation("Train {0} : transfer command : transfer requires all units of train {0} to transfer to train {1}", thisTrain.Name, GivingTrain.Name, TakingTrain.Name);
-                if (thisTrain.Number == GivingTrain.Number)
+                if (thisTrain.OrgAINumber == GivingTrain.OrgAINumber)
                 {
                     thisTrain.TTCouple(TakingTrain, true, frontpos);
                 }
@@ -15137,7 +15064,7 @@ namespace Orts.Simulation.Timetables
             {
                 // create temp train which will hold transfered units
                 List<TTTrain> tempList = new List<TTTrain>();
-                string tempName = String.Concat("T_", thisTrain.Number.ToString("0000"));
+                string tempName = String.Concat("T_", thisTrain.OrgAINumber.ToString("0000"));
                 int formedTrainNo = thisTrain.CreateStaticTrain(thisTrain, ref tempList, tempName, thisTrain.PresentPosition[0].TCSectionIndex);
                 TTTrain tempTrain = tempList[0];
 
@@ -15172,7 +15099,7 @@ namespace Orts.Simulation.Timetables
                         }
                     }
                 }
-                else if (TransferTrain == otherTrain.Number || (otherTrain.Number == 0 && TransferTrain == otherTrain.OrgAINumber))
+                else if (TransferTrain == otherTrain.OrgAINumber)
                 {
                     // get last section as reference to transfer position
                     int lastSectionIndex = thisTrain.TCRoute.TCRouteSubpaths.Last().Last().TCSectionIndex;
@@ -15221,7 +15148,7 @@ namespace Orts.Simulation.Timetables
             {
                 if (String.Compare(otherTrain.Name, TransferTrainName, true) == 0)
                 {
-                    TransferTrain = otherTrain.Number;
+                    TransferTrain = otherTrain.OrgAINumber;
                     transferTrain = otherTrain;
                     trainFound = true;
                     break;
@@ -15233,7 +15160,7 @@ namespace Orts.Simulation.Timetables
             {
                 if (playerTrain != null && String.Compare(playerTrain.Name, TransferTrainName, true) == 0)
                 {
-                    TransferTrain = playerTrain.Number;
+                    TransferTrain = playerTrain.OrgAINumber;
                     transferTrain = playerTrain;
                     trainFound = true;
                 }
@@ -15254,12 +15181,12 @@ namespace Orts.Simulation.Timetables
                 {
                     if (transferTrain.NeedStationTransfer.ContainsKey(StationPlatformReference))
                     {
-                        transferTrain.NeedStationTransfer[StationPlatformReference].Add(dettrain.Number);
+                        transferTrain.NeedStationTransfer[StationPlatformReference].Add(dettrain.OrgAINumber);
                     }
                     else
                     {
                         List<int> tempList = new List<int>();
-                        tempList.Add(dettrain.Number);
+                        tempList.Add(dettrain.OrgAINumber);
                         transferTrain.NeedStationTransfer.Add(StationPlatformReference, tempList);
                     }
                 }
