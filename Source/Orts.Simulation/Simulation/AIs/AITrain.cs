@@ -5100,6 +5100,32 @@ namespace Orts.Simulation.AIs
             // correct trigger for approach distance but not backward beyond present position
             triggerDistanceM = Math.Max(PresentPosition[0].DistanceTravelledM, triggerDistanceM - (3.0f * signalApproachDistanceM));
 
+            // for signal stop item : check if action allready in list, if so, remove (can be result of restore action)
+            LinkedListNode<DistanceTravelledItem> thisItemLink = requiredActions.First;
+            bool itemFound = false;
+
+            while (thisItemLink != null && !itemFound)
+            {
+                DistanceTravelledItem thisDTItem = thisItemLink.Value;
+                if (thisDTItem is AIActionItem)
+                {
+                    AIActionItem thisActionItem = thisDTItem as AIActionItem;
+                    if (thisActionItem.ActiveItem != null && thisActionItem.NextAction == thisAction)
+                    {
+                        if (thisActionItem.ActiveItem.ObjectDetails.thisRef == thisItem.ObjectDetails.thisRef)
+                        {
+                            // equal item, so remove it
+                            requiredActions.Remove(thisDTItem);
+                            itemFound = true;
+                        }
+                    }
+                }
+                if (!itemFound)
+                {
+                    thisItemLink = thisItemLink.Next;
+                }
+            }
+
             // create and insert action
 
             AIActionItem newAction = new AIActionItem(thisItem, thisAction);
