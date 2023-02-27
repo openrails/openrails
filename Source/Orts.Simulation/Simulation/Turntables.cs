@@ -179,9 +179,9 @@ namespace Orts.Simulation
             }
 
             int trainsInQ = inf.ReadInt32();
-            for (int iQ = 0; iQ < trainsInQ - 1; iQ++)
+            for (int iQ = 0; iQ < trainsInQ; iQ++)
             {
-                Q.Enqueue(iQ);
+                Q.Enqueue(inf.ReadInt32());
             }
         }
 
@@ -723,9 +723,12 @@ namespace Orts.Simulation
                 var iRelativeCarPositions = 0;
                 foreach (TrainCar traincar in TrainsOnMovingTable[0].Train.Cars)
                 {
-                    traincar.WorldPosition.XNAMatrix = Matrix.Multiply(RelativeCarPositions[iRelativeCarPositions], AnimationXNAMatrix);
-                    traincar.UpdateFreightAnimationDiscretePositions();
-                    iRelativeCarPositions++;
+                    if (RelativeCarPositions != null)
+                    {
+                        traincar.WorldPosition.XNAMatrix = Matrix.Multiply(RelativeCarPositions[iRelativeCarPositions], AnimationXNAMatrix);
+                        traincar.UpdateFreightAnimationDiscretePositions();
+                        iRelativeCarPositions++;
+                    }
                 }
             }
         }
