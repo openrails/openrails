@@ -7908,17 +7908,36 @@ namespace Orts.Simulation.Timetables
                     break;
 
                 case "callon":
-                    if (thisStationStop != null) thisStationStop.CallOnAllowed = true;
+                    if (thisStationStop == null)
+                    {
+                        Trace.TraceInformation("Cannot set CALLON without station stop time : train " + Name + " ( " + Number + " )");
+                    }
+                    else
+                    {
+                        thisStationStop.CallOnAllowed = true;
+                    }
                     break;
 
                 case "hold":
-                    if (thisStationStop != null)
+                    if (thisStationStop == null)
+                    {
+                        Trace.TraceInformation("Cannot set HOLD without station stop time : train " + Name + " ( " + Number + " )");
+                    }
+                    else
+                    {
                         thisStationStop.HoldSignal = thisStationStop.ExitSignal >= 0; // set holdstate only if exit signal is defined
+                    }
                     break;
 
                 case "nohold":
-                    if (thisStationStop != null)
+                    if (thisStationStop == null)
+                    {
+                        Trace.TraceInformation("Cannot set NOHOLD without station stop time : train " + Name + " ( " + Number + " )");
+                    }
+                    else
+                    {
                         thisStationStop.HoldSignal = false;
+                    }
                     break;
 
                 case "forcehold":
@@ -8002,15 +8021,36 @@ namespace Orts.Simulation.Timetables
                     break;
 
                 case "nowaitsignal":
-                    thisStationStop.NoWaitSignal = true;
+                    if (thisStationStop == null)
+                    {
+                        Trace.TraceInformation("Cannot set NOWAITSIGNAL without station stop time : train " + Name + " ( " + Number + " )");
+                    }
+                    else
+                    {
+                        thisStationStop.NoWaitSignal = true;
+                    }
                     break;
 
                 case "waitsignal":
-                    thisStationStop.NoWaitSignal = false;
+                    if (thisStationStop == null)
+                    {
+                        Trace.TraceInformation("Cannot set WAITSIGNAL without station stop time : train " + Name + " ( " + Number + " )");
+                    }
+                    else
+                    {
+                        thisStationStop.NoWaitSignal = false;
+                    }
                     break;
 
                 case "noclaim":
-                    thisStationStop.NoClaimAllowed = true;
+                    if (thisStationStop == null)
+                    {
+                        Trace.TraceInformation("Cannot set NOCLAIM without station stop time : train " + Name + " ( " + Number + " )");
+                    }
+                    else
+                    {
+                        thisStationStop.NoClaimAllowed = true;
+                    }
                     break;
 
                 // no action for terminal (processed in create station stop)
