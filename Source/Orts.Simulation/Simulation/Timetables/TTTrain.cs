@@ -6518,13 +6518,20 @@ namespace Orts.Simulation.Timetables
         /// Clear moving table after moving off table
         /// </summary>
 
-        public override void ClearMovingTable()
+        public override void ClearMovingTable(DistanceTravelledItem action)
         {
             // only if valid reference
             if (ActiveTurntable != null)
             {
                 ActiveTurntable.RemoveTrainFromTurntable();
                 ActiveTurntable = null;
+
+                // set action to restore original speed
+                ClearMovingTableAction clearAction = action as ClearMovingTableAction;
+
+                float reqDistance = DistanceTravelledM + 1;
+                ActivateSpeedLimit speedLimit = new ActivateSpeedLimit((DistanceTravelledM + 1), clearAction.OriginalMaxTrainSpeedMpS, clearAction.OriginalMaxTrainSpeedMpS, clearAction.OriginalMaxTrainSpeedMpS);
+                requiredActions.InsertAction(speedLimit);
             }
         }
 
@@ -9246,7 +9253,7 @@ namespace Orts.Simulation.Timetables
             List<DistanceTravelledItem> reqActions = requiredActions.GetActions(0.0f, typeof(ClearMovingTableAction));
             foreach (DistanceTravelledItem thisAction in reqActions)
             {
-                ClearMovingTable();
+                ClearMovingTable(thisAction);
             }
 
             // check if train is to form new train

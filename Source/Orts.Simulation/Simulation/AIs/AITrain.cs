@@ -5298,7 +5298,7 @@ namespace Orts.Simulation.AIs
                 }
                 else if (thisAction is ClearMovingTableAction)
                 {
-                    ClearMovingTable();
+                    ClearMovingTable(thisAction);
                 }
                 else if (thisAction is AIActionItem && !(thisAction is AuxActionItem))
                 {
