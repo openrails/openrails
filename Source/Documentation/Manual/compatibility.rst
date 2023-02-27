@@ -129,7 +129,7 @@ Within the ``\GLOBAL`` folder two sub-folders are required::
 Within the ``\TRAINS`` folder two subfolders are required::
 
     \CONSISTS
-    \TRAINSETS
+    \TRAINSET
 
 Original MSTS Files Usually Needed for Added MSTS-Compatible Content
 ====================================================================
