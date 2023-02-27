@@ -3176,9 +3176,11 @@ namespace Orts.Simulation.Timetables
             public string StopName;
             public int arrivalTime;
             public int departureTime;
+            public int passTime;
             public DateTime arrivalDT;
             public DateTime departureDT;
-            public bool arrdepvalid;
+            public DateTime passDT;
+            public bool arrdeppassvalid;
             public SignalHoldType holdState;
             public bool noWaitSignal;
             //          public int passageTime;   // not yet implemented
@@ -3199,17 +3201,34 @@ namespace Orts.Simulation.Timetables
                 refTTInfo = ttinfo;
                 arrivalTime = -1;
                 departureTime = -1;
+                passTime = -1;
                 Commands = null;
 
                 TimeSpan atime;
                 bool validArrTime = false;
                 bool validDepTime = false;
+                bool validPassTime = false;
 
-                validArrTime = TimeSpan.TryParse(arrTime, out atime);
-                if (validArrTime)
+                if (arrTime.Contains("P"))
                 {
-                    arrivalTime = Convert.ToInt32(atime.TotalSeconds);
-                    arrivalDT = new DateTime(atime.Ticks);
+                    string passingTime = arrTime.Replace('P', ':');
+                    validPassTime = TimeSpan.TryParse(passingTime, out atime);
+
+                    if (validPassTime)
+                    {
+                        passTime = Convert.ToInt32(atime.TotalSeconds);
+                        passDT = new DateTime(atime.Ticks);
+                    }
+                }
+                else
+                {
+
+                    validArrTime = TimeSpan.TryParse(arrTime, out atime);
+                    if (validArrTime)
+                    {
+                        arrivalTime = Convert.ToInt32(atime.TotalSeconds);
+                        arrivalDT = new DateTime(atime.Ticks);
+                    }
                 }
 
                 validDepTime = TimeSpan.TryParse(depTime, out atime);
@@ -3219,7 +3238,7 @@ namespace Orts.Simulation.Timetables
                     departureDT = new DateTime(atime.Ticks);
                 }
 
-                arrdepvalid = (validArrTime || validDepTime);
+                arrdeppassvalid = (validArrTime || validDepTime);
 
                 StopName = String.Copy(name.ToLower());
             }
@@ -3236,8 +3255,8 @@ namespace Orts.Simulation.Timetables
             {
                 bool validStop = false;
 
-                // valid stop
-                if (arrdepvalid)
+                // valid stop and not passing
+                if (arrdeppassvalid && passTime < 0)
                 {
                     // check for station flags
                     bool terminal = false;
@@ -3489,6 +3508,12 @@ namespace Orts.Simulation.Timetables
                             }
                         }
                     }
+                }
+
+                // pass time only - valid condition but not yet processed
+                if (!validStop && passTime >= 0)
+                {
+                    validStop = true;
                 }
 
                 return (validStop);
