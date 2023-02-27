@@ -8035,7 +8035,7 @@ namespace Orts.Simulation.Timetables
                     }
                     else
                     {
-                    thisStationStop.NoWaitSignal = true;
+                        thisStationStop.NoWaitSignal = true;
                     }
                     break;
 
@@ -8046,7 +8046,7 @@ namespace Orts.Simulation.Timetables
                     }
                     else
                     {
-                    thisStationStop.NoWaitSignal = false;
+                        thisStationStop.NoWaitSignal = false;
                     }
                     break;
 
@@ -8057,7 +8057,7 @@ namespace Orts.Simulation.Timetables
                     }
                     else
                     {
-                    thisStationStop.NoClaimAllowed = true;
+                        thisStationStop.NoClaimAllowed = true;
                     }
                     break;
 
@@ -12832,10 +12832,10 @@ namespace Orts.Simulation.Timetables
             {
                 ttanalysisreport = waitforstring.ToString();
 
-            var sob = new StringBuilder();
+                var sob = new StringBuilder();
                 sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}", Number, stopTime.ToString("HH:mm:ss"), Name, Delay, "", "", "", "", "", "", stopTime.ToString("HH:mm:ss"), signalstring.ToString(), waitforstring.ToString());
-            File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
-        }
+                File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+            }
         }
 
         public void TTAnalysisUpdateBrakingState1()
@@ -12896,11 +12896,11 @@ namespace Orts.Simulation.Timetables
                 {
                     ttanalysisreport = waitforstring.ToString();
 
-                var sob = new StringBuilder();
+                    var sob = new StringBuilder();
                     sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}", Number, stopTime.ToString("HH:mm:ss"), Name, Delay, "", "", "", "", "", "", stopTime.ToString("HH:mm:ss"), signalstring.ToString(), waitforstring.ToString());
-                File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+                }
             }
-        }
         }
 
         public void TTAnalysisUpdateBrakingState2()
@@ -12967,10 +12967,10 @@ namespace Orts.Simulation.Timetables
             {
                 ttanalysisreport = waitforstring.ToString();
 
-            var sob = new StringBuilder();
+                var sob = new StringBuilder();
                 sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}", Number, stopTime.ToString("HH:mm:ss"), Name, Delay, "", "", "", "", "", "", stopTime.ToString("HH:mm:ss"), signalstring.ToString(), waitforstring.ToString());
-            File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
-        }
+                File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+            }
         }
 
         public void TTAnalysisStartMoving(String info)

@@ -725,12 +725,12 @@ namespace Orts.Simulation
                 {
                     if (RelativeCarPositions != null)
                     {
-                    traincar.WorldPosition.XNAMatrix = Matrix.Multiply(RelativeCarPositions[iRelativeCarPositions], AnimationXNAMatrix);
-                    traincar.UpdateFreightAnimationDiscretePositions();
-                    iRelativeCarPositions++;
+                        traincar.WorldPosition.XNAMatrix = Matrix.Multiply(RelativeCarPositions[iRelativeCarPositions], AnimationXNAMatrix);
+                        traincar.UpdateFreightAnimationDiscretePositions();
+                        iRelativeCarPositions++;
+                    }
                 }
             }
-        }
         }
 
         public void AutoRotateTable(float elapsedClockSeconds)

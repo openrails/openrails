@@ -1195,18 +1195,18 @@ namespace Orts.Simulation.Timetables
             else
             {
                 // use rear of train position
-            if (occSectionDirection == storageSectionDirection)
-            {
-                occSectionIndex = train.PresentPosition[1].TCSectionIndex;
-                TrackCircuitSection occSection = train.signalRef.TrackCircuitList[occSectionIndex];
-                remLength = occSection.Length - train.PresentPosition[1].TCOffset;
-            }
-            else
+                if (occSectionDirection == storageSectionDirection)
+                {
+                    occSectionIndex = train.PresentPosition[1].TCSectionIndex;
+                    TrackCircuitSection occSection = train.signalRef.TrackCircuitList[occSectionIndex];
+                    remLength = occSection.Length - train.PresentPosition[1].TCOffset;
+                }
+                else
                 // use front of train position
-            {
-                TrackCircuitSection occSection = train.signalRef.TrackCircuitList[occSectionIndex];
-                remLength = train.PresentPosition[0].TCOffset;
-            }
+                {
+                    TrackCircuitSection occSection = train.signalRef.TrackCircuitList[occSectionIndex];
+                    remLength = train.PresentPosition[0].TCOffset;
+                }
             }
 
             for (int iSection = reqStorage.StoragePath.Count - 1; iSection >= 0 && reqStorage.StoragePath[iSection].TCSectionIndex != occSectionIndex; iSection--)
