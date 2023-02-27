@@ -798,10 +798,84 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
         /// <summary>
-        /// Create in pool : create train in pool, for this type of pool train is created directly on storage path
+        /// Create in pool : create train in pool
+        /// </summary>
+        /// <param name="train"></param>
+
+        override public int CreateInPool(TTTrain train, List<TTTrain> nextTrains)
+        {
+            int PoolStorageState = (int)TTTrain.PoolAccessState.PoolInvalid;
+            train.TCRoute.TCRouteSubpaths[0] = PlaceInPool(train, out PoolStorageState, false);
+            train.ValidRoute[0] = new Train.TCSubpathRoute(train.TCRoute.TCRouteSubpaths[0]);
+            train.TCRoute.activeSubpath = 0;
+
+            // if no storage available - abondone train
+            if (PoolStorageState < 0)
+            {
+                return (PoolStorageState);
+            }
+
+            train.PoolStorageIndex = PoolStorageState;
+
+            // if no of units is limited to 1, place engine in direction of turntable
+            if (StoragePool[PoolStorageState].maxStoredUnits.HasValue && StoragePool[PoolStorageState].maxStoredUnits == 1)
+            {
+                // use stored traveller
+                train.RearTDBTraveller = new Traveller(StoragePool[PoolStorageState].StoragePathTraveller);
+            }
+
+            else
+            {
+                // use reverse path
+                train.TCRoute.TCRouteSubpaths[0] = new Train.TCSubpathRoute(train.TCRoute.TCRouteSubpaths[0].ReversePath(train.signalRef));
+                train.ValidRoute[0] = new Train.TCSubpathRoute(train.TCRoute.TCRouteSubpaths[0]);
+
+                train.RearTDBTraveller = new Traveller(StoragePool[PoolStorageState].StoragePathReverseTraveller);
+
+                // if storage available check for other engines on storage track
+                if (StoragePool[PoolStorageState].StoredUnits.Count > 0)
+                {
+                    int lastTrainNumber = StoragePool[PoolStorageState].StoredUnits[StoragePool[PoolStorageState].StoredUnits.Count - 1];
+                    TTTrain lastTrain = train.GetOtherTTTrainByNumber(lastTrainNumber);
+                    if (lastTrain == null)
+                    {
+                        lastTrain = train.Simulator.GetAutoGenTTTrainByNumber(lastTrainNumber);
+                    }
+                    if (lastTrain != null)
+                    {
+                        train.CreateAhead = String.Copy(lastTrain.Name).ToLower();
+                    }
+                }
+            }
+
+            bool validPosition = false;
+            Train.TCSubpathRoute tempRoute = train.CalculateInitialTTTrainPosition(ref validPosition, nextTrains);
+
+            if (validPosition)
+            {
+                train.SetInitialTrainRoute(tempRoute);
+                train.CalculatePositionOfCars();
+                for (int i = 0; i < train.Cars.Count; i++)
+                    train.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
+                train.ResetInitialTrainRoute(tempRoute);
+
+                // set train route and position so proper position in pool can be calculated
+                train.UpdateTrainPosition();
+
+                // add unit to pool
+                AddUnit(train, false);
+                validPosition = train.PostInit(false); // post init train but do not activate
+            }
+
+            return (PoolStorageState);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Place in pool : place train in pool, for this type of pool train is created directly on storage path
         /// </summary>
 
-        public override Train.TCSubpathRoute CreateInPool(TTTrain train, out int poolStorageIndex, bool checkAccessPath)
+        public override Train.TCSubpathRoute PlaceInPool(TTTrain train, out int poolStorageIndex, bool checkAccessPath)
         {
             Train.TCSubpathRoute newRoute = null;
             int storageIndex = -1;
