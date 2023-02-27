@@ -27,6 +27,7 @@
 // #define DEBUG_EXTRAINFO
 // #define DEBUG_TRACEINFO
 // #define DEBUG_TTANALYSIS
+// #define DEBUG_DELAYS
 // DEBUG flag for debug prints
 
 using System;
@@ -69,6 +70,8 @@ namespace Orts.Simulation.Timetables
         public TimetablePool.PoolExitDirectionEnum CreatePoolDirection = TimetablePool.PoolExitDirectionEnum.Undefined;
                                                             // required direction on leaving pool (if applicable)
         public string ForcedConsistName = String.Empty;     // forced consist name for extraction from pool
+
+        public string ttanalysisreport = String.Empty;      // string holding last analysis report, to avoid continouos output of same string
 
         // Timetable Commands info
         public List<WaitInfo> WaitList = null;                            //used when in timetable mode for wait instructions
@@ -4110,6 +4113,11 @@ namespace Orts.Simulation.Timetables
                 }
                 File.AppendAllText(@"C:\temp\printproc.txt", "\n");
             }
+#endif
+
+#if DEBUG_DELAYS
+            if (Delay.HasValue && Delay.Value.TotalMinutes > 5)
+                Trace.TraceInformation("{0} at {1} : + {2}", Name, thisStation.PlatformItem.Name, Delay.Value.ToString());
 #endif
 
             if (CheckTrain)
@@ -8231,6 +8239,13 @@ namespace Orts.Simulation.Timetables
                             Trace.TraceInformation("Train : " + Name);
                             Trace.TraceInformation("WAIT : Search for : {0} - found {1}", reqWait.referencedTrainName, otherTrain == null ? -1 : otherTrain.Number);
 #endif
+#if DEBUG_DELAYS
+                            if (otherTrain == null)
+                            {
+                                Trace.TraceInformation("Train : " + Name);
+                                Trace.TraceInformation("WAIT : Search for : {0} - not found", reqWait.referencedTrainName);
+                            }
+#endif
                             if (otherTrain != null)
                             {
                                 ProcessWaitRequest(reqWait, otherTrain, true, true, true, ref newWaitItems);
@@ -8244,6 +8259,13 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TRACEINFO
                             Trace.TraceInformation("Train : " + Name);
                             Trace.TraceInformation("FOLLOW : Search for : {0} - found {1}", reqWait.referencedTrainName, otherTrain == null ? -1 : otherTrain.Number);
+#endif
+#if DEBUG_DELAYS
+                            if (otherTrain == null)
+                            {
+                                Trace.TraceInformation("Train : " + Name);
+                                Trace.TraceInformation("FOLLOW : Search for : {0} - not found", reqWait.referencedTrainName);
+                            }
 #endif
                             if (otherTrain != null)
                             {
@@ -8259,6 +8281,14 @@ namespace Orts.Simulation.Timetables
                             Trace.TraceInformation("Train : " + Name);
                             Trace.TraceInformation("CONNECT : Search for : {0} - found {1}", reqWait.referencedTrainName, otherTrain == null ? -1 : otherTrain.Number);
 #endif
+#if DEBUG_DELAYS
+                            if (otherTrain == null)
+                            {
+                                Trace.TraceInformation("Train : " + Name);
+                                Trace.TraceInformation("CONNECT : Search for : {0} - not found", reqWait.referencedTrainName);
+                            }
+#endif
+
                             if (otherTrain != null)
                             {
                                 ProcessConnectRequest(reqWait, otherTrain, ref newWaitItems);
@@ -9671,6 +9701,7 @@ namespace Orts.Simulation.Timetables
                         MovementState = AI_MOVEMENT_STATE.TURNTABLE;
                         if (CheckTrain)
                         {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + thisTurntablePool.PoolName + " : Table state set to " + ActiveTurntable.MovingTableState.ToString() + "\n");
                             File.AppendAllText(@"C:\temp\checktrain.txt", "Moving table access ; Movement State : " + MovementState + "\n");
                         }
                         return (endOfRoute);
@@ -11573,6 +11604,11 @@ namespace Orts.Simulation.Timetables
 
                 default:
                     iunits = numberOfUnits;
+                    if (iunits > Cars.Count - 1)
+                    {
+                        Trace.TraceInformation("Train {0} : no. of units to detach ({1}) : value too large, only {2} units on train\n", Name, iunits, Cars.Count);
+                        iunits = Cars.Count - 1;
+                    }
                     frontpos = detachUnits == DetachInfo.DetachUnitsInfo.unitsAtFront;
                     break;
             }
@@ -12727,12 +12763,13 @@ namespace Orts.Simulation.Timetables
         {
 
             DateTime baseDTA = new DateTime();
+            DateTime presentDTA = baseDTA.AddSeconds(AI.clockTime);
             DateTime arrTimeA = baseDTA.AddSeconds(presentTime);
             DateTime depTimeA = baseDTA.AddSeconds(thisStation.ActualDepart);
 
             var sob = new StringBuilder();
             sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}",
-                Number, AI.clockTime, Name, Delay, thisStation.PlatformItem.Name, thisStation.arrivalDT.ToString("HH:mm:ss"), thisStation.departureDT.ToString("HH:mm:ss"),
+                Number, presentDTA.ToString("HH:mm:ss"), Name, Delay, thisStation.PlatformItem.Name, thisStation.arrivalDT.ToString("HH:mm:ss"), thisStation.departureDT.ToString("HH:mm:ss"),
                 arrTimeA.ToString("HH:mm:ss"), depTimeA.ToString("HH:mm:ss"), "", "", "", "");
             File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
         }
@@ -12789,9 +12826,16 @@ namespace Orts.Simulation.Timetables
             DateTime baseDT = new DateTime();
             DateTime stopTime = baseDT.AddSeconds(AI.clockTime);
 
-            var sob = new StringBuilder();
-            sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}", Number, AI.clockTime, Name, Delay, "", "", "", "", "", "", stopTime.ToString("HH:mm:ss"), signalstring.ToString(), waitforstring.ToString());
-            File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+            // output string only if different from last output
+
+            if (waitforstring.ToString() != ttanalysisreport)
+            {
+                ttanalysisreport = waitforstring.ToString();
+
+                var sob = new StringBuilder();
+                sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}", Number, stopTime.ToString("HH:mm:ss"), Name, Delay, "", "", "", "", "", "", stopTime.ToString("HH:mm:ss"), signalstring.ToString(), waitforstring.ToString());
+                File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+            }
         }
 
         public void TTAnalysisUpdateBrakingState1()
@@ -12848,9 +12892,14 @@ namespace Orts.Simulation.Timetables
                 DateTime baseDT = new DateTime();
                 DateTime stopTime = baseDT.AddSeconds(AI.clockTime);
 
-                var sob = new StringBuilder();
-                sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}", Number, AI.clockTime, Name, Delay, "", "", "", "", "", "", stopTime.ToString("HH:mm:ss"), signalstring.ToString(), waitforstring.ToString());
-                File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+                if (waitforstring.ToString() != ttanalysisreport)
+                {
+                    ttanalysisreport = waitforstring.ToString();
+
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}", Number, stopTime.ToString("HH:mm:ss"), Name, Delay, "", "", "", "", "", "", stopTime.ToString("HH:mm:ss"), signalstring.ToString(), waitforstring.ToString());
+                    File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+                }
             }
         }
 
@@ -12914,9 +12963,14 @@ namespace Orts.Simulation.Timetables
             DateTime baseDT = new DateTime();
             DateTime stopTime = baseDT.AddSeconds(AI.clockTime);
 
-            var sob = new StringBuilder();
-            sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}", Number, AI.clockTime, Name, Delay, "", "", "", "", "", "", stopTime.ToString("HH:mm:ss"), signalstring.ToString(), waitforstring.ToString());
-            File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+            if (waitforstring.ToString() != ttanalysisreport)
+            {
+                ttanalysisreport = waitforstring.ToString();
+
+                var sob = new StringBuilder();
+                sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}", Number, stopTime.ToString("HH:mm:ss"), Name, Delay, "", "", "", "", "", "", stopTime.ToString("HH:mm:ss"), signalstring.ToString(), waitforstring.ToString());
+                File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+            }
         }
 
         public void TTAnalysisStartMoving(String info)
@@ -12926,8 +12980,9 @@ namespace Orts.Simulation.Timetables
 
             var sob = new StringBuilder();
             sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}",
-                Number, AI.clockTime, Name, Delay, "", "", "", "", "", moveTimeA.ToString("HH:mm:ss"), "", "", info);
+                Number, moveTimeA.ToString("HH:mm:ss"), Name, Delay, "", "", "", "", "", moveTimeA.ToString("HH:mm:ss"), "", "", info);
             File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
+            ttanalysisreport = String.Empty;
         }
     }
 
@@ -13377,6 +13432,13 @@ namespace Orts.Simulation.Timetables
 
             bool portionDefined = false;
             bool formedTrainDefined = false;
+
+            if (commandInfo.CommandQualifiers == null || commandInfo.CommandQualifiers.Count < 1)
+            {
+                Trace.TraceInformation("Train {0} : missing detach command qualifiers", thisTrain.Name);
+                Valid = false;
+                return;
+            }
 
             foreach (TTTrainCommands.TTTrainComQualifiers Qualifier in commandInfo.CommandQualifiers)
             {
