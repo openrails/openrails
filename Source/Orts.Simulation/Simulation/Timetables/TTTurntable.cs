@@ -441,6 +441,7 @@ namespace Orts.Simulation.Timetables
                 PoolDetails newPool = new PoolDetails();
                 newPool.StoragePath = new Train.TCSubpathRoute(inf);
                 newPool.StoragePathTraveller = new Traveller(Simulatorref.TSectionDat, Simulatorref.TDB.TrackDB.TrackNodes, inf);
+                newPool.StoragePathReverseTraveller = new Traveller(Simulatorref.TSectionDat, Simulatorref.TDB.TrackDB.TrackNodes, inf);
                 newPool.StorageName = inf.ReadString();
 
                 newPool.AccessPaths = null;
@@ -530,6 +531,7 @@ namespace Orts.Simulation.Timetables
             {
                 thisStorage.StoragePath.Save(outf);
                 thisStorage.StoragePathTraveller.Save(outf);
+                thisStorage.StoragePathReverseTraveller.Save(outf);
                 outf.Write(thisStorage.StorageName);
 
                 outf.Write(thisStorage.StoredUnits.Count);
@@ -720,6 +722,7 @@ namespace Orts.Simulation.Timetables
                 exitSectionLength = CalculateVectorLength(0, lastVectorIndex - 2, lastVectorIndex, trackVectors);
                 thisPath.StoragePath[0].Direction = 1;
                 thisPath.StoragePathTraveller.Direction = Traveller.TravellerDirection.Forward;
+                thisPath.StoragePathReverseTraveller.Direction = Traveller.TravellerDirection.Backward;
             }
             else
             {
@@ -730,6 +733,7 @@ namespace Orts.Simulation.Timetables
                 exitSectionLength = CalculateVectorLength(lastVectorIndex + 2, trackVectors.Length - 1, lastVectorIndex, trackVectors);
                 thisPath.StoragePath[0].Direction = 0;
                 thisPath.StoragePathTraveller.Direction = Traveller.TravellerDirection.Backward;
+                thisPath.StoragePathReverseTraveller.Direction = Traveller.TravellerDirection.Forward;
             }
 
             float totalLength = baseLength + entrySectionLength;
