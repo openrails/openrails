@@ -874,7 +874,7 @@ namespace Orts.Simulation
         /// <summary>
         /// Check if train position is on turntable track section
         /// </summary>
- 
+
         public bool CheckOnSection(Traveller trainPosition)
         {
             bool onTable = false;

@@ -3322,9 +3322,9 @@ namespace Orts.Simulation.Timetables
 
                             // check attach details
                             if (AttachDetails != null && AttachDetails.Valid && AttachDetails.ReadyToAttach && AttachDetails.AttachTrain == OtherTrain.OrgAINumber)
-                                {
-                                    attachToTrain = true;
-                                }
+                            {
+                                attachToTrain = true;
+                            }
 
                             if (!attachToTrain)
                             {
@@ -5270,9 +5270,9 @@ namespace Orts.Simulation.Timetables
 
                         // check attach details
                         if (AttachDetails != null && AttachDetails.Valid && AttachDetails.ReadyToAttach && AttachDetails.AttachTrain == OtherTrain.OrgAINumber)
-                            {
-                                attachToTrain = true;
-                            }
+                        {
+                            attachToTrain = true;
+                        }
 
                         // check pickup details
                         if (!attachToTrain)
@@ -10873,13 +10873,13 @@ namespace Orts.Simulation.Timetables
                             if (otherTrain.OrgAINumber == AttachDetails.AttachTrain)
                             {
                                 if (otherTrain.AtStation)
-                            {
-                                AttachDetails.ReadyToAttach = true;
-                            }
+                                {
+                                    AttachDetails.ReadyToAttach = true;
+                                }
                                 else if (otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
-                            {
-                                AttachDetails.ReadyToAttach = true;
-                            }
+                                {
+                                    AttachDetails.ReadyToAttach = true;
+                                }
                             }
                         }
                     }

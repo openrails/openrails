@@ -1032,8 +1032,8 @@ namespace Orts.Simulation.Timetables
             {
                 if (thisTrain.TriggeredActivationRequired)
                 {
-                        activatedTrains.Add(thisTrain.OrgAINumber);
-                    }
+                    activatedTrains.Add(thisTrain.OrgAINumber);
+                }
             }
 
             if (reqPlayerTrain.TriggeredActivationRequired)
@@ -3227,12 +3227,12 @@ namespace Orts.Simulation.Timetables
                 else
                 {
 
-                validArrTime = TimeSpan.TryParse(arrTime, out atime);
-                if (validArrTime)
-                {
-                    arrivalTime = Convert.ToInt32(atime.TotalSeconds);
-                    arrivalDT = new DateTime(atime.Ticks);
-                }
+                    validArrTime = TimeSpan.TryParse(arrTime, out atime);
+                    if (validArrTime)
+                    {
+                        arrivalTime = Convert.ToInt32(atime.TotalSeconds);
+                        arrivalDT = new DateTime(atime.Ticks);
+                    }
                 }
 
                 validDepTime = TimeSpan.TryParse(depTime, out atime);

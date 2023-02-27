@@ -11228,13 +11228,13 @@ namespace Orts.Simulation.Physics
 
             List<DistanceTravelledItem> activeActions = requiredActions.GetActions(99999999f, typeof(ClearSectionItem));
             foreach (DistanceTravelledItem thisAction in activeActions)
-                {
-                    ClearSectionItem thisItem = thisAction as ClearSectionItem;
-                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisItem.TrackSectionIndex];
-                    thisSection.ClearOccupied(this, true);
-                }
+            {
+                ClearSectionItem thisItem = thisAction as ClearSectionItem;
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisItem.TrackSectionIndex];
+                thisSection.ClearOccupied(this, true);
             }
-
+        }
+    
         //================================================================================================//
         //
         // Update track actions after coupling
