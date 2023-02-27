@@ -17,7 +17,7 @@
 
 // This code processes the Timetable definition and converts it into playable train information
 //
-// #DEBUG_POOLINFO
+// #define DEBUG_POOLINFO
 //
 
 using System;
@@ -1000,8 +1000,17 @@ namespace Orts.Simulation.Timetables
 
 #if DEBUG_POOLINFO
                     var sob = new StringBuilder();
-                    sob.AppendFormat("Pool {0} : error : train {1} ({2}) allready stored in pool \n", PoolName, train.Number, train.Name);
-                    sob.AppendFormat("           stored units : {0}", thisStorage.StoredUnits.Count);
+                    DateTime baseDT = new DateTime();
+                    DateTime actTime = baseDT.AddSeconds(train.AI.clockTime);
+
+                    sob.AppendFormat("{0} : Pool {1} : error : train {2} ({3}) allready stored in pool \n", actTime.ToString("HH:mm:ss"),PoolName, train.Number, train.Name);
+
+                    int totalno = 0;
+                    foreach (PoolDetails selStorage in StoragePool)
+                    {
+                        totalno += selStorage.StoredUnits.Count;
+                    }
+                    sob.AppendFormat("           stored units {0} : {1} (total {2})", PoolName, thisStorage.StoredUnits.Count, totalno);
                     File.AppendAllText(@"C:\temp\PoolAnal.csv", sob.ToString() + "\n");
 #endif
                 }
@@ -1083,8 +1092,18 @@ namespace Orts.Simulation.Timetables
 
 #if DEBUG_POOLINFO
                 var sob = new StringBuilder();
-                sob.AppendFormat("Pool {0} : train {1} ({2}) added\n", PoolName, train.Number, train.Name);
-                sob.AppendFormat("           stored units : {0}\n", thisPool.StoredUnits.Count);
+                DateTime baseDT = new DateTime();
+                DateTime actTime = baseDT.AddSeconds(train.AI.clockTime);
+
+                sob.AppendFormat("{0} : Pool {1} : train {2} ({3}) added\n", actTime.ToString("HH:mm:ss"),PoolName, train.Number, train.Name);
+
+                int totalno = 0;
+                foreach (PoolDetails selStorage in StoragePool)
+                {
+                    totalno += selStorage.StoredUnits.Count;
+                }
+
+                sob.AppendFormat("           stored units {0} : {1} (total {2})", PoolName, thisPool.StoredUnits.Count, totalno);
                 File.AppendAllText(@"C:\temp\PoolAnal.csv", sob.ToString() + "\n");
 #endif
 
@@ -1184,7 +1203,10 @@ namespace Orts.Simulation.Timetables
         {
 #if DEBUG_POOLINFO
             var sob = new StringBuilder();
-            sob.AppendFormat("Pool {0} : request for train {1} ({2})", PoolName, train.Number, train.Name);
+            DateTime baseDT = new DateTime();
+            DateTime actTime = baseDT.AddSeconds(train.AI.clockTime);
+
+            sob.AppendFormat("{0} : Pool {1} : request for train {2} ({3})", actTime.ToString("HH:mm:ss"), PoolName, train.Number, train.Name);
             File.AppendAllText(@"C:\temp\PoolAnal.csv", sob.ToString() + "\n");
 #endif
             // check if any engines available
@@ -1214,6 +1236,9 @@ namespace Orts.Simulation.Timetables
                 if (claimActive)
                 {
 #if DEBUG_TRACEINFO
+                Trace.TraceInformation("Pool {0} : train {1} : delayed through claimed access\n", PoolName, train.Name);
+#endif
+#if DEBUG_POOLINFO
                 Trace.TraceInformation("Pool {0} : train {1} : delayed through claimed access\n", PoolName, train.Name);
 #endif
                     return (TrainFromPool.Delayed);
@@ -1319,7 +1344,13 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_POOLINFO
                         sob = new StringBuilder();
                         sob.AppendFormat("Pool {0} : train {1} ({2}) waiting for incoming train {3} ({4})\n", PoolName, train.Number, train.Name, otherTTTrain.Number, otherTTTrain.Name);
-                        sob.AppendFormat("           stored units : {0}", reqStorage.StoredUnits.Count);
+
+                        int totalno1 = 0;
+                        foreach (PoolDetails selStorage in StoragePool)
+                        {
+                            totalno1 += selStorage.StoredUnits.Count;
+                        }
+                        sob.AppendFormat("           stored units {0} : {1} (total {2})", PoolName, reqStorage.StoredUnits.Count, totalno1);
                         File.AppendAllText(@"C:\temp\PoolAnal.csv", sob.ToString() + "\n");
 #endif
                         break;
@@ -1344,8 +1375,15 @@ namespace Orts.Simulation.Timetables
             {
 #if DEBUG_POOLINFO
                 sob = new StringBuilder();
-                sob.AppendFormat("Pool {0} : cannot find train {1} for {2} ({3}) \n", PoolName, selectedTrainNumber, train.Number, train.Name);
-                sob.AppendFormat("           stored units : {0}", reqStorage.StoredUnits.Count);
+
+                sob.AppendFormat("Pool {1} : cannot find train {2} for {3} ({4}) \n", PoolName, selectedTrainNumber, train.Number, train.Name);
+
+                int totalno2 = 0;
+                foreach (PoolDetails selStorage in StoragePool)
+                {
+                    totalno2 += selStorage.StoredUnits.Count;
+                }
+                sob.AppendFormat("           stored units {0} : {1} (total {2})", PoolName, reqStorage.StoredUnits.Count, totalno2);
                 File.AppendAllText(@"C:\temp\PoolAnal.csv", sob.ToString() + "\n");
 #endif
                 return (TrainFromPool.Delayed);
@@ -1361,8 +1399,15 @@ namespace Orts.Simulation.Timetables
 
 #if DEBUG_POOLINFO
             sob = new StringBuilder();
+
             sob.AppendFormat("Pool {0} : train {1} ({2}) extracted as {3} ({4}) \n", PoolName, selectedTrain.Number, selectedTrain.Name, train.Number, train.Name);
-            sob.AppendFormat("           stored units : {0}", reqStorage.StoredUnits.Count);
+
+            int totalno = 0;
+            foreach (PoolDetails selStorage in StoragePool)
+            {
+                totalno += selStorage.StoredUnits.Count;
+            }
+            sob.AppendFormat("           stored units {0} : {1} (total {2})", PoolName, reqStorage.StoredUnits.Count, totalno);
             File.AppendAllText(@"C:\temp\PoolAnal.csv", sob.ToString() + "\n");
 #endif
 
@@ -1503,6 +1548,9 @@ namespace Orts.Simulation.Timetables
             else
             {
 #if DEBUG_TRACEINFO
+                Trace.TraceWarning("Failed to extract required train " + train.Name + " from pool " + PoolName + "\n");
+#endif
+#if DEBUG_POOLINFO
                 Trace.TraceWarning("Failed to extract required train " + train.Name + " from pool " + PoolName + "\n");
 #endif
                 return (TrainFromPool.Failed);

@@ -17,6 +17,7 @@
 
 // This code processes the Timetable definition and converts it into playable train information
 //
+// #define BEBUG_TRACEINFO
 // #define DEBUG_POOLINFO
 // #define DEBUG_TURNTABLEINFO
 //
@@ -1247,6 +1248,10 @@ namespace Orts.Simulation.Timetables
                 train.ActiveTurntable.StoragePathIndex = selectedStorage;
                 train.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
                 train.ActivateTime = presentTime - 1; // train is immediately activated
+
+#if DEBUG_TURNTABLEINFO
+                Trace.TraceInformation("Pool : " + PoolName + " : Table state set to " + train.ActiveTurntable.MovingTableState.ToString() + " for train " + train.Name + "\n");
+#endif
             }
             else
             {
@@ -1335,12 +1340,12 @@ namespace Orts.Simulation.Timetables
 
                 if (train.CheckTrain)
                 {
-                    File.AppendAllText(@"C:\temp\checktrain.txt", "Required Pool Exit : " + PoolName + "\n");
-                    File.AppendAllText(@"C:\temp\checktrain.txt", "Pool overflow : train length : " + train.Length + "\n");
-                    File.AppendAllText(@"C:\temp\checktrain.txt", "                pool lengths : \n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Required Pool Exit : " + PoolName + "\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool overflow : train length : " + train.Length + "\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :                 pool lengths : \n");
                     foreach (PoolDetails thisStorage in StoragePool)
                     {
-                        File.AppendAllText(@"C:\temp\checktrain.txt", "                  path : " + thisStorage.StorageName + " ; stored units : " +
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :                   path : " + thisStorage.StorageName + " ; stored units : " +
                             thisStorage.StoredUnits.Count + " ; rem length : " + thisStorage.RemLength + "\n");
                     }
                 }
@@ -1358,8 +1363,8 @@ namespace Orts.Simulation.Timetables
 
                 if (train.CheckTrain)
                 {
-                    File.AppendAllText(@"C:\temp\checktrain.txt", "Required Pool Exit : " + PoolName + "\n");
-                    File.AppendAllText(@"C:\temp\checktrain.txt", "No valid pool found \n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Required Pool Exit : " + PoolName + "\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : No valid pool found \n");
                 }
 
                 // train will be abandoned when reaching end of path
@@ -1630,14 +1635,38 @@ namespace Orts.Simulation.Timetables
                                 MovingTableState = TimetableTurntableControl.MovingTableStateEnum.WaitingAccessToMovingTable;
                                 AccessPathIndex = GetAccessPathIndex();
                                 StoragePathIndex = parentTrain.PoolStorageIndex;
+
+#if DEBUG_TURNTABLEINFO
+                                Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                                if (parentTrain.CheckTrain)
+                                {
+                                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                                }
                                 break;
 
                             case TimetableTurntableControl.MovingTableActionEnum.FromStorage:
                                 MovingTableState = TimetableTurntableControl.MovingTableStateEnum.WaitingStorageToMovingTable;
+
+#if DEBUG_TURNTABLEINFO
+                                Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                                if (parentTrain.CheckTrain)
+                                {
+                                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                                }
                                 break;
 
                             default:
                                 MovingTableState = TimetableTurntableControl.MovingTableStateEnum.Inactive;
+
+#if DEBUG_TURNTABLEINFO
+                                Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                                if (parentTrain.CheckTrain)
+                                {
+                                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                                }
                                 break;
                         }
                     }
@@ -1681,6 +1710,9 @@ namespace Orts.Simulation.Timetables
                     {
                         parentTrain.DelayedStartMoving(TTTrain.AI_START_MOVEMENT.TURNTABLE);
                         MovingTableState = TimetableTurntableControl.MovingTableStateEnum.AccessToMovingTable;
+#if DEBUG_TURNTABLEINFO
+                        Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
                         parentTrain.EndAuthorityType[0] = Train.END_AUTHORITY.END_OF_PATH;
 
                         // calculate end position
@@ -1715,6 +1747,15 @@ namespace Orts.Simulation.Timetables
                     {
                         parentTrain.DelayedStartMoving(TTTrain.AI_START_MOVEMENT.TURNTABLE);
                         MovingTableState = TimetableTurntableControl.MovingTableStateEnum.StorageToMovingTable;
+
+#if DEBUG_TURNTABLEINFO
+                        Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                        if (parentTrain.CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                        }
+
                         parentTrain.EndAuthorityType[0] = Train.END_AUTHORITY.END_OF_PATH;
 
                         // calculate end position
@@ -1832,6 +1873,14 @@ namespace Orts.Simulation.Timetables
                             else
                             {
                                 MovingTableState = TimetableTurntableControl.MovingTableStateEnum.WaitingStorageToMovingTable;
+
+#if DEBUG_TURNTABLEINFO
+                                Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                                if (parentTrain.CheckTrain)
+                                {
+                                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                                }
                             }
                         }
                     }
@@ -1849,6 +1898,14 @@ namespace Orts.Simulation.Timetables
                     if (AutoRequestExit(reqTurntableExit, reqEntryDirection, reqExitDirection, elapsedClockSeconds))
                     {
                         MovingTableState = TimetableTurntableControl.MovingTableStateEnum.AccessToMovingTable;
+
+#if DEBUG_TURNTABLEINFO
+                        Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                        if (parentTrain.CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                        }
 
                         // calculate end position - place in front of timetable incl. clearance
                         parentTrain.EndAuthorityType[0] = Train.END_AUTHORITY.END_OF_PATH;
@@ -1893,6 +1950,14 @@ namespace Orts.Simulation.Timetables
                     if (AutoRequestExit(reqTurntableExit, reqEntryDirection, reqExitDirection, elapsedClockSeconds))
                     {
                         MovingTableState = TimetableTurntableControl.MovingTableStateEnum.StorageToMovingTable;
+
+#if DEBUG_TURNTABLEINFO
+                        Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                        if (parentTrain.CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                        }
 
                         // calculate end position - place in front of timetable incl. clearance
                         parentTrain.EndAuthorityType[0] = Train.END_AUTHORITY.END_OF_PATH;
@@ -1972,6 +2037,19 @@ namespace Orts.Simulation.Timetables
                                 MovingTableState = MovingTableStateEnum.AccessOnMovingTable;
                                 parentTurntable.TrainsOnMovingTable.Add(trainOnTable);
                                 parentTurntable.ComputeTrainPosition(parentTrain);
+
+#if DEBUG_TURNTABLEINFO
+                                Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                                if (parentTrain.CheckTrain)
+                                {
+                                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :             Trains on table : " + parentTurntable.TrainsOnMovingTable.Count + "\n");
+                                    foreach (TrainOnMovingTable mttrain in parentTurntable.TrainsOnMovingTable)
+                                    {
+                                        File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :              " + mttrain.Train.Name + "[" + mttrain.Train.Number + "]\n");
+                                    }
+                                }
                             }
                         }
                     }
@@ -2029,6 +2107,19 @@ namespace Orts.Simulation.Timetables
                                 MovingTableState = MovingTableStateEnum.StorageOnMovingTable;
                                 parentTurntable.TrainsOnMovingTable.Add(trainOnTable);
                                 parentTurntable.ComputeTrainPosition(parentTrain);
+
+#if DEBUG_TURNTABLEINFO
+                                Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                                if (parentTrain.CheckTrain)
+                                {
+                                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :             Trains on table : " + parentTurntable.TrainsOnMovingTable.Count + "\n");
+                                    foreach (TrainOnMovingTable mttrain in parentTurntable.TrainsOnMovingTable)
+                                    {
+                                        File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :              " + mttrain.Train.Name + "[" + mttrain.Train.Number + "]\n");
+                                    }
+                                }
                             }
                         }
                     }
@@ -2147,6 +2238,10 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TURNTABLEINFO
             Trace.TraceInformation("Pool {0} - Train {1} [{2}]",parentPool.PoolName, parentTrain.Name, parentTrain.Number.ToString());
 #endif
+            if (parentTrain.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :  " + parentPool.PoolName + " - Train start moving \n");
+            }
 
             parentTurntable.SendNotifications = false;
             reqTurntableExit = reqExit;
@@ -2209,9 +2304,7 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TURNTABLEINFO
                 Trace.TraceInformation("   Angle calculation : Rotation Clockwise : {0}, Counterclockwise : {1}, Change end required : {2}",
                     parentTurntable.AutoClockwise.ToString(), parentTurntable.AutoCounterclockwise.ToString(), reqChangeEnd.ToString());
-#endif
 
-#if DEBUG_TURNTABLEINFO
                 Trace.TraceInformation("   Exit orientation and path direction : exit forward : {0} , path direction : {1}",
                                   exitForward.ToString(), exitPathDirection.ToString());
 #endif
@@ -2247,6 +2340,14 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TURNTABLEINFO
             Trace.TraceInformation("   Train on turntable");
 #endif
+            if (parentTrain.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :    Exit information : start Exit - Angle " + parentTurntable.ConnectedTrackEnd +
+                    " - " + startAngle + " (front : " + parentTurntable.ForwardConnected.ToString() + "), end Exit - angle " +
+                    reqExit + " - " + endAngle + ", angle to move : " + angleToMove.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :              entry orientation forward : " + entryForward.ToString() +
+                    " , exit orientation forward : " + exitForward.ToString() + "\n");
+            }
 
             // find out if train needs to reverse
             reqReverseFormation = TestTrainFormation(parentTrain);
@@ -2258,6 +2359,10 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TURNTABLEINFO
                 Trace.TraceInformation("    reverse formation not required, Change end required {0}", reqChangeEnd.ToString());
 #endif
+                if (parentTrain.CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :     reverse formation not required, Change end required " + reqChangeEnd.ToString() + "\n");
+                }
             }
 
             // rotate clockwise or counterclockwise depending on angle
@@ -2267,6 +2372,10 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TURNTABLEINFO
                 Trace.TraceInformation("   angle < 0");
 #endif
+                if (parentTrain.CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :    angle < 0 \n");
+                }
             }
             else if (angleToMove > 0)
             {
@@ -2274,17 +2383,26 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TURNTABLEINFO
                 Trace.TraceInformation("   angle > 0");
 #endif
+                if (parentTrain.CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :    angle > 0 \n");
+                }
             }
 
 #if DEBUG_TURNTABLEINFO
             Trace.TraceInformation("   Angle calculation : Rotation Clockwise : {0}, Counterclockwise : {1}, Change end required : {2}",
                 parentTurntable.AutoClockwise.ToString(), parentTurntable.AutoCounterclockwise.ToString(), reqChangeEnd.ToString());
-#endif
 
-#if DEBUG_TURNTABLEINFO
             Trace.TraceInformation("   Entry orientation and path direction : entry forward : {0} , path direction : {1}",
                               entryForward.ToString(), entryPathDirection.ToString());
 #endif
+            if (parentTrain.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :    Angle calculation : Rotation Clockwise : " + parentTurntable.AutoClockwise.ToString() +
+                    " , Counterclockwise : " + parentTurntable.AutoCounterclockwise.ToString() + ", Change end required : " + reqChangeEnd.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :    Entry orientation and path direction : entry forward : " + entryForward.ToString() +
+                    ", path direction : " + entryPathDirection.ToString() + "\n");
+            }
 
             // if entry orientation does not match tracknode direction, entry direction must be reversed
             // orientation is true : tracknode direction is away from turntable so traveller direction must be forward
@@ -2295,12 +2413,21 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TURNTABLEINFO
                 Trace.TraceInformation("   Entry has reversed orientation : change end required : {0}", reqChangeEnd.ToString());
 #endif
+                if (parentTrain.CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :    Entry has reversed orientation : change end required : " + reqChangeEnd.ToString() + "\n");
+                }
             }
 
 #if DEBUG_TURNTABLEINFO
             Trace.TraceInformation("   Exit orientation and path direction : exit forward : {0} , path direction : {1}",
                               exitForward.ToString(), exitPathDirection.ToString());
 #endif
+            if (parentTrain.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :    Exit orientation and path direction : exit forward : " + exitForward.ToString() +
+                " , path direction : " + exitPathDirection.ToString() + "\n");
+            }
 
             // if exit orientation does not match tracknode direction, exit direction must be reversed
             // orientation is true : tracknode direction is away from turntable so traveller direction must be forward
@@ -2311,6 +2438,10 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TURNTABLEINFO
                 Trace.TraceInformation("   Exit has reversed orientation : change end required : {0}", reqChangeEnd.ToString());
 #endif
+                if (parentTrain.CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :    Exit has reversed orientation : change end required : " + reqChangeEnd.ToString() + "\n");
+                }
             }
 
             // reverse rotation if required
@@ -2337,6 +2468,13 @@ namespace Orts.Simulation.Timetables
                         parentTurntable.ForwardConnectedTarget, parentTurntable.RearConnectedTarget,
                         parentTurntable.AutoClockwise.ToString(), parentTurntable.AutoCounterclockwise.ToString());
 #endif
+            if (parentTrain.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :    Final setting loaded table : Forward connected : " + parentTurntable.ForwardConnectedTarget +
+                " , Rear connected " + parentTurntable.RearConnectedTarget +
+                " , Clockwise : " + parentTurntable.AutoClockwise.ToString() +
+                " , Counterclockwise : " + parentTurntable.AutoCounterclockwise.ToString() + "\n");
+            }
 
             return (false);
         }
@@ -2400,11 +2538,27 @@ namespace Orts.Simulation.Timetables
                 case MovingTableStateEnum.AccessToMovingTable:
                     MovingTableState = MovingTableStateEnum.AccessOnMovingTable;
                     trainOnTable = true;
+
+#if DEBUG_TURNTABLEINFO
+                    Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                    if (parentTrain.CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                    }
                     break;
 
                 case MovingTableStateEnum.StorageToMovingTable:
                     MovingTableState = MovingTableStateEnum.StorageOnMovingTable;
                     trainOnTable = true;
+
+#if DEBUG_TURNTABLEINFO
+                    Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+                    if (parentTrain.CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                    }
                     break;
 
                 default:
@@ -2474,6 +2628,16 @@ namespace Orts.Simulation.Timetables
 
             parentTurntable.TrainsOnMovingTable.Add(trainOnTable);
             parentTurntable.ComputeTrainPosition(parentTrain);
+
+            if (parentTrain.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :             Trains on table : " + parentTurntable.TrainsOnMovingTable.Count + "\n");
+                foreach (TrainOnMovingTable mttrain in parentTurntable.TrainsOnMovingTable)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE :              " + mttrain.Train.Name + "[" + mttrain.Train.Number + "]\n");
+                }
+            }
         }
 
         //================================================================================================//
@@ -2573,6 +2737,15 @@ namespace Orts.Simulation.Timetables
 
             // reinitiate train
             MovingTableState = MovingTableStateEnum.Completed;
+
+#if DEBUG_TURNTABLEINFO
+            Trace.TraceInformation("Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + " for train " + parentTrain.Name + "\n");
+#endif
+            if (parentTrain.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+            }
+
             parentTrain.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
             parentTrain.ControlMode = Train.TRAIN_CONTROL.AUTO_NODE;
             parentTrain.DistanceTravelledM = 0;
@@ -2637,6 +2810,11 @@ namespace Orts.Simulation.Timetables
             else
             {
                 parentTrain.SetAIPendingSpeedLimit(activeSpeeds);
+            }
+
+            if (parentTrain.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Train removed from turntable \n");
             }
         }
 
