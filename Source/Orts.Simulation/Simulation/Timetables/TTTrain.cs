@@ -980,14 +980,47 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // TODO : change to RECALCULATE station stop
-                // section found in new route - set new station details using old details
-                if (altPlatformIndex > 0)
+                // remove holding signal if set
+                int holdSig = -1;
+                if (orgStop.HoldSignal && orgStop.ExitSignal >= 0 && HoldingSignals.Contains(orgStop.ExitSignal))
                 {
-                    StationStop newStop = CalculateStationStop(signalRef.PlatformDetailsList[altPlatformIndex].PlatformReference[0],
+                    holdSig = orgStop.ExitSignal;
+                    HoldingSignals.Remove(holdSig);
+                }
+
+                // section found in new route - set new station details using old details
+                if (altPlatformIndex >= 0)
+                {
+                    bool isNewPlatform = true;
+                    // check if new found platform is actually same as original
+                    foreach (int platfReference in signalRef.PlatformDetailsList[altPlatformIndex].PlatformReference)
+                    {
+                        if (platfReference == orgStop.PlatformReference)
+                        {
+                            isNewPlatform = false;
+                            break;
+                        }
+                    }
+
+                    // if platform found is original platform, reinstate hold signal but take no further action
+                    if (!isNewPlatform)
+                    {
+                        if (holdSig >= 0) HoldingSignals.Add(holdSig);
+                        return (orgStop);
+                    }
+                    else
+                    {
+                        // calculate new stop
+                        StationStop newStop = CalculateStationStop(signalRef.PlatformDetailsList[altPlatformIndex].PlatformReference[0],
                         orgStop.ArrivalTime, orgStop.DepartTime, orgStop.arrivalDT, orgStop.departureDT, clearingDistanceM, minStopDistanceM,
-                        orgStop.Terminal, orgStop.ActualMinStopTime, orgStop.KeepClearFront, orgStop.KeepClearRear, orgStop.ForcePosition, 
+                        orgStop.Terminal, orgStop.ActualMinStopTime, orgStop.KeepClearFront, orgStop.KeepClearRear, orgStop.ForcePosition,
                         orgStop.CloseupSignal, orgStop.Closeup, orgStop.RestrictPlatformToSignal, orgStop.ExtendPlatformToSignal, orgStop.EndStop);
+
+                        // add new holding signal if required
+                        if (newStop.HoldSignal && newStop.ExitSignal >= 0)
+                        {
+                            HoldingSignals.Add(newStop.ExitSignal);
+                        }
 
 #if DEBUG_REPORTS
                     if (newStop != null)
@@ -1004,31 +1037,32 @@ namespace Orts.Simulation.Timetables
                     }
 #endif
 
-                    if (CheckTrain)
-                    {
+                        if (CheckTrain)
+                        {
+                            if (newStop != null)
+                            {
+                                File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
+                                " : alternative stop required for " + orgStop.PlatformItem.Name +
+                                " ; found : " + newStop.PlatformReference + "\n");
+                            }
+                            else
+                            {
+                                File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
+                                " : alternative stop required for " + orgStop.PlatformItem.Name +
+                                " ; not found \n");
+                            }
+                        }
+
                         if (newStop != null)
                         {
-                            File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
-                            " : alternative stop required for " + orgStop.PlatformItem.Name +
-                            " ; found : " + newStop.PlatformReference + "\n");
+                            foreach (KeyValuePair<int, WaitInfo> thisConnect in orgStop.ConnectionDetails)
+                            {
+                                newStop.ConnectionDetails.Add(thisConnect.Key, thisConnect.Value);
+                            }
                         }
-                        else
-                        {
-                            File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
-                            " : alternative stop required for " + orgStop.PlatformItem.Name +
-                            " ; not found \n");
-                        }
-                    }
 
-                    if (newStop != null)
-                    {
-                        foreach (KeyValuePair<int, WaitInfo> thisConnect in orgStop.ConnectionDetails)
-                        {
-                            newStop.ConnectionDetails.Add(thisConnect.Key, thisConnect.Value);
-                        }
+                        return (newStop);
                     }
-
-                    return (newStop);
                 }
             }
 
@@ -2880,7 +2914,7 @@ namespace Orts.Simulation.Timetables
             // update max speed if separate cruise speed is set
             if (SpeedSettings.cruiseSpeedMpS.HasValue)
             {
-                if (SpeedSettings.cruiseMaxDelayS.HasValue && Delay.Value.TotalSeconds > SpeedSettings.cruiseMaxDelayS.Value)
+                if (SpeedSettings.cruiseMaxDelayS.HasValue && Delay.HasValue && Delay.Value.TotalSeconds > SpeedSettings.cruiseMaxDelayS.Value)
                 {
                     TrainMaxSpeedMpS = SpeedSettings.maxSpeedMpS.Value;
                 }
@@ -3310,6 +3344,18 @@ namespace Orts.Simulation.Timetables
                             {
                                 DelayedStartMoving(AI_START_MOVEMENT.FOLLOW_TRAIN);
                             }
+
+                            // if other train in station, check if this train to terminate in station - if so, set state as in station
+                            else if (OtherTrain.AtStation && StationStops != null && StationStops.Count == 1 && OtherTrain.StationStops[0].PlatformReference == StationStops[0].PlatformReference)
+                            {
+                                MovementState = AI_MOVEMENT_STATE.STATION_STOP;
+
+                                if (CheckTrain)
+                                {
+                                    File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number + " assumed to be in station : " +
+                                        StationStops[0].PlatformItem.Name + " as stopped behind other train in station (other train : " + OtherTrain.Name + "[" + OtherTrain.Number + "] \n");
+                                }
+                            }
                         }
                     }
 
@@ -3569,7 +3615,12 @@ namespace Orts.Simulation.Timetables
             // check if turntable available, else exit turntable mode
             if (ActiveTurntable == null || ActiveTurntable.MovingTableState == TimetableTurntableControl.MovingTableStateEnum.Inactive)
             {
+                NextStopDistanceM = DistanceToEndNodeAuthorityM[0];   // set authorized distance
                 MovementState = AI_MOVEMENT_STATE.STOPPED;  // set state to stopped to revert to normal working
+                if (CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : exit from table, distance to go : " + NextStopDistanceM + "\n");
+                }
                 return;
             }
 
@@ -3651,18 +3702,20 @@ namespace Orts.Simulation.Timetables
                              arrTimeCT.ToString("HH:mm:ss") + " ; dep. at " +
                              depTimeCT.ToString("HH:mm:ss") + "\n");
                     }
-                }
-
 #if DEBUG_TTANALYSIS
                     TTAnalysisUpdateStationState1(presentTime, thisStation);
 #endif
+                }
 
-                    // set reference arrival for any waiting connections
+                // check for activation of other train
+                ActivateTriggeredTrain(TriggerActivationType.StationStop, thisStation.PlatformReference);
+
+                // set reference arrival for any waiting connections
                 if (thisStation.ConnectionsWaiting.Count > 0)
                 {
                     foreach (int otherTrainNumber in thisStation.ConnectionsWaiting)
                     {
-                        Train otherTrain = GetOtherTrainByNumber(otherTrainNumber);
+                        Train otherTrain = GetOtherTTTrainByNumber(otherTrainNumber);
                         if (otherTrain != null)
                         {
                             foreach (StationStop otherStop in otherTrain.StationStops)
@@ -3792,12 +3845,41 @@ namespace Orts.Simulation.Timetables
 
             // depart
 
+            // check for activation of other train
+            ActivateTriggeredTrain(TriggerActivationType.StationDepart, thisStation.PlatformReference);
+
             // check if to attach in this platform
 
             bool readyToAttach = false;
             TTTrain trainToTransfer = null;
 
-            if (AttachDetails != null && AttachDetails.StationPlatformReference == StationStops[0].PlatformReference)
+            if (AttachDetails != null)
+            {
+                // check if to attach at this station
+                bool attachAtStation = AttachDetails.StationPlatformReference == StationStops[0].PlatformReference;
+
+                // check if to attach at end, train is in last station, not first in and other train is ahead
+                if (!attachAtStation && !AttachDetails.FirstIn)
+                {
+                    if (AttachDetails.StationPlatformReference == -1 && StationStops.Count == 1)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[StationStops[0].TCSectionIndex];
+                        foreach (KeyValuePair<TrainRouted, int> trainToCheckInfo in thisSection.CircuitState.TrainOccupy)
+                        {
+                            TTTrain otherTrain = trainToCheckInfo.Key.Train as TTTrain;
+                            if (otherTrain.OrgAINumber == AttachDetails.AttachTrain)
+                            {
+                                attachAtStation = true;
+                                AttachDetails.StationPlatformReference = StationStops[0].PlatformReference; // set attach is at this station
+                            }
+                        }
+                    }
+                }
+
+                readyToAttach = attachAtStation;
+            }
+
+            if (readyToAttach)
             {
                 trainToTransfer = GetOtherTTTrainByNumber(AttachDetails.AttachTrain);
 
@@ -6870,7 +6952,7 @@ namespace Orts.Simulation.Timetables
                                 }
                                 return (true);
                             }
-                            else if (occTTTrain.TrainType == TRAINTYPE.PLAYER && occTTTrain.AtStation)
+                            else if ((occTTTrain.TrainType == TRAINTYPE.PLAYER || occTTTrain.TrainType == TRAINTYPE.INTENDED_PLAYER) && occTTTrain.AtStation)
                             {
                                 if (!String.IsNullOrEmpty(dumpfile))
                                 {
@@ -6922,73 +7004,57 @@ namespace Orts.Simulation.Timetables
 
                     if (routeSection.PlatformIndex.Count > 0)
                     {
+                        intoPlatform = true;
+
                         PlatformDetails thisPlatform = signalRef.PlatformDetailsList[routeSection.PlatformIndex[0]];
-                        if (StationStops.Count > 0) // train has stops
+
+                        // stop is next station stop and callon is set
+                        if (StationStops.Count > 0 && StationStops[0].PlatformItem.Name == thisPlatform.Name && StationStops[0].CallOnAllowed)
                         {
-                            if (String.Compare(StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0)
+                            // only allow if train ahead is stopped
+                            foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
                             {
-                                intoPlatform = true;
-                            }
+                                Train.TrainRouted occTrain = occTrainInfo.Key;
+                                TTTrain occTTTrain = occTrain.Train as TTTrain;
+                                AITrain.AI_MOVEMENT_STATE movState = occTTTrain.ControlMode == Train.TRAIN_CONTROL.INACTIVE ? AITrain.AI_MOVEMENT_STATE.AI_STATIC : occTTTrain.MovementState;
 
-                            if (intoPlatform && StationStops[0].CallOnAllowed) // stop is next station stop and callon is set
-                            {
-                                // only allow if train ahead is stopped
-                                foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
+                                if (movState == AITrain.AI_MOVEMENT_STATE.STOPPED || movState == AITrain.AI_MOVEMENT_STATE.STATION_STOP || movState == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
                                 {
-                                    Train.TrainRouted occTrain = occTrainInfo.Key;
-                                    TTTrain occTTTrain = occTrain.Train as TTTrain;
-                                    AITrain.AI_MOVEMENT_STATE movState = occTTTrain.ControlMode == Train.TRAIN_CONTROL.INACTIVE ? AITrain.AI_MOVEMENT_STATE.AI_STATIC : occTTTrain.MovementState;
-
-                                    if (movState == AITrain.AI_MOVEMENT_STATE.STOPPED || movState == AITrain.AI_MOVEMENT_STATE.STATION_STOP || movState == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+                                    if (!String.IsNullOrEmpty(dumpfile))
                                     {
-                                        if (!String.IsNullOrEmpty(dumpfile))
-                                        {
-                                            var sob = new StringBuilder();
-                                            sob.AppendFormat("CALL ON : Train {0} : access to platform {1}, train {2} is stopped \n", Name, thisPlatform.Name, occTTTrain.Name);
-                                            File.AppendAllText(dumpfile, sob.ToString());
-                                        }
-                                    }
-                                    else if (occTTTrain.TrainType == Train.TRAINTYPE.PLAYER && occTTTrain.AtStation)
-                                    {
-                                        if (!String.IsNullOrEmpty(dumpfile))
-                                        {
-                                            var sob = new StringBuilder();
-                                            sob.AppendFormat("CALL ON : Train {0} : access to platform {1}, train {2} (player train) is at station \n", Name, thisPlatform.Name, occTTTrain.Name);
-                                            File.AppendAllText(dumpfile, sob.ToString());
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (!String.IsNullOrEmpty(dumpfile))
-                                        {
-                                            var sob = new StringBuilder();
-                                            sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, but train {2} is moving \n", Name, thisPlatform.Name, occTTTrain.Name);
-                                            File.AppendAllText(dumpfile, sob.ToString());
-                                        }
-                                        allclear = false;
-                                        break; // no need to check for other trains
+                                        var sob = new StringBuilder();
+                                        sob.AppendFormat("CALL ON : Train {0} : access to platform {1}, train {2} is stopped \n", Name, thisPlatform.Name, occTTTrain.Name);
+                                        File.AppendAllText(dumpfile, sob.ToString());
                                     }
                                 }
-                            }
-                            else
-                            {
-                                // not first station or train has call-on not set
-                                if (!String.IsNullOrEmpty(dumpfile))
+                                else if (occTTTrain.TrainType == Train.TRAINTYPE.PLAYER && occTTTrain.AtStation)
                                 {
-                                    var sob = new StringBuilder();
-                                    sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, train does not call or has no call-on set \n", Name, thisPlatform.Name);
-                                    File.AppendAllText(dumpfile, sob.ToString());
+                                    if (!String.IsNullOrEmpty(dumpfile))
+                                    {
+                                        var sob = new StringBuilder();
+                                        sob.AppendFormat("CALL ON : Train {0} : access to platform {1}, train {2} (player train) is at station \n", Name, thisPlatform.Name, occTTTrain.Name);
+                                        File.AppendAllText(dumpfile, sob.ToString());
+                                    }
                                 }
-                                allclear = false;
+                                else
+                                {
+                                    if (!String.IsNullOrEmpty(dumpfile))
+                                    {
+                                        var sob = new StringBuilder();
+                                        sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, but train {2} is moving \n", Name, thisPlatform.Name, occTTTrain.Name);
+                                        File.AppendAllText(dumpfile, sob.ToString());
+                                    }
+                                    allclear = false;
+                                    break; // no need to check for other trains
+                                }
                             }
                         }
                         else
                         {
-                            // train has no stops
                             if (!String.IsNullOrEmpty(dumpfile))
                             {
                                 var sob = new StringBuilder();
-                                sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1}, but train has no stops \n", Name, thisPlatform.Name);
+                                sob.AppendFormat("CALL ON : Train {0} : invalid - access to platform {1} but train has no stop \n", Name, thisPlatform.Name);
                                 File.AppendAllText(dumpfile, sob.ToString());
                             }
                             allclear = false;
@@ -7009,7 +7075,7 @@ namespace Orts.Simulation.Timetables
                                 {
                                     if (String.Compare(StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0)
                                     {
-                                        intoPlatform = true;
+                                        intoPlatform = StationStops[0].CallOnAllowed;
                                     }
                                 }
                             }
@@ -9104,12 +9170,21 @@ namespace Orts.Simulation.Timetables
         {
             bool[] returnValue = new bool[2] { false, true };
 
+            // if train not on route in can't be at end
+            if (PresentPosition[0].RouteListIndex < 0)
+            {
+                return (returnValue);
+            }
+
             int directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
             int positionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
 
             bool[] nextPart = UpdateRouteActions(0, checkLoop);
 
-            if (!nextPart[0]) return (returnValue);   // not at end and not to attach to anything
+            if (!nextPart[0])
+            {
+                return (returnValue);   // not at end and not to attach to anything
+            }
 
             returnValue[0] = true; // end of path reached
             if (nextPart[1])   // next route available
@@ -9299,6 +9374,7 @@ namespace Orts.Simulation.Timetables
                     else
                     {
                         thisPool.AddUnit(this, false);
+                        Update(0);
                     }
                 }
             }
@@ -9417,7 +9493,7 @@ namespace Orts.Simulation.Timetables
                             formedTrain.InitializeBrakes();
                         }
 
-                        if (AI.Simulator.PlayerLocomotive == null)
+                        if (AI.Simulator.PlayerLocomotive == null && (formedTrain.NeedAttach == null || formedTrain.NeedAttach.Count <= 0))
                         {
                             throw new InvalidDataException("Can't find player locomotive in " + formedTrain.Name);
                         }
@@ -10279,6 +10355,10 @@ namespace Orts.Simulation.Timetables
             // if at station
             if (AtStation)
             {
+                // check for activation of other train
+                ActivateTriggeredTrain(TriggerActivationType.StationStop, StationStops[0].PlatformReference);
+
+                // get time
                 int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                 int eightHundredHours = 8 * 3600;
                 int sixteenHundredHours = 16 * 3600;
@@ -10293,6 +10373,10 @@ namespace Orts.Simulation.Timetables
                     DisplayMessage = "";
                     Delay = TimeSpan.FromSeconds((presentTime - StationStops[0].DepartTime) % (24 * 3600));
 
+                    // check for activation of other train
+                    ActivateTriggeredTrain(TriggerActivationType.StationDepart, StationStops[0].PlatformReference);
+
+                    // remove stop
                     PreviousStop = StationStops[0].CreateCopy();
                     StationStops.RemoveAt(0);
                 }
@@ -10666,6 +10750,8 @@ namespace Orts.Simulation.Timetables
 
                         if (AtStation)
                         {
+                            MovementState = AI_MOVEMENT_STATE.STATION_STOP;
+
                             int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                             StationStops[0].ActualArrival = presentTime;
                             StationStops[0].CalculateDepartTime(presentTime, this);
@@ -11602,12 +11688,14 @@ namespace Orts.Simulation.Timetables
             // remove cars from this train
             Cars.Clear();
             attachTrain.Length += Length;
+            float distanceTravelledCorrection = 0;
 
             // recalculate position of formed train
             if (attachTrainFront)  // coupled to front, so rear position is still valid
             {
                 attachTrain.CalculatePositionOfCars();
                 attachTrain.DistanceTravelledM += Length;
+                distanceTravelledCorrection = Length;
             }
             else // coupled to rear so front position is still valid
             {
@@ -11669,6 +11757,12 @@ namespace Orts.Simulation.Timetables
             attachTrain.ReinitializeEOT();
             attachCar.SignalEvent(Event.Couple);
             attachTrain.ProcessSpeedSettings();
+
+            // adjust set actions for updated distance travelled value
+            if (distanceTravelledCorrection > 0)
+            {
+                attachTrain.requiredActions.ModifyRequiredDistance(distanceTravelledCorrection);
+            }
 
             // if not static, reassess signals if coupled at front (no need to reassess signals if coupled to rear)
             // also, reset movement state if not player train
@@ -13682,6 +13776,12 @@ namespace Orts.Simulation.Timetables
                             train.LeadLocomotiveIndex = newLocoIndex;
                             train.Simulator.Confirmer.Information(train.DetachUnits.ToString() + " units detached as train : " + newTrain.Name);
                             train.DetachActive[1] = -1;
+
+                            // set proper details for new train
+                            newTrain.SetFormedOccupied();
+                            newTrain.ControlMode = Train.TRAIN_CONTROL.INACTIVE;
+                            newTrain.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
+                            newTrain.SetupStationStopHandling();
                         }
                         // keep portion has no power, so detach immediately and switch to new train
                         else
