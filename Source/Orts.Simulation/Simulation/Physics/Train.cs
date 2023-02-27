@@ -11218,19 +11218,17 @@ namespace Orts.Simulation.Physics
             LastReservedSection[0] = -1;
             LastReservedSection[1] = -1;
 
-            // clear outstanding clear sections
+            // clear outstanding clear sections and remove them from queue as they are no longer required
 
-            foreach (DistanceTravelledItem thisAction in requiredActions)
+            List<DistanceTravelledItem> activeActions = requiredActions.GetActions(99999999f, typeof(ClearSectionItem));
+            foreach (DistanceTravelledItem thisAction in activeActions)
             {
-                if (thisAction is ClearSectionItem)
-                {
-                    ClearSectionItem thisItem = thisAction as ClearSectionItem;
-                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisItem.TrackSectionIndex];
-                    thisSection.ClearOccupied(this, true);
-                }
+                ClearSectionItem thisItem = thisAction as ClearSectionItem;
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisItem.TrackSectionIndex];
+                thisSection.ClearOccupied(this, true);
             }
         }
-
+    
         //================================================================================================//
         //
         // Update track actions after coupling
