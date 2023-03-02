@@ -165,7 +165,8 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques["Transfer"];
+            var level9_3 = Viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3);
+            shader.CurrentTechnique = shader.Techniques[level9_3 ? "TransferLevel9_3" : "TransferLevel9_1"];
             if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
             shader.ImageTexture = Texture;
             shader.ReferenceAlpha = 10;
@@ -177,7 +178,6 @@ namespace Orts.Viewer3D
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
             ShaderPasses.Reset();
@@ -185,7 +185,7 @@ namespace Orts.Viewer3D
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref viewproj);
+                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().

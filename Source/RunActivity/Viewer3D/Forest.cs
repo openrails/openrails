@@ -420,7 +420,7 @@ namespace Orts.Viewer3D
         {
             var shader = Viewer.MaterialManager.SceneryShader;
             shader.CurrentTechnique = shader.Techniques["Forest"];
-            if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
+            if (ShaderPasses == null) ShaderPasses = shader.Techniques["Forest"].Passes.GetEnumerator();
             shader.ImageTexture = TreeTexture;
             shader.ReferenceAlpha = 200;
 
@@ -431,7 +431,6 @@ namespace Orts.Viewer3D
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
             ShaderPasses.Reset();
@@ -439,7 +438,7 @@ namespace Orts.Viewer3D
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref viewproj);
+                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
 
