@@ -179,9 +179,9 @@ namespace Orts.Simulation
             }
 
             int trainsInQ = inf.ReadInt32();
-            for (int iQ = 0; iQ < trainsInQ - 1; iQ++)
+            for (int iQ = 0; iQ < trainsInQ; iQ++)
             {
-                Q.Enqueue(iQ);
+                Q.Enqueue(inf.ReadInt32());
             }
         }
 
@@ -352,6 +352,7 @@ namespace Orts.Simulation
         public List<float> Angles = new List<float>();
         public float StartingY = 0; // starting yaw angle
         public float ThresholdForTarget; // Threshold to check if we can now go to the target
+        public float MaxAngle = -1; // max angle extension for partial turntables (in radians)
         // Dynamic data
         public bool Clockwise; // clockwise motion on
         public bool Counterclockwise; // counterclockwise motion on
@@ -392,6 +393,7 @@ namespace Orts.Simulation
                     TrackShapeIndex = stf.ReadIntBlock(-1);
                     InitializeAnglesAndTrackNodes();
                 }),
+                new STFReader.TokenProcessor("maxangle", ()=>{ MaxAngle = MathHelper.ToRadians(stf.ReadFloatBlock(STFReader.UNITS.None , null));}),
              });
         }
 
@@ -636,6 +638,18 @@ namespace Orts.Simulation
 
         public void GeneralStartContinuous(bool isClockwise)
         {
+            if (MaxAngle > 0)
+            {
+                var positiveYAngle = YAngle >= 0 ? YAngle : YAngle + 2 * (float)Math.PI;
+                if (!isClockwise && positiveYAngle < 0.2 || isClockwise && positiveYAngle <= 2 * (float)Math.PI - MaxAngle && positiveYAngle > 0.2)
+                {
+                    Clockwise = false;
+                    Counterclockwise = false;
+                    Continuous = false;
+                    if (SendNotifications) Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Turntable is at its bound, can't rotate"));
+                    return;
+                }
+            }
             if (TrainsOnMovingTable.Count > 1 || (TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].FrontOnBoard ^ TrainsOnMovingTable[0].BackOnBoard))
             {
                 Clockwise = false;
@@ -709,9 +723,12 @@ namespace Orts.Simulation
                 var iRelativeCarPositions = 0;
                 foreach (TrainCar traincar in TrainsOnMovingTable[0].Train.Cars)
                 {
-                    traincar.WorldPosition.XNAMatrix = Matrix.Multiply(RelativeCarPositions[iRelativeCarPositions], AnimationXNAMatrix);
-                    traincar.UpdateFreightAnimationDiscretePositions();
-                    iRelativeCarPositions++;
+                    if (RelativeCarPositions != null)
+                    {
+                        traincar.WorldPosition.XNAMatrix = Matrix.Multiply(RelativeCarPositions[iRelativeCarPositions], AnimationXNAMatrix);
+                        traincar.UpdateFreightAnimationDiscretePositions();
+                        iRelativeCarPositions++;
+                    }
                 }
             }
         }
@@ -854,7 +871,30 @@ namespace Orts.Simulation
             return false;
         }
 
- 
+        /// <summary>
+        /// Check if train position is on turntable track section
+        /// </summary>
+
+        public bool CheckOnSection(Traveller trainPosition)
+        {
+            bool onTable = false;
+            int nodeIndex = -1;
+
+            for (int inode = 0; inode < MyTrackNodesIndex.Length && nodeIndex == -1; inode++)
+            {
+                if (MyTrackNodesIndex[inode] == trainPosition.TrackNodeIndex)
+                {
+                    nodeIndex = inode;
+                }
+            }
+
+            if (nodeIndex >= 0)
+            {
+                onTable = (trainPosition.TrackVectorSectionIndex == MyTrVectorSectionsIndex[nodeIndex]);
+            }
+
+            return (onTable);
+        }
 
         /// <summary>
         /// PerformUpdateActions: actions to be performed at every animation step
