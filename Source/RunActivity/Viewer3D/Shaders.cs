@@ -121,6 +121,8 @@ namespace Orts.Viewer3D
         readonly EffectParameter texturePacking;
         readonly EffectParameter hasNormals;
         readonly EffectParameter hasTangents;
+        readonly EffectParameter morphConfig;
+        readonly EffectParameter morphWeights;
         // Per-frame PBR uniforms:
         readonly EffectParameter environmentMapSpecularTexture;
         readonly EffectParameter environmentMapDiffuseTexture;
@@ -302,6 +304,10 @@ namespace Orts.Viewer3D
 
         public bool HasTangents { set { hasTangents.SetValue(value); } }
 
+        public int[] MorphConfig { set { morphConfig.SetValue(value); } }
+        
+        public float[] MorphWeights { set { morphWeights.SetValue(value); } }
+
         public int NumLights { set { numLights.SetValue(value); } }
         public Vector3[] LightPositions { set { lightPositions.SetValue(value); } }
         public Vector3[] LightDirections { set { lightDirections.SetValue(value); } }
@@ -361,6 +367,8 @@ namespace Orts.Viewer3D
             texturePacking = Parameters["TexturePacking"];
             hasNormals = Parameters["HasNormals"];
             hasTangents = Parameters["HasTangents"];
+            morphConfig = Parameters["MorphConfig"];
+            morphWeights = Parameters["MorphWeights"];
             environmentMapSpecularTexture = Parameters["EnvironmentMapSpecularTexture"];
             environmentMapDiffuseTexture = Parameters["EnvironmentMapDiffuseTexture"];
             brdfLutTexture = Parameters["BrdfLutTexture"];
@@ -384,6 +392,8 @@ namespace Orts.Viewer3D
         readonly EffectParameter imageBlurStep;
         readonly EffectParameter imageTexture;
         readonly EffectParameter bones;
+        readonly EffectParameter morphConfig;
+        readonly EffectParameter morphWeights;
 
         public void SetData(ref Matrix v)
         {
@@ -409,7 +419,9 @@ namespace Orts.Viewer3D
         }
 
         public Matrix[] Bones { set { bones.SetValue(value); } }
-        
+        public int[] MorphConfig { set { morphConfig.SetValue(value); } }
+        public float[] MorphWeights { set { morphWeights.SetValue(value); } }
+
         public ShadowMapShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "ShadowMap")
         {
@@ -418,6 +430,8 @@ namespace Orts.Viewer3D
             imageBlurStep = Parameters["ImageBlurStep"];
             imageTexture = Parameters["ImageTexture"];
             bones = Parameters["Bones"];
+            morphConfig = Parameters["MorphConfig"];
+            morphWeights = Parameters["MorphWeights"];
         }
     }
 

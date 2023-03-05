@@ -778,6 +778,7 @@ namespace Orts.Viewer3D
         PbrHasSkin = 0x08000,
         PbrCullClockWise = 0x10000,
         PbrHasTexCoord1 = 0x20000,
+        PbrHasMorphTargets = 0x40000,
 
         // Texture to be shown in tunnels and underground (used for 3D cab night textures)
         UndergroundTexture = 0x40000000,
@@ -798,6 +799,7 @@ namespace Orts.Viewer3D
         IEnumerator<EffectPass> ShaderPassesImage;
         IEnumerator<EffectPass> ShaderPassesVegetation;
 
+        protected IEnumerator<EffectPass> ShaderPassesPbrMorphed;
         protected IEnumerator<EffectPass> ShaderPassesPbrSkinned;
         protected IEnumerator<EffectPass> ShaderPassesPbrNormalMap;
         protected IEnumerator<EffectPass> ShaderPassesPbrBase;
@@ -1198,24 +1200,25 @@ namespace Orts.Viewer3D
 
             var shader = Viewer.MaterialManager.SceneryShader;
 
-            if (ShaderPassesPbrSkinned == null) ShaderPassesPbrSkinned = shader.Techniques["PbrSkinned"].Passes.GetEnumerator();
-            if (ShaderPassesPbrNormalMap == null) ShaderPassesPbrNormalMap = shader.Techniques["PbrNormalMap"].Passes.GetEnumerator();
-            if (ShaderPassesPbrBase == null) ShaderPassesPbrBase = shader.Techniques["PbrBaseColorMap"].Passes.GetEnumerator();
-
-            if ((Options & SceneryMaterialOptions.PbrHasSkin) != 0)
+            if ((Options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
+            {
+                shader.CurrentTechnique = shader.Techniques["PbrMorphed"];
+                ShaderPasses = ShaderPassesPbrMorphed = ShaderPassesPbrMorphed ?? shader.Techniques["PbrMorphed"].Passes.GetEnumerator();
+            }
+            else if ((Options & SceneryMaterialOptions.PbrHasSkin) != 0)
             {
                 shader.CurrentTechnique = shader.Techniques["PbrSkinned"];
-                ShaderPasses = ShaderPassesPbrSkinned;
+                ShaderPasses = ShaderPassesPbrSkinned = ShaderPassesPbrSkinned ?? shader.Techniques["PbrSkinned"].Passes.GetEnumerator();
             }
             else if ((Options & SceneryMaterialOptions.PbrHasTexCoord1) != 0)
             {
                 shader.CurrentTechnique = shader.Techniques["PbrNormalMap"];
-                ShaderPasses = ShaderPassesPbrNormalMap;
+                ShaderPasses = ShaderPassesPbrNormalMap = ShaderPassesPbrNormalMap ?? shader.Techniques["PbrNormalMap"].Passes.GetEnumerator();
             }
             else
             {
                 shader.CurrentTechnique = shader.Techniques["PbrBaseColorMap"];
-                ShaderPasses = ShaderPassesPbrBase;
+                ShaderPasses = ShaderPassesPbrBase = ShaderPassesPbrBase ?? shader.Techniques["PbrBaseColorMap"].Passes.GetEnumerator();
             }
 
             shader.BaseColorFactor = BaseColorFactor;
@@ -1271,6 +1274,12 @@ namespace Orts.Viewer3D
                         shader.TextureCoordinates1 = gltfPrimitive.TexCoords1;
                         shader.TextureCoordinates2 = gltfPrimitive.TexCoords2;
                         shader.TexturePacking = gltfPrimitive.TexturePacking;
+
+                        if ((Options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
+                        {
+                            shader.MorphConfig = gltfPrimitive.MorphConfig;
+                            shader.MorphWeights = gltfPrimitive.MorphWeights;
+                        }
                     }
 
                     if (item.ItemData is Matrix[] bones)
@@ -1307,6 +1316,7 @@ namespace Orts.Viewer3D
         IEnumerator<EffectPass> ShaderPassesShadowMap;
         IEnumerator<EffectPass> ShaderPassesShadowMapNormalMap;
         IEnumerator<EffectPass> ShaderPassesShadowMapSkinned;
+        IEnumerator<EffectPass> ShaderPassesShadowMapMorphed;
         IEnumerator<EffectPass> ShaderPassesShadowMapForest;
         IEnumerator<EffectPass> ShaderPassesShadowMapBlocker;
         IEnumerator<EffectPass> ShaderPasses;
@@ -1318,6 +1328,7 @@ namespace Orts.Viewer3D
             Normal,
             Pbr,
             PbrSkinned,
+            PbrMorphed,
             Forest,
             Blocker,
         }
@@ -1343,11 +1354,13 @@ namespace Orts.Viewer3D
                 mode == Mode.Blocker ? "ShadowMapBlocker" : 
                 mode == Mode.Pbr ? "ShadowMapNormalMap" :
                 mode == Mode.PbrSkinned ? "ShadowMapSkinned" :
+                mode == Mode.PbrMorphed ? "ShadowMapMorphed" :
                 "ShadowMap"];
 
             if (ShaderPassesShadowMap == null) ShaderPassesShadowMap = shader.Techniques["ShadowMap"].Passes.GetEnumerator();
             if (ShaderPassesShadowMapNormalMap == null) ShaderPassesShadowMapNormalMap = shader.Techniques["ShadowMapNormalMap"].Passes.GetEnumerator();
             if (ShaderPassesShadowMapSkinned == null) ShaderPassesShadowMapSkinned = shader.Techniques["ShadowMapSkinned"].Passes.GetEnumerator();
+            if (ShaderPassesShadowMapMorphed == null) ShaderPassesShadowMapMorphed = shader.Techniques["ShadowMapMorphed"].Passes.GetEnumerator();
             if (ShaderPassesShadowMapForest == null) ShaderPassesShadowMapForest = shader.Techniques["ShadowMapForest"].Passes.GetEnumerator();
             if (ShaderPassesShadowMapBlocker == null) ShaderPassesShadowMapBlocker = shader.Techniques["ShadowMapBlocker"].Passes.GetEnumerator();
 
@@ -1355,6 +1368,7 @@ namespace Orts.Viewer3D
                 mode == Mode.Blocker ? ShaderPassesShadowMapBlocker : 
                 mode == Mode.Pbr ? ShaderPassesShadowMapNormalMap :
                 mode == Mode.PbrSkinned ? ShaderPassesShadowMapSkinned :
+                mode == Mode.PbrMorphed ? ShaderPassesShadowMapMorphed :
                 ShaderPassesShadowMap;
 
             graphicsDevice.RasterizerState = mode == Mode.Blocker ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
@@ -1373,6 +1387,16 @@ namespace Orts.Viewer3D
                 {
                     var wvp = item.XNAMatrix * viewproj;
                     shader.SetData(ref wvp, item.Material.GetShadowTexture());
+
+                    if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)
+                    {
+                        if (gltfPrimitive.MorphConfig[7] > 0)
+                        {
+                            shader.MorphConfig = gltfPrimitive.MorphConfig;
+                            shader.MorphWeights = gltfPrimitive.MorphWeights;
+                        }
+                    }
+
                     if (item.ItemData is Matrix[] bones)
                         shader.Bones = bones;
                     ShaderPasses.Current.Apply();

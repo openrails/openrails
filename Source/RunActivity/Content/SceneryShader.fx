@@ -58,6 +58,7 @@ float	 OverlayScale;
 #define MAX_LIGHTS 20
 #define MAX_BONES 50
 #define CLEARCOAT
+#define MAX_MORPH_TARGETS 8
 
 float4x4 Bones[MAX_BONES]; // model -> world [max number of bones]
 float4   BaseColorFactor; // glTF linear color multiplier
@@ -79,6 +80,8 @@ float4   TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearc
 float    TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic, 4: roughnessMetallicOcclusion + normal (RG) 2 channel separate, 5: occlusionRoughnessMetallic + normal (RG) 2 channel separate
 bool     HasNormals; // 0: no, 1: yes
 bool     HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
+int      MorphConfig[9]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. 6: if the model has skin, set to 1. All: set to -1 if not available. 7: targets count. 8: attributes count.
+float    MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
 
 int		NumLights; // The number of the lights used
 float	LightTypes[MAX_LIGHTS]; // 0: directional, 1: point, 2: spot
@@ -295,6 +298,19 @@ struct VERTEX_INPUT_SKINNED
 	float4x4 Instance  : TEXCOORD2;
 };
 
+struct VERTEX_INPUT_MORPHED
+{
+	float4 Position    : POSITION;
+	float2 TexCoords   : TEXCOORD0;
+	float3 Normal      : NORMAL;
+    float4 Tangent     : TANGENT;
+	float2 TexCoordsPbr: TEXCOORD1;
+    min16uint4  Joints : BLENDINDICES0;
+	float4 Weights     : BLENDWEIGHT0;
+	float4 Color       : COLOR0;
+    float4 MorphTargets[MAX_MORPH_TARGETS] : POSITION1;
+};
+
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
 
 struct VERTEX_OUTPUT
@@ -469,15 +485,16 @@ VERTEX_OUTPUT_PBR VSSkinned(in VERTEX_INPUT_SKINNED In)
 	VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR) 0;
 
 	_VSInstances(In.Position, In.Normal, In.Instance);
-	float4x4 WorldTransform = _VSSkinTransform(In.Joints, In.Weights);
+	float4x4 skinTransform = _VSSkinTransform(In.Joints, In.Weights);
     
     // Beware: Out.Position will contain Pos*World, and WorldViewProjection is uploaded as View*Projection here,
     // in contrast with e.g. VSGeneral, where Out.Position is just a position, and WorldViewProjection is WVP.
-	Out.Position = mul(In.Position, WorldTransform);
-	_VSNormalProjection(In.Normal, WorldTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
-	_VSLightsAndShadows(In.Position, WorldTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
+	Out.Position = mul(In.Position, skinTransform);
+    float4 worldPosition = Out.Position;
+	_VSNormalProjection(In.Normal, skinTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
+	_VSLightsAndShadows(worldPosition, skinTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
 
-	_VSNormalMapTransform(In.Tangent, In.Normal, WorldTransform, Out);
+	_VSNormalMapTransform(In.Tangent, In.Normal, skinTransform, Out);
 
 	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
 	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
@@ -487,6 +504,54 @@ VERTEX_OUTPUT_PBR VSSkinned(in VERTEX_INPUT_SKINNED In)
 
 	return Out;
 }
+
+VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
+{
+    VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR)0;
+
+    float4x4 skinTransform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 }; // Identity
+    if (MorphConfig[6] == 1)
+        skinTransform = _VSSkinTransform(In.Joints, In.Weights);
+
+    // Beware: Out.Position will contain Pos*World, and WorldViewProjection is uploaded as View*Projection here,
+    // in contrast with e.g. VSGeneral, where Out.Position is just a position, and WorldViewProjection is WVP.
+    Out.Position = In.Position;
+    float3 normal = In.Normal;
+    float4 tangent = In.Tangent;
+    Out.Color = In.Color;
+    Out.TexCoords.xy = In.TexCoords;
+    Out.TexCoords.zw = In.TexCoordsPbr;
+
+    [unroll(MAX_MORPH_TARGETS)]
+    for (int i = 0; i < MorphConfig[7]; i++)
+    {
+        if (MorphConfig[0] != -1)
+            Out.Position.xyz += In.MorphTargets[MorphConfig[8] * i + MorphConfig[0]].xyz * MorphWeights[i];
+        if (MorphConfig[1] != -1)
+            normal.xyz += In.MorphTargets[MorphConfig[8] * i + MorphConfig[1]].xyz * MorphWeights[i];
+        if (MorphConfig[2] != -1)
+            tangent.xyz += In.MorphTargets[MorphConfig[8] * i + MorphConfig[2]].xyz * MorphWeights[i];
+        if (MorphConfig[3] != -1)
+            Out.TexCoords.xy += In.MorphTargets[MorphConfig[8] * i + MorphConfig[3]].xy * MorphWeights[i];
+        if (MorphConfig[4] != -1)
+            Out.TexCoords.zw += In.MorphTargets[MorphConfig[8] * i + MorphConfig[4]].xy * MorphWeights[i];
+        if (MorphConfig[5] != -1)
+            Out.Color += In.MorphTargets[MorphConfig[8] * i + MorphConfig[5]] * MorphWeights[i];
+    }
+
+    Out.Position = mul(Out.Position, skinTransform);
+    float4 worldPosition = Out.Position;
+    _VSNormalProjection(normal, skinTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
+    _VSLightsAndShadows(worldPosition, skinTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
+
+    _VSNormalMapTransform(tangent, normal, skinTransform, Out);
+
+    // Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
+    Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
+
+    return Out;
+}
+
 
 VERTEX_OUTPUT VSTransfer(in VERTEX_INPUT_TRANSFER In)
 {
@@ -1238,6 +1303,13 @@ technique PbrNormalMap {
 technique PbrSkinned {
 	pass Pass_0 {
 		VertexShader = compile vs_4_0 VSSkinned();
+		PixelShader = compile ps_4_0 PSPbr();
+	}
+}
+
+technique PbrMorphed {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0 VSMorphing();
 		PixelShader = compile ps_4_0 PSPbr();
 	}
 }

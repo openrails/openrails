@@ -54,7 +54,6 @@ namespace Orts.Viewer3D
         };
 
         string FileDir { get; set; }
-        int SkeletonRootNode;
         public bool MsfsFlavoured;
 
         internal Vector3[] Scales;
@@ -318,6 +317,7 @@ namespace Orts.Viewer3D
             internal readonly Viewer Viewer;
             internal readonly GltfShape Shape;
 
+            public const int MAX_MORPH_BUFFERS = 8;
             static readonly string[] TestControls = new[] { "WIPER", "ORTSITEM1CONTINUOUS", "ORTSITEM2CONTINUOUS" };
 
             // These are only temporary variables needed during the construction
@@ -468,7 +468,8 @@ namespace Orts.Viewer3D
                 IndexBuffers = new Dictionary<int, IndexBuffer>();
                 BinaryBuffers = new Dictionary<int, byte[]>();
 
-                Weights = gltfFile.Nodes.Select(node => gltfFile.Meshes?.ElementAtOrDefault(node.Mesh ?? -1)?.Weights).ToArray();
+                Weights = gltfFile.Nodes.Select(node => node.Weights ?? gltfFile.Meshes?.ElementAtOrDefault(node.Mesh ?? -1)?.Weights
+                    ?? new float[gltfFile.Meshes?.ElementAtOrDefault(node.Mesh ?? -1)?.Primitives?.FirstOrDefault(p => p.Targets != null && p.Targets.Length > 0)?.Targets?.Length ?? 0]).ToArray();
                 Scales = gltfFile.Nodes.Select(node => node.Scale == null ? Vector3.One : MemoryMarshal.Cast<float, Vector3>(node.Scale)[0]).ToArray();
                 Rotations = gltfFile.Nodes.Select(node => node.Rotation == null ? Quaternion.Identity : MemoryMarshal.Cast<float, Quaternion>(node.Rotation)[0]).ToArray();
                 Translations = gltfFile.Nodes.Select(node => node.Translation == null ? Vector3.Zero : MemoryMarshal.Cast<float, Vector3>(node.Translation)[0]).ToArray();
@@ -510,14 +511,22 @@ namespace Orts.Viewer3D
                     }
                 }
 
-                // Shovel all binary index & vertex attribute data over to the GPU. Such bufferViews are VertexBuffers/IndexBuffers in fact, the byteStride is the same throughout a bufferView.
+                // Shovel all binary index & vertex attribute data over to the GPU. Such bufferViews are VertexBuffers/IndexBuffers in fact.
+                // The byteStride is constant throughout a vertex attribute bufferView, but may vary in index bufferViews.
                 // An accessor is the vertex attribute, is has a byteOffset within the bufferView. If byteOffset < byteStride, then the accessors are interleaved.
                 var bufferViews = gltfFile.Meshes
                     .SelectMany(m => m.Primitives)
                     .SelectMany(p => p.Attributes)
                     .OrderBy(a => gltfFile.Accessors[a.Value].ByteOffset)
                     .Distinct()
-                    .GroupBy(a => gltfFile.Accessors[a.Value].BufferView ?? -1);
+                    .GroupBy(a => gltfFile.Accessors[a.Value].BufferView ?? -1)
+                    .Concat(gltfFile.Meshes // Upload all the morph targets too in this sole pass.
+                        .SelectMany(m => m.Primitives)
+                        .SelectMany(p => p.Targets ?? new Dictionary<string, int>[0])
+                        .SelectMany(t => t.Select(d => new KeyValuePair<string, int>("POSITION", d.Value))) // Create all morph target vertex buffers with POSITION semantic, so they bind to the right slots.
+                        .OrderBy(a => gltfFile.Accessors[a.Value].ByteOffset)
+                        .Distinct()
+                        .GroupBy(a => gltfFile.Accessors[a.Value].BufferView ?? -1));
 
                 foreach (var bufferView in bufferViews)
                 {
@@ -598,20 +607,17 @@ namespace Orts.Viewer3D
                             continue;
                         var accessor = gltfFile.Accessors?.ElementAtOrDefault((int)p.Indices);
                         var bufferView = gltfFile.BufferViews?.ElementAtOrDefault(indexBufferView.Key);
-                        var componentSizeInBytes = GetComponentSizeInBytes(accessor.ComponentType);
                         var indexBuffer = new IndexBuffer(shape.Viewer.GraphicsDevice, GetIndexElementSize(accessor.ComponentType), accessor.Count, BufferUsage.None);
 
-                        // 8 bit indices are unsupported in MonoGame, so we must convert them to 16 bits. GetIndexElementSize() reports twice the length automatically in this case.
+                        // 8 bit indices are unsupported in Direct3D, so we must convert them to 16 bits. GetIndexElementSize() reports twice the length automatically in this case.
                         if (accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE)
-                            indexBuffer.SetData(BinaryBuffers[bufferView.Buffer].Skip(bufferView.ByteOffset + accessor.ByteOffset).Take(accessor.Count * componentSizeInBytes).Select(b => (ushort)b).ToArray());
+                            indexBuffer.SetData(BinaryBuffers[bufferView.Buffer].Skip(bufferView.ByteOffset + accessor.ByteOffset).Take(accessor.Count).Select(b => (ushort)b).ToArray());
                         else
-                            indexBuffer.SetData(BinaryBuffers[bufferView.Buffer], bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * componentSizeInBytes);
+                            indexBuffer.SetData(BinaryBuffers[bufferView.Buffer], bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * GetComponentSizeInBytes(accessor.ComponentType));
 
                         IndexBuffers.Add((int)p.Indices, indexBuffer);
                     }
                 }
-
-                var morphWarning = false;
 
                 for (var j = 0; j < (gltfFile.Animations?.Length ?? 0); j++)
                 {
@@ -651,12 +657,9 @@ namespace Orts.Viewer3D
                             OutputWeights = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.weights ?
                                 new float[outputAccessor.Count].Select(_ => readOutput(bro)).ToArray() : null,
                         });
-                        morphWarning |= gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.weights;
                     }
                     GltfAnimations.Add(animation);
                 }
-                if (morphWarning && ShapeWarnings)
-                    Trace.TraceInformation($"glTF morphing animation is unsupported in file {gltfFileName}");
 
                 object extension = null;
                 var names = gltfFile.Nodes.Select((n, i) => ((n.Extras?.TryGetValue("OPENRAILS_animation_name", out extension) ?? false) && extension is string a ? a : null, i)).Where(n => n.Item1 != null);
@@ -1011,6 +1014,8 @@ namespace Orts.Viewer3D
                 WrapT = Sampler.WrapTEnum.REPEAT,
                 Name = nameof(DefaultGltfSampler)
             };
+            
+            static readonly List<string> MorphTargetAttributes = new List<string>() { "POSITION", "NORMAL", "TANGENT", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0" };
 
             public GltfSubObject(KHR_lights_punctual light, int hierarchyIndex, int[] hierarchy, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel)
             {
@@ -1029,10 +1034,9 @@ namespace Orts.Viewer3D
                     options |= SceneryMaterialOptions.Diffuse;
 
                 if (skin != null)
-                {
                     options |= SceneryMaterialOptions.PbrHasSkin;
-                    shape.SkeletonRootNode = skin.Skeleton ?? 0;
-                }
+                if (meshPrimitive.Targets != null && meshPrimitive.Targets.Length > 0)
+                    options |= SceneryMaterialOptions.PbrHasMorphTargets;
 
                 if (!shape.MsfsFlavoured && distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant() > 0)
                     // This is according to the glTF spec
@@ -1144,18 +1148,18 @@ namespace Orts.Viewer3D
                 // The order of the vertex buffers is unimportant, the shader will attach by semantics.
                 // If more combinations to be added in the future, there must be support for them both in SceneryShader and ShadowMapShader.
                 //
-                // ================================================================
-                // PositionNormalTexture | NormalMapColor     | Skinned            
-                // ================================================================
-                //  Position             | Position           | Position           
-                //  Normal               | Normal             | Normal             
-                //  TexCoords_0          | TexCoords_0        | TexCoords_0        
-                //                       | Tangent            | Tangent            
-                //                       | TexCoords_1        | TexCoords_1        
-                //                       | Color_0            | Color_0            
-                //                       |                    | Joints_0           
-                //                       |                    | Weights_0          
-                // ================================================================
+                // ===================================================================================
+                // PositionNormalTexture | NormalMapColor     | Skinned            | Morphed          
+                // ===================================================================================
+                //  Position             | Position           | Position           | All skinned + 8 morph targets, can be any of:
+                //  Normal               | Normal             | Normal             |                  
+                //  TexCoords_0          | TexCoords_0        | TexCoords_0        | Position         
+                //                       | Tangent            | Tangent            | Normal           
+                //                       | TexCoords_1        | TexCoords_1        | Tangent          
+                //                       | Color_0            | Color_0            | TexCoords_0      
+                //                       |                    | Joints_0           | TexCoords_1      
+                //                       |                    | Weights_0          | Color_0          
+                // ===================================================================================
                 //
                 // So e.g. for a primitive with only Position, Normal, Color_0 attributes present,
                 // dummy TexCoord_0, TexCoord_1 and Tangent buffers have to be added to match the NormalMapColor pipeline.
@@ -1188,7 +1192,7 @@ namespace Orts.Viewer3D
                 }
 
                 // If we have skins or Color_0 or TexCoord_1, but don't have Tangent, then we must add a dummy one to run through the NormalMapColor pipeline. (See: MorphStressTest with spare TexCoord_1)
-                if ((options & SceneryMaterialOptions.PbrHasSkin) != 0 || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
+                if ((options & (SceneryMaterialOptions.PbrHasSkin | SceneryMaterialOptions.PbrHasMorphTargets)) != 0 || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
                 {
                     options |= SceneryMaterialOptions.PbrHasTexCoord1; // With this we request to call the NormalMapColor pipeline
 
@@ -1217,7 +1221,7 @@ namespace Orts.Viewer3D
                 }
 
                 // When we have a Tangent, must also make sure to have TexCoord_1 and Color_0
-                if ((options & (SceneryMaterialOptions.PbrHasTangents | SceneryMaterialOptions.PbrHasSkin)) != 0
+                if ((options & (SceneryMaterialOptions.PbrHasTangents | SceneryMaterialOptions.PbrHasSkin | SceneryMaterialOptions.PbrHasMorphTargets)) != 0
                     || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
                 {
                     if (!meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
@@ -1235,7 +1239,44 @@ namespace Orts.Viewer3D
                     options |= SceneryMaterialOptions.PbrHasTexCoord1;
                 }
 
-                // Remove the unused TexCoord_2, _3, etc. attributes, because they might create display artifacts. Most probably these are model errors anyway. (See: MosquitoInAmber with spare TexCoord_2)
+                // Indicates what position in the target a specific vertex attribute is located at. Element [6] is set to 1 if the primitive has a skin. [7] is the targets count. [8] is the attributes count per target.
+                var morphConfig = Enumerable.Repeat(-1, 9).ToArray();
+
+                // When having morph targets, make sure we have exactly 8 of them.
+                if ((options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
+                {
+                    // Have to add fake JOINT_0 and WEIGHTS_0 buffers in case we don't have them.
+                    if ((options & SceneryMaterialOptions.PbrHasSkin) == 0)
+                    {
+                        vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Byte4, VertexElementUsage.BlendIndices, 0)), vertexCount, BufferUsage.None) { Name = "JOINTS_DUMMY" }));
+                        vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.BlendWeight, 0)), vertexCount, BufferUsage.None) { Name = "WEIGHTS_DUMMY" }));
+                    }
+                    else
+                    {
+                        morphConfig[6] = 1;
+                    }
+
+                    // We might have to limit how many attributes we are animating, because with vs_4_0 we can use max. 8 target attributes totally. (Need to limit in e.g. the MorphStressTest.)
+                    var maxAttributesPerTarget = Math.Min(GltfDistanceLevel.MAX_MORPH_BUFFERS / meshPrimitive.Targets.Length, meshPrimitive.Targets[0].Count);
+                    vertexAttributes.AddRange(meshPrimitive.Targets
+                        .SelectMany(t => t.Take(maxAttributesPerTarget))
+                        .Select(kvp => distanceLevel.VertexBufferBindings[kvp.Value]));
+
+                    // Bind more buffers if needed for being exactly 8 of them. The content doesn't matter, they will not be accessed anyway, it is just to fool the shader binding mechanism.
+                    for (var i = 0; i < GltfDistanceLevel.MAX_MORPH_BUFFERS - maxAttributesPerTarget * meshPrimitive.Targets.Length; i++)
+                        vertexAttributes.Add(vertexAttributes.Last());
+
+                    var arrangement = meshPrimitive.Targets[0].Take(maxAttributesPerTarget).Select((kvp, i) => (MorphTargetAttributes.IndexOf(kvp.Key), i));
+                    foreach (var a in arrangement)
+                        morphConfig[a.Item1] = a.i;
+                    morphConfig[7] = meshPrimitive.Targets.Length;
+                    morphConfig[8] = maxAttributesPerTarget;
+                }
+
+                // Remove the unused TexCoord_2, _3, etc. attributes, because they might create display artifacts.
+                // Most probably these are model errors anyway. (See: MosquitoInAmber with spare TexCoord_2)
                 var remove = vertexAttributes.Where(b => b.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.TextureCoordinate && e.UsageIndex > 1));
                 foreach (var r in remove)
                     Disposables.Enqueue(r.VertexBuffer);
@@ -1245,8 +1286,9 @@ namespace Orts.Viewer3D
                 while (Disposables.TryDequeue(out var vb))
                     vb.Dispose();
 
-                // This is the dummy instance buffer at the end of the vertex buffers
-                vertexAttributes.Add(new VertexBufferBinding(RenderPrimitive.GetDummyVertexBuffer(shape.Viewer.GraphicsDevice)));
+                // This is the dummy instance buffer at the end of the vertex buffers. Models with morph targets cannot be instanced, because then the vs_4_0 input limit (16) is exceeded, shader uses 20 inputs.
+                if ((options & SceneryMaterialOptions.PbrHasMorphTargets) == 0)
+                    vertexAttributes.Add(new VertexBufferBinding(RenderPrimitive.GetDummyVertexBuffer(shape.Viewer.GraphicsDevice)));
 
                 var verticesDrawn = indexCount > 0 ? indexCount : vertexCount;
                 switch (meshPrimitive.Mode)
@@ -1279,7 +1321,7 @@ namespace Orts.Viewer3D
                     clearcoatRoughnessSamplerState,
                     clearcoatNormalSamplerState);
 
-                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords1, texCoords2, texturePacking) };
+                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords1, texCoords2, texturePacking, morphConfig) };
                 ShapePrimitives[0].SortIndex = 0;
             }
 
@@ -1290,6 +1332,12 @@ namespace Orts.Viewer3D
         {
             public readonly int[] Joints; // Replaces ShapePrimitive.HierarchyIndex for non-skinned primitives
             public readonly Matrix[] InverseBindMatrices;
+            public readonly float[] MorphWeights;
+            /// <summary>
+            /// Indicates what position in the target a specific vertex attribute is located at. Element [6] is set to 1 if the primitive has a skin.
+            /// [7] is the targets count. [8] is the attributes count per target.
+            /// </summary>
+            public readonly int[] MorphConfig;
 
             /// <summary>
             /// x: baseColor, y: roughness-metallic, z: normal, w: emissive
@@ -1309,7 +1357,7 @@ namespace Orts.Viewer3D
 
 
             public GltfPrimitive(KHR_lights_punctual light, Gltf gltfFile, GltfDistanceLevel distanceLevel, int hierarchyIndex, int[] hierarchy)
-                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Vector4.Zero, Vector4.Zero, 0)
+                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Vector4.Zero, Vector4.Zero, 0, new int[0])
             {
                 Light = new ShapeLight
                 {
@@ -1326,7 +1374,7 @@ namespace Orts.Viewer3D
                 }
             }
 
-            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords1, Vector4 texCoords2, int texturePacking)
+            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords1, Vector4 texCoords2, int texturePacking, int[] morphConfig)
                 : base(vertexAttributes.ToArray())
             {
                 Material = material;
@@ -1375,6 +1423,8 @@ namespace Orts.Viewer3D
                         distanceLevel.InverseBindMatrices.Add((int)skin.InverseBindMatrices, InverseBindMatrices);
                     }
                 }
+                MorphConfig = morphConfig;
+                MorphWeights = distanceLevel.Weights[hierarchyIndex];
             }
         }
 
@@ -1496,10 +1546,12 @@ namespace Orts.Viewer3D
                 // Interpolating between two frames
                 var frame1 = 0;
                 for (var i = 0; i < channel.TimeArray.Length; i++)
+                {
                     if (channel.TimeArray[i] <= time)
                         frame1 = i;
                     else if (channel.TimeArray[i] > time)
                         break;
+                }
 
                 var frame2 = Math.Min(channel.TimeArray.Length - 1, frame1 + 1);
                 var time1 = channel.TimeArray[frame1];
@@ -1532,6 +1584,12 @@ namespace Orts.Viewer3D
                             : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
                         break;
                     case AnimationChannelTarget.PathEnum.weights:
+                        var count = Weights[channel.TargetNode].Length;
+                        for (var i = 0; i < count; i++)
+                            Weights[channel.TargetNode][i] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                                ? MathHelper.Hermite(channel.OutputWeights[Property(frame1) * count + i], channel.OutputWeights[OutTangent(frame2) * count + i], channel.OutputWeights[Property(frame2) * count + i], channel.OutputWeights[InTangent(frame2) * count + i], amount)
+                                : MathHelper.Lerp(channel.OutputWeights[frame1 * count + i], channel.OutputWeights[frame2 * count + i], amount);
+                        break;
                     default: break;
                 }
                 animatedMatrices[channel.TargetNode] = Matrix.CreateScale(Scales[channel.TargetNode]) * Matrix.CreateFromQuaternion(Rotations[channel.TargetNode]) * Matrix.CreateTranslation(Translations[channel.TargetNode]);

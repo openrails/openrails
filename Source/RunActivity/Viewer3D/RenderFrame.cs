@@ -408,6 +408,7 @@ namespace Orts.Viewer3D
         readonly RenderItemCollection[] RenderShadowSceneryItems;
         readonly RenderItemCollection[] RenderShadowPbrNormalMapItems;
         readonly RenderItemCollection[] RenderShadowPbrSkinnedItems;
+        readonly RenderItemCollection[] RenderShadowPbrMorphedItems;
         readonly RenderItemCollection[] RenderShadowForestItems;
         readonly RenderItemCollection[] RenderShadowTerrainItems;
         readonly RenderItemCollection RenderItemsSequence = new RenderItemCollection();
@@ -462,6 +463,7 @@ namespace Orts.Viewer3D
                 RenderShadowSceneryItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
                 RenderShadowPbrNormalMapItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
                 RenderShadowPbrSkinnedItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
+                RenderShadowPbrMorphedItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
                 RenderShadowForestItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
                 RenderShadowTerrainItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
@@ -469,6 +471,7 @@ namespace Orts.Viewer3D
                     RenderShadowSceneryItems[shadowMapIndex] = new RenderItemCollection();
                     RenderShadowPbrNormalMapItems[shadowMapIndex] = new RenderItemCollection();
                     RenderShadowPbrSkinnedItems[shadowMapIndex] = new RenderItemCollection();
+                    RenderShadowPbrMorphedItems[shadowMapIndex] = new RenderItemCollection();
                     RenderShadowForestItems[shadowMapIndex] = new RenderItemCollection();
                     RenderShadowTerrainItems[shadowMapIndex] = new RenderItemCollection();
                 }
@@ -522,6 +525,7 @@ namespace Orts.Viewer3D
                     RenderShadowSceneryItems[shadowMapIndex].Clear();
                     RenderShadowPbrNormalMapItems[shadowMapIndex].Clear();
                     RenderShadowPbrSkinnedItems[shadowMapIndex].Clear();
+                    RenderShadowPbrMorphedItems[shadowMapIndex].Clear();
                     RenderShadowForestItems[shadowMapIndex].Clear();
                     RenderShadowTerrainItems[shadowMapIndex].Clear();
                 }
@@ -745,7 +749,9 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         void AddShadowPrimitive(int shadowMapIndex, Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            if (material is PbrMaterial skinnedMaterial && (skinnedMaterial.Options & SceneryMaterialOptions.PbrHasSkin) != 0)
+            if (material is PbrMaterial morphedMaterial && (morphedMaterial.Options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
+                RenderShadowPbrMorphedItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            else if (material is PbrMaterial skinnedMaterial && (skinnedMaterial.Options & SceneryMaterialOptions.PbrHasSkin) != 0)
                 RenderShadowPbrSkinnedItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
             else if (material is PbrMaterial pbrMaterial && (pbrMaterial.Options & SceneryMaterialOptions.PbrHasTexCoord1) != 0)
                 RenderShadowPbrNormalMapItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
@@ -858,6 +864,7 @@ namespace Orts.Viewer3D
                     RenderShadowSceneryItems[shadowMapIndex].Count + 
                     RenderShadowPbrNormalMapItems[shadowMapIndex].Count + 
                     RenderShadowPbrSkinnedItems[shadowMapIndex].Count + 
+                    RenderShadowPbrMorphedItems[shadowMapIndex].Count + 
                     RenderShadowForestItems[shadowMapIndex].Count + 
                     RenderShadowTerrainItems[shadowMapIndex].Count;
             if (logging) Console.WriteLine("  }");
@@ -885,6 +892,10 @@ namespace Orts.Viewer3D
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.PbrSkinned);
             if (logging) Console.WriteLine("      {0,-5} * PbrMaterialSkinned (normal)", RenderShadowPbrSkinnedItems[shadowMapIndex].Count);
             ShadowMapMaterial.Render(graphicsDevice, RenderShadowPbrSkinnedItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+
+            ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.PbrMorphed);
+            if (logging) Console.WriteLine("      {0,-5} * PbrMaterialSkinned (normal)", RenderShadowPbrMorphedItems[shadowMapIndex].Count);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowPbrMorphedItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for normal (non-blocking) rendering of forests.
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Forest);
