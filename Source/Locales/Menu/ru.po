@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-10-29 14:20:22+0300\n"
-"PO-Revision-Date: 2022-10-29 14:26+0300\n"
+"POT-Creation-Date: 2023-02-21 17:54:09+0300\n"
+"PO-Revision-Date: 2023-02-21 18:02+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -723,7 +723,6 @@ msgid "Video"
 msgstr "Вид"
 
 #: ../../Menu/Options.Designer.cs:820
-#| msgid "Default detail (+{0}%)"
 msgid "Default detail (+0%)"
 msgstr "Детализация по умолчанию (+0%)"
 
@@ -941,7 +940,7 @@ msgstr "Изменить..."
 
 #: ../../Menu/Options.Designer.cs:1888
 msgid "Name:"
-msgstr "Название:"
+msgstr "Имя:"
 
 #: ../../Menu/Options.Designer.cs:1897
 msgid "Path:"
