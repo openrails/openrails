@@ -1054,12 +1054,31 @@ namespace Orts.Viewer3D
 
             if (UserInput.IsPressed(UserCommand.DebugToggleConfirmations))
             {
-                Simulator.Settings.SuppressConfirmations = !Simulator.Settings.SuppressConfirmations;
-                if (Simulator.Settings.SuppressConfirmations)
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Confirmations suppressed"));
-                else
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Confirmations visible"));
-                Settings.SuppressConfirmations = Simulator.Settings.SuppressConfirmations;
+                int suppressConfirmationsEntry = Simulator.Settings.SuppressConfirmations;
+
+                // cycle between ConfirmLevel.None and Error
+                suppressConfirmationsEntry++;
+                if (suppressConfirmationsEntry >= (int)ConfirmLevel.MSG)
+                {
+                    suppressConfirmationsEntry = (int)ConfirmLevel.None;
+                }
+
+                Simulator.Settings.SuppressConfirmations = (int)ConfirmLevel.None;
+                if (suppressConfirmationsEntry > (int)ConfirmLevel.None)
+                {
+                    Simulator.Confirmer.Message(
+                        ConfirmLevel.Warning,
+                        Catalog.GetString(((ConfirmLevel)suppressConfirmationsEntry).ToString()) +
+                        " " +
+                        Catalog.GetString("messages suppressed"));
+                }
+                else 
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("All messages visible"));
+                }
+
+                Simulator.Settings.SuppressConfirmations = suppressConfirmationsEntry;
+                Settings.SuppressConfirmations = suppressConfirmationsEntry;
                 Settings.Save();
             }
 
