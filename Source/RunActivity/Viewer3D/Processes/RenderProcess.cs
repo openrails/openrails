@@ -70,6 +70,7 @@ namespace Orts.Viewer3D.Processes
         public static bool LEVEL_9_3;
         public static int MAX_BONES;
         public static int MAX_LIGHTS; // must not be lower than 2.
+        public const int MAX_MORPH_BUFFERS = 8;
         public static bool CLEARCOAT;
 
         internal RenderProcess(Game game)

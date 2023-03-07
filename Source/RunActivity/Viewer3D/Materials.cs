@@ -1275,11 +1275,8 @@ namespace Orts.Viewer3D
                         shader.TextureCoordinates2 = gltfPrimitive.TexCoords2;
                         shader.TexturePacking = gltfPrimitive.TexturePacking;
 
-                        if ((Options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
-                        {
-                            shader.MorphConfig = gltfPrimitive.MorphConfig;
-                            shader.MorphWeights = gltfPrimitive.MorphWeights;
-                        }
+                        if (gltfPrimitive.HasMorphTargets())
+                            (shader.MorphConfig, shader.MorphWeights) = gltfPrimitive.GetMorphingData();
                     }
 
                     if (item.ItemData is Matrix[] bones)
@@ -1390,11 +1387,8 @@ namespace Orts.Viewer3D
 
                     if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)
                     {
-                        if (gltfPrimitive.MorphConfig[7] > 0)
-                        {
-                            shader.MorphConfig = gltfPrimitive.MorphConfig;
-                            shader.MorphWeights = gltfPrimitive.MorphWeights;
-                        }
+                        if (gltfPrimitive.HasMorphTargets())
+                            (shader.MorphConfig, shader.MorphWeights) = gltfPrimitive.GetMorphingData();
                     }
 
                     if (item.ItemData is Matrix[] bones)

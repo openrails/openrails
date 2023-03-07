@@ -317,7 +317,6 @@ namespace Orts.Viewer3D
             internal readonly Viewer Viewer;
             internal readonly GltfShape Shape;
 
-            public const int MAX_MORPH_BUFFERS = 8;
             static readonly string[] TestControls = new[] { "WIPER", "ORTSITEM1CONTINUOUS", "ORTSITEM2CONTINUOUS" };
 
             // These are only temporary variables needed during the construction
@@ -1240,7 +1239,7 @@ namespace Orts.Viewer3D
                 }
 
                 // Indicates what position in the target a specific vertex attribute is located at. Element [6] is set to 1 if the primitive has a skin. [7] is the targets count. [8] is the attributes count per target.
-                var morphConfig = Enumerable.Repeat(-1, 9).ToArray();
+                var morphConfig = new int[9];
 
                 // When having morph targets, make sure we have exactly 8 of them.
                 if ((options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
@@ -1258,21 +1257,23 @@ namespace Orts.Viewer3D
                         morphConfig[6] = 1;
                     }
 
-                    // We might have to limit how many attributes we are animating, because with vs_4_0 we can use max. 8 target attributes totally. (Need to limit in e.g. the MorphStressTest.)
-                    var maxAttributesPerTarget = Math.Min(GltfDistanceLevel.MAX_MORPH_BUFFERS / meshPrimitive.Targets.Length, meshPrimitive.Targets[0].Count);
                     vertexAttributes.AddRange(meshPrimitive.Targets
-                        .SelectMany(t => t.Take(maxAttributesPerTarget))
+                        .SelectMany(t => t)
                         .Select(kvp => distanceLevel.VertexBufferBindings[kvp.Value]));
 
                     // Bind more buffers if needed for being exactly 8 of them. The content doesn't matter, they will not be accessed anyway, it is just to fool the shader binding mechanism.
-                    for (var i = 0; i < GltfDistanceLevel.MAX_MORPH_BUFFERS - maxAttributesPerTarget * meshPrimitive.Targets.Length; i++)
+                    for (var i = 0; i < RenderProcess.MAX_MORPH_BUFFERS - meshPrimitive.Targets.Length * meshPrimitive.Targets[0].Count; i++)
                         vertexAttributes.Add(vertexAttributes.Last());
 
-                    var arrangement = meshPrimitive.Targets[0].Take(maxAttributesPerTarget).Select((kvp, i) => (MorphTargetAttributes.IndexOf(kvp.Key), i));
-                    foreach (var a in arrangement)
-                        morphConfig[a.Item1] = a.i;
+                    for (var i = 0; i < 6; i++)
+                        morphConfig[i] = -1;
+                    var arrangement = meshPrimitive.Targets[0]
+                        .Select((kvp, i) => (sourcePosition: MorphTargetAttributes.IndexOf(kvp.Key), targetPosition: i));
+                    foreach (var (sourcePosition, targetPosition) in arrangement)
+                        morphConfig[sourcePosition] = targetPosition;
+
                     morphConfig[7] = meshPrimitive.Targets.Length;
-                    morphConfig[8] = maxAttributesPerTarget;
+                    morphConfig[8] = meshPrimitive.Targets[0].Count;
                 }
 
                 // Remove the unused TexCoord_2, _3, etc. attributes, because they might create display artifacts.
@@ -1332,12 +1333,14 @@ namespace Orts.Viewer3D
         {
             public readonly int[] Joints; // Replaces ShapePrimitive.HierarchyIndex for non-skinned primitives
             public readonly Matrix[] InverseBindMatrices;
-            public readonly float[] MorphWeights;
+            
             /// <summary>
             /// Indicates what position in the target a specific vertex attribute is located at. Element [6] is set to 1 if the primitive has a skin.
             /// [7] is the targets count. [8] is the attributes count per target.
             /// </summary>
-            public readonly int[] MorphConfig;
+            readonly int[] MorphConfig;
+            readonly float[] MorphWeights;
+            readonly int MaxActiveMorphTargets;
 
             /// <summary>
             /// x: baseColor, y: roughness-metallic, z: normal, w: emissive
@@ -1425,6 +1428,64 @@ namespace Orts.Viewer3D
                 }
                 MorphConfig = morphConfig;
                 MorphWeights = distanceLevel.Weights[hierarchyIndex];
+                MaxActiveMorphTargets = MorphConfig.ElementAtOrDefault(8) != 0 ? RenderProcess.MAX_MORPH_BUFFERS / MorphConfig.ElementAtOrDefault(8) : 0;
+            }
+
+            /// <summary>
+            /// Used in case of morphing. Only 8 morph targets can be bound at any time, so need to select the actually active ones.
+            /// </summary>
+            VertexBufferBinding[] ActiveVertexBufferBindings;
+            int[] ActiveMorphConfig;
+
+            /// <summary>
+            /// Select the max. 8 active morph targets and compile the active buffer binding.
+            /// </summary>
+            /// <returns>(morphConfig, weights)</returns>
+            public (int[], float[]) GetMorphingData()
+            {
+                if (MorphWeights.Length <= MaxActiveMorphTargets)
+                    return (MorphConfig, MorphWeights);
+
+                // Drop targets with the lowest weights if needed, according to the glTF spec recommendation.
+                var activeTargets = MorphWeights
+                    .Select((w, i) => (w, i))
+                    .OrderByDescending(v => v.w)
+                    .Take(MaxActiveMorphTargets);
+
+                ActiveVertexBufferBindings = ActiveVertexBufferBindings ?? VertexBufferBindings.ToArray();
+                Array.Resize(ref ActiveVertexBufferBindings, 16); // This is what the vs_4_0 can handle.
+                ActiveMorphConfig = ActiveMorphConfig ?? MorphConfig.ToArray();
+                ActiveMorphConfig[7] = activeTargets.Count();
+
+                // Recompile the buffer binding
+                for (var i = 0; i < activeTargets.Count(); i++)
+                    for (var j = 0; j < MorphConfig[8]; j++)
+                        ActiveVertexBufferBindings[8 + MorphConfig[8] * i + j] = VertexBufferBindings[8 + MorphConfig[8] * activeTargets.ElementAt(i).i + j];
+                // Fill up the rest of ActiveVertexBufferBindings with anything.
+                for (var i = 8 + MorphConfig[8] * activeTargets.Count(); i < 16; i++)
+                    ActiveVertexBufferBindings[i] = VertexBufferBindings[8];
+
+                return (ActiveMorphConfig, activeTargets.Select(v => v.w).ToArray());
+            }
+
+            public bool HasMorphTargets() => MorphConfig[7] > 0;
+
+            public override void Draw(GraphicsDevice graphicsDevice)
+            {
+                if (PrimitiveCount > 0)
+                {
+                    // Need to bind only the active morph targets attributes
+                    graphicsDevice.SetVertexBuffers(ActiveVertexBufferBindings ?? VertexBufferBindings);
+                    if (IndexBuffer != null)
+                    {
+                        graphicsDevice.Indices = IndexBuffer;
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: 0, startIndex: PrimitiveOffset, primitiveCount: PrimitiveCount);
+                    }
+                    else
+                    {
+                        graphicsDevice.DrawPrimitives(PrimitiveType, 0, PrimitiveCount);
+                    }
+                }
             }
         }
 
