@@ -204,7 +204,7 @@ namespace Orts.Viewer3D
         public GltfDistanceLevel SetLod(int lodId)
         {
             var lod = LodControls.FirstOrDefault()?.DistanceLevels?.ElementAtOrDefault(lodId) as GltfDistanceLevel;
-            if (lodId != LastLod)
+            if (lodId != LastLod && lod != null)
             {
                 Matrices = lod.Matrices;
                 Scales = lod.Scales; ;
@@ -239,8 +239,14 @@ namespace Orts.Viewer3D
                         foreach (var extensionRequired in gltfFile.ExtensionsRequired)
                             if (!ExtensionsSupported.Contains(extensionRequired))
                                 unsupportedExtensions.Add($"\"{extensionRequired}\"");
-                        if (unsupportedExtensions.Any() && ShapeWarnings)
-                            Trace.TraceWarning($"glTF required extension {string.Join(", ", unsupportedExtensions)} is unsupported in file {externalLods[id]}");
+                        if (unsupportedExtensions.Any())
+                        {
+                            var message = $"glTF required extension {string.Join(", ", unsupportedExtensions)} is unsupported in file {externalLods[id]}";
+                            if (ConsistGenerator.GltfVisualTestRun)
+                                Trace.TraceWarning(message);
+                            else
+                                throw new NotImplementedException(message);
+                        }
                     }
 
                     if (gltfFile.Asset?.Extensions?.ContainsKey("ASOBO_asset_optimized") ?? false)
@@ -530,9 +536,9 @@ namespace Orts.Viewer3D
                 foreach (var bufferView in bufferViews)
                 {
                     var byteStride = gltfFile.BufferViews.ElementAtOrDefault(bufferView.Key)?.ByteStride ?? GetSizeInBytes(gltfFile.Accessors[bufferView.First().Value]);
-                    
-                    if (GetBufferViewSpan(bufferView.Key, 0) is var buffer && buffer.IsEmpty)
-                        buffer = new Span<byte>(new byte[gltfFile.BufferViews.ElementAtOrDefault(bufferView.Key).ByteLength]);
+
+                    // Trigger the loading of the binary buffer.
+                    GetBufferViewSpan(bufferView.Key, 0);
                     
                     var previousOffset = 0;
                     var attributes = bufferView.GetEnumerator();
@@ -1178,7 +1184,7 @@ namespace Orts.Viewer3D
                 {
                     vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
                         new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Normal, 0)), vertexCount, BufferUsage.None) { Name = "NORMAL_DUMMY" }));
-                    // Do not set the SceneryMaterialOptions.PbrHasNormals flag here, so that the shader will know to calculate its own normals.
+                    // Do not set the SceneryMaterialOptions.PbrHasNormals flag here, so that the shader will know to calculate its own normals. (See: Fox)
                 }
                 else
                     options |= SceneryMaterialOptions.PbrHasNormals;

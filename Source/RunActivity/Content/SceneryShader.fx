@@ -56,7 +56,7 @@ float	 OverlayScale;
 // MAX_LIGHTS must not be less than 2
 // MAX_BONES must not be less than 1
 #define MAX_LIGHTS 20
-#define MAX_BONES 50
+#define MAX_BONES 128
 #define CLEARCOAT
 #define MAX_MORPH_TARGETS 8
 
@@ -492,7 +492,9 @@ VERTEX_OUTPUT_PBR VSSkinned(in VERTEX_INPUT_SKINNED In)
 	Out.Position = mul(In.Position, skinTransform);
     float4 worldPosition = Out.Position;
 	_VSNormalProjection(In.Normal, skinTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
+    Out.RelPosition.xyz = worldPosition - ViewerPos; // Need to amend the calculation of _VSNormalProjection here, because of the above.
 	_VSLightsAndShadows(worldPosition, skinTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
+    Out.Shadow = worldPosition; // Need to amend this as well.
 
 	_VSNormalMapTransform(In.Tangent, In.Normal, skinTransform, Out);
 
@@ -542,7 +544,9 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
     Out.Position = mul(Out.Position, skinTransform);
     float4 worldPosition = Out.Position;
     _VSNormalProjection(normal, skinTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
+    Out.RelPosition.xyz = worldPosition - ViewerPos; // Need to amend the calculation of _VSNormalProjection here, because of the above.
     _VSLightsAndShadows(worldPosition, skinTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
+    Out.Shadow = worldPosition; // Need to amend this as well.
 
     _VSNormalMapTransform(tangent, normal, skinTransform, Out);
 
@@ -797,19 +801,18 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, float normalScale
 	float3x3 tbn = float3x3(In.Tangent.xyz, In.Bitangent.xyz, In.Normal_Light.xyz);
     if (!hasTangents || !HasNormals)
 	{
-        float3 pos_dx = ddx(In.Position.xyz);
-        float3 pos_dy = ddy(In.Position.xyz);
-
 		float3 ng;
 		if (HasNormals)
 			ng = normalize(In.Normal_Light.xyz);
 		else
-			ng = cross(pos_dx, pos_dy);
+			ng = normalize(cross(ddx(In.RelPosition.xyz), ddy(-In.RelPosition.xyz)));
 		tbn[2].xyz = ng;
 		
 		if (hasNormalMap)
 		{
-			float3 tex_dx = -ddx(float3(In.TexCoords.xy, 0.0));
+            float3 pos_dx = ddx(In.Position.xyz);
+            float3 pos_dy = ddy(In.Position.xyz);
+            float3 tex_dx = -ddx(float3(In.TexCoords.xy, 0.0));
 			float3 tex_dy = -ddy(float3(In.TexCoords.xy, 0.0));
             float tex_dxy = tex_dx.x * tex_dy.y - tex_dy.x * tex_dx.y;
             float3 t = (tex_dy.y * pos_dx - tex_dx.y * pos_dy) / tex_dxy;
