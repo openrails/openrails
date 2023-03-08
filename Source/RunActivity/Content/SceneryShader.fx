@@ -210,6 +210,9 @@ sampler BrdfLut = sampler_state
 	MagFilter = Linear;
 	MinFilter = Linear;
 	MipFilter = Linear;
+    AddressU = Clamp;
+    AddressV = Clamp;
+    AddressW = Clamp;
 };
 
 sampler ShadowMap0 = sampler_state
