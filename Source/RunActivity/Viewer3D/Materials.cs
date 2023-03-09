@@ -1292,8 +1292,8 @@ namespace Orts.Viewer3D
                     if (ClearcoatFactor > 0 && RenderProcess.CLEARCOAT)
                     {
                         graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Clearcoat] = SamplerStateClearcoat;
-                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Clearcoat] = SamplerStateClearcoat;
-                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Clearcoat] = SamplerStateClearcoat;
+                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.ClearcoatRoughness] = SamplerStateClearcoatRoughness;
+                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.ClearcoatNormal] = SamplerStateClearcoatNormal;
                     }
 
                     item.RenderPrimitive.Draw(graphicsDevice);
