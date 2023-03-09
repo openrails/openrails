@@ -548,6 +548,8 @@ namespace Orts.Viewer3D
                         DebugName = "";
                         VertexElements.Clear();
                         Accessors.Clear();
+                        previousOffset = gltfFile.Accessors[attributes.Current.Value].ByteOffset;
+
                         // For interleaved data, multiple vertexElements and multiple accessors will be in a single vertexBuffer.
                         // For non-interleaved data, we create a distinct vertexBuffer for each accessor.
                         // A bufferView may consist of a series of (non-interleaved) accessors of POSITION:NORMAL:POSITION:NORMAL:POSITION:NORMAL etc. (See: 2CylinderEngine)
@@ -590,8 +592,6 @@ namespace Orts.Viewer3D
 
                         var vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
                         VertexBufferBindings.Add(Accessors.First(), vertexBufferBinding);
-
-                        previousOffset = gltfFile.Accessors[attributes.Current.Value].ByteOffset;
                     }
                     while (loop);
                 }
