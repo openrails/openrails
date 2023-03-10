@@ -1441,7 +1441,8 @@ namespace Orts.Viewer3D
             /// Used in case of morphing. Only 8 morph targets can be bound at any time, so need to select the actually active ones.
             /// </summary>
             VertexBufferBinding[] ActiveVertexBufferBindings;
-            int[] ActiveMorphConfig;
+            int[] ActiveWeightIndices;
+            float[] ActiveWeights;
 
             /// <summary>
             /// Select the max. 8 active morph targets and compile the active buffer binding.
@@ -1452,29 +1453,51 @@ namespace Orts.Viewer3D
                 if (MorphWeights.Length <= MaxActiveMorphTargets)
                     return (MorphConfig, MorphWeights);
 
-                // Drop targets with the lowest weights if needed, according to the glTF spec recommendation.
-                var activeTargets = MorphWeights
-                    .Select((w, i) => (w, i))
-                    .OrderByDescending(v => v.w)
-                    .Take(MaxActiveMorphTargets);
-
                 ActiveVertexBufferBindings = ActiveVertexBufferBindings ?? VertexBufferBindings.ToArray();
                 Array.Resize(ref ActiveVertexBufferBindings, 16); // This is what the vs_4_0 can handle.
-                ActiveMorphConfig = ActiveMorphConfig ?? MorphConfig.ToArray();
-                ActiveMorphConfig[7] = activeTargets.Count();
+                ActiveWeightIndices = ActiveWeightIndices ?? new int[RenderProcess.MAX_MORPH_BUFFERS];
+                ActiveWeights = ActiveWeights ?? new float[RenderProcess.MAX_MORPH_BUFFERS];
 
-                // Recompile the buffer binding
-                for (var i = 0; i < activeTargets.Count(); i++)
+                // First select the weight indices
+                var w = 0;
+                for (var i = 0; i < MorphWeights.Length; i++)
+                {
+                    if (MorphWeights[i] == 0)
+                        continue;
+                    if (w < MaxActiveMorphTargets)
+                    {
+                        ActiveWeightIndices[w++] = i;
+                    }
+                    else
+                    {
+                        // Drop targets with the lowest weights if needed, according to the glTF spec recommendation.
+                        var smallestWeight = 0;
+                        for (var j = 0; j < MaxActiveMorphTargets; j++)
+                        {
+                            if (MorphWeights[ActiveWeightIndices[j]] < MorphWeights[ActiveWeightIndices[smallestWeight]])
+                                smallestWeight = j;
+                        }
+                        if (MorphWeights[i] > MorphWeights[ActiveWeightIndices[smallestWeight]])
+                            ActiveWeightIndices[smallestWeight] = i;
+                    }
+                }
+                MorphConfig[7] = w;
+
+                // Recompile the buffer binding and the weights from the indices
+                for (var i = 0; i < w; i++)
+                {
                     for (var j = 0; j < MorphConfig[8]; j++)
-                        ActiveVertexBufferBindings[8 + MorphConfig[8] * i + j] = VertexBufferBindings[8 + MorphConfig[8] * activeTargets.ElementAt(i).i + j];
+                        ActiveVertexBufferBindings[8 + MorphConfig[8] * i + j] = VertexBufferBindings[8 + MorphConfig[8] * ActiveWeightIndices[i] + j];
+                    ActiveWeights[i] = MorphWeights[ActiveWeightIndices[i]];
+                }
                 // Fill up the rest of ActiveVertexBufferBindings with anything.
-                for (var i = 8 + MorphConfig[8] * activeTargets.Count(); i < 16; i++)
+                for (var i = 8 + MorphConfig[8] * w; i < 16; i++)
                     ActiveVertexBufferBindings[i] = VertexBufferBindings[8];
 
-                return (ActiveMorphConfig, activeTargets.Select(v => v.w).ToArray());
+                return (MorphConfig, ActiveWeights);
             }
 
-            public bool HasMorphTargets() => MorphConfig[7] > 0;
+            public bool HasMorphTargets() => MorphWeights.Length > 0;
 
             public override void Draw(GraphicsDevice graphicsDevice)
             {
