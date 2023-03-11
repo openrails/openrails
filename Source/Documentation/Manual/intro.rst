@@ -86,7 +86,7 @@ called an *MSTS installation* for convenience, even if this wording is not
 completely correct. 
 
 A proof that Open Rails itself does not need an MSTS installation at all to 
-run is `this route <http://www.burrinjuck.coalstonewcastle.com.au/route/route-install/>`.
+run is `this route <http://www.burrinjuck.coalstonewcastle.com.au/route/route-install/>`_ (Burrinjuck Railway).
 
 Community
 =========

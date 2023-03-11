@@ -78,7 +78,8 @@ namespace Orts.Viewer3D
     public class SceneryShader : Shader
     {
         readonly EffectParameter world;
-        readonly EffectParameter worldViewProjection;
+        readonly EffectParameter view;
+        readonly EffectParameter projection;
         readonly EffectParameter[] lightViewProjectionShadowProjection;
         readonly EffectParameter[] shadowMapTextures;
         readonly EffectParameter shadowMapLimit;
@@ -167,10 +168,11 @@ namespace Orts.Viewer3D
             sideVector.SetValue(Vector3.Normalize(Vector3.Cross(_eyeVector, Vector3.Down)));
         }
 
-        public void SetMatrix(Matrix w, ref Matrix vp)
+        public void SetMatrix(Matrix w, ref Matrix v, ref Matrix p)
         {
             world.SetValue(w);
-            worldViewProjection.SetValue(w * vp);
+            view.SetValue(v);
+            projection.SetValue(p);
 
             int vIn = Program.Simulator.Settings.DayAmbientLight;
             
@@ -322,7 +324,8 @@ namespace Orts.Viewer3D
             : base(graphicsDevice, "SceneryShader")
         {
             world = Parameters["World"];
-            worldViewProjection = Parameters["WorldViewProjection"];
+            view = Parameters["View"];
+            projection = Parameters["Projection"];
             lightViewProjectionShadowProjection = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
             shadowMapTextures = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
             for (var i = 0; i < RenderProcess.ShadowMapCountMaximum; i++)

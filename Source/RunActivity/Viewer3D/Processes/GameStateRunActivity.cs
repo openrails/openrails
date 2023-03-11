@@ -55,13 +55,25 @@ namespace Orts.Viewer3D.Processes
         static string logFileName { get { return Program.logFileName; } set { Program.logFileName = value; } }
         static string EvaluationFilename { get { return Program.EvaluationFilename; } set { Program.EvaluationFilename = value; } }
 
+        /// <summary>
+        /// A set of save files all have the same filestem but a specific extension:
+        /// *.save for the binary data containing the simulation values at the time of saving.
+        /// *.txt for the log file, provided only for reference.
+        /// *.png for the screenshot taken automatically at the moment of saving and shown in minature in the Resume menu.
+        /// *.replay for binary data containing the user's commands so the simulation can be replayed if required.
+        /// *.evaluation.txt for the text evaluation if an activity evaluation has been requested.
+        /// </summary>
+        public class SaveSet
+        { 
+            public string FileStem { get; }
+
         // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
         // that are likely to match the previously chosen route and activity.
         // Append the current date and time, so that each file is unique.
         // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which is not valid in filenames.
-        public static string FileStem
-        {   get
-            {   return String.Format("{0} {1} {2:yyyy-MM-dd HH.mm.ss}",
+        public SaveSet()
+            {
+                FileStem = String.Format("{0} {1} {2:yyyy-MM-dd HH.mm.ss}",
                     Simulator.Activity != null
                         ? Simulator.ActivityFileName
                         : (String.IsNullOrEmpty(Simulator.TimetableFileName)
@@ -376,7 +388,8 @@ namespace Orts.Viewer3D.Processes
             //    (!String.IsNullOrEmpty(Simulator.TimetableFileName) ? Simulator.RoutePathName + " " + Simulator.TimetableFileName : Simulator.RoutePathName),
             //    MPManager.IsMultiPlayer() && MPManager.IsServer() ? "$Multipl$ " : "" , DateTime.Now);
 
-            using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + FileStem + ".save", FileMode.Create, FileAccess.Write)))
+            var saveSet = new SaveSet();  // Sets the filestem for the set of Save files
+            using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + saveSet.FileStem + ".save", FileMode.Create, FileAccess.Write)))
             {
                 // Save some version identifiers so we can validate on load.
                 outf.Write(VersionInfo.Version);
@@ -402,7 +415,7 @@ namespace Orts.Viewer3D.Processes
                 outf.Write(Acttype);
 
                 Simulator.Save(outf);
-                Viewer.Save(outf, FileStem);
+                Viewer.Save(outf, saveSet.FileStem);
                 // Save multiplayer parameters
                 if (MPManager.IsMultiPlayer() && MPManager.IsServer())
                     MPManager.OnlineTrains.Save (outf);
@@ -416,15 +429,15 @@ namespace Orts.Viewer3D.Processes
             // Having written .save file, write other files: .replay, .txt, .evaluation.txt
 
             // The Save command is the only command that doesn't take any action. It just serves as a marker.
-            new SaveCommand(Simulator.Log, FileStem);
-            Simulator.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, FileStem + ".replay"));
+            new SaveCommand(Simulator.Log, saveSet.FileStem);
+            Simulator.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, saveSet.FileStem + ".replay"));
 
             // Copy the logfile to the save folder
-            CopyLog(Path.Combine(UserSettings.UserDataFolder, FileStem + ".txt"));
+            CopyLog(Path.Combine(UserSettings.UserDataFolder, saveSet.FileStem + ".txt"));
 
             // Copy the evaluation file to the save folder
             if (File.Exists(Program.EvaluationFilename))
-                File.Copy(Program.EvaluationFilename, Path.Combine(UserSettings.UserDataFolder, FileStem + ".evaluation.txt"), true); 
+                File.Copy(Program.EvaluationFilename, Path.Combine(UserSettings.UserDataFolder, saveSet.FileStem + ".evaluation.txt"), true); 
         }
 
         private static void SaveEvaluation(BinaryWriter outf)

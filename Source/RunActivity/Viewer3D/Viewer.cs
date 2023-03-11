@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -1670,6 +1670,7 @@ namespace Orts.Viewer3D
             if (SelectedTrain == e.OldTrain)
             {
                 SelectedTrain = e.NewTrain;
+                SetCommandReceivers();
             }
         }
 

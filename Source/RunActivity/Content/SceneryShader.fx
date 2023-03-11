@@ -24,7 +24,8 @@
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
 float4x4 World;         // model -> world [max number of bones]
-float4x4 WorldViewProjection;  // model -> world -> view -> projection (in case of skinned model only View x Projection)
+float4x4 View;          // world -> view
+float4x4 Projection;    // view -> projection
 float4x4 LightViewProjectionShadowProjection0;  // world -> light view -> light projection -> shadow map projection
 float4x4 LightViewProjectionShadowProjection1;
 float4x4 LightViewProjectionShadowProjection2;
@@ -344,7 +345,7 @@ struct VERTEX_OUTPUT_PBR
 void _VSNormalProjection(in float3 InNormal, in float4x4 WorldTransform, inout float4 OutPosition, inout float4 OutRelPosition, inout float4 OutNormal_Light)
 {
 	OutRelPosition.xyz = mul(OutPosition, WorldTransform).xyz - ViewerPos;
-	OutPosition = mul(OutPosition, WorldViewProjection);
+	OutPosition = mul(mul(mul(OutPosition, World), View), Projection);
 	OutRelPosition.w = OutPosition.z;
 	OutNormal_Light.xyz = normalize(mul(InNormal, (float3x3)WorldTransform).xyz);
 	
@@ -370,7 +371,7 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 		const float GlowScalingFactor = 40;
 		In.Position.xyz *= log(1 + max(0, length(relPos) - GlowCutOffM) / GlowScalingFactor) * ZBias_Lighting.x;
 	}
-	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.RelPosition.xyz = relPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
@@ -380,7 +381,7 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
-	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
@@ -434,7 +435,7 @@ VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
 	_VSLightsAndShadows(In.Position, World, length(Out.Position.xyz), Out.Fog, Out.Shadow);
 
 	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
-	//Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
+	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
 	Out.TexCoords.xy = In.TexCoords;
 
 
@@ -596,7 +597,7 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT_FOREST In)
 	In.Position = float4(newPosition, 1);
 
 	// Project vertex with fixed w=1 and normal=eye.
-	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;

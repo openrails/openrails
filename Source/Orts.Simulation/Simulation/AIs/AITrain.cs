@@ -684,7 +684,7 @@ namespace Orts.Simulation.AIs
 
             if (MovementState == AI_MOVEMENT_STATE.AI_STATIC)
             {
-                physicsUpdate(0);   //required to make train visible ; set elapsed time to zero to avoid actual movement
+                CalculatePositionOfCars(0, 0);   //required to make train visible ; set elapsed time to zero to avoid actual movement
             }
             else
             {
@@ -4027,6 +4027,7 @@ namespace Orts.Simulation.AIs
                             RandomizedWPDelay(ref randomizedDelay);
                         }
                         action.SetDelay(randomizedDelay);
+                        action.OriginalDelay = action.Delay;
                         AuxActionsContain.Add(action);
                         if (insertSigDelegate && (waitingPoint[2] != 60002) && signalIndex[iWait] > -1)
                         {
@@ -5100,6 +5101,32 @@ namespace Orts.Simulation.AIs
             // correct trigger for approach distance but not backward beyond present position
             triggerDistanceM = Math.Max(PresentPosition[0].DistanceTravelledM, triggerDistanceM - (3.0f * signalApproachDistanceM));
 
+            // for signal stop item : check if action allready in list, if so, remove (can be result of restore action)
+            LinkedListNode<DistanceTravelledItem> thisItemLink = requiredActions.First;
+            bool itemFound = false;
+
+            while (thisItemLink != null && !itemFound)
+            {
+                DistanceTravelledItem thisDTItem = thisItemLink.Value;
+                if (thisDTItem is AIActionItem)
+                {
+                    AIActionItem thisActionItem = thisDTItem as AIActionItem;
+                    if (thisActionItem.ActiveItem != null && thisActionItem.NextAction == thisAction)
+                    {
+                        if (thisActionItem.ActiveItem.ObjectDetails.thisRef == thisItem.ObjectDetails.thisRef)
+                        {
+                            // equal item, so remove it
+                            requiredActions.Remove(thisDTItem);
+                            itemFound = true;
+                        }
+                    }
+                }
+                if (!itemFound)
+                {
+                    thisItemLink = thisItemLink.Next;
+                }
+            }
+
             // create and insert action
 
             AIActionItem newAction = new AIActionItem(thisItem, thisAction);
@@ -5298,7 +5325,7 @@ namespace Orts.Simulation.AIs
                 }
                 else if (thisAction is ClearMovingTableAction)
                 {
-                    ClearMovingTable();
+                    ClearMovingTable(thisAction);
                 }
                 else if (thisAction is AIActionItem && !(thisAction is AuxActionItem))
                 {
@@ -5345,7 +5372,7 @@ namespace Orts.Simulation.AIs
                 else
                     AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSLimit, Math.Min(allowedMaxSpeedSignalMpS, allowedMaxTempSpeedLimitMpS));
             }
-            if (speedInfo.MaxTempSpeedMpSLimit > 0 && !Simulator.TimetableMode)
+            if (speedInfo.MaxTempSpeedMpSLimit > 0)
             {
                 allowedMaxTempSpeedLimitMpS = allowedAbsoluteMaxTempSpeedLimitMpS;
                 AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxTempSpeedMpSLimit, Math.Min(allowedMaxSpeedSignalMpS, allowedMaxSpeedLimitMpS));
@@ -5453,7 +5480,10 @@ namespace Orts.Simulation.AIs
                 if (thisItem.ActiveItem.signal_state == MstsSignalAspect.STOP &&
                     thisItem.ActiveItem.ObjectDetails.holdState == HoldState.StationStop)
                 {
-                    actionValid = false;
+                    // check if train is approaching or standing at station and has not yet departed
+                    if (StationStops != null && StationStops.Count >= 1 && AtStation && StationStops[0].ExitSignal == thisItem.ActiveItem.ObjectDetails.thisRef)
+                    {
+                        actionValid = false;
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -5461,14 +5491,30 @@ namespace Orts.Simulation.AIs
                             thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
                             thisItem.ActivateDistanceM.ToString() + " is held for station stop\n");
 #endif
-                    if (CheckTrain)
-                    {
-                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
-                                Number.ToString() + " : signal " +
-                                thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
-                                thisItem.ActivateDistanceM.ToString() + " is held for station stop\n");
+                        if (CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
+                                    Number.ToString() + " : signal " +
+                                    thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
+                                    thisItem.ActivateDistanceM.ToString() + " is held for station stop\n");
+                        }
                     }
-
+                    else
+                    {
+#if DEBUG_REPORTS
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
+                            Number.ToString() + " : signal " +
+                            thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
+                            thisItem.ActivateDistanceM.ToString() + " is held for station stop but train is no longer stopped in station\n");
+#endif
+                        if (CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
+                                    Number.ToString() + " : signal " +
+                                    thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
+                                    thisItem.ActivateDistanceM.ToString() + " is held for station stop but train is no longer stopped in station\n");
+                        }
+                    }
                 }
 
                 // check if cleared
@@ -6640,7 +6686,7 @@ namespace Orts.Simulation.AIs
             var matchingWPDelay = restartWaitingTrain.MatchingWPDelay;
             int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
             var roughActualDepart = presentTime + delayToRestart;
-            if (MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay == matchingWPDelay ||
+            if (MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).OriginalDelay == matchingWPDelay ||
                 (AuxActionsContain.specRequiredActions.Count > 0 && ((AuxActSigDelegate)(AuxActionsContain.specRequiredActions).First.Value).currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION &&
                 (((AuxActSigDelegate)(AuxActionsContain.specRequiredActions).First.Value).ActionRef as AIActSigDelegateRef).Delay == matchingWPDelay)))
             {

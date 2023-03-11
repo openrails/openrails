@@ -1159,14 +1159,14 @@ namespace Orts.Simulation.RollingStocks
                 status.AppendFormat("{0:F0}\t", brakeInfoValue);
 
                 // MR
-                status.AppendFormat("{0:F0}", FormatStrings.FormatPressure((Simulator.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (Simulator.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true));
+                status.AppendFormat("{0:F0}", FormatStrings.FormatPressure(MainResPressurePSI, PressureUnit.PSI, (Simulator.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true));
             }
             return status.ToString();
         }
 
         string brakeValue(string tokenIni, string tokenEnd) // used by GetDpuStatus(bool dataHud)
         {
-            string trainBrakeStatus = Simulator.PlayerLocomotive.GetTrainBrakeStatus();
+            string trainBrakeStatus = GetTrainBrakeStatus();
             var brakeInfoValue = "-";
             if (trainBrakeStatus.Contains(tokenIni) && trainBrakeStatus.Contains(tokenEnd))
             {
