@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -69,6 +69,13 @@ namespace Orts.Viewer3D
         Overlay
     }
 
+    public enum LightMode
+    {
+        Directional = 0,
+        Point = 1,
+        Spot = 2
+    }
+    
     public abstract class RenderPrimitive
     {
         /// <summary>
@@ -132,6 +139,7 @@ namespace Orts.Viewer3D
             {
                 var vertexBuffer = new VertexBuffer(graphicsDevice, new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements), 1, BufferUsage.WriteOnly);
                 vertexBuffer.SetData(new Matrix[] { Matrix.Identity });
+                vertexBuffer.Name = "INSTANCE_DUMMY";
                 DummyVertexBuffer = vertexBuffer;
             }
             return DummyVertexBuffer;
@@ -191,7 +199,7 @@ namespace Orts.Viewer3D
         }
     }
 
-	public class RenderItemCollection : IList<RenderItem>, IEnumerator<RenderItem>
+    public class RenderItemCollection : IList<RenderItem>, IEnumerator<RenderItem>
 	{
 		RenderItem[] Items = new RenderItem[4];
 		int ItemCount;
@@ -378,6 +386,11 @@ namespace Orts.Viewer3D
         static RenderTarget2D[] ShadowMap;
         static RenderTarget2D[] ShadowMapRenderTarget;
         static Vector3 SteppedSolarDirection = Vector3.UnitX;
+        static readonly Vector3 SunColor = Vector3.One;
+        static readonly Vector3 MoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
+        const float SunIntensity = 1;
+        const float MoonIntensity = SunIntensity / 380000;
+        float HeadLightIntensity = 50000; // Can be 10 in case of linear calculation method
 
         // Local shadow map data.
         Matrix[] ShadowMapLightView;
@@ -393,9 +406,22 @@ namespace Orts.Viewer3D
         readonly Material DummyBlendedMaterial;
 		readonly Dictionary<Material, RenderItemCollection>[] RenderItems = new Dictionary<Material, RenderItemCollection>[(int)RenderPrimitiveSequence.Sentinel];
         readonly RenderItemCollection[] RenderShadowSceneryItems;
+        readonly RenderItemCollection[] RenderShadowPbrNormalMapItems;
+        readonly RenderItemCollection[] RenderShadowPbrSkinnedItems;
+        readonly RenderItemCollection[] RenderShadowPbrMorphedItems;
         readonly RenderItemCollection[] RenderShadowForestItems;
         readonly RenderItemCollection[] RenderShadowTerrainItems;
         readonly RenderItemCollection RenderItemsSequence = new RenderItemCollection();
+
+        int NumLights;
+        readonly Vector3[] LightPositions = new Vector3[RenderProcess.MAX_LIGHTS];
+        readonly Vector3[] LightDirections = new Vector3[RenderProcess.MAX_LIGHTS];
+        readonly Vector3[] LightColors = new Vector3[RenderProcess.MAX_LIGHTS];
+        readonly float[] LightIntensities = new float[RenderProcess.MAX_LIGHTS];
+        readonly float[] LightRanges = new float[RenderProcess.MAX_LIGHTS];
+        readonly float[] LightInnerConeCos = new float[RenderProcess.MAX_LIGHTS];
+        readonly float[] LightOuterConeCos = new float[RenderProcess.MAX_LIGHTS];
+        readonly float[] LightTypes = new float[RenderProcess.MAX_LIGHTS];
 
         public bool IsScreenChanged { get; internal set; }
         ShadowMapMaterial ShadowMapMaterial;
@@ -435,11 +461,17 @@ namespace Orts.Viewer3D
                 ShadowMapCenter = new Vector3[RenderProcess.ShadowMapCount];
 
                 RenderShadowSceneryItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
+                RenderShadowPbrNormalMapItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
+                RenderShadowPbrSkinnedItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
+                RenderShadowPbrMorphedItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
                 RenderShadowForestItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
                 RenderShadowTerrainItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                 {
                     RenderShadowSceneryItems[shadowMapIndex] = new RenderItemCollection();
+                    RenderShadowPbrNormalMapItems[shadowMapIndex] = new RenderItemCollection();
+                    RenderShadowPbrSkinnedItems[shadowMapIndex] = new RenderItemCollection();
+                    RenderShadowPbrMorphedItems[shadowMapIndex] = new RenderItemCollection();
                     RenderShadowForestItems[shadowMapIndex] = new RenderItemCollection();
                     RenderShadowTerrainItems[shadowMapIndex] = new RenderItemCollection();
                 }
@@ -491,12 +523,21 @@ namespace Orts.Viewer3D
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                 {
                     RenderShadowSceneryItems[shadowMapIndex].Clear();
+                    RenderShadowPbrNormalMapItems[shadowMapIndex].Clear();
+                    RenderShadowPbrSkinnedItems[shadowMapIndex].Clear();
+                    RenderShadowPbrMorphedItems[shadowMapIndex].Clear();
                     RenderShadowForestItems[shadowMapIndex].Clear();
                     RenderShadowTerrainItems[shadowMapIndex].Clear();
                 }
             }
+
+            NumLights = 0;
         }
 
+        bool lastLightState;
+        double fadeStartTimer;
+        float fadeDuration = -1;
+        
         public void PrepareFrame(Viewer viewer)
         {
             if (RenderSurfaceMaterial == null)
@@ -511,6 +552,68 @@ namespace Orts.Viewer3D
                 ShadowMapMaterial = (ShadowMapMaterial)viewer.MaterialManager.Load("ShadowMap");
             if (SceneryShader == null)
                 SceneryShader = viewer.MaterialManager.SceneryShader;
+
+            // Ensure that the first light is always the sun/moon, because the ambient and shadow effects will be calculated based on the first light.
+            if (SolarDirection.Y > -0.05)
+                AddLight(-SolarDirection, SunColor, SunIntensity);
+            else
+            {
+                var moonDirection = viewer.Settings.UseMSTSEnv ? viewer.World.MSTSSky.mstsskylunarDirection : viewer.World.Sky.LunarDirection;
+                AddLight(-moonDirection, MoonGlow, MoonIntensity);
+            }
+
+            // Headlight illumination
+            if (viewer.PlayerLocomotiveViewer?.lightDrawer?.HasLightCone ?? false)
+            {
+                var clampValue = 1f;
+                var dayNightMultiplier = 1f;
+                var lightDrawer = viewer.PlayerLocomotiveViewer.lightDrawer;
+                var lightState = lightDrawer.IsLightConeActive;
+                if (lightState != lastLightState)
+                {
+                    if (lightDrawer.LightConeFadeIn > 0)
+                    {
+                        fadeStartTimer = viewer.Simulator.GameTime;
+                        fadeDuration = lightDrawer.LightConeFadeIn;
+                    }
+                    else if (lightDrawer.LightConeFadeOut > 0)
+                    {
+                        fadeStartTimer = viewer.Simulator.GameTime;
+                        fadeDuration = lightDrawer.LightConeFadeOut;
+                    }
+                    lastLightState = lightState;
+                }
+                if (SolarDirection.Y <= -0.05)
+                {
+                    clampValue = 1; // at nighttime max headlight
+                    dayNightMultiplier = 1;
+                }
+                else if (SolarDirection.Y >= 0.15)
+                {
+                    clampValue = 0.5f; // at daytime min headlight
+                    dayNightMultiplier = 0.1f;
+                }
+                else
+                {
+                    clampValue = 1 - 2.5f * (SolarDirection.Y + 0.05f); // in the meantime interpolate
+                    dayNightMultiplier = 1 - 4.5f * (SolarDirection.Y + 0.05f);
+                }
+
+                // The original shaders followed the phylisophy of wanting 50% brightness at half the range. (LightConeDistance is only the half)
+                // For the new calculation method the full range is needed.
+                var range = lightDrawer.LightConeDistance * 2 * dayNightMultiplier;
+                var color = new Vector3(lightDrawer.LightConeColor.X, lightDrawer.LightConeColor.Y, lightDrawer.LightConeColor.Z);
+
+                var intensity = (float)(viewer.Simulator.GameTime - fadeStartTimer) / (fadeDuration + float.Epsilon);
+                if (!lightState)
+                    intensity = 1 - intensity;
+                intensity = MathHelper.Clamp(intensity, 0, 1);
+                intensity = MathHelper.Clamp(intensity * dayNightMultiplier * clampValue, 0, clampValue);
+                intensity *= HeadLightIntensity;
+
+                if (intensity > 0)
+                    AddLight(LightMode.Spot, lightDrawer.LightConePosition, lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
+            }
         }
 
         public void SetCamera(Camera camera)
@@ -574,6 +677,10 @@ namespace Orts.Viewer3D
             }
         }
 
+        [CallOnThread("Updater")]
+        public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
+            => AddAutoPrimitive(mstsLocation, objectRadius, objectViewingDistance, material, primitive, group, ref xnaMatrix, flags, null);
+
         /// <summary>
         /// Automatically adds or culls a <see cref="RenderPrimitive"/> based on a location, radius and max viewing distance.
         /// </summary>
@@ -586,12 +693,12 @@ namespace Orts.Viewer3D
         /// <param name="xnaMatrix"></param>
         /// <param name="flags"></param>
         [CallOnThread("Updater")]
-        public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
+        public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags, object itemData)
         {
             if (float.IsPositiveInfinity(objectViewingDistance) || (Camera != null && Camera.InRange(mstsLocation, objectRadius, objectViewingDistance)))
             {
                 if (Camera != null && Camera.InFov(mstsLocation, objectRadius))
-                    AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
+                    AddPrimitive(material, primitive, group, ref xnaMatrix, flags, itemData);
             }
 
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
@@ -642,13 +749,19 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         void AddShadowPrimitive(int shadowMapIndex, Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            if (material is SceneryMaterial)
+            if (material is PbrMaterial morphedMaterial && (morphedMaterial.Options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
+                RenderShadowPbrMorphedItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            else if (material is PbrMaterial skinnedMaterial && (skinnedMaterial.Options & SceneryMaterialOptions.PbrHasSkin) != 0)
+                RenderShadowPbrSkinnedItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            else if (material is PbrMaterial pbrMaterial && (pbrMaterial.Options & SceneryMaterialOptions.PbrHasTexCoord1) != 0)
+                RenderShadowPbrNormalMapItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            else if (material is SceneryMaterial)
                 RenderShadowSceneryItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
             else if (material is ForestMaterial)
                 RenderShadowForestItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
             else if (material is TerrainMaterial)
                 RenderShadowTerrainItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
-            else
+            else if (!(material is EmptyMaterial))
                 Debug.Fail("Only scenery, forest and terrain materials allowed in shadow map.");
         }
 
@@ -724,6 +837,8 @@ namespace Orts.Viewer3D
                 Console.WriteLine("Draw {");
             }
 
+            SetLights();
+
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ShadowMapMaterial != null)
                 DrawShadows(graphicsDevice, logging);
 
@@ -745,7 +860,13 @@ namespace Orts.Viewer3D
             for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                 DrawShadows(graphicsDevice, logging, shadowMapIndex);
             for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-                Game.RenderProcess.ShadowPrimitiveCount[shadowMapIndex] = RenderShadowSceneryItems[shadowMapIndex].Count + RenderShadowForestItems[shadowMapIndex].Count + RenderShadowTerrainItems[shadowMapIndex].Count;
+                Game.RenderProcess.ShadowPrimitiveCount[shadowMapIndex] =
+                    RenderShadowSceneryItems[shadowMapIndex].Count + 
+                    RenderShadowPbrNormalMapItems[shadowMapIndex].Count + 
+                    RenderShadowPbrSkinnedItems[shadowMapIndex].Count + 
+                    RenderShadowPbrMorphedItems[shadowMapIndex].Count + 
+                    RenderShadowForestItems[shadowMapIndex].Count + 
+                    RenderShadowTerrainItems[shadowMapIndex].Count;
             if (logging) Console.WriteLine("  }");
         }
 
@@ -763,6 +884,18 @@ namespace Orts.Viewer3D
             // Render non-terrain, non-forest shadow items first.
             if (logging) Console.WriteLine("      {0,-5} * SceneryMaterial (normal)", RenderShadowSceneryItems[shadowMapIndex].Count);
             ShadowMapMaterial.Render(graphicsDevice, RenderShadowSceneryItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+
+            ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Pbr);
+            if (logging) Console.WriteLine("      {0,-5} * PbrMaterialNormalMap (normal)", RenderShadowPbrNormalMapItems[shadowMapIndex].Count);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowPbrNormalMapItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+
+            ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.PbrSkinned);
+            if (logging) Console.WriteLine("      {0,-5} * PbrMaterialSkinned (normal)", RenderShadowPbrSkinnedItems[shadowMapIndex].Count);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowPbrSkinnedItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+
+            ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.PbrMorphed);
+            if (logging) Console.WriteLine("      {0,-5} * PbrMaterialSkinned (normal)", RenderShadowPbrMorphedItems[shadowMapIndex].Count);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowPbrMorphedItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for normal (non-blocking) rendering of forests.
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Forest);
@@ -948,6 +1081,49 @@ namespace Orts.Viewer3D
                 if (logging) Console.WriteLine("    }");
             }
         }
+
+        public void AddLight(ShapeLight light, ref Matrix worldMatrix, float lodBias)
+        {
+            // Do not allow directional light injection. That is reserved to the sun and the moon.
+            if (light != null && light.Type != LightMode.Directional)
+                AddLight(light.Type, worldMatrix.Translation, Vector3.TransformNormal(-Vector3.UnitZ, worldMatrix), light.Color, light.Intensity, light.Range, light.InnerConeCos, light.OuterConeCos);
+        }
+        public void AddLight(Vector3 direction, Vector3 color, float intensity) => AddLight(LightMode.Directional, Vector3.Zero, direction, color, intensity, -1, 0, 0);
+        public void AddLight(LightMode type, Vector3 position, Vector3 direction, Vector3 color, float intensity, float range, float innerConeCos, float outerConeCos)
+        {
+            if (NumLights >= RenderProcess.MAX_LIGHTS)
+                return;
+
+            LightTypes[NumLights] = (float)type;
+            LightPositions[NumLights] = position;
+            LightDirections[NumLights] = direction;
+            LightColors[NumLights] = color;
+            LightIntensities[NumLights] = intensity;
+            LightRanges[NumLights] = range;
+            LightInnerConeCos[NumLights] = innerConeCos;
+            LightOuterConeCos[NumLights] = outerConeCos;
+            NumLights++;
+        }
+
+        void SetLights()
+        {
+            if (SceneryShader == null)
+                return;
+
+            SceneryShader.NumLights = NumLights;
+            if (NumLights > 0)
+            {
+                SceneryShader.LightTypes = LightTypes.ToArray();
+                SceneryShader.LightPositions = LightPositions.ToArray();
+                SceneryShader.LightDirections = LightDirections.ToArray();
+                SceneryShader.LightColors = LightColors.ToArray();
+                SceneryShader.LightIntensities = LightIntensities.ToArray();
+                SceneryShader.LightRanges = LightRanges.ToArray();
+                SceneryShader.LightInnerConeCos = LightInnerConeCos.ToArray();
+                SceneryShader.LightOuterConeCos = LightOuterConeCos.ToArray();
+            }
+        }
+
 
 #if DEBUG_RENDER_STATE
         static void DebugRenderState(GraphicsDevice graphicsDevice, string location)
