@@ -345,7 +345,7 @@ struct VERTEX_OUTPUT_PBR
 void _VSNormalProjection(in float3 InNormal, in float4x4 WorldTransform, inout float4 OutPosition, inout float4 OutRelPosition, inout float4 OutNormal_Light)
 {
 	OutRelPosition.xyz = mul(OutPosition, WorldTransform).xyz - ViewerPos;
-	OutPosition = mul(mul(mul(OutPosition, World), View), Projection);
+	OutPosition = mul(mul(mul(OutPosition, WorldTransform), View), Projection);
 	OutRelPosition.w = OutPosition.z;
 	OutNormal_Light.xyz = normalize(mul(InNormal, (float3x3)WorldTransform).xyz);
 	
@@ -489,18 +489,13 @@ VERTEX_OUTPUT_PBR VSSkinned(in VERTEX_INPUT_SKINNED In)
 	VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR) 0;
 
 	_VSInstances(In.Position, In.Normal, In.Instance);
-	float4x4 skinTransform = _VSSkinTransform(In.Joints, In.Weights);
+	float4x4 worldTransform = _VSSkinTransform(In.Joints, In.Weights);
     
-    // Beware: Out.Position will contain Pos*World, and WorldViewProjection is uploaded as View*Projection here,
-    // in contrast with e.g. VSGeneral, where Out.Position is just a position, and WorldViewProjection is WVP.
-	Out.Position = mul(In.Position, skinTransform);
-    float4 worldPosition = Out.Position;
-	_VSNormalProjection(In.Normal, skinTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
-    Out.RelPosition.xyz = worldPosition - ViewerPos; // Need to amend the calculation of _VSNormalProjection here, because of the above.
-	_VSLightsAndShadows(worldPosition, skinTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
-    Out.Shadow = worldPosition; // Need to amend this as well.
+    Out.Position = In.Position;
+    _VSNormalProjection(In.Normal, worldTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
+	_VSLightsAndShadows(Out.Position, worldTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
 
-	_VSNormalMapTransform(In.Tangent, In.Normal, skinTransform, Out);
+	_VSNormalMapTransform(In.Tangent, In.Normal, worldTransform, Out);
 
 	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
 	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
@@ -515,12 +510,8 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
 {
     VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR)0;
 
-    float4x4 skinTransform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 }; // Identity
-    if (MorphConfig[6] == 1)
-        skinTransform = _VSSkinTransform(In.Joints, In.Weights);
+    float4x4 worldTransform = MorphConfig[6] == 1 ? _VSSkinTransform(In.Joints, In.Weights) : World;
 
-    // Beware: Out.Position will contain Pos*World, and WorldViewProjection is uploaded as View*Projection here,
-    // in contrast with e.g. VSGeneral, where Out.Position is just a position, and WorldViewProjection is WVP.
     Out.Position = In.Position;
     float3 normal = In.Normal;
     float4 tangent = In.Tangent;
@@ -545,14 +536,10 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
             Out.Color += In.MorphTargets[MorphConfig[8] * i + MorphConfig[5]] * MorphWeights[i];
     }
 
-    Out.Position = mul(Out.Position, skinTransform);
-    float4 worldPosition = Out.Position;
-    _VSNormalProjection(normal, skinTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
-    Out.RelPosition.xyz = worldPosition - ViewerPos; // Need to amend the calculation of _VSNormalProjection here, because of the above.
-    _VSLightsAndShadows(worldPosition, skinTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
-    Out.Shadow = worldPosition; // Need to amend this as well.
+    _VSNormalProjection(normal, worldTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
+    _VSLightsAndShadows(Out.Position, worldTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
 
-    _VSNormalMapTransform(tangent, normal, skinTransform, Out);
+    _VSNormalMapTransform(tangent, normal, worldTransform, Out);
 
     // Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
     Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
