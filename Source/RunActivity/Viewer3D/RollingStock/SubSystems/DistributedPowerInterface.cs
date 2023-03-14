@@ -213,7 +213,6 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
             public void Draw(SpriteBatch spriteBatch, Point position)
             {
                 Font.Draw(spriteBatch, position, DrawRotation, 0, Text, LabelAlignment.Left, Color, Color.Black);
- //                               Font.Draw(spriteBatch, position, Text, Color);
             }
         }
         public struct TexturePrimitive
