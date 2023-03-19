@@ -100,6 +100,9 @@ namespace Orts.Simulation
       , Odometer
       , Battery
       , MasterKey
+      // Cruise control
+      , MaxAcceleration
+      , RestrictedSpeedZone
       // Train Devices
       , DoorsLeft
       , DoorsRight
@@ -245,6 +248,9 @@ namespace Orts.Simulation
                 , new string [] { GetString("Odometer"), null, null, GetParticularString("Odometer", "reset"), GetParticularString("Odometer", "counting down"), GetParticularString("Odometer", "counting up") }
                 , new string [] { GetString("Battery"), GetString("off"), null, GetString("on") }
                 , new string [] { GetString("Master key"), GetString("off"), null, GetString("on") }
+                // Cruise control
+                , new string [] { GetString("Max acceleration"), null, null, null }
+                , new string [] { GetString("Restricted speed zone"), GetString("off"), null, GetString("on") }
                 // Train Devices
                 , new string [] { GetString("Doors Left"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("Doors Right"), GetString("close"), null, GetString("open") } 

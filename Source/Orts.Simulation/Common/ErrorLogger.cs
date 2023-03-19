@@ -153,16 +153,12 @@ namespace Orts.Common
                 // full stack to this trace call, which goes via the catch block at the same level as the try block. We'd prefer to have the whole stack, so we need to find the
                 // join and stitch the stacks together.
                 var error = args[0] as Exception;
-                var errorStack = new StackTrace(args[0] as Exception);
-                var errorStackLast = errorStack.GetFrame(errorStack.FrameCount - 1);
-                var catchStack = new StackTrace();
-                var catchStackIndex = 0;
-                while (catchStackIndex < catchStack.FrameCount && errorStackLast != null && catchStack.GetFrame(catchStackIndex).GetMethod().Name != errorStackLast.GetMethod().Name)
-                    catchStackIndex++;
-                catchStack = new StackTrace(catchStackIndex < catchStack.FrameCount ? catchStackIndex + 1 : 0, true);
+                var errorStack = error.ToString().Replace("\r", "").Split('\n');
+                var catchStack = new StackTrace(true).ToString().Replace("\r", "").Split('\n');
+                var catchIndex = Array.IndexOf(catchStack, errorStack[errorStack.Length - 1]);
 
                 output.AppendLine(error.ToString());
-                output.AppendLine(catchStack.ToString());
+                if (catchIndex >= 0) output.AppendLine(String.Join(Environment.NewLine, catchStack, catchIndex + 1, catchStack.Length - catchIndex - 1));
             }
             else
             {

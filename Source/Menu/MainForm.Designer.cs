@@ -32,7 +32,6 @@ namespace ORTS
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.checkBoxWindowed = new System.Windows.Forms.CheckBox();
             this.buttonStart = new System.Windows.Forms.Button();
             this.labelLogo = new System.Windows.Forms.Label();
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -62,7 +61,6 @@ namespace ORTS
             this.radioButtonModeActivity = new System.Windows.Forms.RadioButton();
             this.radioButtonModeTimetable = new System.Windows.Forms.RadioButton();
             this.panelModeActivity = new System.Windows.Forms.Panel();
-            this.checkDebriefActivityEval = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.comboBoxActivity = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -111,18 +109,6 @@ namespace ORTS
             this.panelModeTimetable.SuspendLayout();
             this.contextMenuStripTools.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // checkBoxWindowed
-            // 
-            this.checkBoxWindowed.AutoSize = true;
-            this.checkBoxWindowed.Checked = true;
-            this.checkBoxWindowed.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWindowed.Location = new System.Drawing.Point(109, 71);
-            this.checkBoxWindowed.Name = "checkBoxWindowed";
-            this.checkBoxWindowed.Size = new System.Drawing.Size(77, 17);
-            this.checkBoxWindowed.TabIndex = 2;
-            this.checkBoxWindowed.Text = "Windowed";
-            this.checkBoxWindowed.UseVisualStyleBackColor = true;
             // 
             // buttonStart
             // 
@@ -379,7 +365,6 @@ namespace ORTS
             this.panel1.Controls.Add(this.buttonDocuments);
             this.panel1.Controls.Add(this.buttonOptions);
             this.panel1.Controls.Add(this.checkBoxWarnings);
-            this.panel1.Controls.Add(this.checkBoxWindowed);
             this.panel1.Controls.Add(this.buttonTools);
             this.panel1.Location = new System.Drawing.Point(311, 416);
             this.panel1.Name = "panel1";
@@ -431,7 +416,6 @@ namespace ORTS
             // 
             // panelModeActivity
             // 
-            this.panelModeActivity.Controls.Add(this.checkDebriefActivityEval);
             this.panelModeActivity.Controls.Add(this.label3);
             this.panelModeActivity.Controls.Add(this.comboBoxActivity);
             this.panelModeActivity.Controls.Add(this.label4);
@@ -457,18 +441,6 @@ namespace ORTS
             this.panelModeActivity.Name = "panelModeActivity";
             this.panelModeActivity.Size = new System.Drawing.Size(287, 311);
             this.panelModeActivity.TabIndex = 9;
-            // 
-            // checkDebriefActivityEval
-            // 
-            this.checkDebriefActivityEval.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkDebriefActivityEval.Location = new System.Drawing.Point(134, 3);
-            this.checkDebriefActivityEval.Margin = new System.Windows.Forms.Padding(2);
-            this.checkDebriefActivityEval.Name = "checkDebriefActivityEval";
-            this.checkDebriefActivityEval.Size = new System.Drawing.Size(149, 17);
-            this.checkDebriefActivityEval.TabIndex = 20;
-            this.checkDebriefActivityEval.Text = "Debrief evaluation:";
-            this.checkDebriefActivityEval.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkDebriefActivityEval.UseVisualStyleBackColor = true;
             // 
             // label3
             // 
@@ -896,7 +868,7 @@ namespace ORTS
             // testingToolStripMenuItem
             // 
             this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
-            this.testingToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
+            this.testingToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
             this.testingToolStripMenuItem.Text = "Testing";
             this.testingToolStripMenuItem.Click += new System.EventHandler(this.testingToolStripMenuItem_Click);
             // 
@@ -906,7 +878,7 @@ namespace ORTS
             this.contextMenuStripTools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.testingToolStripMenuItem});
             this.contextMenuStripTools.Name = "contextMenuStrip1";
-            this.contextMenuStripTools.Size = new System.Drawing.Size(110, 26);
+            this.contextMenuStripTools.Size = new System.Drawing.Size(112, 26);
             // 
             // linkLabelChangeLog
             // 
@@ -973,8 +945,6 @@ namespace ORTS
         }
 
         #endregion
-
-        private System.Windows.Forms.CheckBox checkBoxWindowed;
         private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.Label labelLogo;
         private System.Windows.Forms.PictureBox pictureBoxLogo;
@@ -1042,7 +1012,6 @@ namespace ORTS
         private System.Windows.Forms.RadioButton radioButtonMPServer;
         private System.Windows.Forms.RadioButton radioButtonMPClient;
         private System.Windows.Forms.Button buttonStartMP;
-        private System.Windows.Forms.CheckBox checkDebriefActivityEval;
         private System.Windows.Forms.Label labelTimetableWeatherFile;
         private System.Windows.Forms.ComboBox comboBoxTimetableWeatherFile;
     }

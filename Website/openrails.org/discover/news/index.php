@@ -15,6 +15,37 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
+        <h2>Jan 2023 - Portugal '79</h2>
+        <p>
+          <a href="https://github.com/cpvirtual/OR_CPV.git">Portugal '79</a> has been published. 
+          This provides 1775km of broad gauge track, with full detail on 91km between Entroncamento and Alfarelos.
+        </p>
+        <h2>Jan 2023 - HSB Simulator</h2>
+        <p>
+          New commercial route <a href="http://www.hsb-simulator.com/">HSB Simulator</a> published. 
+          This contains 87 miles of the Harz narrow-gauge railway, the longest narrow-gauge route network in Europe.
+        </p>
+        <hr /> 
+        <h2>Nov 2022 - Version 1.5.1</h2>
+        <p>
+          <a href="/discover/version-1-5-1/">Open Rails 1.5.1</a> released to fix 3 bugs in v1.5.
+        </p>
+        <hr /> 
+        <h2>Nov 2022 - Version 1.5</h2>
+        <p>
+          <a href="/discover/version-1-5/">Open Rails 1.5</a> released.
+        </p>
+        <hr />        
+        <h2>Summer 2022</h2>
+        <p>
+          Three new UK routes are now available for immediate download <a href="http://openrails.org/download/content/">here</a>.
+        </p>
+        <hr />        
+        <h2>Oct 2021 - Version 1.4</h2>
+        <p>
+          <a href="/discover/version-1-4/">Open Rails 1.4</a> released.
+        </p>
+        <hr />        
         <h2>Nov 2020</h2>
         <p>
           Wagons can now be braked individually as on the oldest railways. This can be experienced in 2 scenarios - <a href="https://www.coalstonewcastle.com.au/physics/stock/#rainhill">Stephenson's Rocket at Rainhill Trials</a> and <a href="https://www.coalstonewcastle.com.au/physics/stock/#select">Langley Vale Timber Tramway</a>. 

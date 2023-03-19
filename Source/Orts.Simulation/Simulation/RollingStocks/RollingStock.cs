@@ -18,6 +18,7 @@
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks.SubSystems;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,8 +61,11 @@ namespace Orts.Simulation.RollingStocks
 
             if (!wagFile.IsEngine)
             {
-                // its an ordinary MSTS wagon
-                car = new MSTSWagon(simulator, wagFilePath);
+                if (wagFilePath.ToLower().Contains("orts_eot"))
+                    car = new EOT(simulator, wagFilePath);
+                else
+                    // its an ordinary MSTS wagon
+                    car = new MSTSWagon(simulator, wagFilePath);
             }
             else
             {

@@ -143,15 +143,12 @@ namespace ORTS
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
             checkOverspeedMonitor.Checked = Settings.SpeedControl;
-            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
             checkRetainers.Checked = Settings.RetainersOnAllCars;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
-            comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
-            checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
-            numericWebServerPort.Value = Settings.WebServerPort;
+            checkEnableTCSScripts.Checked = !Settings.DisableTCSScripts;    // Inverted as "Enable scripts" is better UI than "Disable scripts"
 
             // Audio tab
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
@@ -161,7 +158,6 @@ namespace ORTS
             // Video tab
             checkDynamicShadows.Checked = Settings.DynamicShadows;
             checkShadowAllShapes.Checked = Settings.ShadowAllShapes;
-            checkWindowGlass.Checked = Settings.WindowGlass;
             checkModelInstancing.Checked = Settings.ModelInstancing;
             checkWire.Checked = Settings.Wire;
             checkVerticalSync.Checked = Settings.VerticalSync;
@@ -170,9 +166,9 @@ namespace ORTS
             labelDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
             numericDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
             numericDistantMountainsViewingDistance.Value = Settings.DistantMountainsViewingDistance / 1000;
+            checkLODViewingExtension.Checked = Settings.LODViewingExtension;
             numericViewingFOV.Value = Settings.ViewingFOV;
             numericWorldObjectDensity.Value = Settings.WorldObjectDensity;
-            comboWindowSize.Text = Settings.WindowSize;
             trackDayAmbientLight.Value = Settings.DayAmbientLight;
             trackDayAmbientLight_ValueChanged(null, null);
             trackAntiAliasing.Value = Settings.AntiAliasing;
@@ -188,10 +184,10 @@ namespace ORTS
             numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
-            checkHotStart.Checked = Settings.HotStart;
+            checkBoilerPreheated.Checked = Settings.HotStart;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
-            checkBoxNoDieselEngineStart.Checked = Settings.NoDieselEngineStart;
+            checkDieselEnginesStarted.Checked = !Settings.NoDieselEngineStart; // Inverted as "EngineStart" is better UI than "NoEngineStart"
 
             // Keyboard tab
             InitializeKeyboardSettings();
@@ -262,7 +258,9 @@ namespace ORTS
                 catch { }
             }
 
-            // Updater tab
+            // System tab
+            comboLanguage.Text = Settings.Language;
+
             var updateChannelNames = new Dictionary<string, string> {
                 { "stable", catalog.GetString("Stable (recommended)") },
                 { "testing", catalog.GetString("Testing") },
@@ -275,60 +273,60 @@ namespace ORTS
                 { "unstable", catalog.GetString("Daily updates which may contain serious defects. For developers only.") },
                 { "", catalog.GetString("No updates.") },
             };
-            var spacing = labelUpdateChannel.Margin.Size;
-            var indent = 20;
-            var top = labelUpdateChannel.Bottom + spacing.Height;
+            var spacing = labelUpdateMode.Margin.Size;
+            var indent = 180;
+            var top = labelUpdateMode.Bottom + spacing.Height;
             foreach (var channel in UpdateManager.GetChannels())
             {
                 var radio = new RadioButton()
                 {
                     Text = updateChannelNames[channel.ToLowerInvariant()],
-                    Margin = labelUpdateChannel.Margin,
-                    Left = spacing.Width,
+                    Margin = labelUpdateMode.Margin,
+                    Left = spacing.Width + 32, // to leave room for HelpIcon
                     Top = top,
                     Checked = updateManager.ChannelName.Equals(channel, StringComparison.InvariantCultureIgnoreCase),
                     AutoSize = true,
                     Tag = channel,
                 };
-                tabPageUpdater.Controls.Add(radio);
-                top += radio.Height + spacing.Height;
+                tabPageSystem.Controls.Add(radio);
                 var label = new Label()
                 {
                     Text = updateChannelDescriptions[channel.ToLowerInvariant()],
-                    Margin = labelUpdateChannel.Margin,
+                    Margin = labelUpdateMode.Margin,
                     Left = spacing.Width + indent,
-                    Top = top,
-                    Width = tabPageUpdater.ClientSize.Width - indent - spacing.Width * 2,
+                    Top = top + 2, // Offset to align with radio button text
+                    Width = tabPageSystem.ClientSize.Width - indent - spacing.Width * 2,
                     AutoSize = true,
                 };
-                tabPageUpdater.Controls.Add(label);
-                top += label.Height + spacing.Height;
+                tabPageSystem.Controls.Add(label);
+                top += label.Height + spacing.Height - 3; // -3 to close them up a bit
             }
+
+            checkWindowed.Checked = !Settings.FullScreen;
+            comboWindowSize.Text = Settings.WindowSize;
+            checkWindowGlass.Checked = Settings.WindowGlass;
+            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
+            numericWebServerPort.Value = Settings.WebServerPort;
+            checkPerformanceTuner.Checked = Settings.PerformanceTuner;
+            labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
+            numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
+            numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
 
             // Experimental tab
             numericUseSuperElevation.Value = Settings.UseSuperElevation;
             numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
-            checkPerformanceTuner.Checked = Settings.PerformanceTuner;
-            labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
-            numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
-            numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
             checkSignalLightGlow.Checked = Settings.SignalLightGlow;
-            checkPreferDDSTexture.Checked = Settings.PreferDDSTexture;
             checkUseLocationPassingPaths.Checked = Settings.UseLocationPassingPaths;
             checkUseMSTSEnv.Checked = Settings.UseMSTSEnv;
             trackAdhesionFactor.Value = Settings.AdhesionFactor;
-            checkAdhesionPropToWeather.Checked = Settings.AdhesionProportionalToWeather;
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
-            checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;
+            checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;   // Inverted as "Show warnings" is better UI than "Suppress warnings"
             numericVfsLogLevel.Value = Settings.VfsLogLevel;
             checkVfsAutoMount.Checked = Settings.VfsAutoMount;
-            precipitationBoxHeight.Value = Settings.PrecipitationBoxHeight;
-            precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
-            precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
             checkCorrectQuestionableBrakingParams.Checked = Settings.CorrectQuestionableBrakingParams;
             numericActRandomizationLevel.Value = Settings.ActRandomizationLevel;
             numericActWeatherRandomizationLevel.Value = Settings.ActWeatherRandomizationLevel;
@@ -426,15 +424,12 @@ namespace ORTS
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
             Settings.SpeedControl = checkOverspeedMonitor.Checked;
-            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
             Settings.RetainersOnAllCars = checkRetainers.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
-            Settings.Language = comboLanguage.SelectedValue.ToString();
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
-            Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
-            Settings.WebServerPort = (int)numericWebServerPort.Value;
+            Settings.DisableTCSScripts = !checkEnableTCSScripts.Checked; // Inverted as "Enable scripts" is better UI than "Disable scripts"
 
             // Audio tab
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
@@ -444,16 +439,15 @@ namespace ORTS
             // Video tab
             Settings.DynamicShadows = checkDynamicShadows.Checked;
             Settings.ShadowAllShapes = checkShadowAllShapes.Checked;
-            Settings.WindowGlass = checkWindowGlass.Checked;
             Settings.ModelInstancing = checkModelInstancing.Checked;
             Settings.Wire = checkWire.Checked;
             Settings.VerticalSync = checkVerticalSync.Checked;
             Settings.ViewingDistance = (int)numericViewingDistance.Value;
             Settings.DistantMountains = checkDistantMountains.Checked;
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
+            Settings.LODViewingExtension = checkLODViewingExtension.Checked;
             Settings.ViewingFOV = (int)numericViewingFOV.Value;
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
-            Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
 
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
@@ -465,10 +459,10 @@ namespace ORTS
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
-            Settings.HotStart = checkHotStart.Checked;
+            Settings.HotStart = checkBoilerPreheated.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
-            Settings.NoDieselEngineStart = checkBoxNoDieselEngineStart.Checked;
+            Settings.NoDieselEngineStart = !checkDieselEnginesStarted.Checked; // Inverted as "EngineStart" is better UI than "NoEngineStart"
 
             // Keyboard tab
             // These are edited live.
@@ -495,31 +489,32 @@ namespace ORTS
             foreach (var folder in bindingSourceContent.DataSource as List<ContentFolder>)
                 Settings.Folders.Folders.Add(folder.Name, folder.Path);
 
-            // Updater tab
-            foreach (Control control in tabPageUpdater.Controls)
+            // System tab
+            Settings.Language = comboLanguage.SelectedValue.ToString();
+            foreach (Control control in tabPageSystem.Controls)
                 if ((control is RadioButton) && (control as RadioButton).Checked)
                     UpdateManager.SetChannel((string)control.Tag);
+            Settings.FullScreen = !checkWindowed.Checked;
+            Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
+            Settings.WindowGlass = checkWindowGlass.Checked;
+            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
+            Settings.WebServerPort = (int)numericWebServerPort.Value;
+            Settings.PerformanceTuner = checkPerformanceTuner.Checked;
+            Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
 
             // Experimental tab
             Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
             Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
-            Settings.PerformanceTuner = checkPerformanceTuner.Checked;
-            Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
-            Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
             Settings.UseLocationPassingPaths = checkUseLocationPassingPaths.Checked;
             Settings.UseMSTSEnv = checkUseMSTSEnv.Checked;
             Settings.AdhesionFactor = (int)trackAdhesionFactor.Value;
-            Settings.AdhesionProportionalToWeather = checkAdhesionPropToWeather.Checked;
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
             Settings.VfsLogLevel = Vfs.LogLevel = (int)numericVfsLogLevel.Value;
             Settings.VfsAutoMount = Vfs.AutoMount = checkVfsAutoMount.Checked;
-            Settings.PrecipitationBoxHeight = (int)precipitationBoxHeight.Value;
-            Settings.PrecipitationBoxWidth = (int)precipitationBoxWidth.Value;
-            Settings.PrecipitationBoxLength = (int)precipitationBoxLength.Value;
             Settings.CorrectQuestionableBrakingParams = checkCorrectQuestionableBrakingParams.Checked;
             Settings.ActRandomizationLevel = (int)numericActRandomizationLevel.Value;
             Settings.ActWeatherRandomizationLevel = (int)numericActWeatherRandomizationLevel.Value;
@@ -585,7 +580,7 @@ namespace ORTS
         private void SetAdhesionLevelValue()
         {
             int level = trackAdhesionFactor.Value - trackAdhesionFactorChange.Value;
-            if (checkAdhesionPropToWeather.Checked)
+            // Adjust level to be proportional to weather 
                 level -= 40;
 
             if (level > 159)
@@ -681,6 +676,11 @@ namespace ORTS
 
         private void buttonContentDelete_Click(object sender, EventArgs e)
         {
+            DeleteContent();
+        }
+
+        private void DeleteContent()
+        {
             bindingSourceContent.RemoveCurrent();
             // ResetBindings() is to work around a bug in the binding and/or data grid where by deleting the bottom item doesn't show the selection moving to the new bottom item.
             bindingSourceContent.ResetBindings(false);
@@ -739,7 +739,19 @@ namespace ORTS
             var current = bindingSourceContent.Current as ContentFolder;
             if (current != null && current.Name != textBoxContentName.Text)
             {
-                // Duplicate names lead to an exception, so append " copy" if not unique
+                if (current.Path.ToLower().Contains(Application.StartupPath.ToLower()))
+                {
+                    // Block added because a succesful Update operation will empty the Open Rails folder and lose any content stored within it.
+                    MessageBox.Show(catalog.GetString
+                        ($"Cannot use content from any folder which lies inside the Open Rails folder {Application.StartupPath}\n\n")
+                        , "Invalid content location"
+                        , MessageBoxButtons.OK
+                        , MessageBoxIcon.Error);
+                    DeleteContent();
+                    return;
+                }
+
+                // Duplicate names lead to an exception, so append " copy" repeatedly until no longer unique
                 var suffix = "";
                 var isNameUnique = true;
                 while (isNameUnique)
@@ -797,7 +809,24 @@ namespace ORTS
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
 
-        #region Help for General Options
+        #region Help for Options
+        // The icons all share the same code which assumes they are named according to a simple scheme as follows:
+        //   1. To add a new Help Icon, copy an existing one and paste it onto the tab.
+        //   2. Give it the same name as the associated control but change the prefix to "pb" for Picture Box.
+        //   3. Add a Click event named HelpIcon_Click to each HelpIcon
+        //      Do not add code for this event (or press Return/double click in the Properties field which creates a code stub for you). 
+        //   4. Add MouseEnter/Leave events to each HelpIcon, label and checkbox:
+        //     - MouseEnter event named HelpIcon_MouseEnter
+        //     - MouseLeave event named HelpIcon_MouseLeave
+        //     Numeric controls do not have MouseEnter/Leave events so, for them, use:
+        //     - Enter event named HelpIcon_MouseEnter
+        //     - Leave event named HelpIcon_MouseLeave
+        //      Do not add code for these events (or press Return/double click in the Properties field which creates a code stub for you). 
+        //   5. Add an entry to InitializeHelpIcons() which links the icon to the control and, if there is one, the label.
+        //      This link will highlight the icon when the user hovers (mouses over) the control or the label.
+        //   6. Add an entry to HelpIcon_Click() which opens the user's browser with the correct help page.
+        //      The URL can be found from visiting the page and hovering over the title of the section.
+
         /// <summary>
         /// Allows multiple controls to change a single help icon with their hover events.
         /// </summary>
@@ -836,16 +865,46 @@ namespace ORTS
             // static mapping of picture boxes to controls
             var helpIconControls = new (PictureBox, Control[])[]
             {
+                // General
                 (pbAlerter, new[] { checkAlerter }),
-                (pbControlConfirmations, new[] { checkControlConfirmations }),
                 (pbRetainers, new[] { checkRetainers }),
                 (pbGraduatedRelease, new[] { checkGraduatedRelease }),
                 (pbBrakePipeChargingRate, new[] { lBrakePipeChargingRate }),
-                (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
                 (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
-                (pbDisableTcsScripts, new[] { checkDisableTCSScripts }),
+                (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
+
+                // Audio tab
+                (pbSoundVolumePercent, new Control[] { labelSoundVolume, numericSoundVolumePercent }),
+                (pbSoundDetailLevel, new Control[]  { labelSoundDetailLevel, numericSoundDetailLevel }),
+                (pbExternalSoundPassThruPercent, new Control[]  { labelExternalSound, numericExternalSoundPassThruPercent }),
+
+                // Video tab
+                (pbViewingDistance, new Control[] { labelViewingDistance, numericViewingDistance }),
+                (pbDistantMountains, new Control[] { checkDistantMountains, numericDistantMountainsViewingDistance, labelDistantMountainsViewingDistance }),
+                (pbLODViewingExtension, new[] { checkLODViewingExtension }),
+                (pbDynamicShadows, new[] { checkDynamicShadows }),
+                (pbShadowAllShapes, new[] { checkShadowAllShapes }),
+                (pbWire, new[] { checkWire }),
+                (pbDoubleWire, new[] { checkDoubleWire }),
+                (pbSignalLightGlow, new[] { checkSignalLightGlow }),
+                (pbDayAmbientLight, new Control[] { labelAmbientDaylightBrightness, trackDayAmbientLight }),
+                (pbModelInstancing, new[] { checkModelInstancing }),
+                (pbVerticalSync, new[] { checkVerticalSync }),
+                (pbAntiAliasing, new Control[] { labelAntiAliasingValue, trackAntiAliasing }),
+                (pbWorldObjectDensity, new Control[] { labelWorldObjectDensity, numericWorldObjectDensity }),
+                (pbLODBias, new Control[] { labelLODBias, trackLODBias }),
+                (pbViewingFOV, new Control[] { labelViewingVerticalFOV, numericViewingFOV }),
+
+                // System
+                (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
+                (pbUpdateMode, new Control[] { labelUpdateMode }),
+                (pbWindowed, new Control[] { checkWindowed, labelWindowSize, comboWindowSize }),
+                (pbWindowGlass, new[] { checkWindowGlass }),
+                (pbControlConfirmations, new[] { checkControlConfirmations }),
+                (pbWebServerPort, new Control[] { labelWebServerPort }),
+                (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -871,10 +930,6 @@ namespace ORTS
                     baseUrl + "/options.html#alerter-in-cab"
                 },
                 {
-                    pbControlConfirmations,
-                    baseUrl + "/options.html#control-confirmations"
-                },
-                {
                     pbRetainers,
                     baseUrl + "/options.html#retainer-valve-on-all-cars"
                 },
@@ -887,10 +942,6 @@ namespace ORTS
                     baseUrl + "/options.html#brake-pipe-charging-rate"
                 },
                 {
-                    pbLanguage,
-                    baseUrl + "/options.html#language"
-                },
-                {
                     pbPressureUnit,
                     baseUrl + "/options.html#pressure-unit"
                 },
@@ -899,12 +950,118 @@ namespace ORTS
                     baseUrl + "/options.html#other-units"
                 },
                 {
-                    pbDisableTcsScripts,
+                    pbEnableTcsScripts,
                     baseUrl + "/options.html#disable-tcs-scripts"
                 },
                 {
                     pbOverspeedMonitor,
                     baseUrl + "/options.html#overspeed-monitor"
+                },
+
+                // Audio tab
+                {
+                    pbSoundVolumePercent,
+                    baseUrl + "/options.html#audio-options"
+                },
+                {
+                    pbSoundDetailLevel,
+                    baseUrl + "/options.html#audio-options"
+                },
+                {
+                    pbExternalSoundPassThruPercent,
+                    baseUrl + "/options.html#audio-options"
+                },
+
+                // Video tab
+                {
+                    pbViewingDistance,
+                    baseUrl + "/options.html#viewing-distance"
+                },
+                {
+                    pbDistantMountains,
+                    baseUrl + "/options.html#distant-mountains"
+                },
+                {
+                    pbLODViewingExtension,
+                    baseUrl + "/options.html#extend-object-maximum-viewing-distance-to-horizon"
+                },
+                {
+                    pbDynamicShadows,
+                    baseUrl + "/options.html#dynamic-shadows"
+                },
+                {
+                    pbShadowAllShapes,
+                    baseUrl + "/options.html#shadow-for-all-shapes"
+                },
+                {
+                    pbWire,
+                    baseUrl + "/options.html#overhead-wire"
+                },
+                {
+                    pbDoubleWire,
+                    baseUrl + "/options.html#double-overhead-wires"
+                },
+                {
+                    pbSignalLightGlow,
+                    baseUrl + "/options.html#signal-light-glow"
+                },
+                {
+                    pbDayAmbientLight,
+                    baseUrl + "/options.html#ambient-daylight-brightness"
+                },
+                {
+                    pbModelInstancing,
+                    baseUrl + "/options.html#model-instancing"
+                },
+                {
+                    pbVerticalSync,
+                    baseUrl + "/options.html#vertical-sync"
+                },
+                {
+                    pbAntiAliasing,
+                    baseUrl + "/options.html#anti-aliasing"
+                },
+                {
+                    pbWorldObjectDensity,
+                    baseUrl + "/options.html#world-object-density"
+                },
+                {
+                    pbLODBias,
+                    baseUrl + "/options.html#level-of-detail-bias"
+                },
+                {
+                    pbViewingFOV,
+                    baseUrl + "/options.html#viewing-vertical-fov"
+                },
+
+                // System tab
+                {
+                    pbLanguage,
+                    baseUrl + "/options.html#language"
+                },
+                {
+                    pbUpdateMode,
+                    baseUrl + "/options.html#updater-options"
+                },
+                {
+                    pbWindowed,
+                    baseUrl + "/options.html#windowed"
+                },
+                {
+                    pbWindowGlass,
+                    baseUrl + "/options.html#window-glass"
+                },
+                {
+                    pbControlConfirmations,
+                    baseUrl + "/options.html#control-confirmations"
+                },
+                {
+                    pbWebServerPort,
+                    baseUrl + "/options.html#web-server-port"
+                },
+                {
+                    pbPerformanceTuner,
+                    baseUrl + "/options.html#performance-tuner"
                 },
             };
             if (urls.TryGetValue(sender, out var url))

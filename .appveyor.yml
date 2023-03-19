@@ -1,6 +1,6 @@
-version: AV1.4-{build}
+version: AV1.5-{build}
 skip_branch_with_pr: true
-image: Visual Studio 2017
+image: Visual Studio 2019
 cache:
   - C:\ProgramData\chocolatey\bin -> .appveyor.yml
   - C:\ProgramData\chocolatey\lib -> .appveyor.yml

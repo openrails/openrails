@@ -1,250 +1,40 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props" Condition="Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props')" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{333C4378-D82E-4B47-B561-6BA923B8FDFD}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Orts.Simulation</RootNamespace>
-    <AssemblyName>Orts.Simulation</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ACTIVITY_EDITOR</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <IsPublishable>False</IsPublishable>
+    <AssemblyTitle>Open Rails Simulation Library</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <DefineConstants>TRACE;ACTIVITY_EDITOR</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;ACTIVITY_EDITOR</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Program\Orts.Simulation.xml</DocumentationFile>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GNU.Gettext">
       <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CodeAnalysis, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.CodeAnalysis.Common.4.0.1\lib\netstandard2.0\Microsoft.CodeAnalysis.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.CodeAnalysis.CSharp.4.0.1\lib\netstandard2.0\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Collections.Immutable, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Collections.Immutable.5.0.0\lib\net461\System.Collections.Immutable.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reflection.Metadata, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reflection.Metadata.5.0.0\lib\net461\System.Reflection.Metadata.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Text.Encoding.CodePages, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Encoding.CodePages.4.5.1\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\CommandLog.cs" />
-    <Compile Include="Common\Commands.cs" />
-    <Compile Include="Common\ErrorLogger.cs" />
-    <Compile Include="Common\Events.cs" />
-    <Compile Include="Common\Math.cs" />
-    <Compile Include="Common\ORTSPaths.cs" />
-    <Compile Include="Common\Scripting\BrakeController.cs" />
-    <Compile Include="Common\Scripting\Commands.cs" />
-    <Compile Include="Common\Scripting\Common.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\ControlCarPowerSupply.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\DualModePowerSupply.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\LocomotivePowerSupply.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\PassengerCarPowerSupply.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\TractionCutOffRelay.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\TractionCutOffSubsytem.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\PowerSupply.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\CircuitBreaker.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\DieselPowerSupply.cs" />
-    <Compile Include="Common\Scripting\PowerSupply\ElectricPowerSupply.cs" />
-    <Compile Include="Common\Scripting\ScriptManager.cs" />
-    <Compile Include="Common\Scripting\TrainControlSystem.cs" />
-    <Compile Include="Common\SteamTable.cs" />
-    <Compile Include="Common\WorldLatLon.cs" />
-    <Compile Include="MultiPlayer\ClientComm.cs" />
-    <Compile Include="MultiPlayer\Decoder.cs" />
-    <Compile Include="MultiPlayer\Message.cs" />
-    <Compile Include="MultiPlayer\MPManager.cs" />
-    <Compile Include="MultiPlayer\OnlinePlayer.cs" />
-    <Compile Include="MultiPlayer\OnlineTrains.cs" />
-    <Compile Include="MultiPlayer\Server.cs" />
-    <Compile Include="MultiPlayer\ServerComm.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Simulation\Activity.cs" />
-    <Compile Include="Simulation\AIs\AI.cs" />
-    <Compile Include="Simulation\AIs\AIAuxAction.cs" />
-    <Compile Include="Simulation\AIs\AIPath.cs" />
-    <Compile Include="Simulation\AIs\AITrain.cs" />
-    <Compile Include="Simulation\Confirmer.cs" />
-    <Compile Include="Simulation\FuelPickup.cs" />
-    <Compile Include="Simulation\Hazzard.cs" />
-    <Compile Include="Simulation\LevelCrossing.cs" />
-    <Compile Include="Simulation\Physics\Train.cs" />
-    <Compile Include="Simulation\RollingStocks\LocomotiveAttributes.cs" />
-    <Compile Include="Simulation\RollingStocks\MSTSControlTrailerCar.cs" />
-    <Compile Include="Simulation\RollingStocks\MSTSDieselLocomotive.cs" />
-    <Compile Include="Simulation\RollingStocks\MSTSElectricLocomotive.cs" />
-    <Compile Include="Simulation\RollingStocks\MSTSLocomotive.cs" />
-    <Compile Include="Simulation\RollingStocks\MSTSSteamLocomotive.cs" />
-    <Compile Include="Simulation\RollingStocks\MSTSWagon.cs" />
-    <Compile Include="Simulation\RollingStocks\RollingStock.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\BrakeSystem.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\AirSinglePipe.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\AirTwinPipe.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\EPBrakeSystem.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\ManualBraking.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\MSTSBrakeSystem.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\SingleTransferPipe.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\SMEBrakeSystem.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\StraightVacuumSinglePipe.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Brakes\MSTS\VacuumSinglePipe.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\BrakeController.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\ControllerFactory.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\IController.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\MSTSBrakeController.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\Controllers\MSTSNotchController.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\FreightAnimations.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ControlCarPowerSupply.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ElectricTrainSupplySwitch.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\BatterySwitch.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\DualModePowerSupply.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ILocomotivePowerSupply.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\IPassengerCarPowerSupply.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\IPowerSupply.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\PassengerCarPowerSupply.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\SteamPowerSupply.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\TractionCutOffRelay.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\DieselPowerSupply.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\MasterKey.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\LocomotivePowerSupply.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\CircuitBreaker.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\DieselEngine.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\ElectricPowerSupply.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\Pantograph.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\Axle.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\ElectricMotor.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\GearBox.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\SeriesMotor.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\ISubSystem.cs" />
-    <Compile Include="Simulation\RollingStocks\SubSystems\TrainControlSystem.cs" />
-    <Compile Include="Simulation\RollingStocks\TrainCar.cs" />
-    <Compile Include="Simulation\Signalling\CsSignalScript.cs" />
-    <Compile Include="Simulation\Signalling\CsSignalScripts.cs" />
-    <Compile Include="Simulation\Signalling\Signals.cs" />
-    <Compile Include="Simulation\Signalling\SIGSCRfile.cs" />
-    <Compile Include="Simulation\Signalling\SpeedPostWorldObject.cs" />
-    <Compile Include="Simulation\Simulator.cs" />
-    <Compile Include="Simulation\SuperElevation.cs" />
-    <Compile Include="Simulation\Timetables\PoolInfo.cs" />
-    <Compile Include="Simulation\Timetables\ProcessTimetable.cs" />
-    <Compile Include="Simulation\Timetables\TTPool.cs" />
-    <Compile Include="Simulation\Timetables\TTTrain.cs" />
-    <Compile Include="Simulation\Timetables\TTTurntable.cs" />
-    <Compile Include="Simulation\Timetables\TurntableInfo.cs" />
-    <Compile Include="Simulation\Transfertables.cs" />
-    <Compile Include="Simulation\Traveller.cs" />
-    <Compile Include="Simulation\Turntables.cs" />
-    <Compile Include="Simulation\Weather.cs" />
-    <Compile Include="Common\Scripting\EuropeanTrainControlSystem.cs" />
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
+    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj" />
+    <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
+    <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj" />
+    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
+    <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj" />
+    <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
-      <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>
-      <Name>ORTS.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj">
-      <Project>{812685a7-2683-4102-a3ca-2a5ced2e61ee}</Project>
-      <Name>ORTS.Content</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
-      <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
-      <Name>Orts.Formats.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj">
-      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
-      <Name>Orts.Formats.OR</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
-      <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
-      <Name>Orts.Parsers.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
-      <Project>{1cc3bd5c-06c5-4784-b067-f93945a7ca2c}</Project>
-      <Name>Orts.Parsers.OR</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj">
-      <Project>{67f84996-8769-4fd8-819b-464af269037b}</Project>
-      <Name>ORTS.Settings</Name>
-    </ProjectReference>
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
-    <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>Ce projet fait référence à des packages NuGet qui sont manquants sur cet ordinateur. Utilisez l'option de restauration des packages NuGet pour les télécharger. Pour plus d'informations, consultez http://go.microsoft.com/fwlink/?LinkID=322105. Le fichier manquant est : {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets'))" />
-  </Target>
-  <Import Project="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets" Condition="Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

@@ -147,6 +147,7 @@ VERTEX_OUTPUT VSMoon(VERTEX_INPUT In)
 
 // This function adjusts brightness, saturation and contrast
 // By Romain Dura aka Romz
+// Colors edit by DR_Aeronautics
 float3 ContrastSaturationBrightness(float3 color, float brt, float sat, float con)
 {
 	// Increase or decrease theese values to adjust r, g and b color channels separately
@@ -173,10 +174,18 @@ float4 PSSky(VERTEX_OUTPUT In) : COLOR
 	float4 starColor = tex2D(StarMapSampler, TexCoord);
 	
 	// Adjust sky color brightness for time of day
-	skyColor *= SkyColor.x;
+	skyColor *= SkyColor.y;
 	
-	// Stars
-	skyColor = lerp(starColor, skyColor, SkyColor.y);
+	// Stars (power function keeps stars hidden until after sunset)
+	// if-statement handles astronomical/final stage of twilight
+	if (LightVector.y < -0.2)
+		{
+		skyColor = lerp(starColor, skyColor, LightVector.y*6.6+2.22);
+		}
+		else 
+		{
+		skyColor = lerp(starColor, skyColor, pow(abs(SkyColor.y),0.125));
+		}
 	
 	// Fogging
 	skyColor.rgb = lerp(skyColor.rgb, FogColor.rgb, saturate((1 - In.Normal.y) * Fog.x));
@@ -189,11 +198,35 @@ float4 PSSky(VERTEX_OUTPUT In) : COLOR
 	// Coefficients selected by the author to achieve the desired appearance - fot limits the effect
 	skyColor += angleRcp * Fog.y;
 	
-	// increase orange at sunset - fog limits the effect
+	// increase orange at sunset and yellow at sunrise - fog limits the effect
 	if (LightVector.x < 0)
 	{
-		skyColor.r += SkyColor.z * angleRcp * Fog.z;
-		skyColor.g += skyColor.r * Fog.w;
+		// These if-statements prevent the yellow-flash effect
+		if (LightVector.y > 0.13)
+		{
+			skyColor.rg += SkyColor.z*2 * angleRcp * Fog.z;
+			skyColor.r += SkyColor.z*2 * angleRcp * Fog.z;
+		}
+	
+		else
+		{
+			skyColor.rg += angleRcp * 0.075 * SkyColor.y;
+			skyColor.r += angleRcp * 0.075 * SkyColor.y;
+		}
+	}
+	else
+	{
+		if (LightVector.y > 0.15)
+		{
+			skyColor.rg += SkyColor.z*3 * angleRcp * Fog.z;
+			skyColor.r += SkyColor.z * angleRcp * Fog.z;
+		}
+	
+		else
+		{
+			skyColor.rg += angleRcp * 0.075 * SkyColor.y;
+			skyColor.r += pow(angleRcp * 0.075 * SkyColor.y,2);
+		}
 	}
 	
 	// Keep alpha opague

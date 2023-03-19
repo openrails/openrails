@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2021-08-21 11:05:56+0300\n"
-"PO-Revision-Date: 2022-01-06 12:38+0300\n"
+"POT-Creation-Date: 2022-07-09 11:25:40+0300\n"
+"PO-Revision-Date: 2022-07-09 11:31+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -110,7 +110,7 @@ msgstr "Задержка :"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:72
 msgid "Required Trigger Distance :"
-msgstr ""
+msgstr "Дистанция срабатывания:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:93
 msgid "HornProperties"
@@ -370,7 +370,7 @@ msgstr "Метаданные полигона"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2004
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2093
 msgid "Display"
-msgstr ""
+msgstr "Отобразить"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2015
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2117
@@ -888,7 +888,7 @@ msgstr "Загрузка базы звеньев (файл tsection.dat) ..."
 msgid "Loading road track database .rdb ..."
 msgstr "Загрузка базы дорог *.rdb ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:269
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:270
 msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr "Отрисовка сигналов, тупиков..."
 
@@ -1978,7 +1978,7 @@ msgstr "Широта точки под указателем мыши"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:54
 msgid "Trackindex"
-msgstr ""
+msgstr "Каталог путей"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:60
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:79

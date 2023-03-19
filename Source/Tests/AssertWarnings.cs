@@ -25,6 +25,7 @@ using Xunit;
 
 namespace Tests
 {
+    // TODO: This class needs to be removed and replaced with a `JsonReaderTests`-style warning counter, instead of modifying global state (`Trace.Listeners`)
     /// <summary>
     /// This class can be used to test for Trace.TraceWarning() calls.
     /// Instead of having the warnings go to the output window of xunit, they are captured by this class.

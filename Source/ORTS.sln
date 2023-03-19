@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31605.320
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunActivity", "RunActivity\RunActivity.csproj", "{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}"
 EndProject
@@ -29,8 +29,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Updater", "ORTS.Update
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivityEditor", "Contrib\ActivityEditor\ActivityEditor\ActivityEditor.csproj", "{306C904F-BE41-4B39-A0C4-51068B7F205E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AEWizard", "Contrib\ActivityEditor\AEWizard\AEWizard.csproj", "{79EFFB38-252C-4B06-BD4E-7C7FDE0A20DC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentManager", "Contrib\ContentManager\ContentManager.csproj", "{E3E04859-2734-46EA-99B6-8A9721E85D3F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibAE", "Contrib\ActivityEditor\LibAE\LibAE.csproj", "{B79691A7-BF8C-40B4-ADE0-5F30F2730414}"
@@ -52,6 +50,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataValidator", "Contrib\DataValidator\DataValidator.csproj", "{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentChecker", "ContentChecker\ContentChecker.csproj", "{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulatorTester", "Contrib\SimulatorTester\SimulatorTester.csproj", "{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,10 +111,6 @@ Global
 		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{79EFFB38-252C-4B06-BD4E-7C7FDE0A20DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{79EFFB38-252C-4B06-BD4E-7C7FDE0A20DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{79EFFB38-252C-4B06-BD4E-7C7FDE0A20DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{79EFFB38-252C-4B06-BD4E-7C7FDE0A20DC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E3E04859-2734-46EA-99B6-8A9721E85D3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E3E04859-2734-46EA-99B6-8A9721E85D3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3E04859-2734-46EA-99B6-8A9721E85D3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -159,6 +155,10 @@ Global
 		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

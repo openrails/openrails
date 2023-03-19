@@ -19,7 +19,7 @@ using System;
 using System.IO;
 using ORTS.Common;
 using Orts.Common;
-using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using ORTS.Scripting.Api.ETCS;
 
 namespace ORTS.Scripting.Api
@@ -221,9 +221,17 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> ArePantographsDown;
         /// <summary>
+        /// Get doors state
+        /// </summary>
+        public Func<DoorSide, DoorState> CurrentDoorState;
+        /// <summary>
         /// Returns throttle percent
         /// </summary>
         public Func<float> ThrottlePercent;
+        /// <summary>
+        /// Returns maximum throttle percent
+        /// </summary>
+        public Func<float> MaxThrottlePercent;
         /// <summary>
         /// Returns dynamic brake percent
         /// </summary>
@@ -268,6 +276,10 @@ namespace ORTS.Scripting.Api
         /// Line speed taken from .trk file.
         /// </summary>
         public Func<float> LineSpeedMpS;
+        /// <summary>
+        /// Running total of distance travelled - negative or positive depending on train direction
+        /// </summary>
+        public Func<float> SignedDistanceM;
         /// <summary>
         /// True if starting from terminal station (no track behind the train).
         /// </summary>
@@ -367,6 +379,11 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action<bool> SetTractionAuthorization;
         /// <summary>
+        /// Set the maximum throttle percent
+        /// Range: 0 to 100
+        /// </summary>
+        public Action<float> SetMaxThrottlePercent;
+        /// <summary>
         /// Switch vigilance alarm sound on (true) or off (false).
         /// </summary>
         public Action<bool> SetVigilanceAlarm;
@@ -374,6 +391,16 @@ namespace ORTS.Scripting.Api
         /// Set horn on (true) or off (false).
         /// </summary>
         public Action<bool> SetHorn;
+        /// <summary>
+        /// Open or close doors
+        /// DoorSide: side for which doors will be opened or closed
+        /// bool: true for closing order, false for opening order
+        /// </summary>
+        public Action<DoorSide, bool> SetDoors;
+        /// <summary>
+        /// Lock doors so they cannot be opened
+        /// </summary>
+        public Action<DoorSide, bool> LockDoors;
         /// <summary>
         /// Trigger Alert1 sound event
         /// </summary>
@@ -473,6 +500,10 @@ namespace ORTS.Scripting.Api
         /// Requests toggle to and from Manual Mode.
         /// </summary>
         public Action RequestToggleManualMode;
+        /// <summary>
+        /// Requests reset of Out of Control Mode.
+        /// </summary>
+        public Action ResetOutOfControlMode;
         /// <summary>
         /// Get bool parameter in the INI file.
         /// </summary>
@@ -655,6 +686,22 @@ namespace ORTS.Scripting.Api
         /// Traction cut-off relay has been opened.
         /// </summary>
         TractionCutOffRelayOpen,
+        /// <summary>
+        /// Left doors have been opened.
+        /// </summary>
+        LeftDoorsOpen,
+        /// <summary>
+        /// Left doors have been closed.
+        /// </summary>
+        LeftDoorsClosed,
+        /// <summary>
+        /// Right doors have been opened.
+        /// </summary>
+        RightDoorsOpen,
+        /// <summary>
+        /// Right doors have been closed.
+        /// </summary>
+        RightDoorsClosed
     }
 
     /// <summary>
@@ -688,16 +735,20 @@ namespace ORTS.Scripting.Api
     public struct SignalFeatures
     {
         public readonly string MainHeadSignalTypeName;
+        public readonly string SignalTypeName;
         public readonly Aspect Aspect;
+        public readonly string DrawStateName;
         public readonly float DistanceM;
         public readonly float SpeedLimitMpS;
         public readonly float AltitudeM;
         public readonly string TextAspect;
 
-        public SignalFeatures(string mainHeadSignalTypeName, Aspect aspect, float distanceM, float speedLimitMpS, float altitudeM, string textAspect = "")
+        public SignalFeatures(string mainHeadSignalTypeName, string signalTypeName, Aspect aspect, string drawStateName, float distanceM, float speedLimitMpS, float altitudeM, string textAspect = "")
         {
             MainHeadSignalTypeName = mainHeadSignalTypeName;
+            SignalTypeName = signalTypeName;
             Aspect = aspect;
+            DrawStateName = drawStateName;
             DistanceM = distanceM;
             SpeedLimitMpS = speedLimitMpS;
             AltitudeM = altitudeM;

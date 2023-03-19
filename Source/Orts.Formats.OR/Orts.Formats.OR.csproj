@@ -1,109 +1,37 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0D8D312B-2C02-4B77-A795-566394A9DB95}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Orts.Formats.OR</RootNamespace>
-    <AssemblyName>Orts.Formats.OR</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ACTIVITY_EDITOR</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <IsPublishable>False</IsPublishable>
+    <AssemblyTitle>Open Rails OR Formats Library</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <DefineConstants>TRACE;ACTIVITY_EDITOR</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;ACTIVITY_EDITOR</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Program\Orts.Formats.OR.xml</DocumentationFile>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GNU.Gettext, Version=1.1.5151.39896, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
     </Reference>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AEItems.cs" />
-    <Compile Include="AESegment.cs" />
-    <Compile Include="AESignals.cs" />
-    <Compile Include="AEStationPath.cs" />
-    <Compile Include="AETraveller.cs" />
-    <Compile Include="AuxActionRef.cs" />
-    <Compile Include="DrawUtility.cs" />
-    <Compile Include="ExtCarSpawnerFile.cs" />
-    <Compile Include="GlobalItem.cs" />
-    <Compile Include="MSTSCoord.cs" />
-    <Compile Include="MSTSData.cs" />
-    <Compile Include="ClocksFile.cs" />
-    <Compile Include="WeatherFile.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RouteConfigurationFile.cs" />
-    <Compile Include="RouteItems.cs" />
-    <Compile Include="TimetableFile.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="TimetableGroupFile.cs" />
-    <Compile Include="TrackCircuitElement.cs" />
-    <Compile Include="TrackNodeAE.cs" />
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
+    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj" />
+    <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
+    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
+    <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
-      <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>
-      <Name>ORTS.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj">
-      <Project>{812685a7-2683-4102-a3ca-2a5ced2e61ee}</Project>
-      <Name>ORTS.Content</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
-      <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
-      <Name>Orts.Formats.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
-      <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
-      <Name>Orts.Parsers.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
-      <Project>{1cc3bd5c-06c5-4784-b067-f93945a7ca2c}</Project>
-      <Name>Orts.Parsers.OR</Name>
-    </ProjectReference>
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

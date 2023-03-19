@@ -19,6 +19,7 @@ using Orts.Formats.Msts;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -38,14 +39,20 @@ namespace DataCollector
 
         static void ShowHelp()
         {
-            Console.WriteLine("Open Rails Data Collector utility");
+            var version = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location);
+            Console.WriteLine("{0} {1}", version.FileDescription, VersionInfo.VersionOrBuild);
             Console.WriteLine();
-            Console.WriteLine("{0} [/system | /tile-terrtex PATH [...]]", Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName));
+            Console.WriteLine("Usage:");
+            Console.WriteLine("  {0} [options] [<PATH> [...]]", Path.GetFileNameWithoutExtension(version.FileName));
             Console.WriteLine();
-            //                "1234567890123456789012345678901234567890123456789012345678901234567890123456789"
-            Console.WriteLine("    /system       Collects and reports on various system information.");
-            Console.WriteLine("    /tile-terrtex Scans the provided PATHs for MSTS tile files (.t) and");
-            Console.WriteLine("                  produces a statistical summary of the terrtex used.");
+            Console.WriteLine("Arguments:");
+            Console.WriteLine("  <PATH>         Directories to scan for specific options");
+            Console.WriteLine();
+            Console.WriteLine("Options:");
+            Console.WriteLine("  /system        Collects and reports on various system information");
+            Console.WriteLine("  /tile-terrtex  Scans the provided PATHs for MSTS tile files (.t) and");
+            Console.WriteLine("                 produces a statistical summary of the terrtex used");
+            Console.WriteLine("  /help          Show help and usage information");
         }
 
         struct TileTerrtexDirectory

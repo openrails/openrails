@@ -17,17 +17,17 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Viewer3D.Common;
-using Orts.Viewer3D.Popups;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Viewer3D.Common;
+using Orts.Viewer3D.Popups;
+using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
@@ -81,14 +81,14 @@ namespace Orts.Viewer3D
                                 texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, aceTexture);
                                 Trace.TraceWarning("Required texture {1} not existing; using existing texture {2}", path, aceTexture);
                             }
-                            else texture = defaultTexture;
+                            else return defaultTexture;
                         }
                     }
                     else if (Path.GetExtension(path) == ".ace")
                     {
                         var alternativeTexture = Path.ChangeExtension(path, ".dds");
                         
-                        if (Viewer.Settings.PreferDDSTexture && Vfs.FileExists(alternativeTexture))
+                        if (Vfs.FileExists(alternativeTexture))
                         {
                             DDSLib.DDSFromFile(alternativeTexture, GraphicsDevice, true, out texture);
                         }
@@ -383,7 +383,7 @@ namespace Orts.Viewer3D
                 {
                     count = 0;
                     // retest if there is enough free memory left;
-                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.Game.HostProcess.CPUMemoryWorkingSet;
                     if (remainingMemorySpace < 0)
                     {
                         return false; // too bad, no more space, other night textures won't be loaded
@@ -406,7 +406,7 @@ namespace Orts.Viewer3D
                 {
                     count = 0;
                     // retest if there is enough free memory left;
-                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.Game.HostProcess.CPUMemoryWorkingSet;
                     if (remainingMemorySpace < 0)
                     {
                         return false; // too bad, no more space, other night textures won't be loaded
@@ -445,7 +445,7 @@ namespace Orts.Viewer3D
             if (Viewer.Settings.UseMSTSEnv == false)
             {
                 Viewer.World.Sky.LoadPrep();
-                sunDirection = Viewer.World.Sky.solarDirection;
+                sunDirection = Viewer.World.Sky.SolarDirection;
             }
             else
             {
@@ -472,7 +472,7 @@ namespace Orts.Viewer3D
         internal void UpdateShaders()
         {
             if(Viewer.Settings.UseMSTSEnv == false)
-                sunDirection = Viewer.World.Sky.solarDirection;
+                sunDirection = Viewer.World.Sky.SolarDirection;
             else
                 sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
 
@@ -904,14 +904,13 @@ namespace Orts.Viewer3D
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            var viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref viewProj);
+                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
 

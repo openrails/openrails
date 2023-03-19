@@ -996,8 +996,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         // Brake Controller is in Release position - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
                         else if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
                         {
+                            
                             float TrainPipePressureDiffPSI = 0;
-                            if (lead.EngineType == TrainCar.EngineTypes.Diesel || lead.EngineType == TrainCar.EngineTypes.Electric)
+                            if (lead.EngineType == TrainCar.EngineTypes.Diesel || lead.EngineType == TrainCar.EngineTypes.Electric || lead.EngineType == TrainCar.EngineTypes.Control)
                             {
                                 // diesel and electric locomotives use vacuum exhauster
                                 TrainPipePressureDiffPSI = TrainPipeTimeVariationS * EQReleaseNetBPLossGainPSI;

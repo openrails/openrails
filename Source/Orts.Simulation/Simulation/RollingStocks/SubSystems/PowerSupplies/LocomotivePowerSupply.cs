@@ -15,19 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Parsers.Msts;
-using Orts.Simulation.Physics;
-using ORTS.Scripting.Api;
 using System;
 using System.IO;
 using System.Linq;
+using Orts.Parsers.Msts;
+using Orts.Simulation.Physics;
+using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
 
     public abstract class ScriptedLocomotivePowerSupply : ILocomotivePowerSupply
     {
-        public readonly MSTSLocomotive Locomotive;
+        public TrainCar Car { get; protected set; }
+        public MSTSLocomotive Locomotive => Car as MSTSLocomotive;
         protected Simulator Simulator => Locomotive.Simulator;
         protected Train Train => Locomotive.Train;
         protected int CarId = 0;
@@ -79,9 +80,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         private bool firstUpdate = true;
 
-        public ScriptedLocomotivePowerSupply(MSTSLocomotive locomotive)
+        protected ScriptedLocomotivePowerSupply(MSTSLocomotive locomotive)
         {
-            Locomotive = locomotive;
+            Car = locomotive;
 
             BatterySwitch = new BatterySwitch(Locomotive);
             MasterKey = new MasterKey(Locomotive);
@@ -111,6 +112,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 case "engine(ortsbattery(mode":
                 case "engine(ortsbattery(delay":
+                case "engine(ortsbattery(defaulton":
                     BatterySwitch.Parse(lowercasetoken, stf);
                     break;
                 case "engine(ortsmasterkey(mode":

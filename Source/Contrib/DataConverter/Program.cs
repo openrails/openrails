@@ -17,9 +17,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using ORTS.Common;
 
 namespace Orts.DataConverter
 {
@@ -85,22 +87,30 @@ namespace Orts.DataConverter
 
         static void ShowHelp(List<IDataConverter> converters)
         {
-            Console.WriteLine("Open Rails Data Converter utility");
+            var version = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location);
+            Console.WriteLine("{0} {1}", version.FileDescription, VersionInfo.VersionOrBuild);
             Console.WriteLine();
-            Console.WriteLine("{0} /input INPUT [/output] [OUTPUT [...]]", Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName));
+            Console.WriteLine("Usage:");
+            Console.WriteLine("  {0} /input <INPUT> [/output] [<OUTPUT> [...]]", Path.GetFileNameWithoutExtension(version.FileName));
             Console.WriteLine();
-            //                "1234567890123456789012345678901234567890123456789012345678901234567890123456789"
-            Console.WriteLine("    INPUT         Specifies the file to read.");
-            Console.WriteLine("    OUTPUT        Specifies the file to generate.");
+            Console.WriteLine("Arguments:");
+            Console.WriteLine("  <INPUT>   Specifies the file to read");
+            Console.WriteLine("  <OUTPUT>  Specifies the file to generate");
             Console.WriteLine();
-            Console.WriteLine("  Multiple outputs may be specified for each input.");
+            Console.WriteLine("Options:");
+            Console.WriteLine("  /input   Indicate that next argument is input");
+            Console.WriteLine("  /output  Indicate that following arguments are outputs");
+            Console.WriteLine("  /help    Show help and usage information");
             Console.WriteLine();
-            Console.WriteLine("  Available file format conversions");
+            Console.WriteLine("Multiple outputs may be specified for each input");
+            Console.WriteLine();
+            Console.WriteLine("Available file format conversions:");
             Console.WriteLine("               Input  Output              Description");
             foreach (var converter in converters)
             {
                 converter.ShowConversions();
             }
+            Console.WriteLine();
         }
 
         static List<DataConversion> GetConversions(string[] args)

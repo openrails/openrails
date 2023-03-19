@@ -1,54 +1,28 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Orts</RootNamespace>
-    <AssemblyName>RunActivity</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;NEW_ACTION;WITH_NEW_SAVE;ACTIVITY_EDITOR</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <IsPublishable>False</IsPublishable>
+    <AssemblyTitle>Open Rails Activity Runner</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <DefineConstants>TRACE;WINDOWS;NEW_ACTION;WITH_NEW_SAVE;ACTIVITY_EDITOR</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;WINDOWS;NEW_ACTION;WITH_NEW_SAVE;ACTIVITY_EDITOR</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Program\RunActivity.xml</DocumentationFile>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <NoWarn>1591</NoWarn>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>Orts.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>..\Launcher\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EmbedIO, Version=3.4.3.0, Culture=neutral, PublicKeyToken=5e5f048b6e04267e, processorArchitecture=MSIL">
-      <HintPath>..\packages\EmbedIO.3.4.3\lib\netstandard2.0\EmbedIO.dll</HintPath>
-    </Reference>
     <Reference Include="GNU.Gettext, Version=1.1.5151.39896, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
@@ -57,153 +31,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
     </Reference>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoGame.Framework.Content.Pipeline">
-      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.Content.Pipeline.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="RailDriver, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RailDriver.0.7.10\lib\netstandard2.0\RailDriver.dll</HintPath>
-    </Reference>
-    <Reference Include="Swan.Lite, Version=3.0.0.0, Culture=neutral, PublicKeyToken=30c707c872729fff, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unosquare.Swan.Lite.3.0.0\lib\net461\Swan.Lite.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Processes\ProcessState.cs" />
-    <Compile Include="Processes\Profiler.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Viewer3D\ALSoundHelper.cs" />
-    <Compile Include="Viewer3D\AnimatedPart.cs" />
-    <Compile Include="Viewer3D\Cameras.cs" />
-    <Compile Include="Viewer3D\Commands.cs" />
-    <Compile Include="Viewer3D\Common\Helpers.cs" />
-    <Compile Include="Viewer3D\Common\SunMoonPos.cs" />
-    <Compile Include="Viewer3D\DDSLib.cs" />
-    <Compile Include="Viewer3D\Debugging\DebugViewerForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Viewer3D\Debugging\DebugViewerForm.Designer.cs">
-      <DependentUpon>DebugViewerForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Viewer3D\Debugging\MessageViewer.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Viewer3D\Debugging\MessageViewer.Designer.cs">
-      <DependentUpon>MessageViewer.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Viewer3D\Debugging\SoundDebugForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Viewer3D\Debugging\SoundDebugForm.Designer.cs">
-      <DependentUpon>SoundDebugForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Viewer3D\Debugging\TimetableWindow.cs" />
-    <Compile Include="Viewer3D\DynamicTrack.cs" />
-    <Compile Include="Viewer3D\Forest.cs" />
-    <Compile Include="Viewer3D\InfoDisplay.cs" />
-    <Compile Include="Viewer3D\Lights.cs" />
-    <Compile Include="Viewer3D\Materials.cs" />
-    <Compile Include="Viewer3D\MSTSSky.cs" />
-    <Compile Include="Viewer3D\MultiPlayerViewer.cs" />
-    <Compile Include="Viewer3D\Noise.cs" />
-    <Compile Include="Viewer3D\OpenAL.cs" />
-    <Compile Include="Viewer3D\ParticleEmitter.cs" />
-    <Compile Include="Viewer3D\Popups\ActivityWindow.cs" />
-    <Compile Include="Viewer3D\Popups\CarOperationsWindow.cs" />
-    <Compile Include="Viewer3D\Popups\CompassWindow.cs" />
-    <Compile Include="Viewer3D\Popups\ComposeMessage.cs" />
-    <Compile Include="Viewer3D\Popups\LabelPrimitive.cs" />
-    <Compile Include="Viewer3D\Popups\MultiPlayerWindow.cs" />
-    <Compile Include="Viewer3D\Popups\NoticeWindow.cs" />
-    <Compile Include="Viewer3D\Popups\HelpWindow.cs" />
-    <Compile Include="Viewer3D\Popups\HUDWindow.cs" />
-    <Compile Include="Viewer3D\Popups\LayeredWindow.cs" />
-    <Compile Include="Viewer3D\Popups\MessagesWindow.cs" />
-    <Compile Include="Viewer3D\Popups\NextStationWindow.cs" />
-    <Compile Include="Viewer3D\Popups\OSDCars.cs" />
-    <Compile Include="Viewer3D\Popups\OSDLocations.cs" />
-    <Compile Include="Viewer3D\Popups\PauseWindow.cs" />
-    <Compile Include="Viewer3D\Popups\QuitWindow.cs" />
-    <Compile Include="Viewer3D\Popups\SignallingDebugWindow.cs" />
-    <Compile Include="Viewer3D\Popups\SwitchWindow.cs" />
-    <Compile Include="Viewer3D\Popups\TrackMonitorWindow.cs" />
-    <Compile Include="Viewer3D\Popups\TracksDebugWindow.cs" />
-    <Compile Include="Viewer3D\Popups\TrainDPUWindow.cs" />
-    <Compile Include="Viewer3D\Popups\TrainDrivingWindow.cs" />
-    <Compile Include="Viewer3D\Popups\TrainListWindow.cs" />
-    <Compile Include="Viewer3D\Popups\TrainOperationsWindow.cs" />
-    <Compile Include="Viewer3D\Popups\TTDetachWindow.cs" />
-    <Compile Include="Viewer3D\Popups\Window.cs" />
-    <Compile Include="Viewer3D\Popups\WindowControls.cs" />
-    <Compile Include="Viewer3D\Popups\WindowManager.cs" />
-    <Compile Include="Viewer3D\Popups\WindowText.cs" />
-    <Compile Include="Viewer3D\Precipitation.cs" />
-    <Compile Include="Viewer3D\Processes\Game.cs" />
-    <Compile Include="Viewer3D\Processes\GameState.cs" />
-    <Compile Include="Viewer3D\Processes\GameStateRunActivity.cs" />
-    <Compile Include="Viewer3D\Processes\GameStateViewer3D.cs" />
-    <Compile Include="Viewer3D\Processes\LoaderProcess.cs" />
-    <Compile Include="Viewer3D\Processes\RenderProcess.cs" />
-    <Compile Include="Viewer3D\Processes\SoundProcess.cs" />
-    <Compile Include="Viewer3D\Processes\UpdaterProcess.cs" />
-    <Compile Include="Viewer3D\Processes\WatchdogProcess.cs" />
-    <Compile Include="Viewer3D\Processes\WebServerProcess.cs" />
-    <Compile Include="Viewer3D\RenderFrame.cs" />
-    <Compile Include="Viewer3D\RoadCars.cs" />
-    <Compile Include="Viewer3D\RollingStock\MSTSDieselLocomotiveViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\MSTSElectricLocomotiveViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\MSTSLocomotiveViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\MSTSSteamLocomotiveViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\MSTSWagonViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\SubSystems\DistributedPowerInterface.cs" />
-    <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\DataEntry.cs" />
-    <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\Menus.cs" />
-    <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\TextMessages.cs" />
-    <Compile Include="Viewer3D\RollingStock\SubSystems\FreightAnimationsViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\TrainCarViewer.cs" />
-    <Compile Include="Viewer3D\Scenery.cs" />
-    <Compile Include="Viewer3D\Shaders.cs" />
-    <Compile Include="Viewer3D\Shapes.cs" />
-    <Compile Include="Viewer3D\Signals.cs" />
-    <Compile Include="Viewer3D\Sky.cs" />
-    <Compile Include="Viewer3D\Sound.cs" />
-    <Compile Include="Viewer3D\SuperElevation.cs" />
-    <Compile Include="Viewer3D\Terrain.cs" />
-    <Compile Include="Viewer3D\Tiles.cs" />
-    <Compile Include="Viewer3D\Trains.cs" />
-    <Compile Include="Viewer3D\Transfers.cs" />
-    <Compile Include="Viewer3D\UserInput.cs" />
-    <Compile Include="Viewer3D\UserInputRailDriver.cs" />
-    <Compile Include="Viewer3D\Viewer.cs" />
-    <Compile Include="Viewer3D\Water.cs" />
-    <Compile Include="Viewer3D\Weather.cs" />
-    <Compile Include="Viewer3D\WebServices\ControlValue.cs" />
-    <Compile Include="Viewer3D\WebServices\TrackMonitorDisplay.cs" />
-    <Compile Include="Viewer3D\WebServices\TrainDpuDisplay.cs" />
-    <Compile Include="Viewer3D\WebServices\TrainDrivingDisplay.cs" />
-    <Compile Include="Viewer3D\WebServices\TrainInfo.cs" />
-    <Compile Include="Viewer3D\WebServices\WebServer.cs" />
-    <Compile Include="Viewer3D\Wire.cs" />
-    <Compile Include="Viewer3D\World.cs" />
-    <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\DriverMachineInterface.cs" />
-    <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\SpeedDistanceMonitoring.cs" />
-    <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\PlanningWindow.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\3rdPartyLibs\openal-soft\Win32\OpenAL32.dll">
@@ -217,16 +44,7 @@
     <Content Include="Content\blank.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\CabShader.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Content\Clouds01.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\DebugShader.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\DriverMachineInterfaceShader.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\ETCS\ETCS_DMI_symbols_credit.txt">
@@ -640,16 +458,7 @@
     <Content Include="Content\ETCS\SE_04.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\LightConeShader.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Content\LightGlow.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\LightGlowShader.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\Loading.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Loading.png">
@@ -659,15 +468,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\MoonMask.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\ParticleEmitterShader.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\PopupWindow.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\PrecipitationShader.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Raindrop.png">
@@ -703,12 +503,6 @@
     <Content Include="Content\Raindrop10.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\SceneryShader.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\ShadowMap.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Content\SignalAspects.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -716,9 +510,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\SkyDome1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\SkyShader.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Snowflake.png">
@@ -830,42 +621,29 @@
       <Project>{333c4378-d82e-4b47-b561-6ba923b8fdfd}</Project>
       <Name>Orts.Simulation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
+    <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj" />
+    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
+    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj" />
+    <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj" />
+    <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj" />
+    <ProjectReference Include="..\Orts.Simulation\Orts.Simulation.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Viewer3D\Debugging\DebugViewerForm.resx">
-      <DependentUpon>DebugViewerForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Viewer3D\Debugging\MessageViewer.resx">
-      <DependentUpon>MessageViewer.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Viewer3D\Debugging\SoundDebugForm.resx">
-      <DependentUpon>SoundDebugForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
+    <PackageReference Include="EmbedIO" Version="3.5.2" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="MonoGame.Framework.Content.Pipeline" Version="3.8.0.1641" />
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="RailDriver" Version="0.7.10" />
+    <PackageReference Include="System.Management" Version="7.0.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <PackageReference Include="Unosquare.Swan.Lite" Version="3.1.0" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="PostBuildActions.bat" />
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-    <PostBuildEvent>CD ..\
-IF EXIST "Program\Content\Web" RMDIR "Program\Content\Web" /S /Q
-IF NOT EXIST "Program\Content\Web" MKDIR "Program\Content\Web"
-XCOPY "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web" /S /Y
-DEL "Program\RunActivityLAA.*"
-</PostBuildEvent>
-  </PropertyGroup>
 </Project>

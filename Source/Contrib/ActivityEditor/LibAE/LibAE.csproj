@@ -1,62 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B79691A7-BF8C-40B4-ADE0-5F30F2730414}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LibAE</RootNamespace>
     <AssemblyName>Contrib.LibAE</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <IsPublishable>False</IsPublishable>
+    <AssemblyTitle>Open Rails LibAE Library (Contributed)</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <DefineConstants>TRACE;WINDOWS;ACTIVITY_EDITOR;JSON_OR_XML</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;ACTIVITY_EDITOR;JSON_OR_XML</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;WINDOWS;ACTIVITY_EDITOR</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Drawing" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AEUtility.cs" />
-    <Compile Include="Divers.cs" />
-    <Compile Include="Formats\ActivityInfo.cs" />
-    <Compile Include="Formats\MSTSDataConfig.cs" />
-    <Compile Include="Formats\PathEvent.cs" />
-    <Compile Include="Formats\TrackDef.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RouteInfo.cs" />
-  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon\Start.ico" />
     <EmbeddedResource Include="Icon\Stop.ico" />
@@ -66,39 +21,19 @@
     <Folder Include="OR\" />
     <Folder Include="Utility\" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
-      <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
-      <Name>Orts.Formats.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Orts.Formats.OR\Orts.Formats.OR.csproj">
-      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
-      <Name>Orts.Formats.OR</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
-      <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
-      <Name>Orts.Parsers.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\ORTS.Common\ORTS.Common.csproj">
-      <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>
-      <Name>ORTS.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\ORTS.Content\ORTS.Content.csproj">
-      <Project>{812685a7-2683-4102-a3ca-2a5ced2e61ee}</Project>
-      <Name>ORTS.Content</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\ORTS.Settings\ORTS.Settings.csproj">
-      <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
-      <Name>ORTS.Settings</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
+    <ProjectReference Include="..\..\..\Orts.Formats.OR\Orts.Formats.OR.csproj" />
+    <ProjectReference Include="..\..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
+    <ProjectReference Include="..\..\..\ORTS.Common\ORTS.Common.csproj" />
+    <ProjectReference Include="..\..\..\ORTS.Content\ORTS.Content.csproj" />
+    <ProjectReference Include="..\..\..\ORTS.Settings\ORTS.Settings.csproj" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+  </ItemGroup>
 </Project>

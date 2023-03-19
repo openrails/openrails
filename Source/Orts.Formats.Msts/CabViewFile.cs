@@ -207,58 +207,48 @@ namespace Orts.Formats.Msts
         ORTS_GENERIC_ITEM2,
         ORTS_SCREEN_SELECT,
         ORTS_STATIC_DISPLAY,
+        ORTS_EOT_BRAKE_PIPE,
+        ORTS_EOT_STATE_DISPLAY,
+        ORTS_EOT_ID,
+        ORTS_EOT_COMM_TEST,
+        ORTS_EOT_DISARM,
+        ORTS_EOT_ARM_TWO_WAY,
+        ORTS_EOT_EMERGENCY_BRAKE,
 
         // TCS Controls
-        ORTS_TCS1,
-        ORTS_TCS2,
-        ORTS_TCS3,
-        ORTS_TCS4,
-        ORTS_TCS5,
-        ORTS_TCS6,
-        ORTS_TCS7,
-        ORTS_TCS8,
-        ORTS_TCS9,
-        ORTS_TCS10,
-        ORTS_TCS11,
-        ORTS_TCS12,
-        ORTS_TCS13,
-        ORTS_TCS14,
-        ORTS_TCS15,
-        ORTS_TCS16,
-        ORTS_TCS17,
-        ORTS_TCS18,
-        ORTS_TCS19,
-        ORTS_TCS20,
-        ORTS_TCS21,
-        ORTS_TCS22,
-        ORTS_TCS23,
-        ORTS_TCS24,
-        ORTS_TCS25,
-        ORTS_TCS26,
-        ORTS_TCS27,
-        ORTS_TCS28,
-        ORTS_TCS29,
-        ORTS_TCS30,
-        ORTS_TCS31,
-        ORTS_TCS32,
-        ORTS_TCS33,
-        ORTS_TCS34,
-        ORTS_TCS35,
-        ORTS_TCS36,
-        ORTS_TCS37,
-        ORTS_TCS38,
-        ORTS_TCS39,
-        ORTS_TCS40,
-        ORTS_TCS41,
-        ORTS_TCS42,
-        ORTS_TCS43,
-        ORTS_TCS44,
-        ORTS_TCS45,
-        ORTS_TCS46,
-        ORTS_TCS47,
-        ORTS_TCS48,
+        ORTS_TCS,
         ORTS_ETCS,
 
+        // Cruise Control
+        ORTS_SELECTED_SPEED,
+        ORTS_SELECTED_SPEED_DISPLAY,
+        ORTS_SELECTED_SPEED_MODE,
+        ORTS_SELECTED_SPEED_REGULATOR_MODE,
+        ORTS_SELECTED_SPEED_MAXIMUM_ACCELERATION,
+        ORTS_SELECTED_SPEED_SELECTOR,
+        ORTS_RESTRICTED_SPEED_ZONE_ACTIVE,
+        ORTS_NUMBER_OF_AXES_DISPLAY_UNITS,
+        ORTS_NUMBER_OF_AXES_DISPLAY_TENS,
+        ORTS_NUMBER_OF_AXES_DISPLAY_HUNDREDS,
+        ORTS_TRAIN_LENGTH_METERS,
+        ORTS_REMAINING_TRAIN_LENGTH_SPEED_RESTRICTED,
+        ORTS_REMAINING_TRAIN_LENGTH_PERCENT,
+        ORTS_MOTIVE_FORCE,
+        ORTS_MOTIVE_FORCE_KILONEWTON,
+        ORTS_MAXIMUM_FORCE,
+        ORTS_FORCE_IN_PERCENT_THROTTLE_AND_DYNAMIC_BRAKE,
+        ORTS_TRAIN_TYPE_PAX_OR_CARGO,
+        ORTS_CONTROLLER_VOLTAGE,
+        ORTS_AMPERS_BY_CONTROLLER_VOLTAGE,
+        ORTS_ACCELERATION_IN_TIME,
+        ORTS_CC_SELECTED_SPEED,
+        ORTS_NUMBER_OF_AXES_INCREASE,
+        ORTS_NUMBER_OF_AXES_DECREASE,
+        ORTS_MULTI_POSITION_CONTROLLER,
+        ORTS_CC_SPEED_0,
+
+		ORTS_CC_SPEED_DELTA,
+					
         ORTS_ODOMETER,
         ORTS_ODOMETER_RESET,
         ORTS_ODOMETER_DIRECTION,
@@ -350,6 +340,30 @@ namespace Orts.Formats.Msts
         CAB_SIGNAL_DISPLAY
     }
 
+    public struct CabViewControlType
+    {
+        public CABViewControlTypes Type;
+        public int Id;
+        public CabViewControlType(string name)
+        {
+            Type = CABViewControlTypes.NONE;
+            Id = 0;
+            if (name != null && name.ToUpperInvariant().StartsWith("ORTS_TCS"))
+            {
+                if (int.TryParse(name.Substring(8), out Id))
+                {
+                    Type = CABViewControlTypes.ORTS_TCS;
+                }
+            }
+            else Enum.TryParse(name, true, out Type);
+        }
+        public override string ToString()
+        {
+            if (Type == CABViewControlTypes.ORTS_TCS) return Type.ToString() + Id;
+            return Type.ToString();
+        }
+    }
+
     public class CabViewControls : List<CabViewControl>
     {
         public CabViewControls(STFReader stf, string basepath)
@@ -408,30 +422,30 @@ namespace Orts.Formats.Msts
         public double OldValue;
         public string ACEFile = "";
         public string Label = "";
+        public int ControlId = 0;
+        public float Parameter1; // Generic parameter, individually interpreted by the controls using it
 
         public int Display;
         public List<string> Screens;
         public int CabViewpoint;
 
-        public CABViewControlTypes ControlType = CABViewControlTypes.NONE;
+        public CabViewControlType ControlType;
         public CABViewControlStyles ControlStyle = CABViewControlStyles.NONE;
         public CABViewControlUnits Units = CABViewControlUnits.NONE;
 
         public bool DisabledIfLowVoltagePowerSupplyOff { get; private set; } = false;
         public bool DisabledIfCabPowerSupplyOff { get; private set; } = false;
+        public bool HideIfDisabled { get; private set; } = true;
+        public float? ValueIfDisabled { get; private set; }
 
         protected void ParseType(STFReader stf)
         {
             stf.MustMatch("(");
-            try
+            string name = stf.ReadString();
+            ControlType = new CabViewControlType(name);
+            if (ControlType.Type == CABViewControlTypes.NONE)
             {
-                ControlType = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), stf.ReadString());
-            }
-            catch(ArgumentException)
-            {
-                stf.StepBackOneItem();
-                STFException.TraceInformation(stf, "Skipped unknown ControlType " + stf.ReadString());
-                ControlType = CABViewControlTypes.NONE;
+                STFException.TraceInformation(stf, "Skipped unknown ControlType " + name);
             }
             //stf.ReadItem(); // Skip repeated Class Type 
             stf.SkipRestOfBlock();
@@ -502,14 +516,27 @@ namespace Orts.Formats.Msts
             }
             stf.SkipRestOfBlock();
         }
+
         protected void ParseDisabledIfLowVoltagePowerSupplyOff(STFReader stf)
         {
             DisabledIfLowVoltagePowerSupplyOff = stf.ReadBoolBlock(false);
         }
+
         protected void ParseDisabledIfCabPowerSupplyOff(STFReader stf)
         {
             DisabledIfCabPowerSupplyOff = stf.ReadBoolBlock(false);
         }
+
+        protected void ParseHideIfDisabled(STFReader stf)
+        {
+            HideIfDisabled = stf.ReadBoolBlock(true);
+        }
+
+        protected void ParseValueIfDisabled(STFReader stf)
+        {
+            ValueIfDisabled = stf.ReadFloatBlock(STFReader.UNITS.None, 0f);
+        }
+
         // Used by subclasses CVCGauge and CVCDigital
         protected virtual color ParseControlColor( STFReader stf )
         {
@@ -578,7 +605,11 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("pivot", ()=>{ Center = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 });
-            ControlType = dialtype;
+            ControlType = new CabViewControlType()
+            {
+                Type = dialtype,
+                Id = 0,
+            };
             ControlStyle = CABViewControlStyles.NEEDLE;
             Direction = 0;
             MaxValue = maxvalue;
@@ -600,6 +631,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
                 new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
                 new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("hideifdisabled", ()=>{ ParseHideIfDisabled(stf); }),
+                new STFReader.TokenProcessor("valueifdisabled", ()=>{ ParseValueIfDisabled(stf); }),
 
                 new STFReader.TokenProcessor("pivot", ()=>{ Center = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(null); }),
@@ -654,6 +687,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
                 new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
                 new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("hideifdisabled", ()=>{ ParseHideIfDisabled(stf); }),
+                new STFReader.TokenProcessor("valueifdisabled", ()=>{ ParseValueIfDisabled(stf); }),
 
                 new STFReader.TokenProcessor("zeropos", ()=>{ ZeroPos = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("orientation", ()=>{ Orientation = stf.ReadIntBlock(null); }),
@@ -793,6 +828,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
                 new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
                 new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("hideifdisabled", ()=>{ ParseHideIfDisabled(stf); }),
+                new STFReader.TokenProcessor("valueifdisabled", ()=>{ ParseValueIfDisabled(stf); }),
                 new STFReader.TokenProcessor("leadingzeros", ()=>{ ParseLeadingZeros(stf); }),
                 new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
                 new STFReader.TokenProcessor("accuracyswitch", ()=>{ ParseAccuracySwitch(stf); }), 
@@ -899,6 +936,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
                 new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("hideifdisabled", ()=>{ ParseHideIfDisabled(stf); }),
+                new STFReader.TokenProcessor("valueifdisabled", ()=>{ ParseValueIfDisabled(stf); }),
                 new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
                 new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); }),
                 new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); }),
@@ -964,6 +1003,8 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
                     new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
                     new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
+                    new STFReader.TokenProcessor("hideifdisabled", ()=>{ ParseHideIfDisabled(stf); }),
+                    new STFReader.TokenProcessor("valueifdisabled", ()=>{ ParseValueIfDisabled(stf); }),
                     new STFReader.TokenProcessor("mousecontrol", ()=>{ MouseControl = stf.ReadBoolBlock(false); }),
                     new STFReader.TokenProcessor("orientation", ()=>{ Orientation = stf.ReadIntBlock(null); }),
                     new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(null); }),
@@ -1088,10 +1129,12 @@ namespace Orts.Formats.Msts
                     Label = stf.ReadString();
                     stf.SkipRestOfBlock();
                 }),
+                new STFReader.TokenProcessor("controlid", ()=> { ControlId = stf.ReadIntBlock(0); }),
                 new STFReader.TokenProcessor("ortsdisplay", ()=>{ParseDisplay(stf); }),
                 new STFReader.TokenProcessor("ortsscreenpage", () => {ParseScreen(stf); }),
                 new STFReader.TokenProcessor("ortsnewscreenpage", () => {ParseNewScreen(stf); }),
                 new STFReader.TokenProcessor("ortscabviewpoint", ()=>{ParseCabViewpoint(stf); }),
+                new STFReader.TokenProcessor("ortsparameter1", ()=>{ Parameter1 = stf.ReadFloatBlock(STFReader.UNITS.Any, 0); }),
                 });
 
                 // If no ACE, just don't need any fixup
@@ -1253,15 +1296,15 @@ namespace Orts.Formats.Msts
                 }
 
                 // MSTS ignores/overrides various settings by the following exceptional cases:
-                if (ControlType == CABViewControlTypes.CP_HANDLE)
+                if (ControlType.Type == CABViewControlTypes.CP_HANDLE)
                     ControlStyle = CABViewControlStyles.NOT_SPRUNG;
-                if (ControlType == CABViewControlTypes.PANTOGRAPH || ControlType == CABViewControlTypes.PANTOGRAPH2 ||
-                    ControlType == CABViewControlTypes.ORTS_PANTOGRAPH3 || ControlType == CABViewControlTypes.ORTS_PANTOGRAPH4)
+                if (ControlType.Type == CABViewControlTypes.PANTOGRAPH || ControlType.Type == CABViewControlTypes.PANTOGRAPH2 ||
+                    ControlType.Type == CABViewControlTypes.ORTS_PANTOGRAPH3 || ControlType.Type == CABViewControlTypes.ORTS_PANTOGRAPH4)
                     ControlStyle = CABViewControlStyles.ONOFF;
-                if (ControlType == CABViewControlTypes.HORN || ControlType == CABViewControlTypes.SANDERS || ControlType == CABViewControlTypes.BELL 
-                    || ControlType == CABViewControlTypes.RESET || ControlType == CABViewControlTypes.VACUUM_EXHAUSTER)
+                if (ControlType.Type == CABViewControlTypes.HORN || ControlType.Type == CABViewControlTypes.SANDERS || ControlType.Type == CABViewControlTypes.BELL 
+                    || ControlType.Type == CABViewControlTypes.RESET || ControlType.Type == CABViewControlTypes.VACUUM_EXHAUSTER)
                     ControlStyle = CABViewControlStyles.WHILE_PRESSED;
-                if (ControlType == CABViewControlTypes.DIRECTION && Orientation == 0)
+                if (ControlType.Type == CABViewControlTypes.DIRECTION && Orientation == 0)
                     Direction = 1 - Direction;
 
                 switch (discreteState)
@@ -1313,6 +1356,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
                 new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
                 new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("hideifdisabled", ()=>{ ParseHideIfDisabled(stf); }),
+                new STFReader.TokenProcessor("valueifdisabled", ()=>{ ParseValueIfDisabled(stf); }),
 
                 new STFReader.TokenProcessor("states", ()=>{
                     stf.MustMatch("(");
@@ -1403,6 +1448,9 @@ namespace Orts.Formats.Msts
     public class CVCScreen : CabViewControl
     {
         public readonly Dictionary<string, string> CustomParameters = new Dictionary<string, string>();
+
+        public float Rotation { get; set; }
+
         public CVCScreen()
         {
         }
@@ -1416,8 +1464,11 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
                 new STFReader.TokenProcessor("parameters", ()=>{ ParseCustomParameters(stf); }),
+                new STFReader.TokenProcessor("ortsangle", () =>{ Rotation = ParseRotation(stf); }),
                 new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
                 new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("hideifdisabled", ()=>{ ParseHideIfDisabled(stf); }),
+                new STFReader.TokenProcessor("valueifdisabled", ()=>{ ParseValueIfDisabled(stf); }),
                 new STFReader.TokenProcessor("ortsdisplay", ()=>{ParseDisplay(stf); }),
                 new STFReader.TokenProcessor("ortsscreenpage", () => {ParseScreen(stf); }),
                 new STFReader.TokenProcessor("ortscabviewpoint", ()=>{ParseCabViewpoint(stf); }),

@@ -31,13 +31,16 @@ function ApiCabControls() {
 	hr.open("GET", "/API/CABCONTROLS/", true);
 	hr.send();
 	hr.onreadystatechange = function () {
-		if (this.readyState == xmlHttpRequestCodeDone && this.status == httpCodeSuccess) {
-			var jso = JSON.parse(hr.responseText);
-			if (jso != null) // Can happen using IEv11
-			{
-				// Replaces any content (innerHTML) of the element with id=markup with the data from the jso JavaScript Object
-				markup.innerHTML = prepareData(jso);
-			}
+        if (this.readyState == xmlHttpRequestCodeDone && this.status == httpCodeSuccess) {
+            if (hr.responseText != "") {
+                console.log(hr.responseText);
+                var jso = JSON.parse(hr.responseText);
+                if (jso != null) // Can happen using IEv11
+                {
+                    // Replaces any content (innerHTML) of the element with id=markup with the data from the jso JavaScript Object
+                    markup.innerHTML = prepareData(jso);
+                }
+            }
 		}
 	}
 }
@@ -95,4 +98,22 @@ function prepareData(jso)
 		data += "</tr>";
 	}
 	return data;
+}
+
+// Sends the setting for a control.
+function sendValue(value, typeName)
+{
+    // GET to fetch data, POST to send it
+    // "/API/APISAMPLE" /API is a prefix hard-coded into the WebServer class
+    hr.open("POST", "/API/CABCONTROLS", true);    // true to send asynchronously (without waiting)
+    hr.setRequestHeader("Content-Type", "application/json");    // Default is ;charset=UTF-8
+    hr.send
+    ( JSON.stringify
+        (   [   { "TypeName": typeName
+             // , "ControlIndex": intData.value // If provided, used in rendering cab view
+                , "Value": value
+				}
+            ]
+        )
+    );
 }

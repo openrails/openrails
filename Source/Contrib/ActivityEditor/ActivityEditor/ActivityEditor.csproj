@@ -1,202 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{306C904F-BE41-4B39-A0C4-51068B7F205E}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ActivityEditor</RootNamespace>
     <AssemblyName>Contrib.ActivityEditor</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
     <ApplicationIcon>..\..\..\ORTS.ico</ApplicationIcon>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;ACTIVITY_EDITOR</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\..\..\Program\</OutputPath>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <IsPublishable>False</IsPublishable>
+    <AssemblyTitle>Open Rails Activity Editor (Contributed)</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails (disabled)</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <DefineConstants>TRACE;WINDOWS;ACTIVITY_EDITOR</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ActionProperties\ControlStartProperties.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ActionProperties\ControlStartProperties.Designer.cs">
-      <DependentUpon>ControlStartProperties.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ActionProperties\ControlStoppedProperties.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ActionProperties\ControlStoppedProperties.Designer.cs">
-      <DependentUpon>ControlStoppedProperties.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ActionProperties\HornProperties.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ActionProperties\HornProperties.Designer.cs">
-      <DependentUpon>HornProperties.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Engine\ActEditor.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Engine\ActEditor.Designer.cs">
-      <DependentUpon>ActEditor.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Engine\AEConfig.cs" />
-    <Compile Include="Preference\AEPreference.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="AboutActEdit.resx">
-      <DependentUpon>AboutActEdit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ActionProperties\ControlStartProperties.resx">
-      <DependentUpon>ControlStartProperties.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ActionProperties\ControlStoppedProperties.resx">
-      <DependentUpon>ControlStoppedProperties.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ActionProperties\HornProperties.resx">
-      <DependentUpon>HornProperties.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Engine\ActEditor.resx">
-      <DependentUpon>ActEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Engine\Viewer2D.resx">
-      <DependentUpon>Viewer2D.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Preference\Options.resx">
-      <DependentUpon>Options.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <None Include="app.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <Compile Include="AboutActEdit.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AboutActEdit.Designer.cs">
-      <DependentUpon>AboutActEdit.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Activity\WaitActivity.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Activity\WaitActivity.Designer.cs">
-      <DependentUpon>WaitActivity.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Activity\StartActivity.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Activity\StartActivity.Designer.cs">
-      <DependentUpon>StartActivity.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Engine\AEActivity.cs" />
-    <Compile Include="Engine\AERouteConfig.cs" />
-    <Compile Include="Engine\SimpleTextEd.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Engine\SimpleTextEd.Designer.cs">
-      <DependentUpon>SimpleTextEd.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Engine\ProcessState.cs" />
-    <Compile Include="Engine\PseudoSim.cs" />
-    <Compile Include="Engine\Viewer2D.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Engine\Viewer2D.Designer.cs">
-      <DependentUpon>Viewer2D.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Internat\IntalMngr.cs" />
-    <Compile Include="Preference\Options.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Preference\Options.Designer.cs">
-      <DependentUpon>Options.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Route Metadata\BufferInterface.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Route Metadata\BufferInterface.Designer.cs">
-      <DependentUpon>BufferInterface.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Route Metadata\ConnectorInterface.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Route Metadata\ConnectorInterface.Designer.cs">
-      <DependentUpon>ConnectorInterface.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Route Metadata\StationDisplay.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Route Metadata\StationDisplay.Designer.cs">
-      <DependentUpon>StationDisplay.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Route Metadata\TrackSegmentInterface.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Route Metadata\TrackSegmentInterface.Designer.cs">
-      <DependentUpon>TrackSegmentInterface.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Settings.cs" />
-    <Compile Include="Wizard\ActivityDescr.cs">
+    <Compile Update="Wizard\ActivityDescr.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Wizard\SelectRoute.cs">
+    <Compile Update="Wizard\SelectRoute.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Wizard\SinglePage.cs">
+    <Compile Update="Wizard\SinglePage.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Wizard\TrainInfo.cs">
+    <Compile Update="Wizard\TrainInfo.cs">
       <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Wizard\WizardForm.cs">
-      <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -224,97 +54,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Engine\ActEditor.en-GB.resx">
-      <DependentUpon>ActEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Engine\ActEditor.en.resx">
-      <DependentUpon>ActEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Engine\ActEditor.fr-FR.resx">
-      <DependentUpon>ActEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Engine\ActEditor.fr.resx">
-      <DependentUpon>ActEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Engine\Viewer2D.en.resx">
-      <DependentUpon>Viewer2D.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Engine\Viewer2D.fr.resx">
-      <DependentUpon>Viewer2D.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="icon\SignalBox.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="icon\object_rotate.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="icon\object_move.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="icon\Activity_start.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="icon\Activity_stop.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="icon\Activity_wait.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="icon\Action.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="icon\Activity_check.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="icon\tag.gif" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\activityStart.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\activityStart1.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\98.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\12.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\78.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\77.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\118.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\31.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\311.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\AREA_ADD.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\64.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\main.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="icon\reduit.cur" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\point.cur" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\23.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="icon\StationConnector.ico">
@@ -324,82 +64,27 @@
     <EmbeddedResource Include="icon\ruler.ico" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Activity\StartActivity.resx">
-      <DependentUpon>StartActivity.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="icon\Ruler.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="icon\Start.ico" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Activity\WaitActivity.resx">
-      <DependentUpon>WaitActivity.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="icon\Stop.ico" />
     <EmbeddedResource Include="icon\Wait.ico" />
-    <EmbeddedResource Include="Route Metadata\BufferInterface.resx">
-      <DependentUpon>BufferInterface.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Route Metadata\ConnectorInterface.resx">
-      <DependentUpon>ConnectorInterface.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Route Metadata\StationDisplay.resx">
-      <DependentUpon>StationDisplay.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Route Metadata\TrackSegmentInterface.resx">
-      <DependentUpon>TrackSegmentInterface.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Wizard\ActivityDescr.resx">
-      <DependentUpon>ActivityDescr.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Wizard\SelectRoute.resx">
-      <DependentUpon>SelectRoute.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Wizard\TrainInfo.resx">
-      <DependentUpon>TrainInfo.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Wizard\WizardForm.resx">
-      <DependentUpon>WizardForm.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-    <None Include="Resources\metasegment.bmp" />
-    <Content Include="Resources\metasegment.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
-      <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
-      <Name>Orts.Formats.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Orts.Formats.OR\Orts.Formats.OR.csproj">
-      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
-      <Name>Orts.Formats.OR</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
-      <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
-      <Name>Orts.Parsers.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\ORTS.Common\ORTS.Common.csproj">
-      <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>
-      <Name>ORTS.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\ORTS.Settings\ORTS.Settings.csproj">
-      <Project>{67f84996-8769-4fd8-819b-464af269037b}</Project>
-      <Name>ORTS.Settings</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\LibAE\LibAE.csproj">
-      <Project>{b79691a7-bf8c-40b4-ade0-5f30f2730414}</Project>
-      <Name>LibAE</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
+    <ProjectReference Include="..\..\..\Orts.Formats.OR\Orts.Formats.OR.csproj" />
+    <ProjectReference Include="..\..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
+    <ProjectReference Include="..\..\..\ORTS.Common\ORTS.Common.csproj" />
+    <ProjectReference Include="..\..\..\ORTS.Settings\ORTS.Settings.csproj" />
+    <ProjectReference Include="..\LibAE\LibAE.csproj" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
+  </ItemGroup>
 </Project>

@@ -81,7 +81,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         /// </summary>
         public bool IsSoftLayout;
         public DPIWindow ActiveWindow;
-        public DistributedPowerInterface(float height, float width, MSTSLocomotive locomotive, Viewer viewer, CabViewControl control)
+        public DistributedPowerInterface(float height, float width, MSTSLocomotive locomotive, Viewer viewer, CVCScreen control)
         {
             Viewer = viewer;
             Locomotive = locomotive;
@@ -171,7 +171,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                 sUnits = sUnits.Replace('/', '_');
                 CABViewControlUnits.TryParse(sUnits, out LoadUnits);
             }
-            DPITable = new DPITable(FullTable, LoadUnits, fullScreen:true, dpi:dpi);
+            DPITable = new DPITable(FullTable, LoadUnits, fullScreen:true, dpi:dpi, (control as CVCScreen).Rotation);
             AddToLayout(DPITable, new Point(0, 0));
         }
     }
@@ -198,18 +198,20 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
             public Color Color;
             public WindowTextFont Font;
             public string Text;
+            public float DrawRotation;
 
-            public TextPrimitive(Point position, Color color, string text, WindowTextFont font)
+            public TextPrimitive(Point position, Color color, string text, WindowTextFont font, float drawRotation = 0)
             {
                 Position = position;
                 Color = color;
                 Text = text;
                 Font = font;
+                DrawRotation = drawRotation;
             }
 
             public void Draw(SpriteBatch spriteBatch, Point position)
             {
-                Font.Draw(spriteBatch, position, Text, Color);
+                Font.Draw(spriteBatch, position, DrawRotation, 0, Text, LabelAlignment.Left, Color, Color.Black);
             }
         }
         public struct TexturePrimitive
@@ -371,6 +373,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         readonly int ColLength = 88;
         public bool FullTable = true;
         public CABViewControlUnits LoadUnits;
+        private float DrawRotation = 0;
 
         // Change text color
         readonly Dictionary<string, Color> ColorCodeCtrl = new Dictionary<string, Color>
@@ -389,12 +392,13 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
 
         public readonly string[] FirstColumn = { "ID", "Throttle", "Load", "BP", "Flow", "Remote", "ER", "BC", "MR" };
 
-        public DPITable(bool fullTable, CABViewControlUnits loadUnits, bool fullScreen, DistributedPowerInterface dpi) : base(dpi, 640,  fullTable? 230 : 162)
+        public DPITable(bool fullTable, CABViewControlUnits loadUnits, bool fullScreen, DistributedPowerInterface dpi, float drawRotation) : base(dpi, 640,  fullTable? 230 : 162)
         {
             DPI = dpi;
             FullScreen = fullScreen;
             FullTable = fullTable;
             LoadUnits = loadUnits;
+            DrawRotation = drawRotation;
             BackgroundColor = DPI.BlackWhiteTheme ? Color.Black : ColorBackground;
             SetFont();
             string text = "";
@@ -402,9 +406,10 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
             {
                 for (int iCol = 0; iCol < NumberOfColumns; iCol++)
                 {
-//                    text = iCol.ToString() + "--" + iRow.ToString();
-                    TableText[iRow, iCol] = new TextPrimitive(new Point(20 + ColLength * iCol, (iRow) * (FontHeightTableText + 8)), Color.White, text, TableTextFont);
-                    TableSymbol[iRow, iCol] = new TextPrimitive(new Point(10 + ColLength * iCol, (iRow) * (FontHeightTableText + 8)), Color.Green, text, TableSymbolFont);
+                    TableText[iRow, iCol] = new TextPrimitive(new Point(20 + ColLength * iCol - (int)(iRow * (FontHeightTableText - 8) * DrawRotation / 2), (iRow) * (FontHeightTableText + 8) + (int)(ColLength * iCol * DrawRotation)),
+                        Color.White, text, TableTextFont, DrawRotation);
+                    TableSymbol[iRow, iCol] = new TextPrimitive(new Point(10 + ColLength * iCol - (int)(iRow * (FontHeightTableText - 8) * DrawRotation / 2), (iRow) * (FontHeightTableText + 8) + (int)(ColLength * iCol * DrawRotation)),
+                        Color.Green, text, TableSymbolFont, DrawRotation);
                 }
             }
         }
@@ -539,7 +544,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (!IsPowered)
+            if (!IsPowered && Control.HideIfDisabled)
                 return;
 
             base.PrepareFrame(frame, elapsedTime);
@@ -733,7 +738,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         {
             string imageName = "";
             string globalText = Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\";
-            CABViewControlTypes controltype = CVFR.GetControlType();
+            CABViewControlTypes controltype = CVFR.GetControlType().Type;
             Material material = null;
 
             if (AceFile != "")
@@ -973,7 +978,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (!CVFR.IsPowered)
+            if (!CVFR.IsPowered && CVFR.Control.HideIfDisabled)
                 return;
 
             Update3DDPITable();

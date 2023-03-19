@@ -15,14 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 using ORTS.Common;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
 namespace Orts.Formats.Msts
 {
@@ -64,13 +63,13 @@ namespace Orts.Formats.Msts
             }
         }
 
-        public void InsertORSpecificData (string filename)
+        public void InsertORSpecificData (string filename, List<TokenID> allowedTokens)
         {
             using (var sbr = SBR.Open(filename))
             {
                 using (var block = sbr.ReadSubBlock())
                 {
-                    Tr_Worldfile.InsertORSpecificData(block, filename);
+                    Tr_Worldfile.InsertORSpecificData(block, filename, allowedTokens);
                 }
                 // some w files have additional comments at the end 
                 //       eg _Skip ( "TS DB-Utility - Version: 3.4.05(13.10.2009), Filetype='World', Copyright (C) 2003-2009 by ...CarlosHR..." )
@@ -179,7 +178,7 @@ namespace Orts.Formats.Msts
             }
         }
 
-        public void InsertORSpecificData (SBR block, string filename)
+        public void InsertORSpecificData (SBR block, string filename, List<TokenID> allowedTokens)
         {
             block.VerifyID(TokenID.Tr_Worldfile);
             while (!block.EndOfBlock())
@@ -188,11 +187,13 @@ namespace Orts.Formats.Msts
                 {
                     try
                     {
-                        WorldObject origObject;
-                        bool wrongBlock = false;
-                        if (!subBlock.EndOfBlock())
+                        if (allowedTokens == null || allowedTokens.Contains(subBlock.ID))
                         {
-                            var subSubBlockUID = subBlock.ReadSubBlock();
+                            WorldObject origObject;
+                            bool wrongBlock = false;
+                            if (!subBlock.EndOfBlock())
+                            {
+                                var subSubBlockUID = subBlock.ReadSubBlock();
                                 // check if a block with this UiD already present
                                 if (subSubBlockUID.ID == TokenID.UiD)
                                 {
@@ -229,8 +230,11 @@ namespace Orts.Formats.Msts
                                     }
                                 }
  
+                            }
+                            subBlock.EndOfBlock();
                         }
-                        subBlock.EndOfBlock();
+                        else
+                            subBlock.Skip();
                     }
 
                     catch (Exception error)
@@ -310,6 +314,13 @@ namespace Orts.Formats.Msts
         public PickupCapacityItem PickupCapacity;
         public List<TrItemId> TrItemIDList = new List<TrItemId>();
         public uint CollideFlags;
+        public int MaxStackedContainers;
+        public float StackLocationsLength = 12.19f;
+        public StackLocationItems StackLocations;
+        public float PickingSurfaceYOffset;
+        public Vector3 PickingSurfaceRelativeTopStartPosition;
+        public int GrabberArmsParts = 2;
+        public string CraneSound;
 
         public WorldLocation Location;
 
@@ -333,6 +344,13 @@ namespace Orts.Formats.Msts
                 case TokenID.PickupType: PickupType = subBlock.ReadUInt();
                     subBlock.Skip(); // Discard the 2nd value (0 or 1 but significance is not known)
                     break;
+                case TokenID.ORTSMaxStackedContainers: MaxStackedContainers = subBlock.ReadInt(); break;
+                case TokenID.ORTSStackLocationsLength: StackLocationsLength = subBlock.ReadFloat(); break;
+                case TokenID.ORTSStackLocations: StackLocations = new StackLocationItems(subBlock, this); break;
+                case TokenID.ORTSPickingSurfaceYOffset: PickingSurfaceYOffset = subBlock.ReadFloat(); break;
+                case TokenID.ORTSPickingSurfaceRelativeTopStartPosition: PickingSurfaceRelativeTopStartPosition = subBlock.ReadVector3(); break;
+                case TokenID.ORTSGrabberArmsParts: GrabberArmsParts = subBlock.ReadInt(); break;
+                case TokenID.ORTSCraneSound: CraneSound = subBlock.ReadString(); break;
                 case TokenID.PickupAnimData: PickupAnimData = new PickupAnimDataItem(subBlock); break;
                 case TokenID.PickupCapacity: PickupCapacity = new PickupCapacityItem(subBlock); break;
                 case TokenID.TrItemId: TrItemIDList.Add(new TrItemId(subBlock)); break;
@@ -400,6 +418,58 @@ namespace Orts.Formats.Msts
                 QuantityAvailableKG = Kg.FromLb(block.ReadFloat());
                 FeedRateKGpS = Kg.FromLb(block.ReadFloat());
                 block.VerifyEndOfBlock();
+            }
+        }
+
+        public class StackLocationItems
+        {
+            public readonly StackLocation[] Locations;
+
+            public StackLocationItems(SBR block, PickupObj pickupObj)
+            {
+                var locations = new List<StackLocation>();
+                var count = block.ReadUInt();
+                for (var i = 0; i < count; i++)
+                {
+                    using (var subBlock = block.ReadSubBlock())
+                    {
+                        if (subBlock.ID == TokenID.StackLocation)
+                        {
+                            locations.Add(new StackLocation(subBlock));
+                        }
+                    }
+                    if (locations[i].Length == 0) locations[i].Length = pickupObj.StackLocationsLength;
+                    if (locations[i].MaxStackedContainers == 0) locations[i].MaxStackedContainers = pickupObj.MaxStackedContainers;
+                }
+                block.VerifyEndOfBlock();
+                Locations = locations.ToArray();
+                locations.Clear();
+            }
+        }
+
+        public class StackLocation
+        {
+            public Vector3 Position;
+            public int MaxStackedContainers;
+            public float Length;
+            public bool Flipped;
+
+            public StackLocation(SBR block)
+            {
+                while (!block.EndOfBlock())
+                {
+                    using (var subBlock = block.ReadSubBlock())
+                    {
+                        switch (subBlock.ID)
+                        {
+                            case TokenID.Position: Position = subBlock.ReadVector3(); break;
+                            case TokenID.MaxStackedContainers: MaxStackedContainers = subBlock.ReadInt(); break;
+                            case TokenID.Length: Length = subBlock.ReadFloat(); break;
+                            case TokenID.Flipped: subBlock.ReadInt();  Flipped = true; break;
+                            default: subBlock.Skip(); break;
+                        }
+                    }
+                }
             }
         }
     }

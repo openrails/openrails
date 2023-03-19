@@ -24,18 +24,24 @@ namespace ORTS.Common
 {
     public class SmoothedData
     {
-        public readonly float SmoothPeriodS = 3;
+        const float DefaultSmoothPeriodS = 3;
+
+        public readonly float SmoothPeriodS;
+
+        protected float rate = 0;
         protected float value = float.NaN;
         protected float smoothedValue = float.NaN;
 
         public SmoothedData()
+            : this(DefaultSmoothPeriodS)
         {
         }
 
         public SmoothedData(float smoothPeriodS)
-            : this()
         {
             SmoothPeriodS = smoothPeriodS;
+            // Convert the input assuming 60 FPS (arbitary)
+            rate = (float)(-60 * Math.Log(1 - 1 / (60 * SmoothPeriodS)));
         }
 
         public void Update(float periodS, float newValue)
@@ -53,13 +59,12 @@ namespace ORTS.Common
 
         protected void SmoothValue(ref float smoothedValue, float periodS, float newValue)
         {
-            var rate = SmoothPeriodS / periodS;
-            if (float.IsNaN(smoothedValue) || float.IsInfinity(smoothedValue))
-                smoothedValue = newValue;
-            else if (rate < 1)
+            // This formula and the calculation of `rate` are FPS-independent; see https://www.gamedeveloper.com/programming/improved-lerp-smoothing- for more details
+            var ratio = (float)Math.Exp(-rate * periodS);
+            if (float.IsNaN(smoothedValue) || float.IsInfinity(smoothedValue) || ratio < 0.5)
                 smoothedValue = newValue;
             else
-                smoothedValue = (smoothedValue * (rate - 1) + newValue) / rate;
+                smoothedValue = smoothedValue * ratio + newValue * (1 - ratio);
         }
 
         public void ForceSmoothValue(float forcedValue)

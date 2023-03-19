@@ -69,7 +69,7 @@ namespace ContentChecker
                 // we want to load the signal scripts one by one, not as a group
                 var scriptFiles = new List<string>() { Path.GetFileName(file) };
                 var scrfile = new SIGSCRfile(new SignalScripts(_sigcfg.ScriptPath, scriptFiles,
-                    _sigcfg.SignalTypes, _sigcfg.ORTSFunctionTypes, _sigcfg.ORTSNormalSubtypes));
+                    _sigcfg.SignalTypes, _sigcfg.SignalFunctions, _sigcfg.ORTSNormalSubtypes));
             }
         }
     }

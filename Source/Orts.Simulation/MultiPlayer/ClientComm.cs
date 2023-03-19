@@ -88,7 +88,6 @@ namespace Orts.MultiPlayer
 			while (true)
 			{
 				bytesRead = 0;
-				//System.Threading.Thread.Sleep(Program.Random.Next(50, 200));
 				try
 				{
 					//blocks until a client sends a message

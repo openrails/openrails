@@ -1,107 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Orts.Formats.Msts</RootNamespace>
-    <AssemblyName>Orts.Formats.Msts</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <IsPublishable>False</IsPublishable>
+    <AssemblyTitle>Open Rails MSTS Formats Library</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Program\Orts.Formats.Msts.xml</DocumentationFile>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
+    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
+    <ProjectReference Include="..\ORTS.IO\ORTS.IO.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AceFile.cs" />
-    <Compile Include="ActivityFile.cs" />
-    <Compile Include="CameraConfigurationFile.cs" />
-    <Compile Include="CarSpawnerFile.cs" />
-    <Compile Include="ConsistFile.cs" />
-    <Compile Include="CabViewFile.cs" />
-    <Compile Include="EngineFile.cs" />
-    <Compile Include="EnvironmentFile.cs" />
-    <Compile Include="SignalScripts.cs" />
-    <Compile Include="TerrainFlagsFile.cs" />
-    <Compile Include="HazardFile.cs" />
-    <Compile Include="LightCollection.cs" />
-    <Compile Include="MstsUtility.cs" />
-    <Compile Include="PathFile.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RoadDatabaseFile.cs" />
-    <Compile Include="ShapeDescriptorFile.cs" />
-    <Compile Include="ShapeFile.cs" />
-    <Compile Include="SignalConfigurationFile.cs" />
-    <Compile Include="SignalEnums.cs" />
-    <Compile Include="SpeedpostDatFile.cs" />
-    <Compile Include="SoundManagmentFile.cs" />
-    <Compile Include="ServiceFile.cs" />
-    <Compile Include="TrackDatabaseFile.cs" />
-    <Compile Include="TerrainFile.cs" />
-    <Compile Include="TrafficFile.cs" />
-    <Compile Include="RouteFile.cs" />
-    <Compile Include="TrackSectionsFile.cs" />
-    <Compile Include="TrackTypesFile.cs" />
-    <Compile Include="WagonFile.cs" />
-    <Compile Include="WorldFile.cs" />
-    <Compile Include="WorldSoundFile.cs" />
-    <Compile Include="TerrainAltitudeFile.cs" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
-      <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
-      <Name>Orts.Parsers.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
-      <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
-      <Name>ORTS.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ORTS.IO\ORTS.IO.csproj">
-      <Project>{6AB8B673-5775-4536-A58A-BA0A15899583}</Project>
-      <Name>ORTS.IO</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
 </Project>

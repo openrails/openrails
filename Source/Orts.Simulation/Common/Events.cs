@@ -53,6 +53,14 @@ namespace Orts.Common
         Couple,
         CoupleB, // NOTE: Currently not used in Open Rails.
         CoupleC, // NOTE: Currently not used in Open Rails.
+        CraneXAxisMove,
+        CraneXAxisSlowDown,
+        CraneYAxisMove,
+        CraneYAxisSlowDown,
+        CraneZAxisMove,
+        CraneZAxisSlowDown,
+        CraneYAxisBumpsOnTarget,
+        CraneYAxisDown,
         CrossingClosing,
         CrossingOpening,
         CylinderCocksToggle,
@@ -248,6 +256,17 @@ namespace Orts.Common
         OverchargeBrakingOn,
         OverchargeBrakingOff,
 
+        // Cruise Control
+        LeverFromZero,
+        LeverToZero,
+        CruiseControlSpeedRegulator,
+        CruiseControlSpeedSelector,
+        CruiseControlMaxForce,
+        CruiseControlAlert,
+        CruiseControlAlert1,
+
+        MPCChangePosition,
+
     }
 
     public static class Events
@@ -260,7 +279,8 @@ namespace Orts.Common
             MSTSFuelTower,
             MSTSInGame,
             MSTSSignal,
-            ORTSTurntable
+            ORTSTurntable,
+            ORTSContainerCrane
         }
 
         // PLEASE DO NOT EDIT THESE FUNCTIONS without references and testing!
@@ -504,6 +524,17 @@ namespace Orts.Common
                         case 250: return Event.OverchargeBrakingOn;
                         case 251: return Event.OverchargeBrakingOff;
 
+                        // Cruise Control
+                        case 298: return Event.LeverFromZero;
+                        case 299: return Event.LeverToZero;
+                        case 300: return Event.CruiseControlSpeedRegulator;
+                        case 301: return Event.CruiseControlSpeedSelector;
+                        case 302: return Event.CruiseControlMaxForce;
+                        case 303: return Event.CruiseControlAlert;
+                        case 304: return Event.CruiseControlAlert1;
+
+                        case 310: return Event.MPCChangePosition;
+
                         default: return 0;
                     }
                 case Source.MSTSCrossing:
@@ -552,6 +583,19 @@ namespace Orts.Common
                         case 1: return Event.MovingTableMovingEmpty;
                         case 2: return Event.MovingTableMovingLoaded;
                         case 3: return Event.MovingTableStopped;
+                        default: return 0;
+                    }
+                case Source.ORTSContainerCrane:
+                    switch (eventID)
+                    {
+                        // Can be different from crane to crane
+                        case 1: return Event.CraneXAxisMove;
+                        case 2: return Event.CraneXAxisSlowDown;
+                        case 3: return Event.CraneYAxisMove;
+                        case 4: return Event.CraneYAxisSlowDown;
+                        case 5: return Event.CraneZAxisMove;
+                        case 6: return Event.CraneZAxisSlowDown;
+                        case 7: return Event.CraneYAxisDown;
                         default: return 0;
                     }
                 default: return 0;

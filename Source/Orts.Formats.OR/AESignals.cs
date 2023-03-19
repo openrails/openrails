@@ -15,14 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
+using ORTS.Common;
 
 namespace Orts.Formats.OR
 {
@@ -51,6 +51,7 @@ namespace Orts.Formats.OR
         //private Dictionary<uint, SignalRefObject> SignalRefList;
         private Dictionary<uint, AESignalObject> SignalHeadList;
         //public static SIGSCRfile scrfile;
+        public readonly IDictionary<string, SignalFunction> SignalFunctions;
 
         public int noSignals;
         private int foundSignals;
@@ -79,6 +80,8 @@ namespace Orts.Formats.OR
             //SignalRefList = new Dictionary<uint, SignalRefObject>();
             SignalHeadList = new Dictionary<uint, AESignalObject>();
             Dictionary<int, int> platformList = new Dictionary<int, int>();
+
+            SignalFunctions = sigcfg.SignalFunctions;
 
             trackDB = data.TDB.TrackDB;
             tsectiondat = data.TSectionDat;
@@ -1657,7 +1660,7 @@ namespace Orts.Formats.OR
             get
             {
                 if (signalType != null)
-                    return (MstsSignalFunction)signalType.FnType;
+                    return signalType.Function.MstsFunction;
                 else
                     return MstsSignalFunction.UNKNOWN;
             }
@@ -1700,14 +1703,14 @@ namespace Orts.Formats.OR
         // Constructor for speedposts
         //
 
-        public AESignalHead(AESignalObject sigOoject, int trItem, int TDBRef, SpeedPostItem speedItem)
+        public AESignalHead(AESignalObject sigObject, int trItem, int TDBRef, SpeedPostItem speedItem)
         {
-            mainSignal = sigOoject;
+            mainSignal = sigObject;
             trItemIndex = trItem;
             TDBIndex = TDBRef;
             draw_state = 1;
             state = MstsSignalAspect.CLEAR_2;
-            signalType = new SignalType(MstsSignalFunction.SPEED, MstsSignalAspect.CLEAR_2);
+            signalType = new SignalType(SignalFunction.SPEED, MstsSignalAspect.CLEAR_2);
 
             var sigasp_values = Enum.GetValues(typeof(MstsSignalAspect));
             //speed_info = new ObjectSpeedInfo[sigasp_values.Length];

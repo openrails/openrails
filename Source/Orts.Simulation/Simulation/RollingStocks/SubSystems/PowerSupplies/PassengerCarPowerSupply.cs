@@ -15,21 +15,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Common;
-using Orts.Parsers.Msts;
-using Orts.Simulation.Physics;
-using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Orts.Common;
+using Orts.Parsers.Msts;
+using Orts.Simulation.Physics;
+using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
     public class ScriptedPassengerCarPowerSupply : IPassengerCarPowerSupply, ISubSystem<ScriptedPassengerCarPowerSupply>
     {
-        public readonly MSTSWagon Wagon;
-        protected Simulator Simulator => Wagon.Simulator;
+        public TrainCar Car { get; }
+        public MSTSWagon Wagon => Car as MSTSWagon; protected Simulator Simulator => Wagon.Simulator;
         protected Train Train => Wagon.Train;
         protected Pantographs Pantographs => Wagon.Pantographs;
         protected int CarId = 0;
@@ -69,7 +69,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public ScriptedPassengerCarPowerSupply(MSTSWagon wagon)
         {
-            Wagon = wagon;
+            Car = wagon;
 
             BatterySwitch = new BatterySwitch(Wagon);
         }
@@ -88,6 +88,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 case "wagon(ortsbattery(mode":
                 case "wagon(ortsbattery(delay":
+                case "wagon(ortsbattery(defaulton":
                     BatterySwitch.Parse(lowercasetoken, stf);
                     break;
 

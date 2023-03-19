@@ -645,6 +645,17 @@ namespace Orts.MultiPlayer
                             if (hasOtherPlayer == false) 
                             {
                                 AddOrRemoveLocomotives(p.Username, p.Train, false);
+                                if (p.Train.Cars.Count > 0)
+                                {
+                                    foreach (TrainCar car in p.Train.Cars)
+                                    {
+                                        car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
+                                        car.IsPartOfActiveTrain = false;  // to stop sounds
+                                                                          // remove containers if any
+                                        if (car.FreightAnimations?.Animations != null)
+                                            car.FreightAnimations?.HideDiscreteFreightAnimations();
+                                    }
+                                }
                                 p.Train.RemoveFromTrack();
                                 Simulator.Trains.Remove(p.Train);
                             }

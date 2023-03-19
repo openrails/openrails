@@ -1,120 +1,30 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ContentChecker</RootNamespace>
-    <AssemblyName>ContentChecker</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <IsPublishable>False</IsPublishable>
+    <AssemblyTitle>Open Rails Content Checker</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Windows.Forms" />
+    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj" />
+    <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
+    <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj" />
+    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
+    <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj" />
+    <ProjectReference Include="..\Orts.Simulation\Orts.Simulation.csproj" />
+    <ProjectReference Include="..\RunActivity\RunActivity.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConsistLoader.cs" />
-    <Compile Include="CabviewLoader.cs" />
-    <Compile Include="CarSpawnLoader.cs" />
-    <Compile Include="LoaderFactory.cs" />
-    <Compile Include="NotUsedLoader.cs" />
-    <Compile Include="SignalScriptLoader.cs" />
-    <Compile Include="SignalConfigLoader.cs" />
-    <Compile Include="TerrainAltitudeLoader.cs" />
-    <Compile Include="TerrainFlagsLoader.cs" />
-    <Compile Include="TimeTableLoader.cs" />
-    <Compile Include="TrackTypeLoader.cs" />
-    <Compile Include="TsectionGlobalLoader.cs" />
-    <Compile Include="TsectionLoader.cs" />
-    <Compile Include="WagonLoader.cs" />
-    <Compile Include="EngineLoader.cs" />
-    <Compile Include="TrafficLoader.cs" />
-    <Compile Include="ServiceLoader.cs" />
-    <Compile Include="HazardLoader.cs" />
-    <Compile Include="NotRecognizedLoader.cs" />
-    <Compile Include="WavLoader.cs" />
-    <Compile Include="SmsLoader.cs" />
-    <Compile Include="PathLoader.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RoadDataBaseLoader.cs" />
-    <Compile Include="ShapeDescriptionLoader.cs" />
-    <Compile Include="ActivityLoader.cs" />
-    <Compile Include="WorldFileLoader.cs" />
-    <Compile Include="AceLoader.cs" />
-    <Compile Include="WorldSoundLoader.cs" />
-    <Compile Include="ShapeLoader.cs" />
-    <Compile Include="TrackDataBaseLoader.cs" />
-    <Compile Include="EnvironmentFileLoader.cs" />
-    <Compile Include="TrackFileLoader.cs" />
-    <Compile Include="TerrainLoader.cs" />
-    <Compile Include="Loader.cs" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj">
-      <Project>{812685a7-2683-4102-a3ca-2a5ced2e61ee}</Project>
-      <Name>ORTS.Content</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
-      <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
-      <Name>Orts.Formats.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj">
-      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
-      <Name>Orts.Formats.OR</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
-      <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
-      <Name>Orts.Parsers.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
-      <Project>{1cc3bd5c-06c5-4784-b067-f93945a7ca2c}</Project>
-      <Name>Orts.Parsers.OR</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Orts.Simulation\Orts.Simulation.csproj">
-      <Project>{333c4378-d82e-4b47-b561-6ba923b8fdfd}</Project>
-      <Name>Orts.Simulation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\RunActivity\RunActivity.csproj">
-      <Project>{9be44f64-417d-4aa6-af4d-2a6a0cbc814d}</Project>
-      <Name>RunActivity</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

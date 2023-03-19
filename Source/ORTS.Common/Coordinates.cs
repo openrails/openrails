@@ -85,6 +85,20 @@ namespace ORTS.Common
             Location = copy.Location;
         }
 
+
+        /// <summary>
+        /// MSTS WFiles represent some location with a position, quaternion and tile coordinates
+        /// This converts it to the ORTS WorldPosition representation
+        /// </summary>
+        public WorldPosition (int tileX, int tileZ, Vector3 xnaPosition, Quaternion xnaQuaternion)
+        {
+            XNAMatrix = Matrix.CreateFromQuaternion(xnaQuaternion);
+            XNAMatrix *= Matrix.CreateTranslation(xnaPosition);
+
+            TileX = tileX;
+            TileZ = tileZ;
+        }
+
         /// <summary>
         /// The world-location in MSTS coordinates of the current position
         /// </summary>
@@ -168,6 +182,7 @@ namespace ORTS.Common
             return WorldLocation.ToString();
         }
     }
+
 
     /// <summary>
     /// Represents the position of an object within a tile in MSTS coordinates.
@@ -314,6 +329,15 @@ namespace ORTS.Common
         {
             return new Vector2((float)(locationTo.Location.X - locationFrom.Location.X + (locationTo.TileX - locationFrom.TileX) * TileSize),
                 (float)(locationTo.Location.Z - locationFrom.Location.Z + (locationTo.TileZ - locationFrom.TileZ) * TileSize));
+        }
+
+        public static float ApproximateDistance(WorldLocation a, WorldLocation b)
+        {
+            var dx = a.Location.X - b.Location.X;
+            var dz = a.Location.Z - b.Location.Z;
+            dx += (a.TileX - b.TileX) * 2048;
+            dz += (a.TileZ - b.TileZ) * 2048;
+            return Math.Abs(dx) + Math.Abs(dz);
         }
 
         /// <summary>

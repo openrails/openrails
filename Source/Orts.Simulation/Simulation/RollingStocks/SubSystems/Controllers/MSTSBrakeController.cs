@@ -15,9 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ORTS.Scripting.Api;
 using System;
-using System.Diagnostics;
+using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 {
@@ -61,13 +60,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             NotchController.SetValue(0);
             if (NotchController.NotchCount() > 0) NotchController.CurrentNotch = 0;
             else NotchController.CurrentNotch = -1;
+            CurrentNotch = NotchController.CurrentNotch;
         }
 
         public override float Update(float elapsedSeconds)
         {
             float value = NotchController.Update(elapsedSeconds);
             SetCurrentValue(value);
+            IntermediateValue = NotchController.IntermediateValue;
             SetUpdateValue(NotchController.UpdateValue);
+            CurrentNotch = NotchController.CurrentNotch;
             return value;
         }
 
@@ -124,13 +126,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     switch (type)
                     {
                         case ControllerState.Release:
-                            IncreasePressure(ref pressureBar, MaxPressureBar(), ReleaseRateBarpS(), elapsedClockSeconds);
+                            IncreasePressure(ref pressureBar, Math.Min(MaxPressureBar(), MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
                             epState = -1;
                             break;
                         case ControllerState.FullQuickRelease:
                         case ControllerState.SMEReleaseStart:
-                            IncreasePressure(ref pressureBar, MaxPressureBar(), QuickReleaseRateBarpS(), elapsedClockSeconds);
+                            IncreasePressure(ref pressureBar, Math.Min(MaxPressureBar(), MainReservoirPressureBar()), QuickReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
                             epState = -1;
                             break;
@@ -197,7 +199,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                                 x = MaxPressureBar() - MinReductionBar() * (1 - x) - FullServReductionBar() * x;
                                 DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
                                 if (ForceControllerReleaseGraduated || notch.Type == ControllerState.EPApply)
-                                    IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
+                                    IncreasePressure(ref pressureBar, Math.Min(x, MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             }
                             break;
                         case ControllerState.GSelfLapH:
@@ -207,7 +209,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             x = MaxPressureBar() - MinReductionBar() * (1 - x) - FullServReductionBar() * x;
                             DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
                             if (ForceControllerReleaseGraduated || notch.Type == ControllerState.GSelfLap)
-                                IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
+                                IncreasePressure(ref pressureBar, Math.Min(x, MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             break;
                         case ControllerState.Emergency:
                             pressureBar -= EmergencyRateBarpS() * elapsedClockSeconds;
@@ -215,7 +217,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             break;
                         case ControllerState.Dummy:
                             x = MaxPressureBar() - FullServReductionBar() * (notch.Smooth ? x : CurrentValue());
-                            IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
+                            IncreasePressure(ref pressureBar, Math.Min(x, MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
                             epState = -1;
                             break;
@@ -225,8 +227,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 }
             }
 
+            float ccdemand = CruiseControlBrakeDemand();
+            if (ccdemand > 0)
+            {
+                pressureBar = Math.Min(MaxPressureBar() - MinReductionBar() * (1 - ccdemand) - FullServReductionBar() * ccdemand, pressureBar);
+                epState = ccdemand;
+            }
+
             if (pressureBar < 0)
                 pressureBar = 0;
+
             epControllerState = epState;
         }
 

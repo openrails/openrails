@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows.Forms;
 using ORTS.Common;
 
@@ -137,12 +139,6 @@ namespace ORTS.Settings
         // Main menu settings:
         [Default(true)]
         public bool Logging { get; set; }
-        [Default(false)]
-        public bool DebriefActivityEval { get; set; }
-        [Default(false)]
-        public bool DebriefTTActivityEval { get; set; }
-        [Default(false)]
-        public bool FullScreen { get; set; }
         [Default("")]
         public string Multiplayer_User { get; set; }
         [Default("127.0.0.1")]
@@ -153,9 +149,6 @@ namespace ORTS.Settings
         public bool IsModeActivity { get; set; } // false indicates Timetable mode
 
         // General settings:
-        [Default(2150)]
-        public int WebServerPort { get; set; }
-
         [Default(false)]
         public bool Alerter { get; set; }
         [Default(true)]
@@ -163,19 +156,13 @@ namespace ORTS.Settings
         [Default(true)]
         public bool SpeedControl { get; set; }
         [Default(false)]
-        public bool ViewDispatcher { get; set; }
-        [Default(false)]
         public bool GraduatedRelease { get; set; }
         [Default(false)]
         public bool RetainersOnAllCars { get; set; }
         [Default(true)]
         public bool UseLargeAddressAware { get; set; }
-        [Default(false)]
-        public bool SuppressConfirmations { get; set; }
         [Default(21)]
         public int BrakePipeChargingRate { get; set; }
-        [Default("")]
-        public String Language { get; set; }
         [Default("Automatic")]
         public String PressureUnit { get; set; }
         [Default("Automatic")]
@@ -192,17 +179,15 @@ namespace ORTS.Settings
         public int ExternalSoundPassThruPercent { get; set; } // higher = louder sound
 
         // Video settings:
-        [Default(false)]
+        [Default(true)]
         public bool DynamicShadows { get; set; }
         [Default(false)]
         public bool ShadowAllShapes { get; set; }
-        [Default(false)]
-        public bool WindowGlass { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool ModelInstancing { get; set; }
         [Default(true)]
         public bool Wire { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool VerticalSync { get; set; }
         [Default(2000)]
         public int ViewingDistance { get; set; }
@@ -210,12 +195,12 @@ namespace ORTS.Settings
         public bool DistantMountains { get; set; }
         [Default(40000)]
         public int DistantMountainsViewingDistance { get; set; }
+        [Default(true)]
+        public bool LODViewingExtension { get; set; }
         [Default(45)] // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
         public int ViewingFOV { get; set; }
         [Default(49)]
         public int WorldObjectDensity { get; set; }
-        [Default("1024x768")]
-        public string WindowSize { get; set; }
         [Default(20)]
         public int DayAmbientLight { get; set; }
         [Default(AntiAliasingMethod.MSAA2x)]
@@ -282,7 +267,24 @@ namespace ORTS.Settings
         [Default(false)]
         public bool TTOutputTimetableFullEvaluation { get; set; }
 
+        //System settings
+        [Default("")]
+        public String Language { get; set; }
         // Updater settings are saved only in "Updater.ini".
+        [Default(true)]
+        public bool FullScreen { get; set; }
+        [Default("1024x768")]
+        public string WindowSize { get; set; }
+        [Default(false)]
+        public bool WindowGlass { get; set; }
+        [Default(false)]
+        public bool SuppressConfirmations { get; set; }
+        [Default(2150)]
+        public int WebServerPort { get; set; }
+        [Default(false)]
+        public bool PerformanceTuner { get; set; }
+        [Default(60)]
+        public int PerformanceTunerTarget { get; set; }
 
         // Experimental settings:
         [Default(0)]
@@ -293,29 +295,23 @@ namespace ORTS.Settings
         public int SuperElevationGauge { get; set; }
         [Default(0)]
         public int LODBias { get; set; }
-        [Default(false)]
-        public bool PerformanceTuner { get; set; }
         [Default(true)]
         public bool SuppressShapeWarnings { get; set; }
         [Default(1)]
         public int VfsLogLevel { get; set; }
         [Default(false)]
         public bool VfsAutoMount { get; set; }
-        [Default(60)]
-        public int PerformanceTunerTarget { get; set; }
         [Default(false)]
         public bool DoubleWire { get; set; }
         [Default(false)]
         public bool AuxActionEnabled { get; set; }
-        [Default(false)]
-        public bool PreferDDSTexture { get; set; }
         [Default(false)]
         public bool UseLocationPassingPaths { get; set; }
         [Default(false)]
         public bool UseMSTSEnv { get; set; }
         [Default(false)]
         public bool SignalLightGlow { get; set; }
-        [Default(130)]
+        [Default(100)]
         public int AdhesionFactor { get; set; }
         [Default(10)]
         public int AdhesionFactorChange { get; set; }
@@ -343,8 +339,8 @@ namespace ORTS.Settings
         public int CarVibratingLevel { get; set; }
         [Default("OpenRailsLog.txt")]
         public string LoggingFilename { get; set; }
-        [Default("OR-DebriefEval.txt")]
-        public string DebriefEvalFilename { get; set; }//
+        [Default("OpenRailsEvaluation.txt")]
+        public string EvaluationFilename { get; set; }//
         [Default("")] // If left as "", OR will use the user's desktop folder
         public string LoggingPath { get; set; }
         [Default("")]
@@ -483,6 +479,20 @@ namespace ORTS.Settings
                 return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
 
             throw new InvalidDataException(String.Format("UserSetting {0} has no default value.", property.Name));
+        }
+
+        public string GetCacheFilePath(string type, string key)
+        {
+            var hasher = new MD5CryptoServiceProvider();
+            hasher.ComputeHash(Encoding.Default.GetBytes(key));
+            var hash = String.Join("", hasher.Hash.Select(h => h.ToString("x2")));
+
+            var directory = Path.Combine(UserSettings.UserDataFolder, "Cache", type);
+
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            return Path.Combine(directory, hash + ".cache-or");
         }
 
         PropertyInfo GetProperty(string name)

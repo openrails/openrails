@@ -34,11 +34,10 @@
 // prints processing details of all enabled signals
 //
 
-using Orts.Formats.Msts;
-using Orts.Simulation.Timetables;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Orts.Formats.Msts;
 #if DEBUG_PRINT_PROCESS
 using System.Linq;
 using System.IO;
@@ -67,7 +66,7 @@ namespace Orts.Simulation.Signalling
         public static string dpe_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 
-        public SignalScripts SignalScripts;
+        public readonly SignalScripts SignalScripts;
 
         //================================================================================================//
         //
@@ -114,11 +113,11 @@ namespace Orts.Simulation.Signalling
         {
             if (thisHead.mainSignal.block_state() == MstsBlockState.CLEAR)
             {
-                thisHead.SetLeastRestrictiveAspect();
+                thisHead.RequestLeastRestrictiveAspect();
             }
             else
             {
-                thisHead.SetMostRestrictiveAspect();
+                thisHead.RequestMostRestrictiveAspect();
             }
         }
 
@@ -517,6 +516,8 @@ namespace Orts.Simulation.Signalling
             int return_value = 0;
             int parameter1_value = 0;
             int parameter2_value = 0;
+            SignalFunction function1 = SignalFunction.NORMAL;
+            SignalFunction function2 = SignalFunction.NORMAL;
 
             // extract parameters (max. 2)
 
@@ -527,6 +528,11 @@ namespace Orts.Simulation.Signalling
                     SignalScripts.SCRScripts.SCRParameterType thisParameter = thisTerm.PartParameter[0];
                     parameter1_value = SH_termvalue(thisHead, thisParameter,
                         localFloats, sigscr);
+
+                    if (thisParameter.SignalFunction != null)
+                    {
+                        function1 = thisParameter.SignalFunction;
+                    }
                 }
 
                 if (thisTerm.PartParameter.Length >= 2)
@@ -534,33 +540,38 @@ namespace Orts.Simulation.Signalling
                     SignalScripts.SCRScripts.SCRParameterType thisParameter = thisTerm.PartParameter[1];
                     parameter2_value = SH_termvalue(thisHead, thisParameter,
                         localFloats, sigscr);
+
+                    if (thisParameter.SignalFunction != null)
+                    {
+                        function2 = thisParameter.SignalFunction;
+                    }
                 }
             }
 
             // switch on function
 
             SignalScripts.SCRExternalFunctions thisFunction = thisTerm.Function;
-            String dumpfile = String.Empty;
+            string dumpfile = string.Empty;
 
             switch (thisFunction)
             {
 
                 // BlockState
 
-                case (SignalScripts.SCRExternalFunctions.BLOCK_STATE):
+                case SignalScripts.SCRExternalFunctions.BLOCK_STATE:
                     return_value = (int)thisHead.mainSignal.block_state();
                     break;
 
                 // Route set
 
-                case (SignalScripts.SCRExternalFunctions.ROUTE_SET):
+                case SignalScripts.SCRExternalFunctions.ROUTE_SET:
                     return_value = (int)thisHead.route_set();
                     break;
 
                 // next_sig_lr
 
-                case (SignalScripts.SCRExternalFunctions.NEXT_SIG_LR):
-                    return_value = (int)thisHead.next_sig_lr(parameter1_value);
+                case SignalScripts.SCRExternalFunctions.NEXT_SIG_LR:
+                    return_value = (int)thisHead.next_sig_lr(function1);
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -598,8 +609,8 @@ namespace Orts.Simulation.Signalling
 
                 // next_sig_mr
 
-                case (SignalScripts.SCRExternalFunctions.NEXT_SIG_MR):
-                    return_value = (int)thisHead.next_sig_mr(parameter1_value);
+                case SignalScripts.SCRExternalFunctions.NEXT_SIG_MR:
+                    return_value = (int)thisHead.next_sig_mr(function1);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -620,24 +631,24 @@ namespace Orts.Simulation.Signalling
 
                 // this_sig_lr
 
-                case (SignalScripts.SCRExternalFunctions.THIS_SIG_LR):
+                case SignalScripts.SCRExternalFunctions.THIS_SIG_LR:
                     bool sigfound_lr = false;
-                    MstsSignalAspect returnState_lr = thisHead.this_sig_lr(parameter1_value, ref sigfound_lr);
+                    MstsSignalAspect returnState_lr = thisHead.this_sig_lr(function1, ref sigfound_lr);
                     return_value = sigfound_lr ? (int)returnState_lr : -1;
                     break;
 
                 // this_sig_mr
 
-                case (SignalScripts.SCRExternalFunctions.THIS_SIG_MR):
+                case SignalScripts.SCRExternalFunctions.THIS_SIG_MR:
                     bool sigfound_mr = false;
-                    MstsSignalAspect returnState_mr = thisHead.this_sig_mr(parameter1_value, ref sigfound_mr);
+                    MstsSignalAspect returnState_mr = thisHead.this_sig_mr(function1, ref sigfound_mr);
                     return_value = sigfound_mr ? (int)returnState_mr : -1;
                     break;
 
                 // opp_sig_lr
 
-                case (SignalScripts.SCRExternalFunctions.OPP_SIG_LR):
-                    return_value = (int)thisHead.opp_sig_lr(parameter1_value);
+                case SignalScripts.SCRExternalFunctions.OPP_SIG_LR:
+                    return_value = (int)thisHead.opp_sig_lr(function1);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -662,14 +673,14 @@ namespace Orts.Simulation.Signalling
 
                 // opp_sig_mr
 
-                case (SignalScripts.SCRExternalFunctions.OPP_SIG_MR):
-                    return_value = (int)thisHead.opp_sig_mr(parameter1_value);
+                case SignalScripts.SCRExternalFunctions.OPP_SIG_MR:
+                    return_value = (int)thisHead.opp_sig_mr(function1);
                     break;
 
                 // next_nsig_lr
 
-                case (SignalScripts.SCRExternalFunctions.NEXT_NSIG_LR):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.NEXT_NSIG_LR:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -684,14 +695,14 @@ namespace Orts.Simulation.Signalling
                         dumpfile = String.Concat(dpr_fileLoc,"printproc.txt");
                     }
 #endif
-                    return_value = (int)thisHead.next_nsig_lr(parameter1_value, parameter2_value, dumpfile);
+                    return_value = (int)thisHead.next_nsig_lr(function1, parameter2_value, dumpfile);
                     break;
 
                 // dist_multi_sig_mr
 
-                case (SignalScripts.SCRExternalFunctions.DIST_MULTI_SIG_MR):
+                case SignalScripts.SCRExternalFunctions.DIST_MULTI_SIG_MR:
 
-                    dumpfile = String.Empty;
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -707,15 +718,15 @@ namespace Orts.Simulation.Signalling
                     }
 #endif
 
-                    return_value = (int)thisHead.dist_multi_sig_mr(parameter1_value, parameter2_value, dumpfile);
+                    return_value = (int)thisHead.dist_multi_sig_mr(function1, function2, dumpfile);
 
                     break;
 
                 // dist_multi_sig_mr_of_lr
 
-                case (SignalScripts.SCRExternalFunctions.DIST_MULTI_SIG_MR_OF_LR):
+                case SignalScripts.SCRExternalFunctions.DIST_MULTI_SIG_MR_OF_LR:
 
-                    dumpfile = String.Empty;
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -731,14 +742,14 @@ namespace Orts.Simulation.Signalling
                     }
 #endif
 
-                    return_value = (int)thisHead.dist_multi_sig_mr_of_lr(parameter1_value, parameter2_value, dumpfile);
+                    return_value = (int)thisHead.dist_multi_sig_mr_of_lr(function1, function2, dumpfile);
 
                     break;
 
                 // next_sig_id
 
-                case (SignalScripts.SCRExternalFunctions.NEXT_SIG_ID):
-                    return_value = (int)thisHead.next_sig_id(parameter1_value);
+                case SignalScripts.SCRExternalFunctions.NEXT_SIG_ID:
+                    return_value = (int)thisHead.next_sig_id(function1);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -774,8 +785,8 @@ namespace Orts.Simulation.Signalling
 
                 // next_nsig_id
 
-                case (SignalScripts.SCRExternalFunctions.NEXT_NSIG_ID):
-                    return_value = (int)thisHead.next_nsig_id(parameter1_value, parameter2_value);
+                case SignalScripts.SCRExternalFunctions.NEXT_NSIG_ID:
+                    return_value = (int)thisHead.next_nsig_id(function1, parameter2_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -811,8 +822,8 @@ namespace Orts.Simulation.Signalling
 
                 // opp_sig_id
 
-                case (SignalScripts.SCRExternalFunctions.OPP_SIG_ID):
-                    return_value = (int)thisHead.opp_sig_id(parameter1_value);
+                case SignalScripts.SCRExternalFunctions.OPP_SIG_ID:
+                    return_value = (int)thisHead.opp_sig_id(function1);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -848,20 +859,20 @@ namespace Orts.Simulation.Signalling
 
                 // id_sig_enabled
 
-                case (SignalScripts.SCRExternalFunctions.ID_SIG_ENABLED):
+                case SignalScripts.SCRExternalFunctions.ID_SIG_ENABLED:
                     return_value = (int)thisHead.id_sig_enabled(parameter1_value);
                     break;
 
                 // id_sig_lr
 
-                case (SignalScripts.SCRExternalFunctions.ID_SIG_LR):
-                    return_value = (int)thisHead.id_sig_lr(parameter1_value, parameter2_value);
+                case SignalScripts.SCRExternalFunctions.ID_SIG_LR:
+                    return_value = (int)thisHead.id_sig_lr(parameter1_value, function2);
                     break;
 
 
                 // sig_feature
 
-                case (SignalScripts.SCRExternalFunctions.SIG_FEATURE):
+                case SignalScripts.SCRExternalFunctions.SIG_FEATURE:
                     bool temp_value;
                     temp_value = thisHead.sig_feature(parameter1_value);
                     return_value = Convert.ToInt32(temp_value);
@@ -869,14 +880,14 @@ namespace Orts.Simulation.Signalling
 
                 // allow to clear to partial route
 
-                case (SignalScripts.SCRExternalFunctions.ALLOW_CLEAR_TO_PARTIAL_ROUTE):
+                case SignalScripts.SCRExternalFunctions.ALLOW_CLEAR_TO_PARTIAL_ROUTE:
                     thisHead.mainSignal.AllowClearPartialRoute(parameter1_value);
                     break;
 
                 // approach control position
 
-                case (SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_POSITION):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_POSITION:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -897,8 +908,8 @@ namespace Orts.Simulation.Signalling
 
                 // approach control position forced
 
-                case (SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_POSITION_FORCED):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_POSITION_FORCED:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -919,8 +930,8 @@ namespace Orts.Simulation.Signalling
 
                 // approach control speed
 
-                case (SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_SPEED):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_SPEED:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -940,8 +951,8 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // approach control next stop
-                case (SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_NEXT_STOP):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_NEXT_STOP:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -962,13 +973,13 @@ namespace Orts.Simulation.Signalling
 
                 // Lock claim for approach control
 
-                case (SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_LOCK_CLAIM):
+                case SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_LOCK_CLAIM:
                     thisHead.mainSignal.LockClaim();
                     break;
 
                 // Activate timing trigger
 
-                case (SignalScripts.SCRExternalFunctions.ACTIVATE_TIMING_TRIGGER):
+                case SignalScripts.SCRExternalFunctions.ACTIVATE_TIMING_TRIGGER:
                     thisHead.mainSignal.ActivateTimingTrigger();
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -988,8 +999,8 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // Check timing trigger
-                case (SignalScripts.SCRExternalFunctions.CHECK_TIMING_TRIGGER):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.CHECK_TIMING_TRIGGER:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1010,8 +1021,8 @@ namespace Orts.Simulation.Signalling
 
                 // Check for CallOn
 
-                case (SignalScripts.SCRExternalFunctions.TRAINHASCALLON):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.TRAINHASCALLON:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1033,8 +1044,8 @@ namespace Orts.Simulation.Signalling
 
                 // Check for CallOn Restricted
 
-                case (SignalScripts.SCRExternalFunctions.TRAINHASCALLON_RESTRICTED):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.TRAINHASCALLON_RESTRICTED:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1056,8 +1067,8 @@ namespace Orts.Simulation.Signalling
 
                 // Check for CallOn
 
-                case (SignalScripts.SCRExternalFunctions.TRAINHASCALLON_ADVANCED):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.TRAINHASCALLON_ADVANCED:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1079,8 +1090,8 @@ namespace Orts.Simulation.Signalling
 
                 // Check for CallOn Restricted
 
-                case (SignalScripts.SCRExternalFunctions.TRAINHASCALLON_RESTRICTED_ADVANCED):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.TRAINHASCALLON_RESTRICTED_ADVANCED:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1102,8 +1113,8 @@ namespace Orts.Simulation.Signalling
 
                 // check if train needs next signal
 
-                case (SignalScripts.SCRExternalFunctions.TRAIN_REQUIRES_NEXT_SIGNAL):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.TRAIN_REQUIRES_NEXT_SIGNAL:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1122,8 +1133,8 @@ namespace Orts.Simulation.Signalling
                     return_value = Convert.ToInt32(temp_value);
                     break;
 
-                case (SignalScripts.SCRExternalFunctions.FIND_REQ_NORMAL_SIGNAL):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.FIND_REQ_NORMAL_SIGNAL:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1143,8 +1154,8 @@ namespace Orts.Simulation.Signalling
 
                 // check if route upto required signal is fully cleared
 
-                case (SignalScripts.SCRExternalFunctions.ROUTE_CLEARED_TO_SIGNAL):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.ROUTE_CLEARED_TO_SIGNAL:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1164,8 +1175,8 @@ namespace Orts.Simulation.Signalling
 
                 // check if route upto required signal is fully cleared, but allow callon
 
-                case (SignalScripts.SCRExternalFunctions.ROUTE_CLEARED_TO_SIGNAL_CALLON):
-                    dumpfile = String.Empty;
+                case SignalScripts.SCRExternalFunctions.ROUTE_CLEARED_TO_SIGNAL_CALLON:
+                    dumpfile = string.Empty;
 
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1185,7 +1196,7 @@ namespace Orts.Simulation.Signalling
 
                 // check if specified head enabled
 
-                case (SignalScripts.SCRExternalFunctions.HASHEAD):
+                case SignalScripts.SCRExternalFunctions.HASHEAD:
                     return_value = thisHead.mainSignal.HasHead(parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1205,7 +1216,7 @@ namespace Orts.Simulation.Signalling
 
                 // increase active value of SignalNumClearAhead
 
-                case (SignalScripts.SCRExternalFunctions.INCREASE_SIGNALNUMCLEARAHEAD):
+                case SignalScripts.SCRExternalFunctions.INCREASE_SIGNALNUMCLEARAHEAD:
                     thisHead.mainSignal.IncreaseSignalNumClearAhead(parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1225,7 +1236,7 @@ namespace Orts.Simulation.Signalling
 
                 // decrease active value of SignalNumClearAhead
 
-                case (SignalScripts.SCRExternalFunctions.DECREASE_SIGNALNUMCLEARAHEAD):
+                case SignalScripts.SCRExternalFunctions.DECREASE_SIGNALNUMCLEARAHEAD:
                     thisHead.mainSignal.DecreaseSignalNumClearAhead(parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1245,7 +1256,7 @@ namespace Orts.Simulation.Signalling
 
                 // set active value of SignalNumClearAhead
 
-                case (SignalScripts.SCRExternalFunctions.SET_SIGNALNUMCLEARAHEAD):
+                case SignalScripts.SCRExternalFunctions.SET_SIGNALNUMCLEARAHEAD:
                     thisHead.mainSignal.SetSignalNumClearAhead(parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1265,7 +1276,7 @@ namespace Orts.Simulation.Signalling
 
                 // reset active value of SignalNumClearAhead to default
 
-                case (SignalScripts.SCRExternalFunctions.RESET_SIGNALNUMCLEARAHEAD):
+                case SignalScripts.SCRExternalFunctions.RESET_SIGNALNUMCLEARAHEAD:
                     thisHead.mainSignal.ResetSignalNumClearAhead();
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1285,13 +1296,13 @@ namespace Orts.Simulation.Signalling
 
                 // store_lvar
 
-                case (SignalScripts.SCRExternalFunctions.STORE_LVAR):
+                case SignalScripts.SCRExternalFunctions.STORE_LVAR:
                     thisHead.store_lvar(parameter1_value, parameter2_value);
                     break;
 
                 // this_sig_lvar
 
-                case (SignalScripts.SCRExternalFunctions.THIS_SIG_LVAR):
+                case SignalScripts.SCRExternalFunctions.THIS_SIG_LVAR:
                     return_value = (int)thisHead.this_sig_lvar(parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1310,8 +1321,8 @@ namespace Orts.Simulation.Signalling
 
                 // next_sig_lvar
 
-                case (SignalScripts.SCRExternalFunctions.NEXT_SIG_LVAR):
-                    return_value = (int)thisHead.next_sig_lvar(parameter1_value, parameter2_value);
+                case SignalScripts.SCRExternalFunctions.NEXT_SIG_LVAR:
+                    return_value = (int)thisHead.next_sig_lvar(function1, parameter2_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -1350,7 +1361,7 @@ namespace Orts.Simulation.Signalling
 
                 // id_sig_lvar
 
-                case (SignalScripts.SCRExternalFunctions.ID_SIG_LVAR):
+                case SignalScripts.SCRExternalFunctions.ID_SIG_LVAR:
                     return_value = (int)thisHead.id_sig_lvar(parameter1_value, parameter2_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
@@ -1369,37 +1380,43 @@ namespace Orts.Simulation.Signalling
 
                 // this_sig_noupdate
 
-                case (SignalScripts.SCRExternalFunctions.THIS_SIG_NOUPDATE):
+                case SignalScripts.SCRExternalFunctions.THIS_SIG_NOUPDATE:
                     thisHead.mainSignal.noupdate = true;
                     break;
 
                 // this_sig_hasnormalsubtype
 
-                case (SignalScripts.SCRExternalFunctions.THIS_SIG_HASNORMALSUBTYPE):
+                case SignalScripts.SCRExternalFunctions.THIS_SIG_HASNORMALSUBTYPE:
                     return_value = thisHead.this_sig_hasnormalsubtype(parameter1_value);
                     break;
 
                 // next_sig_hasnormalsubtype
 
-                case (SignalScripts.SCRExternalFunctions.NEXT_SIG_HASNORMALSUBTYPE):
+                case SignalScripts.SCRExternalFunctions.NEXT_SIG_HASNORMALSUBTYPE:
                     return_value = thisHead.next_sig_hasnormalsubtype(parameter1_value);
                     break;
 
                 // next_sig_hasnormalsubtype
 
-                case (SignalScripts.SCRExternalFunctions.ID_SIG_HASNORMALSUBTYPE):
+                case SignalScripts.SCRExternalFunctions.ID_SIG_HASNORMALSUBTYPE:
                     return_value = thisHead.id_sig_hasnormalsubtype(parameter1_value, parameter2_value);
                     break;
 
                 // switchstand
 
-                case (SignalScripts.SCRExternalFunctions.SWITCHSTAND):
-                    return_value = thisHead.switchstand(parameter1_value, parameter2_value);
+                case SignalScripts.SCRExternalFunctions.SWITCHSTAND:
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc, "printproc.txt");
+                    }
+#endif
+                    return_value = thisHead.switchstand(parameter1_value, parameter2_value, dumpfile);
                     break;
 
                 // def_draw_state
 
-                case (SignalScripts.SCRExternalFunctions.DEF_DRAW_STATE):
+                case SignalScripts.SCRExternalFunctions.DEF_DRAW_STATE:
                     return_value = thisHead.def_draw_state((MstsSignalAspect)parameter1_value);
                     break;
 
@@ -1430,7 +1447,7 @@ namespace Orts.Simulation.Signalling
 
             if (thisTerm.TermOperator == SignalScripts.SCRTermOperator.MINUS)
             {
-                return_value = -(return_value);
+                return_value = -return_value;
             }
 
             return return_value;

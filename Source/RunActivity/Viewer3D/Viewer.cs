@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -101,6 +101,8 @@ namespace Orts.Viewer3D
         public ComposeMessage ComposeMessageWindow { get; private set; } // ??? window
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
         public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
+        public EOTListWindow EOTListWindow { get; private set; } // to select EOT
+
         // Route Information
         public TileManager Tiles { get; private set; }
         public TileManager LoTiles { get; private set; }
@@ -255,7 +257,7 @@ namespace Orts.Viewer3D
 
         public static double DbfEvalAutoPilotTimeS = 0;//Debrief eval
         public static double DbfEvalIniAutoPilotTimeS = 0;//Debrief eval  
-        public bool DbfEvalAutoPilot = false;//DebriefEval
+        public static bool DbfEvalAutoPilot = false;//DebriefEval
 
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
@@ -432,7 +434,7 @@ namespace Orts.Viewer3D
             CabXOffsetPixels = inf.ReadInt32();
             NightTexturesNotLoaded = inf.ReadBoolean();
             DayTexturesNotLoaded = inf.ReadBoolean();
-            LoadMemoryThreshold = (ulong)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+            LoadMemoryThreshold = Game.HostProcess.CPUMemoryVirtualLimit - 512 * 1024 * 1024;
             tryLoadingNightTextures = true;
             tryLoadingDayTextures = true;
 
@@ -500,6 +502,7 @@ namespace Orts.Viewer3D
             ComposeMessageWindow = new ComposeMessage(WindowManager);
             TrainListWindow = new TrainListWindow(WindowManager);
             TTDetachWindow = new TTDetachWindow(WindowManager);
+            EOTListWindow = new EOTListWindow(WindowManager);
             WindowManager.Initialize();
 
             InfoDisplay = new InfoDisplay(this);
@@ -531,7 +534,7 @@ namespace Orts.Viewer3D
             // all loading is performed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
             MaterialManager.LoadPrep();
-            LoadMemoryThreshold = (ulong)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+            LoadMemoryThreshold = Game.HostProcess.CPUMemoryVirtualLimit - 512 * 1024 * 1024;
             Load();
 
             // MUST be after loading is done! (Or we try and load shapes on the main thread.)
@@ -548,80 +551,11 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetCommandReceivers()
         {
-            ReverserCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            NotchedThrottleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            ContinuousThrottleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            TrainBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            EngineBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            BrakemanBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            DynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            InitializeBrakesCommand.Receiver = PlayerLocomotive.Train;
-            ResetOutOfControlModeCommand.Receiver = PlayerLocomotive.Train;
-            EmergencyPushButtonCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            HandbrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            BailOffCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            QuickReleaseCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            BrakeOverchargeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            RetainersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            BrakeHoseConnectCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            ToggleWaterScoopCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            if (PlayerLocomotive is MSTSSteamLocomotive)
-            {
-                ContinuousReverserCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousSmallEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousLargeEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleBlowdownValveCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousBlowerCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousDamperCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousFiringRateCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleManualFiringCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleCylinderCocksCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleCylinderCompoundCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                FireShovelfullCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                AIFireOnCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                AIFireOffCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                AIFireResetCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-            }
-
-            PantographCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            if (PlayerLocomotive is MSTSElectricLocomotive)
-            {
-                CircuitBreakerClosingOrderCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                CircuitBreakerClosingOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                CircuitBreakerOpeningOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                CircuitBreakerClosingAuthorizationCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-            }
-
-            if (PlayerLocomotive is MSTSDieselLocomotive)
-            {
-                TractionCutOffRelayClosingOrderCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                TractionCutOffRelayClosingOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                TractionCutOffRelayOpeningOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                TractionCutOffRelayClosingAuthorizationCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                TogglePlayerEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
-                VacuumExhausterCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
-            }
-
+            Simulator.SetCommandReceivers();
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             RefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             SelectScreenCommand.Receiver = this;
-            ToggleOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            ResetOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            ToggleOdometerDirectionCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            SanderCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            AlerterCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            HornCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            BellCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            ToggleCabLightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            WipersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            HeadlightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ChangeCabCommand.Receiver = this;
-            ToggleDoorsLeftCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            ToggleDoorsRightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            ToggleMirrorsCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            CabRadioCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleSwitchAheadCommand.Receiver = this;
             ToggleSwitchBehindCommand.Receiver = this;
             ToggleAnySwitchCommand.Receiver = this;
@@ -630,27 +564,6 @@ namespace Orts.Viewer3D
             ActivityCommand.Receiver = ActivityWindow;  // and therefore shared by all sub-classes
             UseCameraCommand.Receiver = this;
             MoveCameraCommand.Receiver = this;
-            ToggleHelpersEngineCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            BatterySwitchCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-            BatterySwitchCloseButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-            BatterySwitchOpenButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-            ToggleMasterKeyCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-            ServiceRetentionButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-            ServiceRetentionCancellationButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-            ElectricTrainSupplyCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-            TCSButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).TrainControlSystem;
-            TCSSwitchCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).TrainControlSystem;
-            ToggleGenericItem1Command.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            ToggleGenericItem2Command.Receiver = (MSTSLocomotive)PlayerLocomotive;
-
-            //Distributed power
-            DPMoveToFrontCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            DPMoveToBackCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            DPTractionCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            DPIdleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            DPDynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            DPMoreCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            DPLessCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
         }
 
         public void ChangeToPreviousFreeRoamCamera()
@@ -1076,6 +989,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.DebugTracks)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugSignalling)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayEOTListWindow)) EOTListWindow.Visible = !EOTListWindow.Visible;
 
 
             if (UserInput.IsPressed(UserCommand.GameChangeCab))
@@ -1756,6 +1670,7 @@ namespace Orts.Viewer3D
             if (SelectedTrain == e.OldTrain)
             {
                 SelectedTrain = e.NewTrain;
+                SetCommandReceivers();
             }
         }
 

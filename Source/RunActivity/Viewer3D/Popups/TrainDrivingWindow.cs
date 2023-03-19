@@ -17,6 +17,7 @@
 
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using ORTS.Common;
 using ORTS.Common.Input;
@@ -44,6 +45,13 @@ namespace Orts.Viewer3D.Popups
             public string KeyPressed;
         }
         public List<ListLabel> labels = new List<ListLabel>();
+
+        List<string> tokens = new List<string>()
+        {
+            Viewer.Catalog.GetString("BP"),
+            Viewer.Catalog.GetString("EQ"),
+            Viewer.Catalog.GetString("V")
+        };
 
         /// <summary>
         /// Table of Colors to client-side color codes.
@@ -111,6 +119,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("Boiler pressure")] = Viewer.Catalog.GetString("PRES"),
             [Viewer.Catalog.GetString("Boiler water glass")] = Viewer.Catalog.GetString("WATR"),
             [Viewer.Catalog.GetString("Boiler water level")] = Viewer.Catalog.GetString("LEVL"),
+            [Viewer.Catalog.GetString("CCStatus")] = Viewer.Catalog.GetString("CCST"),
             [Viewer.Catalog.GetString("Circuit breaker")] = Viewer.Catalog.GetString("CIRC"),
             [Viewer.Catalog.GetString("Cylinder cocks")] = Viewer.Catalog.GetString("CCOK"),
             [Viewer.Catalog.GetString("Direction")] = Viewer.Catalog.GetString("DIRC"),
@@ -128,6 +137,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("Grate limit")] = Viewer.Catalog.GetString("GRAT"),
             [Viewer.Catalog.GetString("Loco Groups")] = Viewer.Catalog.GetString("GRUP"),
             [Viewer.Catalog.GetString("Master key")] = Viewer.Catalog.GetString("MAST"),
+            [Viewer.Catalog.GetString("MaxAccel")] = Viewer.Catalog.GetString("MACC"),
             [Viewer.Catalog.GetString("Pantographs")] = Viewer.Catalog.GetString("PANT"),
             [Viewer.Catalog.GetString("Power")] = Viewer.Catalog.GetString("POWR"),
             [Viewer.Catalog.GetString("Regulator")] = Viewer.Catalog.GetString("REGL"),
@@ -137,6 +147,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("Sander")] = Viewer.Catalog.GetString("SAND"),
             [Viewer.Catalog.GetString("Speed")] = Viewer.Catalog.GetString("SPED"),
             [Viewer.Catalog.GetString("Steam usage")] = Viewer.Catalog.GetString("STEM"),
+            [Viewer.Catalog.GetString("Target")] = Viewer.Catalog.GetString("TARG"),
             [Viewer.Catalog.GetString("Throttle")] = Viewer.Catalog.GetString("THRO"),
             [Viewer.Catalog.GetString("Time")] = Viewer.Catalog.GetString("TIME"),
             [Viewer.Catalog.GetString("Traction cut-off relay")] = Viewer.Catalog.GetString("TRAC"),
@@ -265,7 +276,7 @@ namespace Orts.Viewer3D.Popups
         {
             base.Initialize();
             // Reset window size
-            UpdateWindowSize();
+            if (Visible) UpdateWindowSize();
         }
 
         protected override ControlLayout Layout(ControlLayout layout)
@@ -275,6 +286,16 @@ namespace Orts.Viewer3D.Popups
             {
                 var colWidth = labels.Max(x => x.FirstColWidth) + (normalTextMode? 15: 20);
                 var TimeHboxPositionY = 0;
+
+                // search wider
+                var tokenOffset = 0;
+                var tokenWidth = 0;
+                foreach (var data in tokens.Where((string d) => !string.IsNullOrWhiteSpace(d)))
+                {
+                    tokenWidth = Owner.TextFontDefault.MeasureString(data);
+                    tokenOffset = tokenWidth > tokenOffset ? tokenWidth : tokenOffset;
+                }
+
                 foreach (var data in labels.ToList())
                 {
                     if (data.FirstCol.Contains("NwLn"))
@@ -367,7 +388,16 @@ namespace Orts.Viewer3D.Popups
                             }
                             else
                             {
-                                hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, LastCol));
+                                var iniLastCol = Viewer.Catalog.GetString(LastCol).IndexOf(" ");
+                                if (tokens.Any(LastCol.Contains) && iniLastCol >= 0)
+                                {
+                                    hbox.Add(indicator = new Label(tokenOffset + (normalTextMode ? 5 : 3), hbox.RemainingHeight, LastCol.Substring(0, iniLastCol)));
+                                    hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, LastCol.Substring(iniLastCol, Viewer.Catalog.GetString(LastCol).Length - iniLastCol).TrimStart()));
+                                }
+                                else
+                                {
+                                    hbox.Add(indicator = new Label(colWidth, hbox.RemainingHeight, LastCol));
+                                }
                                 indicator.Color = Color.White; // Default color
                             }
                         }
@@ -838,7 +868,6 @@ namespace Orts.Viewer3D.Popups
                         index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
 
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimEnd();
-                    brakeInfoValue = brakeInfoValue.StartsWith(Viewer.Catalog.GetString("V")) ? brakeInfoValue.Replace(Viewer.Catalog.GetString("V"), Viewer.Catalog.GetString("V") + "  ") : brakeInfoValue;
                     AddLabel(new ListLabel
                     {
                         LastCol = brakeInfoValue,
@@ -1057,6 +1086,46 @@ namespace Orts.Viewer3D.Popups
             }
 
             AddSeparator();
+
+            // Cruise Control
+            if ((Owner.Viewer.PlayerLocomotive as MSTSLocomotive).CruiseControl != null)
+            {
+                var cc = (Owner.Viewer.PlayerLocomotive as MSTSLocomotive).CruiseControl;
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString("CCStatus"),
+                    LastCol = cc.SpeedRegMode.ToString() + ColorCode[Color.Cyan]//"%%%"
+                });
+
+                if (cc.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto)
+                {
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Target"),
+                        LastCol = $"{FormatStrings.FormatSpeedDisplay(cc.SelectedSpeedMpS, Owner.Viewer.PlayerLocomotive.IsMetric) + ColorCode[Color.Cyan]}"//"%%%"
+                    });
+
+                    var maxAcceleration = Math.Round(cc.SelectedMaxAccelerationPercent).ToString("0") + "% ";//, "", false, keyPressed);
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("MaxAccel"),
+                        LastCol = $"{maxAcceleration + ColorCode[Color.Cyan]}"//"%%%"
+                    });
+                }
+                AddSeparator();
+            }
+
+            // EOT
+
+            if (locomotive.Train.EOT != null)
+            {
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString("EOT"),
+                    LastCol = $"{locomotive.Train.EOT?.EOTState.ToString()}"
+                });
+                AddSeparator();
+            }
 
             // Distributed Power
 
@@ -1277,16 +1346,18 @@ namespace Orts.Viewer3D.Popups
 
             // Doors
             var wagon = (MSTSWagon)locomotive;
-            if (wagon.DoorLeftOpen || wagon.DoorRightOpen)
+            bool flipped = locomotive.Flipped ^ locomotive.GetCabFlipped();
+            var doorLeftOpen = train.DoorState(flipped ? DoorSide.Right : DoorSide.Left) != DoorState.Closed;
+            var doorRightOpen = train.DoorState(flipped ? DoorSide.Left : DoorSide.Right) != DoorState.Closed;
+            if (doorLeftOpen || doorRightOpen)
             {
                 var status = new List<string>();
-                bool flipped = locomotive.GetCabFlipped();
                 doorsLabelVisible = true;
                 clockDoorsTime = Owner.Viewer.Simulator.ClockTime;
-                if (wagon.DoorLeftOpen)
-                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString(flipped ? "Right" : "Left")));
-                if (wagon.DoorRightOpen)
-                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString(flipped ? "Left" : "Right")));
+                if (doorLeftOpen)
+                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString("Left")));
+                if (doorRightOpen)
+                    status.Add(Viewer.Catalog.GetString(Viewer.Catalog.GetString("Right")));
 
                 AddLabel(new ListLabel
                 {

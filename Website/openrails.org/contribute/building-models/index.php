@@ -30,7 +30,7 @@ There are several products which support modelling in 3D and produce the formats
   <li><a href="http://www.sketchup.com/">Google Sketch Up</a> (good for static models)</li>
   <li><a href="https://www.google.com/?q=gmax#q=gmax">Autodesk GMax</a></li>
   <li><a href="http://www.sketchup.com/">Autodesk 3ds Max</a></li>
-  <li>Train Sim Modeler (TSM) - no longer sold by Abacus <br><a href="http://www.rundiomusic.com/SimDownloads">but downloadable free</a> from author, Louis Sinclair</li>
+  <li>Train Sim Modeler (TSM) - no longer sold by Abacus <br><a href="https://www.digital-rails.com/">but downloadable free</a> from Digital Rails</li>
 </ul>
 <p>&nbsp;</p>
 <h2>Tutorials</h2>

@@ -43,7 +43,8 @@ namespace Orts
         public static DispatchViewer DebugViewer;
         public static SoundDebugForm SoundDebugForm;
         public static ORTraceListener ORTraceListener;
-        public static string logFileName = "";
+        public static string logFileName = "";          // contains path to file
+        public static string EvaluationFilename = "";   // contains path to file
 
         /// <summary>
         /// The main entry point for the application.
@@ -53,8 +54,6 @@ namespace Orts
         {
             var options = args.Where(a => a.StartsWith("-") || a.StartsWith("/") && !a.TrimStart('/').Contains("/")).Select(a => a.Substring(1));
             var settings = new UserSettings(options);
-
-            //settings.WebServer = true;
 
             //enables loading of dll for specific architecture(32 or 64bit) from distinct folders, useful when both versions require same name (as for OpenAL32.dll)
             string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Native");

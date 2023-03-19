@@ -20,7 +20,7 @@ along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 <html lang="en">
 <head>
 	<title>OR: Cab Controls</title>
-	<meta charset="utf-8"/>
+	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1"><!-- adds zooming for mobiles -->
 	<link rel="shortcut icon" type="image/png" href="/or_logo.png"><!-- This icon appears in the page's tab and its bookmark. -->
 	<link rel="stylesheet" type="text/css" href="/index.css"><!-- share styles with home page -->
@@ -30,19 +30,57 @@ along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 <body onload="setInterval (ApiCabControls, 500)">
 	<div id="menu"><a href="/">Back to Menu</a></div>
-	<br><h2>Cab Controls, Instruments, Dials, Meters and Gauges</h2>
-	<table>
-		<thead>
-			<tr>
-				<th>Control</th>
-				<th>Min</th>
-				<th>Value</th>
-				<th>Max</th>
-				<th>Scale</th>
-			</tr>
-		</thead>
-		<tbody id="markup">
-		</tbody>
-	</table>
+	<br />
+	<div class="row">
+		<div class="column">
+			<h2>Cab Instruments, Dials, Meters and Gauges</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>Control</th>
+						<th>Min</th>
+						<th>Value</th>
+						<th>Max</th>
+						<th>Scale</th>
+					</tr>
+				</thead>
+				<tbody id="markup">
+				</tbody>
+			</table>
+		</div>
+		<div class="column">
+			<h2>Basic Controls</h2>
+			<br />
+			<br />
+			<div class="control">
+				<input id="train_brake" type="range" step="any" value="0" min="0" max="100" onchange="sendValue(this.value/100, 'TRAIN_BRAKE')" />
+				<label for="train_brake">Train Brake (0 - 100)</label>
+			</div>
+			<div class="control">
+				<input id="direction" type="range" value="0" min="-1" max="1" onchange="sendValue(this.value, 'DIRECTION')" />
+				<label for="direction">Direction/Reverser (-1 - +1)</label>
+			</div>
+			<div class="control">
+				<input id="train_brake" type="range" step="10" value="0" min="0" max="100" onchange="sendValue(this.value/100, 'THROTTLE')" />
+				<label for="train_brake">Throttle/Regulator (0 - 100)</label>
+			</div>
+			<div class="control">
+				<input id="train_brake" type="range" step="1" value="0" min="0" max="1" onchange="sendValue(this.value, 'HORN')" />
+				<label for="train_brake">Horn (0 - 1)</label>
+			</div>
+			<div class="control">
+				<input id="train_brake" type="range" step="1" value="0" min="0" max="1" onchange="sendValue(this.value, 'BELL')" />
+				<label for="train_brake">Bell (0 - 1)</label>
+			</div>
+			<div class="control">
+				<input id="train_brake" type="range" step="1" value="0" min="0" max="3" onchange="sendValue(this.value, 'FRONT_HLIGHT')" />
+				<label for="train_brake">Front Headlight (0 - 3)</label>
+			</div>
+			<div class="control">
+				<input id="train_brake" type="range" step="1" value="0" min="0" max="1" onchange="sendValue(this.value, 'PANTOGRAPH')" />
+				<label for="train_brake">Pantograph (0 - 1)</label>
+			</div>
+		</div>
+	</div>
 </body>
 </html>

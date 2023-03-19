@@ -20,17 +20,17 @@
 // Prints out lots of diagnostic information about the construction of signals from shape data and their state changes.
 //#define DEBUG_SIGNAL_SHAPES
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Simulation.Signalling;
 using Orts.Viewer3D.Common;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Event = Orts.Common.Event;
 using Events = Orts.Common.Events;
 
@@ -354,7 +354,7 @@ namespace Orts.Viewer3D
 
                     bool isDay;
                     if (Viewer.Settings.UseMSTSEnv == false)
-                        isDay = Viewer.World.Sky.solarDirection.Y > 0;
+                        isDay = Viewer.World.Sky.SolarDirection.Y > 0;
                     else
                         isDay = Viewer.World.MSTSSky.mstsskysolarDirection.Y > 0;
                     bool isPoorVisibility = Viewer.Simulator.Weather.FogDistance < 200;
@@ -514,7 +514,7 @@ namespace Orts.Viewer3D
 
                     if (mstsSignalType.Semaphore)
                         glowDay = 0.0f;
-                    if (mstsSignalType.FnType == MstsSignalFunction.INFO || mstsSignalType.FnType == MstsSignalFunction.SHUNTING) // These are good at identifying theatre boxes.
+                    if (mstsSignalType.Function == SignalFunction.INFO || mstsSignalType.Function == SignalFunction.SHUNTING) // These are good at identifying theatre boxes.
                         glowDay = glowNight = 0.0f;
 
                     // use values from signal if defined
@@ -694,14 +694,12 @@ namespace Orts.Viewer3D
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            var viewProj = XNAViewMatrix * XNAProjectionMatrix;
-
             foreach (var pass in SceneryShader.CurrentTechnique.Passes)
             {
                 foreach (var item in renderItems)
                 {
                     SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref viewProj);
+                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     pass.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
@@ -746,14 +744,12 @@ namespace Orts.Viewer3D
             const float startNightTrans = 0.1f;
             const float finishNightTrans = -0.1f;
 
-            var sunDirection = Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.solarDirection;
+            var sunDirection = Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.SolarDirection;
             NightEffect = 1 - MathHelper.Clamp((sunDirection.Y - finishNightTrans) / (startNightTrans - finishNightTrans), 0, 1);
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            var viewProj = XNAViewMatrix * XNAProjectionMatrix;
-
             foreach (var pass in SceneryShader.CurrentTechnique.Passes)
             {
                 foreach (var item in renderItems)
@@ -761,7 +757,7 @@ namespace Orts.Viewer3D
                     var slp = item.RenderPrimitive as SignalLightPrimitive;
                     SceneryShader.ZBias = MathHelper.Lerp(slp.GlowIntensityDay, slp.GlowIntensityNight, NightEffect);
                     SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref viewProj);
+                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     pass.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }

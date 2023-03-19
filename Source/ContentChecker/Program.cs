@@ -21,7 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Orts.Common;
-using Orts.Parsers.Msts;
+using ORTS.Common;
 
 namespace ContentChecker
 {
@@ -77,21 +77,25 @@ namespace ContentChecker
         /// </summary>
         static void ShowHelp()
         {
-            Console.WriteLine("Open Rails File Loader and Cross-check utility");
+            var version = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location);
+            Console.WriteLine("{0} {1}", version.FileDescription, VersionInfo.VersionOrBuild);
             Console.WriteLine();
-            Console.WriteLine("{0} [<option> ...] FILE [...]", Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName));
+            Console.WriteLine("Usage:");
+            Console.WriteLine("  {0} [options] <FILE> [...]", Path.GetFileNameWithoutExtension(version.FileName));
             Console.WriteLine();
-            //                "1234567890123456789012345678901234567890123456789012345678901234567890123456789"
+            Console.WriteLine("Arguments:");
+            Console.WriteLine("  <FILE>           Data files to check; may contain wildcards");
+            Console.WriteLine();
             Console.WriteLine("Options:");
-            Console.WriteLine("    /h, /help      Show help.");
-            Console.WriteLine("    /v, /verbose   Displays all expected/valid values in addition to any errors");
-            Console.WriteLine("    /d, /dependent Also load dependent files.");
+            Console.WriteLine("  /h, /help        Show help.");
+            Console.WriteLine("  /v, /verbose     Displays all expected/valid values in addition to any errors");
+            Console.WriteLine("  /d, /dependent   Also load dependent files");
             Console.WriteLine("");
             Console.WriteLine("Partially implemented options:");
-            Console.WriteLine("    /r, /referenced  Also load files that are directly referenced");
-            Console.WriteLine("                       This implies /d");
-            Console.WriteLine("    /a, /all         Load all related files");
-            Console.WriteLine("                       This implies /d and /r");
+            Console.WriteLine("  /r, /referenced  Also load files that are directly referenced");
+            Console.WriteLine("                   This implies /d");
+            Console.WriteLine("  /a, /all         Load all related files");
+            Console.WriteLine("                   This implies /d and /r");
             Console.WriteLine("");
             Console.WriteLine("This utility needs as input one or more files.");
             Console.WriteLine("You can either give a file with a full path or with a relative path.");

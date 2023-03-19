@@ -17,7 +17,7 @@
     </i18n>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <StringTable Comments="Open Rails Transport Simulator" CompanyName="Open Rails" FileDescription="Open Rails Timetable Editor (Contributed)" LegalCopyright="Copyright © 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018" ProductName="Open Rails"/>
+      <StringTable Comments="Open Rails Transport Simulator" CompanyName="Open Rails" FileDescription="Open Rails Timetable Editor (Contributed)" LegalCopyright="Copyright © 2009 - 2022" ProductName="Open Rails"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>

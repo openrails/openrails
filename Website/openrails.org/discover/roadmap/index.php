@@ -40,34 +40,34 @@ There are many other elements which cannot fit into an overview and these can be
     </tr>
   </thead>
   <tbody>
-    <tr><td class=version> v1.5</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+    <tr><td class=version> v1.6</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
     <tr>
-      <td class=blue><a href="https://trello.com/c/JGosmRnZ/159-consist-editor">consist editor</a></td>
+      <td class=blue><a href=""></a></td>
       <td class=red><a href="https://trello.com/c/ZpMsbNDp/144-sets-of-1-10-cameras-that-players-can-switch-between">user-definable camera sets</a></td>
-      <td class=green><a href="https://trello.com/c/7AOpISiH/501-deferred-rendering-of-graphics">deferred rendering for graphics effects</a></td>
+      <td class=green><a href="https://trello.com/c/N05HMaKn/350-darkness-in-tunnels">darkness in tunnels</a></td>
       <td class=orange><a href="https://trello.com/c/G7aoSuwy/270-content-directory-file-format">virtual filesystem</a></td>
     </tr>
     <tr>
-      <td class=blue><a href="https://trello.com/c/ASuDPya7/283-wagon-editor">wagon parameters editor</a></td>
+      <td class=blue><a href=""></a></td>
       <td class=red><a href="https://trello.com/c/awrukdfm/425-customise-freight-animations-for-2d-3d-cabs">custom animations</a></td>
-      <td class=green><a href="https://trello.com/c/N05HMaKn/350-darkness-in-tunnels">darkness in tunnels</a></td>
-      <td class=orange><a href="https://trello.com/c/Ql02djix/390-64bit-version-4gb-ram-usage">64-bit</a></td>
+      <td class=green><a href="https://trello.com/c/QRIfnqhm/137-new-3d-model-format">new 3D model format (glTF)</a></td>
+      <td class=orange><a href="https://trello.com/c/zma8vdQA/228-support-button-remapping-for-raildriver">remapping for RailDriver controls</a></td>
     </tr>
     <tr>
-      <td class=blue><a href="https://trello.com/c/upvTt0M7/284-locomotive-editor">loco parameters editor</a></td>
+    <td class=blue><a href=""></a></td>
       <td class=red><a href=""></a></td>
       <td class=green><a href=""></a></td>
-      <td class=orange><a href=""></a></td>
+      <td class=orange><a href="https://trello.com/c/wRX5Q6IQ/139-foundation-for-interactive-content-on-secondary-screens-devices">web APIs for interactive content</a></td>
     </tr>
     <tr><td class=version> v ?</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
     <tr>
-      <td class=blue><a href="https://trello.com/c/5O1usjDV/160-timetable-editor">timetable editor</a></td>
+      <td class=blue><a href="https://trello.com/c/JGosmRnZ/159-consist-editor">consist editor</a></td>
       <td class=red><a href="https://trello.com/c/LDJDHAAA/415-brakeman-mode">brakeman role</a></td>
       <td class=green><a href="https://trello.com/c/AHLLtyoL/473-support-a-texture-layer-channel-for-objects-to-show-weathering-grime-ambient-occlusion-etc">ambient occlusion</a></td>
-      <td class=orange><a href="https://trello.com/c/QRIfnqhm/137-new-3d-model-format">shape support and shaders</a></td>
+      <td class=orange><a href="https://trello.com/c/4GemLyo4/262-autosave">auto-save</a></td>
     </tr>
     <tr>
-      <td class=blue><a href=""></a></td>
+      <td class=blue><a href="https://trello.com/c/upvTt0M7/284-locomotive-editor">loco and wagon editor</a></td>
       <td class=red><a href="https://trello.com/c/idi8r9TZ/184-steam-automatic-engineer-allowing-fully-manual-fireman-operations">fireman role</a></td>
       <td class=green><a href="https://trello.com/c/4oQrHy8o/175-multiple-light-sources">multiple light sources</a></td>
       <td class=orange><a href="https://trello.com/c/1YXKK7N5/164-publishing-and-downloading-content">self-installing content</a></td>
@@ -80,10 +80,10 @@ There are many other elements which cannot fit into an overview and these can be
       <td class=orange><a href="https://trello.com/c/1hWlhrYL/140-in-game-gui-refresh-to-focus-on-user">better user-centred GUI</a></td>
     </tr>
     <tr>
-      <td class=blue><a href=""></a></td>
+    <td class=blue><a href="https://trello.com/c/5O1usjDV/160-timetable-editor">timetable editor</a></td>
       <td class=red><a href=""></a></td>
       <td class=green><a href="https://trello.com/c/dt93oY8b/182-improved-water">realistic water</a></td>
-      <td class=orange><a href="https://trello.com/c/bhTj9d3h/496-web-api-for-input">Web API input</a></td>
+      <td class=orange><a href=""></a></td>
     </tr> 
     <tr><td class=version> v ?</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
     <tr>

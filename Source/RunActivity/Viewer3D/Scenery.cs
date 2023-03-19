@@ -46,6 +46,7 @@ using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using ORTS.Common;
+using Orts.Simulation.RollingStocks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -113,7 +114,7 @@ namespace Orts.Viewer3D
                 var sunHeight = Viewer.MaterialManager.sunDirection.Y;
                 if (sunHeight < 0.10f && sunHeight > 0.01)
                 {
-                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.Game.HostProcess.CPUMemoryWorkingSet;
                     if (remainingMemorySpace >= 0) // if not we'll try again
                     {
                         // Night is coming, it's time to load the night textures
@@ -133,7 +134,7 @@ namespace Orts.Viewer3D
                 var sunHeight = Viewer.MaterialManager.sunDirection.Y;
                 if (sunHeight > -0.10f && sunHeight < -0.01)
                 {
-                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.Game.HostProcess.CPUMemoryWorkingSet;
                     if (remainingMemorySpace >= 0) // if not we'll try again
                     {
                         // Day is coming, it's time to load the day textures
@@ -282,7 +283,7 @@ namespace Orts.Viewer3D
             if (Vfs.FileExists(WFilePath))
             {
                 // We have an OR-specific addition to world file
-                WFile.InsertORSpecificData(WFilePath);
+                WFile.InsertORSpecificData(WFilePath, null);
             }
 
 
@@ -382,7 +383,7 @@ namespace Orts.Viewer3D
                             else
                             {
                                 var found = false;
-                                foreach (var movingTable in Program.Simulator.MovingTables)
+                                foreach (var movingTable in Program.Simulator.            MovingTables)
                                 {
                                     if (worldObject.UID == movingTable.UID && WFileName == movingTable.WFile)
                                     {
@@ -497,6 +498,11 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(PickupObj))
                     {
+                        if ((worldObject as PickupObj).PickupType == (uint)(MSTSWagon.PickupType.Container))
+                        {
+                            sceneryObjects.Add(new ContainerHandlingItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
+                        }
+                        else
                         sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
                         PickupList.Add((PickupObj)worldObject);
                     }

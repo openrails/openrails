@@ -1,41 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{79C3A70B-7535-40CB-8448-91AB87CBAE44}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ORTS.TrackViewer</RootNamespace>
     <AssemblyName>Contrib.TrackViewer</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
     <ApplicationIcon>..\..\ORTS.ico</ApplicationIcon>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\..\Program\</OutputPath>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <IsPublishable>False</IsPublishable>
+    <AssemblyTitle>Open Rails Track Viewer (Contributed)</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <DefineConstants>TRACE;WINDOWS</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>..\..\Launcher\app.manifest</ApplicationManifest>
@@ -45,150 +25,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
     </Reference>
-    <Reference Include="MonoGame.Framework">
-      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="PresentationCore">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="WindowsFormsIntegration" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Drawing\BasicShapes.cs" />
-    <Compile Include="Drawing\CloseToMouse.cs" />
-    <Compile Include="Drawing\DebugWindow.cs" />
-    <Compile Include="Drawing\DrawableTrackItem.cs" />
-    <Compile Include="Drawing\DrawArea.cs" />
-    <Compile Include="Drawing\DrawColors.cs" />
-    <Compile Include="Drawing\DrawLongitudeLatitude.cs" />
-    <Compile Include="Drawing\DrawMultiplePaths.cs" />
-    <Compile Include="Drawing\DrawScaleRuler.cs" />
-    <Compile Include="Drawing\DrawTerrain.cs" />
-    <Compile Include="Drawing\DrawTrackDB.cs" />
-    <Compile Include="Drawing\DrawWorldTiles.cs" />
-    <Compile Include="Drawing\Labels\DrawLabels.cs" />
-    <Compile Include="Drawing\Labels\EditLabel.xaml.cs">
-      <DependentUpon>EditLabel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Drawing\Labels\StorableLabels.cs" />
-    <Compile Include="Drawing\ShadowDrawArea.cs" />
-    <Compile Include="Editing\AutoConnectTools.cs" />
-    <Compile Include="Editing\AutoFixAllPaths.xaml.cs">
-      <DependentUpon>AutoFixAllPaths.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Editing\Charts\PathChartWindow.xaml.cs">
-      <DependentUpon>PathChartWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Editing\DrawEditorAction.cs" />
-    <Compile Include="Editing\DrawPATfile.cs" />
-    <Compile Include="Editing\DrawPath.cs" />
-    <Compile Include="Editing\Charts\DrawPathChart.cs" />
-    <Compile Include="Editing\EditorActions.cs" />
-    <Compile Include="Editing\ModificationTools.cs" />
-    <Compile Include="Editing\PathEditor.cs" />
-    <Compile Include="Editing\Charts\PathChartData.cs" />
-    <Compile Include="Editing\PathMetadataDialog.xaml.cs">
-      <DependentUpon>PathMetadataDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Editing\ConnectableNode.cs" />
-    <Compile Include="Editing\SavePatFile.cs" />
-    <Compile Include="Editing\TrackExtensions.cs" />
-    <Compile Include="Editing\Trainpath.cs" />
-    <Compile Include="Editing\TrainpathNode.cs" />
-    <Compile Include="Editing\WaitPointDialog.xaml.cs">
-      <DependentUpon>WaitPointDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-    <Compile Include="TrackViewer.cs" />
-    <Compile Include="UserInterface\Languages.cs" />
-    <Compile Include="UserInterface\MenuControl.xaml.cs">
-      <DependentUpon>MenuControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UserInterface\OtherPathsWindow.xaml.cs">
-      <DependentUpon>OtherPathsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UserInterface\SearchControl.xaml.cs">
-      <DependentUpon>SearchControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UserInterface\StatusBarControl.xaml.cs">
-      <DependentUpon>StatusBarControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UserInterface\TVInputSettings.cs" />
-    <Compile Include="UserInterface\TVUserInput.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="Editing\AutoFixAllPaths.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Drawing\Labels\EditLabel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editing\Charts\PathChartWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editing\PathMetadataDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editing\WaitPointDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UserInterface\MenuControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UserInterface\OtherPathsWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UserInterface\SearchControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UserInterface\StatusBarControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\activeBroken.png">
@@ -241,45 +77,23 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
-      <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
-      <Name>Orts.Formats.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ORTS.Common\ORTS.Common.csproj">
-      <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
-      <Name>ORTS.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ORTS.Content\ORTS.Content.csproj">
-      <Project>{812685A7-2683-4102-A3CA-2A5CED2E61EE}</Project>
-      <Name>ORTS.Content</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ORTS.Menu\ORTS.Menu.csproj">
-      <Project>{1C5B0B41-2FE9-41C9-8B21-CCDCBEB3DDA5}</Project>
-      <Name>ORTS.Menu</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
-      <Project>{8a84696c-3559-49b8-b27f-bb6932d8a1c6}</Project>
-      <Name>Orts.Parsers.Msts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ORTS.Settings\ORTS.Settings.csproj">
-      <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
-      <Name>ORTS.Settings</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Orts.Simulation\Orts.Simulation.csproj">
-      <Project>{333c4378-d82e-4b47-b561-6ba923b8fdfd}</Project>
-      <Name>Orts.Simulation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\RunActivity\RunActivity.csproj">
-      <Project>{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}</Project>
-      <Name>RunActivity</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
+    <ProjectReference Include="..\..\ORTS.Common\ORTS.Common.csproj" />
+    <ProjectReference Include="..\..\ORTS.Content\ORTS.Content.csproj" />
+    <ProjectReference Include="..\..\ORTS.Menu\ORTS.Menu.csproj" />
+    <ProjectReference Include="..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
+    <ProjectReference Include="..\..\ORTS.Settings\ORTS.Settings.csproj" />
+    <ProjectReference Include="..\..\Orts.Simulation\Orts.Simulation.csproj" />
+    <ProjectReference Include="..\..\RunActivity\RunActivity.csproj" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="System.ServiceModel.Duplex" Version="4.10.0" />
+    <PackageReference Include="System.ServiceModel.NetTcp" Version="4.10.0" />
+    <PackageReference Include="System.ServiceModel.Federation" Version="4.10.0" />
+  </ItemGroup>
 </Project>

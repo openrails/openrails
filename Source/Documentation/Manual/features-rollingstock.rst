@@ -540,6 +540,579 @@ A typical configuration code block will be as follows::
  
 The empty values for the wagon will be read from the normal base WAG file paramaters.
 
+.. _features-containers:
+
+Container management
+====================
+
+General
+-------
+
+With this feature containers are not static objects laying on earth or on wagons, but 
+may be loaded from a container station onto a wagon, or unloaded from a wagon and laid on 
+a container station. The load/unload operations are performed through a crane, which is the 
+heart of the container station.
+
+.. image:: images/features-container.png
+
+The other component of the container station is the set of stack locations, that is the 
+locations where containers may lay. Containers of same length can be stacked one above the other. 
+
+Wagons may be empty at game start, or partially or totally pre-loaded with containers, by 
+inserting the related data either in the consist (``.con``) file or in the ``.wag`` files.
+
+Also container stations may be empty at game start, or partially or totally populated with 
+containers, inserting the related data in the activity (``.act``) file.
+
+The loading and unloading operations are started by the player, by pressing the key ``<T>`` 
+for loading, and the key  ``<Shift-T>`` . The operation is performed on the first wagon 
+(starting from the locomotive) which is within the container crane displacement range and which 
+fulfills the 
+required conditions (e.g. loading space available for loading, container present for unloading). 
+
+Double stack wagons are managed.
+
+From a point of view of internal code structure, Open Rails handles container stations as 
+special pickups.
+
+
+How to define container data
+----------------------------
+
+Container shape files (``.s``) must be located in subfolders (or sub-subfolders) of the 
+``Trainset`` folder.
+Containers that can be managed must be provided with a Json ``.load-or`` file. The ``.load-or`` files 
+must be located in a subfolder of the ``Trainset`` folder. It is warmly advised to keep all 
+``.load-or`` file in a single folder: ``Common.ContainerData`` is suggested. It is also advised to name 
+the ``.load-or`` files in a consistent way:  ``40HCtriton.load-or`` is suggested, where ``40HC`` is the
+container type and ``triton`` the brand painted on the container.
+
+Format of the .load-or file
+'''''''''''''''''''''''
+
+Here below a sample of a ``.load-or`` file::
+
+  {
+  	"Container": 
+  	{
+	  	"Name" : "triton",
+	  	"Shape" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.s",
+	  	"ContainerType" : "C40ftHC",
+	  	"IntrinsicShapeOffset": [0,1.175,0],
+   		"EmptyMassKG": 2100.,
+		  "MaxMassWhenLoadedKG": 28000.,
+	  }
+  }
+
+- "Container" is a fixed keyword.
+- "Name" has as value a string used by Open Rails when the container must be indentified in a message 
+  to the player.
+- "Shape" has as value the path of the container shape, having ``Trainset`` as base.
+- "ContainerType" identifies the container type, which may be one of the following ones::
+
+  * C20ft
+  * C40ft
+  * C40ftHC
+  * C45ft
+  * C45ftHC
+  * C48ft
+  * C53ft
+
+  C48ft and C53ft have a HC height (2.90m)
+- "IntrinsicShapeOffset" has as value the offset in meters of the center of the bottom rectangle of the 
+  container with respect to the container shape file coordinates. Unfortunately often such 
+  offset is not [0,0,0], which would be advisable for newly produced containers. A simple way to 
+  state such offset is to use the ``Show Bounding Info`` of ``Shape Viewer``.
+- "EmptyMassKG" is an optional parameter that defines the tare (weight when empty) of the 
+  container. If the parameter is not present, OR uses a default parameter, specific for that 
+  ContainerType.
+- "MaxMassWhenLoadedKG" is an optional parameter that defines the sum of the tare plus the maximum 
+  allowed payload. As above, if the parameter is not present, OR uses a default parameter, specific for that 
+  ContainerType.
+
+
+Pre-setting a .wag file to accommodate containers
+-------------------------------------------------
+
+As a minimum following block must be present in the .wag file for a double stacker::
+
+  ORTSFreightAnims (
+		WagonEmptyWeight ( 12.575t )
+		LoadingAreaLength ( 12.20 )
+		AboveLoadingAreaLength ( 12.20 )
+		DoubleStacker ()
+		Offset( 0 0.34 0 )
+		IntakePoint ( 0 6.0 Container)
+		)
+
+- WagonEmptyWeight is the weight of the wagon, when it has neither containers nor other 
+  weighing freight animations on board
+- LoadingAreaLength is the length in meters of the loading area available for containers
+- AboveLoadingAreaLength is the length in meters of the above loading area available 
+  for containers (parameter not needed if not double stacker)
+- DoubleStacker must be present if the wagon allows double stacking
+- Offset is the offset of the center of the rectangle of the loading area with respect to 
+  the shape file of the wagon.
+- The first and the third IntakePoint parameters have the same meanings than the ones used 
+  for generic pickups. The first parameter must be equal to the Z value of the offset. 
+  ``Container`` is mandatory.
+
+This ``ORTSFreightAnims`` block can include also static freight animations as described in 
+the related paragraph.
+
+Allocation of the containers on the wagons
+------------------------------------------
+
+A container may have following positions within the loading area of the wagon: Rear, CenterRear, 
+Center, CenterFront, Front and Above. Following picture shows where the first five positions are located 
+on the wagon, while Above is the above position in dual-stack configurations. The Above position is 
+always centered.
+
+.. image:: images/features-loading-positions.png
+
+Some loading configurations are shown in following picture:
+
+.. image:: images/features-loading-configurations.png
+
+From left to right the loading configurations are present (locomotive on the left):
+
+-  CenterFront, CenterRear, Above
+-  Center
+-  Front, Rear
+-  Front, Center, Rear
+-  Front, Rear
+-  Front, CenterFront, CenterRear, Rear.
+
+The real rules to allocate double-stacked containers must be respected:
+
+- no 20ft stacked above
+- only one container above
+- at least 40ft of containers below.
+
+How to allocate containers on wagons at start of game
+-----------------------------------------------------
+The containers may be allocated either by editing the ``.con`` file, 
+or by editing the ``.wag`` file, or in a mixed mode (some wagons in one mode, 
+some others in another mode).
+
+Allocation through ``.con`` file
+'''''''''''''''''''''''''''''''''
+
+This allocation mode is the recommended one, as it is more flexible and provides 
+easier visibility.
+
+A wagon entry complete with the data about the containers loaded at startup is 
+shown here::
+
+  		Wagon (
+			  WagonData ( DTTX_620040_A ATW.DTTX_620040 )
+			  LoadData ( 20cmacgm common.containerdata CenterFront Empty)
+			  LoadData ( 20hamburgsud common.containerdata CenterRear Loaded)
+			  LoadData ( 40msc common.containerdata Above Random)			
+			  UiD ( 11 )
+		)
+
+
+As can be seen, for each container loaded at startup a ``LoadData`` entry must be 
+present. The meaning of the parameters is as follows:
+
+- The first parameter is the name of the ``.load-or`` file 
+- The second parameter is the path (having ``Trainset`` as base path) where the ``.load-or``
+  file resides 
+- The third parameter indicates where the container is allocated on the wagon
+- The fourth parameter, which is optional, defines the load state of the related container, 
+  which is used to derive the weight of the container. If ``Empty`` is present, the weight 
+  of the empty container is used as actual weight; if ``Loaded`` is present, the maximum 
+  weight (tare + payload) of the container is used; if ``Random`` is present, the weight 
+  is computed as follows: a random number between 0 and 100 is generated. If the number is 
+  below 31, the container is considered empty; else the number is used as percentage of the 
+  maximum weight of the container (tare + payload). The weight of the containers are added to 
+  the empty weight of the wagon, to compute the total weight of the wagon. If the parameter 
+  is not present, the ``Random`` value is assumed.
+
+
+The entry for the container allocated ``Above`` must be the last one.
+
+CenterFront and CenterRear entries must be entered after Front or Rear entries.
+
+The advantage of this type of allocation is that, for a single ``.wag`` file 
+(in the example ``DTTX_620040_A.wag``) more possible container configurations are 
+possible, sparing the time of creating many ``.wag`` files that differ only on the 
+containers loaded.
+
+Here below a picture with a sample entry in the ``.con`` file:
+
+.. image:: images/features-sample-load-entry.png
+
+
+Allocation through ``.wag`` file
+'''''''''''''''''''''''''''''''''
+
+Content creators might prefer to provide packs of pre-loaded wagons. Therefore 
+it is also possible to set in ``.wag`` file the containers to be loaded at startup. 
+
+A minimum ``FreightAnimations`` entry in a ``.wag`` file to have the same pre-loaded container 
+set as in the previous paragraph is as follows::
+
+    ORTSFreightAnims (
+		  WagonEmptyWeight ( 12.575t )
+		  LoadingAreaLength ( 14.6 )
+		  AboveLoadingAreaLength ( 16.15 )
+		  DoubleStacker ()
+		  Offset( 0 0.34 0 )
+		  IntakePoint ( 0 6.0 Container)
+		  LoadData ( 20cmacgm common.containerdata CenterFront Empty)
+		  LoadData ( 20hamburgsud common.containerdata CenterRear Loaded)
+		  LoadData ( 40msc common.containerdata Above Random)
+		)
+
+As can be seen, the syntax of the ``LoadData`` entries is the same as in the case of 
+the ``.con``  file. Also here the fourth parameter is optional.
+
+Obviously, using ``.wag`` files for this type of info, a different ``.wag`` file must 
+be created for every desired pre-loaded set of containers.
+
+A single ``.con`` file can include Wagon entries for both types of allocation definition.
+
+Container Station
+-----------------
+
+The Container Station is composed by a container crane and a container stack area.
+
+To insert a Container Station in a route, its object must be present in the ``.ref`` file as a 
+Pickup object. A ``.ref`` file entry sample is as follows::
+
+  Pickup (
+    Class                   ( "Animated loader" )
+    Filename                ( RMG_45.s )
+    PickupType              ( _FUEL_COAL_ )
+    Description             ( "Animated container crane" )
+  )
+
+PickupType is set to ``_FUEL_COAL``, but this will be overwritten by the data inserted in the 
+extension ``.w`` file (see :ref:`here<features-route-modify-wfiles>`) within the ``Openrails``
+sufolder of the World folder.
+
+Such extension ``.w`` file is formed by a general part, a container crane related part, and a 
+stack locations related part, as per following example (parts separated by blank lines) ::
+
+  SIMISA@@@@@@@@@@JINX0w0t______
+  
+  Tr_Worldfile (
+		Pickup (
+			UiD ( 21 )
+			PickupType ( 15 1 )
+      
+ 			ORTSPickingSurfaceYOffset ( 2.25 )
+			ORTSPickingSurfaceRelativeTopStartPosition ( 0 6.75 0 )
+			ORTSGrabberArmsParts ( 2 )
+			ORTSCraneSound ( "ContainerCrane.sms" )
+
+			ORTSMaxStackedContainers ( 2 )
+			ORTSStackLocationsLength ( 12.19 )
+			ORTSStackLocations ( 12
+				StackLocation (
+					Position ( -10 0 26 )
+					Length ( 16.15 )
+					)
+				StackLocation (
+					Position ( -10 0 26 )
+					MaxStackedContainers ( 1 )
+					Flipped ( 1 )
+					)
+				StackLocation (
+					Position ( -10 0 0 )
+					MaxStackedContainers ( 2 )
+					)
+				StackLocation (
+					Position ( -10 0 0 )
+					Flipped ( 1 )
+					)
+				StackLocation (
+					Position ( -10 0 -26 )
+					)
+				StackLocation (
+					Position ( -10 0 -26 )
+					Flipped ( 1 )
+					Length ( 16.15 )					
+					)
+				StackLocation (
+					Position ( -7 0 26 )
+					Length ( 16.15 )
+					)
+				StackLocation (
+					Position ( -7 0 26 )
+					Flipped ( 1 )
+					)
+				StackLocation (
+					Position ( -7 0 0 )
+					)
+				StackLocation (
+					Position ( -7 0 0 )
+					Flipped ( 1 )
+					)
+				StackLocation (
+					Position ( -7 0 -26 )
+					)
+				StackLocation (
+					Position ( -7 0 -26 )
+					Flipped ( 1 )
+					Length ( 16.15 )
+					)							
+				)
+		)
+  )
+
+- The UiD number must correspond to the uiD number that the pickup has in the main ``.w`` file.
+- PickupType ( 15 1 ) identifies this pickup as being a container station.
+
+More than a Pickup() block can be present in such extension file, one for every container station 
+present in the route.
+
+The container crane and stack location related data are described at a convenient point below. 
+
+
+Container Station (including container crane) shape file developing rules
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+- The shape file must have its Z Axis aligned with the track where the wagons to be loaded or 
+  unloaded stay.
+- The Z-zero of the shape file must be in the middle of the segment that the crane can cover in 
+  its motion (e.g. the crane Z-span could be -30 meters to 30 meters).
+- The animation of the part of the crane moving along the Z axis must be called ``ZAXIS``.
+- The animation of the part of the crane moving transversally along the X axis must be called ``XAXIS``, 
+  and must be hierarchically dependent from ``ZAXIS``.
+- The animation of the part of the crane moving vertically along the Y axis must be called ``YAXIS``, 
+  and must be hierarchically dependent from ``XAXIS``.
+- The grabbers are the extensible arms that pick the container. In the simplest case there are two 
+  sections, one extending towards positive Z for longer containers, and one extending towards negative Z. 
+  The first one must be called ``GRABBER01`` and the second one ``GRABBER02``. Both must be hierarchically 
+  dependent from ``YAXIS``. In the most complex case each of the two "arms" is composed by two parts, 
+  which move like a telescope. Such second couple of arms must be called ``GRABBER01_O2`` and 
+  ``GRABBER02_02``. They must be hierarchically dependent from ``GRABBER01`` and ``GRABBER02``. 
+  The spans of ``GRABBER01`` 
+  and ``GRABBER02`` must be symmetric, and the same applies for the other couple of spans. Moreover the 
+  spans of ``GRABBER01`` and ``GRABBER01_02`` must be equal (and symmetrically also the other couple).
+- The names of the cable parts that have a partially autonomous motion along the Y axis (to 
+  simulate cable winding and unwinding) must start with ``CABLE`` and must be hierarchically dependent 
+  from ``YAXIS``. 
+
+The following diagram, taken from Shape Viewer, sums up the above rules.
+
+.. image:: images/features-hierarchy.png
+
+Following are the significant animation entries of a crane's shape file::
+
+  animations ( 1
+		animation ( 2 30
+			anim_nodes ( 30
+				anim_node MAIN (
+					controllers ( 0 )
+				)
+                ...
+				anim_node ZAXIS (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 -139.5 )
+							linear_key ( 12 0 0 139.5 )
+							linear_key ( 24 0 0 -139.5 )
+						)
+					)
+				)
+				anim_node XAXIS (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 0 )
+							linear_key ( 3 26.4 0 0 )
+							linear_key ( 6 0 0 0 )
+						)
+					)
+				)
+                ...
+				anim_node YAXIS (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 11.7 0 )
+							linear_key ( 2 0 0 0 )
+							linear_key ( 4 0 11.7 0 )
+						)
+					)
+				)
+				anim_node GRABBER02 (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 -2.515 )
+							linear_key ( 1 0 0 0 )
+							linear_key ( 2 0 0 -2.515 )
+						)
+					)
+				)
+				anim_node GRABBER02_02 (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 -2.513 )
+							linear_key ( 1 0 0 0 )
+							linear_key ( 2 0 0 -2.513 )
+						)
+					)
+				)
+				anim_node GRABBER01 (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 2.515 )
+							linear_key ( 1 0 0 0 )
+							linear_key ( 2 0 0 2.515 )
+						)
+					)
+				)
+				anim_node GRABBER01_02 (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 0 2.513 )
+							linear_key ( 1 0 0 0 )
+							linear_key ( 2 0 0 2.513 )
+						)
+					)
+				)
+                ...
+				anim_node CABLE02 (
+					controllers ( 1
+						linear_pos ( 3
+							linear_key ( 0 0 22.32 0 )
+							linear_key ( 1 0 15.72 0 )
+							linear_key ( 2 0 22.32 0 )
+						)
+					)
+				)
+				...
+			)
+		)
+	)
+
+
+It can be noted that the frame count is different for different animation nodes, e.g. 
+the ZAXIS has 0, 12, 24. This permits to scale down the motion speed along that axis to a 
+realistic value.
+
+Parameters of extension ``.w`` file related to the crane and its animations
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+- ORTSPickingSurfaceYOffset ( 0.0 ) : the Y offset of the lower face of the grabbers 
+  (the one which gets in contact with the upper face of the container) when ``YAXIS`` is 
+  equal to 0
+- ORTSPickingSurfaceRelativeTopStartPosition ( 0 11.7 0 ) : the values of ``XAXIS``, ``YAXIS`` 
+  and ZAXIS at game start (should be centered on the Z axis, above the rails and at 
+  top height)
+- ORTSGrabberArmsParts ( 4 ) : is 4 if there are all four ``GRABBER01``, ``GRABBER02``, ``GRABBER01_02`` 
+  and ``GRABBER02_02`` animations; is 2 if there is only ``GRABBER01`` and ``GRABBER02``
+- ORTSCraneSound ( "ContainerCrane.sms" ) : name and path of the crane sound file; the path is 
+  based on the ``SOUND`` folder of the route; if the file is not found there, the path becomes 
+  based on the ``SOUND`` folder of ``TRAIN SIMULATOR``. The specific discrete sound triggers 
+  available are listed :ref:`here<sound-container-cranes>` .
+
+Stack Locations
+''''''''''''''''
+Within the area that can be reached by the container crane (rails area apart) 
+stack locations where the containers can be laid down can be defined in the extension 
+``.w`` file.
+
+The stack locations are defined by following parameters:
+
+- ``Position``: the coordinates of the center point of one of the short sides of the stack 
+  location; if no ``Flipped ( 1 )`` line is present, the location area extends towards the 
+  increasing Z axis; if instead such line is present, the location area extends towards 
+  the decreasing Z axis. If two stack locations have the same position, and one is flipped and 
+  the other isn't, the containers will be laid back-to-back, optimizing space used.
+- ``Length``: the maximum length of the containers that can be laid down on that stack 
+  location
+- ``MaxStackedContainers``: The maximum number of containers that can be stacked one above 
+  the other on that stack location
+
+The ``Length`` and ``MaxStackedContainers`` parameters are optional and, when present, override 
+the default values present in the ``ORTSStackLocationsLength`` and ``ORTSMaxStackedContainers``.
+
+If ``ORTSStackLocationsLength`` is greater or equal to 12.20m, which is twice the length of 
+a 20ft container, Open Rails applies a space optimization strategy: for each stack location 
+(let's call it the mother stack location), another one (let's call it the child stack location) 
+is created on a position with a Z value which is 6.095m greater than the mother 
+stack location (if the latter is flipped the Z value is 6.095m smaller). This child stack location 
+can be occupied by a 20ft container only, and only if the mother stack location is empty or 
+occupied by a 20ft container too. The child stack location has an index which is equal to 
+the mother stack location index plus the total number of mother stack locations. Once both 
+the mother and the child stack locations are empty, the mother stack location is again available 
+for any type of container of suitable length.
+
+A further example of a stack locations allocation code and of its physical counterpart in the 
+container station follows. It can be noted that stack location 0 has a 20ft container on it, and so has 
+its child stack location 10. Same applies to stack location 3 and its child stack location 13.
+
+.. image:: images/features-stack-locations-code.png
+  :scale: 80 %
+
+.. image:: images/features-stack-locations.png
+
+
+Population of container stations at game start
+''''''''''''''''''''''''''''''''''''''''''''''
+
+Container stations may be populated at game start. This occurs by inserting a ``.load-stations-loads-or`` 
+file in the ``Openrails`` subfolder of the "Activities" folder of the 
+route, and inserting the following line  at the bottom of the ``Tr_Activity_Header`` in 
+``.act`` files ::
+
+  		ORTSLoadStationsPopulation ( BigContainerStationPopulation )
+
+where ``BigContainerStationPopulation`` is the name of the ``.load-stations-loads-or`` file.  At the moment population at 
+game start is possible only in Activity mode.
+
+The ``.load-stations-loads-or`` file is a Json file. An example is shown here below ::
+
+  	"ContainerStationsPopulation": [ 
+		{
+			"LoadStationID" : { "wfile" : "w-005354+014849.w", "UiD" :  21, },
+			"LoadData" : [
+				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, "LoadState" : "Empty"},
+				{ "File" : "40HCcai", "Folder" : "common.containerdata", "StackLocation" : 0, "LoadState" : "Loaded"},
+				{ "File" : "20cmacgm", "Folder" : "common.containerdata", "StackLocation" : 2, "LoadState" : "Random"},
+				{ "File" : "20kline", "Folder" : "common.containerdata", "StackLocation" : 2, },
+				{ "File" : "45HCtriton", "Folder" : "common.containerdata", "StackLocation" : 5, },
+				{ "File" : "45HCtriton", "Folder" : "common.containerdata", "StackLocation" : 5, },
+				{ "File" : "48emp", "Folder" : "common.containerdata", "StackLocation" : 6, },
+				{ "File" : "20maersk", "Folder" : "common.containerdata", "StackLocation" : 14, },
+				{ "File" : "20maersk3", "Folder" : "common.containerdata", "StackLocation" : 14, },				
+			]	
+		},
+		{
+			"LoadStationID" : { "wfile" : "w-005354+014849.w", "UiD" :  210, },
+			"LoadData" : [ 
+			...
+			]	
+		},
+		...
+  	]
+  }
+
+The file can define the population at startup of many container stations. 
+
+- The ``LoadStationID`` contains the info needed to identify the container station.
+- The ``LoadData`` array contains the data to populate the container station.
+- The value of ``File`` is the name of the ``.load-or`` file identifying the container.
+- The value of ``Folder`` is the path where the ``.load-or`` can be found, starting from the 
+  ``TRAINSET``.
+- The value of ``StackLocation`` is the index of the Stack Location. If the index is equal 
+  or higher than the number of stack locations defined in the extension ``.w`` file, the 
+  index refers to a child stack location.
+- If more than a container is defined for a stack location, they are stacked one above the 
+  other.
+- The ``LoadState`` parameter is optional, and has the same meaning and values as the 
+  parameter of the same name which can be present in .con or .wag files.
+
+The container station population file must be written taking into account the constraints 
+of the stack locations (container length must be smaller than stack location lenght, 
+stacked containers can't exceed the allowed number, a stack location must contain 
+containers of same length).
+
+
 .. _features-passengerviewpoints:
 
 Multiple passenger viewpoints
@@ -643,6 +1216,22 @@ Open rails uses some defaults to calculate the required movement and angles for 
 shape movement, however for greater accuracy the modeler can add specific values such as 
 ``ORTSLengthAirHose``. In addition the length values suggested in the Derailment Coefficient should 
 also be added.
+
+Passenger doors
+===============
+
+.. index:: ORTSDoors
+
+Passenger doors are opened and closed (by default) using the ``<Q>`` and ``<Shift+Q>`` keys.
+It is possible to add opening and closing delays, which can be useful to delay the indication of
+"Doors closed" until all doors are fully closed.
+The delays can be added inserting the following block in the wagon section of any
+ENG or WAG file::
+
+  ORTSDoors (
+    ClosingDelay ( 5s )
+    OpeningDelay ( 1s )
+  )
 
 
 C# engine scripting
@@ -1132,8 +1721,8 @@ interface), which can include a (touch screen) display and buttons.
 Being the display fields and icons and the buttons specific of every TCS, 
 a set of generic cabview controls are available, which can be customized 
 within the TCS script.
-More precisely 48 generic cabview controls, named from ORTS_TCS1 to ORTS_TCS48 
-are available. All 48 may be used as two state or multistate controls,  
+Generic cabview controls, named ORTS_TCS1, ORTS_TCS2, and so on
+are available. All of them may be used as two state or multistate controls,  
 like e.g.::
 
     MultiStateDisplay (
@@ -1177,7 +1766,7 @@ like e.g.::
    single: Style
    single: MouseControl
 
-Each one of the first 32 can be also used as Two-state commands/displays, like e.g.::
+They can be also used as Two-state commands/displays, like e.g.::
 
 		TwoState (
 			Type ( ORTS_TCS7 TWO_STATE )
@@ -1195,8 +1784,8 @@ The commands are received asynchronously by the script through this method:
     public override void HandleEvent(TCSEvent evt, string message)
 
 Where evt may be TCSEvent.GenericTCSButtonPressed or TCSEvent.GenericTCSButtonReleased 
-and message is a string ranging from "0" to "31", which correspond to controls from 
-ORTS_TCS1 to ORTS_TCS32.
+and message is a string representing the control number with zero-base indexing
+(e.g. "5" corresponds to ORTS_TCS6).
 The commands may only be triggered by the mouse, except the first two which may also be 
 triggered by key combinations ``Ctrl,`` (comma) and ``Ctrl.`` (period).
 Here's a code excerpt from the script which manages the commands:
@@ -1257,14 +1846,14 @@ To request a display of a cabview control, method:
 
     public Action<int, float> SetCabDisplayControl; 
 
-has to be used, where ``int`` is the index of the cab control (from 0 to 47 
-corresponding from ORTS_TCS1 to ORTS_TCS48), and ``float`` is the value to be 
+has to be used, where ``int`` is the index of the cab control (starting from 0
+which corresponds to ORTS_TCS1), and ``float`` is the value to be 
 used to select among frames.
 
 When the player moves the mouse over the cabview controls linked to commands, 
 the name of such control shortly appears on the display, like e.g. "speedometer", 
 as a reminder to the player. 
-In case of these generic commands, strings from "ORTS_TCS1" to "ORTS_TCS32" would 
+In case of these generic commands, strings like "ORTS_TCS1" or "ORTS_TCS32" would 
 appear, which aren't mnemonic at all. Therefore following method is available:
 
 .. code-block:: csharp

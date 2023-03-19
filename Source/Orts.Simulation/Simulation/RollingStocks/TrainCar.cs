@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2022 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -34,10 +34,12 @@
 //#define DEBUG_BRAKE_SLIDE
 
 using Microsoft.Xna.Framework;
+using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks.Coupling;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
@@ -197,6 +199,7 @@ namespace Orts.Simulation.RollingStocks
         public float CarCouplerFaceLengthM;
         public float DerailmentCoefficient;
         public float NadalDerailmentCoefficient;
+        public bool DerailmentCoefficientEnabled = true;
         public float MaximumWheelFlangeAngleRad;
         public float WheelFlangeLengthM;
         public float AngleOfAttackRad;
@@ -211,57 +214,12 @@ namespace Orts.Simulation.RollingStocks
         public float InitialMaxBrakeForceN = 89e3f;   // Initial force when agon initialised
 
         // Coupler Animation
-        public string FrontCouplerShapeFileName;
-        public float FrontCouplerAnimLengthM;
-        public float FrontCouplerAnimWidthM;
-        public float FrontCouplerAnimHeightM;
-
-        public string FrontCouplerOpenShapeFileName;
-        public float FrontCouplerOpenAnimLengthM;
-        public float FrontCouplerOpenAnimWidthM;
-        public float FrontCouplerOpenAnimHeightM;
-        public bool FrontCouplerOpenFitted = false;
-        public bool FrontCouplerOpen = false;
-
-        public string RearCouplerShapeFileName;
-        public float RearCouplerAnimLengthM;
-        public float RearCouplerAnimWidthM;
-        public float RearCouplerAnimHeightM;
-
-        public string RearCouplerOpenShapeFileName;
-        public float RearCouplerOpenAnimLengthM;
-        public float RearCouplerOpenAnimWidthM;
-        public float RearCouplerOpenAnimHeightM;
-        public bool RearCouplerOpenFitted = false;
-        public bool RearCouplerOpen = false;
+        public AnimatedCoupler FrontCoupler = new AnimatedCoupler();
+        public AnimatedCoupler RearCoupler = new AnimatedCoupler();
 
         // Air hose animation
-        public string FrontAirHoseShapeFileName;
-        public float FrontAirHoseAnimLengthM;
-        public float FrontAirHoseAnimWidthM;
-        public float FrontAirHoseAnimHeightM;
-
-        public string FrontAirHoseDisconnectedShapeFileName;
-        public float FrontAirHoseDisconnectedAnimLengthM;
-        public float FrontAirHoseDisconnectedAnimWidthM;
-        public float FrontAirHoseDisconnectedAnimHeightM;
-
-        public string RearAirHoseShapeFileName;
-        public float RearAirHoseAnimLengthM;
-        public float RearAirHoseAnimWidthM;
-        public float RearAirHoseAnimHeightM;
-
-        public string RearAirHoseDisconnectedShapeFileName;
-        public float RearAirHoseDisconnectedAnimLengthM;
-        public float RearAirHoseDisconnectedAnimWidthM;
-        public float RearAirHoseDisconnectedAnimHeightM;
-
-        public float FrontAirHoseHeightAdjustmentM;
-        public float RearAirHoseHeightAdjustmentM;
-        public float FrontAirHoseYAngleAdjustmentRad;
-        public float FrontAirHoseZAngleAdjustmentRad;
-        public float RearAirHoseYAngleAdjustmentRad;
-        public float RearAirHoseZAngleAdjustmentRad;
+        public AnimatedAirHose FrontAirHose = new AnimatedAirHose();
+        public AnimatedAirHose RearAirHose = new AnimatedAirHose();
 
         public float CarAirHoseLengthM;
         public float CarAirHoseHorizontalLengthM;
@@ -467,19 +425,29 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (RemoteControlGroup == 0 && Train != null)
                 {
-                    if (Train.LeadLocomotive != null && !((MSTSLocomotive)Train.LeadLocomotive).TrainControlSystem.TractionAuthorization && Train.MUThrottlePercent > 0)
+                    if (Train.LeadLocomotive is MSTSLocomotive locomotive)
                     {
-                        return 0;
+                        if (!locomotive.TrainControlSystem.TractionAuthorization
+                            || Train.MUThrottlePercent <= 0)
+                        {
+                            return 0;
+                        }
+                        else if (Train.MUThrottlePercent > locomotive.TrainControlSystem.MaxThrottlePercent)
+                        {
+                            return Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
+                        }
                     }
-                    else
-                    {
-                        return Train.MUThrottlePercent;
-                    }
+
+                    return Train.MUThrottlePercent;
                 }
                 else if (RemoteControlGroup == 1 && Train != null)
+                {
                     return Train.DPThrottlePercent;
+                }
                 else
+                {
                     return LocalThrottlePercent;
+                }
             }
             set
             {
@@ -514,21 +482,26 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
-                if (RemoteControlGroup >= 0 && Train != null)
+                if (RemoteControlGroup == 0 && Train != null)
                 {
-                    if (Train.LeadLocomotive != null && ((MSTSLocomotive) Train.LeadLocomotive).TrainControlSystem.FullDynamicBrakingOrder)
+                    if (Train.LeadLocomotive is MSTSLocomotive locomotive)
                     {
-                        return 100;
+                        if (locomotive.TrainControlSystem.FullDynamicBrakingOrder)
+                        {
+                            return 100;
+                        }
                     }
-                    else if (RemoteControlGroup == 1 && Train != null)
-                        return Train.DPDynamicBrakePercent;
-                    else
-                    {
-                        return Train.MUDynamicBrakePercent;
-                    }
-}
+
+                    return Train.MUDynamicBrakePercent;
+                }
+                else if (RemoteControlGroup == 1 && Train != null)
+                {
+                    return Train.DPDynamicBrakePercent;
+                }
                 else
+                {
                     return LocalDynamicBrakePercent;
+                }
             }
             set
             {
@@ -659,7 +632,8 @@ namespace Orts.Simulation.RollingStocks
         protected float RouteSpeedMpS; // Max Route Speed Limit
         protected const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
         protected int WagonNumAxles; // Number of axles on a wagon
-        protected float MSTSWagonNumWheels; // Number of axless on a wagon - used to read MSTS value as default
+        protected int InitWagonNumAxles; // Initial read of number of axles on a wagon
+        protected float MSTSWagonNumWheels; // Number of axles on a wagon - used to read MSTS value as default
         protected int LocoNumDrvAxles; // Number of drive axles on locomotive
         protected float MSTSLocoNumDrvWheels; // Number of drive axles on locomotive - used to read MSTS value as default
         public float DriverWheelRadiusM = Me.FromIn(30.0f); // Drive wheel radius of locomotive wheels - Wheel radius of loco drive wheels can be anywhere from about 10" to 40".
@@ -681,6 +655,7 @@ namespace Orts.Simulation.RollingStocks
             Tender,
             Passenger,
             Freight,
+            EOT,
         }
         public WagonTypes WagonType;
 
@@ -883,6 +858,32 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
+
+
+        /// <summary>
+        /// update position of discrete freight animations (e.g. containers)
+        /// </summary>  
+        public void UpdateFreightAnimationDiscretePositions()
+        {
+            if (FreightAnimations?.Animations != null)
+            {
+                foreach (var freightAnim in FreightAnimations.Animations)
+                {
+                    if (freightAnim is FreightAnimationDiscrete)
+                    {
+                        var discreteFreightAnim = freightAnim as FreightAnimationDiscrete;
+                        if (discreteFreightAnim.Loaded && discreteFreightAnim.Container != null)
+                        {
+                            var container = discreteFreightAnim.Container;
+                            container.WorldPosition.XNAMatrix = Matrix.Multiply(container.RelativeContainerMatrix, discreteFreightAnim.Wagon.WorldPosition.XNAMatrix);
+                            container.WorldPosition.TileX = WorldPosition.TileX;
+                            container.WorldPosition.TileZ = WorldPosition.TileZ;
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Initialise Train Temperatures
         /// <\summary>           
@@ -897,7 +898,7 @@ namespace Orts.Simulation.RollingStocks
             double latitude = 0;
             double longitude = 0;
 
-            new Orts.Common.WorldLatLon().ConvertWTC(WorldPosition.TileX, WorldPosition.TileZ, WorldPosition.Location, ref latitude, ref longitude);
+            new WorldLatLon().ConvertWTC(WorldPosition.TileX, WorldPosition.TileZ, WorldPosition.Location, ref latitude, ref longitude);
             
             float LatitudeDeg = MathHelper.ToDegrees((float)latitude);
                       
@@ -1421,60 +1422,60 @@ namespace Orts.Simulation.RollingStocks
                 var frontairhoseheightadjustmentreferenceM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow(CarBehind.CarAirHoseHorizontalLengthM, 2));
 
                 // actual airhose height
-                RearAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
-                CarBehind.FrontAirHoseHeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
+                RearAirHose.HeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
+                CarBehind.FrontAirHose.HeightAdjustmentM = (float)Math.Sqrt((float)Math.Pow(CarAirHoseLengthM, 2) - (float)Math.Pow((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM), 2));
 
                 // refererence adjustment heights to rest position
                 // If higher then rest position, then +ve adjustment
-                if (RearAirHoseHeightAdjustmentM >= rearairhoseheightadjustmentreferenceM)
+                if (RearAirHose.HeightAdjustmentM >= rearairhoseheightadjustmentreferenceM)
                 {
-                    RearAirHoseHeightAdjustmentM -= rearairhoseheightadjustmentreferenceM;
+                    RearAirHose.HeightAdjustmentM -= rearairhoseheightadjustmentreferenceM;
                 }
                 else // if lower then the rest position, then -ve adjustment
                 {
-                    RearAirHoseHeightAdjustmentM = (rearairhoseheightadjustmentreferenceM - RearAirHoseHeightAdjustmentM);
+                    RearAirHose.HeightAdjustmentM = (rearairhoseheightadjustmentreferenceM - RearAirHose.HeightAdjustmentM);
                 }
 
-                if (CarBehind.FrontAirHoseHeightAdjustmentM >= frontairhoseheightadjustmentreferenceM)
+                if (CarBehind.FrontAirHose.HeightAdjustmentM >= frontairhoseheightadjustmentreferenceM)
                 {
-                    CarBehind.FrontAirHoseHeightAdjustmentM -= frontairhoseheightadjustmentreferenceM;
+                    CarBehind.FrontAirHose.HeightAdjustmentM -= frontairhoseheightadjustmentreferenceM;
                 }
                 else
                 {
-                    CarBehind.FrontAirHoseHeightAdjustmentM = frontairhoseheightadjustmentreferenceM - CarBehind.FrontAirHoseHeightAdjustmentM;
+                    CarBehind.FrontAirHose.HeightAdjustmentM = frontairhoseheightadjustmentreferenceM - CarBehind.FrontAirHose.HeightAdjustmentM;
                 }
 
                 // Calculate angle adjustments
                 var rearAirhoseAngleAdjustmentReferenceRad = (float)Math.Asin(CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
                 var frontAirhoseAngleAdjustmentReferenceRad = (float)Math.Asin(CarBehind.CarAirHoseHorizontalLengthM / CarAirHoseLengthM);
 
-                RearAirHoseZAngleAdjustmentRad = (float)Math.Asin((CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
-                CarBehind.FrontAirHoseZAngleAdjustmentRad = (float)Math.Asin((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
+                RearAirHose.ZAngleAdjustmentRad = (float)Math.Asin((CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
+                CarBehind.FrontAirHose.ZAngleAdjustmentRad = (float)Math.Asin((CarBehind.CarAirHoseHorizontalLengthM + CouplerSlackM) / CarAirHoseLengthM);
 
                 // refererence adjustment angles to rest position
-                if (RearAirHoseZAngleAdjustmentRad >= rearAirhoseAngleAdjustmentReferenceRad)
+                if (RearAirHose.ZAngleAdjustmentRad >= rearAirhoseAngleAdjustmentReferenceRad)
                 {
-                    RearAirHoseZAngleAdjustmentRad -= rearAirhoseAngleAdjustmentReferenceRad;
+                    RearAirHose.ZAngleAdjustmentRad -= rearAirhoseAngleAdjustmentReferenceRad;
                 }
                 else
                 {
-                    RearAirHoseZAngleAdjustmentRad = (rearAirhoseAngleAdjustmentReferenceRad - RearAirHoseZAngleAdjustmentRad);
+                    RearAirHose.ZAngleAdjustmentRad = (rearAirhoseAngleAdjustmentReferenceRad - RearAirHose.ZAngleAdjustmentRad);
                 }
 
                 // The Y axis angle adjustment should be the same as the z axis
-                RearAirHoseYAngleAdjustmentRad = RearAirHoseZAngleAdjustmentRad;
+                RearAirHose.YAngleAdjustmentRad = RearAirHose.ZAngleAdjustmentRad;
 
-                if (CarBehind.FrontAirHoseZAngleAdjustmentRad >= frontAirhoseAngleAdjustmentReferenceRad)
+                if (CarBehind.FrontAirHose.ZAngleAdjustmentRad >= frontAirhoseAngleAdjustmentReferenceRad)
                 {
-                    CarBehind.FrontAirHoseZAngleAdjustmentRad -= frontAirhoseAngleAdjustmentReferenceRad;
+                    CarBehind.FrontAirHose.ZAngleAdjustmentRad -= frontAirhoseAngleAdjustmentReferenceRad;
                 }
                 else
                 {
-                    CarBehind.FrontAirHoseZAngleAdjustmentRad = (frontAirhoseAngleAdjustmentReferenceRad - CarBehind.FrontAirHoseZAngleAdjustmentRad);
+                    CarBehind.FrontAirHose.ZAngleAdjustmentRad = (frontAirhoseAngleAdjustmentReferenceRad - CarBehind.FrontAirHose.ZAngleAdjustmentRad);
                 }
 
                 // The Y axis angle adjustment should be the same as the z axis
-                CarBehind.FrontAirHoseYAngleAdjustmentRad = CarBehind.FrontAirHoseZAngleAdjustmentRad;
+                CarBehind.FrontAirHose.YAngleAdjustmentRad = CarBehind.FrontAirHose.ZAngleAdjustmentRad;
 
             }
 
@@ -1486,7 +1487,7 @@ namespace Orts.Simulation.RollingStocks
             // To calculate vertical force on outer wheel = (WagMass / NumWheels) * gravity + WagMass / NumAxles * ( (Speed^2 / CurveRadius) - (gravity * superelevation angle)) * (height * track width)
             // Equation 5
 
-            if (IsPlayerTrain)
+            if (IsPlayerTrain && DerailmentCoefficientEnabled)
             {
                 if (CouplerForceU > 0 && CouplerSlackM < 0) // If car coupler is in compression, use the buff angle
                 {
@@ -1767,7 +1768,7 @@ namespace Orts.Simulation.RollingStocks
         public virtual void UpdateCurveSpeedLimit()
         {
             float s = AbsSpeedMpS; // speed of train
-            var train = Simulator.PlayerLocomotive.Train;//Debrief Eval
+            var train = Simulator.PlayerLocomotive != null ? Simulator.PlayerLocomotive.Train : null;//Debrief Eval (timetable train can exist without engine)
 
             // get curve radius
 
@@ -2231,6 +2232,7 @@ namespace Orts.Simulation.RollingStocks
             CarHeatCurrentCompartmentHeatJ = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
+            FreightAnimations?.LoadDataList?.Clear();
         }
 
         //================================================================================================//
@@ -2301,6 +2303,22 @@ namespace Orts.Simulation.RollingStocks
         public virtual bool GetCabFlipped()
         {
             return false;
+        }
+
+        //<comment>
+        //Initializes the physics of the car taking into account its variable discrete loads
+        //</comment>
+        public void InitializeLoadPhysics()
+        {
+            // TODO
+        }
+
+        //<comment>
+        //Updates the physics of the car taking into account its variable discrete loads
+        //</comment>
+        public void UpdateLoadPhysics()
+        {
+            // TODO
         }
 
         public virtual float GetCouplerZeroLengthM()
@@ -2964,7 +2982,8 @@ namespace Orts.Simulation.RollingStocks
             // NOTE: Traveller is at the FRONT of the TrainCar!
 
             // Don't add vibrations to train cars less than 2.5 meter in length; they're unsuitable for these calculations.
-            if (CarLengthM < 2.5f) return;
+            // Don't let vibrate car before EOT to avoid EOT not moving together with that car
+            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars[Train.Cars.Count - 2] == this) return;
             if (Simulator.Settings.CarVibratingLevel != 0)
             {
 
@@ -3331,6 +3350,42 @@ namespace Orts.Simulation.RollingStocks
             float HeatLossInfiltrationW = W.FromKW(SpecificHeatCapacityAirKJpKgK * DensityAirKgpM3 * NumAirShiftspSec * CarHeatVolumeM3 * (CarInsideTempC - CarOutsideTempC));
 
             TotalCarCompartmentHeatLossW = HeatLossTransmissionW + HeatLossInfiltrationW + HeatLossVentilationW;
+        }
+
+        /// <summary>
+        /// Determine latitude/longitude position of the current TrainCar
+        /// </summary>
+        public LatLonDirection GetLatLonDirection()
+        {
+            double lat = 0;
+            double lon = 0;
+
+            var playerLocation = WorldPosition.WorldLocation;
+
+            new WorldLatLon().ConvertWTC(playerLocation.TileX, playerLocation.TileZ, playerLocation.Location, ref lat, ref lon);
+
+            LatLon latLon = new LatLon(
+                MathHelper.ToDegrees((float)lat),
+                MathHelper.ToDegrees((float)lon));
+
+            float direction = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
+            float directionDeg = MathHelper.ToDegrees((float)direction);
+
+            if (Direction == Direction.Reverse)
+            {
+                directionDeg += 180.0f;
+            }
+            var loco = this as MSTSLocomotive;
+            if (loco.UsingRearCab)
+            {
+                directionDeg += 180.0f;
+            }
+            while (directionDeg > 360)
+            {
+                directionDeg -= 360;
+            }
+
+            return new LatLonDirection(latLon, directionDeg); ;
         }
     }
 

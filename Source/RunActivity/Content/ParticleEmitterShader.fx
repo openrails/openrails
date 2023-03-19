@@ -141,7 +141,7 @@ void _PSApplyDay2Night(inout float3 Color)
 	// The following constants define the beginning and the end conditions of the day-night transition
 	const float startNightTrans = 0.1; // The "NightTrans" values refer to the Y postion of LightVector
 	const float finishNightTrans = -0.1;
-	const float minDarknessCoeff = 0.15;
+	const float minDarknessCoeff = 0.03;
 	
 	// Internal variables
 	// The following two are used to interpoate between day and night lighting (y = mx + b)

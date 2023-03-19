@@ -131,6 +131,7 @@ namespace ORTS.Updater
             Channel = new UpdateSettings(ChannelName = Settings.Channel);
 
             // Do a forced update check because the cached update data is likely to only be valid for the old channel.
+            // Also the user may have changed channels just to see what update might be available.
             Force = true;
         }
 

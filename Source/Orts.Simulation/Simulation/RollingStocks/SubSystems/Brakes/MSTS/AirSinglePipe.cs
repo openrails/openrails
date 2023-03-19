@@ -38,6 +38,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float AutoCylPressurePSI = 64;
         protected float AuxResPressurePSI = 64;
         protected float EmergResPressurePSI = 64;
+        protected float ControlResPressurePSI = 64;
         protected float FullServPressurePSI = 50;
         protected float MaxCylPressurePSI = 64;
         protected float AuxCylVolumeRatio = 2.5f;
@@ -49,11 +50,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float MaxApplicationRatePSIpS = .9f;
         protected float MaxAuxilaryChargingRatePSIpS = 1.684f;
         protected float BrakeInsensitivityPSIpS = 0;
+        protected float EmergencyValveActuationRatePSIpS = 0;
         protected float EmergResChargingRatePSIpS = 1.684f;
         protected float EmergAuxVolumeRatio = 1.4f;
         protected string DebugType = string.Empty;
         protected string RetainerDebugState = string.Empty;
-        protected bool NoMRPAuxResCharging;
+        protected bool MRPAuxResCharging;
         protected float CylVolumeM3;
 
 
@@ -62,6 +64,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float SoundTriggerCounter = 0;
         protected float prevCylPressurePSI = 0f;
         protected float prevBrakePipePressurePSI = 0f;
+        protected float prevBrakePipePressurePSI_sound = 0f;
         protected bool BailOffOn;
 
 
@@ -88,7 +91,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             DebugType = "1P";
 
             // Force graduated releasable brakes. Workaround for MSTS with bugs preventing to set eng/wag files correctly for this.
-            (Car as MSTSWagon).DistributorPresent |= Car.Simulator.Settings.GraduatedRelease;
+            if (Car.Simulator.Settings.GraduatedRelease) (Car as MSTSWagon).BrakeValve = MSTSWagon.BrakeValveType.Distributor;
 
             if (Car.Simulator.Settings.RetainersOnAllCars && !(Car is MSTSLocomotive))
                 (Car as MSTSWagon).RetainerPositions = 4;
@@ -113,10 +116,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             MaxApplicationRatePSIpS = thiscopy.MaxApplicationRatePSIpS;
             MaxAuxilaryChargingRatePSIpS = thiscopy.MaxAuxilaryChargingRatePSIpS;
             BrakeInsensitivityPSIpS = thiscopy.BrakeInsensitivityPSIpS;
+            EmergencyValveActuationRatePSIpS = thiscopy.EmergencyValveActuationRatePSIpS;
             EmergResChargingRatePSIpS = thiscopy.EmergResChargingRatePSIpS;
             EmergAuxVolumeRatio = thiscopy.EmergAuxVolumeRatio;
             TwoPipes = thiscopy.TwoPipes;
-            NoMRPAuxResCharging = thiscopy.NoMRPAuxResCharging;
+            MRPAuxResCharging = thiscopy.MRPAuxResCharging;
             HoldingValve = thiscopy.HoldingValve;
         }
 
@@ -251,6 +255,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 // OpenRails specific parameters
                 case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "wagon(ortsbrakeinsensitivity": BrakeInsensitivityPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "wagon(ortsemergencyvalveactuationrate": EmergencyValveActuationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 15f); break;
+                case "wagon(ortsmainrespipeauxrescharging": MRPAuxResCharging = this is AirTwinPipe && stf.ReadBoolBlock(true); break;
             }
         }
 
@@ -265,6 +271,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(AutoCylPressurePSI);
             outf.Write(AuxResPressurePSI);
             outf.Write(EmergResPressurePSI);
+            outf.Write(ControlResPressurePSI);
             outf.Write(FullServPressurePSI);
             outf.Write((int)TripleValveState);
             outf.Write(FrontBrakeHoseConnected);
@@ -287,6 +294,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             AutoCylPressurePSI = inf.ReadSingle();
             AuxResPressurePSI = inf.ReadSingle();
             EmergResPressurePSI = inf.ReadSingle();
+            ControlResPressurePSI = inf.ReadSingle();
             FullServPressurePSI = inf.ReadSingle();
             TripleValveState = (ValveState)inf.ReadInt32();
             FrontBrakeHoseConnected = inf.ReadBoolean();
@@ -304,6 +312,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && Car.CarLengthM <= 1)
             EmergResVolumeM3 = Math.Min (0.02f, EmergResVolumeM3);
 
+            if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.None)
+            {
+                (Car as MSTSWagon).BrakeValve = MSTSWagon.BrakeValveType.TripleValve;
+                Trace.TraceWarning("{0} does not define a brake valve, defaulting to a plain triple valve", (Car as MSTSWagon).WagFilePath);
+            }
+
             // In simple brake mode set emergency reservoir volume, override high volume values to allow faster brake release.
             if (Car.Simulator.Settings.SimpleControlPhysics && EmergResVolumeM3 > 2.0)
                 EmergResVolumeM3 = 0.7f;
@@ -311,12 +325,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
-            if ((Car as MSTSWagon).EmergencyReservoirPresent || maxPressurePSI > 0)
-                EmergResPressurePSI = maxPressurePSI;
+            if (maxPressurePSI > 0)
+                ControlResPressurePSI = maxPressurePSI;
             FullServPressurePSI = fullServPressurePSI;
             AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
-            AuxResPressurePSI = TwoPipes ? maxPressurePSI : Math.Max(maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
-            TripleValveState = ValveState.Lap;
+            AuxResPressurePSI = Math.Max(TwoPipes ? maxPressurePSI : maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
+            if ((Car as MSTSWagon).EmergencyReservoirPresent)
+                EmergResPressurePSI = Math.Max(AuxResPressurePSI, maxPressurePSI);
+            TripleValveState = AutoCylPressurePSI < 1 ? ValveState.Release : ValveState.Lap;
             HoldingValve = ValveState.Release;
             HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
             SetRetainer(RetainerSetting.Exhaust);
@@ -339,40 +355,49 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         /// </summary>
         public override void InitializeMoving ()
         {
-            var emergResPressurePSI = EmergResPressurePSI;
             Initialize(false, 0, FullServPressurePSI, true);
-            EmergResPressurePSI = emergResPressurePSI;
         }
 
         public override void LocoInitializeMoving() // starting conditions when starting speed > 0
         {
         }
 
-        public virtual void UpdateTripleValveState(float controlPressurePSI)
+        public void UpdateTripleValveState(float elapsedClockSeconds)
         {
-            if (BrakeLine1PressurePSI < FullServPressurePSI - 1)
-                TripleValveState = ValveState.Emergency;
-            else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
-                TripleValveState = ValveState.Release;
-            else if (TripleValveState == ValveState.Emergency && BrakeLine1PressurePSI > AuxResPressurePSI)
-                TripleValveState = ValveState.Release;
-            else if (EmergResPressurePSI > 70 && BrakeLine1PressurePSI > EmergResPressurePSI * 0.97f) // UIC regulation: for 5 bar systems, release if > 4.85 bar
-                TripleValveState = ValveState.Release;
-            else if (TripleValveState != ValveState.Emergency && BrakeLine1PressurePSI < AuxResPressurePSI - 1)
-                TripleValveState = ValveState.Apply;
-            else if (TripleValveState == ValveState.Apply && BrakeLine1PressurePSI >= AuxResPressurePSI)
-                TripleValveState = ValveState.Lap;
+            if ((Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.Distributor)
+            {
+                float targetPressurePSI = (ControlResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
+                if (targetPressurePSI > AutoCylPressurePSI && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
+                    TripleValveState = ValveState.Emergency;
+                else if (targetPressurePSI < AutoCylPressurePSI - (TripleValveState != ValveState.Release ? 2.2f : 0f)
+                    || targetPressurePSI < 2.2f) // The latter is a UIC regulation (0.15 bar)
+                    TripleValveState = ValveState.Release;
+                else if (!BailOffOn && TripleValveState != ValveState.Emergency && targetPressurePSI > AutoCylPressurePSI + (TripleValveState != ValveState.Apply ? 2.2f : 0f))
+                    TripleValveState = ValveState.Apply;
+                else
+                    TripleValveState = ValveState.Lap;
+            }
+            else
+            {
+                if (BrakeLine1PressurePSI < AuxResPressurePSI - 1 && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
+                    TripleValveState = ValveState.Emergency;
+                else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
+                    TripleValveState = ValveState.Release;
+                else if (TripleValveState == ValveState.Emergency && BrakeLine1PressurePSI > AuxResPressurePSI)
+                    TripleValveState = ValveState.Release;
+                else if (ControlResPressurePSI > 70 && BrakeLine1PressurePSI > ControlResPressurePSI * 0.97f) // UIC regulation: for 5 bar systems, release if > 4.85 bar
+                    TripleValveState = ValveState.Release;
+                else if (TripleValveState != ValveState.Emergency && BrakeLine1PressurePSI < AuxResPressurePSI - 1)
+                    TripleValveState = ValveState.Apply;
+                else if (TripleValveState == ValveState.Apply && BrakeLine1PressurePSI >= AuxResPressurePSI)
+                    TripleValveState = ValveState.Lap;
+            }
+            prevBrakePipePressurePSI = BrakeLine1PressurePSI;
         }
 
         public override void Update(float elapsedClockSeconds)
         {
-            //ValveState prevTripleValueState = TripleValveState;
-
-            // Emergency reservoir's second role (in OpenRails) is to act as a control reservoir,
-            // maintaining a reference control pressure for graduated release brake actions.
-            // Thus this pressure must be set even in brake systems ER not present otherwise. It just stays static in this case.
-            float threshold = Math.Max(RetainerPressureThresholdPSI,
-                (Car as MSTSWagon).DistributorPresent ? (EmergResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio : 0);
+            float threshold = ((Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.Distributor) ? (ControlResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio : 0;
 
             if (BleedOffValveOpen)
             {
@@ -398,7 +423,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
             }
             else
-                UpdateTripleValveState(threshold);
+                UpdateTripleValveState(elapsedClockSeconds);
 
             // triple valve is set to charge the brake cylinder
             if ((TripleValveState == ValveState.Apply || TripleValveState == ValveState.Emergency) && !Car.WheelBrakeSlideProtectionActive)
@@ -406,7 +431,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                 if (AuxResPressurePSI - dp / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
                     dp = (AuxResPressurePSI - AutoCylPressurePSI) * AuxCylVolumeRatio / (1 + AuxCylVolumeRatio);
-                if (TwoPipes && dp > threshold - AutoCylPressurePSI)
+                if (((Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.Distributor) && TripleValveState != ValveState.Emergency && dp > threshold - AutoCylPressurePSI)
                     dp = threshold - AutoCylPressurePSI;
                 if (AutoCylPressurePSI + dp > MaxCylPressurePSI)
                     dp = MaxCylPressurePSI - AutoCylPressurePSI;
@@ -429,18 +454,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // triple valve set to release pressure in brake cylinder and EP valve set
-            if (TripleValveState == ValveState.Release && HoldingValve == ValveState.Release)
+            if (TripleValveState == ValveState.Release)
             {
-                if (AutoCylPressurePSI > threshold)
-                {
-                    AutoCylPressurePSI -= elapsedClockSeconds * ReleaseRatePSIpS;
-                    if (AutoCylPressurePSI < threshold)
-                        AutoCylPressurePSI = threshold;
-                }
-
                 if ((Car as MSTSWagon).EmergencyReservoirPresent)
 				{
-                    if (!(Car as MSTSWagon).DistributorPresent && AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
+                    if (AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
 					{
 						float dp = elapsedClockSeconds * EmergResChargingRatePSIpS;
 						if (EmergResPressurePSI - dp < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
@@ -459,7 +477,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 						AuxResPressurePSI -= dp * EmergAuxVolumeRatio;
 					}
 				}
-                if (AuxResPressurePSI < BrakeLine1PressurePSI && (!TwoPipes || NoMRPAuxResCharging || BrakeLine2PressurePSI < BrakeLine1PressurePSI) && !BleedOffValveOpen)
+                if (AuxResPressurePSI < BrakeLine1PressurePSI && (!TwoPipes || !MRPAuxResCharging || ((Car as MSTSWagon).BrakeValve != MSTSWagon.BrakeValveType.Distributor) || BrakeLine2PressurePSI < BrakeLine1PressurePSI) && !BleedOffValveOpen)
                 {
                     float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS; // Change in pressure for train brake pipe.
                     if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
@@ -477,11 +495,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
             }
 
+            // Handle brake release: reduce cylinder pressure if all triple valve, EP holding valve and retainers allow so
+            float minCylPressurePSI = Math.Max(threshold, RetainerPressureThresholdPSI);
+            if (TripleValveState == ValveState.Release && HoldingValve == ValveState.Release && AutoCylPressurePSI > minCylPressurePSI)
+            {
+                float dp = elapsedClockSeconds * ReleaseRatePSIpS;
+                if (AutoCylPressurePSI - dp < minCylPressurePSI)
+                    dp = AutoCylPressurePSI-minCylPressurePSI;
+                if (dp < 0)
+                    dp = 0;
+                AutoCylPressurePSI -= dp;
+            }
+
             // Charge Auxiliary reservoir for MRP
             if (TwoPipes
-                && !NoMRPAuxResCharging
+                && MRPAuxResCharging
+                && ((Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.Distributor)
                 && AuxResPressurePSI < BrakeLine2PressurePSI
-                && AuxResPressurePSI < EmergResPressurePSI
+                && AuxResPressurePSI < ControlResPressurePSI
                 && (BrakeLine2PressurePSI > BrakeLine1PressurePSI || TripleValveState != ValveState.Release) && !BleedOffValveOpen)
             {
                 float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
@@ -619,11 +650,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     Car.SignalEvent(Event.TrainBrakePressureStoppedChanging);
                 }
 
-                if ( Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI) > 0.1f /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/)
+                if ( Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI_sound) > 0.1f /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/)
                 {
                     if (!BrakePipePressureChanging)
                     {
-                        if (BrakeLine1PressurePSI > prevBrakePipePressurePSI)
+                        if (BrakeLine1PressurePSI > prevBrakePipePressurePSI_sound)
                             Car.SignalEvent(Event.BrakePipePressureIncrease);
                         else
                             Car.SignalEvent(Event.BrakePipePressureDecrease);
@@ -637,7 +668,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     Car.SignalEvent(Event.BrakePipePressureStoppedChanging);
                 }
                 prevCylPressurePSI = AutoCylPressurePSI;
-                prevBrakePipePressurePSI = BrakeLine1PressurePSI;
+                prevBrakePipePressurePSI_sound = BrakeLine1PressurePSI;
 
                 var lead = Car as MSTSLocomotive;
 
@@ -726,32 +757,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     PressureDiffEqualToPipePSI = 0;
 
                                 // Adjust brake pipe pressure based upon pressure differential
-                                if (lead.TrainBrakePipeLeakPSIorInHgpS == 0)  // Train pipe leakage disabled (ie. No Train Leakage parameter present in ENG file)
+                                if (lead.TrainBrakeController.TrainBrakeControllerState != ControllerState.Lap) // in LAP psoition brake pipe is isolated, and thus brake pipe pressure decreases, but reservoir remains at same pressure
                                 {
                                     lead.BrakeSystem.BrakeLine1PressurePSI += PressureDiffEqualToPipePSI;
                                     lead.MainResPressurePSI -= PressureDiffEqualToPipePSI * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3;
-                                }
-                                else
-                                // Train pipe leakage is enabled (ie. ENG file parameter present)
-                                {
-                                    // If pipe leakage and brake control valve is in LAP position then pipe is connected to main reservoir and maintained at equalising pressure from reservoir
-                                    // All other brake states will have the brake pipe connected to the main reservoir, and therefore leakage will be compenstaed by air from main reservoir
-                                    // Modern self lap brakes will maintain pipe pressure using air from main reservoir
-
-                                    if (lead.TrainBrakeController.TrainBrakeControllerState != ControllerState.Lap)
-                                    {
-                                        lead.BrakeSystem.BrakeLine1PressurePSI += PressureDiffEqualToPipePSI;  // Increase brake pipe pressure to cover loss
-                                        lead.MainResPressurePSI = lead.MainResPressurePSI - (PressureDiffEqualToPipePSI * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3);   // Decrease main reservoir pressure
-                                    }
-                                    // else in LAP psoition brake pipe is isolated, and thus brake pipe pressure decreases, but reservoir remains at same pressure
                                 }
                             }
                             // reduce pressure in lead brake line if brake pipe pressure is above equalising pressure - apply brakes
                             else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.EqualReservoirPressurePSIorInHg)
                             {
-                                float ServiceVariationFactor = (1 - trainPipeTimeVariationS / serviceTimeFactor);
-                                ServiceVariationFactor = MathHelper.Clamp(ServiceVariationFactor, 0.05f, 1.0f); // Keep factor within acceptable limits - prevent value from going negative
-                                lead.BrakeSystem.BrakeLine1PressurePSI *= ServiceVariationFactor;
+                                float serviceVariationFactor = Math.Min(trainPipeTimeVariationS / serviceTimeFactor, 0.95f);
+                                float pressureDiffPSI = serviceVariationFactor * lead.BrakeSystem.BrakeLine1PressurePSI;
+                                if (lead.BrakeSystem.BrakeLine1PressurePSI - pressureDiffPSI < train.EqualReservoirPressurePSIorInHg)
+                                    pressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI - train.EqualReservoirPressurePSIorInHg;
+                                lead.BrakeSystem.BrakeLine1PressurePSI -= pressureDiffPSI;
                             }
                         }
 
@@ -804,18 +823,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (!car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen)
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI = Math.Max(car.BrakeSystem.BrakeLine1PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
-                            if (car.BrakeSystem.TwoPipes)
-                            {
-                                car.BrakeSystem.BrakeLine2PressurePSI = Math.Max(car.BrakeSystem.BrakeLine2PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
-                            }
                         }
                         if ((nextCar == null || !nextCar.BrakeSystem.FrontBrakeHoseConnected) && car.BrakeSystem.AngleCockBOpen)
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI = Math.Max(car.BrakeSystem.BrakeLine1PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
-                            if (car.BrakeSystem.TwoPipes)
-                            {
-                                car.BrakeSystem.BrakeLine2PressurePSI = Math.Max(car.BrakeSystem.BrakeLine2PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
-                            }
                         }
                     }
 #if DEBUG_TRAIN_PIPE_LEAK
@@ -998,6 +1009,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (AuxResPressurePSI > maxPressurePSI) AuxResPressurePSI = maxPressurePSI;
             if (BrakeLine1PressurePSI > maxPressurePSI) BrakeLine1PressurePSI = maxPressurePSI;
             if (EmergResPressurePSI > maxPressurePSI) EmergResPressurePSI = maxPressurePSI;
+            if (ControlResPressurePSI > maxPressurePSI) ControlResPressurePSI = maxPressurePSI;
         }
 
         public override bool IsBraking()

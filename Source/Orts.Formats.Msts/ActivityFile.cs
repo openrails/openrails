@@ -291,6 +291,14 @@ namespace Orts.Formats.Msts
         Tutorial = 3,
     }
 
+    public struct LoadData
+    {
+        public string Name;
+        public string Folder;
+        public LoadPosition LoadPosition;
+        public LoadState LoadState;
+    }
+
     /// <summary>
     /// Parse and *.act file.
     /// Naming for classes matches the terms in the *.act file.
@@ -392,6 +400,7 @@ namespace Orts.Formats.Msts
         public int FuelWater = 100;		// percent
         public int FuelCoal = 100;		// percent
         public int FuelDiesel = 100;	// percent
+        public string LoadStationsPopulationFile;
 
         public Tr_Activity_Header(STFReader stf) {
             stf.MustMatch("(");
@@ -415,6 +424,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("fuelwater", ()=>{ FuelWater = stf.ReadIntBlock(FuelWater); }),
                 new STFReader.TokenProcessor("fuelcoal", ()=>{ FuelCoal = stf.ReadIntBlock(FuelCoal); }),
                 new STFReader.TokenProcessor("fueldiesel", ()=>{ FuelDiesel = stf.ReadIntBlock(FuelDiesel); }),
+                new STFReader.TokenProcessor("ortsloadstationspopulation", ()=>{ LoadStationsPopulationFile = stf.ReadStringBlock(null); }),
             });
         }
 
@@ -1300,6 +1310,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("durability", ()=>{ Durability = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("wagon", ()=>{ WagonList.Add(new Wagon(stf)); }),
                 new STFReader.TokenProcessor("engine", ()=>{ WagonList.Add(new Wagon(stf)); }),
+                new STFReader.TokenProcessor("ortseot", ()=>{ WagonList.Add(new Wagon(stf)); }),
                 new STFReader.TokenProcessor("ortstraincontrolsystemparameters", () => TcsParametersFileName = stf.ReadStringBlock(null)),
             });
         }
@@ -1310,7 +1321,9 @@ namespace Orts.Formats.Msts
         public string Name;
         public int UiD;
         public bool IsEngine;
+        public bool IsEOT;
         public bool Flip;
+        public List<LoadData> LoadDataList;
 
         public Wagon(STFReader stf) {
             stf.MustMatch("(");
@@ -1319,6 +1332,26 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("flip", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Flip = true; }),
                 new STFReader.TokenProcessor("enginedata", ()=>{ stf.MustMatch("("); Name = stf.ReadString(); Folder = stf.ReadString(); stf.MustMatch(")"); IsEngine = true; }),
                 new STFReader.TokenProcessor("wagondata", ()=>{ stf.MustMatch("("); Name = stf.ReadString(); Folder = stf.ReadString(); stf.MustMatch(")"); }),
+                new STFReader.TokenProcessor("eotdata", ()=>{ stf.MustMatch("("); Name = stf.ReadString(); Folder = stf.ReadString(); stf.MustMatch(")"); IsEOT = true;  }),
+                new STFReader.TokenProcessor("loaddata", ()=>
+                {
+                    stf.MustMatch("(");
+                    if (LoadDataList == null) LoadDataList = new List<LoadData>();
+                    LoadData loadData = new LoadData();
+                    loadData.Name = stf.ReadString();
+                    loadData.Folder = stf.ReadString();
+                    var positionString = stf.ReadString();
+                    Enum.TryParse(positionString, out loadData.LoadPosition);
+                    var state = stf.ReadString();
+                    if (state != ")")
+                    {
+                        Enum.TryParse(state, out loadData.LoadState);
+                        LoadDataList.Add(loadData);
+                        stf.MustMatch(")");
+                    }
+                    else
+                        LoadDataList.Add(loadData);
+                }),
             });
         }
 

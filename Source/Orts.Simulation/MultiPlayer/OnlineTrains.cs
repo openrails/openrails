@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Formats.Msts;
 using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
@@ -182,7 +183,8 @@ namespace Orts.MultiPlayer
                 }
                 else throw new Exception();
             }
-
+            string[] faDiscreteSplit;
+            List<LoadData> loadDataList = new List<LoadData>();
             for (var i = 0; i < player.cars.Length; i++)// cars.Length-1; i >= 0; i--) {
             {
                 string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + player.cars[i];
@@ -191,7 +193,26 @@ namespace Orts.MultiPlayer
                 try
                 {
                     car = RollingStock.Load(MPManager.Simulator, train, wagonFilePath);
+                    car.CarID = player.ids[i];
                     car.CarLengthM = player.lengths[i] / 100.0f;
+                    if (player.fadiscretes[i][0] != '0')
+                    {
+                        int numDiscretes = player.fadiscretes[i][0];
+                        // There are discrete freight animations, add them to wagon
+                        faDiscreteSplit = player.fadiscretes[i].Split('&');
+                        loadDataList.Clear();
+                        for (int j = 1; j < faDiscreteSplit.Length; j++)
+                        {
+                            var faDiscrete = faDiscreteSplit[j];
+                            string[] loadDataItems = faDiscrete.Split('%');
+                            LoadData loadData = new LoadData();
+                            loadData.Name = loadDataItems[0];
+                            loadData.Folder = loadDataItems[1];
+                            Enum.TryParse(loadDataItems[2], out loadData.LoadPosition);
+                            loadDataList.Add(loadData);
+                        }
+                        car.FreightAnimations?.Load(loadDataList);
+                    }
                 }
                 catch (Exception error)
                 {
@@ -203,7 +224,6 @@ namespace Orts.MultiPlayer
                     continue;
 
                 car.Flipped = player.flipped[i] != 0;
-                car.CarID = player.ids[i];
 
                 if (car is MSTSWagon w)
                 {

@@ -79,12 +79,22 @@ The following controls are available for the cabview:
 - ``ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE`` and ``ORTS_BATTERY_SWITCH_COMMAND_BUTTON_OPEN`` can be used if the switch is controlled with two pushbuttons (one to close the switch and the other to open it)
 - ``ORTS_BATTERY_SWITCH_ON`` can be used to control a light on the cab showing the state of the battery switch
 
-Other controls can be hidden if the low voltage power supply is not available using the following parameter::
+Other controls can be disabled if the low voltage power supply is not available using the following parameter::
 
       TwoState (
-         Type ( ORTS_CIRCUIT_BREAKER_CLOSED TWO_STATE)
+         Type ( ORTS_CIRCUIT_BREAKER_CLOSED TWO_STATE )
          ...
          DisabledIfLowVoltagePowerSupplyOff ( 1 )
+      )
+
+By default, the cabview control will be completely hidden. You can also set a specific value for the control when it is disabled::
+
+      TwoState (
+         Type ( SPEEDOMETER DIAL )
+         ...
+         DisabledIfLowVoltagePowerSupplyOff ( 1 )
+         HideIfDisabled ( 0 )
+         ValueIfDisabled ( 0 )
       )
 
 .. _cabs-master-key:
@@ -105,12 +115,22 @@ The following controls are available for the cabview:
 - ``ORTS_CURRENT_CAB_IN_USE`` can be used to indicate that the current cab is active
 - ``ORTS_OTHER_CAB_IN_USE`` can be used to indicate that another cab of the train is active
 
-Other controls can be hidden if the cab power supply is not available using the following parameter::
+Other controls can be disabled if the cab power supply is not available using the following parameter::
 
       TwoState (
-         Type ( ORTS_CIRCUIT_BREAKER_CLOSED TWO_STATE)
+         Type ( ORTS_CIRCUIT_BREAKER_CLOSED TWO_STATE )
          ...
          DisabledIfCabPowerSupplyOff ( 1 )
+      )
+
+By default, the cabview control will be completely hidden. You can also set a specific value for the control when it is disabled::
+
+      TwoState (
+         Type ( SPEEDOMETER DIAL )
+         ...
+         DisabledIfCabPowerSupplyOff ( 1 )
+         HideIfDisabled ( 0 )
+         ValueIfDisabled ( 0 )
       )
 
 .. _cabs-service-retention:
@@ -506,6 +526,156 @@ Here an example of use of one of the controls::
 		ORTSDisplay ( 1 )
 		ORTSScreenPage ( "2300-0" )
 	)
+
+.. _cabs-eot:
+
+EOT (End of Train device)
+-------------------------
+
+See :ref:`here <physics-eot>` for full description of EOT features.
+
+Following EOT controls are available for EOT management:
+
+- ORTS_EOT_BRAKE_PIPE : displays the value of the brake pipe pressure at last wagon. 
+  The display is always enabled (even if the EOT is disarmed), because this display 
+  could be available also in other ways; however it is possible to mask the display 
+  using a texture driven by the EOT state.
+- ORTS_EOT_STATE_DISPLAY : may have values from 0 to 5, corresponding to the states listed :ref:`here <physics-eot-states>`  
+- ORTS_EOT_ID : the EOT ID is generated as a 5-digit random number and can be displayed 
+  in the cab using this control; entering the ID by the train driver is not supported, 
+  as the .cvf files don't support as of now digital data entry
+- ORTS_EOT_COMM_TEST : driver command that starts the communication test between locomotive and EOT
+- ORTS_EOT_ARM_TWO_WAY : driver command passes the EOT from ArmNow to ArmedTwoWay
+- ORTS_EOT_DISARM : passes the EOT to disarmed state
+- ORTS_EOT_EMERGENCY_BRAKE (on-off): lets the EOT venting the brake pipe from the last train car.
+  
+These controls are available only using the mouse; only The last one can also be operated by the 
+``<Ctrl+Backspace>`` key combination.
+
+An example of implementation of the above controls can be seen
+:ref:`in this picture <physics-eot-display>`
+
+The ``ORTS_EOT_EMERGENCY_BRAKE`` control can be implemented in the cab by an ON-OFF switch.
+
+An example of implementation of the above controls in a .cvf file follows::
+
+   		TwoState (
+			Type ( ORTS_EOT_COMM_TEST TWO_STATE )
+			Position ( 474 385 16.25 10 )
+			Graphic ( "..\\..\\Common.Cab\\ES44v3\\softkey5trans.ace" )
+			NumFrames ( 2 2 1 )
+			Style ( WHILE_PRESSED )
+			MouseControl ( 1 )
+			ORTSDisplay ( 0 )
+			ORTSScreenPage ( "2100-0" )
+		)
+		TwoState (
+			Type ( ORTS_EOT_DISARM TWO_STATE )
+			Position ( 493 385 16.25 10 )
+			Graphic ( "..\\..\\Common.Cab\\ES44v3\\softkey5trans.ace" )
+			NumFrames ( 2 2 1 )
+			Style ( WHILE_PRESSED )
+			MouseControl ( 1 )
+			ORTSDisplay ( 0 )
+			ORTSScreenPage ( "2100-0" )
+		)
+		TwoState (
+			Type ( ORTS_EOT_ARM_TWO_WAY TWO_STATE )
+			Position ( 511.7 385.7 16.25 10 )
+			Graphic ( "..\\..\\Common.Cab\\ES44v3\\softkey7trans.ace" )
+			NumFrames ( 2 2 1 )
+			Style ( WHILE_PRESSED )
+			MouseControl ( 1 )
+			ORTSDisplay ( 0 )
+			ORTSScreenPage ( "2100-0" )
+		)
+		MultiStateDisplay (
+			Type ( ORTS_EOT_STATE_DISPLAY MULTI_STATE_DISPLAY )
+			Position ( 516 314.5 17 5.15 )
+			Graphic ( "..\\..\\Common.Cab\\ES44v3\\CommTest.ace" )
+			States ( 2 2 1
+				State (
+					Style ( 0 )
+					SwitchVal ( 0 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 2 )
+				)
+			)
+			ORTSDisplay ( 0 )
+			ORTSScreenPage ( "2100-0" )
+		)
+			Digital (
+			Type ( ORTS_EOT_ID DIGITAL )
+			Position ( 421 313 22 8 )
+			ScaleRange ( 0 999999 )
+			Accuracy ( 0 )
+			AccuracySwitch ( 0 )
+			LeadingZeros ( 0 )
+			Justification ( 1 )
+			PositiveColour ( 1
+				ControlColour ( 255 255 255 )
+			)
+			NegativeColour ( 1
+				ControlColour ( 255 255 0 )
+			)
+			DecreaseColour ( 0
+				ControlColour ( 0 0 0 )
+			)
+			Units ( KILO_LBS )
+			ORTSFont ( 6 0 "Arial" )
+			ORTSDisplay ( 0 )
+			ORTSScreenPage ( "2100-0" )
+		)
+		MultiStateDisplay (
+			Type ( ORTS_EOT_STATE_DISPLAY MULTI_STATE_DISPLAY )
+			Position ( 513.5 328 22.66 5.15 )
+			Graphic ( "..\\..\\Common.Cab\\ES44v3\\EOTStatus2.ace" )
+			States ( 4 4 1
+				State (
+					Style ( 0 )
+					SwitchVal ( 0 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 2 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 4 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 5 )
+				)
+			)
+			ORTSDisplay ( 0 )
+			ORTSScreenPage ( "2100-0" )
+		)
+		MultiStateDisplay (
+			Type ( ORTS_EOT_STATE_DISPLAY MULTI_STATE_DISPLAY )
+			Position (  431.4 292.1 9 5  )
+			Graphic ( "..\\..\\Common.Cab\\ES44v3\\MaskEOT.ace" )
+			States ( 2 2 1
+				State (
+					Style ( 0 )
+					SwitchVal ( 0 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 2 )
+				)
+			)
+		)
+		TwoState (
+			Type ( ORTS_EOT_EMERGENCY_BRAKE TWO_STATE )
+			Position ( 53.5 344.2 21.4 42.8 )
+			Graphic ( ..\\..\\Common.Cab\\ES44v3\\EOTEmergency.ace )
+			NumFrames ( 2 2 1 )
+			Style ( ONOFF )
+			MouseControl ( 1 )
+		)
 
 
 Animated 2D Wipers

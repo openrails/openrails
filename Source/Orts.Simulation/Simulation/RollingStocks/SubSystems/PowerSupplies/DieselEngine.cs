@@ -124,6 +124,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     break;
                 case "engine(gearboxnumberofgears":
+                case "engine(ortsreversegearboxindication":
                 case "engine(gearboxdirectdrivegear":
                 case "engine(ortsmainclutchtype":
                 case "engine(ortsgearboxtype":
@@ -417,21 +418,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             foreach (var eng in DEList)
                 result.AppendFormat("\t{0}", Simulator.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(eng.State)));
 
-            result.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), FormatStrings.FormatPower(MaxOutputPowerW, Locomotive.IsMetric, false, false));
-
             if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
-
+                result.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), Simulator.Catalog.GetString(" "));  // Leave maximum power out
                 foreach (var eng in DEList)
                 {
-                    //   Power(Watts) = Torque(Nm) * rpm / 9.54.
-                    var tempPowerDisplay = eng.GearBox.torqueCurveMultiplier * eng.DieselTorqueTab[eng.RealRPM] * eng.RealRPM / 9.54f;
-                    tempPowerDisplay = MathHelper.Clamp(tempPowerDisplay, 0, MaxOutputPowerW);  // Clamp throttle setting within bounds
-                    result.AppendFormat("\t{0}", FormatStrings.FormatPower(tempPowerDisplay, Locomotive.IsMetric, false, false));
+                    result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.CurrentDieselOutputPowerW, Locomotive.IsMetric, false, false));
                 }
             }
             else
             {
+                result.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), FormatStrings.FormatPower(MaxOutputPowerW, Locomotive.IsMetric, false, false));
                 foreach (var eng in DEList)
                     result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.CurrentDieselOutputPowerW, Locomotive.IsMetric, false, false));
             }
@@ -924,7 +921,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                return CurrentDieselOutputPowerW <= 0f ? 0f : ((OutputPowerW + (Locomotive.DieselEngines.NumOfActiveEngines > 0 ? Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines : 0f)) * 100f / CurrentDieselOutputPowerW);
+                if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                {
+                    float tempEff = 0;
+                    if (GearBox.CurrentGear != null)
+                    {
+                        tempEff = ((GearBox.CurrentGear.TractiveForceatMaxSpeedN * GearBox.CurrentGear.MaxSpeedMpS / (DieselTorqueTab[MaxRPM] * MaxRPM / 9.54f)) * 100.0f);
+                    }
+
+                    return tempEff;
+                }
+                else
+                {
+                    return CurrentDieselOutputPowerW <= 0f ? 0f : ((OutputPowerW + (Locomotive.DieselEngines.NumOfActiveEngines > 0 ? Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines : 0f)) * 100f / CurrentDieselOutputPowerW);
+                }
             }
         }
         /// <summary>
@@ -968,7 +978,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "exhaustdynamicsdown": ExhaustDecelReduction = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.ExhaustDynamics; break;
                     case "exhaustcolor":    ExhaustSteadyColor = stf.ReadColorBlock(Color.Gray); initLevel |= SettingsFlags.ExhaustColor; break;
                     case "exhausttransientcolor": ExhaustTransientColor = stf.ReadColorBlock(Color.Black);initLevel |= SettingsFlags.ExhaustTransientColor; break;
-                    case "dieselpowertab": DieselPowerTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselPowerTab; break;
+                    case "dieselpowertab": DieselPowerTab = new Interpolator(stf); initLevel |= SettingsFlags.DieselPowerTab; break;
                     case "dieselconsumptiontab": DieselConsumptionTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselConsumptionTab; break;
                     case "throttlerpmtab":
                         ThrottleRPMTab = new Interpolator(stf);
@@ -1088,7 +1098,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if ((State == DieselEngineState.Running) && (Locomotive.ThrottlePercent > 0))
             {
-                OutputPowerW = (Locomotive.PrevMotiveForceN > 0 ? Locomotive.PrevMotiveForceN * Locomotive.AbsSpeedMpS : 0) / Locomotive.DieselEngines.NumOfActiveEngines;
+                var abstempMotiveForce = Math.Abs(Locomotive.PrevMotiveForceN);
+                OutputPowerW = ( abstempMotiveForce > 0 ? abstempMotiveForce * Locomotive.AbsSpeedMpS : 0) / Locomotive.DieselEngines.NumOfActiveEngines;
             }
             else
             {
@@ -1430,20 +1441,36 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 CurrentDieselOutputPowerW = (RawRpM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
             }
 
-            // For geared locomotives the engine RpM can be higher then the throttle demanded rpm, and this gives an inflated value of power
-            // so set output power based upon throttle demanded power
-            if (HasGearBox && Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
-            {
-                CurrentDieselOutputPowerW = (ThrottleRPMTab[demandedThrottlePercent] - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
-            }
-
             if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
             {
+
                 CurrentDieselOutputPowerW -= Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
                 CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
             }
 
             CurrentDieselOutputPowerW = MathHelper.Clamp(CurrentDieselOutputPowerW, 0.0f, CurrentDieselOutputPowerW);  // prevent power going -ve
+
+            // For geared locomotives the engine RpM can be higher then the throttle demanded rpm, and this gives an inflated value of power
+            // so set output power based upon rail power
+            if (HasGearBox && Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+            {
+                if (LoadPercent != 0)
+                {
+                    CurrentDieselOutputPowerW = GearBox.TractiveForceN * Locomotive.AbsSpeedMpS * 100.0f / LoadPercent;
+
+                    if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
+                    {
+
+                        CurrentDieselOutputPowerW += Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
+                    }
+
+                }
+                else
+                {
+                    CurrentDieselOutputPowerW = 0;
+                }
+                CurrentDieselOutputPowerW = MathHelper.Clamp(CurrentDieselOutputPowerW, 0, MaximumDieselPowerW);  // Clamp throttle setting within bounds
+            }
 
             if (State == DieselEngineState.Starting)
             {
@@ -1535,7 +1562,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (GearBox != null)
             {
-                if ((Locomotive.IsLeadLocomotive()))
+                if ((Locomotive.IsLeadLocomotive()) || Locomotive.Train.HasControlCarWithGear)
                 {
                     if (GearBox.GearBoxOperation == GearBoxOperation.Manual)
                     {
@@ -1550,6 +1577,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (GearBox.GearBoxOperation == GearBoxOperation.Manual)
                     {
                         if (Locomotive.GearboxGearIndex > 0)
+
                             GearBox.NextGear = GearBox.Gears[Locomotive.GearboxGearIndex - 1];
                         else
                             GearBox.NextGear = null;
@@ -1624,6 +1652,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             RealRPM = inf.ReadSingle();
             OutputPowerW = inf.ReadSingle();
             DieselTemperatureDeg = inf.ReadSingle();
+            GovernorEnabled = inf.ReadBoolean();
 
             Locomotive.gearSaved = inf.ReadBoolean();  // read boolean which indicates gear data was saved
 
@@ -1640,6 +1669,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             outf.Write(RealRPM);
             outf.Write(OutputPowerW);
             outf.Write(DieselTemperatureDeg);
+            outf.Write(GovernorEnabled);
+
             if (GearBox != null)
             {
                 outf.Write(true);
@@ -1658,7 +1689,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public void InitFromMSTS()
         {
-
             if (MaximumRailOutputPowerW == 0 && Locomotive.MaxPowerW != 0)
             {
                 MaximumRailOutputPowerW = Locomotive.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowerW parameter
@@ -2111,7 +2141,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             // Set up the reverse ThrottleRPM table. This is used to provide an apparent throttle setting to the Tractive Force calculation, and allows the diesel engine to control the up/down time of 
             // tractive force. This table should be creeated with all locomotives, as they will either use (create) a default ThrottleRPM table, or the user will enter one. 
-
             if (ThrottleRPMTab != null)
             {
                 var size = ThrottleRPMTab.GetSize();

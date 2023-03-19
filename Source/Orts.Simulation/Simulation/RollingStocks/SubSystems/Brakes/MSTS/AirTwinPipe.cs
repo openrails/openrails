@@ -24,20 +24,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             : base(car)
         {
             TwoPipes = true;
+            MRPAuxResCharging = true;
             DebugType = "2P";
-            (Car as MSTSWagon).DistributorPresent = true;
-            (Car as MSTSWagon).EmergencyReservoirPresent = false;
-        }
-
-        public override void UpdateTripleValveState(float controlPressurePSI)
-        {
-            if (controlPressurePSI < AutoCylPressurePSI - (TripleValveState != ValveState.Release ? 2.2f : 0f) 
-                || controlPressurePSI < 2.2f) // The latter is a UIC regulation (0.15 bar)
-                TripleValveState = ValveState.Release;
-            else if (!BailOffOn && controlPressurePSI > AutoCylPressurePSI + (TripleValveState != ValveState.Apply ? 2.2f : 0f))
-                TripleValveState = ValveState.Apply;
-            else
-                TripleValveState = ValveState.Lap;
         }
     }
 }

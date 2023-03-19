@@ -312,6 +312,11 @@ namespace Orts.Viewer3D.Processes
 
     class ThreadWatchdogException : Exception
     {
+        public override string ToString()
+        {
+            return $"{GetType()}: {Message}{Environment.NewLine}{StackTrace}";
+        }
+
         public override string StackTrace
         {
             get

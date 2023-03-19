@@ -25,11 +25,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
 using System.IO;
+using System.Linq;
 using Orts.Parsers.Msts;
 using ORTS.Common;
+using static System.String;
 
 namespace Orts.Formats.Msts
 {
@@ -41,8 +41,8 @@ namespace Orts.Formats.Msts
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable only used in using statement, known FcCop bug")]
     public class SignalConfigurationFile
     {
-        /// <summary>List of OR defined function types</summary>
-        public IList<string> ORTSFunctionTypes;
+        /// <summary>Name-indexed list of available signal functions</summary>
+        public IDictionary<string, SignalFunction> SignalFunctions;
         /// <summary>List of OR defined subtypes for Norman signals</summary>
         public IList<string> ORTSNormalSubtypes;
         /// <summary>Name-indexed list of available light textures</summary>
@@ -68,13 +68,17 @@ namespace Orts.Formats.Msts
             ScriptPath = Path.GetDirectoryName(filenamewithpath);
 
             // preset OR function types and related MSTS function types for default types
-            ORTSFunctionTypes = new List<String>();
-
-            for (int itype = 0; itype < (int)MstsSignalFunction.UNKNOWN; itype++)
+            SignalFunctions = new SortedDictionary<string, SignalFunction>
             {
-                MstsSignalFunction msfunction = (MstsSignalFunction)itype;
-                ORTSFunctionTypes.Add(msfunction.ToString().ToUpper());
-            }
+                { SignalFunction.NORMAL.Name, SignalFunction.NORMAL },
+                { SignalFunction.DISTANCE.Name, SignalFunction.DISTANCE },
+                { SignalFunction.REPEATER.Name, SignalFunction.REPEATER },
+                { SignalFunction.SHUNTING.Name, SignalFunction.SHUNTING },
+                { SignalFunction.INFO.Name, SignalFunction.INFO },
+                { SignalFunction.SPEED.Name, SignalFunction.SPEED },
+                { SignalFunction.ALERT.Name, SignalFunction.ALERT },
+                { SignalFunction.UNKNOWN.Name, SignalFunction.UNKNOWN }
+            };
 
             // preset empty OR normal subtypes
             ORTSNormalSubtypes = new List<String>();
@@ -85,9 +89,9 @@ namespace Orts.Formats.Msts
                     stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("lighttextures", ()=>{ LightTextures = ReadLightTextures(stf); }),
                     new STFReader.TokenProcessor("lightstab", ()=>{ LightsTable = ReadLightsTable(stf); }),
-                    new STFReader.TokenProcessor("ortssignalfunctions", ()=>{ ReadORTSSignalFunctions(stf, ref ORTSFunctionTypes); }),
+                    new STFReader.TokenProcessor("ortssignalfunctions", ()=>{ ReadORTSSignalFunctions(stf, ref SignalFunctions); }),
                     new STFReader.TokenProcessor("ortsnormalsubtypes", ()=>{ ReadORTSNormalSubtypes(stf, ref ORTSNormalSubtypes); }),
-                    new STFReader.TokenProcessor("signaltypes", ()=>{ SignalTypes = ReadSignalTypes(stf, ORTSMode, ORTSFunctionTypes, ORTSNormalSubtypes); }),
+                    new STFReader.TokenProcessor("signaltypes", ()=>{ SignalTypes = ReadSignalTypes(stf, ORTSMode, SignalFunctions, ORTSNormalSubtypes); }),
                     new STFReader.TokenProcessor("signalshapes", ()=>{ SignalShapes = ReadSignalShapes(stf); }),
                     new STFReader.TokenProcessor("scriptfiles", ()=>{ ScriptFiles = ReadScriptFiles(stf); }),
                 });
@@ -98,7 +102,7 @@ namespace Orts.Formats.Msts
                     stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("lighttextures", ()=>{ LightTextures = ReadLightTextures(stf); }),
                     new STFReader.TokenProcessor("lightstab", ()=>{ LightsTable = ReadLightsTable(stf); }),
-                    new STFReader.TokenProcessor("signaltypes", ()=>{ SignalTypes = ReadSignalTypes(stf, ORTSMode, ORTSFunctionTypes, ORTSNormalSubtypes); }),
+                    new STFReader.TokenProcessor("signaltypes", ()=>{ SignalTypes = ReadSignalTypes(stf, ORTSMode, SignalFunctions, ORTSNormalSubtypes); }),
                     new STFReader.TokenProcessor("signalshapes", ()=>{ SignalShapes = ReadSignalShapes(stf); }),
                     new STFReader.TokenProcessor("scriptfiles", ()=>{ ScriptFiles = ReadScriptFiles(stf); }),
                 });
@@ -120,66 +124,88 @@ namespace Orts.Formats.Msts
             }
         }
 
-        private static void ReadORTSSignalFunctions(STFReader stf, ref IList<string> ORTSSignalFunctionTypes)
+        private static void ReadORTSSignalFunctions(STFReader stf, ref IDictionary<string, SignalFunction> SignalFunctions)
         {
             stf.MustMatch("(");
             int count = stf.ReadInt(null);
-            List<string> TokensRead = new List<string>();
-            List<MstsSignalFunction> TranslatedTokens = new List<MstsSignalFunction>();
+            Dictionary<string, MstsSignalFunction> TokensRead = new Dictionary<string, MstsSignalFunction>();
 
-            stf.ParseBlock(new STFReader.TokenProcessor[] {
+            stf.ParseBlock(new[] {
                 new STFReader.TokenProcessor("ortssignalfunctiontype", ()=> {
-                stf.MustMatch("(");
-                if (TokensRead.Count >= count)
-                {
+                    stf.MustMatch("(");
+                    if (TokensRead.Count >= count)
+                    {
                         STFException.TraceWarning(stf, "Skipped extra ORTSFunctionType");
-                }
-                else
-                {
-                    string newType = stf.ReadString().ToUpper();
-                    bool validstring = true;
-
-                    // check agains default types
-                    for (int itype = 0; itype < (int)MstsSignalFunction.UNKNOWN; itype++)
+                    }
+                    else
                     {
-                        MstsSignalFunction msfunction = (MstsSignalFunction)itype;
-                        if (String.Equals(newType, msfunction.ToString().ToUpper()))
+                        string orType = stf.ReadString().ToUpper();
+                        bool valid = true;
+
+                        // check against default types
+                        foreach (MstsSignalFunction function in Enum.GetValues(typeof(MstsSignalFunction)))
                         {
-                            STFException.TraceWarning(stf, "Invalid definition of ORTSFunctionType, type is equal to MSTS defined type : " + newType);
-                            validstring = false;
-                            break;
+                            if (orType == function.ToString().ToUpper())
+                            {
+                                STFException.TraceWarning(stf, "Invalid definition of ORTSFunctionType, type is equal to MSTS defined type : " + orType);
+                                valid = false;
+                                break;
+                            }
+                        }
+
+                        if (valid)
+                        {
+                            if (orType.Length > 3 && orType.Substring(0, 3) == "OR_"
+                                || orType.Length > 4 && orType.Substring(0, 4) == "ORTS")
+                            {
+                                STFException.TraceWarning(stf, "Invalid definition of ORTSFunctionType, using reserved type name : " + orType);
+                                valid = false;
+                            }
+                        }
+
+                        string mstsTypeUnparsed = stf.ReadString().ToUpper();
+                        MstsSignalFunction mstsTypeParsed;
+
+                        if (mstsTypeUnparsed != ")")
+                        {
+                            // If optional MSTS type is defined and incorrect, invalidate the function.
+                            if (!Enum.TryParse(mstsTypeUnparsed, out mstsTypeParsed))
+                            {
+                                STFException.TraceWarning(stf, "Invalid definition of ORTSFunctionType, underlying type is not equal to a MSTS function type : " + orType);
+                                valid = false;
+                            }
+                            else if (mstsTypeParsed == MstsSignalFunction.NORMAL)
+                            {
+                                STFException.TraceWarning(stf, "Invalid definition of ORTSFunctionType, underlying type value NORMAL is forbidden for custom function types : " + orType);
+                                valid = false;
+                            }
+                        }
+                        else
+                        {
+                            // Default to INFO if no MSTS type defined
+                            stf.StepBackOneItem();
+                            mstsTypeParsed = MstsSignalFunction.INFO;
+                        }
+
+                        if (valid)
+                        {
+                            TokensRead.Add(orType, mstsTypeParsed);
                         }
                     }
-
-                    if (validstring)
-                    {
-                        if (((newType.Length > 3) && String.Equals(newType.Substring(0, 3), "OR_")) || ((newType.Length > 4) && String.Equals(newType.Substring(0, 4), "ORTS")))
-                        {
-                            STFException.TraceWarning(stf, "Invalid definition of ORTSFunctionType, using reserved type name : " + newType);
-                            validstring = false;
-                        }
-                    }
-
-                    if (validstring)
-                    {
-                            TokensRead.Add(newType);
-                    }
-                }
                     stf.SkipRestOfBlock();
                 }),
             });
 
             // sort defined OR functions
-            for (int itoken = 0; itoken < TokensRead.Count; itoken++)
+            foreach (KeyValuePair<string, MstsSignalFunction> element in TokensRead)
             {
-                string ORTSFunction = TokensRead[itoken];
-                if (ORTSSignalFunctionTypes.Contains(ORTSFunction))
+                if (SignalFunctions.ContainsKey(element.Key))
                 {
-                    STFException.TraceWarning(stf, "Skipped duplicate ORTSSignalFunction definition : " + ORTSFunction);
+                    STFException.TraceWarning(stf, "Skipped duplicate ORTSSignalFunction definition : " + element.Key);
                 }
                 else
                 {
-                    ORTSSignalFunctionTypes.Add(ORTSFunction);
+                    SignalFunctions.Add(element.Key, new SignalFunction(element.Key, element.Value));
                 }
             }
         }
@@ -268,7 +294,7 @@ namespace Orts.Formats.Msts
             return lightsTable;
         }
 
-        private static IDictionary<string, SignalType> ReadSignalTypes(STFReader stf, bool ORTSMode, IList<string> ORTSFunctionTypes, IList<string> ORTSNormalSubtypes)
+        private static IDictionary<string, SignalType> ReadSignalTypes(STFReader stf, bool ORTSMode, IDictionary<string, SignalFunction> ORTSFunctionTypes, IList<string> ORTSNormalSubtypes)
         {
             stf.MustMatch("(");
             int count = stf.ReadInt(null);
@@ -392,7 +418,7 @@ namespace Orts.Formats.Msts
             Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("colour", ()=>{
-				    stf.MustMatch("(");
+                    stf.MustMatch("(");
                     a = (byte)stf.ReadUInt(null);
                     r = (byte)stf.ReadUInt(null);
                     g = (byte)stf.ReadUInt(null);
@@ -400,6 +426,86 @@ namespace Orts.Formats.Msts
                     stf.SkipRestOfBlock();
                 }),
             });
+        }
+    }
+    #endregion
+
+    #region SignalFunction
+    public class SignalFunction : IEquatable<SignalFunction>
+    {
+        public static SignalFunction NORMAL = new SignalFunction(MstsSignalFunction.NORMAL);
+        public static SignalFunction DISTANCE = new SignalFunction(MstsSignalFunction.DISTANCE);
+        public static SignalFunction REPEATER = new SignalFunction(MstsSignalFunction.REPEATER);
+        public static SignalFunction SHUNTING = new SignalFunction(MstsSignalFunction.SHUNTING);
+        public static SignalFunction INFO = new SignalFunction(MstsSignalFunction.INFO);
+        public static SignalFunction SPEED = new SignalFunction(MstsSignalFunction.SPEED);
+        public static SignalFunction ALERT = new SignalFunction(MstsSignalFunction.ALERT);
+        public static SignalFunction UNKNOWN = new SignalFunction(MstsSignalFunction.UNKNOWN);
+
+        public readonly string Name;
+        public readonly MstsSignalFunction MstsFunction;
+
+        public SignalFunction(MstsSignalFunction mstsFunction)
+        {
+            Name = mstsFunction.ToString();
+            MstsFunction = mstsFunction;
+        }
+
+        public SignalFunction(string name, MstsSignalFunction mstsFunction)
+        {
+            Name = name;
+            MstsFunction = mstsFunction;
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as SignalFunction);
+        }
+
+        public bool Equals(SignalFunction other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Name == other.Name &&
+                   MstsFunction == other.MstsFunction;
+        }
+
+        public static bool operator ==(SignalFunction a, SignalFunction b)
+        {
+            if (a is null)
+            {
+                if (b is null)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(SignalFunction a, SignalFunction b)
+        {
+            return !(a == b);
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode() ^ MstsFunction.GetHashCode();
         }
     }
     #endregion
@@ -420,12 +526,11 @@ namespace Orts.Formats.Msts
         /// <summary></summary>
         public readonly string Name;
         /// allocated script
-        public string Script = String.Empty;
-        /// <summary>MSTS Function type (normal, speed, ...) of this signal type </summary>
-        public MstsSignalFunction FnType { get; private set; }
-        /// <summary>OR Function type (additional function types may be set using OR_FUNCTIONTYPES).</summary>
-        public String ORTSFnType { get; private set; }
-        public int ORTSFnTypeIndex { get; private set; }
+        public string Script = Empty;
+        /// <summary>
+        /// Signal function associated to this signal type 
+        /// </summary>
+        public SignalFunction Function { get; protected set; }
         /// <summary>OR Additional subtype for Normal signals</summary>
         public String ORTSNormalSubtype { get; private set; }
         public int ORTSSubtypeIndex { get; private set; }
@@ -481,10 +586,10 @@ namespace Orts.Formats.Msts
         /// <summary>
         /// Constructor for dummy entries
         /// </summary>
-        public SignalType(MstsSignalFunction reqType, MstsSignalAspect reqAspect)
+        public SignalType(SignalFunction function, MstsSignalAspect reqAspect)
             : this()
         {
-            FnType = reqType;
+            Function = function;
             Name = "UNDEFINED";
             Semaphore = false;
             DrawStates = new Dictionary<string, SignalDrawState>();
@@ -497,20 +602,19 @@ namespace Orts.Formats.Msts
         /// Default constructor used during file parsing.
         /// </summary>
         /// <param name="stf">The STFreader containing the file stream</param>
-        /// <param name="ORTSMode">Process SignalType for ORTS mode (always set NumClearAhead_ORTS only)</param>
-        public SignalType(STFReader stf, bool ORTSMode, IList<string> ORTSFunctionTypes, IList<string> ORTSNormalSubtypes)
+        /// <param name="ortsMode">Process SignalType for ORTS mode (always set NumClearAhead_ORTS only)</param>
+        public SignalType(STFReader stf, bool ortsMode, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORTSNormalSubtypes)
             : this()
         {
             stf.MustMatch("(");
             Name = stf.ReadString().ToLowerInvariant();
             int numClearAhead = -2;
             int numdefs = 0;
-            ORTSFnType = String.Empty;
             ORTSNormalSubtype = String.Empty;
 
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("ortsscript", ()=>{ Script = stf.ReadStringBlock("").ToLowerInvariant(); }),
-                new STFReader.TokenProcessor("signalfntype", ()=>{ if (ORTSMode) ORTSFnType = ReadORTSFnType(stf, ORTSFunctionTypes); else FnType = ReadFnType(stf); }),
+                new STFReader.TokenProcessor("signalfntype", ()=>{ Function = ReadSignalFunction(stf, ortsMode, signalFunctions); }),
                 new STFReader.TokenProcessor("signallighttex", ()=>{ LightTextureName = stf.ReadStringBlock("").ToLowerInvariant(); }),
                 new STFReader.TokenProcessor("signallights", ()=>{ Lights = ReadLights(stf); }),
                 new STFReader.TokenProcessor("signaldrawstates", ()=>{ DrawStates = ReadDrawStates(stf); }),
@@ -542,19 +646,8 @@ namespace Orts.Formats.Msts
                 }),
             });
 
-            if (ORTSMode)
+            if (ortsMode)
             {
-                // set related MSTS function type
-                ORTSFnTypeIndex = ORTSFunctionTypes.IndexOf(ORTSFnType);
-                try
-                {
-                    FnType = (MstsSignalFunction)Enum.Parse(typeof(MstsSignalFunction), ORTSFnType, true);
-                }
-                catch (ArgumentException)
-                {
-                    FnType = MstsSignalFunction.INFO;
-                }
-
                 // set index for Normal Subtype
                 ORTSSubtypeIndex = String.IsNullOrEmpty(ORTSNormalSubtype) ? -1 : ORTSNormalSubtypes.IndexOf(ORTSNormalSubtype);
 
@@ -564,41 +657,28 @@ namespace Orts.Formats.Msts
             }
             else
             {
-                // set defaulted OR function type
-                ORTSFnTypeIndex = (int)FnType;
-                ORTSFnType = FnType.ToString().ToUpper();
-
                 // set SNCA
                 NumClearAhead_MSTS = numdefs == 1 ? numClearAhead : -2;
                 NumClearAhead_ORTS = numdefs == 2 ? numClearAhead : -2;
             }
         }
 
-        static MstsSignalFunction ReadFnType(STFReader stf)
+        static SignalFunction ReadSignalFunction(STFReader stf, bool ortsMode, IDictionary<string, SignalFunction> signalFunctions)
         {
-            string type = stf.ReadStringBlock(null);
-            try
-            {
-                return (MstsSignalFunction)Enum.Parse(typeof(MstsSignalFunction), type, true);
-            }
-            catch (ArgumentException)
+            string type = stf.ReadStringBlock(null).ToUpper();
+            if (!ortsMode && !Enum.IsDefined(typeof(MstsSignalFunction), type))
             {
                 STFException.TraceInformation(stf, "Skipped unknown SignalFnType " + type);
-                return MstsSignalFunction.INFO;
+                return SignalFunction.INFO;
             }
-        }
-
-        static string ReadORTSFnType(STFReader stf, IList<string> ORTSFunctionTypes)
-        {
-            string type = stf.ReadStringBlock(null);
-            if (ORTSFunctionTypes.Contains(type.ToUpper()))
+            else if (signalFunctions.ContainsKey(type))
             {
-                return (type.ToUpper());
+                return signalFunctions[type];
             }
             else
             {
                 STFException.TraceInformation(stf, "Skipped unknown ORTSSignalFnType " + type);
-                return MstsSignalFunction.INFO.ToString().ToUpper();
+                return SignalFunction.INFO;
             }
         }
 
@@ -607,12 +687,12 @@ namespace Orts.Formats.Msts
             string type = stf.ReadStringBlock(null);
             if (ORTSNormalSubtypes.Contains(type.ToUpper()))
             {
-                return (type.ToUpper());
+                return type.ToUpper();
             }
             else
             {
                 STFException.TraceInformation(stf, "Skipped unknown ORTSNormalSubtype " + type);
-                return (String.Empty);
+                return String.Empty;
             }
         }
 
@@ -1034,7 +1114,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("positionyd", ()=>{ ApproachControlPositionM = Me.FromYd(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
                 new STFReader.TokenProcessor("speedmph", ()=>{ ApproachControlSpeedMpS = MpS.FromMpH(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
                 new STFReader.TokenProcessor("speedkph", ()=>{ ApproachControlSpeedMpS = MpS.FromKpH(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
-                });
+                new STFReader.TokenProcessor("speedmps", ()=>{ ApproachControlSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); }),
+              });
         }
     }
 
