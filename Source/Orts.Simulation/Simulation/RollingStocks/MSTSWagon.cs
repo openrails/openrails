@@ -1867,7 +1867,7 @@ namespace Orts.Simulation.RollingStocks
 
                 AuxWagonType = "AuxiliaryTender";
             }
-            else
+            else if (AuxWagonType == "")
             {
                 AuxWagonType = WagonType.ToString();
             }

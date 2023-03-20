@@ -108,8 +108,12 @@ namespace Orts.Simulation
             // Separate tests are performed for present speed and for possible maximum speed to avoid anomolies if train accelerates.
             // Special test is also done to check on section availability to avoid closure beyond signal at danger.
 
-            foreach (var crossing in TrackCrossingItems.Values.Where(ci => ci.CrossingGroup != null))
+            foreach (var key in TrackCrossingItems.Keys)
             {
+                var crossing = TrackCrossingItems[key];
+                if (crossing?.CrossingGroup == null)
+                    continue;
+
                 var predictedDist = crossing.CrossingGroup.WarningTime * absSpeedMpS;
                 var maxPredictedDist = crossing.CrossingGroup.WarningTime * (maxSpeedMpS - absSpeedMpS) / 2; // added distance if train accelerates to maxspeed
                 var minimumDist = crossing.CrossingGroup.MinimumDistance;
@@ -299,11 +303,15 @@ namespace Orts.Simulation
         public LevelCrossingItem SearchNearLevelCrossing(Train train, float reqDist, bool trainForwards, out float frontDist)
         {
             LevelCrossingItem roadItem = LevelCrossingItem.None;
-           frontDist = -1;
+            frontDist = -1;
             Traveller traveller = trainForwards ? train.FrontTDBTraveller :
                 new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
-            foreach (var crossing in TrackCrossingItems.Values.Where(ci => ci.CrossingGroup != null))
+            foreach (var key in TrackCrossingItems.Keys)
             {
+                var crossing = TrackCrossingItems[key];
+                if (crossing?.CrossingGroup == null)
+                    continue;
+
                 if (crossing.Trains.Contains(train))
                 {
                     frontDist = crossing.DistanceTo(traveller, reqDist);
@@ -445,14 +453,10 @@ namespace Orts.Simulation
         {
             get
             {
-                bool trains = Items.Any(i => i.Trains.Count > 0);
-                bool staticconsists = Items.Any(i => i.StaticConsists.Count > 0);
-                if (trains && staticconsists)
-                    return true;
-                else if (trains || staticconsists)
-                    return true;
-                else
-                    return false;
+                foreach (var item in Items)
+                    if (item.Trains.Count > 0 || item.StaticConsists.Count > 0)
+                        return true;
+                return false;
             }
         }
     }
