@@ -197,8 +197,9 @@ namespace Orts.Simulation.Signalling
 
             // loop through all lines
 
-            foreach (object scriptstat in Statements)
+            for (int i = 0; i < Statements.Count; i++)
             {
+                object scriptstat = Statements[i];
 
                 // process statement lines
 
@@ -1553,8 +1554,9 @@ namespace Orts.Simulation.Signalling
             bool termnegate = false;
             SignalScripts.SCRAndOr condstring = SignalScripts.SCRAndOr.NONE;
 
-            foreach (object thisCond in thisCStatList)
+            for (int i = 0; i < thisCStatList.Count; i++)
             {
+                object thisCond = thisCStatList[i];
 
                 // single condition : process
 

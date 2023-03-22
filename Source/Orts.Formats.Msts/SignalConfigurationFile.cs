@@ -444,17 +444,22 @@ namespace Orts.Formats.Msts
 
         public readonly string Name;
         public readonly MstsSignalFunction MstsFunction;
+        readonly int HashCode;
 
         public SignalFunction(MstsSignalFunction mstsFunction)
         {
             Name = mstsFunction.ToString();
             MstsFunction = mstsFunction;
+
+            HashCode = Name.GetHashCode() ^ MstsFunction.GetHashCode();
         }
 
         public SignalFunction(string name, MstsSignalFunction mstsFunction)
         {
             Name = name;
             MstsFunction = mstsFunction;
+
+            HashCode = Name.GetHashCode() ^ MstsFunction.GetHashCode();
         }
 
         public override string ToString()
@@ -505,7 +510,7 @@ namespace Orts.Formats.Msts
 
         public override int GetHashCode()
         {
-            return Name.GetHashCode() ^ MstsFunction.GetHashCode();
+            return HashCode;
         }
     }
     #endregion

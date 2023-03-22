@@ -771,8 +771,10 @@ namespace Orts.Viewer3D
             var renderItemComparer = new RenderItem.Comparer(CameraLocation);
             foreach (var sequence in RenderItems)
             {
-                foreach (var sequenceMaterial in sequence.Where(kvp => kvp.Value.Count > 0))
+                foreach (var sequenceMaterial in sequence)
                 {
+                    if (sequenceMaterial.Value.Count == 0)
+                        continue;
                     if (sequenceMaterial.Key != DummyBlendedMaterial)
                         continue;
                     sequenceMaterial.Value.Sort(renderItemComparer);

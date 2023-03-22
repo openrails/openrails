@@ -580,7 +580,10 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public bool isSignalNormal()
         {
-            return SignalHeads.Any(sigHead => sigHead.Function == SignalFunction.NORMAL);
+            for (int i = 0; i < SignalHeads.Count; i++)
+                if (SignalHeads[i].Function == SignalFunction.NORMAL)
+                    return true;
+            return false;
         }
 
         /// <summary>
@@ -588,7 +591,10 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public bool isORTSSignalType(SignalFunction function)
         {
-            return SignalHeads.Any(sigHead => function == sigHead.Function);
+            for (int i = 0; i < SignalHeads.Count; i++)
+                if (SignalHeads[i].Function == function)
+                    return true;
+            return false;
         }
 
         /// <summary>
@@ -1791,15 +1797,17 @@ namespace Orts.Simulation.Signalling
                 if (holdState == HoldState.ManualApproach || holdState == HoldState.ManualLock || holdState == HoldState.ManualPass) return;
             }
 
-            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function == SignalFunction.NORMAL))
+            for (int i = 0; i < SignalHeads.Count; i++)
             {
-                sigHead.Update();
+                if (SignalHeads[i].Function == SignalFunction.NORMAL)
+                    SignalHeads[i].Update();
             }
 
             // next, update all other heads
-            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function != SignalFunction.NORMAL))
+            for (int i = 0; i < SignalHeads.Count; i++)
             {
-                sigHead.Update();
+                if (SignalHeads[i].Function != SignalFunction.NORMAL)
+                    SignalHeads[i].Update();
             }
 
         }
