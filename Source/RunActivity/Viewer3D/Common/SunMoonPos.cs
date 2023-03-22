@@ -94,9 +94,9 @@ namespace Orts.Viewer3D.Common
             var solarAzimuthCosine = (Math.Sin(solarDeclination) - (solarZenithCosine * Math.Sin(latitude))) / (Math.Sin(Math.Acos(solarZenithCosine)) * Math.Cos(latitude));
             var solarAzimuthSine = -Math.Sin(solarHourAngle) * Math.Cos(solarDeclination) / Math.Sin(Math.Acos(solarZenithCosine));
 
-            sunDirection.X = (float)solarZenithSine * (float)solarAzimuthSine;
+            sunDirection.X = (float)(solarZenithSine * solarAzimuthSine);
             sunDirection.Y = (float)solarZenithCosine;
-            sunDirection.Z = -(float)solarZenithSine * (float)solarAzimuthCosine;
+            sunDirection.Z = -(float)(solarZenithSine * solarAzimuthCosine);
             sunDirection.Normalize();
 
             return sunDirection;
