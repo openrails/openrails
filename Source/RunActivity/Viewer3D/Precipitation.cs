@@ -1,64 +1,63 @@
 // COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
-// 
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// This file is the responsibility of the 3D & Environment Team. 
+// This file is the responsibility of the 3D & Environment Team.
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Graphics.PackedVector;
-using Orts.Simulation;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ORTS.Common;
+using Orts.Simulation;
 
 namespace Orts.Viewer3D
 {
     public class PrecipitationViewer
     {
         public const float MinIntensityPPSPM2 = 0;
+
         // 16 bit version.
         public const float MaxIntensityPPSPM2_16 = 0.010f;
+
         // Default 32 bit version.
         public const float MaxIntensityPPSPM2 = 0.035f;
 
         public static bool IndexesAre32bit;
 
         readonly Viewer Viewer;
-        readonly WeatherControl WeatherControl;
         readonly Weather Weather;
 
         readonly Material Material;
-        readonly PrecipitationPrimitive Pricipitation;
+        readonly PrecipitationPrimitive Precipitation;
 
         Vector3 Wind;
 
-        public PrecipitationViewer(Viewer viewer, WeatherControl weatherControl)
+        public PrecipitationViewer(Viewer viewer)
         {
             IndexesAre32bit = viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level10_0);
 
             Viewer = viewer;
-            WeatherControl = weatherControl;
             Weather = viewer.Simulator.Weather;
 
             Material = viewer.MaterialManager.Load("Precipitation");
-            Pricipitation = new PrecipitationPrimitive(Viewer.GraphicsDevice);
+            Precipitation = new PrecipitationPrimitive(Viewer.GraphicsDevice);
 
             Wind = new Vector3(0, 0, 0);
             Reset();
@@ -67,16 +66,16 @@ namespace Orts.Viewer3D
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var gameTime = (float)Viewer.Simulator.GameTime;
-            Pricipitation.DynamicUpdate(WeatherControl, Weather, Viewer, ref Wind);
-            Pricipitation.Update(gameTime, elapsedTime, Weather.PricipitationIntensityPPSPM2, Viewer);
+            Precipitation.DynamicUpdate(Weather, ref Wind);
+            Precipitation.Update(gameTime, elapsedTime, Weather.PrecipitationIntensityPPSPM2, Viewer);
 
             // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
-            var XNAWorldLocation = Matrix.Identity;
-            XNAWorldLocation.M11 = gameTime;
-            XNAWorldLocation.M21 = Viewer.Camera.TileX;
-            XNAWorldLocation.M22 = Viewer.Camera.TileZ;
+            var xnaWorldLocation = Matrix.Identity;
+            xnaWorldLocation.M11 = gameTime;
+            xnaWorldLocation.M21 = Viewer.Camera.TileX;
+            xnaWorldLocation.M22 = Viewer.Camera.TileZ;
 
-            frame.AddPrimitive(Material, Pricipitation, RenderPrimitiveGroup.Precipitation, ref XNAWorldLocation);
+            frame.AddPrimitive(Material, Precipitation, RenderPrimitiveGroup.Precipitation, ref xnaWorldLocation);
         }
 
         public void Reset()
@@ -85,11 +84,15 @@ namespace Orts.Viewer3D
             // Added random Wind.X value for rain and snow.
             // Max value used by randWind.Next is max value - 1.
             Wind.X = Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? Viewer.Random.Next(2, 6) : Viewer.Random.Next(15, 21);
-                                    
+
             var gameTime = (float)Viewer.Simulator.GameTime;
-            Pricipitation.Initialize(Viewer.Simulator.WeatherType, Wind);
+            Precipitation.Initialize(Viewer.Simulator.WeatherType, Wind);
+
             // Camera is null during first initialisation.
-            if (Viewer.Camera != null) Pricipitation.Update(gameTime, null, Weather.PricipitationIntensityPPSPM2, Viewer);
+            if (Viewer.Camera != null)
+            {
+                Precipitation.Update(gameTime, null, Weather.PrecipitationIntensityPPSPM2, Viewer);
+            }
         }
 
         [CallOnThread("Loader")]
@@ -104,8 +107,10 @@ namespace Orts.Viewer3D
         // http://www-das.uwyo.edu/~geerts/cwx/notes/chap09/hydrometeor.html
         // "Rain  1.8 - 2.2mm  6.1 - 6.9m/s"
         const float RainVelocityMpS = 6.9f;
+
         // "Snow flakes of any size falls at about 1 m/s"
         const float SnowVelocityMpS = 1.0f;
+
         // This is a fiddle factor because the above values feel too slow. Alternative suggestions welcome.
         const float ParticleVelocityFactor = 10.0f;
 
@@ -118,7 +123,7 @@ namespace Orts.Viewer3D
         const float ParticleBoxWidthM_16 = 500;
         const float ParticleBoxHeightM_16 = 43;
 
-        const int IndiciesPerParticle = 6;
+        const int IndicesPerParticle = 6;
         const int VerticiesPerParticle = 4;
         const int PrimitivesPerParticle = 2;
 
@@ -142,7 +147,7 @@ namespace Orts.Viewer3D
                 new VertexElement(16 + 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 2),
             };
 
-            public static int SizeInBytes = sizeof(float) * (4 + 4) + sizeof(float) * 4;
+            public static int SizeInBytes = (sizeof(float) * (4 + 4)) + (sizeof(float) * 4);
         }
 
         float ParticleDuration;
@@ -153,7 +158,6 @@ namespace Orts.Viewer3D
         //   +--active>-----new>--+
         //   |                    |
         //   +--<retired---<free--+
-
         int FirstActiveParticle;
         int FirstNewParticle;
         int FirstFreeParticle;
@@ -166,7 +170,7 @@ namespace Orts.Viewer3D
         public PrecipitationPrimitive(GraphicsDevice graphicsDevice)
         {
             // Snow is the slower particle, hence longer duration, hence more particles in total.
-            // Setting the precipitaton box size based on GraphicsDeviceCapabilities.
+            // Setting the precipitation box size based on GraphicsDeviceCapabilities.
             if (PrecipitationViewer.IndexesAre32bit)
             {
                 ParticleBoxLengthM = (float)Program.Simulator.Settings.PrecipitationBoxLength;
@@ -179,38 +183,56 @@ namespace Orts.Viewer3D
                 ParticleBoxWidthM = ParticleBoxWidthM_16;
                 ParticleBoxHeightM = ParticleBoxHeightM_16;
             }
+
             if (PrecipitationViewer.IndexesAre32bit)
+            {
                 MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
+            }
+
             // Processing 16bit device
             else
+            {
                 MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2_16 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
+            }
+
             // Checking if graphics device is 16bit.
             if (!PrecipitationViewer.IndexesAre32bit)
+            {
                 Debug.Assert(MaxParticles * VerticiesPerParticle < ushort.MaxValue, "The maximum number of precipitation verticies must be able to fit in a ushort (16bit unsigned) index buffer.");
+            }
+
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
             VertexDeclaration = new VertexDeclaration(ParticleVertex.SizeInBytes, ParticleVertex.VertexElements);
             VertexStride = Marshal.SizeOf(typeof(ParticleVertex));
             VertexBuffer = new DynamicVertexBuffer(graphicsDevice, VertexDeclaration, MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
+
             // Processing either 32bit or 16bit InitIndexBuffer depending on GraphicsDeviceCapabilities.
             if (PrecipitationViewer.IndexesAre32bit)
-                IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
+            {
+                IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndicesPerParticle);
+            }
             else
-                IndexBuffer = InitIndexBuffer16(graphicsDevice, MaxParticles * IndiciesPerParticle);
+            {
+                IndexBuffer = InitIndexBuffer16(graphicsDevice, MaxParticles * IndicesPerParticle);
+            }
+
             Heights = new HeightCache(8);
+
             // This Trace command is used to show how much memory is used.
-            Trace.TraceInformation(String.Format("Allocation for {0:N0} particles:\n\n  {1,13:N0} B RAM vertex data\n  {2,13:N0} B RAM index data (temporary)\n  {1,13:N0} B VRAM DynamicVertexBuffer\n  {2,13:N0} B VRAM IndexBuffer", MaxParticles, Marshal.SizeOf(typeof(ParticleVertex)) * MaxParticles * VerticiesPerParticle, sizeof(uint) * MaxParticles * IndiciesPerParticle));
+            Trace.TraceInformation(string.Format("Allocation for {0:N0} particles:\n\n  {1,13:N0} B RAM vertex data\n  {2,13:N0} B RAM index data (temporary)\n  {1,13:N0} B VRAM DynamicVertexBuffer\n  {2,13:N0} B VRAM IndexBuffer", MaxParticles, Marshal.SizeOf(typeof(ParticleVertex)) * MaxParticles * VerticiesPerParticle, sizeof(uint) * MaxParticles * IndicesPerParticle));
         }
 
         void VertexBuffer_ContentLost()
         {
             VertexBuffer.SetData(0, Vertices, 0, Vertices.Length, VertexStride, SetDataOptions.NoOverwrite);
         }
+
         // IndexBuffer for 32bit process.
-        static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndicies)
+        static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndices)
         {
-            var indices = new uint[numIndicies];
+            var indices = new uint[numIndices];
             var index = 0;
-            for (var i = 0; i < numIndicies; i += IndiciesPerParticle)
+            for (var i = 0; i < numIndices; i += IndicesPerParticle)
             {
                 indices[i] = (uint)index;
                 indices[i + 1] = (uint)(index + 1);
@@ -218,20 +240,22 @@ namespace Orts.Viewer3D
 
                 indices[i + 3] = (uint)(index + 2);
                 indices[i + 4] = (uint)(index + 3);
-                indices[i + 5] = (uint)(index);
+                indices[i + 5] = (uint)index;
 
                 index += VerticiesPerParticle;
             }
-            var indexBuffer = new IndexBuffer(graphicsDevice, typeof(uint), numIndicies, BufferUsage.WriteOnly);
+
+            var indexBuffer = new IndexBuffer(graphicsDevice, typeof(uint), numIndices, BufferUsage.WriteOnly);
             indexBuffer.SetData(indices);
             return indexBuffer;
         }
+
         // IndexBuffer for computers that still use 16bit graphics.
-        static IndexBuffer InitIndexBuffer16(GraphicsDevice graphicsDevice, int numIndicies)
+        static IndexBuffer InitIndexBuffer16(GraphicsDevice graphicsDevice, int numIndices)
         {
-            var indices = new ushort[numIndicies];
+            var indices = new ushort[numIndices];
             var index = 0;
-            for (var i = 0; i < numIndicies; i += IndiciesPerParticle)
+            for (var i = 0; i < numIndices; i += IndicesPerParticle)
             {
                 indices[i] = (ushort)index;
                 indices[i + 1] = (ushort)(index + 1);
@@ -239,11 +263,12 @@ namespace Orts.Viewer3D
 
                 indices[i + 3] = (ushort)(index + 2);
                 indices[i + 4] = (ushort)(index + 3);
-                indices[i + 5] = (ushort)(index);
+                indices[i + 5] = (ushort)index;
 
                 index += VerticiesPerParticle;
             }
-            var indexBuffer = new IndexBuffer(graphicsDevice, typeof(ushort), numIndicies, BufferUsage.WriteOnly);
+
+            var indexBuffer = new IndexBuffer(graphicsDevice, typeof(ushort), numIndices, BufferUsage.WriteOnly);
             indexBuffer.SetData(indices);
             return indexBuffer;
         }
@@ -257,7 +282,9 @@ namespace Orts.Viewer3D
 
                 // Stop as soon as we find the first particle which hasn't expired.
                 if (expiry > currentTime)
+                {
                     break;
+                }
 
                 // Expire particle.
                 Vertices[vertex].StartPosition_StartTime.W = (float)DrawCounter;
@@ -274,7 +301,9 @@ namespace Orts.Viewer3D
 
                 // Stop as soon as we find the first expired particle which hasn't been expired for at least 2 'ticks'.
                 if (age < 2)
+                {
                     break;
+                }
 
                 FirstRetiredParticle = (FirstRetiredParticle + 1) % MaxParticles;
             }
@@ -285,7 +314,9 @@ namespace Orts.Viewer3D
             var nextFree = (FirstFreeParticle + 1) % MaxParticles;
 
             if (nextFree <= FirstRetiredParticle)
+            {
                 return FirstRetiredParticle - nextFree;
+            }
 
             return (MaxParticles - nextFree) + FirstRetiredParticle;
         }
@@ -299,11 +330,15 @@ namespace Orts.Viewer3D
             DrawCounter = 0;
         }
 
-        public void DynamicUpdate(WeatherControl weatherControl, Weather weather, Viewer viewer, ref Vector3 wind)
+        public void DynamicUpdate(Weather weather, ref Vector3 wind)
         {
-            if (weather.PrecipitationLiquidity == 0 || weather.PrecipitationLiquidity == 1) return;
-            ParticleDuration = ParticleBoxHeightM / ((RainVelocityMpS-SnowVelocityMpS) *  weather.PrecipitationLiquidity + SnowVelocityMpS)/ ParticleVelocityFactor;
-            wind.X = 18 * weather.PrecipitationLiquidity + 2;
+            if (weather.PrecipitationLiquidity == 0 || weather.PrecipitationLiquidity == 1)
+            {
+                return;
+            }
+
+            ParticleDuration = ParticleBoxHeightM / (((RainVelocityMpS - SnowVelocityMpS) * weather.PrecipitationLiquidity) + SnowVelocityMpS) / ParticleVelocityFactor;
+            wind.X = (18 * weather.PrecipitationLiquidity) + 2;
             ParticleDirection = wind;
         }
 
@@ -344,7 +379,7 @@ namespace Orts.Viewer3D
 
                 for (var j = 0; j < VerticiesPerParticle; j++)
                 {
-                    Vertices[vertex + j].StartPosition_StartTime = new Vector4(position.XNAMatrix.Translation - ParticleDirection * ParticleDuration, time);
+                    Vertices[vertex + j].StartPosition_StartTime = new Vector4(position.XNAMatrix.Translation - (ParticleDirection * ParticleDuration), time);
                     Vertices[vertex + j].StartPosition_StartTime.Y += ParticleBoxHeightM;
                     Vertices[vertex + j].EndPosition_EndTime = new Vector4(position.XNAMatrix.Translation, time + ParticleDuration);
                     Vertices[vertex + j].TileXZ_Vertex = new Vector4(position.TileX, position.TileZ, j, 0);
@@ -356,9 +391,11 @@ namespace Orts.Viewer3D
             }
 
             if (numParticlesAdded > 0)
+            {
                 TimeParticlesLastEmitted = currentTime;
+            }
 
-            ParticlesToEmit = ParticlesToEmit - (int)ParticlesToEmit;
+            ParticlesToEmit -= (int)ParticlesToEmit;
         }
 
         void AddNewParticlesToVertexBuffer()
@@ -373,7 +410,9 @@ namespace Orts.Viewer3D
                 var numParticlesToAddAtEnd = MaxParticles - FirstNewParticle;
                 VertexBuffer.SetData(FirstNewParticle * VertexStride * VerticiesPerParticle, Vertices, FirstNewParticle * VerticiesPerParticle, numParticlesToAddAtEnd * VerticiesPerParticle, VertexStride, SetDataOptions.NoOverwrite);
                 if (FirstFreeParticle > 0)
+                {
                     VertexBuffer.SetData(0, Vertices, 0, FirstFreeParticle * VerticiesPerParticle, VertexStride, SetDataOptions.NoOverwrite);
+                }
             }
 
             FirstNewParticle = FirstFreeParticle;
@@ -387,10 +426,14 @@ namespace Orts.Viewer3D
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             if (VertexBuffer.IsContentLost)
+            {
                 VertexBuffer_ContentLost();
+            }
 
             if (FirstNewParticle != FirstFreeParticle)
+            {
                 AddNewParticlesToVertexBuffer();
+            }
 
             if (HasParticlesToRender())
             {
@@ -400,15 +443,20 @@ namespace Orts.Viewer3D
                 if (FirstActiveParticle < FirstFreeParticle)
                 {
                     var numParticles = FirstFreeParticle - FirstActiveParticle;
-                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: FirstActiveParticle * IndiciesPerParticle, primitiveCount: numParticles * PrimitivesPerParticle);
+                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: FirstActiveParticle * IndicesPerParticle, primitiveCount: numParticles * PrimitivesPerParticle);
                 }
                 else
                 {
                     var numParticlesAtEnd = MaxParticles - FirstActiveParticle;
                     if (numParticlesAtEnd > 0)
-                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: FirstActiveParticle * IndiciesPerParticle, primitiveCount: numParticlesAtEnd * PrimitivesPerParticle);
+                    {
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: FirstActiveParticle * IndicesPerParticle, primitiveCount: numParticlesAtEnd * PrimitivesPerParticle);
+                    }
+
                     if (FirstFreeParticle > 0)
+                    {
                         graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, primitiveCount: FirstFreeParticle * PrimitivesPerParticle);
+                    }
                 }
             }
 
@@ -436,11 +484,15 @@ namespace Orts.Viewer3D
                 // First, ensure we have the tile in question cached.
                 var tile = Tiles.FirstOrDefault(t => t.TileX == location.TileX && t.TileZ == location.TileZ);
                 if (tile == null)
+                {
                     Tiles.Add(tile = new Tile(location.TileX, location.TileZ, Divisions));
+                }
 
                 // Remove excess entries.
                 if (Tiles.Count > TileCount)
+                {
                     Tiles.RemoveAt(0);
+                }
 
                 // Now calculate division to query.
                 var x = (int)((location.Location.X + 1024) / BlockSize);
@@ -451,18 +503,41 @@ namespace Orts.Viewer3D
                 var zSize = tile.Height.GetLength(1);
                 if (x < 0 || x >= xSize || z < 0 || z >= zSize)
                 {
-                    Trace.TraceWarning("At least one precipitation index is out of bounds:  x = {0}, z = {1}, Location.X = {2}, Location.Z = {3}, BlockSize = {4}, HeightDimensionX = {5}, HeightDimensionZ = {6} ; fixing it",
-                        x, z, location.Location.X, location.Location.Z, BlockSize, xSize, zSize);
-                    if (x >= xSize) x = xSize - 1;
-                    if (z >= zSize) z = zSize - 1;
-                    if (x < 0) x = 0;
-                    if (z < 0) z = 0;
+                    Trace.TraceWarning(
+                        "At least one precipitation index is out of bounds:  x = {0}, z = {1}, Location.X = {2}, Location.Z = {3}, BlockSize = {4}, HeightDimensionX = {5}, HeightDimensionZ = {6} ; fixing it",
+                        x,
+                        z,
+                        location.Location.X,
+                        location.Location.Z,
+                        BlockSize,
+                        xSize,
+                        zSize);
+
+                    if (x >= xSize)
+                    {
+                        x = xSize - 1;
+                    }
+
+                    if (z >= zSize)
+                    {
+                        z = zSize - 1;
+                    }
+
+                    if (x < 0)
+                    {
+                        x = 0;
+                    }
+
+                    if (z < 0)
+                    {
+                        z = 0;
+                    }
                 }
 
                 // If we don't have it cached, load it.
                 if (tile.Height[x, z] == float.MinValue)
                 {
-                    var position = new WorldLocation(location.TileX, location.TileZ, (x + 0.5f) * BlockSize - 1024, 0, (z + 0.5f) * BlockSize - 1024);
+                    var position = new WorldLocation(location.TileX, location.TileZ, ((x + 0.5f) * BlockSize) - 1024, 0, ((z + 0.5f) * BlockSize) - 1024);
                     tile.Height[x, z] = Math.Max(tiles.GetElevation(position), scenery.GetBoundingBoxTop(position, BlockSize));
                     tile.Used++;
                 }
@@ -484,8 +559,12 @@ namespace Orts.Viewer3D
                     TileZ = tileZ;
                     Height = new float[divisions, divisions];
                     for (var x = 0; x < divisions; x++)
+                    {
                         for (var z = 0; z < divisions; z++)
+                        {
                             Height[x, z] = float.MinValue;
+                        }
+                    }
                 }
             }
         }
@@ -506,7 +585,7 @@ namespace Orts.Viewer3D
             SnowTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Snowflake.png"));
             DynamicPrecipitationTexture[0] = SnowTexture;
             DynamicPrecipitationTexture[11] = RainTexture;
-            for (int i = 1; i<=10; i++)
+            for (int i = 1; i <= 10; i++)
             {
                 var path = "Raindrop" + i.ToString() + ".png";
                 DynamicPrecipitationTexture[11 - i] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, path));
@@ -516,21 +595,24 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.PrecipitationShader;
-            shader.CurrentTechnique = shader.Techniques["Pricipitation"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques["Pricipitation"].Passes.GetEnumerator();
+            shader.CurrentTechnique = shader.Techniques["Precipitation"];
+            if (ShaderPasses == null)
+            {
+                ShaderPasses = shader.Techniques["Precipitation"].Passes.GetEnumerator();
+            }
 
             shader.LightVector.SetValue(Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.SolarDirection);
-            shader.particleSize.SetValue(1f);
+            shader.ParticleSize.SetValue(1f);
             if (Viewer.Simulator.Weather.PrecipitationLiquidity == 0 || Viewer.Simulator.Weather.PrecipitationLiquidity == 1)
             {
-                shader.precipitation_Tex.SetValue(Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? SnowTexture :
+                shader.PrecipitationTex.SetValue(Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? SnowTexture :
                     Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Rain ? RainTexture :
                     Viewer.Simulator.Weather.PrecipitationLiquidity == 0 ? SnowTexture : RainTexture);
             }
             else
             {
                 var precipitation_TexIndex = (int)(Viewer.Simulator.Weather.PrecipitationLiquidity * 11);
-                shader.precipitation_Tex.SetValue(DynamicPrecipitationTexture[precipitation_TexIndex]);
+                shader.PrecipitationTex.SetValue(DynamicPrecipitationTexture[precipitation_TexIndex]);
             }
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
@@ -547,8 +629,8 @@ namespace Orts.Viewer3D
                 foreach (var item in renderItems)
                 {
                     // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
-                    shader.cameraTileXZ.SetValue(new Vector2(item.XNAMatrix.M21, item.XNAMatrix.M22));
-                    shader.currentTime.SetValue(item.XNAMatrix.M11);
+                    shader.CameraTileXZ.SetValue(new Vector2(item.XNAMatrix.M21, item.XNAMatrix.M22));
+                    shader.CurrentTime.SetValue(item.XNAMatrix.M11);
 
                     shader.SetMatrix(Matrix.Identity, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     ShaderPasses.Current.Apply();
@@ -573,7 +655,10 @@ namespace Orts.Viewer3D
             Viewer.TextureManager.Mark(RainTexture);
             Viewer.TextureManager.Mark(SnowTexture);
             for (int i = 1; i <= 10; i++)
+            {
                 Viewer.TextureManager.Mark(DynamicPrecipitationTexture[i]);
+            }
+
             base.Mark();
         }
     }
@@ -581,30 +666,30 @@ namespace Orts.Viewer3D
     [CallOnThread("Render")]
     public class PrecipitationShader : Shader
     {
-        internal readonly EffectParameter worldViewProjection;
-        internal readonly EffectParameter invView;
+        internal readonly EffectParameter WorldViewProjection;
+        internal readonly EffectParameter InvView;
         internal readonly EffectParameter LightVector;
-        internal readonly EffectParameter particleSize;
-        internal readonly EffectParameter cameraTileXZ;
-        internal readonly EffectParameter currentTime;
-        internal readonly EffectParameter precipitation_Tex;
+        internal readonly EffectParameter ParticleSize;
+        internal readonly EffectParameter CameraTileXZ;
+        internal readonly EffectParameter CurrentTime;
+        internal readonly EffectParameter PrecipitationTex;
 
         public PrecipitationShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "PrecipitationShader")
         {
-            worldViewProjection = Parameters["worldViewProjection"];
-            invView = Parameters["invView"];
+            WorldViewProjection = Parameters["worldViewProjection"];
+            InvView = Parameters["invView"];
             LightVector = Parameters["LightVector"];
-            particleSize = Parameters["particleSize"];
-            cameraTileXZ = Parameters["cameraTileXZ"];
-            currentTime = Parameters["currentTime"];
-            precipitation_Tex = Parameters["precipitation_Tex"];
+            ParticleSize = Parameters["particleSize"];
+            CameraTileXZ = Parameters["cameraTileXZ"];
+            CurrentTime = Parameters["currentTime"];
+            PrecipitationTex = Parameters["precipitation_Tex"];
         }
 
         public void SetMatrix(Matrix world, ref Matrix view, ref Matrix projection)
         {
-            worldViewProjection.SetValue(world * view * projection);
-            invView.SetValue(Matrix.Invert(view));
+            WorldViewProjection.SetValue(world * view * projection);
+            InvView.SetValue(Matrix.Invert(view));
         }
     }
 }

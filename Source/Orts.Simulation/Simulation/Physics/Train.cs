@@ -2111,14 +2111,14 @@ namespace Orts.Simulation.Physics
         public void UpdateWindComponents()
         {
             // Gets wind direction and speed, and determines HUD display values for the train as a whole. 
-            //These will be representative of the train whilst it is on a straight track, but each wagon will vary when going around a curve.
+            // These will be representative of the train whilst it is on a straight track, but each wagon will vary when going around a curve.
             // Note both train and wind direction will be positive between 0 (north) and 180 (south) through east, and negative between 0 (north) and 180 (south) through west
             // Wind and train direction to be converted to an angle between 0 and 360 deg.
                 // Calculate Wind speed and direction, and train direction
                 // Update the value of the Wind Speed and Direction for the train
-                PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindDirection);
-                PhysicsWindSpeedMpS = Simulator.Weather.WindSpeed;
-                float TrainSpeedMpS = Math.Abs(SpeedMpS);
+            PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindInstantaneousDirectionRad);
+            PhysicsWindSpeedMpS = Simulator.Weather.WindInstantaneousSpeedMpS;
+            var speedMpS = Math.Abs(SpeedMpS);
 
                 // If a westerly direction (ie -ve) convert to an angle between 0 and 360
                 if (PhysicsWindDirectionDeg < 0)
@@ -2127,7 +2127,7 @@ namespace Orts.Simulation.Physics
                 if (PhysicsTrainLocoDirectionDeg < 0)
                     PhysicsTrainLocoDirectionDeg += 360;
 
-                // calculate angle between train and eind direction
+            // Calculate angle between train and wind direction
                 if (PhysicsWindDirectionDeg > PhysicsTrainLocoDirectionDeg)
                     ResultantWindComponentDeg = PhysicsWindDirectionDeg - PhysicsTrainLocoDirectionDeg;
                 else if (PhysicsTrainLocoDirectionDeg > PhysicsWindDirectionDeg)
@@ -2143,9 +2143,8 @@ namespace Orts.Simulation.Physics
                 if (ResultantWindComponentDeg > 180)
                     ResultantWindComponentDeg = 360 - ResultantWindComponentDeg;
 
-                float WindAngleRad = MathHelper.ToRadians(ResultantWindComponentDeg);
-
-                WindResultantSpeedMpS = (float)Math.Sqrt(TrainSpeedMpS * TrainSpeedMpS + PhysicsWindSpeedMpS * PhysicsWindSpeedMpS + 2.0f * TrainSpeedMpS * PhysicsWindSpeedMpS * (float)Math.Cos(WindAngleRad));
+            var windAngleRad = MathHelper.ToRadians(ResultantWindComponentDeg);
+            WindResultantSpeedMpS = (float)Math.Sqrt(speedMpS * speedMpS + PhysicsWindSpeedMpS * PhysicsWindSpeedMpS + 2.0f * speedMpS * PhysicsWindSpeedMpS * (float)Math.Cos(windAngleRad));
             }
 
 

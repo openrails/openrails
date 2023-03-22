@@ -1,21 +1,21 @@
-// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
-// 
+// COPYRIGHT 2009 - 2023 by the Open Rails project.
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// This file is the responsibility of the 3D & Environment Team. 
+// This file is the responsibility of the 3D & Environment Team.
 
 ////////////////////////////////////////////////////////////////////////////////
 //                     S H A D O W   M A P   S H A D E R                      //
@@ -27,7 +27,7 @@ float4x4 WorldViewProjection;  // model -> world -> view -> projection
 float4   LightVector;  // Direction vector to sun, w = 1/length of vector
 float    Time;  // Used for moving textures across the sky
 float4   Overcast;  // x = alpha, y = contrast, z = brightness, w = !Overcast.y && !Overcast.z
-float2   WindDisplacement;
+float4   CloudScalePosition;
 float3   SkyColor;
 float3   FogColor;
 float4   Fog;
@@ -255,10 +255,7 @@ float4 PSMoon(VERTEX_OUTPUT In) : COLOR
 
 float4 PSClouds(VERTEX_OUTPUT In) : COLOR
 {
-	// Get the color information for the current pixel
-	// Cloud map is tiled. Tiling factor: 4
-	// Move cloud map to suit wind conditions
-	float2 TexCoord = float2(In.TexCoord.x * 4 + WindDisplacement.x, In.TexCoord.y * 4 + WindDisplacement.y);
+	float2 TexCoord = In.TexCoord.xy * CloudScalePosition.xy - CloudScalePosition.zw;
 	float4 cloudColor = tex2D(CloudMapSampler, TexCoord);
 	float alpha = cloudColor.a;
 	
