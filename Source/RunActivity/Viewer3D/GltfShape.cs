@@ -164,7 +164,7 @@ namespace Orts.Viewer3D
         public override Matrix SetRenderMatrices(ShapePrimitive baseShapePrimitive, Matrix[] animatedMatrices, ref Matrix tileTranslation, out Matrix[] bones)
         {
             var shapePrimitive = baseShapePrimitive as GltfPrimitive;
-            bones = Enumerable.Repeat(Matrix.Identity, Math.Min(RenderProcess.MAX_BONES, shapePrimitive.Joints.Length)).ToArray();
+            (shapePrimitive.RenderBonesCurrent, shapePrimitive.RenderBonesNext) = (shapePrimitive.RenderBonesNext, shapePrimitive.RenderBonesCurrent);
 
             if (LodChanged && ExternalLods.Count > 1)
             {
@@ -173,32 +173,36 @@ namespace Orts.Viewer3D
             }
             LodChanged = false;
 
-            for (var j = 0; j < bones.Length; j++)
+            for (var j = 0; j < shapePrimitive.Joints.Length; j++)
             {
-                bones[j] = MsfsFlavoured ? Matrix.Identity : shapePrimitive.InverseBindMatrices[j];
+                var bone = MsfsFlavoured ? Matrix.Identity : shapePrimitive.InverseBindMatrices[j];
                 var hi = shapePrimitive.Joints[j];
                 while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
                 {
-                    Matrix.Multiply(ref bones[j], ref animatedMatrices[hi], out bones[j]);
+                    Matrix.Multiply(ref bone, ref animatedMatrices[hi], out bone);
                     hi = shapePrimitive.Hierarchy[hi];
                 }
-                Matrix.Multiply(ref bones[j], ref PlusZToForward, out bones[j]);
+                Matrix.Multiply(ref bone, ref PlusZToForward, out bone);
 
                 // The ConsistGenerator is used to show all the Khronos sample models for testing purposes. However they need adjustments to show them all at once.
                 if (ConsistGenerator.GltfVisualTestRun && SampleModelsAdjustments.TryGetValue(Path.GetFileNameWithoutExtension(FilePath), out var adjustment))
-                    Matrix.Multiply(ref bones[j], ref adjustment, out bones[j]);
+                    Matrix.Multiply(ref bone, ref adjustment, out bone);
                 
-                Matrix.Multiply(ref bones[j], ref tileTranslation, out bones[j]);
+                Matrix.Multiply(ref bone, ref tileTranslation, out bone);
+
+                // Non-skinned primitive
+                if (shapePrimitive.Joints.Length == 1)
+                {
+                    bones = null;
+                    return bone;
+                }
+
+                shapePrimitive.RenderBonesCurrent[j] = bone;
             }
 
             // Skinned primitive
-            if (shapePrimitive.Joints.Length > 1)
-                return Matrix.Identity;
-
-            // Non-skinned primitive
-            var matrix = bones[0];
-            bones = null;
-            return matrix;
+            bones = shapePrimitive.RenderBonesCurrent;
+            return Matrix.Identity;
         }
 
         public GltfDistanceLevel SetLod(int lodId)
@@ -1339,6 +1343,15 @@ namespace Orts.Viewer3D
         {
             public readonly int[] Joints; // Replaces ShapePrimitive.HierarchyIndex for non-skinned primitives
             public readonly Matrix[] InverseBindMatrices;
+
+            /// <summary>
+            /// It is used in <see cref="SetRenderMatrices"/> to store the animated bones until uploading them to GPU.
+            /// To avoid garbage creation, this array must be reused each time for a new frame calculation.
+            /// However the data usually is not getting uploaded before a new calculation begins, so two set of bones needs to be stored:
+            /// one is being recalculated while the other is waiting for the upload.
+            /// </summary>
+            public Matrix[] RenderBonesCurrent;
+            public Matrix[] RenderBonesNext;
             
             /// <summary>
             /// Indicates what position in the target a specific vertex attribute is located at. Element [6] is set to 1 if the primitive has a skin.
@@ -1407,6 +1420,8 @@ namespace Orts.Viewer3D
                 {
                     // Skinned model
                     Joints = skin.Joints;
+                    RenderBonesCurrent = Enumerable.Repeat(Matrix.Identity, Math.Min(RenderProcess.MAX_BONES, Joints.Length)).ToArray();
+                    RenderBonesNext = Enumerable.Repeat(Matrix.Identity, Math.Min(RenderProcess.MAX_BONES, Joints.Length)).ToArray();
 
                     if (!distanceLevel.InverseBindMatrices.TryGetValue((int)skin.InverseBindMatrices, out InverseBindMatrices))
                     {
