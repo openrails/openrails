@@ -101,6 +101,12 @@ namespace Orts.Viewer3D
             CustomAnimationFPS = 1;
             EnableAnimations = viewer.Game.Settings.GltfAnimations;
             ShapeWarnings = !viewer.Game.Settings.SuppressShapeWarnings;
+
+            if (ConsistGenerator.GltfVisualTestRun)
+            {
+                if (!SampleModelsAdjustments.TryGetValue(Path.GetFileNameWithoutExtension(FilePath), out SampleModelsAdjustment))
+                    SampleModelsAdjustment = Matrix.Identity;
+            }
         }
 
         protected override void LoadContent()
@@ -185,8 +191,8 @@ namespace Orts.Viewer3D
                 Matrix.Multiply(ref bone, ref PlusZToForward, out bone);
 
                 // The ConsistGenerator is used to show all the Khronos sample models for testing purposes. However they need adjustments to show them all at once.
-                if (ConsistGenerator.GltfVisualTestRun && SampleModelsAdjustments.TryGetValue(Path.GetFileNameWithoutExtension(FilePath), out var adjustment))
-                    Matrix.Multiply(ref bone, ref adjustment, out bone);
+                if (ConsistGenerator.GltfVisualTestRun)
+                    bone *= SampleModelsAdjustment;
                 
                 Matrix.Multiply(ref bone, ref tileTranslation, out bone);
 
@@ -1793,6 +1799,7 @@ namespace Orts.Viewer3D
             { "VertexColorTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
             { "WaterBottle".ToLower(), Matrix.CreateScale(7) * Matrix.CreateTranslation(0, 2, 0) },
         };
+        readonly Matrix SampleModelsAdjustment;
     }
 
     class GltfAnimation
