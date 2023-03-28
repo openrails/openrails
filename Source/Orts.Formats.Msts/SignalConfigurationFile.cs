@@ -43,6 +43,8 @@ namespace Orts.Formats.Msts
     {
         /// <summary>Name-indexed list of available signal functions</summary>
         public IDictionary<string, SignalFunction> SignalFunctions;
+        /// <summary>Allocation-free MstsName-indexed list of available signal functions</summary>
+        public static IDictionary<MstsSignalFunction, SignalFunction> MstsSignalFunctions;
         /// <summary>List of OR defined subtypes for Norman signals</summary>
         public IList<string> ORTSNormalSubtypes;
         /// <summary>Name-indexed list of available light textures</summary>
@@ -78,6 +80,19 @@ namespace Orts.Formats.Msts
                 { SignalFunction.SPEED.Name, SignalFunction.SPEED },
                 { SignalFunction.ALERT.Name, SignalFunction.ALERT },
                 { SignalFunction.UNKNOWN.Name, SignalFunction.UNKNOWN }
+            };
+
+            // and the allocation-free version of the above 
+            MstsSignalFunctions = new SortedDictionary<MstsSignalFunction, SignalFunction>
+            {
+                { MstsSignalFunction.NORMAL, SignalFunction.NORMAL },
+                { MstsSignalFunction.DISTANCE, SignalFunction.DISTANCE },
+                { MstsSignalFunction.REPEATER, SignalFunction.REPEATER },
+                { MstsSignalFunction.SHUNTING, SignalFunction.SHUNTING },
+                { MstsSignalFunction.INFO, SignalFunction.INFO },
+                { MstsSignalFunction.SPEED, SignalFunction.SPEED },
+                { MstsSignalFunction.ALERT, SignalFunction.ALERT },
+                { MstsSignalFunction.UNKNOWN, SignalFunction.UNKNOWN }
             };
 
             // preset empty OR normal subtypes

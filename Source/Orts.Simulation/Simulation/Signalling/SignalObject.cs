@@ -138,6 +138,9 @@ namespace Orts.Simulation.Signalling
 
         public bool CallOnEnabled = false;      // set if signal script file uses CallOn functionality
 
+        private readonly List<int> SectionsWithAlternativePath = new List<int>();
+        private readonly List<int> SectionsWithAltPathSet = new List<int>();
+
         public bool enabled
         {
             get
@@ -763,7 +766,7 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect this_sig_mr(MstsSignalFunction msfn_type)
         {
             bool sigfound = false;
-            return this_sig_mr(signalRef.SignalFunctions[msfn_type.ToString()], ref sigfound);
+            return this_sig_mr(SignalConfigurationFile.MstsSignalFunctions[msfn_type], ref sigfound);
         }
 
         /// <summary>
@@ -862,7 +865,7 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect this_sig_lr(MstsSignalFunction msfn_type)
         {
             bool sigfound = false;
-            return this_sig_lr(signalRef.SignalFunctions[msfn_type.ToString()], ref sigfound);
+            return this_sig_lr(SignalConfigurationFile.MstsSignalFunctions[msfn_type], ref sigfound);
         }
 
         /// <summary>
@@ -1399,10 +1402,13 @@ namespace Orts.Simulation.Signalling
                 if (!isSignalNormal())
                 {
                     TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][function];
-                    foreach (TrackCircuitSignalItem item in thisList.TrackCircuitItem.Where(item => item.SignalRef.TCOffset > TCOffset))
+                    for (int i = 0; i < thisList.TrackCircuitItem.Count; i++)
                     {
-                        signalFound = item.SignalRef.thisRef;
-                        break;
+                        if (thisList.TrackCircuitItem[i].SignalRef.TCOffset > TCOffset)
+                        {
+                            signalFound = thisList.TrackCircuitItem[i].SignalRef.thisRef;
+                            break;
+                        }
                     }
                 }
 
@@ -2689,9 +2695,9 @@ namespace Orts.Simulation.Signalling
 
             if (isSignalNormal() && hasFixedRoute)
             {
-                foreach (Train.TCRouteElement thisElement in fixedRoute)
+                for (int i = 0; i < fixedRoute.Count; i++)
                 {
-                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[fixedRoute[i].TCSectionIndex];
                     if (thisSection.CircuitState.HasTrainsOccupying())
                     {
                         localBlockState = InternalBlockstate.OccupiedSameDirection;
@@ -2980,8 +2986,8 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         private bool getBlockState_locationBased(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain, bool AIPermissionRequest)
         {
-            List<int> SectionsWithAlternativePath = new List<int>();
-            List<int> SectionsWithAltPathSet = new List<int>();
+            SectionsWithAlternativePath.Clear();
+            SectionsWithAltPathSet.Clear();
             bool altRouteAssigned = false;
 
             bool returnvalue = false;
