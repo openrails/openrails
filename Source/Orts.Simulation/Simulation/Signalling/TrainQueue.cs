@@ -40,5 +40,21 @@ namespace Orts.Simulation.Signalling
             if (thisTrain == null) return (false);
             return (Contains(thisTrain.Train.routedForward) || Contains(thisTrain.Train.routedBackward));
         }
+
+        /// <summary>
+        /// Dequeue the whole queue and re-enqueue the unmatched trains
+        /// </summary>
+        /// <param name="thisTrain"></param>
+        public void RemoveTrain(Train.TrainRouted thisTrain)
+        {
+            if (thisTrain == null) return;
+            var queueCount = Count; // loop through the original count to cover all trains in the queue
+            for (var i = 0; i < queueCount; i++)
+            {
+                var queueTrain = Dequeue();
+                if (queueTrain != null & queueTrain.Train != thisTrain.Train)
+                    Enqueue(queueTrain);
+            }
+        }
     }
 }
