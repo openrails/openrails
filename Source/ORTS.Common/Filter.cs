@@ -19,7 +19,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ORTS.Common
 {
@@ -48,6 +47,12 @@ namespace ORTS.Common
     /// </summary>
     public class IIRFilter
     {
+        int NCoef;
+        List<float> ACoef;
+        List<float> BCoef;
+        float[] x;
+        float[] y;
+
         public IIRFilter()
         {
             /**************************************************************
@@ -73,25 +78,24 @@ namespace ORTS.Common
             z = 0.599839 + j -0.394883
             z = 0.599839 + j 0.394883
             ***************************************************************/
-            ACoef = new ArrayList();
-            ACoef.Add(0.00023973435363423468);
-            ACoef.Add(0.00047946870726846936);
-            ACoef.Add(0.00023973435363423468);
+            ACoef = new List<float>
+            {
+                0.00023973435363423468f,
+                0.00047946870726846936f,
+                0.00023973435363423468f
+            };
 
-            BCoef = new ArrayList();
-            BCoef.Add(1.00000000000000000000);
-            BCoef.Add(-1.94607498611971570000);
-            BCoef.Add(0.94703573071858904000);
+            BCoef = new List<float>
+            {
+                1.00000000000000000000f,
+                -1.94607498611971570000f,
+                0.94703573071858904000f
+            };
 
             NCoef = A.Count - 1;
 
-            x = new ArrayList();
-            y = new ArrayList();
-            for (int i = 0; i <= NCoef; i++)
-            {
-                x.Add(0.0);
-                y.Add(0.0);
-            }
+            x = new float[NCoef + 1];
+            y = new float[NCoef + 1];
 
             FilterType = FilterTypes.Bessel;
         }
@@ -102,19 +106,14 @@ namespace ORTS.Common
         /// <param name="a">A coefficients of the filter</param>
         /// <param name="b">B coefficients of the filter</param>
         /// <param name="type">Filter type</param>
-        public IIRFilter(ArrayList a, ArrayList b, FilterTypes type)
+        public IIRFilter(List<float> a, List<float> b, FilterTypes type)
         {
             FilterType = type;
             NCoef = a.Count - 1;
             ACoef = a;
             BCoef = b;
-            x = new ArrayList();
-            y = new ArrayList();
-            for (int i = 0; i <= NCoef; i++)
-            {
-                x.Add(0.0);
-                y.Add(0.0);
-            }
+            x = new float[NCoef + 1];
+            y = new float[NCoef + 1];
         }
 
         /// <summary>
@@ -126,11 +125,10 @@ namespace ORTS.Common
         /// <param name="samplingPeriod">Filter sampling period</param>
         public IIRFilter(FilterTypes type, int order, float cutoffFrequency, float samplingPeriod)
         {
-            NCoef = order;
-            A = new ArrayList();
-            B = new ArrayList();
-
             FilterType = type;
+            NCoef = order;
+            A = new List<float>();
+            B = new List<float>();
 
             switch (type)
             {
@@ -147,39 +145,25 @@ namespace ORTS.Common
             NCoef = A.Count - 1;
             ACoef = A;
             BCoef = B;
-            x = new ArrayList();
-            y = new ArrayList();
-            for (int i = 0; i <= NCoef; i++)
-            {
-                x.Add(0.0);
-                y.Add(0.0);
-            }
+            x = new float[NCoef + 1];
+            y = new float[NCoef + 1];
         }
-
-        int NCoef;
-        ArrayList ACoef;
-        ArrayList BCoef;
 
         /// <summary>
         /// A coefficients of the filter
         /// </summary>
-        public ArrayList A
+        public List<float> A
         {
             set
             {
-                if(NCoef <= 0)
+                if (NCoef <= 0)
                     NCoef = value.Count - 1;
-                x = new ArrayList();
-                y = new ArrayList();
-                for (int i = 0; i <= NCoef; i++)
-                {
-                    x.Add(0.0);
-                    y.Add(0.0);
-                }
+                x = new float[NCoef + 1];
+                y = new float[NCoef + 1];
                 if (ACoef == null)
-                    ACoef = new ArrayList();
+                    ACoef = new List<float>();
                 ACoef.Clear();
-                foreach (object obj in value)
+                foreach (var obj in value)
                 {
                     ACoef.Add(obj);
                 }
@@ -193,23 +177,18 @@ namespace ORTS.Common
         /// <summary>
         /// B coefficients of the filter
         /// </summary>
-        public ArrayList B
+        public List<float> B
         {
             set
             {
-                if(NCoef <= 0)
+                if (NCoef <= 0)
                     NCoef = value.Count - 1;
-                x = new ArrayList();
-                y = new ArrayList();
-                for (int i = 0; i <= NCoef; i++)
-                {
-                    x.Add(0.0);
-                    y.Add(0.0);
-                }
+                x = new float[NCoef + 1];
+                y = new float[NCoef + 1];
                 if (BCoef == null)
-                    BCoef = new ArrayList();
+                    BCoef = new List<float>();
                 BCoef.Clear();
-                foreach (object obj in value)
+                foreach (var obj in value)
                 {
                     BCoef.Add(obj);
                 }
@@ -219,9 +198,6 @@ namespace ORTS.Common
                 return BCoef;
             }
         }
-
-        ArrayList y;
-        ArrayList x;
 
         private float cuttoffFreqRadpS;
         /// <summary>
@@ -282,18 +258,18 @@ namespace ORTS.Common
         public float Filter(float NewSample)
         {
             //shift the old samples
-            for (int n = NCoef; n > 0; n--)
+            for (int n = x.Length - 1; n > 0; n--)
             {
                 x[n] = x[n - 1];
                 y[n] = y[n - 1];
             }
             //Calculate the new output
             x[0] = NewSample;
-            y[0] = (float)Convert.ToDouble(ACoef[0]) * (float)Convert.ToDouble(x[0]);
+            y[0] = ACoef[0] * x[0];
             for (int n = 1; n <= NCoef; n++)
-                y[0] = (float)Convert.ToDouble(y[0]) + (float)Convert.ToDouble(ACoef[n]) * (float)Convert.ToDouble(x[n]) - (float)Convert.ToDouble(BCoef[n]) * (float)Convert.ToDouble(y[n]);
+                y[0] += ACoef[n] * x[n] - BCoef[n] * y[n];
 
-            return (float)y[0];
+            return y[0];
         }
 
         /// <summary>
@@ -322,20 +298,18 @@ namespace ORTS.Common
                     throw new NotImplementedException("Other filter types are not implemented yet. Try to use constant sampling period and Filter(float NewSample) version of this method.");
             }
             //shift the old samples
-            for (int n = NCoef; n > 0; n--)
+            for (int n = x.Length - 1; n > 0; n--)
             {
                 x[n] = x[n - 1];
                 y[n] = y[n - 1];
             }
             //Calculate the new output
             x[0] = NewSample;
-            y[0] = (float)ACoef[0] * (float)x[0];
+            y[0] = ACoef[0] * x[0];
             for (int n = 1; n <= NCoef; n++)
-            {
-                y[0] = (float)Convert.ToDouble(y[0]) + (float)Convert.ToDouble(ACoef[n]) * (float)Convert.ToDouble(x[n]) - (float)Convert.ToDouble(BCoef[n]) * (float)Convert.ToDouble(y[n]);
-            }
+                y[0] += ACoef[n] * x[n] - BCoef[n] * y[n];
 
-            return (float)y[0];
+            return y[0];
         }
 
         /// <summary>
@@ -343,11 +317,8 @@ namespace ORTS.Common
         /// </summary>
         public void Reset()
         {
-            for (int i = 0; i < x.Count; i++)
-            {
-                x[i] = 0.0;
-                y[i] = 0.0;
-            }
+            Array.Clear(x);
+            Array.Clear(y);
         }
         /// <summary>
         /// Resets all buffers of the filter with given initial value
