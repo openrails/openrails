@@ -2904,6 +2904,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 .. index::
    single: BrakePipeVolume
    single: ORTSEmergencyValveActuationRate
+   single: ORTSEmergencyDumpValveRate
    single: ORTSMainResPipeAuxResCharging
    single: ORTSMainResChargingRate
    single: ORTSEngineBrakeReleaseRate
@@ -2932,6 +2933,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   brake actuation of the triple valve. If the pressure in the brake pipe
   decreases at a higher rate than specified, the triple valve will switch to
   emergency mode.
+- ``Wagon(ORTSEmergencyDumpValveRate)``-- Rate at which BP is locally discharged
+  at every wagon during an emergency brake application.
 - ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
   for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
   reservoirs. If set to false, the main reservoir pipe will not be used
