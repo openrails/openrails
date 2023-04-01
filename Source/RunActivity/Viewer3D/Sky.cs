@@ -106,7 +106,7 @@ namespace Orts.Viewer3D
             // Fill in the sun- and moon-position lookup tables
             for (var i = 0; i < SkyInterpolation.MaxSteps; i++)
             {
-                SolarPositionCache[i] = SunMoonPos.SolarAngle(Latitude, Longitude, (float)i / SkyInterpolation.MaxSteps, date);
+                SolarPositionCache[i] = SunMoonPos.SolarAngle(Latitude, Longitude, Viewer.ENVFile.Sun, (float)i / SkyInterpolation.MaxSteps, date);
                 LunarPositionCache[i] = SunMoonPos.LunarAngle(Latitude, Longitude, (float)i / SkyInterpolation.MaxSteps, date);
             }
 
