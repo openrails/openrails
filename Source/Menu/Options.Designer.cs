@@ -170,7 +170,8 @@
             this.labelWebServerPort = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
-            this.checkControlConfirmations = new System.Windows.Forms.CheckBox();
+            this.labelControlConfirmations = new System.Windows.Forms.Label();
+            this.comboControlConfirmations = new System.Windows.Forms.ComboBox();
             this.pbWindowGlass = new System.Windows.Forms.PictureBox();
             this.checkWindowGlass = new System.Windows.Forms.CheckBox();
             this.comboWindowSize = new System.Windows.Forms.ComboBox();
@@ -2003,7 +2004,8 @@
             this.tabPageSystem.Controls.Add(this.labelWebServerPort);
             this.tabPageSystem.Controls.Add(this.numericWebServerPort);
             this.tabPageSystem.Controls.Add(this.pbControlConfirmations);
-            this.tabPageSystem.Controls.Add(this.checkControlConfirmations);
+            this.tabPageSystem.Controls.Add(this.comboControlConfirmations);
+            this.tabPageSystem.Controls.Add(this.labelControlConfirmations);
             this.tabPageSystem.Controls.Add(this.pbWindowGlass);
             this.tabPageSystem.Controls.Add(this.checkWindowGlass);
             this.tabPageSystem.Controls.Add(this.comboWindowSize);
@@ -2141,18 +2143,29 @@
             this.pbControlConfirmations.TabStop = false;
             this.pbControlConfirmations.Click += new System.EventHandler(this.HelpIcon_Click);
             this.pbControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // checkControlConfirmations
+            // comboControlConfirmations
+            //
+            this.comboControlConfirmations.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboControlConfirmations.FormattingEnabled = true;
+            this.comboControlConfirmations.Location = new System.Drawing.Point(35, 265);
+            this.comboControlConfirmations.Name = "comboControlConfirmations";
+            this.comboControlConfirmations.Size = new System.Drawing.Size(121, 21);
+            this.comboControlConfirmations.TabIndex = 37;
+            this.comboControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.comboControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            this.checkControlConfirmations.Location = new System.Drawing.Point(35, 265);
-            this.checkControlConfirmations.Name = "checkControlConfirmations";
-            this.checkControlConfirmations.Size = new System.Drawing.Size(285, 17);
-            this.checkControlConfirmations.TabIndex = 37;
-            this.checkControlConfirmations.Text = "Show control confirmations ";
-            this.checkControlConfirmations.UseVisualStyleBackColor = true;
-            this.checkControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.checkControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // labelControlConfirmations
+            // 
+            this.labelControlConfirmations.Location = new System.Drawing.Point(161, 265);
+            this.labelControlConfirmations.Margin = new System.Windows.Forms.Padding(3);
+            this.labelControlConfirmations.Name = "labelControlConfirmation";
+            this.labelControlConfirmations.Size = new System.Drawing.Size(200, 21);
+            this.labelControlConfirmations.TabIndex = 37;
+            this.labelControlConfirmations.Text = "Messages suppressed       ";
+            this.labelControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.labelControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbWindowGlass
             // 
@@ -2266,7 +2279,7 @@
             this.labelLanguage.Location = new System.Drawing.Point(161, 9);
             this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
             this.labelLanguage.Name = "labelLanguage";
-            this.labelLanguage.Size = new System.Drawing.Size(140, 13);
+            this.labelLanguage.Size = new System.Drawing.Size(140, 21);
             this.labelLanguage.TabIndex = 27;
             this.labelLanguage.Text = "Language                         ";
             this.labelLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
@@ -2883,7 +2896,8 @@
         private System.Windows.Forms.PictureBox pbWindowGlass;
         private System.Windows.Forms.CheckBox checkWindowGlass;
         private System.Windows.Forms.PictureBox pbControlConfirmations;
-        private System.Windows.Forms.CheckBox checkControlConfirmations;
+        private System.Windows.Forms.Label labelControlConfirmations;
+        private System.Windows.Forms.ComboBox comboControlConfirmations;
         private System.Windows.Forms.PictureBox pbWebServerPort;
         private System.Windows.Forms.Label labelWebServerPort;
         private System.Windows.Forms.NumericUpDown numericWebServerPort;
