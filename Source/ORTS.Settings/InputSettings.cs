@@ -67,6 +67,7 @@ namespace ORTS.Settings
 
         public static readonly UserCommandInput[] DefaultCommands = new UserCommandInput[Enum.GetNames(typeof(UserCommand)).Length];
         public readonly UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(UserCommand)).Length];
+        static readonly UserCommand[] UserCommandValues = (UserCommand[])Enum.GetValues(typeof(UserCommand));
 
         static InputSettings()
         {
@@ -91,7 +92,7 @@ namespace ORTS.Settings
 
         UserCommand[] GetCommands()
         {
-            return (UserCommand[])Enum.GetValues(typeof(UserCommand));
+            return UserCommandValues;
         }
 
         public override object GetDefaultValue(string name)
