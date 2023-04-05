@@ -96,6 +96,7 @@ namespace Orts.Simulation.Physics
         }
         public Traveller RearTDBTraveller;               // positioned at the back of the last car in the train
         public Traveller FrontTDBTraveller;              // positioned at the front of the train by CalculatePositionOfCars
+        Traveller CalculatorTraveller;            // CalculatePositionOfCars uses it for the calculations
         public float Length;                             // length of train from FrontTDBTraveller to RearTDBTraveller
         public float MassKg;                             // weight of the train
         public float SpeedMpS;                           // meters per second +ve forward, -ve when backing
@@ -419,6 +420,8 @@ namespace Orts.Simulation.Physics
         public int LoopSection = -1;                                    // section where route loops back onto itself
 
         public bool nextRouteReady = false;                             // indication to activity.cs that a reversal has taken place
+
+        readonly List<int[]> sectionList = new List<int[]>(); // internally used in UpdateSectionState()
 
         // Deadlock Info : 
         // list of sections where deadlock begins
@@ -4378,7 +4381,9 @@ namespace Orts.Simulation.Physics
 
             // TODO : check if train moved back into previous section
 
-            var traveller = new Traveller(RearTDBTraveller);
+            CalculatorTraveller = CalculatorTraveller ?? new Traveller(RearTDBTraveller);
+            var traveller = CalculatorTraveller;
+            traveller.Copy(RearTDBTraveller);
             // The traveller location represents the back of the train.
             var length = 0f;
 
@@ -4453,7 +4458,7 @@ namespace Orts.Simulation.Physics
                 car.UpdateFreightAnimationDiscretePositions();
             }
 
-            FrontTDBTraveller = traveller;
+            (FrontTDBTraveller, CalculatorTraveller) = (CalculatorTraveller, FrontTDBTraveller);
             Length = length;
             travelled += distance;
         } // CalculatePositionOfCars
@@ -6521,7 +6526,7 @@ namespace Orts.Simulation.Physics
         public void UpdateSectionState(int backward)
         {
 
-            List<int[]> sectionList = new List<int[]>();
+            sectionList.Clear();
 
             int lastIndex = PreviousPosition[0].RouteListIndex;
             int presentIndex = PresentPosition[0].RouteListIndex;
@@ -20025,6 +20030,7 @@ namespace Orts.Simulation.Physics
 
         public class DistanceTravelledActions : LinkedList<DistanceTravelledItem>
         {
+            readonly List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
 
             //================================================================================================//
             //
@@ -20111,7 +20117,7 @@ namespace Orts.Simulation.Physics
 
             public List<DistanceTravelledItem> GetActions(float distance)
             {
-                List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
+                itemList.Clear();
 
                 bool itemsCollected = false;
                 LinkedListNode<DistanceTravelledItem> nextNode = this.First;
@@ -20136,7 +20142,7 @@ namespace Orts.Simulation.Physics
 
             public List<DistanceTravelledItem> GetAuxActions(Train thisTrain, float distance)
             {
-                List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
+                itemList.Clear();
                 LinkedListNode<DistanceTravelledItem> nextNode = this.First;
 
                 while (nextNode != null)
@@ -20159,7 +20165,7 @@ namespace Orts.Simulation.Physics
 
             public List<DistanceTravelledItem> GetActions(float distance, Type reqType)
             {
-                List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
+                itemList.Clear();
 
                 bool itemsCollected = false;
                 LinkedListNode<DistanceTravelledItem> nextNode = this.First;
