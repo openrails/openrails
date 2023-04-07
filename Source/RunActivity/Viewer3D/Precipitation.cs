@@ -1,4 +1,4 @@
-// COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -33,13 +33,7 @@ namespace Orts.Viewer3D
     {
         public const float MinIntensityPPSPM2 = 0;
 
-        // 16 bit version.
-        public const float MaxIntensityPPSPM2_16 = 0.010f;
-
-        // Default 32 bit version.
-        public const float MaxIntensityPPSPM2 = 0.035f;
-
-        public static bool IndexesAre32bit;
+        public const float MaxIntensityPPSPM2 = 0.015f;
 
         readonly Viewer Viewer;
         readonly Weather Weather;
@@ -47,26 +41,21 @@ namespace Orts.Viewer3D
         readonly Material Material;
         readonly PrecipitationPrimitive Precipitation;
 
-        Vector3 Wind;
-
         public PrecipitationViewer(Viewer viewer)
         {
-            IndexesAre32bit = viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level10_0);
-
             Viewer = viewer;
             Weather = viewer.Simulator.Weather;
 
             Material = viewer.MaterialManager.Load("Precipitation");
             Precipitation = new PrecipitationPrimitive(Viewer.GraphicsDevice);
 
-            Wind = new Vector3(0, 0, 0);
             Reset();
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var gameTime = (float)Viewer.Simulator.GameTime;
-            Precipitation.DynamicUpdate(Weather, ref Wind);
+            Precipitation.DynamicUpdate(Weather);
             Precipitation.Update(gameTime, elapsedTime, Weather.PrecipitationIntensityPPSPM2, Viewer);
 
             // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
@@ -80,13 +69,8 @@ namespace Orts.Viewer3D
 
         public void Reset()
         {
-            // This procedure is only called once at the start of an activity.
-            // Added random Wind.X value for rain and snow.
-            // Max value used by randWind.Next is max value - 1.
-            Wind.X = Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? Viewer.Random.Next(2, 6) : Viewer.Random.Next(15, 21);
-
             var gameTime = (float)Viewer.Simulator.GameTime;
-            Precipitation.Initialize(Viewer.Simulator.WeatherType, Wind);
+            Precipitation.Initialize(Viewer.Simulator.WeatherType);
 
             // Camera is null during first initialisation.
             if (Viewer.Camera != null)
@@ -114,14 +98,9 @@ namespace Orts.Viewer3D
         // This is a fiddle factor because the above values feel too slow. Alternative suggestions welcome.
         const float ParticleVelocityFactor = 10.0f;
 
-        readonly float ParticleBoxLengthM;
-        readonly float ParticleBoxWidthM;
-        readonly float ParticleBoxHeightM;
-
-        // 16bit Box Parameters
-        const float ParticleBoxLengthM_16 = 500;
-        const float ParticleBoxWidthM_16 = 500;
-        const float ParticleBoxHeightM_16 = 43;
+        const float ParticleBoxLengthM = 500;
+        const float ParticleBoxWidthM = 500;
+        const float ParticleBoxHeightM = 43;
 
         const int IndicesPerParticle = 6;
         const int VerticiesPerParticle = 4;
@@ -151,7 +130,6 @@ namespace Orts.Viewer3D
         }
 
         float ParticleDuration;
-        Vector3 ParticleDirection;
         HeightCache Heights;
 
         // Particle buffer goes like this:
@@ -170,51 +148,14 @@ namespace Orts.Viewer3D
         public PrecipitationPrimitive(GraphicsDevice graphicsDevice)
         {
             // Snow is the slower particle, hence longer duration, hence more particles in total.
-            // Setting the precipitation box size based on GraphicsDeviceCapabilities.
-            if (PrecipitationViewer.IndexesAre32bit)
-            {
-                ParticleBoxLengthM = (float)Program.Simulator.Settings.PrecipitationBoxLength;
-                ParticleBoxWidthM = (float)Program.Simulator.Settings.PrecipitationBoxWidth;
-                ParticleBoxHeightM = (float)Program.Simulator.Settings.PrecipitationBoxHeight;
-            }
-            else
-            {
-                ParticleBoxLengthM = ParticleBoxLengthM_16;
-                ParticleBoxWidthM = ParticleBoxWidthM_16;
-                ParticleBoxHeightM = ParticleBoxHeightM_16;
-            }
-
-            if (PrecipitationViewer.IndexesAre32bit)
-            {
-                MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
-            }
-
-            // Processing 16bit device
-            else
-            {
-                MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2_16 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
-            }
-
-            // Checking if graphics device is 16bit.
-            if (!PrecipitationViewer.IndexesAre32bit)
-            {
-                Debug.Assert(MaxParticles * VerticiesPerParticle < ushort.MaxValue, "The maximum number of precipitation verticies must be able to fit in a ushort (16bit unsigned) index buffer.");
-            }
+            MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
+            Debug.Assert(MaxParticles * VerticiesPerParticle < ushort.MaxValue, "The maximum number of precipitation verticies must be able to fit in a ushort (16bit unsigned) index buffer.");
 
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
             VertexDeclaration = new VertexDeclaration(ParticleVertex.SizeInBytes, ParticleVertex.VertexElements);
             VertexStride = Marshal.SizeOf(typeof(ParticleVertex));
             VertexBuffer = new DynamicVertexBuffer(graphicsDevice, VertexDeclaration, MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
-
-            // Processing either 32bit or 16bit InitIndexBuffer depending on GraphicsDeviceCapabilities.
-            if (PrecipitationViewer.IndexesAre32bit)
-            {
-                IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndicesPerParticle);
-            }
-            else
-            {
-                IndexBuffer = InitIndexBuffer16(graphicsDevice, MaxParticles * IndicesPerParticle);
-            }
+            IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndicesPerParticle);
 
             Heights = new HeightCache(8);
 
@@ -227,31 +168,7 @@ namespace Orts.Viewer3D
             VertexBuffer.SetData(0, Vertices, 0, Vertices.Length, VertexStride, SetDataOptions.NoOverwrite);
         }
 
-        // IndexBuffer for 32bit process.
         static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndices)
-        {
-            var indices = new uint[numIndices];
-            var index = 0;
-            for (var i = 0; i < numIndices; i += IndicesPerParticle)
-            {
-                indices[i] = (uint)index;
-                indices[i + 1] = (uint)(index + 1);
-                indices[i + 2] = (uint)(index + 2);
-
-                indices[i + 3] = (uint)(index + 2);
-                indices[i + 4] = (uint)(index + 3);
-                indices[i + 5] = (uint)index;
-
-                index += VerticiesPerParticle;
-            }
-
-            var indexBuffer = new IndexBuffer(graphicsDevice, typeof(uint), numIndices, BufferUsage.WriteOnly);
-            indexBuffer.SetData(indices);
-            return indexBuffer;
-        }
-
-        // IndexBuffer for computers that still use 16bit graphics.
-        static IndexBuffer InitIndexBuffer16(GraphicsDevice graphicsDevice, int numIndices)
         {
             var indices = new ushort[numIndices];
             var index = 0;
@@ -321,16 +238,15 @@ namespace Orts.Viewer3D
             return (MaxParticles - nextFree) + FirstRetiredParticle;
         }
 
-        public void Initialize(Orts.Formats.Msts.WeatherType weather, Vector3 wind)
+        public void Initialize(Orts.Formats.Msts.WeatherType weather)
         {
             ParticleDuration = ParticleBoxHeightM / (weather == Orts.Formats.Msts.WeatherType.Snow ? SnowVelocityMpS : RainVelocityMpS) / ParticleVelocityFactor;
-            ParticleDirection = wind;
             FirstActiveParticle = FirstNewParticle = FirstFreeParticle = FirstRetiredParticle = 0;
             ParticlesToEmit = TimeParticlesLastEmitted = 0;
             DrawCounter = 0;
         }
 
-        public void DynamicUpdate(Weather weather, ref Vector3 wind)
+        public void DynamicUpdate(Weather weather)
         {
             if (weather.PrecipitationLiquidity == 0 || weather.PrecipitationLiquidity == 1)
             {
@@ -338,8 +254,6 @@ namespace Orts.Viewer3D
             }
 
             ParticleDuration = ParticleBoxHeightM / (((RainVelocityMpS - SnowVelocityMpS) * weather.PrecipitationLiquidity) + SnowVelocityMpS) / ParticleVelocityFactor;
-            wind.X = (18 * weather.PrecipitationLiquidity) + 2;
-            ParticleDirection = wind;
         }
 
         public void Update(float currentTime, ElapsedTime elapsedTime, float particlesPerSecondPerM2, Viewer viewer)
@@ -347,7 +261,8 @@ namespace Orts.Viewer3D
             var tiles = viewer.Tiles;
             var scenery = viewer.World.Scenery;
             var worldLocation = viewer.Camera.CameraWorldLocation;
-            //var worldLocation = Program.Viewer.PlayerLocomotive.WorldPosition.WorldLocation;  // This is used to test overall precipitation position.
+            var particleDirection2D = viewer.Simulator.Weather.WindInstantaneousDirection * viewer.Simulator.Weather.WindInstantaneousSpeedMpS;
+            var particleDirection3D = new Vector3(particleDirection2D.X, 0, particleDirection2D.Y);
 
             if (TimeParticlesLastEmitted == 0)
             {
@@ -379,7 +294,7 @@ namespace Orts.Viewer3D
 
                 for (var j = 0; j < VerticiesPerParticle; j++)
                 {
-                    Vertices[vertex + j].StartPosition_StartTime = new Vector4(position.XNAMatrix.Translation - (ParticleDirection * ParticleDuration), time);
+                    Vertices[vertex + j].StartPosition_StartTime = new Vector4(position.XNAMatrix.Translation - (particleDirection3D * ParticleDuration), time);
                     Vertices[vertex + j].StartPosition_StartTime.Y += ParticleBoxHeightM;
                     Vertices[vertex + j].EndPosition_EndTime = new Vector4(position.XNAMatrix.Translation, time + ParticleDuration);
                     Vertices[vertex + j].TileXZ_Vertex = new Vector4(position.TileX, position.TileZ, j, 0);

@@ -206,29 +206,14 @@ namespace Orts.Viewer3D
 
         void UpdateVolume()
         {
-            if (PrecipitationViewer.IndexesAre32bit)
+            foreach (var soundSource in RainSound)
             {
-                foreach (var soundSource in RainSound)
-                {
-                    soundSource.Volume = Weather.PrecipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
-                }
-
-                foreach (var soundSource in SnowSound)
-                {
-                    soundSource.Volume = Weather.PrecipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
-                }
+                soundSource.Volume = Weather.PrecipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
             }
-            else
-            {
-                foreach (var soundSource in RainSound)
-                {
-                    soundSource.Volume = Weather.PrecipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2_16;
-                }
 
-                foreach (var soundSource in SnowSound)
-                {
-                    soundSource.Volume = Weather.PrecipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2_16;
-                }
+            foreach (var soundSource in SnowSound)
+            {
+                soundSource.Volume = Weather.PrecipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
             }
         }
 
@@ -733,18 +718,9 @@ namespace Orts.Viewer3D
                     ORTSPrecipitationIntensityTransitionTimeS = eventWeatherChange.ORTSPrecipitationIntensityTransitionTimeS;
                     precipitationIntensityTimer = (float)ORTSPrecipitationIntensityTransitionTimeS;
 
-                    // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
-                    // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
-                    if (PrecipitationViewer.IndexesAre32bit)
-                    {
-                        precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
-                            - weatherControl.Weather.PrecipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
-                    }
-                    else
-                    {
-                        precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2_16)
-                            - weatherControl.Weather.PrecipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
-                    }
+                    // Precipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
+                    precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
+                        - weatherControl.Weather.PrecipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
 
                     wChangeOn = true;
                 }
