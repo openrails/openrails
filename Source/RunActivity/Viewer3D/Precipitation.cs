@@ -1,4 +1,4 @@
-// COPYRIGHT 2009 - 2023 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -41,8 +41,6 @@ namespace Orts.Viewer3D
         readonly Material Material;
         readonly PrecipitationPrimitive Precipitation;
 
-        Vector3 Wind;
-
         public PrecipitationViewer(Viewer viewer)
         {
             Viewer = viewer;
@@ -51,14 +49,13 @@ namespace Orts.Viewer3D
             Material = viewer.MaterialManager.Load("Precipitation");
             Precipitation = new PrecipitationPrimitive(Viewer.GraphicsDevice);
 
-            Wind = new Vector3(0, 0, 0);
             Reset();
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var gameTime = (float)Viewer.Simulator.GameTime;
-            Precipitation.DynamicUpdate(Weather, ref Wind);
+            Precipitation.DynamicUpdate(Weather);
             Precipitation.Update(gameTime, elapsedTime, Weather.PrecipitationIntensityPPSPM2, Viewer);
 
             // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
@@ -72,13 +69,8 @@ namespace Orts.Viewer3D
 
         public void Reset()
         {
-            // This procedure is only called once at the start of an activity.
-            // Added random Wind.X value for rain and snow.
-            // Max value used by randWind.Next is max value - 1.
-            Wind.X = Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? Viewer.Random.Next(2, 6) : Viewer.Random.Next(15, 21);
-
             var gameTime = (float)Viewer.Simulator.GameTime;
-            Precipitation.Initialize(Viewer.Simulator.WeatherType, Wind);
+            Precipitation.Initialize(Viewer.Simulator.WeatherType);
 
             // Camera is null during first initialisation.
             if (Viewer.Camera != null)
@@ -138,7 +130,6 @@ namespace Orts.Viewer3D
         }
 
         float ParticleDuration;
-        Vector3 ParticleDirection;
         HeightCache Heights;
 
         // Particle buffer goes like this:
@@ -247,16 +238,15 @@ namespace Orts.Viewer3D
             return (MaxParticles - nextFree) + FirstRetiredParticle;
         }
 
-        public void Initialize(Orts.Formats.Msts.WeatherType weather, Vector3 wind)
+        public void Initialize(Orts.Formats.Msts.WeatherType weather)
         {
             ParticleDuration = ParticleBoxHeightM / (weather == Orts.Formats.Msts.WeatherType.Snow ? SnowVelocityMpS : RainVelocityMpS) / ParticleVelocityFactor;
-            ParticleDirection = wind;
             FirstActiveParticle = FirstNewParticle = FirstFreeParticle = FirstRetiredParticle = 0;
             ParticlesToEmit = TimeParticlesLastEmitted = 0;
             DrawCounter = 0;
         }
 
-        public void DynamicUpdate(Weather weather, ref Vector3 wind)
+        public void DynamicUpdate(Weather weather)
         {
             if (weather.PrecipitationLiquidity == 0 || weather.PrecipitationLiquidity == 1)
             {
@@ -264,8 +254,6 @@ namespace Orts.Viewer3D
             }
 
             ParticleDuration = ParticleBoxHeightM / (((RainVelocityMpS - SnowVelocityMpS) * weather.PrecipitationLiquidity) + SnowVelocityMpS) / ParticleVelocityFactor;
-            wind.X = (18 * weather.PrecipitationLiquidity) + 2;
-            ParticleDirection = wind;
         }
 
         public void Update(float currentTime, ElapsedTime elapsedTime, float particlesPerSecondPerM2, Viewer viewer)
@@ -273,6 +261,8 @@ namespace Orts.Viewer3D
             var tiles = viewer.Tiles;
             var scenery = viewer.World.Scenery;
             var worldLocation = viewer.Camera.CameraWorldLocation;
+            var particleDirection2D = viewer.Simulator.Weather.WindInstantaneousDirection * viewer.Simulator.Weather.WindInstantaneousSpeedMpS;
+            var particleDirection3D = new Vector3(particleDirection2D.X, 0, particleDirection2D.Y);
 
             if (TimeParticlesLastEmitted == 0)
             {
@@ -304,7 +294,7 @@ namespace Orts.Viewer3D
 
                 for (var j = 0; j < VerticiesPerParticle; j++)
                 {
-                    Vertices[vertex + j].StartPosition_StartTime = new Vector4(position.XNAMatrix.Translation - (ParticleDirection * ParticleDuration), time);
+                    Vertices[vertex + j].StartPosition_StartTime = new Vector4(position.XNAMatrix.Translation - (particleDirection3D * ParticleDuration), time);
                     Vertices[vertex + j].StartPosition_StartTime.Y += ParticleBoxHeightM;
                     Vertices[vertex + j].EndPosition_EndTime = new Vector4(position.XNAMatrix.Translation, time + ParticleDuration);
                     Vertices[vertex + j].TileXZ_Vertex = new Vector4(position.TileX, position.TileZ, j, 0);
