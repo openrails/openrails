@@ -140,6 +140,7 @@ namespace Orts.Simulation.Signalling
 
         private readonly List<int> SectionsWithAlternativePath = new List<int>();
         private readonly List<int> SectionsWithAltPathSet = new List<int>();
+        private readonly static List<int> sectionsInRoute = new List<int>();
 
         public bool enabled
         {
@@ -2157,7 +2158,7 @@ namespace Orts.Simulation.Signalling
             // copy sections upto next normal signal
             // check for loop
 
-            List<int> sectionsInRoute = new List<int>();
+            sectionsInRoute.Clear();
 
             for (int iNode = foundFirstSection; iNode < RoutePart.Count && foundLastSection < 0; iNode++)
             {
