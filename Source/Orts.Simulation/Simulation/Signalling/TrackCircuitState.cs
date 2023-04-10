@@ -36,6 +36,8 @@ namespace Orts.Simulation.Signalling
         public int RemoteReserved;                                 // remote reserved (number only) //
         public bool Forced;                                        // forced by human dispatcher    //
 
+        List<Train.TrainRouted> TrainOccupyList;                   // used for allocation-free returning of the TrainOccuping() result //
+
         public TrackCircuitState()
         {
             TrainOccupy = new TrainOccupyState();
@@ -253,12 +255,13 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public List<Train.TrainRouted> TrainsOccupying()
         {
-            List<Train.TrainRouted> reqList = new List<Train.TrainRouted>();
+            TrainOccupyList = TrainOccupyList ?? new List<Train.TrainRouted>();
+            TrainOccupyList.Clear();
             foreach (KeyValuePair<Train.TrainRouted, int> thisTCT in TrainOccupy)
             {
-                reqList.Add(thisTCT.Key);
+                TrainOccupyList.Add(thisTCT.Key);
             }
-            return (reqList);
+            return (TrainOccupyList);
         }
 
         /// <summary>
@@ -267,15 +270,16 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public List<Train.TrainRouted> TrainsOccupying(int reqDirection)
         {
-            List<Train.TrainRouted> reqList = new List<Train.TrainRouted>();
+            TrainOccupyList = TrainOccupyList ?? new List<Train.TrainRouted>();
+            TrainOccupyList.Clear();
             foreach (KeyValuePair<Train.TrainRouted, int> thisTCT in TrainOccupy)
             {
                 if (thisTCT.Value == reqDirection)
                 {
-                    reqList.Add(thisTCT.Key);
+                    TrainOccupyList.Add(thisTCT.Key);
                 }
             }
-            return (reqList);
+            return (TrainOccupyList);
         }
 
         /// <summary>
