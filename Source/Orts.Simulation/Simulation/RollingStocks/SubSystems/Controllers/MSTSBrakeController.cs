@@ -185,6 +185,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         case ControllerState.VacApplyContServ:
                             // Continuous service position for vacuum brakes - allows brake to be adjusted up and down continuously between the ON and OFF position
                             pressureBar = (1 - x) * MaxPressureBar();
+                            epState = -1;
                             break;
                         case ControllerState.EPApply:
                         case ControllerState.EPOnly:
@@ -219,6 +220,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             x = MaxPressureBar() - FullServReductionBar() * (notch.Smooth ? x : CurrentValue());
                             IncreasePressure(ref pressureBar, Math.Min(x, MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
+                            epState = -1;
                             break;
                     }
 
