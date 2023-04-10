@@ -37,7 +37,7 @@ These vendors sell or create products suitable for Open Rails:
   <li><a href="https://www.trainsimulations.net/">TrainSimulations</a> - Canada</li>
   <li><a href="https://pikku.msts.cz/">Pikku Locomotive Works</a> - Czechoslovakia</li>
   <li><a href="http://www.hsb-simulator.com/" title="Harz narrow-gauge railways">HSB Simulator</a> - Germany</li>
-  <li><a href="http://broadgaugeproduction.irts.in/">Broad Gauge Productions</a> - India</li>  
+  <li><a href="https://www.broadgaugeproductions.com/">Broad Gauge Productions</a> - India</li>
   <li><a href="http://www.gabriele90.com/">Gabriele 90</a> - Italy</li>
   <li><a href="http://www.3dtrains.com/" target="_blank">3DTrains</a> - USA</li>
   <li><a href="https://dekogames.com/trains/">Deko Games</a> - USA</li>
