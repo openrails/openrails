@@ -255,13 +255,13 @@ namespace Orts.Viewer3D
             }
 
             // Calculate all the distances to items we need to stop at (level crossings, other cars).
-            var stopDistances = new List<float>();
+            var stopDistance = float.MaxValue;
             for (var crossing = NextCrossingIndex; crossing < crossings.Count; crossing++)
             {
                 if (crossings[crossing].Item.CrossingGroup != null && crossings[crossing].Item.CrossingGroup.HasTrain)
                 {
                     // TODO: Stopping distance for level crossings!
-                    stopDistances.Add(crossings[crossing].Distance - RoadCarSpawner.StopDistance);
+                    stopDistance = Math.Min(stopDistance, crossings[crossing].Distance - RoadCarSpawner.StopDistance);
                     break;
                 }
             }
@@ -271,13 +271,13 @@ namespace Orts.Viewer3D
             if (spawnerIndex > 0)
             {
                 if (!cars[spawnerIndex - 1].CarriesCamera)
-                    stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length / 2);
+                    stopDistance = Math.Min(stopDistance, cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length / 2);
                 else
-                    stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length * 0.65f - 4 - cars[spawnerIndex - 1].Speed * 0.5f);
-                }
+                    stopDistance = Math.Min(stopDistance, cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length * 0.65f - 4 - cars[spawnerIndex - 1].Speed * 0.5f);
+            }
 
             // Calculate whether we're too close to the minimum stopping distance (and need to slow down) or going too slowly (and need to speed up).
-            var stopDistance = stopDistances.Count > 0 ? stopDistances.Min() - Travelled - Length / 2 : float.MaxValue;
+            stopDistance = stopDistance - Travelled - Length / 2;
             var slowingDistance = BrakingFactor * Length;
             if (stopDistance < slowingDistance)
                 Speed = SpeedMax * (float)Math.Sin((Math.PI / 2) * (stopDistance / slowingDistance));
