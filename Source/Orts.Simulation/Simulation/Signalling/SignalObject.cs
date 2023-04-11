@@ -138,8 +138,11 @@ namespace Orts.Simulation.Signalling
 
         public bool CallOnEnabled = false;      // set if signal script file uses CallOn functionality
 
+        private readonly List<int> passedSections = new List<int>();
         private readonly List<int> SectionsWithAlternativePath = new List<int>();
         private readonly List<int> SectionsWithAltPathSet = new List<int>();
+        private readonly static List<int> sectionsInRoute = new List<int>();
+        private static readonly ObjectSpeedInfo DefaultSpeedInfo = new ObjectSpeedInfo(-1, -1, false, false, 0, false);
 
         public bool enabled
         {
@@ -906,11 +909,11 @@ namespace Orts.Simulation.Signalling
         public ObjectSpeedInfo this_sig_speed(SignalFunction function)
         {
             var sigAsp = MstsSignalAspect.STOP;
-            var set_speed = new ObjectSpeedInfo(-1, -1, false, false, 0, false);
+            var set_speed = DefaultSpeedInfo;
 
-            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function == function))
+            foreach (SignalHead sigHead in SignalHeads)
             {
-                if (sigHead.state >= sigAsp && sigHead.CurrentSpeedInfo != null)
+                if (sigHead.Function == function && sigHead.state >= sigAsp && sigHead.CurrentSpeedInfo != null)
                 {
                     sigAsp = sigHead.state;
                     set_speed = sigHead.CurrentSpeedInfo;
@@ -1292,7 +1295,7 @@ namespace Orts.Simulation.Signalling
                 int sectionIndex = -1;
                 bool passedTrackJn = false;
 
-                List<int> passedSections = new List<int>();
+                passedSections.Clear();
                 passedSections.Add(thisSection.Index);
 
                 routeset = req_mainnode == thisSection.OriginalIndex;
@@ -2157,7 +2160,7 @@ namespace Orts.Simulation.Signalling
             // copy sections upto next normal signal
             // check for loop
 
-            List<int> sectionsInRoute = new List<int>();
+            sectionsInRoute.Clear();
 
             for (int iNode = foundFirstSection; iNode < RoutePart.Count && foundLastSection < 0; iNode++)
             {
