@@ -448,11 +448,12 @@ public List<CabView> CabViewList = new List<CabView>();
             AC,
         }
         public TractionMotorTypes TractionMotorType = TractionMotorTypes.DC;
+        public List<ElectricMotor> TractionMotors = new List<ElectricMotor>();
 
         public ILocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ILocomotivePowerSupply;
         public ScriptedTrainControlSystem TrainControlSystem;
 
-        public Axle LocomotiveAxle;
+        public Axles LocomotiveAxles;
         public IIRFilter CurrentFilter;
         public IIRFilter AdhesionFilter;
         public float SaveAdhesionFilter;
@@ -479,8 +480,8 @@ public List<CabView> CabViewList = new List<CabView>();
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
             BrakeCutsPowerAtBrakeCylinderPressurePSI = 4.0f;
 
-            LocomotiveAxle = new Axle();
-            LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
+            LocomotiveAxles = new Axles(this);
+            LocomotiveAxles.Add(new Axle());
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1f), 0.001f);
 
@@ -1238,10 +1239,10 @@ public List<CabView> CabViewList = new List<CabView>();
         /// </summary>
         public void MoveParamsToAxle()
         {
-            if (LocomotiveAxle != null)
+            foreach (var axle in LocomotiveAxles)
             {
-                LocomotiveAxle.SlipWarningTresholdPercent = SlipWarningThresholdPercent;
-                LocomotiveAxle.AdhesionK = AdhesionK;
+                axle.SlipWarningTresholdPercent = SlipWarningThresholdPercent;
+                axle.AdhesionK = AdhesionK;
             }
         }
 
@@ -1266,7 +1267,6 @@ public List<CabView> CabViewList = new List<CabView>();
             outf.Write(VacuumExhausterIsOn);
             outf.Write(TrainBrakePipeLeakPSIorInHgpS);
             outf.Write(AverageForceN);
-            outf.Write(LocomotiveAxle.AxleSpeedMpS);
             outf.Write(CabLightOn);
             outf.Write(UsingRearCab);
             outf.Write(CalculatedCarHeaterSteamUsageLBpS);
@@ -1294,7 +1294,7 @@ public List<CabView> CabViewList = new List<CabView>();
             LocomotivePowerSupply?.Save(outf);
             TrainControlSystem.Save(outf);
 
-            LocomotiveAxle.Save(outf);
+            LocomotiveAxles.Save(outf);
             CruiseControl?.Save(outf);
         }
 
@@ -1318,7 +1318,6 @@ public List<CabView> CabViewList = new List<CabView>();
             VacuumExhausterIsOn = inf.ReadBoolean();
             TrainBrakePipeLeakPSIorInHgpS = inf.ReadSingle();
             AverageForceN = inf.ReadSingle();
-            float axleSpeedMpS = inf.ReadSingle();
             CabLightOn = inf.ReadBoolean();
             UsingRearCab = inf.ReadBoolean();
             CalculatedCarHeaterSteamUsageLBpS = inf.ReadSingle();
@@ -1350,9 +1349,8 @@ public List<CabView> CabViewList = new List<CabView>();
             LocomotivePowerSupply?.Restore(inf);
             TrainControlSystem.Restore(inf);
 
-            LocomotiveAxle = new Axle(inf);
             MoveParamsToAxle();
-            LocomotiveAxle.Reset(Simulator.GameTime, axleSpeedMpS);
+            LocomotiveAxles.Restore(inf);
             CruiseControl?.Restore(inf);
         }
 
@@ -1434,6 +1432,7 @@ public List<CabView> CabViewList = new List<CabView>();
             BrakemanBrakeController.Initialize();
             LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
+            LocomotiveAxles.Initialize();
             CruiseControl?.Initialize();
             foreach (MultiPositionController mpc in MultiPositionControllers)
             {
@@ -1494,7 +1493,11 @@ public List<CabView> CabViewList = new List<CabView>();
             }
             if (TractionMotorType == TractionMotorTypes.AC)
             {
-                InductionMotor motor = new InductionMotor(LocomotiveAxle, this);
+                foreach (var axle in LocomotiveAxles)
+                {
+                    InductionMotor motor = new InductionMotor(axle, this);
+                    TractionMotors.Add(motor);
+                }
             }
 
 
@@ -1746,8 +1749,8 @@ public List<CabView> CabViewList = new List<CabView>();
         public override void InitializeMoving()
         {
             base.InitializeMoving();
-            LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS);
             AdhesionFilter.Reset(0.5f);
+            LocomotiveAxles.InitializeMoving();
             AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
             float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
             if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
@@ -1992,29 +1995,6 @@ public List<CabView> CabViewList = new List<CabView>();
                 mpc.Update(elapsedClockSeconds);
             }
 
-            ApplyDirectionToTractiveForce();
-
-            // Calculate the total motive force for the locomotive - ie TractiveForce (driving force) + Dynamic Braking force.
-            // Note typically only one of the above will only ever be non-zero at the one time.
-            // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
-            MotiveForceN = TractiveForceN;
-
-            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
-            {
-                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
-                if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
-                {
-                    DynamicBrakeForceN = f * (1 - PowerReduction);
-                    MotiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
-                }
-                else
-                {
-                    DynamicBrakeForceN = 0f;
-                }
-            }
-            else
-                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
-                
 
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
 
@@ -2438,6 +2418,57 @@ public List<CabView> CabViewList = new List<CabView>();
                     w = 0;
                 AverageForceN = w * AverageForceN + (1 - w) * TractiveForceN;
             }
+
+            ApplyDirectionToTractiveForce();
+
+            // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
+            // Note typically only one of the above will only ever be non-zero at the one time.
+            // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
+
+            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            {
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
+                if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
+                {
+                    DynamicBrakeForceN = f * (1 - PowerReduction);
+                    TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
+                }
+                else
+                {
+                    DynamicBrakeForceN = 0f;
+                }
+            }
+            else
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
+
+            foreach (var motor in TractionMotors)
+            {
+                motor.UpdateTractiveForce(elapsedClockSeconds, t);
+            }
+
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
+            {
+                UpdateAxleDriveForce();
+            }
+        }
+
+        protected virtual void UpdateAxleDriveForce()
+        {
+            foreach (var axle in LocomotiveAxles)
+            {
+                if (axle.DriveType == AxleDriveType.ForceDriven)
+                {
+                    axle.DriveForceN = TractiveForceN / LocomotiveAxles.Count;
+                    if (SlipControlSystem == SlipControlType.Full)
+                    {
+                        // Simple slip control
+                        // Motive force is reduced to the maximum adhesive force
+                        // In wheelslip situations, motive force is set to zero
+                        axle.DriveForceN = Math.Sign(axle.DriveForceN) * Math.Min(axle.AdhesionLimit * axle.AxleWeightN, Math.Abs(axle.DriveForceN));
+                        if (axle.IsWheelSlip) axle.DriveForceN = 0;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -2485,7 +2516,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void ConfirmWheelslip(float elapsedClockSeconds)
         {
-            if (elapsedClockSeconds > 0 && Simulator.GameTime - LocomotiveAxle.ResetTime > 5)
+            if (elapsedClockSeconds > 0 && Simulator.GameTime - LocomotiveAxles.ResetTime > 5)
             {
                 if (AdvancedAdhesionModel)
                 {
@@ -2784,47 +2815,28 @@ public List<CabView> CabViewList = new List<CabView>();
                     else
                         AxleInertiaKgm2 = 2000.0f;
                 }
+                foreach (var axle in LocomotiveAxles)
+                {
                 //Limit the inertia to 40000 kgm2
-                LocomotiveAxle.InertiaKgm2 = Math.Min(AxleInertiaKgm2, 40000);
-                LocomotiveAxle.DampingNs = MassKG / 1000.0f;
-                LocomotiveAxle.FrictionN = MassKG / 1000.0f;
-
-                if (LocomotiveAxle.Motor is InductionMotor motor)
-                {
-                    motor.SlipControl = SlipControlSystem == SlipControlType.Full;
-                    motor.TargetForceN = MotiveForceN;
-                    motor.EngineMaxSpeedMpS = MaxSpeedMpS;
+                    axle.InertiaKgm2 = Math.Min(AxleInertiaKgm2, 40000);
+                    axle.DampingNs = MassKG / 1000.0f;
+                    axle.FrictionN = MassKG / 1000.0f;
+                    axle.AxleWeightN = 9.81f * DrvWheelWeightKg/LocomotiveAxles.Count;;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
                 }
-                else
-                {
-                    if (SlipControlSystem == SlipControlType.Full)
-                    {
-                        // Simple slip control
-                        // Motive force is reduced to the maximum adhesive force
-                        // In wheelslip situations, motive force is set to zero
-                        MotiveForceN = Math.Sign(MotiveForceN) * Math.Min(LocomotiveAxle.AdhesionLimit * LocomotiveAxle.AxleWeightN, Math.Abs(MotiveForceN));
-                        if (LocomotiveAxle.IsWheelSlip) MotiveForceN = 0;
-                    }
-                }
-
-                LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
             }
+            foreach (var axle in LocomotiveAxles)
+                {
+                axle.BrakeRetardForceN = BrakeRetardForceN/LocomotiveAxles.Count;
+                axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
+                axle.WheelRadiusM = DriverWheelRadiusM;
+                }
+            LocomotiveAxles.Update(elapsedClockSeconds);
+            MotiveForceN = LocomotiveAxles.CompensatedForceN;
 
-            //Set axle model parameters
-
-            // Inputs
-            LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
-            LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
-            LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
-            LocomotiveAxle.WheelRadiusM = DriverWheelRadiusM;
-
-            LocomotiveAxle.Update(elapsedClockSeconds); //Main updater of the axle model
-
-            MotiveForceN = LocomotiveAxle.CompensatedAxleForceN;
             if (elapsedClockSeconds > 0)
             {
-                WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
-                WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning && SlipControlSystem != SlipControlType.Full;
+                WheelSlip = LocomotiveAxles.IsWheelSlip;
+                WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
             }
             
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.
@@ -2837,17 +2849,17 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 else
                 {
-                    WheelSpeedSlipMpS = LocomotiveAxle.AxleSpeedMpS;
+                    WheelSpeedSlipMpS = LocomotiveAxles[0].AxleSpeedMpS;
                     WheelSpeedMpS = SpeedMpS;
                 }
             }
-            else WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS; 
+            else WheelSpeedMpS = LocomotiveAxles[0].AxleSpeedMpS; 
 
         }
 
         public void SimpleAdhesion()
         {
-
+            MotiveForceN = TractiveForceN;
             // Check if the following few lines are required???
             if (LocoNumDrvAxles <= 0)
             {
@@ -3293,7 +3305,10 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 SaveAdhesionFilter = AdhesionFilter.Filter(BaseFrictionCoefficientFactor + AdhesionRandom, elapsedClockSeconds);
                 AdhesionConditions = MathHelper.Clamp(AdhesionMultiplier * SaveAdhesionFilter, 0.05f, 2.5f);
-                LocomotiveAxle.AdhesionLimit = AdhesionConditions * BaseuMax;
+                foreach (var axle in LocomotiveAxles)
+                {
+                    axle.AdhesionLimit = AdhesionConditions * BaseuMax;
+                }
             }
 
            // Set adhesion conditions for other steam locomotives
@@ -3303,7 +3318,7 @@ public List<CabView> CabViewList = new List<CabView>();
             }
             else
             {
-                LocomotiveCoefficientFrictionHUD = LocomotiveAxle.AdhesionLimit; // Set display value for HUD - diesel
+                LocomotiveCoefficientFrictionHUD = LocomotiveAxles[0].AdhesionLimit; // Set display value for HUD - diesel
             }
         }
 
@@ -5011,7 +5026,12 @@ public List<CabView> CabViewList = new List<CabView>();
                 case Event.VacuumExhausterOn: { if(FastVacuumExhausterFitted) VacuumExhausterPressed = true; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.VacuumExhauster, CabSetting.On); break; }
                 case Event.VacuumExhausterOff: { if (FastVacuumExhausterFitted) VacuumExhausterPressed = false; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.VacuumExhauster, CabSetting.Off); break; }
 
-                case Event._ResetWheelSlip: { LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS); ThrottleController.SetValue(0.0f); break; }
+                case Event._ResetWheelSlip:
+                    {
+                        LocomotiveAxles.InitializeMoving();
+                        ThrottleController.SetValue(0.0f);
+                        break;
+                    }
                 case Event.TrainBrakePressureDecrease:
                 case Event.TrainBrakePressureIncrease:
                     {
@@ -5119,7 +5139,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             direction = ((CVCGauge)cvc).Direction;
                         if (MaxCurrentA == 0)
                             MaxCurrentA = (float)cvc.MaxValue;
-                        if (LocomotiveAxle != null)
+                        if (LocomotiveAxles.Count > 0)
                         {
                             data = 0.0f;
                             if (ThrottlePercent > 0)
@@ -5129,7 +5149,7 @@ public List<CabView> CabViewList = new List<CabView>();
                                 if (FilteredMotiveForceN != 0)
                                     data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
                                 else
-                                    data = this.LocomotiveAxle.DriveForceN / MaxForceN * rangeFactor;
+                                    data = this.LocomotiveAxles[cvc.ControlId].DriveForceN / MaxForceN * rangeFactor;
                                 data = Math.Abs(data);
                             }
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
@@ -5175,7 +5195,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (FilteredMotiveForceN != 0)
                                 data = this.FilteredMotiveForceN / MaxForceN * MaxCurrentA;
                             else
-                                data = this.LocomotiveAxle.DriveForceN / MaxForceN * MaxCurrentA;
+                                data = this.LocomotiveAxles[cvc.ControlId].DriveForceN / MaxForceN * MaxCurrentA;
                             data = Math.Abs(data);
                         }
                         if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
@@ -5196,7 +5216,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         if (FilteredMotiveForceN != 0)
                             data = this.FilteredMotiveForceN;
                         else
-                            data = this.LocomotiveAxle.DriveForceN;
+                            data = this.LocomotiveAxles[cvc.ControlId].DriveForceN;
                         if (DynamicBrakePercent > 0)
                         {
                             data = DynamicBrakeForceN;
@@ -5244,7 +5264,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         if (FilteredMotiveForceN != 0)
                             data = Math.Abs(this.FilteredMotiveForceN);
                         else
-                            data = Math.Abs(this.LocomotiveAxle.DriveForceN);
+                            data = Math.Abs(this.LocomotiveAxles[cvc.ControlId].DriveForceN);
                         if (DynamicBrakePercent > 0)
                         {
                             data = -Math.Abs(DynamicBrakeForceN);

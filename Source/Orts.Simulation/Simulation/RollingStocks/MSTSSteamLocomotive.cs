@@ -2074,7 +2074,6 @@ namespace Orts.Simulation.RollingStocks
             UpdateBoiler(elapsedClockSeconds);
             UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedMpS);
             UpdateMotion(elapsedClockSeconds, cutoff, absSpeedMpS);
-            UpdateTractiveForce(elapsedClockSeconds, 0, 0, 0);
             UpdateAuxiliaries(elapsedClockSeconds, absSpeedMpS);
             #endregion
 
@@ -2109,7 +2108,7 @@ namespace Orts.Simulation.RollingStocks
 //                    Trace.TraceInformation("NumCyl - {0} i {1}", NumCylinders, i);
                     
                     // float realCrankAngleRad = (float)(LocomotiveAxle.AxlePositionRad + i * WheelCrankAngleDiffRad[i]);
-                    float realCrankAngleRad = (float)(LocomotiveAxle.AxlePositionRad);
+                    float realCrankAngleRad = (float)(LocomotiveAxles[0].AxlePositionRad);
                     float normalisedCrankAngleRad = 0;
 
                     realCrankAngleRad = (float)(MathHelper.WrapAngle(realCrankAngleRad));
@@ -5086,7 +5085,7 @@ namespace Orts.Simulation.RollingStocks
 
                 for (int i = 0; i < NumCylinders; i++)
                 {
-                    float crankAngleRad = (float)(LocomotiveAxle.AxlePositionRad + i * WheelCrankAngleDiffRad[i]);
+                    float crankAngleRad = (float)(LocomotiveAxles[0].AxlePositionRad + i * WheelCrankAngleDiffRad[i]);
 
                     testCrankAngle = crankAngleRad;
 
@@ -5325,7 +5324,7 @@ namespace Orts.Simulation.RollingStocks
 #endif
                 }
 
-                LocomotiveAxle.AxleWeightN = totalDrvWeightN + 9.81f * DrvWheelWeightKg;
+                LocomotiveAxles[0].AxleWeightN = totalDrvWeightN + 9.81f * DrvWheelWeightKg;
                 SteamStaticWheelForce = N.ToLbf(totalDrvWeightN + 9.81f * DrvWheelWeightKg) * LocomotiveCoefficientFrictionHUD;
 /*
                 if (DisplayTangentialWheelTreadForceLbf > SteamStaticWheelForce)
@@ -5396,6 +5395,10 @@ namespace Orts.Simulation.RollingStocks
                     absStartTractiveEffortN = Math.Abs(TractiveForceN); // update to new maximum TE
                 }
             }
+
+            ApplyDirectionToTractiveForce();
+            
+            LocomotiveAxles[0].DriveForceN = TractiveForceN;
         }
 
 
@@ -5433,10 +5436,10 @@ namespace Orts.Simulation.RollingStocks
 
                 float TotalMomentInertia = TotalWheelMomentofInertia + RodMomentInertia;
 
-                LocomotiveAxle.InertiaKgm2 = TotalMomentInertia;
-                LocomotiveAxle.DampingNs = 9.81f * DrvWheelWeightKg / 200;
+                LocomotiveAxles[0].InertiaKgm2 = TotalMomentInertia;
+                LocomotiveAxles[0].DampingNs = 9.81f * DrvWheelWeightKg / 200;
                 // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
-                LocomotiveAxle.FrictionN = N.FromLbf(3.8f * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / Me.ToIn(DrvWheelDiaM));
+                LocomotiveAxles[0].FrictionN = N.FromLbf(3.8f * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / Me.ToIn(DrvWheelDiaM));
 
                 if (WheelSlip && AdvancedAdhesionModel)
                     {
