@@ -676,11 +676,6 @@ namespace Orts.Simulation.RollingStocks
                 if (TractionMotorType == TractionMotorTypes.AC)
                 {
                     AbsTractionSpeedMpS = AbsSpeedMpS;
-                    if (AbsWheelSpeedMpS > 1.1 * MaxSpeedMpS)
-                    {
-                        AverageForceN = TractiveForceN = 0;
-                        return;
-                    }
                 }
                 else
                 {
@@ -770,6 +765,53 @@ namespace Orts.Simulation.RollingStocks
             {
                 SignalEvent(Event.EnginePowerOff);
                 DieselEngines.HandleEvent(PowerSupplyEvent.StopEngine);
+            }
+
+            ApplyDirectionToTractiveForce();
+
+            // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
+            // Note typically only one of the above will only ever be non-zero at the one time.
+            // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
+
+            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            {
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
+                if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
+                {
+                    DynamicBrakeForceN = f * (1 - PowerReduction);
+                    TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
+                }
+                else
+                {
+                    DynamicBrakeForceN = 0f;
+                }
+            }
+            else
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
+
+            foreach (var motor in TractionMotors)
+            {
+                motor.UpdateTractiveForce(elapsedClockSeconds, t);
+            }
+
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
+            {
+                UpdateAxleDriveForce();
+            }
+        }
+
+        protected override void UpdateAxleDriveForce()
+        {
+            /* TODO: connect different engines to different axles
+            if (DieselEngines.HasGearBox && DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+            {
+                foreach (var de in DieselEngines)
+                {
+                }
+            }
+            else */
+            {
+                base.UpdateAxleDriveForce();
             }
         }
 
@@ -1088,7 +1130,7 @@ namespace Orts.Simulation.RollingStocks
             if (FilteredMotiveForceN != 0)
                 data = Math.Abs(this.FilteredMotiveForceN);
             else
-                data = Math.Abs(this.LocomotiveAxle.DriveForceN);
+                data = Math.Abs(TractiveForceN);
             if (DynamicBrakePercent > 0)
             {
                 data = -Math.Abs(DynamicBrakeForceN);
