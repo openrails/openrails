@@ -50,7 +50,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     /// Sums individual axle values to create a total value
     /// </summary>
 
-    public class Axles : IEnumerable<Axle>, ISubSystem<Axles>
+    public class Axles : ISubSystem<Axles>
     {
         /// <summary>
         /// List of axles
@@ -249,11 +249,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 axle.Update(elapsedClockSeconds);
             }
         }
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return AxleList.GetEnumerator();
-        }
-        IEnumerator<Axle> IEnumerable<Axle>.GetEnumerator()
+        public List<Axle>.Enumerator GetEnumerator()
         {
             return AxleList.GetEnumerator();
         }
