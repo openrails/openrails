@@ -453,7 +453,6 @@ public List<CabView> CabViewList = new List<CabView>();
         public ILocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ILocomotivePowerSupply;
         public ScriptedTrainControlSystem TrainControlSystem;
 
-        public Axles LocomotiveAxles;
         public IIRFilter CurrentFilter;
         public IIRFilter AdhesionFilter;
         public float SaveAdhesionFilter;
@@ -480,7 +479,6 @@ public List<CabView> CabViewList = new List<CabView>();
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
             BrakeCutsPowerAtBrakeCylinderPressurePSI = 4.0f;
 
-            LocomotiveAxles = new Axles(this);
             LocomotiveAxles.Add(new Axle());
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1f), 0.001f);
@@ -1229,21 +1227,8 @@ public List<CabView> CabViewList = new List<CabView>();
             WaterScoopFillElevationM = locoCopy.WaterScoopFillElevationM;
             WaterScoopDepthM = locoCopy.WaterScoopDepthM;
             WaterScoopWidthM = locoCopy.WaterScoopWidthM;
-            MoveParamsToAxle();
             CruiseControl = locoCopy.CruiseControl?.Clone(this);
             MultiPositionControllers = locoCopy.CloneMPC(this);
-        }
-
-        /// <summary>
-        /// We are moving parameters from locomotive to axle. 
-        /// </summary>
-        public void MoveParamsToAxle()
-        {
-            foreach (var axle in LocomotiveAxles)
-            {
-                axle.SlipWarningTresholdPercent = SlipWarningThresholdPercent;
-                axle.AdhesionK = AdhesionK;
-            }
         }
 
         /// <summary>
@@ -1294,7 +1279,6 @@ public List<CabView> CabViewList = new List<CabView>();
             LocomotivePowerSupply?.Save(outf);
             TrainControlSystem.Save(outf);
 
-            LocomotiveAxles.Save(outf);
             CruiseControl?.Save(outf);
         }
 
@@ -1348,9 +1332,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
             LocomotivePowerSupply?.Restore(inf);
             TrainControlSystem.Restore(inf);
-                        
-            MoveParamsToAxle();
-            LocomotiveAxles.Restore(inf);
+
             CruiseControl?.Restore(inf);
         }
 
@@ -1432,7 +1414,6 @@ public List<CabView> CabViewList = new List<CabView>();
             BrakemanBrakeController.Initialize();
             LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
-            LocomotiveAxles.Initialize();
             CruiseControl?.Initialize();
             foreach (MultiPositionController mpc in MultiPositionControllers)
             {
@@ -1491,6 +1472,18 @@ public List<CabView> CabViewList = new List<CabView>();
                     Trace.TraceInformation("Number of Locomotive Drive Axles set to default value of {0}", LocoNumDrvAxles);
                 }
             }
+            //Compute axle inertia from parameters if possible
+            if (AxleInertiaKgm2 <= 0) // if no axleinertia value supplied in ENG file, calculate axleinertia value.
+            {
+                if (LocoNumDrvAxles > 0 && DriverWheelRadiusM > 0)
+                {
+                    float radiusSquared = DriverWheelRadiusM * DriverWheelRadiusM;
+                    float wheelMass = 500 * radiusSquared / (0.5f * 0.5f);
+                    AxleInertiaKgm2 = Math.Min(LocoNumDrvAxles * wheelMass * radiusSquared + 500, 40000);
+                }
+                else
+                    AxleInertiaKgm2 = 2000.0f;
+            }
             if (TractionMotorType == TractionMotorTypes.AC)
             {
                 foreach (var axle in LocomotiveAxles)
@@ -1499,7 +1492,6 @@ public List<CabView> CabViewList = new List<CabView>();
                     TractionMotors.Add(motor);
                 }
             }
-
 
             // Calculate minimum speed to pickup water
             const float Aconst = 2;
@@ -1748,9 +1740,8 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public override void InitializeMoving()
         {
-            base.InitializeMoving();
             AdhesionFilter.Reset(0.5f);
-            LocomotiveAxles.InitializeMoving();
+            base.InitializeMoving();
             AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
             float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
             if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
@@ -2796,34 +2787,6 @@ public List<CabView> CabViewList = new List<CabView>();
                 return;
             }
 
-            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
-            {
-                // Managed in MSTSSteamLocomotive implementation of AdvancedAdhesion
-            }
-            else
-            {
-
-                //Compute axle inertia from parameters if possible
-                if (AxleInertiaKgm2 <= 0) // if no axleinertia value supplied in ENG file, calculate axleinertia value.
-                {
-                    if (LocoNumDrvAxles > 0 && DriverWheelRadiusM > 0)
-                    {
-                        float radiusSquared = DriverWheelRadiusM * DriverWheelRadiusM;
-                        float wheelMass = 500 * radiusSquared / (0.5f * 0.5f);
-                        AxleInertiaKgm2 = LocoNumDrvAxles * wheelMass * radiusSquared + 500;
-                    }
-                    else
-                        AxleInertiaKgm2 = 2000.0f;
-                }
-                foreach (var axle in LocomotiveAxles)
-                {
-                    //Limit the inertia to 40000 kgm2
-                    axle.InertiaKgm2 = Math.Min(AxleInertiaKgm2, 40000);
-                    axle.DampingNs = MassKG / 1000.0f;
-                    axle.FrictionN = MassKG / 1000.0f;
-                    axle.AxleWeightN = 9.81f * DrvWheelWeightKg/LocomotiveAxles.Count;;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
-                }
-            }
             foreach (var axle in LocomotiveAxles)
             {
                 axle.BrakeRetardForceN = BrakeRetardForceN/LocomotiveAxles.Count;
