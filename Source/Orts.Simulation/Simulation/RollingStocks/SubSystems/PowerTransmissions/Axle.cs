@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using ORTS.Common;
+using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using SharpDX.Direct2D1;
 
@@ -179,6 +180,34 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             AxleList.Add(axle);
         }
+
+        /// <summary>
+        /// Parses all the parameters within the ENG file
+        /// </summary>
+        /// <param name="stf">reference to the ENG file reader</param>
+        public void Parse(string lowercasetoken, STFReader stf)
+        {
+            switch (lowercasetoken)
+            {
+                case "wagon(ortsadhesion(wheelset":
+                    AxleList.Clear();
+                    stf.MustMatch("(");
+                    stf.ParseBlock(
+                        new[] {
+                            new STFReader.TokenProcessor(
+                                "axle",
+                                () => {
+                                    var axle = new Axle();
+                                    AxleList.Add(axle);
+                                    axle.Parse(stf);
+                                }
+                            )
+                        });
+                    if (AxleList.Count == 0)
+                        throw new InvalidDataException("Wheelset block with no axles");
+                    break;
+            }
+        }
         public void Copy(Axles other)
         {
             AxleList = new List<Axle>();
@@ -195,6 +224,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             ResetTime = Car.Simulator.GameTime;
             foreach (var axle in AxleList)
             {
+                if (Car is MSTSLocomotive locomotive)
+                {
+                    if (axle.InertiaKgm2 <= 0) axle.InertiaKgm2 = locomotive.AxleInertiaKgm2 / AxleList.Count;
+                    if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * locomotive.DrvWheelWeightKg / AxleList.Count;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
+                    if (axle.DampingNs <= 0) axle.DampingNs = locomotive.MassKG / 1000.0f / AxleList.Count;
+                    if (axle.FrictionN <= 0) axle.FrictionN = locomotive.MassKG / 1000.0f / AxleList.Count;
+                }
                 axle.Initialize();
             }
         }
@@ -604,10 +640,33 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxleSpeedMpS = TrainSpeedMpS;
             motor?.InitializeMoving();
         }
+        public void Parse(STFReader stf)
+        {
+            stf.MustMatch("(");
+            while (!stf.EndOfBlock())
+            {
+                switch (stf.ReadItem().ToLower())
+                {
+                    case "ortsradius":
+                        WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
+                        break;
+                    case "ortsinertia":
+                        InertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.RotationalInertia, null);
+                        break;
+                    case "weight":
+                        AxleWeightN = 9.81f * stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
+                        break;
+                    case "(":
+                        stf.SkipRestOfBlock();
+                        break;
+                }
+            }
+        }
         public void Copy(Axle other)
         {
-            // TODO
-            motor?.Copy(other.motor);
+            WheelRadiusM = other.WheelRadiusM;
+            InertiaKgm2 = other.InertiaKgm2;
+            AxleWeightN = other.AxleWeightN;
         }
 
         /// <summary>
