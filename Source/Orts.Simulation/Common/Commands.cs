@@ -1135,14 +1135,16 @@ namespace Orts.Common
                         {
                             Receiver.Headlight = 1;
                             Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Neutral);
+                            Receiver.SignalEvent(Event.LightSwitchToggle);
                         }
                         break;
                     case 1:
                         Receiver.Headlight = 2;
                         Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.On);
+                        Receiver.SignalEvent(Event.LightSwitchToggle);
                         break;
                 }
-                Receiver.SignalEvent(Event.LightSwitchToggle);
+                
             }
             else
             {
@@ -1153,14 +1155,15 @@ namespace Orts.Common
                         {
                             Receiver.Headlight = 0;
                             Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Off);
+                            Receiver.SignalEvent(Event.LightSwitchToggle);
                         }
                         break;
                     case 2:
                         Receiver.Headlight = 1;
                         Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Neutral);
+                        Receiver.SignalEvent(Event.LightSwitchToggle);
                         break;
                 }
-                Receiver.SignalEvent(Event.LightSwitchToggle);
             }
         }
     }
