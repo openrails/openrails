@@ -1832,8 +1832,8 @@ public List<CabView> CabViewList = new List<CabView>();
                         float threshold = 100;
                         if (diff > threshold && DynamicBrakeIntervention < 1)
                             DynamicBrakeIntervention = Math.Min(DynamicBrakeIntervention + elapsedClockSeconds, 1);
-                    else if (diff < -threshold)
-                            DynamicBrakeIntervention -= elapsedClockSeconds;
+                        else if (diff < -threshold && DynamicBrakeIntervention > 0.01f)
+                            DynamicBrakeIntervention = Math.Max(DynamicBrakeIntervention - elapsedClockSeconds, 0.01f);
                     }
                     else
                     {
