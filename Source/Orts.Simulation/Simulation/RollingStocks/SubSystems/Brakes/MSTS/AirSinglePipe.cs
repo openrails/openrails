@@ -591,7 +591,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
                             var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
                             var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                            if (localBrakeForceN > requiredBrakeForceN * 0.85f)
+                            if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.MaxBrakeForceN)
                             {
                                 isolateAutoBrake = true;
                                 if (loco.DynamicBrakePartialBailOff)
