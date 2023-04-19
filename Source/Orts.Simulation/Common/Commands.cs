@@ -2268,9 +2268,9 @@ namespace Orts.Common
         {
             if (Receiver?.Train != null)
             {
+                var wagonFilePath = PickedEOTType.ToLower();
                 if (ToState)
                 {
-                    var wagonFilePath = PickedEOTType.ToLower();
                     try
                     {
                         EOT eot = (EOT)RollingStock.Load(Receiver.Train.Simulator, Receiver.Train, wagonFilePath);
@@ -2287,8 +2287,14 @@ namespace Orts.Common
                 }
                 else
                 {
-                    Receiver.Train.RecalculateRearTDBTraveller();
                     var car = Receiver.Train.Cars[Receiver.Train.Cars.Count - 1];
+                    if (wagonFilePath != car.WagFilePath.ToLower())
+                    {
+                        car = Receiver.Train.Cars[0];
+                        if (Receiver.Train.LeadLocomotive != null) Receiver.Train.LeadLocomotiveIndex--;
+                    }
+                    else
+                        Receiver.Train.RecalculateRearTDBTraveller();
                     car.Train = null;
                     car.IsPartOfActiveTrain = false;  // to stop sounds
                     Receiver.Train.Cars.Remove(car);
