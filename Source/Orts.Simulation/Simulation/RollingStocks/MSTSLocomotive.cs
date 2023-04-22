@@ -1734,8 +1734,8 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public override void InitializeMoving()
         {
-            AdhesionFilter.Reset(0.5f);
             base.InitializeMoving();
+            AdhesionFilter.Reset(0.5f);
             AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
             float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
             if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;

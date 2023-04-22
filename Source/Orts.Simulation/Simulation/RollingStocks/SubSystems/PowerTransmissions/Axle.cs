@@ -269,7 +269,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     AxleList.Add(new Axle());
                     AxleList[i].Initialize();
                 }
-
             }
             foreach (var axle in AxleList)
                 axle.Restore(inf);
@@ -678,6 +677,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             previousSlipPercent = inf.ReadSingle();
             previousSlipSpeedMpS = inf.ReadSingle();
             AxleForceN = inf.ReadSingle();
+            AxleSpeedMpS = inf.ReadSingle();
         }
 
         /// <summary>
@@ -689,6 +689,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             outf.Write(previousSlipPercent);
             outf.Write(previousSlipSpeedMpS);
             outf.Write(AxleForceN);
+            outf.Write(AxleSpeedMpS);
         }
 
         /// <summary>
