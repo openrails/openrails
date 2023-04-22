@@ -1368,7 +1368,7 @@ A level below 70% uncovers the firebox crown. In real life, this is a catastroph
 which melts the fusible plugs in the crown and that releases steam into the firebox 
 and from there onto the footplate.
 
-Open Rails does not model the steam but drops the boiler pressure and the fire
+Open Rails does not model the steam release but drops the boiler pressure and the fire
 and issues a confirmation message: 
 "Water level dropped too far. Plug has fused and loco has failed."
 Basically the loco is coasting thereafter and nothing can be done to recover.
@@ -1504,6 +1504,9 @@ drop whilst the fire is building up. Similarly if the steam usage is dropped
 (due to a throttle decrease, such as approaching a station) then the fire
 takes time to reduce in heat, thus the boiler pressure can become excessive.
 
+When the AI Fireman is operating in this simplistic manner, excess pressure 
+is bled off silently and the safety valve operation is suppressed.
+
 To give the player a little bit more control over this, and to facilitate
 the maintaining of the boiler pressure the following key controls have been
 added to the AI Fireman function:
@@ -1521,10 +1524,13 @@ boiler pressure from exceeding the maximum. This function will be turned off
 if AIFireOn, AIFireReset are triggered or if boiler pressure or BoilerHeat
 drops too low.
 
+Once AIFireOn or AIFireOff have been used, the safety valves work normally
+as for manual firing.
+
 AIFireReset - (``<Ctrl+Alt+H>``) - turns off both of the above
 functions when desired.
 
-If theses controls are not used, then the AI fireman operates in the same
+If these controls are not used, then the AI fireman operates in the same
 fashion as previously.
 
 Steam Boiler Heat Radiation Loss
