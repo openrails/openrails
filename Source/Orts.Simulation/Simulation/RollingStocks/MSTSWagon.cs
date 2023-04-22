@@ -1012,10 +1012,9 @@ namespace Orts.Simulation.RollingStocks
 
         public override void InitializeMoving()
         {
+            base.InitializeMoving();
             PassengerCarPowerSupply?.InitializeMoving();
             LocomotiveAxles.InitializeMoving();
-
-            base.InitializeMoving();
         }
 
         /// <summary>
