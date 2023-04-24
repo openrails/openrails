@@ -317,8 +317,11 @@ namespace ORTS.Common
         /// </summary>
         public void Reset()
         {
-            Array.Clear(x);
-            Array.Clear(y);
+            for (int i = 0; i < x.Length; i++)
+            {
+                x[i] = 0.0f;
+                y[i] = 0.0f;
+            }
         }
         /// <summary>
         /// Resets all buffers of the filter with given initial value
