@@ -2341,6 +2341,21 @@ brake features.
 Brake system charging time depends on the train length as it should, but
 at the moment there is no modeling of main reservoirs and compressors.
 
+For EP brakes, two variants are available:
+
+- If ``Wagon(ORTSEPBrakeControlsBrakePipe`` is set to 0 (default situation),
+an electrical wire (application wire) provides simultaneous fast brake application
+along the train. Release time will be fast if standard air brake haven't been applied,
+otherwise air brakes will determine release time. Typically this system is present
+with Train Brake Controllers having an EP-only application section, followed by an
+air application portion which serves as a fallback system.
+- If ``Wagon(ORTSEPBrakeControlsBrakePipe`` is set to 1, brake pipe is charged and discharged
+simultaneously at each car in the train, providing fast and uniform brake application and release.
+The locomotive instructs the cars to "charge" or "discharge" the brake pipe to reach
+a reference pressure. Standard triple valves or distributors will follow brake pipe variations
+actuating the cylinders. This system is sometimes called "UIC EP brake". It is typically the system
+used in high speed trains.
+
 .. _physics-brake-controller:
 
 Train Brake Controller Positions
