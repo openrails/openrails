@@ -343,7 +343,7 @@ Dedicated buttons for brake controllers
 .. index::
     single: ORTS_BAILOFF
 
-In addition to the BailOff keyboard command, a cabview control named
+In addition to the BailOff keyboard command ``</>``, a cabview control named
 ORTS_BAILOFF is available. It is used to release the brakes of the engine
 while keeping the train brakes applied.
 
@@ -352,13 +352,14 @@ while keeping the train brakes applied.
 
 In some brake controllers, there is a button that provides a full and quick
 release of the train brake when pressed. OR supports this via the
-ORTS_QUICKRELEASE cabview control.
+ORTS_QUICKRELEASE cabview control, or alternatively, pressing ``<Ctrl+/>``.
 
 .. index::
     single: ORTS_OVERCHARGE
 
 Some brake controllers have a dedicated button to overcharge the brake pipe.
-The ORTS_OVERCHARGE cabview control can be used for this purpose.
+The ORTS_OVERCHARGE cabview control can be used for this purpose. Alternatively
+the keyboard command ``<Ctrl+Shift+/>`` is available.
 
 Here is an example of one of this controls within the .cvf file::
 
