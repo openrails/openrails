@@ -52,6 +52,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float BrakeInsensitivityPSIpS = 0;
         protected float EmergencyValveActuationRatePSIpS = 0;
         protected float EmergencyDumpValveRatePSIpS = 0;
+        protected float EmergencyDumpValveTimerS = 120;
+        protected float? EmergencyDumpStartTime;
         protected float EmergResChargingRatePSIpS = 1.684f;
         protected float EmergAuxVolumeRatio = 1.4f;
         protected string DebugType = string.Empty;
@@ -118,6 +120,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             BrakeInsensitivityPSIpS = thiscopy.BrakeInsensitivityPSIpS;
             EmergencyValveActuationRatePSIpS = thiscopy.EmergencyValveActuationRatePSIpS;
             EmergencyDumpValveRatePSIpS = thiscopy.EmergencyDumpValveRatePSIpS;
+            EmergencyDumpValveTimerS = thiscopy.EmergencyDumpValveTimerS;
             EmergResChargingRatePSIpS = thiscopy.EmergResChargingRatePSIpS;
             EmergAuxVolumeRatio = thiscopy.EmergAuxVolumeRatio;
             TwoPipes = thiscopy.TwoPipes;
@@ -235,6 +238,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortsbrakeinsensitivity": BrakeInsensitivityPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsemergencyvalveactuationrate": EmergencyValveActuationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 15f); break;
                 case "wagon(ortsemergencydumpvalverate": EmergencyDumpValveRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 15f); break;
+                case "wagon(ortsemergencydumpvalvetimer": EmergencyDumpValveTimerS = stf.ReadFloatBlock(STFReader.UNITS.Time, 120.0f); break;
                 case "wagon(ortsmainrespipeauxrescharging": MRPAuxResCharging = this is AirTwinPipe && stf.ReadBoolBlock(true); break;
             }
         }
@@ -346,6 +350,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public void UpdateTripleValveState(float elapsedClockSeconds)
         {
+            var prevState = TripleValveState;
             var valveType = (Car as MSTSWagon).BrakeValve;
             if (valveType == MSTSWagon.BrakeValveType.Distributor)
             {
@@ -377,6 +382,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 TripleValveState = ValveState.Release;
             }
+            if (TripleValveState == ValveState.Emergency)
+            {
+                if (prevState != ValveState.Emergency)
+                {
+                    EmergencyDumpStartTime = (float)Car.Simulator.GameTime;
+                    Car.SignalEvent(Event.EmergencyVentValveOn);
+                }
+            }
+            else EmergencyDumpStartTime = null;
             prevBrakePipePressurePSI = BrakeLine1PressurePSI;
         }
 
@@ -446,7 +460,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         EmergResPressurePSI -= dp;
                         AuxResPressurePSI += dp * EmergAuxVolumeRatio;
                     }
-                    if (EmergencyDumpValveRatePSIpS > 0)
+                    if (EmergencyDumpValveTimerS == 0)
+                    {
+                        if (BrakeLine1PressurePSI < 1) EmergencyDumpStartTime = null;
+                    }
+                    else if (Car.Simulator.GameTime - EmergencyDumpStartTime > EmergencyDumpValveTimerS)
+                    {
+                        EmergencyDumpStartTime = null;
+                    }
+                    if (EmergencyDumpValveRatePSIpS > 0 && EmergencyDumpStartTime != null)
                     {
                         BrakeLine1PressurePSI -= elapsedClockSeconds * EmergencyDumpValveRatePSIpS;
                         if (BrakeLine1PressurePSI < 0)
