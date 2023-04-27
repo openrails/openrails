@@ -2945,6 +2945,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: BrakePipeVolume
    single: ORTSEmergencyValveActuationRate
    single: ORTSEmergencyDumpValveRate
+   single: ORTSEmergencyDumpValveTimer
    single: ORTSMainResPipeAuxResCharging
    single: ORTSMainResChargingRate
    single: ORTSEngineBrakeReleaseRate
@@ -2975,6 +2976,9 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   emergency mode.
 - ``Wagon(ORTSEmergencyDumpValveRate)``-- Rate at which BP is locally discharged
   at every wagon during an emergency brake application.
+- ``Wagon(ORTSEmergencyDumpValveTimer)``-- Timer for emergency dump valve to close
+  after it is activated. If set to 0, it will close as soon as BP is discharged.
+  Default value will prevent BP from being charged for 2 minutes.
 - ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
   for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
   reservoirs. If set to false, the main reservoir pipe will not be used
