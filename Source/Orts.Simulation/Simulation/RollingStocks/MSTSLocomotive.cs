@@ -2770,16 +2770,8 @@ public List<CabView> CabViewList = new List<CabView>();
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
             {
-                if (AbsSpeedMpS <= 0.15 && !WheelSlip)
-                {
-                    WheelSpeedSlipMpS = SpeedMpS;
-                    WheelSpeedMpS = SpeedMpS;
-                }
-                else
-                {
-                    WheelSpeedSlipMpS = LocomotiveAxles[0].AxleSpeedMpS;
-                    WheelSpeedMpS = SpeedMpS;
-                }
+                WheelSpeedSlipMpS = LocomotiveAxles[0].AxleSpeedMpS;
+                WheelSpeedMpS = SpeedMpS;
             }
             else WheelSpeedMpS = LocomotiveAxles[0].AxleSpeedMpS; 
 
