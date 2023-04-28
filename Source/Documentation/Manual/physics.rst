@@ -2898,11 +2898,10 @@ the following parameters will adjust the behaviour of air brakes:
    
 - ``Engine(DynamicBrakeHasAutoBailOff`` -- Set to 1 if brake cylinders are
   emptied while dynamic brake is active
-- ``Engine(ORTSDynamicBrakesHasPartialBailOff`` -- Only used if the parameter
-  above is set to 1. When ORTSDynamicBrakesHasPartialBailOff is set to 0 (default),
-  air brakes will be fully released when dynamic brake is providing at least the 85%
-  of the total train brake demand. When set to 1, only part of the air from the brake
-  cylinder is released, so the total air+dynamic brake force equals the total brake demand.
+- ``Engine(ORTSDynamicBrakesHasPartialBailOff`` -- If this parameter is set to 1,
+  air brakes are released while dynamic brakes satisfy the train brake demand.
+  If dynamic braking is not sufficient, air brakes will be partially applied
+  so the combination air+dynamic provides the required brake demand.
 
 
 Native Open Rails Braking Parameters
