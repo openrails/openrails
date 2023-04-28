@@ -607,3 +607,22 @@ section of any .eng or .wag file (or in their "include" file as explained
 
 where the number in parenthesis may be anyone from 0 (nothing heard internally) 
 to 100 (external sound reproduced at original volume).  
+
+
+.. _sound-internal-track:   
+
+Manage % of internal track sound heard internally for a specific trainset
+=========================================================================
+
+The percentage of internal track sound heard internally for a specific 
+trainset may be defined for any trainset inserting in the Wagon 
+section of any .eng or .wag file (or in their "include" file as explained 
+:ref:`here <physics-inclusions>`) following line::
+
+  ORTSTrackSoundPassedThroughPercent ( 40 ) 
+
+where the number in parenthesis may be anyone from 0 (nothing heard ) 
+to 100 (internal track sound reproduced at volume as defined in .sms file).  
+
+If the parameter is not present, the internal track sound is 
+reproduced at the volume as defined in .sms file.
