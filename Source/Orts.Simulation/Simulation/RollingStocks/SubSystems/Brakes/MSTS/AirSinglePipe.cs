@@ -587,15 +587,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 }
                             }
                         }
-                        if (loco.DynamicBrakeAutoBailOff && loco.DynamicBrakePercent > 0 && Car.MaxBrakeForceN > 0)
+                        if (loco.DynamicBrakePercent > 0 && Car.MaxBrakeForceN > 0)
                         {
-                            var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                            var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                            if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.MaxBrakeForceN)
+                            if (loco.DynamicBrakePartialBailOff)
                             {
-                                isolateAutoBrake = true;
-                                if (loco.DynamicBrakePartialBailOff)
+                                var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
+                                var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
+                                if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.MaxBrakeForceN)
                                 {
+                                    isolateAutoBrake = true;
                                     var compensatedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.MaxBrakeForceN*MaxCylPressurePSI, 0), MaxCylPressurePSI);
                                     if (CylPressurePSI < BrakeLine3PressurePSI)
                                         CylPressurePSI = BrakeLine3PressurePSI;
@@ -614,9 +614,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                         CylPressurePSI += dp;
                                     }
                                 }
+                            }
+                            else if (loco.DynamicBrakeAutoBailOff)
+                            {
+                                if (loco.DynamicBrakeForceCurves == null)
+                                {
+                                    isolateAutoBrake = true;
+                                    CylPressurePSI = BrakeLine3PressurePSI;
+                                }
                                 else
                                 {
-                                    CylPressurePSI = BrakeLine3PressurePSI;
+                                    var dynforce = loco.DynamicBrakeForceCurves.Get(1.0f, loco.AbsSpeedMpS);
+                                    if ((loco.MaxDynamicBrakeForceN == 0 && dynforce > 0) || dynforce > loco.MaxDynamicBrakeForceN * 0.6)
+                                    {
+                                        isolateAutoBrake = true;
+                                        CylPressurePSI = BrakeLine3PressurePSI;
+                                    }
                                 }
                             }
                         }
