@@ -362,7 +362,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     TripleValveState = ValveState.Release;
                 else if (TripleValveState != ValveState.Emergency && targetPressurePSI > AutoCylPressurePSI + (TripleValveState != ValveState.Apply ? 2.2f : 0f))
                     TripleValveState = ValveState.Apply;
-                else
+                else if (TripleValveState != ValveState.Emergency)
                     TripleValveState = ValveState.Lap;
             }
             else if (valveType == MSTSWagon.BrakeValveType.TripleValve || valveType == MSTSWagon.BrakeValveType.DistributingValve)
