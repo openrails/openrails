@@ -311,7 +311,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (maxPressurePSI > 0)
                 ControlResPressurePSI = maxPressurePSI;
             FullServPressurePSI = fullServPressurePSI;
-            AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
+            CylPressurePSI = AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
             AuxResPressurePSI = Math.Max(TwoPipes ? maxPressurePSI : maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
             if ((Car as MSTSWagon).EmergencyReservoirPresent)
             {
@@ -597,9 +597,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {
-                bool isolateAutoBrake = false; 
                 if (Car is MSTSLocomotive loco && loco.EngineType != TrainCar.EngineTypes.Control)  // TODO - Control cars ned to be linked to power suppy requirements.
                 {
+                    float demandedPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
                     //    if (Car is MSTSLocomotive loco && loco.LocomotivePowerSupply.MainPowerSupplyOn)
                     if (loco.LocomotivePowerSupply.MainPowerSupplyOn)
                     {
@@ -629,47 +629,59 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
                                 if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.MaxBrakeForceN)
                                 {
-                                    isolateAutoBrake = true;
-                                    var compensatedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.MaxBrakeForceN*MaxCylPressurePSI, 0), MaxCylPressurePSI);
-                                    if (CylPressurePSI < BrakeLine3PressurePSI)
-                                        CylPressurePSI = BrakeLine3PressurePSI;
-                                    if (compensatedPressurePSI < CylPressurePSI)
+                                    demandedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.MaxBrakeForceN*MaxCylPressurePSI, 0), MaxCylPressurePSI);
+                                    if (demandedPressurePSI > CylPressurePSI && demandedPressurePSI < CylPressurePSI + 4) // Allow some margin for unnecessary air brake application
                                     {
-                                        CylPressurePSI = Math.Max(CylPressurePSI - MaxReleaseRatePSIpS * elapsedClockSeconds, BrakeLine3PressurePSI);
+                                        demandedPressurePSI = CylPressurePSI;
                                     }
-                                    else if (compensatedPressurePSI > CylPressurePSI + 4)
-                                    {
-                                        float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                                        if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < CylPressurePSI + dp)
-                                            dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
-                                        if (dp > compensatedPressurePSI - CylPressurePSI)
-                                            dp = compensatedPressurePSI - CylPressurePSI;
-                                        BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
-                                        CylPressurePSI += dp;
-                                    }
+                                    if (demandedPressurePSI < BrakeLine3PressurePSI)
+                                        demandedPressurePSI = BrakeLine3PressurePSI;
                                 }
                             }
                             else if (loco.DynamicBrakeAutoBailOff)
                             {
                                 if (loco.DynamicBrakeForceCurves == null)
                                 {
-                                    isolateAutoBrake = true;
-                                    CylPressurePSI = BrakeLine3PressurePSI;
+                                    demandedPressurePSI = BrakeLine3PressurePSI;
                                 }
                                 else
                                 {
                                     var dynforce = loco.DynamicBrakeForceCurves.Get(1.0f, loco.AbsSpeedMpS);
                                     if ((loco.MaxDynamicBrakeForceN == 0 && dynforce > 0) || dynforce > loco.MaxDynamicBrakeForceN * 0.6)
                                     {
-                                        isolateAutoBrake = true;
-                                        CylPressurePSI = BrakeLine3PressurePSI;
+                                        demandedPressurePSI = BrakeLine3PressurePSI;
                                     }
                                 }
                             }
                         }
                     }
+                    // TODO: this first clause is intended for locomotives fitted with some sort of proportional valve
+                    // i.e. the triple valve is not directly attached to the physical brake cylinder
+                    // This allows e.g. blending, variable load, or higher pressures than provided by triple valves
+                    if (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakeAutoBailOff)
+                    {
+                        if (demandedPressurePSI > CylPressurePSI)
+                        {
+                            float dp = elapsedClockSeconds * loco.EngineBrakeApplyRatePSIpS;
+                            if (dp > demandedPressurePSI - CylPressurePSI)
+                                dp = demandedPressurePSI - CylPressurePSI;
+                            /* TODO: Proportional valves need air from the main reservoir
+                            if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < CylPressurePSI + dp)
+                                dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
+                            BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;*/
+                            CylPressurePSI += dp;
+                        }
+                        else if (demandedPressurePSI < CylPressurePSI) CylPressurePSI = Math.Max(demandedPressurePSI, CylPressurePSI - elapsedClockSeconds * loco.EngineBrakeReleaseRatePSIpS);
+                    }
+                    else // Rest of cases
+                    {
+                        CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
+                    }
                 }
-                if (!isolateAutoBrake) CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
+                else
+                {
+                    CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
+                }
             }
 
             // During braking wheelslide control is effected throughout the train by additional equipment on each vehicle. In the piping to each pair of brake cylinders are fitted electrically operated 
