@@ -1022,6 +1022,80 @@ Gauges may have Style POINTER or SOLID.
 
 Rotation may be applied, with the same syntax, also to DigitalClock cab controls.
 
+Display and animation of cabview controls in side views of 2D cabs
+------------------------------------------------------------------
+
+This is possible adding after the CabViewControls ( ) compound block an 
+ORTSCabviewControls ( ) compound block, that has the same format as the 
+CabViewControls ( ) block. The selection of the CabviewPoint where the control 
+is displayed/animated is performed by a line::
+
+   ORTSCabviewPoint ( n )
+
+where n is the ordinal position of the cabview point in the header of the .cvf file. 
+
+Here an example::
+
+   Tr_CabViewFile (
+
+	CabViewType ( 1 )
+
+	CabViewFile ( CV_Front.ace )
+	CabViewWindow ( 0 0 1024 768 )
+	CabViewWindowFile ( "" )
+	Position ( -0.517699 2.78 8.63 )
+	Direction ( 0 0 0 )
+
+	CabViewFile ( CV_Left.ace )
+	CabViewWindow ( 0 0 1024 768 )
+	CabViewWindowFile ( "" )
+	Position ( -0.517699 2.78 8.63 )
+	Direction ( 0 -48 0 )
+
+	CabViewFile ( CV_Right.ace )
+	CabViewWindow ( 0 0 1024 768 )
+	CabViewWindowFile ( "" )
+	Position ( -0.517699 2.78 8.63 )
+	Direction ( 0 71.5 0 )
+
+	EngineData ( BStE-ET_169a_Jm )
+
+	CabViewControls ( 10
+		Dial (
+			Type ( MAIN_RES DIAL )
+			Position ( 163 32 8 30 )
+			Graphic ( CV_Pointer.ace )
+			Style ( POINTER )
+			ScaleRange ( 0 10 )
+			ScalePos ( 227 152 )
+			Units ( BAR )
+			Pivot ( 20 )
+			DirIncrease ( 0 )
+		)
+
+		...
+
+	)
+
+	ORTSCabviewControls ( 12
+		TwoState (	Comment( Wiperswitch in right cabviewpoint )
+			Type ( WIPERS TWO_STATE )
+			Position ( 500 165 13 24 )
+			Graphic ( CV_WIPERSSwitch.ace )
+			NumFrames ( 2 2 1 )
+			Style ( ONOFF )
+			MouseControl ( 1 )
+			ORTSCabviewPoint ( 2 )
+		)
+
+      ...
+	)
+
+
+In this example ORTSCabviewPoint refers to the 3rd viewpoint ( 0 refers to the main-central viewpoint ) defined 
+in the .cvf header, that is the right side viewpoint.
+
+Note that in Open Rails you may have more than three cabviewpoints defined for 2D cabs.
 
 3D cabs
 =======
