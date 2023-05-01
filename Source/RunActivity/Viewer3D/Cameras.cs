@@ -2000,8 +2000,8 @@ namespace Orts.Viewer3D
     public class CabCamera : NonTrackingCamera
     {
         private readonly SavingProperty<bool> LetterboxProperty;
-        protected int sideLocation;
-        public int SideLocation { get { return sideLocation; } }
+        protected int[] sideLocation = new int[2];
+        public int SideLocation { get { return attachedCar == null? sideLocation[0] : (attachedCar as MSTSLocomotive).UsingRearCab ? sideLocation[1] : sideLocation[0]; } }
 
         public override Styles Style { get { return Styles.Cab; } }
         // Cab camera is only possible on the player train.
@@ -2034,13 +2034,15 @@ namespace Orts.Viewer3D
         protected internal override void Save(BinaryWriter outf)
         {
             base.Save(outf);
-            outf.Write(sideLocation);
+            outf.Write(sideLocation[0]);
+            outf.Write(sideLocation[1]);
         }
 
         protected internal override void Restore(BinaryReader inf)
         {
             base.Restore(inf);
-            sideLocation = inf.ReadInt32();
+            sideLocation[0] = inf.ReadInt32();
+            sideLocation[1] = inf.ReadInt32();
         }
 
         public override void Reset()
@@ -2102,10 +2104,11 @@ namespace Orts.Viewer3D
             if (car != null)
             {
                 var loco = car as MSTSLocomotive;
-                var viewpoints = (loco.UsingRearCab)
-                ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList
-                : loco.CabViewList[(int)CabViewType.Front].ViewPointList;
-                attachedLocation = viewpoints[sideLocation].Location;
+                var sLIndex = (loco.UsingRearCab) ? (int)CabViewType.Rear : (int)CabViewType.Front;
+                if (sideLocation[sLIndex] >= loco.CabViewList[sLIndex].ViewPointList.Count)
+                    sideLocation[sLIndex] = 0;
+                var viewpoint = loco.CabViewList[sLIndex].ViewPointList[sideLocation[sLIndex]];
+                attachedLocation = viewpoint.Location;
             }
             InitialiseRotation(attachedCar);
         }
@@ -2117,21 +2120,18 @@ namespace Orts.Viewer3D
         void ShiftView(int index)
         {
             var loco = attachedCar as MSTSLocomotive;
+            var sLIndex = (loco.UsingRearCab) ? 1 : 0;
 
-            var viewpointList = (loco.UsingRearCab)
-            ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList
-            : loco.CabViewList[(int)CabViewType.Front].ViewPointList;
-
-            sideLocation += index;
+            sideLocation[sLIndex] += index;
 
             var count = (loco.UsingRearCab)
                 ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList.Count
                 : loco.CabViewList[(int)CabViewType.Front].ViewPointList.Count;
             // Wrap around
-            if (sideLocation < 0)
-                sideLocation = count - 1;
-            else if (sideLocation >= count)
-                sideLocation = 0;
+            if (sideLocation[sLIndex] < 0)
+                sideLocation[sLIndex] = count - 1;
+            else if (sideLocation[sLIndex] >= count)
+                sideLocation[sLIndex] = 0;
 
             SetCameraCar(attachedCar);
         }
@@ -2213,12 +2213,12 @@ namespace Orts.Viewer3D
             if (attachedCar == null) return;
 
             var loco = attachedCar as MSTSLocomotive;
-            var viewpoints = (loco.UsingRearCab)
-            ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList
-            : loco.CabViewList[(int)CabViewType.Front].ViewPointList;
+            var viewpoint = (loco.UsingRearCab)
+            ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList[sideLocation[1]]
+            : loco.CabViewList[(int)CabViewType.Front].ViewPointList[sideLocation[0]];
 
-            RotationXRadians = MathHelper.ToRadians(viewpoints[sideLocation].StartDirection.X) - RotationRatio * (Viewer.CabYOffsetPixels + Viewer.CabExceedsDisplay / 2);
-            RotationYRadians = MathHelper.ToRadians(viewpoints[sideLocation].StartDirection.Y) - RotationRatioHorizontal * (-Viewer.CabXOffsetPixels + Viewer.CabExceedsDisplayHorizontally / 2); ;
+            RotationXRadians = MathHelper.ToRadians(viewpoint.StartDirection.X) - RotationRatio * (Viewer.CabYOffsetPixels + Viewer.CabExceedsDisplay / 2);
+            RotationYRadians = MathHelper.ToRadians(viewpoint.StartDirection.Y) - RotationRatioHorizontal * (-Viewer.CabXOffsetPixels + Viewer.CabExceedsDisplayHorizontally / 2); ;
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
