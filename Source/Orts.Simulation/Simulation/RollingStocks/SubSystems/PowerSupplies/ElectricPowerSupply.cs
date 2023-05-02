@@ -80,6 +80,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(ElectricLocomotive.WagFilePath), "Script") };
                     AbstractScript = Simulator.ScriptManager.Load(pathArray, ScriptName) as ElectricPowerSupply;
                 }
+
+                if (ParametersFileName != null)
+                {
+                    ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
+                }
+
                 if (Script == null)
                 {
                     AbstractScript = new DefaultElectricPowerSupply();
