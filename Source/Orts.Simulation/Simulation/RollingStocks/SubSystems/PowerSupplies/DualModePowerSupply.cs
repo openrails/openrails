@@ -82,12 +82,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
                     AbstractScript = Simulator.ScriptManager.Load(pathArray, ScriptName) as DualModePowerSupply;
                 }
-
-                if (ParametersFileName != null)
-                {
-                    ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
-                }
-
                 if (Script == null)
                 {
                     AbstractScript = new DefaultDualModePowerSupply();
