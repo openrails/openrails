@@ -49,7 +49,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float MaxReleaseRatePSIpS = 1.86f;
         protected float MaxApplicationRatePSIpS = .9f;
         protected float MaxAuxilaryChargingRatePSIpS = 1.684f;
-        protected float BrakeInsensitivityPSIpS = 0;
+        protected float BrakeInsensitivityPSIpS = 0.07f;
         protected float EmergencyValveActuationRatePSIpS = 0;
         protected float EmergResChargingRatePSIpS = 1.684f;
         protected float EmergAuxVolumeRatio = 1.4f;
@@ -230,7 +230,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 
                 // OpenRails specific parameters
                 case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
-                case "wagon(ortsbrakeinsensitivity": BrakeInsensitivityPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "wagon(ortsbrakeinsensitivity": BrakeInsensitivityPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 0.07f); break;
                 case "wagon(ortsemergencyvalveactuationrate": EmergencyValveActuationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 15f); break;
                 case "wagon(ortsmainrespipeauxrescharging": MRPAuxResCharging = this is AirTwinPipe && stf.ReadBoolBlock(true); break;
             }
@@ -481,7 +481,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         ControlResPressurePSI = BrakeLine1PressurePSI;
                     }
-                    else if (ControlResPressurePSI > BrakeLine1PressurePSI) // Overcharge elimination
+                    else if (ControlResPressurePSI > BrakeLine1PressurePSI && ControlResPressurePSI < BrakeLine1PressurePSI + 1) // Overcharge elimination
                     {
                         float dp = elapsedClockSeconds * BrakeInsensitivityPSIpS;
                         ControlResPressurePSI = Math.Max(ControlResPressurePSI - dp, BrakeLine1PressurePSI);
