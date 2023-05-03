@@ -403,9 +403,6 @@ Trigger       Function
 243           GenericItem2Off
 =========     =====================================
 
-Trigger 252 is activated when the braking system detects an
-emergency brake application and starts venting air from the Brake Pipe.
-
 Variable Triggers
 -----------------
 
