@@ -352,10 +352,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             var prevState = TripleValveState;
             var valveType = (Car as MSTSWagon).BrakeValve;
+            bool disableGradient = !(Car.Train.LeadLocomotive is MSTSLocomotive) && Car.Train.TrainType != Orts.Simulation.Physics.Train.TRAINTYPE.STATIC;
             if (valveType == MSTSWagon.BrakeValveType.Distributor)
             {
                 float targetPressurePSI = (ControlResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
-                if (targetPressurePSI > AutoCylPressurePSI && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
+                if (!disableGradient && targetPressurePSI > AutoCylPressurePSI && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
                     TripleValveState = ValveState.Emergency;
                 else if (targetPressurePSI < AutoCylPressurePSI - (TripleValveState != ValveState.Release ? 2.2f : 0f)
                     || targetPressurePSI < 2.2f) // The latter is a UIC regulation (0.15 bar)
@@ -367,7 +368,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else if (valveType == MSTSWagon.BrakeValveType.TripleValve || valveType == MSTSWagon.BrakeValveType.DistributingValve)
             {
-                if (BrakeLine1PressurePSI < AuxResPressurePSI - 1 && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
+                if (!disableGradient && BrakeLine1PressurePSI < AuxResPressurePSI - 1 && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
                     TripleValveState = ValveState.Emergency;
                 else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
                     TripleValveState = ValveState.Release;
