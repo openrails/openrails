@@ -4382,7 +4382,8 @@ Three behaviours are available:
 
 In real life, the battery switch may not
 close instantly, so you can add a delay with the optional parameter
-``ORTSBattery( Delay ( ) )`` (by default in seconds).
+``ORTSBattery( Delay ( ) )`` (by default in seconds). When delay is used in combination with push buttons 
+you have to keep pressing the button until the battery is (dis)connected.  
 
 It is possible for the battery switch to be switched on at the start of the simulation.
 To activate this behaviour, you can add the optional parameter ``ORTSBattery( DefaultOn ( 1 ) )``

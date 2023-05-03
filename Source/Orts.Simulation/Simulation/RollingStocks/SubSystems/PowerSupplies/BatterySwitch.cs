@@ -211,7 +211,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             if (Timer.Triggered)
                             {
                                 On = false;
-                                CommandButtonOff = false;
                                 Wagon.SignalEvent(Event.BatterySwitchOff);
                                 Timer.Stop();
                             }
@@ -236,7 +235,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             if (Timer.Triggered)
                             {
                                 On = true;
-                                CommandButtonOn = false;
                                 Wagon.SignalEvent(Event.BatterySwitchOn);
                                 Timer.Stop();
                             }
@@ -281,11 +279,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     break;
 
+                case PowerSupplyEvent.CloseBatterySwitchButtonReleased:
+                    if (Mode == ModeType.PushButtons && CommandButtonOn)
+                    {
+                        CommandButtonOn = false;
+                        Wagon.SignalEvent(Event.BatterySwitchCommandOff);
+                    }
+                    break;
+
                 case PowerSupplyEvent.OpenBatterySwitchButtonPressed:
                     if (Mode == ModeType.PushButtons && !CommandButtonOff)
                     {
                         CommandButtonOff = true;
                         Wagon.SignalEvent(Event.BatterySwitchCommandOn);
+                    }
+                    break;
+
+                case PowerSupplyEvent.OpenBatterySwitchButtonReleased:
+                    if (Mode == ModeType.PushButtons && CommandButtonOff)
+                    {
+                        CommandButtonOff = false;
+                        Wagon.SignalEvent(Event.BatterySwitchCommandOff);
                     }
                     break;
             }
