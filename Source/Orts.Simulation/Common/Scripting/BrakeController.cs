@@ -76,6 +76,11 @@ namespace ORTS.Scripting.Api
         public bool IsCabPowerSupplyOn() => LocomotivePowerSupply.CabPowerSupplyOn;
 
         /// <summary>
+        /// Brake pipe pressure
+        /// </summary>
+        public float BrakePipePressureBar() => Bar.FromPSI(Host.Locomotive.BrakeSystem.BrakeLine1PressurePSI);
+
+        /// <summary>
         /// Main reservoir pressure
         /// </summary>
         public float MainReservoirPressureBar()
@@ -135,7 +140,6 @@ namespace ORTS.Scripting.Api
         /// Release rate of the equalizing reservoir
         /// </summary>
         public float MinReductionBar() => Bar.FromPSI(Host.MinReductionPSI);
-        
         /// <summary>
         /// Current value of the brake controller
         /// </summary>
