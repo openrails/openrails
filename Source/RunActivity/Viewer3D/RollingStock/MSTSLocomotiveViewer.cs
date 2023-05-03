@@ -255,13 +255,13 @@ namespace Orts.Viewer3D.RollingStock
                             if (Locomotive is MSTSSteamLocomotive steam)
                             {
                                 steam.SetCutoffPercent(val * 100);
-                            }
+                }
                             else if (val > 0.5f)
-                                Locomotive.SetDirection(Direction.Forward);
+                        Locomotive.SetDirection(Direction.Forward);
                             else if (val < -0.5f)
-                                Locomotive.SetDirection(Direction.Reverse);
-                            else
-                                Locomotive.SetDirection(Direction.N);
+                        Locomotive.SetDirection(Direction.Reverse);
+                    else
+                        Locomotive.SetDirection(Direction.N);
                             break;
                         case CABViewControlTypes.TRAIN_BRAKE:
                             Locomotive.SetTrainBrakePercent(val * 100);
@@ -274,17 +274,17 @@ namespace Orts.Viewer3D.RollingStock
                             Locomotive.SetEngineBrakePercent(val * 100);
                             break;
                         case CABViewControlTypes.FRONT_HLIGHT:
-                            // changing Headlight more than one step at a time doesn't work for some reason
+                    // changing Headlight more than one step at a time doesn't work for some reason
                             if (Locomotive.Headlight < val - 1)
-                            {
-                                Locomotive.Headlight++;
-                                Locomotive.SignalEvent(Event.LightSwitchToggle);
-                            }
+                    {
+                        Locomotive.Headlight++;
+                        Locomotive.SignalEvent(Event.LightSwitchToggle);
+                    }
                             if (Locomotive.Headlight > val - 1)
-                            {
-                                Locomotive.Headlight--;
-                                Locomotive.SignalEvent(Event.LightSwitchToggle);
-                            }
+                    {
+                        Locomotive.Headlight--;
+                        Locomotive.SignalEvent(Event.LightSwitchToggle);
+                    }
                             break;
                         case CABViewControlTypes.ORTS_SELECTED_SPEED_SELECTOR:
                             Locomotive.CruiseControl.SelectedSpeedMpS = val;
