@@ -2650,9 +2650,9 @@ public List<CabView> CabViewList = new List<CabView>();
             if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
             {
                 SignalEvent(Event.CompressorOn);
-                foreach (var loco in Train.Cars.OfType<MSTSLocomotive>())
+                foreach (var car in Train.Cars)
                 {
-                    if (loco.RemoteControlGroup == 0 && loco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !loco.CompressorIsOn && loco.CompressorIsMUControlled)
+                    if (car is MSTSLocomotive loco && loco.RemoteControlGroup == 0 && loco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !loco.CompressorIsOn && loco.CompressorIsMUControlled)
                     {
                         loco.SignalEvent(Event.CompressorOn);
                     }
