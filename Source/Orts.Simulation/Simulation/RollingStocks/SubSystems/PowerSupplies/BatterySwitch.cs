@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2020 by the Open Rails project.
+// COPYRIGHT 2020 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 

@@ -2540,7 +2540,7 @@ Brake Token:   ``TrainBrakesControllerNeutralHandleOffStart``
                 - Air brakes: Train pipe pressure is held without compensation for leakage.
                 - EP brakes: Brake application is held at any value.
                 - Vacuum brakes: Train pipe vacuum is held without compensation for leakage.  
-                
+
 Brake Token:   ``TrainBrakesControllerHoldEngineStart``
 
 - Operation:     Air, EP, Vacuum
