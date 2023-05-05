@@ -2540,7 +2540,7 @@ Brake Token:   ``TrainBrakesControllerNeutralHandleOffStart``
                 - Air brakes: Train pipe pressure is held without compensation for leakage.
                 - EP brakes: Brake application is held at any value.
                 - Vacuum brakes: Train pipe vacuum is held without compensation for leakage.  
-
+                
 Brake Token:   ``TrainBrakesControllerHoldEngineStart``
 
 - Operation:     Air, EP, Vacuum
@@ -2950,6 +2950,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 .. index::
    single: BrakePipeVolume
    single: ORTSEmergencyValveActuationRate
+   single: ORTSEmergencyDumpValveRate
+   single: ORTSEmergencyDumpValveTimer
    single: ORTSMainResPipeAuxResCharging
    single: ORTSMainResChargingRate
    single: ORTSEngineBrakeReleaseRate
@@ -2978,6 +2980,11 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   brake actuation of the triple valve. If the pressure in the brake pipe
   decreases at a higher rate than specified, the triple valve will switch to
   emergency mode.
+- ``Wagon(ORTSEmergencyDumpValveRate)``-- Rate at which BP is locally discharged
+  at every wagon during an emergency brake application.
+- ``Wagon(ORTSEmergencyDumpValveTimer)``-- Timer for emergency dump valve to close
+  after it is activated. If set to 0, it will close as soon as BP is discharged.
+  Default value will prevent BP from being charged for 2 minutes.
 - ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
   for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
   reservoirs. If set to false, the main reservoir pipe will not be used
