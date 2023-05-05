@@ -151,6 +151,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float EmergencyRatePSIpS { get; private set; }
         public float FullServReductionPSI { get; private set; }
         public float MinReductionPSI { get; private set; }
+        public float TrainDynamicBrakeIntervention { get; set; } = -1;
+        public double TrainDynamicBrakeCommandStartTime { get; set; }
 
         /// <summary>
         /// Needed for proper mouse operation in the cabview
@@ -355,7 +357,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         Locomotive.Train.SignalEvent(evt);
                     }
                 };
-
                 Script.Initialize();
             }
         }

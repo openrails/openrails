@@ -2300,6 +2300,10 @@ pressure rises above the auxiliary reservoir pressure, the brake
 cylinder pressure is released completely at a rate determined by the
 retainer setting.
 
+BrakeEquipmentType() can also contain a "Distributing_Valve" instead of a
+"triple_valve" or a "distributor", for locomotives fitted with the
+Westinghouse ET-6 distributing valve or similar equipment.
+
 Selecting :ref:`Graduated Release Air Brakes <options-general>` in *Menu >
 Options* will force self-lapping notches in the brake controller to have
 graduated release. It will also force graduated release of brakes in triple
@@ -2337,6 +2341,21 @@ brake features.
 Brake system charging time depends on the train length as it should, but
 at the moment there is no modeling of main reservoirs and compressors.
 
+For EP brakes, two variants are available:
+
+- If ``Wagon(ORTSEPBrakeControlsBrakePipe`` is set to 0 (default situation),
+an electrical wire (application wire) provides simultaneous fast brake application
+along the train. Release time will be fast if standard air brake haven't been applied,
+otherwise air brakes will determine release time. Typically this system is present
+with Train Brake Controllers having an EP-only application section, followed by an
+air application portion which serves as a fallback system.
+- If ``Wagon(ORTSEPBrakeControlsBrakePipe`` is set to 1, brake pipe is charged and discharged
+simultaneously at each car in the train, providing fast and uniform brake application and release.
+The locomotive instructs the cars to "charge" or "discharge" the brake pipe to reach
+a reference pressure. Standard triple valves or distributors will follow brake pipe variations
+actuating the cylinders. This system is sometimes called "UIC EP brake". It is typically the system
+used in high speed trains.
+
 .. _physics-brake-controller:
 
 Train Brake Controller Positions
@@ -2352,6 +2371,7 @@ The following notch positions can be defined for the train brake at ``Engine(Eng
    single: TrainBrakesControllerSlowServiceStart
    single: TrainBrakesControllerFullServiceStart
    single: TrainBrakesControllerHoldStart
+   single: TrainBrakesControllerHoldEngineStart
    single: TrainBrakesControllerEPHoldStart
    single: TrainBrakesControllerSelfLapStart
    single: TrainBrakesControllerRunningStart
@@ -2371,6 +2391,7 @@ The following notch positions can be defined for the train brake at ``Engine(Eng
    single: ORTSTrainBrakesControllerMaxOverchargePressure
    single: ORTSTrainBrakesControllerOverchargeEliminationRate
    single: ORTSTrainBrakesControllerSlowApplicationRate
+   single: EngineBrakesControllerBailOffStart
 
 **RELEASE and RUNNING tokens**
 
@@ -2429,6 +2450,15 @@ Brake Token:   ``TrainBrakesControllerReleaseStart``
                   - steam with separate ejector:
 
                     - Connects brake pipe to ejector(s) and/or vacuum pump. Brakes may be released by operating large or small ejector.  
+
+Brake Token:   ``EngineBrakesControllerBailOffStart``
+
+- Operation:     Air, EP, Vacuum
+- Brake Systems: Air single pipe, Air twin pipe, EP, Vacuum single pipe
+- Description:   
+   
+                - Engine brake: bail off engine brakes
+                - Train brake: no change
 
 **LAP, HOLDING and NEUTRAL tokens**
 
@@ -2504,6 +2534,15 @@ Brake Token:   ``TrainBrakesControllerNeutralHandleOffStart``
                 - Air brakes: Train pipe pressure is held without compensation for leakage.
                 - EP brakes: Brake application is held at any value.
                 - Vacuum brakes: Train pipe vacuum is held without compensation for leakage.  
+                
+Brake Token:   ``TrainBrakesControllerHoldEngineStart``
+
+- Operation:     Air, EP, Vacuum
+- Brake Systems: Air single pipe, Air twin pipe, EP, Vacuum single pipe
+- Description:   HOLD ENGINE
+
+                - Engine brakes: engine brake cylinder pressure is held at current value.
+                - Train brakes: same as RELEASE/RUNNING
 
 
 **SELF LAPPING APPLY tokens**
@@ -2875,6 +2914,22 @@ defined in a DynamicBrakeForceCurves table that works like the
 DynamicBrakeForceCurves defined in the ENG file, than one is created
 based on the MSTS parameter values.
 
+It is possible to use dynamic brakes as a replacement for air brakes
+when they are available (dynamic brake blending). During blending operation,
+the following parameters will adjust the behaviour of air brakes:
+
+.. index::
+   single: DynamicBrakeHasAutoBailOff
+   single: ORTSDynamicBrakesHasPartialBailOff
+   
+- ``Engine(DynamicBrakeHasAutoBailOff`` -- Set to 1 if brake cylinders are
+  emptied while dynamic brake is active
+- ``Engine(ORTSDynamicBrakesHasPartialBailOff`` -- If this parameter is set to 1,
+  air brakes are released while dynamic brakes satisfy the train brake demand.
+  If dynamic braking is not sufficient, air brakes will be partially applied
+  so the combination air+dynamic provides the required brake demand.
+
+
 Native Open Rails Braking Parameters
 ------------------------------------
 
@@ -2898,6 +2953,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSBrakeServiceTimeFactor
    single: ORTSBrakeEmergencyTimeFactor
    single: ORTSBrakePipeTimeFactor
+   single: ORTSEPBrakeControlsBrakePipe
+   single: ORTSCompressorIsMuControlled
 
 - ``Wagon(BrakePipeVolume`` -- Volume of car's brake pipe in cubic feet
   (default .5).
@@ -2919,6 +2976,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
   reservoirs. If set to false, the main reservoir pipe will not be used
   by the brake system.
+- ``Wagon(ORTSEPBrakeControlsBrakePipe`` -- Set to 1 for UIC EP brake: brake pipe
+  pressure is electrically controlled at every fitted car.
 - ``Engine(ORTSMainResChargingRate`` -- Rate of main reservoir pressure change
   in psi per second when the compressor is on (default .4).
 - ``Engine(ORTSEngineBrakeReleaseRate`` -- Rate of engine brake pressure
@@ -2942,6 +3001,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   (default .003).
 - ``Engine(AirBrakeMaxMainResPipePressure`` -- Pressure in Main Reservoir 
   Pipe for twin pipe braking systems (default = Main Reservoir Pressure).
+- ``Engine(ORTSCompressorIsMuControlled`` -- Set to 1 if compressors from
+  all locomotives are synchronized.
 
 .. _physics-retainers:
 

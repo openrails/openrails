@@ -226,11 +226,11 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public void SetDynamicBrakeIntervention(float value)
         {
-            // TODO: Set dynamic brake intervention instead of controller position
-            // There are some issues that need to be identified and fixed before setting the intervention directly
-            if (Locomotive.DynamicBrakeController == null) return;
-            Locomotive.DynamicBrakeChangeActiveState(value > 0);
-            Locomotive.DynamicBrakeController.SetValue(value);
+            if (value > 0 && Host.TrainDynamicBrakeIntervention <= 0)
+                Host.TrainDynamicBrakeCommandStartTime = Host.Simulator.ClockTime;
+            if (value <= 0)
+                Host.TrainDynamicBrakeIntervention = -1;
+            else Host.TrainDynamicBrakeIntervention = Math.Min(value, 1);
         }
 
         /// <summary>
@@ -363,6 +363,8 @@ namespace ORTS.Scripting.Api
         SMEFullServ,        // TrainBrakesControllerSMEFullServiceStart
         SMESelfLap,         // TrainBrakesControllerSMEHoldStart
         SMEReleaseStart,    // TrainBrakesControllerSMEReleaseStart
+        HoldEngine,        // TrainBrakesControllerHoldEngineStart
+        BailOff,            // EngineBrakesControllerBailOffStart
     };
 
     public static class ControllerStateDictionary
@@ -409,7 +411,9 @@ namespace ORTS.Scripting.Api
             {ControllerState.SMEOnly, Catalog.GetString("SME Service")},
             {ControllerState.SMEFullServ, Catalog.GetString("SME Full Service")},
             {ControllerState.SMESelfLap, Catalog.GetString("SME Self Lap")},
-            {ControllerState.SMEReleaseStart, Catalog.GetString("SME Release Start")}
+            {ControllerState.SMEReleaseStart, Catalog.GetString("SME Release Start")},
+            {ControllerState.HoldEngine, Catalog.GetString("Hold Engine")},
+            {ControllerState.BailOff, Catalog.GetString("Bail Off")}
         };
     }
 }
