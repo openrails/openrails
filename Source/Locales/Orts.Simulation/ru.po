@@ -1,171 +1,180 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2023-02-21 17:54:12+0300\n"
-"PO-Revision-Date: 2023-02-21 18:41+0300\n"
+"POT-Creation-Date: 2023-05-06 08:50:18+0300\n"
+"PO-Revision-Date: 2023-05-06 09:17+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Generator: Poedit 3.2.2\n"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:371
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:81
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:377
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:80
 msgid "Release"
 msgstr "Поездное"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:372
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:378
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:236
 msgid "Quick Release"
 msgstr "Быстрый отпуск"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:374
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:380
 msgid "Neutral"
 msgstr "Нейтраль"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:375
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:80
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:381
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:79
 msgid "Apply"
 msgstr "Служебное"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:376
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:382
 msgid "EPApply"
 msgstr "ЭПТ"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:377
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:82
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:383
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:81
 msgid "Emergency"
 msgstr "Экстренное"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:378
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:384
 msgid "Self Lap"
 msgstr "Самоперекрыша"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:379
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:380
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:385
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:386
 msgid "Service"
 msgstr "Служебное"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:381
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:79
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:387
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:78
 msgid "Lap"
 msgstr "Перекрыша БП"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:382
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:388
 msgid "Suppression"
 msgstr "Сброс ЭПК"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:383
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:389
 msgid "Cont. Service"
 msgstr "Непр.Служебн"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:384
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:390
 msgid "Full Service"
 msgstr "Полн.Служебное"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:385
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:391
 msgid "Minimum Reduction"
 msgstr "Предв. разрядка"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:386
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:392
 msgid "Hold"
 msgstr "Перекрыша СП"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:387
-msgid "Str. Brk. Release On:"
-msgstr ""
-
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:388
-msgid "Str. Brk. Release Off:"
-msgstr ""
-
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:389
-msgid "Str. Brk. Release:"
-msgstr ""
-
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:390
-msgid "Str. Brk. Lap:"
-msgstr ""
-
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:391
-msgid "Str. Brk. Apply:"
-msgstr ""
-
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:392
-msgid "Str. Brk. Apply All:"
-msgstr ""
-
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:393
-msgid "Str. Brk. Emerg:"
-msgstr ""
+msgid "Str. Brk. Release On:"
+msgstr "Прямод.Торм. Отпуск Вкл:"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:394
+msgid "Str. Brk. Release Off:"
+msgstr "Прямод.Торм. Отпуск Откл:"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:395
+msgid "Str. Brk. Release:"
+msgstr "Прямод.Торм. Отпуск:"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:396
+msgid "Str. Brk. Lap:"
+msgstr "Прямод.Торм. Перекрыша:"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:397
+msgid "Str. Brk. Apply:"
+msgstr "Прямод.Торм. Торм:"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:398
+msgid "Str. Brk. Apply All:"
+msgstr "Прямод.Торм. Торм.Полн:"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:399
+msgid "Str. Brk. Emerg:"
+msgstr "Прямод.Торм. Экстренн:"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:400
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:237
 msgid "Overcharge"
 msgstr "Отпускное"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:395
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:401
 msgid "Emergency Braking Push Button"
 msgstr "Кнопка аварийного останова"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:396
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:402
 msgid "TCS Emergency Braking"
 msgstr "Автостоп Экстренное"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:397
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:403
 msgid "TCS Full Service Braking"
 msgstr "Автостоп Служебное"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:398
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:404
 msgid "Vac. Cont. Service"
 msgstr ""
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:399
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:405
 msgid "Vac. Apply Cont. Service"
 msgstr ""
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:400
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:406
 msgid "Manual Braking"
 msgstr "Ручное торможение"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:401
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:407
 msgid "Notch"
 msgstr "Позиция"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:402
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:408
 msgid "EP Service"
 msgstr "ЭП тормож"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:403
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:409
 msgid "EP Full Service"
 msgstr "ЭПТ"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:404
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:410
 msgid "Slow service"
 msgstr "Темп мягкости"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:405
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:411
 msgid "SME Service"
 msgstr "Толкач-тормож"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:406
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:412
 msgid "SME Full Service"
 msgstr "Толкач-служебн"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:407
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:413
 msgid "SME Self Lap"
 msgstr "Толкач-перекр"
 
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:408
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:414
 msgid "SME Release Start"
 msgstr "Толкач-отпуск"
 
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:415
+msgid "Hold Engine"
+msgstr "Перекрыша ВТ"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:416
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:231
+msgid "Bail Off"
+msgstr "Отпуск ВТ"
+
 #. Context: Brake Controller
-#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:373
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:379
 msgctxt "Brake Controller"
 msgid "Running"
 msgstr "Поездное"
@@ -422,20 +431,20 @@ msgstr[2] ""
 "Нельзя расцепиться до полной остановки: в составе поезда {0} игроков ."
 
 #: ../../Orts.Simulation/Simulation/Activity.cs:1004
-#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6576
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10599
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6625
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10712
 msgid "Passenger boarding completed. Waiting for signal ahead to clear."
 msgstr "Посадка окончена. Ожидание разрешающего сигнала."
 
 #: ../../Orts.Simulation/Simulation/Activity.cs:1009
-#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6581
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10607
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6630
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10720
 msgid "Passenger boarding completed. You may depart now."
 msgstr "Посадка окончена. Отправление разрешается."
 
 #: ../../Orts.Simulation/Simulation/Activity.cs:984
-#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6588
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10614
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6637
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10727
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr "Посадка заканчивается в {0:D2}:{1:D2}"
@@ -848,10 +857,6 @@ msgid "Emergency Brake"
 msgstr "Экстренное"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:231
-msgid "Bail Off"
-msgstr "Отпуск ВТ"
-
-#: ../../Orts.Simulation/Simulation/Confirmer.cs:231
 msgid "disengage"
 msgstr "не задействован"
 
@@ -872,11 +877,11 @@ msgid "cannot initialize. Stop train then re-try."
 msgstr "невозможно исправить. Сначала остановите поезд."
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:233
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:143
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:84
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:142
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:143
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:92
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:101
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:87
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:103
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:141
 msgid "Handbrake"
 msgstr "Ручной тормоз"
@@ -1231,16 +1236,16 @@ msgstr "Нет подходящего контейнера для погрузк
 msgid "Wagon out of range: move wagon towards crane by {0} metres"
 msgstr "Платформа слишком далеко: сдвиньте её к крану на {0} метров"
 
-#: ../../Orts.Simulation/Simulation/Simulator.cs:1893
+#: ../../Orts.Simulation/Simulation/Simulator.cs:1895
 msgid "Train can't be suspended with speed not equal 0"
 msgstr "Движущийся поезд нельзя приостановить"
 
-#: ../../Orts.Simulation/Simulation/Simulator.cs:2015
+#: ../../Orts.Simulation/Simulation/Simulator.cs:2017
 msgid "To return to static train speed must be = 0"
 msgstr "Чтобы поезд снова стал статическим, остановите его"
 
 #: ../../Orts.Simulation/Simulation/Simulator.cs:940
-#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:4460
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:4463
 #, csharp-format
 msgid ""
 "Player train has been included into train {0} service {1}, that "
@@ -1249,7 +1254,7 @@ msgstr ""
 "Поезд игрока объединён с {0} в поезд {1}, который теперь управляется Вами"
 
 #: ../../Orts.Simulation/Simulation/Transfertables.cs:277
-#: ../../Orts.Simulation/Simulation/Turntables.cs:625
+#: ../../Orts.Simulation/Simulation/Turntables.cs:627
 msgid "Rotation can't start: check throttle, speed, direction and control mode"
 msgstr "Не повернуть. Проверьте контроллер, реверсор, скорость, АЛС"
 
@@ -1300,25 +1305,29 @@ msgstr "Полностью на {0}"
 msgid "Train rear outside {0}"
 msgstr "Недозаехал на {0}"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:644
+#: ../../Orts.Simulation/Simulation/Turntables.cs:649
+msgid "Turntable is at its bound, can't rotate"
+msgstr "Мост дошёл до упора"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:658
 msgid "Train partially on turntable, can't rotate"
 msgstr "Часть поезда не на мосту"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:656
+#: ../../Orts.Simulation/Simulation/Turntables.cs:670
 msgid "Turntable starting rotation with train"
 msgstr "Поворот начат"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:770
-#: ../../Orts.Simulation/Simulation/Turntables.cs:801
+#: ../../Orts.Simulation/Simulation/Turntables.cs:787
+#: ../../Orts.Simulation/Simulation/Turntables.cs:818
 msgid "Turntable forward connected"
 msgstr "Выезд вперёд"
 
-#: ../../Orts.Simulation/Simulation/Turntables.cs:783
-#: ../../Orts.Simulation/Simulation/Turntables.cs:814
+#: ../../Orts.Simulation/Simulation/Turntables.cs:800
+#: ../../Orts.Simulation/Simulation/Turntables.cs:831
 msgid "Turntable backward connected"
 msgstr "Выезд назад"
 
-#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:5019
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:5023
 #, csharp-format
 msgid ""
 "Join success: Train {0} service {1} has been incorporated into train {2} "
@@ -1326,69 +1335,69 @@ msgid ""
 msgstr ""
 "Сцепка удалась: Состав {0} (Поезд) {1} сцеплен с составом {2} (Поезд) {3}"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2005
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2009
 msgid "Coupler broken!"
 msgstr "Сцепка разрушилась!"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2008
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2012
 msgid "Coupler overloaded!"
 msgstr "Сцепка перегружена!"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2437
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2441
 msgid ""
 "The steam usage has exceeded the capacity of the steam boiler. Steam boiler "
 "locked out."
 msgstr "Расход пара превысил производительность котла."
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6896
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6901
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6906
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6911
 msgid "Other train is blocking path"
 msgstr "Маршрут занят другим составом"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7754
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7764
 msgid "Stopped due to errors in route setting"
 msgstr "Остановлен, поскольку маршрут задан с ошибками"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8468
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9663
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8478
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9673
 msgid "No signal in train's path"
 msgstr "На маршруте нет сигналов"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8476
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8486
 msgid "Next signal already allocated to other train"
 msgstr "Участок впереди уже выделен другому поезду"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8537
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8547
 msgid "Request to clear signal cannot be processed"
 msgstr "Запрос на открытие сигнала не может быть выполнен"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8645
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9783
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8655
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9793
 msgid "No switch found"
 msgstr "Стрелок не обнаружено"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10137
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10147
 msgid "You cannot enter manual mode when autopiloted"
 msgstr "На автопилоте нельзя перейти в маневровый режим"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10142
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10152
 msgid "You cannot use this command for pathless trains"
 msgstr "Команда неприменима, когда поезду не задан маршрут"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10154
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10164
 msgid "Train is not back on original route"
 msgstr "Поезд не вернулся на маршрут"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10163
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10173
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr "Маршрут требует смены направления. Сначала остановите поезд"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10176
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10186
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "В режиме исследования нельзя включить маневровый режим АЛС"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10181
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10191
 msgid ""
 "Cannot change to Manual Mode. Use the Reset Out Of Control Mode command to "
 "release brakes"
@@ -1396,19 +1405,19 @@ msgstr ""
 "Не переключиться в ручной режим. Для отпуска тормозов, используйте команду "
 "Reset Out Of Control Mode"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10270
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10280
 msgid "Reversal required and rear of train not on required route"
 msgstr "Необходимо сменить направление, хвост поезда не освободил стрелку"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10544
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10554
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "Нельзя открыть сигнал сзади при автоматическом режмие АЛС"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10776
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10786
 msgid "Out of control mode reset"
 msgstr "Сброс автостопа"
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10781
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10791
 msgid ""
 "You can only reset if you passed a signal at danger or if you passed a "
 "misaligned switch."
@@ -1416,47 +1425,47 @@ msgstr ""
 "Сброс можно выполнить только после проезда запрещающего сигнала или взреза "
 "стрелки."
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16388
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16396
 msgid "Car "
 msgstr "Вагон "
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16460
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16465
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16468
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16473
 msgid "Locomotive "
 msgstr "Локомотив "
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2385
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2389
 #, csharp-format
 msgid "Carriage {0} temperature is too cold, the passengers are freezing."
 msgstr "В вагоне {0} слишком холодно. Пассажиры мёрзнут."
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2389
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2393
 #, csharp-format
 msgid "Car {0} temperature is too cold for the freight."
 msgstr "В вагоне {0} влишком холодно для этого груза."
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:11074
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:11084
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
 "Поезд остановлен из-за неполадок с другим поездом: поезд {0} , причина: {1}"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSControlTrailerCar.cs:235
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSControlTrailerCar.cs:206
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:930
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:958
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6247
 msgid "Gear"
 msgstr "Передача"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSControlTrailerCar.cs:276
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSControlTrailerCar.cs:308
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:4037
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:4099
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSControlTrailerCar.cs:237
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSControlTrailerCar.cs:268
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:4072
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:4134
 msgid "Throttle must be reduced to Idle before gear change can happen."
 msgstr "Установите контроллер на ноль перед переключением передачи."
 
 #. Context: Gear
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSControlTrailerCar.cs:236
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSControlTrailerCar.cs:207
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:931
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6248
 msgctxt "Gear"
@@ -1591,8 +1600,8 @@ msgstr "Асинхр"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1125
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1226
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:131
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:139
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:130
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:138
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:75
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:79
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:97
@@ -1601,7 +1610,7 @@ msgid "BP"
 msgstr "ТМ"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1125
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:141
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:140
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:90
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:99
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:139
@@ -1609,17 +1618,17 @@ msgid "EOT"
 msgstr "ХВ"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1143
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:137
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:136
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:129
 msgid "EQ"
 msgstr "УР"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1143
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1236
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:130
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:138
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:82
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:85
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:129
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:137
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/EPBrakeSystem.cs:141
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:101
 msgid "BC"
 msgstr "ТЦ"
 
@@ -1708,36 +1717,36 @@ msgstr ""
 msgid "Auxiliary power"
 msgstr "Питание ВЦ"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2892
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2927
 msgid "No water scoop on this loco"
 msgstr "Локомотив не оборудован черпаком"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2899
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2934
 msgid "Scoop is broken, can't refill"
 msgstr "Черпак повреждён, набор воды невозможен"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2906
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2941
 msgid "Scoop is broken by junction track"
 msgstr "Черпак разбит об рельсы"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2916
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2951
 msgid "Scoop is not over trough, can't refill"
 msgstr "Черпак не над канавой, набор воды невозможен"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3272
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3307
 msgid "Sand supply has been exhausted"
 msgstr "Песочный бункер экипировочного устройства пуст"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2927
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2962
 msgid "Refill: Loco must be moving forward."
 msgstr "Для набора двигайтесь вперёд."
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2936
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2971
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0} for water to enter tender."
 msgstr "Для набора воды, скорость движения должна превышать {0}."
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2946
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2981
 msgid "Refill: Water supply now replenished."
 msgstr "Запасы воды пополнены."
 
@@ -2099,11 +2108,11 @@ msgid "Status:"
 msgstr "События:"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6496
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:167
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:185
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:141
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:162
-#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:181
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:162
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:142
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SMEBrakeSystem.cs:95
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:163
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/VacuumSinglePipe.cs:183
 msgid "Open"
 msgstr "Открыт"
 
@@ -2451,26 +2460,24 @@ msgid "M/Press"
 msgstr "Давл.ГР"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6812
-#, fuzzy
-#| msgid "CylEvts:"
 msgid "CylE:"
-msgstr "Цилиндры:"
+msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6813
 msgid "#1"
-msgstr ""
+msgstr "№1"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6815
 msgid "#2"
-msgstr ""
+msgstr "№2"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6817
 msgid "#3"
-msgstr ""
+msgstr "№3"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6819
 msgid "#4"
-msgstr ""
+msgstr "№4"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6869
 msgid "Slip Debug"
@@ -2632,36 +2639,36 @@ msgctxt "HUD"
 msgid "Power"
 msgstr "Мощн"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1978
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1980
 msgid "Starting unload"
 msgstr "Начинается разгрузка"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3992
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3994
 msgid "Incompatible data"
 msgstr "Несовместимо"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4007
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4009
 msgid "Starting refill"
 msgstr "Экипировка начата"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4016
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4063
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4018
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4065
 msgid "Preparing for unload"
 msgstr "Подготовка к выгрузке"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4036
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4038
 msgid "Container station busy with preceding mission"
 msgstr "Крановщик ещё занят предыдущей работой"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4043
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4045
 msgid "No containers to load"
 msgstr "Нет контейнеров для погрузки"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4047
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4049
 msgid "Starting load"
 msgstr "Погрузка начата"
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4057
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:4059
 msgid "Container station full, can't unload"
 msgstr "Контейнерная площадка переполнена - некуда разгружать"
 
@@ -2805,43 +2812,43 @@ msgstr "Т/п поднят, хотя этот маршрут не электри
 msgid "Traction cut-off relay closing not authorized"
 msgstr "Возврат РБ не выполнен"
 
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10409
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10522
 msgid "Held for connecting train : "
 msgstr "Ожидается согласованный поезд: "
 
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10417
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10530
 msgid "Waiting for train to attach : "
 msgstr "Ожидается прицепка к поезду: "
 
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10433
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10546
 msgid "Waiting for transfer with train : "
 msgstr "Ожидается обмен вагонами с поездом: "
 
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10448
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10561
 msgid "Waiting for train to arrive : "
 msgstr "Ожидание прибытия поезда: "
 
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10503
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10534
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10616
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10647
 msgid ", backward"
 msgstr "сзади"
 
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10518
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10534
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10631
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10647
 msgid ", forward"
 msgstr "спереди"
 
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10527
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10535
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10640
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10648
 msgid "Train is ready to attach to : "
 msgstr "Поезд готов к сцепке с: "
 
-#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10590
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10703
 msgid "Passenger detraining completed. Train terminated."
 msgstr "Высадка пассажиров окончена. Поезд аннулирован."
 
-#: ../../Orts.Simulation/Simulation/Timetables/TTTurntable.cs:1788
-#: ../../Orts.Simulation/Simulation/Timetables/TTTurntable.cs:1829
+#: ../../Orts.Simulation/Simulation/Timetables/TTTurntable.cs:1934
+#: ../../Orts.Simulation/Simulation/Timetables/TTTurntable.cs:1983
 #, csharp-format
 msgid "Turntable is ready for access - allowed speed set to {0}"
 msgstr "Поворотный круг готов - разрешённая скорость {0}"
