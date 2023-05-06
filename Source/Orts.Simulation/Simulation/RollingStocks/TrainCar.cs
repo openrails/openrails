@@ -2983,7 +2983,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Don't add vibrations to train cars less than 2.5 meter in length; they're unsuitable for these calculations.
             // Don't let vibrate car before EOT to avoid EOT not moving together with that car
-            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars[Train.Cars.Count - 2] == this) return;
+            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars.Count > 1 && Train.Cars[Train.Cars.Count - 2] == this) return;
             if (Simulator.Settings.CarVibratingLevel != 0)
             {
 

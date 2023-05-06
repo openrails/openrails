@@ -303,7 +303,20 @@ namespace ORTS
             checkWindowed.Checked = !Settings.FullScreen;
             comboWindowSize.Text = Settings.WindowSize;
             checkWindowGlass.Checked = Settings.WindowGlass;
-            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
+
+            // keep values in line with enum Orts.Simulation.ConfirmLevel
+            // see also function Message(CabControl control, ConfirmLevel level, string message)
+            // in Source\Orts.Simulation\Simulation\Confirmer.cs
+            comboControlConfirmations.DataSource = new[] {
+                new ComboBoxMember { Code = "None", Name = catalog.GetString("None") },
+                new ComboBoxMember { Code = "Information", Name = catalog.GetString("Information") },
+                new ComboBoxMember { Code = "Warning", Name = catalog.GetString("Warning") },
+                new ComboBoxMember { Code = "Error", Name = catalog.GetString("Error") },
+            }.ToList();
+            comboControlConfirmations.DisplayMember = "Name";
+            comboControlConfirmations.ValueMember = "Code";
+            comboControlConfirmations.SelectedIndex = Settings.SuppressConfirmations;
+
             numericWebServerPort.Value = Settings.WebServerPort;
             checkPerformanceTuner.Checked = Settings.PerformanceTuner;
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
@@ -493,7 +506,7 @@ namespace ORTS
             Settings.FullScreen = !checkWindowed.Checked;
             Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
             Settings.WindowGlass = checkWindowGlass.Checked;
-            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
+            Settings.SuppressConfirmations = comboControlConfirmations.SelectedIndex;
             Settings.WebServerPort = (int)numericWebServerPort.Value;
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
@@ -876,7 +889,7 @@ namespace ORTS
                 (pbUpdateMode, new Control[] { labelUpdateMode }),
                 (pbWindowed, new Control[] { checkWindowed, labelWindowSize, comboWindowSize }),
                 (pbWindowGlass, new[] { checkWindowGlass }),
-                (pbControlConfirmations, new[] { checkControlConfirmations }),
+                (pbControlConfirmations, new Control[] { labelControlConfirmations, comboControlConfirmations }),
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
                 (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
             };
