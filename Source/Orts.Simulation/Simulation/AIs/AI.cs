@@ -1159,53 +1159,12 @@ namespace Orts.Simulation.AIs
                 int presentTime = Convert.ToInt32(Math.Floor(clockTime));
                 TimetablePool thisPool = Simulator.PoolHolder.Pools[thisTrain.CreateInPool];
 
-                int PoolStorageState = (int)TTTrain.PoolAccessState.PoolInvalid;
-                thisTrain.TCRoute.TCRouteSubpaths[0] = thisPool.CreateInPool(thisTrain, out PoolStorageState, false);
-                thisTrain.ValidRoute[0] = new Train.TCSubpathRoute(thisTrain.TCRoute.TCRouteSubpaths[0]);
-                thisTrain.TCRoute.activeSubpath = 0;
+                int PoolStorageState = thisPool.CreateInPool(thisTrain, nextTrains);
 
-                // if no storage available - abondone train
                 if (PoolStorageState < 0)
                 {
                     Trace.TraceInformation("Train : " + thisTrain.Name + " : no storage room available in pool : " + thisPool.PoolName + " ; engine not created");
                     return (endPreRun);
-                }
-
-                // use stored traveller
-                thisTrain.PoolStorageIndex = PoolStorageState;
-                thisTrain.RearTDBTraveller = new Traveller(thisPool.StoragePool[thisTrain.PoolStorageIndex].StoragePathTraveller);
-
-                // if storage available check for other engines on storage track
-                if (thisPool.StoragePool[thisTrain.PoolStorageIndex].StoredUnits.Count > 0)
-                {
-                    int lastTrainNumber = thisPool.StoragePool[thisTrain.PoolStorageIndex].StoredUnits[thisPool.StoragePool[thisTrain.PoolStorageIndex].StoredUnits.Count - 1];
-                    TTTrain lastTrain = thisTrain.GetOtherTTTrainByNumber(lastTrainNumber);
-                    if (lastTrain == null)
-                    {
-                        lastTrain = thisTrain.Simulator.GetAutoGenTTTrainByNumber(lastTrainNumber);
-                    }
-                    if (lastTrain != null)
-                    {
-                        thisTrain.CreateAhead = String.Copy(lastTrain.Name).ToLower();
-                    }
-                }
-
-                tempRoute = thisTrain.CalculateInitialTTTrainPosition(ref validPosition, nextTrains);
-
-                if (validPosition)
-                {
-                    thisTrain.SetInitialTrainRoute(tempRoute);
-                    thisTrain.CalculatePositionOfCars();
-                    for (int i = 0; i < thisTrain.Cars.Count; i++)
-                        thisTrain.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
-                    thisTrain.ResetInitialTrainRoute(tempRoute);
-
-                    // set train route and position so proper position in pool can be calculated
-                    thisTrain.UpdateTrainPosition();
-
-                    // add unit to pool
-                    thisPool.AddUnit(thisTrain, false);
-                    validPosition = thisTrain.PostInit(false); // post init train but do not activate
                 }
             }
 
@@ -1408,6 +1367,12 @@ namespace Orts.Simulation.AIs
 
         public void InsertTrain(AITrain thisTrain)
         {
+            if (thisTrain.StartTime == null)
+            {
+                Trace.TraceInformation("Train : " + thisTrain.Name + " : missing start time, train not included");
+                return;
+            }
+            
             if (this.Count == 0)
             {
                 this.AddFirst(thisTrain);
@@ -1554,11 +1519,11 @@ namespace Orts.Simulation.AIs
             LinkedListNode<AITrain> AITrainNode = First;
             while (AITrainNode != null)
             {
-                if (AITrainNode.Value.Number == reqNumber)
+                TTTrain tttrain = AITrainNode.Value as TTTrain;
+                if (tttrain.Number == reqNumber || tttrain.OrgAINumber == reqNumber)
                 {
-                    TTTrain reqTrain = AITrainNode.Value as TTTrain;
                     if (remove) Remove(AITrainNode);
-                    return (reqTrain);
+                    return (tttrain);
                 }
                 else
                 {

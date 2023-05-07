@@ -31,12 +31,14 @@ using Orts.Formats.Msts;
 using Orts.Simulation.Physics;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
+using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static Orts.Common.InfoApiMap;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -295,9 +297,26 @@ namespace Orts.Viewer3D.WebServices
         public double Time() => Viewer.Simulator.ClockTime;
         #endregion
 
+        #region /API/MAP/INIT
+        [Route(HttpVerbs.Get, "/MAP/INIT")]
+        public InfoApiMap InfoApiMap() => GetApiMapInfo(Viewer);
+        #endregion
+
+        public static InfoApiMap GetApiMapInfo(Viewer viewer)
+        {
+            InfoApiMap infoApiMap = new InfoApiMap(
+                viewer.PlayerLocomotive.PowerSupply.GetType().Name);
+
+            viewer.Simulator.TDB.TrackDB.AddTrNodesToPointsOnApiMap(infoApiMap);
+
+            viewer.Simulator.TDB.TrackDB.AddTrItemsToPointsOnApiMap(infoApiMap);
+
+            return infoApiMap;
+        }
+
         #region /API/MAP
         [Route(HttpVerbs.Get, "/MAP")]
-        public LatLon LatLon() => Viewer.Simulator.PlayerLocomotive.GetLatLon();
+        public LatLonDirection LatLonDirection() => Viewer.Simulator.PlayerLocomotive.GetLatLonDirection();
         #endregion
     }
 }

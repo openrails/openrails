@@ -349,6 +349,7 @@ namespace Orts.Simulation.RollingStocks
         public float TrainBrakePipeLeakPSIorInHgpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
+        public bool CompressorIsMUControlled = false;
         public float MainResChargingRatePSIpS = 0.4f;
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
         public float EngineBrakeApplyRatePSIpS = 12.5f;
@@ -369,6 +370,7 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeMaxCurrentA;
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
+        public bool DynamicBrakePartialBailOff;
         public bool UsingRearCab;
         public bool BrakeOverchargeSoundOn = false;
 
@@ -984,6 +986,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         CompressorIsMechanical = true;
                     }
                     break;
+                case "engine(ortscompressorismucontrolled": CompressorIsMUControlled = stf.ReadBoolBlock(false); break;
                 case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(vacuumbrakesvacuumpumpresistance": VacuumPumpResistanceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
 
@@ -1018,6 +1021,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(dynamicbrakehasautobailoff":
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
+                case "engine(ortsdynamicbrakeshaspartialbailoff": DynamicBrakePartialBailOff = stf.ReadBoolBlock(false); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
@@ -1137,6 +1141,7 @@ public List<CabView> CabViewList = new List<CabView>();
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
+            DynamicBrakePartialBailOff = locoCopy.DynamicBrakePartialBailOff;
             DynamicBrakeMaxCurrentA = locoCopy.DynamicBrakeMaxCurrentA;
             CombinedControlType = locoCopy.CombinedControlType;
             CombinedControlSplitPosition = locoCopy.CombinedControlSplitPosition;
@@ -1172,6 +1177,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
             CompressorIsMechanical = locoCopy.CompressorIsMechanical;
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
+            CompressorIsMUControlled = locoCopy.CompressorIsMUControlled;
             TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
             MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
             MainResPressurePSI = locoCopy.MaxMainResPressurePSI;
@@ -1525,8 +1531,8 @@ public List<CabView> CabViewList = new List<CabView>();
             // Initialise Brake Pipe Quick Charging Rate
             if (BrakePipeQuickChargingRatePSIpS == 0) BrakePipeQuickChargingRatePSIpS = BrakePipeChargingRatePSIorInHgpS;
 
-            // Initialise Exhauster Charging rate in diesel and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
-            if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
+            // Initialise Exhauster Charging rate in diesel, control cars and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
+            if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive || this is MSTSControlTrailerCar)
             {
                 ExhausterHighSBPChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS;
                 ExhausterLowSBPChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS / 5.0f; // Low speed exhauster setting is 1/5 of high speed
@@ -1808,14 +1814,12 @@ public List<CabView> CabViewList = new List<CabView>();
         /// </summary>
         public void DynamicBrakeBlending(float elapsedClockSeconds)
         {
-            if (Math.Abs(SpeedMpS) > DynamicBrakeSpeed1MpS && airPipeSystem != null && ((airPipeSystem is EPBrakeSystem && Train.BrakeLine4 > 0f) || airPipeSystem.BrakeLine1PressurePSI < TrainBrakeController.MaxPressurePSI - 1f)
-                && ThrottleController.CurrentValue == 0f && !(DynamicBrakeController != null && DynamicBrakeBlendingOverride && DynamicBrakeController.CurrentValue > 0f)
-                /* && (!DynamicBrakeBlendingLeverOverride && DynamicBrakeController != null && DynamicBrakeIntervention < DynamicBrakeController.CurrentValue)*/)
+            // Local blending
+            if (Math.Abs(SpeedMpS) > DynamicBrakeSpeed1MpS && airPipeSystem != null && airPipeSystem.AutoCylPressurePSI > 0.1f
+                && ThrottlePercent == 0 && !(DynamicBrakeController != null && DynamicBrakeBlendingOverride && DynamicBrakeController.CurrentValue > 0))
             {
-                float threshold = DynamicBrakeBlendingForceMatch ? 100f : 0.01f;
                 float maxCylPressurePSI = airPipeSystem.GetMaxCylPressurePSI();
-                float targetDynamicBrakePercent = airPipeSystem is EPBrakeSystem ? Train.BrakeLine4 : Math.Min(((TrainBrakeController.MaxPressurePSI - airPipeSystem.BrakeLine1PressurePSI) * airPipeSystem.GetAuxCylVolumeRatio()) / maxCylPressurePSI, 1f);
-                //DynamicBrakeIntervention = Math.Min(((TrainBrakeController.CurrentValue - DynamicBrakeBlendingStart) / (DynamicBrakeBlendingStop - DynamicBrakeBlendingStart)), 1f);
+                float target = airPipeSystem.AutoCylPressurePSI / maxCylPressurePSI;
 
                 if (!DynamicBrakeBlended)
                 {
@@ -1828,11 +1832,19 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 if (DynamicBrake)
                 {
-                    float diff = DynamicBrakeBlendingForceMatch ? targetDynamicBrakePercent * MaxBrakeForceN - DynamicBrakeForceN : targetDynamicBrakePercent - DynamicBrakeIntervention;
-                    if (diff > threshold && DynamicBrakeIntervention <= 1)
-                        DynamicBrakeIntervention = Math.Min( DynamicBrakeIntervention + elapsedClockSeconds * (airPipeSystem.GetMaxApplicationRatePSIpS() / maxCylPressurePSI), 1.0f);
-                    else if (diff < -threshold)
-                        DynamicBrakeIntervention -= elapsedClockSeconds * (airPipeSystem.GetMaxReleaseRatePSIpS() / maxCylPressurePSI);
+                    if (DynamicBrakeBlendingForceMatch)
+                    {
+                        float diff = target * MaxBrakeForceN - DynamicBrakeForceN;
+                        float threshold = 100;
+                        if (diff > threshold && DynamicBrakeIntervention < 1)
+                            DynamicBrakeIntervention = Math.Min(DynamicBrakeIntervention + elapsedClockSeconds, 1);
+                        else if (diff < -threshold && DynamicBrakeIntervention > 0.01f)
+                            DynamicBrakeIntervention = Math.Max(DynamicBrakeIntervention - elapsedClockSeconds, 0.01f);
+                    }
+                    else
+                    {
+                        DynamicBrakeIntervention = target;
+                    }
                 }
                 if (DynamicBrakeController != null)
                     DynamicBrakeIntervention = Math.Max(DynamicBrakeIntervention, DynamicBrakeController.CurrentValue);
@@ -1841,6 +1853,17 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 DynamicBrakeIntervention = -1;
                 DynamicBrakeBlended = false;
+            }
+            // Train blending
+            if (IsLeadLocomotive())
+            {
+                if (TrainBrakeController.TrainDynamicBrakeIntervention > DynamicBrakeIntervention)
+                {
+                    DynamicBrakeBlended = true;
+                    DynamicBrakeIntervention = TrainBrakeController.TrainDynamicBrakeIntervention;
+                }
+                if (TrainBrakeController.TrainDynamicBrakeCommandStartTime > DynamicBrakeCommandStartTime)
+                    DynamicBrakeCommandStartTime = TrainBrakeController.TrainDynamicBrakeCommandStartTime;
             }
         }
 
@@ -1878,42 +1901,47 @@ public List<CabView> CabViewList = new List<CabView>();
             var gearloco = this as MSTSDieselLocomotive;
 
             // Pass Gearbox commands
+
+
+
+
             // Note - at the moment there is only one GearBox Controller created, but a gearbox for each diesel engine is created. 
             // This code keeps all gearboxes in the locomotive aligned with the first engine and gearbox.
             if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
             {
-                // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive
+                // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive             
 
-                if (gearloco == this)
+                int ii = 0;
+                foreach (var eng in gearloco.DieselEngines.DEList)
                 {
-
-                    int ii = 0;
-                    foreach (var eng in gearloco.DieselEngines.DEList)
+                    // don't change the first engine as this is the reference for all the others
+                    if (ii != 0)
                     {
-                        // don't change the first engine as this is the reference for all the others
-                        if (ii != 0)
-                        {
-                            gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
-                        }
-
-                        ii = ii + 1;
+                        gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
                     }
+                    
+                    ii = ii + 1;
                 }
 
-                // pass gearbox command key to other locomotives in train, don't treat the player locomotive in this fashion.
+            }
+
+            // The lead locomotive passes gearbox commands position to other locomotives in train, don't treat the player locomotive in this fashion.
+
+            if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch && IsLeadLocomotive())
+            {
+ 
                 foreach (TrainCar car in Train.Cars)
                 {
-                    var dieselloco = this as MSTSDieselLocomotive;
                     var locog = car as MSTSDieselLocomotive;
 
-                    if (locog != null && dieselloco != null && car != this && !locog.IsLeadLocomotive())
+                    if (locog != null && gearloco != null && car != this && !locog.IsLeadLocomotive())
                     {
 
-                        locog.DieselEngines[0].GearBox.currentGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex;
+                        locog.DieselEngines[0].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
 
-                        locog.GearBoxController.CurrentNotch = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
-                        locog.GearboxGearIndex = dieselloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
-                        locog.GearBoxController.SetValue((float)dieselloco.GearBoxController.CurrentNotch);
+                        locog.GearBoxController.CurrentNotch = gearloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        locog.GearboxGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        locog.GearBoxController.SetValue((float)gearloco.GearBoxController.CurrentNotch);
 
                         locog.Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, locog.GearBoxController.CurrentNotch);
                         locog.AlerterReset(TCSEvent.GearBoxChanged);
@@ -2238,6 +2266,7 @@ public List<CabView> CabViewList = new List<CabView>();
             }
 
             DynamicBrakeBlending(elapsedClockSeconds);
+
             if (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime > DynamicBrakeCommandStartTime) // use the latest command time
                 DynamicBrakeCommandStartTime = DynamicBrakeController.CommandStartTime;
 
@@ -2640,9 +2669,20 @@ public List<CabView> CabViewList = new List<CabView>();
 
             // Turn compressor on and off
             if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+            {
                 SignalEvent(Event.CompressorOn);
+                foreach (var car in Train.Cars)
+                {
+                    if (car is MSTSLocomotive loco && loco.RemoteControlGroup == 0 && loco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !loco.CompressorIsOn && loco.CompressorIsMUControlled)
+                    {
+                        loco.SignalEvent(Event.CompressorOn);
+                    }
+                }
+            }
             else if ((MainResPressurePSI >= MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
+            {
                 SignalEvent(Event.CompressorOff);
+            }
 
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * reservoirChargingRate;
@@ -4015,16 +4055,16 @@ public List<CabView> CabViewList = new List<CabView>();
         #region GearBoxController
         public virtual void ChangeGearUp()
         {
+
         }
 
         public virtual void StartGearBoxIncrease()
         {
             if (GearBoxController != null)
             {
-                
+
                 if (this is MSTSDieselLocomotive)
                 {
-
                     var dieselloco = this as MSTSDieselLocomotive;
 
                     if (dieselloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
@@ -4080,6 +4120,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public virtual void ChangeGearDown()
         {
+            
         }
 
         public virtual void StartGearBoxDecrease()
@@ -4107,7 +4148,6 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (ThrottlePercent == 0)
                             {
                                 GearBoxController.StartDecrease();
-                                Trace.TraceInformation("Controller Decrease - Current Notch {0} Indication {1} GearIndex {2}", GearBoxController.CurrentNotch, dieselloco.DieselEngines[0].GearBox.GearIndication, dieselloco.DieselEngines[0].GearBox.CurrentGearIndex);
                                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, dieselloco.DieselEngines[0].GearBox.GearIndication);
                                 AlerterReset(TCSEvent.GearBoxChanged);
                                 SignalGearBoxChangeEvents();
@@ -4129,7 +4169,6 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                 }
             }
-
             ChangeGearDown();
         }
 

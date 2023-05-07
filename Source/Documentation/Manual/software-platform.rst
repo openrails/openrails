@@ -124,6 +124,10 @@ A number of web-pages are included in the Open Rails installation as examples of
 what can be done with the APIs.
 
 Some of these sample pages repeat data from the in-game panels to provide a more convenient display.
+The sample pages can be found in the ``Content\Web`` subfolder of the OR
+program folder and the web server defaults to ``Content\Web\index.html``.
+
+If you choose to develop your own pages, please consider sharing them with the Open Rails community.
 
 - The HUD web page repeats the F5 overlay.
  
@@ -135,15 +139,13 @@ Some of these sample pages repeat data from the in-game panels to provide a more
   
 .. image:: images/web-page-both.png
 
-- The time page shows the simulation time as a digital clock and links to 3 versions of an analogue clock.
+- The Time page shows the simulation time as a digital clock and links to 3 versions of an analogue clock.
 
 .. image:: images/web-page-clock.png
 
+- The Map page shows the position and direction of the train in the real world on the OpenRailwayMap https://www.openrailwaymap.org. Different OpenRailwayMap layers are available. Usability depends on the route, position of the train is not always 100% correct.
 
-The sample pages can be found in the ``Content\Web`` subfolder of the OR
-program folder and the web server defaults to ``Content\Web\index.html``.
-
-If you choose to develop your own pages, please consider sharing them with the Open Rails community.
+.. image:: images/web-page-map.png
 
 .. _web-server-api:
 
@@ -186,6 +188,11 @@ Note: To avoid overloading the simulator, please keep API calls to once or twice
      - | ``/API/TIME``
      - | Retrieves just the simulation time in seconds since midnight.
      - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiTime``
+   * - | GET
+     - | ``/API/MAP``
+     - | Retrieves the postion and direction of the train.
+       | Next to various Open Rails route data.
+     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiMap``
    * - | GET
      - | ``/API/CABCONTROLS``
      - | Retrieves an array of the cab controls for the player localhost

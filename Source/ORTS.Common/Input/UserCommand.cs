@@ -134,6 +134,8 @@
         [GetString("Control Dynamic Brake Increase")] ControlDynamicBrakeIncrease,
         [GetString("Control Dynamic Brake Decrease")] ControlDynamicBrakeDecrease,
         [GetString("Control Bail Off")] ControlBailOff,
+        [GetString("Control Brake Quick Release")] ControlBrakeQuickRelease,
+        [GetString("Control Brake Overcharge")] ControlBrakeOvercharge,
         [GetString("Control Initialize Brakes")] ControlInitializeBrakes,
         [GetString("Control Handbrake Full")] ControlHandbrakeFull,
         [GetString("Control Handbrake None")] ControlHandbrakeNone,

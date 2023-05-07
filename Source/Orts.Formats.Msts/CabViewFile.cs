@@ -1452,6 +1452,9 @@ namespace Orts.Formats.Msts
     public class CVCScreen : CabViewControl
     {
         public readonly Dictionary<string, string> CustomParameters = new Dictionary<string, string>();
+
+        public float Rotation { get; set; }
+
         public CVCScreen()
         {
         }
@@ -1465,6 +1468,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
                 new STFReader.TokenProcessor("parameters", ()=>{ ParseCustomParameters(stf); }),
+                new STFReader.TokenProcessor("ortsangle", () =>{ Rotation = ParseRotation(stf); }),
                 new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
                 new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
                 new STFReader.TokenProcessor("hideifdisabled", ()=>{ ParseHideIfDisabled(stf); }),

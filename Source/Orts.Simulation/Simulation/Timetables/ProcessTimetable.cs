@@ -148,7 +148,7 @@ namespace Orts.Simulation.Timetables
 
             // reduce trainlist using player train info and parameters
             bool addPathNoLoadFailure;
-            trainList = BuildAITrains(trainInfoList, playerTrain, arguments, out addPathNoLoadFailure);
+            trainList = BuildAITrains(cancellation, trainInfoList, playerTrain, arguments, out addPathNoLoadFailure);
             if (!addPathNoLoadFailure) loadPathNoFailure = false;
 
             // set references (required to process commands)
@@ -256,6 +256,10 @@ namespace Orts.Simulation.Timetables
                 if (reqPlayerTrain.NeedAttach != null && reqPlayerTrain.NeedAttach.Count > 0)
                 {
                     Trace.TraceInformation("Player trains " + reqPlayerTrain.Name + " defined without engine, engine assumed to be attached later");
+                }
+                else if (reqPlayerTrain.FormedOf >= 0)
+                {
+                    Trace.TraceInformation("Player trains " + reqPlayerTrain.Name + " defined without engine, train is assumed to be formed out of other train");
                 }
                 else
                 {
@@ -752,13 +756,15 @@ namespace Orts.Simulation.Timetables
         /// <param name="allTrains"></param>
         /// <param name="playerTrain"></param>
         /// <param name="arguments"></param>
-        private List<TTTrain> BuildAITrains(List<TTTrainInfo> allTrains, TTTrainInfo playerTrain, string[] arguments, out bool allPathsLoaded)
+        private List<TTTrain> BuildAITrains(CancellationToken cancellation, List<TTTrainInfo> allTrains, TTTrainInfo playerTrain, string[] arguments, out bool allPathsLoaded)
         {
             allPathsLoaded = true;
             List<TTTrain> trainList = new List<TTTrain>();
 
             foreach (TTTrainInfo reqTrain in allTrains)
             {
+                if (cancellation.IsCancellationRequested) continue;  // ping watchdog token
+
                 // create train route
                 if (TrainRouteXRef.ContainsKey(reqTrain.Index) && Paths.ContainsKey(TrainRouteXRef[reqTrain.Index]))
                 {
@@ -1026,14 +1032,7 @@ namespace Orts.Simulation.Timetables
             {
                 if (thisTrain.TriggeredActivationRequired)
                 {
-                    if (thisTrain.Number == 0)
-                    {
-                        activatedTrains.Add(thisTrain.OrgAINumber);
-                    }
-                    else
-                    {
-                        activatedTrains.Add(thisTrain.Number);
-                    }
+                    activatedTrains.Add(thisTrain.OrgAINumber);
                 }
             }
 
@@ -1066,13 +1065,7 @@ namespace Orts.Simulation.Timetables
                         }
                         else
                         {
-                            if (activatedTrains.Contains(otherTrain.Number))
-                            {
-                                activatedTrains.Remove(otherTrain.Number);
-                                thisTrigger.activatedTrain = otherTrain.Number;
-                                thisTrain.activatedTrainTriggers.Insert(itrigger, thisTrigger);
-                            }
-                            else if (activatedTrains.Contains(otherTrain.OrgAINumber))
+                            if (activatedTrains.Contains(otherTrain.OrgAINumber))
                             {
                                 activatedTrains.Remove(otherTrain.OrgAINumber);
                                 thisTrigger.activatedTrain = otherTrain.Number;
@@ -1109,13 +1102,7 @@ namespace Orts.Simulation.Timetables
                     }
                     else
                     {
-                        if (activatedTrains.Contains(otherTrain.Number))
-                        {
-                            activatedTrains.Remove(otherTrain.Number);
-                            thisTrigger.activatedTrain = otherTrain.Number;
-                            reqPlayerTrain.activatedTrainTriggers.Insert(itrigger, thisTrigger);
-                        }
-                        else if (activatedTrains.Contains(otherTrain.OrgAINumber))
+                        if (activatedTrains.Contains(otherTrain.OrgAINumber))
                         {
                             activatedTrains.Remove(otherTrain.OrgAINumber);
                             thisTrigger.activatedTrain = otherTrain.Number;
@@ -1376,6 +1363,7 @@ namespace Orts.Simulation.Timetables
                 }
 
                 TTTrain.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
+                TTTrain.OrgAINumber = TTTrain.Number;
 
                 // derive various directory paths
                 string pathDirectory = Path.Combine(ttInfo.simulator.RoutePath, "Paths");
@@ -3192,9 +3180,11 @@ namespace Orts.Simulation.Timetables
             public string StopName;
             public int arrivalTime;
             public int departureTime;
+            public int passTime;
             public DateTime arrivalDT;
             public DateTime departureDT;
-            public bool arrdepvalid;
+            public DateTime passDT;
+            public bool arrdeppassvalid;
             public SignalHoldType holdState;
             public bool noWaitSignal;
             //          public int passageTime;   // not yet implemented
@@ -3215,17 +3205,34 @@ namespace Orts.Simulation.Timetables
                 refTTInfo = ttinfo;
                 arrivalTime = -1;
                 departureTime = -1;
+                passTime = -1;
                 Commands = null;
 
                 TimeSpan atime;
                 bool validArrTime = false;
                 bool validDepTime = false;
+                bool validPassTime = false;
 
-                validArrTime = TimeSpan.TryParse(arrTime, out atime);
-                if (validArrTime)
+                if (arrTime.Contains("P"))
                 {
-                    arrivalTime = Convert.ToInt32(atime.TotalSeconds);
-                    arrivalDT = new DateTime(atime.Ticks);
+                    string passingTime = arrTime.Replace('P', ':');
+                    validPassTime = TimeSpan.TryParse(passingTime, out atime);
+
+                    if (validPassTime)
+                    {
+                        passTime = Convert.ToInt32(atime.TotalSeconds);
+                        passDT = new DateTime(atime.Ticks);
+                    }
+                }
+                else
+                {
+
+                    validArrTime = TimeSpan.TryParse(arrTime, out atime);
+                    if (validArrTime)
+                    {
+                        arrivalTime = Convert.ToInt32(atime.TotalSeconds);
+                        arrivalDT = new DateTime(atime.Ticks);
+                    }
                 }
 
                 validDepTime = TimeSpan.TryParse(depTime, out atime);
@@ -3235,7 +3242,7 @@ namespace Orts.Simulation.Timetables
                     departureDT = new DateTime(atime.Ticks);
                 }
 
-                arrdepvalid = (validArrTime || validDepTime);
+                arrdeppassvalid = (validArrTime || validDepTime);
 
                 StopName = String.Copy(name.ToLower());
             }
@@ -3252,8 +3259,8 @@ namespace Orts.Simulation.Timetables
             {
                 bool validStop = false;
 
-                // valid stop
-                if (arrdepvalid)
+                // valid stop and not passing
+                if (arrdeppassvalid && passTime < 0)
                 {
                     // check for station flags
                     bool terminal = false;
@@ -3505,6 +3512,12 @@ namespace Orts.Simulation.Timetables
                             }
                         }
                     }
+                }
+
+                // pass time only - valid condition but not yet processed
+                if (!validStop && passTime >= 0)
+                {
+                    validStop = true;
                 }
 
                 return (validStop);

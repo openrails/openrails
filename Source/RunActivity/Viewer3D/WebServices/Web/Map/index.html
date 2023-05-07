@@ -22,18 +22,23 @@ along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
     <title>OR: Map</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
+    <link rel="shortcut icon" type="image/png" href="/../or_logo.png"><!-- This icon appears in the page's tab and its bookmark. -->
+
     <link rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css"
-        integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14="
-        crossorigin="">
+          href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css"
+          integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14="
+          crossorigin="">
 
     <script src="https://unpkg.com/jquery@3.6.0/dist/jquery.min.js"
-        integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK"
-        crossorigin="anonymous"></script>
+            integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK"
+            crossorigin="anonymous"></script>
 
     <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"
-        integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg="
-        crossorigin=""></script>
+            integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg="
+            crossorigin=""></script>
+
+    <script src="leaflet.rotatedMarker.js"></script>
+    <script src="index.js"></script>
 
     <style type="text/css">
         html, body {
@@ -50,9 +55,9 @@ along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
     </style>
 </head>
 
-<body onload="setInterval (ApiMap, 500)">
+<body>
     <div id="map"></div>
-    <script src="index.js"></script>
+    <script>setInterval(ApiMap, 500)</script>
 </body>
 </html>
 

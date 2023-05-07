@@ -898,7 +898,7 @@ namespace Orts.Simulation.RollingStocks
             double latitude = 0;
             double longitude = 0;
 
-            new Orts.Common.WorldLatLon().ConvertWTC(WorldPosition.TileX, WorldPosition.TileZ, WorldPosition.Location, ref latitude, ref longitude);
+            new WorldLatLon().ConvertWTC(WorldPosition.TileX, WorldPosition.TileZ, WorldPosition.Location, ref latitude, ref longitude);
             
             float LatitudeDeg = MathHelper.ToDegrees((float)latitude);
                       
@@ -1768,7 +1768,7 @@ namespace Orts.Simulation.RollingStocks
         public virtual void UpdateCurveSpeedLimit()
         {
             float s = AbsSpeedMpS; // speed of train
-            var train = Simulator.PlayerLocomotive.Train;//Debrief Eval
+            var train = Simulator.PlayerLocomotive != null ? Simulator.PlayerLocomotive.Train : null;//Debrief Eval (timetable train can exist without engine)
 
             // get curve radius
 
@@ -2983,7 +2983,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Don't add vibrations to train cars less than 2.5 meter in length; they're unsuitable for these calculations.
             // Don't let vibrate car before EOT to avoid EOT not moving together with that car
-            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars[Train.Cars.Count - 2] == this) return;
+            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars.Count > 1 && Train.Cars[Train.Cars.Count - 2] == this) return;
             if (Simulator.Settings.CarVibratingLevel != 0)
             {
 
@@ -3355,7 +3355,7 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// Determine latitude/longitude position of the current TrainCar
         /// </summary>
-        public LatLon GetLatLon()
+        public LatLonDirection GetLatLonDirection()
         {
             double lat = 0;
             double lon = 0;
@@ -3368,7 +3368,24 @@ namespace Orts.Simulation.RollingStocks
                 MathHelper.ToDegrees((float)lat),
                 MathHelper.ToDegrees((float)lon));
 
-            return (latLon);
+            float direction = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
+            float directionDeg = MathHelper.ToDegrees((float)direction);
+
+            if (Direction == Direction.Reverse)
+            {
+                directionDeg += 180.0f;
+            }
+            var loco = this as MSTSLocomotive;
+            if (loco.UsingRearCab)
+            {
+                directionDeg += 180.0f;
+            }
+            while (directionDeg > 360)
+            {
+                directionDeg -= 360;
+            }
+
+            return new LatLonDirection(latLon, directionDeg); ;
         }
     }
 

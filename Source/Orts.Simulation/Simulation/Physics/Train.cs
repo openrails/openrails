@@ -134,7 +134,7 @@ namespace Orts.Simulation.Physics
         // but Class VacuumSinglePipe uses it for vacuum in InHg.
         public float BrakeLine2PressurePSI;              // extra line for dual line systems, main reservoir
         public float BrakeLine3PressurePSI;              // extra line just in case, engine brake pressure
-        public float BrakeLine4 = -1;                    // extra line just in case, ep brake control line. -1: release/inactive, 0: hold, 0 < value <=1: apply
+        public float BrakeLine4 = -1;                    // extra line just in case, ep brake control line. -2: hold, -1: inactive, 0: release, 0 < value <=1: apply
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
         public float TotalTrainBrakePipeVolumeM3; // Total volume of train brake pipe
@@ -192,6 +192,7 @@ namespace Orts.Simulation.Physics
         bool AuxTenderFound = false;
         string PrevWagonType;
 
+        public bool HasControlCarWithGear = false;
 
         //To investigate coupler breaks on route
         private bool numOfCouplerBreaksNoted = false;
@@ -902,6 +903,10 @@ namespace Orts.Simulation.Physics
                         AuxActionItem auxAction = new AuxActionItem(inf, signalRef);
                         requiredActions.InsertAction(auxAction);
                         Trace.TraceWarning("DistanceTravelledItem type 4 restored as AuxActionItem");
+                        break;
+                    case 5:
+                        ClearMovingTableAction cmtAction = new ClearMovingTableAction(inf);
+                        requiredActions.InsertAction(cmtAction);
                         break;
                     default:
                         Trace.TraceWarning("Unknown type of DistanceTravelledItem (type {0}",
@@ -4012,6 +4017,8 @@ namespace Orts.Simulation.Physics
                     fullServPressurePSI = lead.BrakeSystem is VacuumSinglePipe ? 16 : maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI;
                     EqualReservoirPressurePSIorInHg = Math.Min(maxPressurePSI, EqualReservoirPressurePSIorInHg);
                     lead.TrainBrakeController.UpdatePressure(ref EqualReservoirPressurePSIorInHg, 1000, ref BrakeLine4);
+                    if (!(lead.BrakeSystem is EPBrakeSystem))
+                        BrakeLine4 = -1;
                     EqualReservoirPressurePSIorInHg =
                             MathHelper.Max(EqualReservoirPressurePSIorInHg, fullServPressurePSI);
                 }
@@ -4218,7 +4225,11 @@ namespace Orts.Simulation.Physics
             if (LeadLocomotive is MSTSLocomotive lead)
             {
                 if (lead.TrainBrakeController != null)
+                {
                     lead.TrainBrakeController.UpdatePressure(ref EqualReservoirPressurePSIorInHg, elapsedClockSeconds, ref BrakeLine4);
+                    if (!(lead.BrakeSystem is EPBrakeSystem))
+                        BrakeLine4 = -1;
+                }
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
                 lead.BrakeSystem.PropagateBrakePressure(elapsedClockSeconds);
@@ -11037,7 +11048,7 @@ namespace Orts.Simulation.Physics
                 else
                     AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxSpeedMpSLimit, Math.Min(allowedMaxSpeedSignalMpS, allowedMaxTempSpeedLimitMpS));
             }
-            if (speedInfo.MaxTempSpeedMpSLimit > 0 && !Simulator.TimetableMode)
+            if (speedInfo.MaxTempSpeedMpSLimit > 0)
             {
                 allowedMaxTempSpeedLimitMpS = allowedAbsoluteMaxTempSpeedLimitMpS;
                 AllowedMaxSpeedMpS = Math.Min(speedInfo.MaxTempSpeedMpSLimit, Math.Min(allowedMaxSpeedSignalMpS, allowedMaxSpeedLimitMpS));
@@ -11213,19 +11224,17 @@ namespace Orts.Simulation.Physics
             LastReservedSection[0] = -1;
             LastReservedSection[1] = -1;
 
-            // clear outstanding clear sections
+            // clear outstanding clear sections and remove them from queue as they are no longer required
 
-            foreach (DistanceTravelledItem thisAction in requiredActions)
+            List<DistanceTravelledItem> activeActions = requiredActions.GetActions(99999999f, typeof(ClearSectionItem));
+            foreach (DistanceTravelledItem thisAction in activeActions)
             {
-                if (thisAction is ClearSectionItem)
-                {
-                    ClearSectionItem thisItem = thisAction as ClearSectionItem;
-                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisItem.TrackSectionIndex];
-                    thisSection.ClearOccupied(this, true);
-                }
+                ClearSectionItem thisItem = thisAction as ClearSectionItem;
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisItem.TrackSectionIndex];
+                thisSection.ClearOccupied(this, true);
             }
         }
-
+    
         //================================================================================================//
         //
         // Update track actions after coupling
@@ -15837,7 +15846,7 @@ namespace Orts.Simulation.Physics
                                 {
                                     int otherSectionIndex = thisElement.Direction == 0 ?
                                         otherPlatform.TCSectionIndex[0] :
-                                        otherPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+                                        otherPlatform.TCSectionIndex[otherPlatform.TCSectionIndex.Count - 1];
                                     if (otherSectionIndex == beginSectionIndex)
                                     {
                                         if (otherPlatform.TCOffset[0, thisElement.Direction] < actualBegin)
@@ -16235,7 +16244,7 @@ namespace Orts.Simulation.Physics
         /// Clear moving table after moving table actions
         /// Dummy method to allow virtualization by child classes
         /// </summary>
-        public virtual void ClearMovingTable()
+        public virtual void ClearMovingTable(DistanceTravelledItem action)
         {
         }
 
@@ -19169,7 +19178,7 @@ namespace Orts.Simulation.Physics
             {
                 float totalLength = startOffset;
 
-                if (startSectionIndex == endSectionIndex)
+                if (startSectionIndex == endSectionIndex && startSectionIndex > -1)
                 {
                     TrackCircuitSection thisSection = signals.TrackCircuitList[this[startSectionIndex].TCSectionIndex];
                     totalLength = startOffset - (thisSection.Length - endOffset);
@@ -20345,6 +20354,13 @@ namespace Orts.Simulation.Physics
                     outf.Write(4);
                     outf.Write(RequiredDistance);
                     AuxActionItem thisAction = this as AuxActionItem;
+                    thisAction.SaveItem(outf);
+                }
+                else if (this is ClearMovingTableAction)
+                {
+                    outf.Write(5);
+                    outf.Write(RequiredDistance);
+                    ClearMovingTableAction thisAction = this as ClearMovingTableAction;
                     thisAction.SaveItem(outf);
                 }
                 else

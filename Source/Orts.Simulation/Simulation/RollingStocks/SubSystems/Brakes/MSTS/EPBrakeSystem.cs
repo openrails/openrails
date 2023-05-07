@@ -15,9 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
+using ORTS.Common;
+using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
@@ -25,61 +26,119 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
     public class EPBrakeSystem : AirTwinPipe
     {
+        bool EPBrakeControlsBrakePipe;
+
         public EPBrakeSystem(TrainCar car)
             : base(car)
         {
             DebugType = "EP";
         }
 
+
         public override void Update(float elapsedClockSeconds)
         {
-            MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
-            float demandedAutoCylPressurePSI = 0;
+            MSTSLocomotive lead = Car.Train.LeadLocomotive as MSTSLocomotive;
 
             // Only allow EP brake tokens to operate if car is connected to an EP system
-            if (lead == null || !(lead.BrakeSystem is EPBrakeSystem))
+            if (lead == null || !(lead.BrakeSystem is EPBrakeSystem) || Car.Train.BrakeLine4 == -1)
             {
                 HoldingValve = ValveState.Release;
                 base.Update(elapsedClockSeconds);
                 return;
             }
 
-            // process valid EP brake tokens
-
-            if (BrakeLine3PressurePSI >= 1000f || Car.Train.BrakeLine4 < 0)
+            if (EPBrakeControlsBrakePipe)
             {
+                if (Car.Train.BrakeLine4 >= 0)
+                {
+                    float targetPressurePSI = 0;
+                    if (Car.Train.BrakeLine4 == 0)
+                    {
+                        targetPressurePSI = lead.TrainBrakeController.MaxPressurePSI;
+                    }
+                    else if (Car.Train.BrakeLine4 > 0)
+                    {
+                        float x = Math.Min(Car.Train.BrakeLine4, 1);
+                        targetPressurePSI = lead.TrainBrakeController.MaxPressurePSI - lead.TrainBrakeController.MinReductionPSI * (1 - x) - lead.TrainBrakeController.FullServReductionPSI * x;
+                    }
+                    if (targetPressurePSI + 1 < BrakeLine1PressurePSI)
+                    {
+                        float dp = elapsedClockSeconds * MaxApplicationRatePSIpS / AuxCylVolumeRatio;
+                        if (dp > BrakeLine1PressurePSI - targetPressurePSI)
+                            dp = BrakeLine1PressurePSI - targetPressurePSI;
+                        BrakeLine1PressurePSI -= dp;
+                    }
+                    else if (targetPressurePSI > BrakeLine1PressurePSI + 1 && BrakeLine2PressurePSI > targetPressurePSI && Car.Train.BrakeLine4 < 1)
+                    {
+                        float dp = elapsedClockSeconds * MaxReleaseRatePSIpS / AuxCylVolumeRatio;
+                        if (dp > targetPressurePSI - BrakeLine1PressurePSI)
+                            dp = targetPressurePSI - BrakeLine1PressurePSI;
+                        BrakeLine1PressurePSI += dp;
+                        BrakeLine2PressurePSI -= dp;
+                    }
+                }
+                base.Update(elapsedClockSeconds);
                 HoldingValve = ValveState.Release;
-            }
-            else if (Car.Train.BrakeLine4 == 0)
-            {
-                HoldingValve = ValveState.Lap;
             }
             else
             {
-                demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI;
-                HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
-            }
-            
-
+                float demandedAutoCylPressurePSI = 0;
+                if (BrakeLine3PressurePSI >= 1000f)
+                {
+                    HoldingValve = ValveState.Release;
+                }
+                else if (Car.Train.BrakeLine4 == -2) // Holding wire on
+                {
+                    HoldingValve = ValveState.Lap;
+                }
+                else if (Car.Train.BrakeLine4 == 0)
+                {
+                    HoldingValve = ValveState.Release;
+                }
+                else
+                {
+                    demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI;
+                    HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
+                }
+                
                 base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
 
-
-            if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
-            {
-                float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
-                    dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
-                if (dp > demandedAutoCylPressurePSI - AutoCylPressurePSI)
-                    dp = demandedAutoCylPressurePSI - AutoCylPressurePSI;
-                BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
-                AutoCylPressurePSI += dp;
+                if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
+                {
+                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+                    if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
+                        dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
+                    if (dp > demandedAutoCylPressurePSI - AutoCylPressurePSI)
+                        dp = demandedAutoCylPressurePSI - AutoCylPressurePSI;
+                    BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
+                    AutoCylPressurePSI += dp;
+                }
             }
             
         }
 
+        public override void Parse(string lowercasetoken, STFReader stf)
+        {
+            switch(lowercasetoken)
+            {
+                case "wagon(ortsepbrakecontrolsbrakepipe":
+                    EPBrakeControlsBrakePipe = stf.ReadBoolBlock(false);
+                    break;
+                default:
+                    base.Parse(lowercasetoken, stf);
+                    break;
+            }
+        }
+        public override void InitializeFromCopy(BrakeSystem copy)
+        {
+            EPBrakeSystem thiscopy = (EPBrakeSystem)copy;
+            EPBrakeControlsBrakePipe = thiscopy.EPBrakeControlsBrakePipe;
+            base.InitializeFromCopy(copy);
+        }
+
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            var s = $" {Simulator.Catalog.GetString("BC")} {FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true)}";
+            var s = $" {Simulator.Catalog.GetString("BC")} {FormatStrings.FormatPressure(Car.Train.HUDWagonBrakeCylinderPSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true)}";
             if (HandbrakePercent > 0)
                 s += $" {Simulator.Catalog.GetString("Handbrake")} {HandbrakePercent:F0}%";
             return s;
@@ -88,7 +147,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
             base.Initialize(handbrakeOn, maxPressurePSI, fullServPressurePSI, immediateRelease);
-            AutoCylPressurePSI = Math.Max(AutoCylPressurePSI, Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI);
+            CylPressurePSI = AutoCylPressurePSI = Math.Max(AutoCylPressurePSI, Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI);
         }
     }
 }

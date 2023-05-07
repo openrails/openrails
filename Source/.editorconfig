@@ -1,7 +1,9 @@
 # To learn more about .editorconfig see https://aka.ms/editorconfigdocs
+# BEGIN COPY FROM https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/code-style-rule-options#example-editorconfig-file
 ###############################
 # Core EditorConfig Options   #
 ###############################
+root = true
 # All files
 [*]
 indent_style = space
@@ -58,7 +60,7 @@ dotnet_style_prefer_conditional_expression_over_return = true:silent
 ###############################
 # Style Definitions
 dotnet_naming_style.pascal_case_style.capitalization             = pascal_case
-# Use PascalCase for constant fields  
+# Use PascalCase for constant fields
 dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
 dotnet_naming_rule.constant_fields_should_be_pascal_case.style    = pascal_case_style
@@ -92,7 +94,7 @@ csharp_preferred_modifier_order = public,private,protected,internal,static,exter
 csharp_prefer_braces = true:silent
 csharp_style_deconstructed_variable_declaration = true:suggestion
 csharp_prefer_simple_default_expression = true:suggestion
-csharp_style_pattern_local_over_anonymous_function = true:suggestion
+csharp_style_prefer_local_over_anonymous_function = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
 ###############################
 # C# Formatting Rules         #
@@ -130,3 +132,29 @@ csharp_preserve_single_line_blocks = true
 [*.vb]
 # Modifier preferences
 visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public,Friend,NotOverridable,Overridable,MustOverride,Overloads,Overrides,MustInherit,NotInheritable,Static,Shared,Shadows,ReadOnly,WriteOnly,Dim,Const,WithEvents,Widening,Narrowing,Custom,Async:suggestion
+# END COPY
+
+#################################
+# Open Rails Coding Conventions #
+#################################
+[*.cs]
+
+# .NET analyzers
+dotnet_style_require_accessibility_modifiers = omit_if_default:silent
+dotnet_naming_symbols.all_fields.applicable_kinds           = field
+dotnet_naming_symbols.all_fields.applicable_accessibilities = *
+dotnet_naming_rule.all_fields_should_be_pascal_case.symbols  = all_fields
+dotnet_naming_rule.all_fields_should_be_pascal_case.style    = pascal_case_style
+dotnet_naming_rule.all_fields_should_be_pascal_case.severity = warning
+
+# StyleCop analyzers
+dotnet_diagnostic.SA1101.severity = none # Readability: PrefixLocalCallsWithThis
+dotnet_diagnostic.SA1200.severity = none # Ordering: UsingDirectivesMustBePlacedCorrectly
+dotnet_diagnostic.SA1306.severity = none # Naming: FieldNamesMustBeginWithLowerCaseLetter
+dotnet_diagnostic.SA1400.severity = none # Maintainability: AccessModifierMustBeDeclared
+dotnet_diagnostic.SA1401.severity = none # Maintainability: FieldsMustBePrivate
+dotnet_diagnostic.SA1402.severity = none # Maintainability: FileMayOnlyContainASingleType
+dotnet_diagnostic.SA1600.severity = none # Documentation: ElementsMustBeDocumented
+dotnet_diagnostic.SA1602.severity = none # Documentation: EnumerationItemsMustBeDocumented
+dotnet_diagnostic.SA1633.severity = none # Documentation: FileMustHaveHeader
+dotnet_diagnostic.SA1649.severity = none # Documentation: FileNameMustMatchTypeName

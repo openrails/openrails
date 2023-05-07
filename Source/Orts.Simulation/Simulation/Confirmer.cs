@@ -374,21 +374,55 @@ namespace Orts.Simulation
 
         void Message(CabControl control, ConfirmLevel level, string message)
         {
-            // User can suppress levels None and Information but not Warning, Error and MSGs.
-            // Cab control confirmations have level None.
-            if (level < ConfirmLevel.Information && Simulator.Settings.SuppressConfirmations)
-                return;
+            // Suppress control messages
+            //
+            // Cab control confirmations have level None. They are suppressed 
+            //      both with Information messages when suppress level is Information
+            // Control messages with level MSG are never suppressed
+            switch (Simulator.Settings.SuppressConfirmations)
+            {
+                case (int)ConfirmLevel.None:
+                    break;
+                case (int)ConfirmLevel.Information:
+                    if (level <= ConfirmLevel.Information)
+                        return;
+                    break;
+                case (int)ConfirmLevel.Warning:
+                    if (level <= ConfirmLevel.Warning)
+                        return;
+                    break;
+                case (int)ConfirmLevel.Error:
+                    if (level <= ConfirmLevel.Error)
+                        return;
+                    break;
+                default:
+                    break;
+            }
 
             var format = "{2}";
+
             // Skip control name if not a control
             if (control != CabControl.None)
                 format = "{0}: " + format;
+
             if (level >= ConfirmLevel.Information)
                 format = "{1} - " + format;
+
+            // message displays longer if more severe
 			var duration = DefaultDurationS;
 			if (level >= ConfirmLevel.Warning) duration *= 2;
 			if (level >= ConfirmLevel.MSG) duration *= 5;
-            if (DisplayMessage != null) DisplayMessage(this, new DisplayMessageEventArgs(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(level)), message), duration));
+
+            if (DisplayMessage != null)
+                DisplayMessage(
+                    this, 
+                    new DisplayMessageEventArgs(
+                        key: String.Format("{0}/{1}", control, level), 
+                        text: String.Format(
+                            format, 
+                            ConfirmText[(int)control][0], 
+                            Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(level)), message), 
+                        duration));
         }
     }
 }

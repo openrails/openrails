@@ -17,39 +17,27 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Content.Pipeline;
-using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
-using Microsoft.Xna.Framework.Content.Pipeline.Processors;
-using Orts.Viewer3D.Processes;
-using ORTS.Common;
 using System;
 using System.IO;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content.Pipeline;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Viewer3D.Processes;
+using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
     public abstract class Shader : Effect
     {
-        public Shader(GraphicsDevice graphicsDevice, string filename)
+        protected Shader(GraphicsDevice graphicsDevice, string filename)
             : base(graphicsDevice, GetEffectCode(filename))
         {
         }
 
         static byte[] GetEffectCode(string filename)
         {
-            var basePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
-            var effectFileName = System.IO.Path.Combine(basePath, filename + ".fx");
-
-            var input = new EffectContent()
-            {
-                // Bizarrely, MonoGame loads the content from the identity's filename and ignores the EffectCode property, so we don't need to bother loading the file ourselves
-                Identity = new ContentIdentity(effectFileName),
-            };
-            var context = new ProcessorContext();
-            var processor = new EffectProcessor();
-            var effect = processor.Process(input, context);
-            return effect.GetEffectCode();
+            string filePath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content", filename + ".mgfx");
+            return File.ReadAllBytes(filePath);
         }
     }
 
@@ -90,7 +78,8 @@ namespace Orts.Viewer3D
     public class SceneryShader : Shader
     {
         readonly EffectParameter world;
-        readonly EffectParameter worldViewProjection;
+        readonly EffectParameter view;
+        readonly EffectParameter projection;
         readonly EffectParameter[] lightViewProjectionShadowProjection;
         readonly EffectParameter[] shadowMapTextures;
         readonly EffectParameter shadowMapLimit;
@@ -128,10 +117,11 @@ namespace Orts.Viewer3D
             sideVector.SetValue(Vector3.Normalize(Vector3.Cross(_eyeVector, Vector3.Down)));
         }
 
-        public void SetMatrix(Matrix w, ref Matrix vp)
+        public void SetMatrix(Matrix w, ref Matrix v, ref Matrix p)
         {
             world.SetValue(w);
-            worldViewProjection.SetValue(w * vp);
+            view.SetValue(v);
+            projection.SetValue(p);
 
             int vIn = Program.Simulator.Settings.DayAmbientLight;
             
@@ -237,7 +227,8 @@ namespace Orts.Viewer3D
             : base(graphicsDevice, "SceneryShader")
         {
             world = Parameters["World"];
-            worldViewProjection = Parameters["WorldViewProjection"];
+            view = Parameters["View"];
+            projection = Parameters["Projection"];
             lightViewProjectionShadowProjection = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
             shadowMapTextures = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
             for (var i = 0; i < RenderProcess.ShadowMapCountMaximum; i++)

@@ -1135,14 +1135,16 @@ namespace Orts.Common
                         {
                             Receiver.Headlight = 1;
                             Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Neutral);
+                            Receiver.SignalEvent(Event.LightSwitchToggle);
                         }
                         break;
                     case 1:
                         Receiver.Headlight = 2;
                         Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.On);
+                        Receiver.SignalEvent(Event.LightSwitchToggle);
                         break;
                 }
-                Receiver.SignalEvent(Event.LightSwitchToggle);
+                
             }
             else
             {
@@ -1153,14 +1155,15 @@ namespace Orts.Common
                         {
                             Receiver.Headlight = 0;
                             Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Off);
+                            Receiver.SignalEvent(Event.LightSwitchToggle);
                         }
                         break;
                     case 2:
                         Receiver.Headlight = 1;
                         Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Neutral);
+                        Receiver.SignalEvent(Event.LightSwitchToggle);
                         break;
                 }
-                Receiver.SignalEvent(Event.LightSwitchToggle);
             }
         }
     }
@@ -2265,9 +2268,9 @@ namespace Orts.Common
         {
             if (Receiver?.Train != null)
             {
+                var wagonFilePath = PickedEOTType.ToLower();
                 if (ToState)
                 {
-                    var wagonFilePath = PickedEOTType.ToLower();
                     try
                     {
                         EOT eot = (EOT)RollingStock.Load(Receiver.Train.Simulator, Receiver.Train, wagonFilePath);
@@ -2284,8 +2287,14 @@ namespace Orts.Common
                 }
                 else
                 {
-                    Receiver.Train.RecalculateRearTDBTraveller();
                     var car = Receiver.Train.Cars[Receiver.Train.Cars.Count - 1];
+                    if (wagonFilePath != car.WagFilePath.ToLower())
+                    {
+                        car = Receiver.Train.Cars[0];
+                        if (Receiver.Train.LeadLocomotive != null) Receiver.Train.LeadLocomotiveIndex--;
+                    }
+                    else
+                        Receiver.Train.RecalculateRearTDBTraveller();
                     car.Train = null;
                     car.IsPartOfActiveTrain = false;  // to stop sounds
                     Receiver.Train.Cars.Remove(car);
