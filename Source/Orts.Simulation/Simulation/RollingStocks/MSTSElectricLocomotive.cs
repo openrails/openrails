@@ -131,6 +131,8 @@ namespace Orts.Simulation.RollingStocks
                     CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
                 }
             }
+
+            if (Simulator.Settings.ElectricHotStart) SetPower(true);
         }
 
         //================================================================================================//
