@@ -3860,6 +3860,8 @@ public List<CabView> CabViewList = new List<CabView>();
                     if (!CruiseControl.UseThrottleInCombinedControl) ThrottleController.SetPercent(percent);
                     return;
                 }
+                else if (CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                    CruiseControl.SetSpeed(MpS.FromMpS(percent * MaxSpeedMpS / 100, !CruiseControl.SpeedIsMph));
                 else
                     ThrottleController.SetPercent(percent);
             }
