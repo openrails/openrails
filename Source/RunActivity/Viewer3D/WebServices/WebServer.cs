@@ -90,7 +90,7 @@ namespace Orts.Viewer3D.WebServices
                 }));
             }
         }
-
+        
         public static async Task<T> DeserializationCallback<T>(IHttpContext context)
         {
             using (var text = context.OpenRequestText())
