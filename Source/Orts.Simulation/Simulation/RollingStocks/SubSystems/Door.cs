@@ -17,6 +17,7 @@
 using System.IO;
 using Orts.Common;
 using Orts.Parsers.Msts;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems
@@ -24,10 +25,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
     // Door state: do not change the order of this enum
     public enum DoorState
     {
-        Closed,
-        Closing,
-        Opening,
-        Open,
+        [GetParticularString("Door", "Closed")] Closed,
+        [GetParticularString("Door", "Closing")] Closing,
+        [GetParticularString("Door", "Opening")] Opening,
+        [GetParticularString("Door", "Open")] Open,
     }
     public enum DoorSide
     {

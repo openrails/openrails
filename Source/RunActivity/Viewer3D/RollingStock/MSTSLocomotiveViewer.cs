@@ -35,6 +35,7 @@ using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock.SubSystems;
 using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
+using Orts.Viewer3D.WebServices.SwitchPanel;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -313,7 +314,7 @@ namespace Orts.Viewer3D.RollingStock
 
             foreach (var command in UserInputCommands.Keys)
             {
-                if (UserInput.IsPressed(command))
+                if (UserInput.IsPressed(command) || SwitchPanelModule.IsPressed(command) || SwitchPanelModule.IsDown(command))
                 {
                     UserInputCommands[command][1]();
                     //Debrief eval
@@ -326,7 +327,7 @@ namespace Orts.Viewer3D.RollingStock
                         train.DbfEvalValueChanged = true;//Debrief eval
                     }
                 }
-                else if (UserInput.IsReleased(command))
+                else if (UserInput.IsReleased(command) || SwitchPanelModule.IsUp(command))
                 {
                     UserInputCommands[command][0]();
                     //Debrief eval
