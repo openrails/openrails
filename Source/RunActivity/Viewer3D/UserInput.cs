@@ -57,8 +57,14 @@ namespace Orts.Viewer3D
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(Keys key);
 
+        public static void Initialize(Game game)
+        {
+            RDState = new RailDriverState(game);
+        }
+
         public static void Update(Game game)
         {
+            RDState.Update();
             if (Orts.MultiPlayer.MPManager.IsMultiPlayer() && Orts.MultiPlayer.MPManager.Instance().ComposingText) return;
             if (InputSettings == null) InputSettings = game.Settings.Input;
             LastKeyboardState = KeyboardState;

@@ -283,6 +283,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public float SetPercent(float percent)
         {
+            if (percent > 100) SetValue(1);
             float v = (MinimumValue < 0 && percent < 0 ? -MinimumValue : MaximumValue) * percent / 100;
             CurrentValue = MathHelper.Clamp(v, MinimumValue, MaximumValue);
 

@@ -178,7 +178,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlWiper, new Action[] { Noop, () => new WipersCommand(Viewer.Log, !Locomotive.Wiper) });
             UserInputCommands.Add(UserCommand.ControlHorn, new Action[] { () => new HornCommand(Viewer.Log, false), () => new HornCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlBell, new Action[] { () => new BellCommand(Viewer.Log, false), () => new BellCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommand.ControlBellToggle, new Action[] { Noop, () => new BellCommand(Viewer.Log, !Locomotive.Bell) });
+            UserInputCommands.Add(UserCommand.ControlBellToggle, new Action[] { Noop, () => new BellCommand(Viewer.Log, !Locomotive.ManualBell) });
             UserInputCommands.Add(UserCommand.ControlAlerter, new Action[] { () => new AlerterCommand(Viewer.Log, false), () => new AlerterCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlHeadlightIncrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlHeadlightDecrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, false) });
@@ -288,6 +288,12 @@ namespace Orts.Viewer3D.RollingStock
                             break;
                         case CABViewControlTypes.ORTS_SELECTED_SPEED_SELECTOR:
                             Locomotive.CruiseControl.SelectedSpeedMpS = val;
+                            break;
+                        case CABViewControlTypes.WIPERS:
+                            if (val == 0 && Locomotive.Wiper)
+                                Locomotive.SignalEvent(Event.WiperOff);
+                            if (val != 0 && !Locomotive.Wiper)
+                                Locomotive.SignalEvent(Event.WiperOn);
                             break;
                         // Other controls can hopefully be controlled faking mouse input
                         // TODO: refactor HandleUserInput() 
