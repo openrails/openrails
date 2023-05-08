@@ -52,7 +52,7 @@ namespace Orts.Simulation.Signalling
             for (var i = 0; i < queueCount; i++)
             {
                 var queueTrain = Dequeue();
-                if (queueTrain != null & queueTrain.Train != thisTrain.Train)
+                if (queueTrain != null && queueTrain.Train != thisTrain.Train)
                     Enqueue(queueTrain);
             }
         }
