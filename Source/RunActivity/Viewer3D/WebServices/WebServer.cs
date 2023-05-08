@@ -37,7 +37,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static Orts.Common.InfoApiMap;
+using Orts.Viewer3D.WebServices.SwitchPanel;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -69,9 +69,11 @@ namespace Orts.Viewer3D.WebServices
 
             return new EmbedIO.WebServer(o => o
                     .WithUrlPrefixes(urls))
+                .WithModule(new SwitchPanelModule("/switchpanel", Program.Viewer))
                 .WithWebApi("/API", SerializationCallback, m => m
                     .WithController(() => new ORTSApiController(Program.Viewer)))
-                .WithStaticFolder("/", path, true);
+                // do not cache when debugging to make changing and testing web files easier
+                .WithStaticFolder("/", path, !System.Diagnostics.Debugger.IsAttached);
         }
 
         /// <remarks>
