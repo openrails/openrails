@@ -33,27 +33,100 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         private static readonly SwitchOnPanel[,] PreviousSwitchesOnPanelArray = new SwitchOnPanel[Rows, Cols];
         private static Viewer Viewer;
 
+        public SwitchesOnPanel(Viewer viewer)
+        {
+            Viewer = viewer;
+
+
+            for (int i = 0; i < Rows; i++)
+            {
+                for (int j = 0; j < Cols; j++)
+                {
+                    SwitchesOnPanelArray[i, j] = new SwitchOnPanel();
+                    PreviousSwitchesOnPanelArray[i, j] = new SwitchOnPanel();
+                }
+            }
+
+            setDefinitionsEmpty(SwitchesOnPanelArray);
+
+            for (int i = 0; i < Rows; i++)
+            {
+                for (int j = 0; j < Cols; j++)
+                {
+                    SwitchesOnPanelArray[i, j].initIs();
+                }
+            }
+        }
+
+        #region privateInitControl
+
         private static void initEmpty(SwitchOnPanel switchOnPanel) { switchOnPanel.init0(); }
+
         private static void initControlAlerter(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlAlerter, "reset", TypeOfButton.push); }
+
         private static void initControlCabinLight(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlLight, "cabin light"); }
+
         private static void initControlDirection(SwitchOnPanel switchOnPanel) { switchOnPanel.init2(UserCommand.ControlForwards, UserCommand.ControlBackwards, "direction"); }
+
         private static void initControlDisplayTrackMonitorWindow(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.DisplayTrackMonitorWindow, "Track Monitor"); }
+
         private static void initControlDisplayTrainDrivingWindow(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.DisplayTrainDrivingWindow, "Train Driving"); }
+
+        private static void initControlDisplayNextStationWindow(SwitchOnPanel switchOnPanel) 
+        {
+            Orts.Simulation.Activity act = Viewer.Simulator.ActivityRun;
+            if ((act != null) && (act.EventList.Count) > 0)
+            {
+                switchOnPanel.init1(UserCommand.DisplayNextStationWindow, "Activity Monitor");
+            }
+            else
+            {
+                switchOnPanel.init0(UserCommand.DisplayNextStationWindow, "Activity Monitor");
+            }
+        }
+
         private static void initControlDisplayHUD(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.DisplayHUD, "HUD"); }
+
         private static void initControlDoorLeft(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlDoorLeft, "left door"); }
+
         private static void initControlDoorRight(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlDoorRight, "right door"); }
+
         private static void initControlEmergencyPushButton(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlEmergencyPushButton, "EMERGENCY"); }
-        private static void initControlGear(SwitchOnPanel switchOnPanel) { switchOnPanel.init2(UserCommand.ControlGearUp, UserCommand.ControlGearDown, "gear"); }
+
+        private static void initControlGear(SwitchOnPanel switchOnPanel)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            if ((locomotive as MSTSDieselLocomotive).DieselEngines.HasGearBox)
+            {
+                switchOnPanel.init2(UserCommand.ControlGearUp, UserCommand.ControlGearDown, "gear");
+            }
+            else
+            {
+                switchOnPanel.init0(UserCommand.ControlGearUp, "gear");
+            }
+        }
+
         private static void initControlHeadLight(SwitchOnPanel switchOnPanel) { switchOnPanel.init2(UserCommand.ControlHeadlightIncrease, UserCommand.ControlHeadlightDecrease, "front light"); }
+
         private static void initControlMultiPlayerDispatcher(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.GameMultiPlayerDispatcher, "Map"); }
+
         private static void initControlPantograph1(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlPantograph1, "panto 1"); }
+
         private static void initControlPantograph2(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlPantograph2, "panto 2"); }
+
         private static void initControlDieselPlayer(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlDieselPlayer, "engine"); }
+
         private static void initControlDieselHelper(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlDieselHelper, "helper engine"); }
+
         private static void initControlSander(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlSander, "sander", TypeOfButton.push); }
+
         private static void initGameChangeCab(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.GameChangeCab, "change cab"); }
+
         private static void initGameSwitchManualMode(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.GameSwitchManualMode, "signal mode"); }
+
         private static void initGameAutopilotMode(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.GameAutopilotMode, "autopilot"); }
+
         private static void initControlWiper(SwitchOnPanel switchOnPanel) { switchOnPanel.init1(UserCommand.ControlWiper, "wiper"); }
 
         private static void initControlBatterySwitch(SwitchOnPanel switchOnPanel)
@@ -100,10 +173,22 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
         }
 
-        public static void setDefinitions(SwitchOnPanel[,] SwitchesOnPanelArray)
+        private static void initControlTractionCutOffRelay(SwitchOnPanel switchOnPanel)
         {
-            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+            MSTSDieselLocomotive locomotive = Viewer.PlayerLocomotive as MSTSDieselLocomotive;
+            string scriptName = locomotive.DieselPowerSupply.TractionCutOffRelay.ScriptName;
+            if (scriptName == "Automatic")
+            {
+                switchOnPanel.init0(UserCommand.ControlTractionCutOffRelayClosingOrder, "traction cut-off");
+            }
+            else
+            {
+                switchOnPanel.init1(UserCommand.ControlTractionCutOffRelayClosingOrder, "traction cut-off");
+            }
+        }
 
+        public static void setDefinitionsEmpty(SwitchOnPanel[,] SwitchesOnPanelArray)
+        {
             for (int i = 0; i < Rows; i++)
             {
                 for (int j = 0; j < Cols; j++)
@@ -111,6 +196,15 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     initEmpty(SwitchesOnPanelArray[i, j]);
                 }
             }
+        }
+
+        #endregion
+
+        public static void setDefinitions(SwitchOnPanel[,] SwitchesOnPanelArray)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            setDefinitionsEmpty(SwitchesOnPanelArray);
 
             switch (locomotive.EngineType)
             {
@@ -138,24 +232,27 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     initControlMultiPlayerDispatcher(SwitchesOnPanelArray[3, 0]);
                     initControlDisplayTrackMonitorWindow(SwitchesOnPanelArray[3, 1]);
                     initControlDisplayTrainDrivingWindow(SwitchesOnPanelArray[3, 2]);
+                    initControlDisplayNextStationWindow(SwitchesOnPanelArray[3, 3]);
                     initControlDisplayHUD(SwitchesOnPanelArray[3, 9]);
                     break;
                 case TrainCar.EngineTypes.Diesel:
                     initControlDoorLeft(SwitchesOnPanelArray[0, 0]);
                     initControlDirection(SwitchesOnPanelArray[0, 1]);
-                    if ((locomotive as MSTSDieselLocomotive).DieselEngines.HasGearBox) initControlGear(SwitchesOnPanelArray[0, 2]);
+                    initControlGear(SwitchesOnPanelArray[0, 2]);
                     initControlCabinLight(SwitchesOnPanelArray[0, 3]);
                     initControlEmergencyPushButton(SwitchesOnPanelArray[0, 4]);
                     initControlAlerter(SwitchesOnPanelArray[0, 5]);
                     initControlSander(SwitchesOnPanelArray[0, 6]);
+                    initControlWiper(SwitchesOnPanelArray[0, 6]);
                     initControlDoorRight(SwitchesOnPanelArray[0, 9]);
 
-                    initControlDieselPlayer(SwitchesOnPanelArray[1, 0]);
-                    initControlDieselHelper(SwitchesOnPanelArray[1, 1]);
-                    initControlHeadLight(SwitchesOnPanelArray[1, 2]);
-                    initControlBatterySwitch(SwitchesOnPanelArray[1, 3]);
-                    initControlMasterKey(SwitchesOnPanelArray[1, 4]);
-
+                    initControlBatterySwitch(SwitchesOnPanelArray[1, 0]);
+                    initControlMasterKey(SwitchesOnPanelArray[1, 1]);
+                    initControlDieselPlayer(SwitchesOnPanelArray[1, 2]);
+                    initControlDieselHelper(SwitchesOnPanelArray[1, 3]);
+                    initControlTractionCutOffRelay(SwitchesOnPanelArray[1, 4]);
+                    initControlHeadLight(SwitchesOnPanelArray[1, 5]);
+                    
                     initGameChangeCab(SwitchesOnPanelArray[2, 0]);
                     initGameSwitchManualMode(SwitchesOnPanelArray[2, 1]);
                     initGameAutopilotMode(SwitchesOnPanelArray[2, 2]);
@@ -163,48 +260,27 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     initControlMultiPlayerDispatcher(SwitchesOnPanelArray[3, 0]);
                     initControlDisplayTrackMonitorWindow(SwitchesOnPanelArray[3, 1]);
                     initControlDisplayTrainDrivingWindow(SwitchesOnPanelArray[3, 2]);
+                    initControlDisplayNextStationWindow(SwitchesOnPanelArray[3, 3]);
                     initControlDisplayHUD(SwitchesOnPanelArray[3, 9]);
                     break;
                 case TrainCar.EngineTypes.Steam:
                     initControlDoorLeft(SwitchesOnPanelArray[0, 0]);
                     initControlDoorRight(SwitchesOnPanelArray[0, 9]);
+                    initControlMultiPlayerDispatcher(SwitchesOnPanelArray[3, 0]);
+                    initControlDisplayTrackMonitorWindow(SwitchesOnPanelArray[3, 1]);
+                    initControlDisplayTrainDrivingWindow(SwitchesOnPanelArray[3, 2]);
+                    initControlDisplayNextStationWindow(SwitchesOnPanelArray[3, 3]);
+                    initControlDisplayHUD(SwitchesOnPanelArray[3, 9]);
                     break;
                 case TrainCar.EngineTypes.Control:
                     // currently do not know what to do with this type
+
+                    initControlMultiPlayerDispatcher(SwitchesOnPanelArray[3, 0]);
+                    initControlDisplayTrackMonitorWindow(SwitchesOnPanelArray[3, 1]);
+                    initControlDisplayTrainDrivingWindow(SwitchesOnPanelArray[3, 2]);
+                    initControlDisplayNextStationWindow(SwitchesOnPanelArray[3, 3]);
+                    initControlDisplayHUD(SwitchesOnPanelArray[3, 9]);
                     break;
-            }
-        }
-
-        public SwitchesOnPanel(Viewer viewer)
-        {
-            Viewer = viewer;
-
-
-            for (int i = 0; i < Rows; i++)
-            {
-                for (int j = 0; j < Cols; j++)
-                {
-                    SwitchesOnPanelArray[i, j] = new SwitchOnPanel();
-                    PreviousSwitchesOnPanelArray[i, j] = new SwitchOnPanel();
-                }
-            }
-
-            setDefinitions(SwitchesOnPanelArray);
-
-            for (int i = 0; i < Rows; i++)
-            {
-                for (int j = 0; j < Cols; j++)
-                {
-                    SwitchesOnPanelArray[i, j].initIs();
-                }
-            }
-
-            for (int i = 0; i < Rows; i++)
-            {
-                for (int j = 0; j < Cols; j++)
-                {
-                    getStatus(SwitchesOnPanelArray[i, j].Definition.UserCommand[0], ref SwitchesOnPanelArray[i, j].Status);
-                }
             }
         }
 
@@ -333,6 +409,8 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
             return false;
         }
+
+        #region privateGetStatus
 
         private static void getStatusDoors(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
         {
@@ -589,30 +667,53 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             switchOnPanelStatus.Status += locomotive.ElectricPowerSupply.CircuitBreaker.State.ToString();
         }
 
+        private static void getStatusTractionCutOffRelay(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSDieselLocomotive locomotive = Viewer.PlayerLocomotive as MSTSDieselLocomotive;
+
+            switchOnPanelStatus.Status = "";
+            switchOnPanelStatus.Color = "";
+
+            string scriptName = locomotive.DieselPowerSupply.TractionCutOffRelay.ScriptName;
+            if (scriptName == "Automatic")
+            {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Automatic") + " <br> ";
+                switchOnPanelStatus.Color = "lightgray";
+            }
+
+            switch (locomotive.DieselPowerSupply.TractionCutOffRelay.State)
+            {
+                case TractionCutOffRelayState.Closing:
+                    if (switchOnPanelStatus.Color == "")
+                        switchOnPanelStatus.Color = "lightblue";
+                    switchOnPanelStatus.Blinking = true;
+                    break;
+                case TractionCutOffRelayState.Closed:
+                    if (switchOnPanelStatus.Color == "")
+                        switchOnPanelStatus.Color = "lightblue";
+                    break;
+            }
+            switchOnPanelStatus.Status += locomotive.DieselPowerSupply.TractionCutOffRelay.State.ToString();
+        }
 
         private static void getStatusDieselEnginePlayerHelper(MSTSDieselLocomotive Locomotive, ref SwitchOnPanelStatus switchOnPanelStatus)
         {
             switch (Locomotive.DieselEngines.State)
             {
                 case DieselEngineState.Stopped:
-                    // switchOnPanelStatus.Status = Viewer.Catalog.GetString("Stopped");
                     break;
                 case DieselEngineState.Starting:
-                    // switchOnPanelStatus.Status = Viewer.Catalog.GetString("Starting");
                     switchOnPanelStatus.Color = "lightblue";
                     switchOnPanelStatus.Blinking = true;
                     break;
                 case DieselEngineState.Running:
-                    // switchOnPanelStatus.Status = Viewer.Catalog.GetString("Running");
                     switchOnPanelStatus.Color = "lightblue";
                     break;
                 case DieselEngineState.Stopping:
-                    // switchOnPanelStatus.Status = Viewer.Catalog.GetString("Stopping");
                     switchOnPanelStatus.Color = "lightblue";
                     switchOnPanelStatus.Blinking = true;
                     break;
                 case DieselEngineState.Unavailable:
-                    // switchOnPanelStatus.Status = Viewer.Catalog.GetString("Unavailable");
                     switchOnPanelStatus.Color = "lightgray";
                     break;
             }
@@ -641,6 +742,8 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 }
             }
         }
+
+        #endregion
 
         public static void getStatus(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
         {
@@ -700,6 +803,9 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     break;
                 case UserCommand.ControlDieselHelper:
                     getStatusDieselEngine(UserCommand.ControlDieselHelper, ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlTractionCutOffRelayClosingOrder:
+                    getStatusTractionCutOffRelay(ref switchOnPanelStatus);
                     break;
             }
         }
