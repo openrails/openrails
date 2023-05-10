@@ -277,8 +277,8 @@ namespace ORTS.Settings
         public string WindowSize { get; set; }
         [Default(false)]
         public bool WindowGlass { get; set; }
-        [Default(false)]
-        public bool SuppressConfirmations { get; set; }
+        [Default(0)]
+        public int SuppressConfirmations { get; set; }
         [Default(2150)]
         public int WebServerPort { get; set; }
         [Default(false)]

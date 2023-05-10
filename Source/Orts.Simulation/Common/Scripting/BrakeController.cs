@@ -76,6 +76,11 @@ namespace ORTS.Scripting.Api
         public bool IsCabPowerSupplyOn() => LocomotivePowerSupply.CabPowerSupplyOn;
 
         /// <summary>
+        /// Brake pipe pressure
+        /// </summary>
+        public float BrakePipePressureBar() => Bar.FromPSI(Host.Locomotive.BrakeSystem.BrakeLine1PressurePSI);
+
+        /// <summary>
         /// Main reservoir pressure
         /// </summary>
         public float MainReservoirPressureBar()
@@ -135,7 +140,6 @@ namespace ORTS.Scripting.Api
         /// Release rate of the equalizing reservoir
         /// </summary>
         public float MinReductionBar() => Bar.FromPSI(Host.MinReductionPSI);
-        
         /// <summary>
         /// Current value of the brake controller
         /// </summary>
@@ -222,11 +226,11 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public void SetDynamicBrakeIntervention(float value)
         {
-            // TODO: Set dynamic brake intervention instead of controller position
-            // There are some issues that need to be identified and fixed before setting the intervention directly
-            if (Locomotive.DynamicBrakeController == null) return;
-            Locomotive.DynamicBrakeChangeActiveState(value > 0);
-            Locomotive.DynamicBrakeController.SetValue(value);
+            if (value > 0 && Host.TrainDynamicBrakeIntervention <= 0)
+                Host.TrainDynamicBrakeCommandStartTime = Host.Simulator.ClockTime;
+            if (value <= 0)
+                Host.TrainDynamicBrakeIntervention = -1;
+            else Host.TrainDynamicBrakeIntervention = Math.Min(value, 1);
         }
 
         /// <summary>
@@ -359,6 +363,8 @@ namespace ORTS.Scripting.Api
         SMEFullServ,        // TrainBrakesControllerSMEFullServiceStart
         SMESelfLap,         // TrainBrakesControllerSMEHoldStart
         SMEReleaseStart,    // TrainBrakesControllerSMEReleaseStart
+        HoldEngine,        // TrainBrakesControllerHoldEngineStart
+        BailOff,            // EngineBrakesControllerBailOffStart
     };
 
     public static class ControllerStateDictionary
@@ -405,7 +411,9 @@ namespace ORTS.Scripting.Api
             {ControllerState.SMEOnly, Catalog.GetString("SME Service")},
             {ControllerState.SMEFullServ, Catalog.GetString("SME Full Service")},
             {ControllerState.SMESelfLap, Catalog.GetString("SME Self Lap")},
-            {ControllerState.SMEReleaseStart, Catalog.GetString("SME Release Start")}
+            {ControllerState.SMEReleaseStart, Catalog.GetString("SME Release Start")},
+            {ControllerState.HoldEngine, Catalog.GetString("Hold Engine")},
+            {ControllerState.BailOff, Catalog.GetString("Bail Off")}
         };
     }
 }

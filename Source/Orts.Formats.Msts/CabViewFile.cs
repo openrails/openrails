@@ -343,6 +343,11 @@ namespace Orts.Formats.Msts
     {
         public CABViewControlTypes Type;
         public int Id;
+        public CabViewControlType(CABViewControlTypes type)
+        {
+            Type = type;
+            Id = 0;
+        }
         public CabViewControlType(string name)
         {
             Type = CABViewControlTypes.NONE;
