@@ -114,6 +114,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             AuxBrakeLineVolumeRatio = thiscopy.AuxBrakeLineVolumeRatio;
             EmergResVolumeM3 = thiscopy.EmergResVolumeM3;
             BrakePipeVolumeM3 = thiscopy.BrakePipeVolumeM3;
+            CylVolumeM3 = thiscopy.CylVolumeM3;
             RetainerPressureThresholdPSI = thiscopy.RetainerPressureThresholdPSI;
             ReleaseRatePSIpS = thiscopy.ReleaseRatePSIpS;
             MaxReleaseRatePSIpS = thiscopy.MaxReleaseRatePSIpS;
@@ -258,6 +259,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortsbrakerelayvalveapplicationrate": RelayValveApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsbrakerelayvalvereleaserate": RelayValveReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsmaxtriplevalvecylinderpressure": MaxTripleValveCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "wagon(ortsbrakecylindervolume": CylVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
             }
         }
 
@@ -280,7 +282,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(AngleCockBOpen);
             outf.Write(BleedOffValveOpen);
             outf.Write((int)HoldingValve);
-            outf.Write(CylVolumeM3);
         }
 
         public override void Restore(BinaryReader inf)
@@ -302,7 +303,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             AngleCockBOpen = inf.ReadBoolean();
             BleedOffValveOpen = inf.ReadBoolean();
             HoldingValve = (ValveState)inf.ReadInt32();
-            CylVolumeM3 = inf.ReadSingle();
         }
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
@@ -351,7 +351,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             else
                 AuxBrakeLineVolumeRatio = 3.1f;
                      
-            CylVolumeM3 = EmergResVolumeM3 / EmergAuxVolumeRatio / AuxCylVolumeRatio;
+            if (CylVolumeM3 == 0) CylVolumeM3 = EmergResVolumeM3 / EmergAuxVolumeRatio / AuxCylVolumeRatio;
             
             RelayValveFitted |= (loco != null && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) || (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve;
         }
@@ -660,11 +660,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     float dp = elapsedClockSeconds * RelayValveApplicationRatePSIpS;
                     if (dp > demandedPressurePSI - CylPressurePSI)
                         dp = demandedPressurePSI - CylPressurePSI;
-                    if (TwoPipes)
+                    
+                    // TODO: Implement a brake reservoir which keeps some air available in case of main reservoir leakage
+                    // Currently we drain from the main reservoir directly
+                    if (loco != null)
                     {
-                        if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < CylPressurePSI + dp)
-                            dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
-                        BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
+                        float volumeRatio = CylVolumeM3 / loco.MainResVolumeM3;
+                        if (loco.MainResPressurePSI - dp * volumeRatio < CylPressurePSI + dp)
+                            dp = (loco.MainResPressurePSI - CylPressurePSI) / (1 + volumeRatio);
+                        loco.MainResPressurePSI -= dp * volumeRatio;
+                    }
+                    else if (TwoPipes)
+                    {
+                        if (BrakeLine2PressurePSI - dp * CylVolumeM3 / BrakePipeVolumeM3 < CylPressurePSI + dp)
+                            dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + CylVolumeM3 / BrakePipeVolumeM3);
+                        BrakeLine2PressurePSI -= dp * CylVolumeM3 / BrakePipeVolumeM3;
                     }
                     if (MaxCylPressurePSI < CylPressurePSI + dp)
                         dp = MaxCylPressurePSI - CylPressurePSI;
