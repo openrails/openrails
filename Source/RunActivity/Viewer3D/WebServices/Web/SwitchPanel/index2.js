@@ -78,7 +78,7 @@ function sendButtonUp(userCommand) {
 
 function sendMessage(type, toSend) {
 
-    console.log('sending message');
+    console.log('sending message, readyState = ' + websocket.readyState);
     if (websocket.readyState === 1) {
         websocket.send(JSON.stringify({
             type: type,
@@ -155,7 +155,7 @@ function updateOneCell(cell, cellData, cellDataPrevious) {
         updateCellDefinition(cell, definition);
         copyDefinition(definitionPrevious, definition);
     }
-    updateCellStatus(cell, definition, status);
+    updateCellStatus(definition, status);
 }
 
 function updateCellDefinition(cell, definition) {
@@ -284,12 +284,10 @@ function updateCellWithTwoButtons(div, definition) {
     div.appendChild(label);
 }
 
-function updateCellStatus(cell, definition, status) {
+function updateCellStatus(definition, status) {
 
     let switchButton = document.getElementById(definition.UserCommand[0]);
     if (switchButton) {
-        // switchButton.textContent = status.Status;
-        // switchButton.innerHTML = "qqq1 <br> qqq2";
         switchButton.innerHTML = status.Status;
         switchButton.style.background = status.Color;
         if (status.Blinking) {

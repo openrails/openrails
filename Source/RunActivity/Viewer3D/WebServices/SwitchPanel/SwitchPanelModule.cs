@@ -156,7 +156,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         {
             bool toBeReturned = false;
 
-            if (InitDone)
+            if ((Connections > 0) && InitDone)
             {
                 if (SwitchesOnPanel.IsPressed(userCommand))
                 {
@@ -176,43 +176,34 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                             break;
                     }
                 }
+
             }
             return toBeReturned;
         }
 
         public static bool IsDown(UserCommand userCommand)
         {
-            if (Connections > 0)
+            if ((Connections > 0) && InitDone)
             {
-                if (InitDone)
-                {
-                    if (SwitchesOnPanel.IsDown(userCommand))
-                    {
-                        return true;
-                    }
-                }
+                if (SwitchesOnPanel.IsDown(userCommand))
+                    return true;
             }
             return false;
         }
 
         public static bool IsUp(UserCommand userCommand)
         {
-            if (Connections > 0)
+            if ((Connections > 0) && InitDone)
             {
-                if (InitDone)
-                {
-                    if (SwitchesOnPanel.IsUp(userCommand))
-                    {
-                        return true;
-                    }
-                }
+                if (SwitchesOnPanel.IsUp(userCommand))
+                    return true;
             }
             return false;
         }
 
-        public static void SendAllSwitchStatus()
+        public static void SendSwitchPanelIfChanged()
         {
-            if ((Connections > 0) && (InitDone))
+            if ((Connections > 0) && InitDone)
             {
                 int rows = SwitchesOnPanel.GetSwitchesOnPanelArray().GetLength(0);
                 int cols = SwitchesOnPanel.GetSwitchesOnPanelArray().GetLength(1);

@@ -859,7 +859,7 @@ namespace Orts.Viewer3D
 
             WindowManager.PrepareFrame(frame, elapsedTime);
 
-            SwitchPanelModule.SendAllSwitchStatus();
+            SwitchPanelModule.SendSwitchPanelIfChanged();
         }
 
         private void LoadDefectCarSound(TrainCar car, string filename)

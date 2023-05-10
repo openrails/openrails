@@ -36,6 +36,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             Definition.Button = TypeOfButton.none;
             Definition.UserCommand = new UserCommand[] { userCommand };
             Definition.Description = description;
+            initIs();
         }
 
         // 1 button
@@ -45,6 +46,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             Definition.Button = typeOfButton;
             Definition.UserCommand = new UserCommand[] { userCommand };
             Definition.Description = description;
+            initIs();
         }
 
         // 2 buttons
@@ -54,6 +56,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             Definition.Button = typeOfButton;
             Definition.UserCommand = new UserCommand[] { userCommandTop, userCommandBottom };
             Definition.Description = description;
+            initIs();
         }
 
         public void initIs()
