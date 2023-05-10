@@ -41,6 +41,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float ControlResPressurePSI = 64;
         protected float FullServPressurePSI = 50;
         protected float MaxCylPressurePSI = 64;
+        protected float MaxTripleValveCylPressurePSI;
         protected float AuxCylVolumeRatio = 2.5f;
         protected float AuxBrakeLineVolumeRatio;
         protected float EmergResVolumeM3 = 0.07f;
@@ -53,6 +54,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float EmergencyValveActuationRatePSIpS = 0;
         protected float EmergResChargingRatePSIpS = 1.684f;
         protected float EmergAuxVolumeRatio = 1.4f;
+        protected bool RelayValveFitted = false;
+        public float RelayValveRatio { get; protected set; } = 1;
+        protected float RelayValveApplicationRatePSIpS = 50;
+        protected float RelayValveReleaseRatePSIpS = 50;
         protected string DebugType = string.Empty;
         protected string RetainerDebugState = string.Empty;
         protected bool MRPAuxResCharging;
@@ -121,6 +126,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             TwoPipes = thiscopy.TwoPipes;
             MRPAuxResCharging = thiscopy.MRPAuxResCharging;
             HoldingValve = thiscopy.HoldingValve;
+            RelayValveFitted = thiscopy.RelayValveFitted;
+            RelayValveRatio = thiscopy.RelayValveRatio;
+            RelayValveApplicationRatePSIpS = thiscopy.RelayValveApplicationRatePSIpS;
+            RelayValveReleaseRatePSIpS = thiscopy.RelayValveReleaseRatePSIpS;
+            MaxTripleValveCylPressurePSI = thiscopy.MaxTripleValveCylPressurePSI;
         }
 
         // Get the brake BC & BP for EOT conditions
@@ -233,6 +243,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortsbrakeinsensitivity": BrakeInsensitivityPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 0.07f); break;
                 case "wagon(ortsemergencyvalveactuationrate": EmergencyValveActuationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 15f); break;
                 case "wagon(ortsmainrespipeauxrescharging": MRPAuxResCharging = this is AirTwinPipe && stf.ReadBoolBlock(true); break;
+                case "wagon(ortsbrakerelayvalveratio":
+                    RelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null);
+                    if (RelayValveRatio != 0)
+                    {
+                        RelayValveFitted = true;
+                    }
+                    else
+                    {
+                        RelayValveRatio = 1;
+                        RelayValveFitted = false;
+                    }
+                    break;
+                case "wagon(ortsbrakerelayvalveapplicationrate": RelayValveApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "wagon(ortsbrakerelayvalvereleaserate": RelayValveReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "wagon(ortsmaxtriplevalvecylinderpressure": MaxTripleValveCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
             }
         }
 
@@ -298,13 +323,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (Car.Simulator.Settings.SimpleControlPhysics && EmergResVolumeM3 > 2.0)
                 EmergResVolumeM3 = 0.7f;
 
+            if (MaxTripleValveCylPressurePSI == 0) MaxTripleValveCylPressurePSI = MaxCylPressurePSI / RelayValveRatio;
+
             BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
             if (maxPressurePSI > 0)
                 ControlResPressurePSI = maxPressurePSI;
             FullServPressurePSI = fullServPressurePSI;
-            CylPressurePSI = AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
+            AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
+            CylPressurePSI = AutoCylPressurePSI * RelayValveRatio;
             AuxResPressurePSI = Math.Max(TwoPipes ? maxPressurePSI : maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
             if ((Car as MSTSWagon).EmergencyReservoirPresent)
                 EmergResPressurePSI = Math.Max(AuxResPressurePSI, maxPressurePSI);
@@ -324,6 +352,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AuxBrakeLineVolumeRatio = 3.1f;
                      
             CylVolumeM3 = EmergResVolumeM3 / EmergAuxVolumeRatio / AuxCylVolumeRatio;
+            
+            RelayValveFitted |= (loco != null && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) || (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve;
         }
 
         /// <summary>
@@ -420,8 +450,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     dp = (AuxResPressurePSI - AutoCylPressurePSI) * AuxCylVolumeRatio / (1 + AuxCylVolumeRatio);
                 if (((Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.Distributor) && TripleValveState != ValveState.Emergency && dp > threshold - AutoCylPressurePSI)
                     dp = threshold - AutoCylPressurePSI;
-                if (AutoCylPressurePSI + dp > MaxCylPressurePSI)
-                    dp = MaxCylPressurePSI - AutoCylPressurePSI;
+                if (AutoCylPressurePSI + dp > MaxTripleValveCylPressurePSI)
+                    dp = MaxTripleValveCylPressurePSI - AutoCylPressurePSI;
                 if (BrakeLine1PressurePSI > AuxResPressurePSI - dp / AuxCylVolumeRatio && !BleedOffValveOpen)
                     dp = (AuxResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
                 if (dp < 0)
@@ -527,11 +557,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (AutoCylPressurePSI < 0)
                 AutoCylPressurePSI = 0;
             
-            if (Car is MSTSLocomotive && (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve)
+            float demandedPressurePSI = 0;
+            var loco = Car as MSTSLocomotive;
+            if (loco != null && (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve)
             {
                 // For distributing valves, we use AutoCylPressurePSI as "Application Chamber/Pipe" pressure
                 // CylPressurePSI is the actual pressure applied to cylinders
-                var loco = Car as MSTSLocomotive;
                 var engineBrakeStatus = loco.EngineBrakeController.Notches[loco.EngineBrakeController.CurrentNotch].Type;
                 var trainBrakeStatus = loco.TrainBrakeController.Notches[loco.TrainBrakeController.CurrentNotch].Type;
                  // BailOff
@@ -544,8 +575,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 if (trainBrakeStatus == ControllerState.Emergency)
                 {
                     float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                    if (dp > MaxCylPressurePSI - AutoCylPressurePSI)
-                        dp = MaxCylPressurePSI - AutoCylPressurePSI;
+                    if (dp > MaxCylPressurePSI / RelayValveRatio - AutoCylPressurePSI)
+                        dp = MaxCylPressurePSI / RelayValveRatio - AutoCylPressurePSI;
                     AutoCylPressurePSI += dp;
                 }
                 // Release pipe open
@@ -558,15 +589,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     loco.Train.BrakeLine3PressurePSI = AutoCylPressurePSI;
 
                 // Equalization between application chamber and brake cylinders
-                // TODO: Drain air from main reservoir
-                CylPressurePSI = AutoCylPressurePSI;
+                demandedPressurePSI = AutoCylPressurePSI;
             }
             else
             {
-                if (Car is MSTSLocomotive loco && loco.EngineType != TrainCar.EngineTypes.Control)  // TODO - Control cars ned to be linked to power suppy requirements.
+                demandedPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
+                if (loco != null && loco.EngineType != TrainCar.EngineTypes.Control)  // TODO - Control cars ned to be linked to power suppy requirements.
                 {
-                    float demandedPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
-                    //    if (Car is MSTSLocomotive loco && loco.LocomotivePowerSupply.MainPowerSupplyOn)
                     if (loco.LocomotivePowerSupply.MainPowerSupplyOn)
                     {
                         if (loco.Train.LeadLocomotiveIndex >= 0)
@@ -600,6 +629,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     {
                                         demandedPressurePSI = CylPressurePSI;
                                     }
+                                    demandedPressurePSI /= RelayValveRatio;
                                     if (demandedPressurePSI < BrakeLine3PressurePSI)
                                         demandedPressurePSI = BrakeLine3PressurePSI;
                                 }
@@ -621,33 +651,34 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             }
                         }
                     }
-                    // TODO: this first clause is intended for locomotives fitted with some sort of proportional valve
-                    // i.e. the triple valve is not directly attached to the physical brake cylinder
-                    // This allows e.g. blending, variable load, or higher pressures than provided by triple valves
-                    if (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakeAutoBailOff)
-                    {
-                        if (demandedPressurePSI > CylPressurePSI)
-                        {
-                            float dp = elapsedClockSeconds * loco.EngineBrakeApplyRatePSIpS;
-                            if (dp > demandedPressurePSI - CylPressurePSI)
-                                dp = demandedPressurePSI - CylPressurePSI;
-                            /* TODO: Proportional valves need air from the main reservoir
-                            if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < CylPressurePSI + dp)
-                                dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
-                            BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;*/
-                            CylPressurePSI += dp;
-                        }
-                        else if (demandedPressurePSI < CylPressurePSI) CylPressurePSI = Math.Max(demandedPressurePSI, CylPressurePSI - elapsedClockSeconds * loco.EngineBrakeReleaseRatePSIpS);
-                    }
-                    else // Rest of cases
-                    {
-                        CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
-                    }
                 }
-                else
+            }
+            if (RelayValveFitted)
+            {
+                demandedPressurePSI *= RelayValveRatio;
+                if (demandedPressurePSI > CylPressurePSI)
                 {
-                    CylPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
+                    float dp = elapsedClockSeconds * RelayValveApplicationRatePSIpS;
+                    if (dp > demandedPressurePSI - CylPressurePSI)
+                        dp = demandedPressurePSI - CylPressurePSI;
+                    if (TwoPipes)
+                    {
+                        if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < CylPressurePSI + dp)
+                            dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
+                        BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
+                    }
+                    if (MaxCylPressurePSI < CylPressurePSI + dp)
+                        dp = MaxCylPressurePSI - CylPressurePSI;
+                    CylPressurePSI += dp;
                 }
+                else if (demandedPressurePSI < CylPressurePSI)
+                {
+                    CylPressurePSI = Math.Max(Math.Max(demandedPressurePSI, CylPressurePSI - elapsedClockSeconds * RelayValveReleaseRatePSIpS), 0);
+                }
+            }
+            else
+            {
+                CylPressurePSI = demandedPressurePSI;
             }
 
             // During braking wheelslide control is effected throughout the train by additional equipment on each vehicle. In the piping to each pair of brake cylinders are fitted electrically operated 
@@ -670,7 +701,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     Car.WheelBrakeSlideProtectionActive = true;
                     AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
-                    CylPressurePSI = AutoCylPressurePSI;
                     Car.WheelBrakeSlideProtectionTimerS -= elapsedClockSeconds;
 
                     // Lockout WSP dump valve if it is open for greater then 7 seconds continuously
