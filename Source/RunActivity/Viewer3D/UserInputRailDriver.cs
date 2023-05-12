@@ -172,12 +172,15 @@ namespace Orts.Viewer3D
                     BailOff.IsDown = Percentage(readBuffer[5], calOff, calOn) > 50;
                     Wipers.Value = (int)(.01 * Percentage(readBuffer[6], wipers) + 2.5) == 1 ? 0 : 1;
                     Lights.Value = (int)(.01 * Percentage(readBuffer[7], headlight) + 2.5);
-
-                    foreach (var buttonList in Commands.Values)
+                }
+                foreach (var command in Commands.Keys)
+                {
+                    var buttonList = Commands[command];
+                    foreach (var button in buttonList)
                     {
-                        foreach (var button in buttonList)
+                        if (button is RailDriverButton rd && (Active || command == UserCommand.GameExternalCabController))
                         {
-                            if (button is RailDriverButton rd) rd.Update(readBuffer);
+                            rd.Update(readBuffer);
                         }
                     }
                 }
