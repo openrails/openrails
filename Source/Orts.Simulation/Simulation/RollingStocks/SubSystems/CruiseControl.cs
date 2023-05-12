@@ -506,7 +506,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     trainBrakePercent = 0;
                 }
                 else if ((Locomotive.TrainBrakeController.MaxPressurePSI - Locomotive.BrakeSystem.BrakeLine1PressurePSI > 1 ||
-                    Locomotive.Train.BrakeLine4 > 0 && TrainBrakePriority) && !CCIsUsingTrainBrake)
+                    Locomotive.Train.BrakeLine4 > 0) && TrainBrakePriority && !CCIsUsingTrainBrake)
                 {
                     reducingForce = true;
                     timeFromEngineMoved = 0;
