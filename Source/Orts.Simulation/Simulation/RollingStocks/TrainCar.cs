@@ -484,6 +484,7 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
+                float percent = -1;
                 if (RemoteControlGroup == 0 && Train != null)
                 {
                     if (Train.LeadLocomotive is MSTSLocomotive locomotive)
@@ -494,16 +495,17 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
 
-                    return Train.MUDynamicBrakePercent;
+                    percent = Train.MUDynamicBrakePercent;
                 }
                 else if (RemoteControlGroup == 1 && Train != null)
                 {
-                    return Train.DPDynamicBrakePercent;
+                    percent = Train.DPDynamicBrakePercent;
                 }
                 else
                 {
-                    return LocalDynamicBrakePercent;
+                    percent = LocalDynamicBrakePercent;
                 }
+                return Math.Max(percent, this is MSTSLocomotive loco ? loco.DynamicBrakeBlendingPercent : -1);
             }
             set
             {

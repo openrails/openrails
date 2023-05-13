@@ -373,14 +373,14 @@ namespace Orts.Simulation.RollingStocks
         public bool DynamicBrakePartialBailOff;
         public bool UsingRearCab;
         public bool BrakeOverchargeSoundOn = false;
-
-        protected bool DynamicBrakeBlended; // dynamic brake blending is currently active
         protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
         public bool DynamicBrakeAvailable; // dynamic brake is available
         AirSinglePipe airPipeSystem;
-        public double DynamicBrakeCommandStartTime;
+        public double? DynamicBrakeCommandStartTime;
         protected bool DynamicBrakeBlendingOverride; // true when DB lever >0% should always override the blending. When false, the bigger command is applied.
         protected bool DynamicBrakeBlendingForceMatch = true; // if true, dynamic brake blending tries to achieve the same braking force as the airbrake would have.
+
+        public float DynamicBrakeBlendingPercent { get; protected set; } = -1;
 
         public CombinedControl CombinedControlType;
         public float CombinedControlSplitPosition;
@@ -439,8 +439,6 @@ public List<CabView> CabViewList = new List<CabView>();
         public float TrainBrakeIntervention = -1;
         public float ThrottleIntervention = -1;
         public float DynamicBrakeIntervention = -1;
-        protected float PreviousDynamicBrakeIntervention = -1;
-        protected bool PreviousFullDynamicBrakingOrder;
 
         public enum TractionMotorTypes
         {
@@ -1191,7 +1189,6 @@ public List<CabView> CabViewList = new List<CabView>();
             MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
             BrakePipeDischargeTimeFactor = locoCopy.BrakePipeDischargeTimeFactor;
             DriveWheelOnlyBrakes = locoCopy.DriveWheelOnlyBrakes;
-            DynamicBrakeBlended = locoCopy.DynamicBrakeBlended;
             DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
             DynamicBrakeAvailable = locoCopy.DynamicBrakeAvailable;
             airPipeSystem = locoCopy.airPipeSystem;
@@ -1384,8 +1381,6 @@ public List<CabView> CabViewList = new List<CabView>();
                 TrainBrakeController = new ScriptedBrakeController(this);
             if (dynamic && !DynamicBrakeController.IsValid())
                 DynamicBrakeController = new MSTSNotchController(0, 1, .05f);
-            if (dynamic)
-                DynamicBrake = true;
         }
 
         /// <summary>
@@ -1821,49 +1816,23 @@ public List<CabView> CabViewList = new List<CabView>();
                 float maxCylPressurePSI = airPipeSystem.GetMaxCylPressurePSI();
                 float target = airPipeSystem.AutoCylPressurePSI * airPipeSystem.RelayValveRatio / maxCylPressurePSI;
 
-                if (!DynamicBrakeBlended)
+                if (DynamicBrakeBlendingForceMatch)
                 {
-                    DynamicBrakeBlended = true;
-                    if (DynamicBrakeController != null)
-                        DynamicBrakeIntervention = DynamicBrakeController.CurrentValue;
-                    else
-                        DynamicBrakeIntervention = 0;
-                    DynamicBrakeCommandStartTime = Simulator.ClockTime;
+                    float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
+                    float threshold = 100;
+                    if (diff > threshold && DynamicBrakePercent < 100)
+                        DynamicBrakeBlendingPercent = Math.Min(DynamicBrakePercent + 100 * elapsedClockSeconds, 100);
+                    else if (diff < -threshold && DynamicBrakePercent > 1)
+                        DynamicBrakeBlendingPercent = Math.Max(DynamicBrakePercent - 100 * elapsedClockSeconds, 1);
                 }
-                if (DynamicBrake)
+                else
                 {
-                    if (DynamicBrakeBlendingForceMatch)
-                    {
-                        float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
-                        float threshold = 100;
-                        if (diff > threshold && DynamicBrakeIntervention < 1)
-                            DynamicBrakeIntervention = Math.Min(DynamicBrakeIntervention + elapsedClockSeconds, 1);
-                        else if (diff < -threshold && DynamicBrakeIntervention > 0.01f)
-                            DynamicBrakeIntervention = Math.Max(DynamicBrakeIntervention - elapsedClockSeconds, 0.01f);
-                    }
-                    else
-                    {
-                        DynamicBrakeIntervention = target;
-                    }
+                    DynamicBrakeBlendingPercent = target * 100;
                 }
-                if (DynamicBrakeController != null)
-                    DynamicBrakeIntervention = Math.Max(DynamicBrakeIntervention, DynamicBrakeController.CurrentValue);
             }
-            else if (DynamicBrakeBlended)
+            else
             {
-                DynamicBrakeIntervention = -1;
-                DynamicBrakeBlended = false;
-            }
-            // Train blending
-            if (IsLeadLocomotive())
-            {
-                if (TrainBrakeController.TrainDynamicBrakeIntervention > DynamicBrakeIntervention)
-                {
-                    DynamicBrakeBlended = true;
-                    DynamicBrakeIntervention = TrainBrakeController.TrainDynamicBrakeIntervention;
-                }
-                if (TrainBrakeController.TrainDynamicBrakeCommandStartTime > DynamicBrakeCommandStartTime)
-                    DynamicBrakeCommandStartTime = TrainBrakeController.TrainDynamicBrakeCommandStartTime;
+                DynamicBrakeBlendingPercent = -1;
             }
         }
 
@@ -1984,6 +1953,30 @@ public List<CabView> CabViewList = new List<CabView>();
             // Cruise Control
             CruiseControl?.Update(elapsedClockSeconds);
  
+            if (DynamicBrakePercent >= 0 && ThrottlePercent <= 0)
+            {
+                if (DynamicBrakeCommandStartTime == null)
+                {
+                    DynamicBrakeCommandStartTime = Simulator.ClockTime;
+                }
+                if (!DynamicBrake)
+                {
+                    if (DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                    {
+                        DynamicBrake = true; // Engage
+                        if (IsLeadLocomotive() && DynamicBrakeIntervention >= 0)
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                    }
+                    else if (IsLeadLocomotive() && DynamicBrakeIntervention >= 0)
+                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
+                }
+            }
+            else
+            {
+                DynamicBrake = false;
+                DynamicBrakeCommandStartTime = null;
+            }
+
             // TODO  this is a wild simplification for electric and diesel electric
             UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
 
@@ -2241,66 +2234,25 @@ public List<CabView> CabViewList = new List<CabView>();
 
             DynamicBrakeBlending(elapsedClockSeconds);
 
-            if (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime > DynamicBrakeCommandStartTime) // use the latest command time
-                DynamicBrakeCommandStartTime = DynamicBrakeController.CommandStartTime;
-
-            if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled || DynamicBrakeAvailable) && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
+            LocalDynamicBrakePercent = -1;
+            if (IsLeadLocomotive() && TrainBrakeController != null && TrainBrakeController.TrainDynamicBrakeIntervention > 0)
             {
-                if (!DynamicBrake)
+                LocalDynamicBrakePercent = TrainBrakeController.TrainDynamicBrakeIntervention * 100;
+            }
+            if (DynamicBrakeController != null && DynamicBrakeIntervention >= 0)
+            {
+                if (DynamicBrake)
                 {
-                    if (DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime /*|| (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)*/)
-                    {
-                        DynamicBrake = true; // Engage
-                        if (IsLeadLocomotive() && DynamicBrakeController != null)
-                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
-                    }
-                    else if (IsLeadLocomotive())
-                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
-                }
-                else if (this.IsLeadLocomotive())
-                {
-                    if (DynamicBrakeController != null)
-                    {
-                        DynamicBrakeController.Update(elapsedClockSeconds);
-                        DynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100f;
-                        LocalDynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100f;
-                    }
-                    else
-                    {
-                        DynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100f, 0f);
-                        LocalDynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100f, 0f);
-                    }
-
-                    if (DynamicBrakeIntervention < 0 && PreviousDynamicBrakeIntervention >= 0 && DynamicBrakePercent == 0)
-                    {
-                        DynamicBrakePercent = -1;
-                        LocalDynamicBrakePercent = -1;
-                    }
-                    PreviousDynamicBrakeIntervention = DynamicBrakeIntervention;
-                    if (PreviousFullDynamicBrakingOrder && !TrainControlSystem.FullDynamicBrakingOrder && DynamicBrakeController.CurrentValue == 0 && DynamicBrakeIntervention < 0)
-                    {
-                        DynamicBrakePercent = -1;
-                        LocalDynamicBrakePercent = -1;
-                        DynamicBrake = false;
-                    }
-                    PreviousFullDynamicBrakingOrder = TrainControlSystem.FullDynamicBrakingOrder;
-                }
-                else if (DynamicBrakeController != null)
                     DynamicBrakeController.Update(elapsedClockSeconds);
+                    DynamicBrakeIntervention = DynamicBrakeController.CurrentValue;
+                }
+                else
+                {
+                    DynamicBrakeIntervention = 0;
+                }
+                LocalDynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100, LocalDynamicBrakePercent);
             }
-            else if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled || DynamicBrakeAvailable) && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
-            {
-                // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
-                //           if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
-                //           {
-                DynamicBrake = false; // Disengage
-                DynamicBrakeForceN = 0f; // Reset dynamic brake force
-                if (IsLeadLocomotive())
-                    Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
-                //           }
-                //            else if (IsLeadLocomotive())
-                //               Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
-            }
+            if (IsLeadLocomotive()) DynamicBrakePercent = LocalDynamicBrakePercent;
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
@@ -2419,7 +2371,7 @@ public List<CabView> CabViewList = new List<CabView>();
             // Note typically only one of the above will only ever be non-zero at the one time.
             // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
 
-            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            if (DynamicBrakePercent > 0 && DynamicBrake && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
                 if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
@@ -3392,7 +3344,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     checkBraking = false;
                 }
             }
-            if (DynamicBrakeController != null && DynamicBrakeController.CurrentValue >= 0 && (DynamicBrakePercent >= 0 || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake)) && checkBraking)
+            if (DynamicBrakeController != null && DynamicBrakeIntervention >= 0 && checkBraking)
             {
                 if (!(CombinedControlType == CombinedControl.ThrottleDynamic
                     || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0))
@@ -3402,7 +3354,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
             }
 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake)
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeIntervention >= 0)
                 StartDynamicBrakeDecrease(null);
             else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
                 StartTrainBrakeDecrease(null);
@@ -3859,12 +3811,12 @@ public List<CabView> CabViewList = new List<CabView>();
         public void SetCombinedHandleValue(float value)
         {
             bool ccUseCombinedControl = CruiseControl != null && (CruiseControl.UseThrottleAsForceSelector || CruiseControl.UseThrottleAsSpeedSelector ) && CruiseControl.UseThrottleInCombinedControl; 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake && !TrainControlSystem.FullDynamicBrakingOrder &&
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeIntervention >= 0 &&
                 !(ccUseCombinedControl && !CruiseControl.DynamicBrakePriority && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto))
             {
                 if (DynamicBrakeController.CurrentValue == 0 && value < CombinedControlSplitPosition)
                     DynamicBrakeChangeActiveState(false);
-                else if (DynamicBrakePercent > -1)
+                else if (DynamicBrakeIntervention > -1)
                     SetDynamicBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
             }
             else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
@@ -3882,7 +3834,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 else if (CombinedControlType == CombinedControl.ThrottleAir && canBrake && value > CombinedControlSplitPosition)
                     SetTrainBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
-                else if (DynamicBrakePercent < 0 || TrainControlSystem.FullDynamicBrakingOrder ||
+                else if (DynamicBrakeIntervention < 0 ||
                     (CruiseControl != null && !CruiseControl.DynamicBrakePriority && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto))
                     SetThrottleValue(1 - MathHelper.Clamp(value, 0, CombinedControlSplitPosition) / CombinedControlSplitPosition);
             }
@@ -3911,7 +3863,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
             }
 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake && !TrainControlSystem.FullDynamicBrakingOrder)
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeIntervention >= 0)
             {
                 if (CruiseControl != null)
                 {
@@ -4504,7 +4456,7 @@ public List<CabView> CabViewList = new List<CabView>();
             if (!CanUseDynamicBrake())
                 return;
 
-            if (DynamicBrakePercent < 0)
+            if (DynamicBrakeIntervention < 0)
             {
                 DynamicBrakeChangeActiveState(true);
             }
@@ -4536,7 +4488,7 @@ public List<CabView> CabViewList = new List<CabView>();
             if (!CanUseDynamicBrake())
                 return;
 
-            if (DynamicBrakePercent <= 0)
+            if (DynamicBrakeIntervention <= 0)
             {
                 DynamicBrakeChangeActiveState(false);
             }
@@ -4582,7 +4534,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void SetDynamicBrakeValue(float value)
         {
-            if (!DynamicBrake && ThrottleController.CurrentValue == 0 && value > 0.05f)
+            if (DynamicBrakeIntervention < 0 && ThrottleController.CurrentValue == 0 && value > 0.05f)
             {
                 DynamicBrakeChangeActiveState(true);
                 if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl)
@@ -4590,7 +4542,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     CruiseControl.DynamicBrakePriority = true;
                 }
             }
-            if (DynamicBrake && DynamicBrakeController.CurrentValue == 0 && value < -0.05f)
+            if (DynamicBrakeIntervention >= 0 && DynamicBrakeController.CurrentValue == 0 && value < -0.05f)
             {
                 DynamicBrakeChangeActiveState(false);
                 return;
@@ -4631,18 +4583,19 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void DynamicBrakeChangeActiveState(bool toState)
         {
-            if (toState && !DynamicBrake && DynamicBrakePercent < 0)
+            if (toState && DynamicBrakeIntervention < 0)
             {
-                DynamicBrakePercent = 0;
+                DynamicBrakeIntervention = 0;
                 DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
                 StopDynamicBrakeIncrease();
             }
-            else if (!toState && DynamicBrake && DynamicBrakePercent > -1 && DynamicBrakeIntervention < 0)
+            else if (!toState && DynamicBrakeIntervention > -1)
             {
-                SignalEvent(Event.DynamicBrakeOff);
-                DynamicBrakePercent = -1;
+                DynamicBrakeIntervention = -1;
                 DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
                 StopDynamicBrakeIncrease();
+                Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
+                SignalEvent(Event.DynamicBrakeOff);
             }
         }
 
