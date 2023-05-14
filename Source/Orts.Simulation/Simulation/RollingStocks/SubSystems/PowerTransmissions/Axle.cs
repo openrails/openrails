@@ -262,16 +262,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public void Restore(BinaryReader inf)
         {
             int count = inf.ReadInt32();
-            if (AxleList.Count == 0)
+            for (int i = 0; i < count; i++)
             {
-                for (int i = 0; i < count; i++)
+                if (i >= AxleList.Count)
                 {
                     AxleList.Add(new Axle());
                     AxleList[i].Initialize();
                 }
+                AxleList[i].Restore(inf);
             }
-            foreach (var axle in AxleList)
-                axle.Restore(inf);
         }
         /// <summary>
         /// Updates each axle on the list
