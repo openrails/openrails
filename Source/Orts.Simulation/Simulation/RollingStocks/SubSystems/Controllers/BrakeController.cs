@@ -152,7 +152,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float FullServReductionPSI { get; private set; }
         public float MinReductionPSI { get; private set; }
         public float TrainDynamicBrakeIntervention { get; set; } = -1;
-        public double TrainDynamicBrakeCommandStartTime { get; set; }
+        InterpolatorDiesel2D DynamicBrakeBlendingTable;
 
         /// <summary>
         /// Needed for proper mouse operation in the cabview
@@ -226,6 +226,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             controller.Notches.ForEach(
                 (item) => { Notches.Add(new MSTSNotch(item)); }
             );
+
+            DynamicBrakeBlendingTable = controller.DynamicBrakeBlendingTable;
 
             Initialize();
         }
@@ -321,6 +323,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "engine(ortsenginebrakecontroller":
                     ScriptName = stf.ReadStringBlock(null);
                     break;
+                case "engine(ortstraindynamicblendingtable":
+                    DynamicBrakeBlendingTable = new InterpolatorDiesel2D(stf, false);
+                    break;
             }
         }
 
@@ -335,8 +340,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 }
                 if (Script == null)
                 {
-                    Script = new MSTSBrakeController() as BrakeController;
-                    (Script as MSTSBrakeController).ForceControllerReleaseGraduated = Simulator.Settings.GraduatedRelease;
+                    var mstsController = new MSTSBrakeController();
+                    mstsController.ForceControllerReleaseGraduated = Simulator.Settings.GraduatedRelease;
+                    mstsController.DynamicBrakeBlendingTable = DynamicBrakeBlendingTable;
+                    Script = mstsController as BrakeController;
                 }
 
                 Script.AttachToHost(this);

@@ -943,6 +943,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(ortstrainbrakescontrollerslowapplicationrate":
                 case "engine(ortstrainbrakecontroller":
                 case "engine(enginecontrollers(brake_train":
+                case "engine(ortstraindynamicblendingtable":
                     TrainBrakeController.Parse(lowercasetoken, stf);
                     TrainBrakeFitted = true;
                     break;
