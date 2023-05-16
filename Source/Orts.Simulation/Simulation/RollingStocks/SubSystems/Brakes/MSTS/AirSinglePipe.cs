@@ -265,7 +265,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     break;
                 case "wagon(ortsbrakerelayvalveapplicationrate": RelayValveApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsbrakerelayvalvereleaserate": RelayValveReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-                case "wagon(ortsmaxtriplevalvecylinderpressurepsi": MaxTripleValveCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "wagon(ortsmaxtriplevalvecylinderpressure": MaxTripleValveCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsbrakecylindervolume": CylVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
             }
         }
@@ -711,9 +711,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + CylVolumeM3 / BrakePipeVolumeM3);
                         BrakeLine2PressurePSI -= dp * CylVolumeM3 / BrakePipeVolumeM3;
                     }
+                    if (MaxCylPressurePSI < CylPressurePSI + dp)
+                        dp = MaxCylPressurePSI - CylPressurePSI;
                             CylPressurePSI += dp;
                         }
-                else if (demandedPressurePSI < CylPressurePSI) CylPressurePSI = Math.Max(demandedPressurePSI, CylPressurePSI - elapsedClockSeconds * RelayValveReleaseRatePSIpS);
+                else if (demandedPressurePSI < CylPressurePSI)
+                    {
+                    CylPressurePSI = Math.Max(Math.Max(demandedPressurePSI, CylPressurePSI - elapsedClockSeconds * RelayValveReleaseRatePSIpS), 0);
+                    }
                 }
                 else
                 {
