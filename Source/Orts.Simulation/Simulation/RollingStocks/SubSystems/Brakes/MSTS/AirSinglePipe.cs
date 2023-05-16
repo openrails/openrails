@@ -59,6 +59,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float EmergAuxVolumeRatio = 1.4f;
         protected bool RelayValveFitted = false;
         public float RelayValveRatio { get; protected set; } = 1;
+        protected float EngineRelayValveRatio = 0;
         protected float RelayValveApplicationRatePSIpS = 50;
         protected float RelayValveReleaseRatePSIpS = 50;
         protected string DebugType = string.Empty;
@@ -134,6 +135,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             HoldingValve = thiscopy.HoldingValve;
             RelayValveFitted = thiscopy.RelayValveFitted;
             RelayValveRatio = thiscopy.RelayValveRatio;
+            EngineRelayValveRatio = thiscopy.EngineRelayValveRatio;
             RelayValveApplicationRatePSIpS = thiscopy.RelayValveApplicationRatePSIpS;
             RelayValveReleaseRatePSIpS = thiscopy.RelayValveReleaseRatePSIpS;
             MaxTripleValveCylPressurePSI = thiscopy.MaxTripleValveCylPressurePSI;
@@ -263,6 +265,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         RelayValveFitted = false;
                     }
                     break;
+                case "wagon(ortsenginebrakerelayvalveratio": EngineRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsbrakerelayvalveapplicationrate": RelayValveApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsbrakerelayvalvereleaserate": RelayValveReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsmaxtriplevalvecylinderpressure": MaxTripleValveCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -331,6 +334,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 EmergResVolumeM3 = 0.7f;
 
             if (MaxTripleValveCylPressurePSI == 0) MaxTripleValveCylPressurePSI = MaxCylPressurePSI / RelayValveRatio;
+            if (EngineRelayValveRatio == 0) EngineRelayValveRatio = RelayValveRatio;
 
             BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
@@ -628,7 +632,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {
-                demandedPressurePSI = Math.Max(AutoCylPressurePSI, BrakeLine3PressurePSI);
+                demandedPressurePSI = AutoCylPressurePSI;
                 if (loco != null && loco.EngineType != TrainCar.EngineTypes.Control)  // TODO - Control cars ned to be linked to power suppy requirements.
                 {
                     if (loco.LocomotivePowerSupply.MainPowerSupplyOn)
@@ -664,22 +668,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     {
                                         demandedPressurePSI = CylPressurePSI;
                                     }
-                                    if (demandedPressurePSI < BrakeLine3PressurePSI)
-                                        demandedPressurePSI = BrakeLine3PressurePSI;
+                                    demandedPressurePSI /= RelayValveRatio;
                                 }
                             }
                             else if (loco.DynamicBrakeAutoBailOff)
                             {
                                 if (loco.DynamicBrakeForceCurves == null)
                                 {
-                                    demandedPressurePSI = BrakeLine3PressurePSI;
+                                    demandedPressurePSI = 0;
                                 }
                                 else
                                 {
                                     var dynforce = loco.DynamicBrakeForceCurves.Get(1.0f, loco.AbsSpeedMpS);
                                     if ((loco.MaxDynamicBrakeForceN == 0 && dynforce > 0) || dynforce > loco.MaxDynamicBrakeForceN * 0.6)
                                     {
-                                        demandedPressurePSI = BrakeLine3PressurePSI;
+                                        demandedPressurePSI = 0;
                                     }
                                 }
                             }
@@ -689,7 +692,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             if (RelayValveFitted)
                     {
-                demandedPressurePSI *= RelayValveRatio;
+                demandedPressurePSI = Math.Max(RelayValveRatio * demandedPressurePSI, EngineRelayValveRatio * BrakeLine3PressurePSI);
                         if (demandedPressurePSI > CylPressurePSI)
                         {
                     float dp = elapsedClockSeconds * RelayValveApplicationRatePSIpS;

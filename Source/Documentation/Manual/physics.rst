@@ -2955,6 +2955,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSEmergencyDumpValveTimer
    single: ORTSMainResPipeAuxResCharging
    single: ORTSBrakeRelayValveRatio
+   single: ORTSEngineBrakeRelayValveRatio
    single: ORTSBrakeRelayValveApplicationRate
    single: ORTSBrakeRelayValveReleaseRate
    single: ORTSMainResChargingRate
@@ -3004,6 +3005,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   This is achieved via a relay valve which sets BC pressure proportionally.
   Relay valves may be installed to achieve higher brake cylinder pressures,
   dynamic brake blending or variable load compensation.
+- ``Wagon(ORTSBrakeRelayValveRatio`` -- Same as above, but for the engine brake
 - ``Wagon(ORTSBrakeRelayValveApplicationRate`` -- Brake cylinder pressure application
   rate achieved by the relay valve, if fitted.
 - ``Wagon(ORTSBrakeRelayValveReleaseRate`` -- Brake cylinder pressure release
