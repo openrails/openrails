@@ -1,0 +1,179 @@
+﻿<UserControl x:Class="ORTS.Orge.UserInterface.MenuControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Height="300" Width="Auto">
+    <DockPanel Height="22" Width="Auto" Margin="0" VerticalAlignment="Top">
+        <Menu Height="22" Name="menuMain" Width="Auto">
+            <MenuItem Header="_File" Name="menuFile">
+                <MenuItem Header="(Re)load route (ctrl-R)" Name="menuReloadRoute" Click="MenuReloadRoute_Click" />
+                <Separator/>
+                <MenuItem Header="Select install folder" Name="menuInstallFolder" Click="MenuInstallFolder_Click"/>
+                <MenuItem Header="Select route" Name="menuSelectRoute"/>
+                <Separator/>
+                <!--<MenuItem Header="Search by index">
+                    <MenuItem Header="Search trackNode" Name="menuSearchTrackNode" IsCheckable="False" Click="MenuSearchTrackNode_Click"/>
+                    <MenuItem Header="Search trackNode for roads" Name="menuSearchTrackNodeRoad" IsCheckable="False" Click="MenuSearchTrackNodeRoad_Click"/>
+                    <MenuItem Header="Search trackItem" Name="menuSearchTrackItem" IsCheckable="False" Click="MenuSearchTrackItem_Click"/>
+                    <MenuItem Header="Search trackItem for roads" Name="menuSearchTrackItemRoad" IsCheckable="False" Click="MenuSearchTrackItemRoad_Click"/>
+                </MenuItem>
+                <Separator/>-->
+                <MenuItem Header="Quit (Q)" Name="menuQuit" Click="MenuQuit_Click"/>
+            </MenuItem>
+            <MenuItem Header="_View" Name="menuView">
+                <MenuItem Header="Center around station" SubmenuClosed="MenuItemCenterClosed" SubmenuOpened="MenuNeedingMouseOpened">
+                    <ComboBox Name="menuStationCombobox" SelectionChanged="MenuStationCombobox_SelectionChanged"/>
+                </MenuItem>
+                <MenuItem Header="Center around platform" SubmenuClosed="MenuItemCenterClosed" SubmenuOpened="MenuNeedingMouseOpened">
+                    <ComboBox Name="menuPlatformCombobox" SelectionChanged="MenuPlatformCombobox_SelectionChanged"/>
+                </MenuItem>
+                <MenuItem Header="Center around siding" SubmenuClosed="MenuItemCenterClosed" SubmenuOpened="MenuNeedingMouseOpened">
+                    <ComboBox Name="menuSidingCombobox" SelectionChanged="MenuSidingCombobox_SelectionChanged"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Paths">
+                    <MenuItem Header="Show path (F11)" Name="menuShowTrainpath" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show raw path from .pat file (shift-F11)" Name="menuShowPATfile" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+                <MenuItem Header="Track Coloring">
+                    <MenuItem Header="Color tracks" Name="menuColorTracks" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Highlight tracks (F10)" Name="menuHighlightTracks" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+                <MenuItem Header="Additional views">
+                    <MenuItem Header="Show inset" Name="menuShowInset" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show world tiles" Name="menuShowWorldTiles" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show grid lines" Name="menuShowGridLines" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show scale ruler" Name="menuShowScaleRuler" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show longitude/latitude" Name="menuShowLonLat" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+                <MenuItem Header="Labels">
+                    <MenuItem Header="Show labels" Name="menuShowLabels" IsCheckable="True" Click="UpdateMenuSettings" ToolTip="For adding a label, press L"/>
+                    <MenuItem Header="Load labels" Name="menuLoadLabels" IsCheckable="False" Click="MenuLoadLabels_Click"/>
+                    <MenuItem Header="Save labels" Name="menuSaveLabels" IsCheckable="False" Click="MenuSaveLabels_Click"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Save current zoom" Name="menuZoomSave" Click="MenuZoomSave_Click"/>
+                <MenuItem Header="Restore saved zoom" Name="menuZoomRestore" Click="MenuZoomRestore_Click"/>
+                <Separator/>
+                <MenuItem Header="Zoom in (=)" Name="menuZoomIn" Click="MenuZoomIn_Click"/> 
+                <MenuItem Header="Zoom out (-)" Name="menuZoomOut" Click="MenuZoomOut_Click"/>
+                <MenuItem Header="Zoom to tile (Z)" Name="menuZoomToTile" Click="MenuZoomToTile_Click"/>
+                <MenuItem Header="Zoom reset (R)" Name="menuZoomReset" Click="MenuZoomReset_Click"/>
+                <Separator/>
+                <MenuItem Header="Anti aliasing (needs restart)" Name="menuDoAntiAliasing" IsCheckable="True" Click="MenuDoAntiAliasing_Click"/>
+            </MenuItem>
+            <MenuItem Header="Track _items" Name="menuTrackItems">
+                <MenuItem Header="Show all items" Name="menuShowAll" IsCheckable="False" Click="MenuShowAll_Click"/>
+                <MenuItem Header="Show no items" Name="menuShowNone" IsCheckable="False" Click="MenuShowNone_Click"/>
+                <MenuItem Header="Highlight items (shift-F10)" Name="menuHighlightItems" IsCheckable="True" Click="UpdateMenuSettings"/>
+                <MenuItem Header="Junctions/ends">
+                    <MenuItem Header="Show junctions" Name="menuShowJunctionNodes" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show end nodes" Name="menuShowEndNodes" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show crossovers" Name="menuShowCrossovers" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+                <MenuItem Header="Sidings">
+                    <MenuItem Header="Show siding markers (F9)" Name="menuShowSidingMarkers" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show siding names (shift-F9)" Name="menuShowSidingNames" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+                <MenuItem Header="Platforms">
+                    <MenuItem Header="Show platform markers (F8)" Name="menuShowPlatformMarkers" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show platform names (shift-F8)" Name="menuShowPlatformNames" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show station names (shift-F8)" Name="menuShowStationNames" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+                <MenuItem Header="Interactives">
+                    <MenuItem Header="Show signals (F7)" Name="menuShowSignals" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show also other signals" Name="menuShowAllSignals" IsCheckable="True" Click="MenuShowAllSignals_Click"/>
+                    <MenuItem Header="Show level crossings" Name="menuShowCrossings" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show hazards" Name="menuShowHazards" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show fuel/pickups" Name="menuShowPickups" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show sound regions" Name="menuShowSoundRegions" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+                <MenuItem Header="Posts">
+                    <MenuItem Header="Show speed limits (F5)" Name="menuShowSpeedLimits" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show mileposts (shift-F5)" Name="menuShowMileposts" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+                <MenuItem Header="Roads">
+                    <MenuItem Header="Draw roads" Name="menuDrawRoads" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show car spawners" Name="menuShowCarSpawners" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show road crossings" Name="menuShowRoadCrossings" IsCheckable="True" Click="UpdateMenuSettings"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Statusbar" Name="menuStatusbar">
+                <MenuItem Header="Show vector section info" Name="menuStatusShowVectorSection" IsCheckable="True" IsChecked="False"
+                          Click="UpdateMenuSettings"/>
+                <MenuItem Header="Show PAT file info" Name="menuStatusShowPATfile" IsCheckable="True" IsChecked="False"
+                          Click="UpdateMenuSettings"/>
+                <MenuItem Header="Show Path info" Name="menuStatusShowTrainpath" IsCheckable="True" IsChecked="True"
+                          Click="UpdateMenuSettings"/>
+                <MenuItem Header="Show terrain info" Name="menuStatusShowTerrain" IsCheckable="True" IsChecked="False"
+                          Click="UpdateMenuSettings"/>
+                <MenuItem Header="Show signal info" Name="menuStatusShowSignal" IsCheckable="True" IsChecked="False"
+                          Click="UpdateMenuSettings"/>
+                <MenuItem Header="Show platform/station names" Name="menuStatusShowNames" IsCheckable="True" IsChecked="False"
+                          Click="UpdateMenuSettings"/>
+            </MenuItem>
+            <MenuItem Header="_Preferences" Name="menuPreferences">
+                <MenuItem Header="Zooming is centered on mouse (M)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
+                          Click="UpdateMenuSettings"/>
+                <MenuItem Header="Use miles i.s.o. meters" Name="menuUseMilesNotMeters" IsCheckable="True" Click="UpdateMenuSettings"/>
+                <MenuItem Header="Select language">
+                    <ComboBox Name="comboBoxLanguage" SelectionChanged="ComboBoxLanguage_SelectionChanged"
+                              DisplayMemberPath="Name" SelectedValuePath="Code"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Highlight last-drawn section" Name="menuHighlightLastPathSection" IsCheckable="True" Click="MenuHighlightLastPathSection_Click"/>
+                <MenuItem Header="Enable editing" Name="menuEnableEditing" IsCheckable="True" IsChecked="False" Click="MenuEnableEditing_Click"/>
+                <MenuItem Header="Show current mouse action" Name="menuShowCurrentEditorAction" IsCheckable="True" IsChecked="False" Click="MenuShowCurrentEditorAction_Click"/>
+                <MenuItem Header="Shift-PgUp also extends path" Name="menuPgupExtendsPath" IsCheckable="True" IsChecked="True" Click="MenuPgupExtendsPathAction_Click"/>
+                <Separator/>
+            </MenuItem>
+            <MenuItem Header="Path-_Editor" Name="menuPathEditor" >
+                <MenuItem Header="==Supporting MSTS paths only==" Foreground="Blue" IsEnabled="False"/>
+                <MenuItem Header="Load path" Name="menuSelectPath" 
+                          SubmenuOpened="MenuNeedingMouseOpened" SubmenuClosed="MenuNeedingMouseClosed">
+                    <ComboBox Name="menuSelectPathCombobox" SelectionChanged="MenuSelectPathCombobox_SelectionChanged"/>
+                </MenuItem>
+                <MenuItem Header="Show other paths" Name="menuShowOtherPaths" IsCheckable="False" Click="MenuShowOtherPaths_Click"/>
+                <Separator/>
+                <MenuItem Header="Save path" Name="menuSavePath" IsCheckable="False" Click="MenuSavePath_Click"/>
+                <MenuItem Header="Save visited stations" Name="menuSaveStations" IsCheckable="False" Click="MenuSaveStations_Click"/>
+                <MenuItem Header="Show chart" Name="menuShowChart" IsCheckable="False" Click="MenuShowChart_Click"/>
+                <Separator/>
+                <MenuItem Header="New path" Name="menuNewPath" IsCheckable="False" Click="MenuNewPath_Click"/>
+                <Separator/>
+                <MenuItem Header="Extend with other path" Name="menuExtendPath" IsCheckable="False"
+                          SubmenuOpened="MenuNeedingMouseOpened" SubmenuClosed="MenuNeedingMouseClosed">
+                    <ComboBox Name="menuExtendPathCombobox" SelectionChanged="MenuExtendPathCombobox_SelectionChanged"/>
+                </MenuItem>
+                <MenuItem Header="Edit path metadata" Name="menuEditMetadata" IsCheckable="False" Click="MenuEditMetadata_Click"/>
+                <MenuItem Header="Reverse path" Name="menuReversePath" IsCheckable="False" Click="MenuReversePath_Click"/>
+                <Separator/>
+                <MenuItem Header="Highlight last-drawn section" Name="menuHighlightLastPathSection2" IsCheckable="True" Click="MenuHighlightLastPathSection2_Click"/>
+                <MenuItem Header="Enable editing" Name="menuEnableEditing2" IsCheckable="True" IsChecked="False" Click="MenuEnableEditing2_Click"/>
+                <MenuItem Header="Show current mouse action" Name="menuShowCurrentEditorAction2" IsCheckable="True" IsChecked="False" Click="MenuShowCurrentEditorAction2_Click"/>
+                <MenuItem Header="Shift-PgUp also extends path" Name="menuPgupExtendsPath2" IsCheckable="True" IsChecked="True" Click="MenuPgupExtendsPathAction2_Click"/>
+                <Separator/>
+                <MenuItem Header="Auto-fix all broken nodes" Name="menuAutoFixAllNodes" IsCheckable="false" Click="MenuAutoFixAllNodes_Click"/>
+                <MenuItem Header="Auto-fix all broken paths" Name="menuAutoFixAllPaths" IsCheckable="false" Click="MenuAutoRestorePaths_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Terrain" Name="menuTerrain">
+                <MenuItem Header="Show terrain textures (F6)" Name="menuShowTerrain" IsCheckable="True" Click="MenuShowTerrain_Click"/>
+                <MenuItem Header="Show DM terrain textures (ctrl-F6)" Name="menuShowDMTerrain" IsCheckable="True" Click="MenuShowTerrain_Click"/>
+                <MenuItem Header="Show patch lines (shift-F6)" Name="menuShowPatchLines" IsCheckable="True" Click="MenuShowPatchLines_Click"/>
+                <Separator/>
+                <MenuItem Header="Memory reduction options" Name="menuTerrainMemoryOptions">
+                    <RadioButton GroupName="reductionOptions" Name="reductionNone" Content="No reduction" Checked="TerrainReductionOption_CheckChanged" Tag="1"/>
+                    <RadioButton GroupName="reductionOptions" Name="reductionAuto" Content="Automatic reduction" Checked="TerrainReductionOption_CheckChanged" Tag="0"/>
+                    <RadioButton GroupName="reductionOptions" Name="reduction2" Content="Reduce by linear factor 2" Checked="TerrainReductionOption_CheckChanged" Tag="2"/>
+                    <RadioButton GroupName="reductionOptions" Name="reduction4" Content="Reduce by linear factor 4" Checked="TerrainReductionOption_CheckChanged" Tag="4"/>
+                    <RadioButton GroupName="reductionOptions" Name="reduction8" Content="Reduce by linear factor 8" Checked="TerrainReductionOption_CheckChanged" Tag="8"/>
+                    <RadioButton GroupName="reductionOptions" Name="reduction16" Content="Reduce by linear factor 16" Checked="TerrainReductionOption_CheckChanged" Tag="16"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Help" Name="menuHelp">
+                <MenuItem Header="Shortcuts" Name="menuShortcuts" IsCheckable="False" Click="MenuShortcuts_Click"/>
+                <MenuItem Header="Documentation" Name="menuDocumentation" IsCheckable="False" Click="MenuDocumentation_Click"/>
+                <MenuItem Header="About" Name="menuAbout" IsCheckable="False" Click="MenuAbout_Click"/>
+            </MenuItem>
+        </Menu>
+    </DockPanel>
+</UserControl>

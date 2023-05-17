@@ -1,0 +1,22 @@
+﻿<Window x:Class="ORTS.Orge.UserInterface.OtherPathsWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="250" d:DesignWidth="150"
+    Height="300" Width="Auto" Title="Select paths to draw" SizeToContent="Width">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Width="Auto">
+            <DockPanel>
+            <Button DockPanel.Dock="Left" Name="ClearOtherPathsButton" Margin="1,3,30,3" Click="ClearOtherPathsButton_Click">Clear all</Button>
+            <CheckBox DockPanel.Dock="Right" Name="AlwaysOnTop" Margin="30,6,0,6" Click="AlwaysOnTop_Click">Window always on top</CheckBox>
+            </DockPanel>
+        </StackPanel>
+        <ScrollViewer DockPanel.Dock="Top" VerticalAlignment="Stretch">
+            <ListBox Name="listOfPaths" VerticalAlignment="Stretch" Width="Auto">
+                <!-- will be filled programmatically -->
+            </ListBox>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

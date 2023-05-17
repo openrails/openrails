@@ -1,0 +1,76 @@
+﻿<Window x:Class="ORTS.Orge.Editing.Charts.PathChartWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             Title="Charting the path"
+             Activated="Window_Activated" Deactivated="Window_Deactivated" MouseWheel="OnMouseWheel"
+             PreviewMouseDown="Window_MouseDown"  PreviewMouseUp="Window_MouseUp" PreviewMouseMove="Window_MouseMove"
+             Width="1500" Height="400">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="20"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="57"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Canvas Grid.Row="0" Grid.Column="0" Name="MileMarkersLegend"/>
+            <Canvas Grid.Row="0" Grid.Column="1" Name="MileMarkersCanvas"/>
+
+            <Canvas Grid.Row="1" Grid.Column="0" Name="HeightLegend"/>
+            <Canvas Grid.Row="1" Grid.Column="1" Name="HeightCanvas" />
+
+            <Canvas Grid.Row="2" Grid.Column="0"  Name="DistanceLegend"/>
+            <Canvas Grid.Row="2" Grid.Column="1"  Name="DistanceCanvas"/>
+        </Grid>
+        
+        <GridSplitter Grid.Row="1" Grid.Column="0" Height="3" HorizontalAlignment="Stretch" Background="Gray" VerticalAlignment="Center"/>
+        
+        <Grid Grid.Row="2" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="57"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Canvas Grid.Row="0" Grid.Column="0"  Name="GradeLegend"/>
+            <Canvas Grid.Row="0" Grid.Column="1"  Name="GradeCanvas"  SizeChanged="Window_SizeChanged"/>
+
+            <Canvas Grid.Row="1" Grid.Column="0" Name="SpeedMarkersLegend"/>
+            <Canvas Grid.Row="1" Grid.Column="1" Name="SpeedMarkersCanvas"/>
+
+            <Canvas Grid.Row="2" Grid.Column="0" Name="CurvatureLegend"/>
+            <Canvas Grid.Row="2" Grid.Column="1" Name="CurvatureCanvas"/>
+        </Grid>
+
+        <StackPanel Grid.Row="3" Grid.Column="0" Orientation="Horizontal">
+            <Button Height="25" Width="57" Content="Save json" Click="SaveJson_Click">
+                <Button.ToolTip>
+                    <ToolTip>
+                        <StackPanel>
+                            <TextBlock>Save the data of the chart in json format into a .js file.</TextBlock>
+                            <TextBlock>The saved data can then be used to show the chart on an HTML5 canvas.</TextBlock>
+                        </StackPanel>
+                    </ToolTip>
+                </Button.ToolTip>
+            </Button>
+            <ScrollBar Grid.Row="3" Grid.Column="1" Name="ChartScrollbar" Minimum="0" Maximum="0.0001" Margin="10,10,0,0" Width="1000" 
+                   Orientation="Horizontal" Value="0" ViewportSize="0.9999" Height="Auto" ValueChanged="ChartScrollbar_ValueChanged"/>
+        </StackPanel>
+    </Grid>
+</Window>
