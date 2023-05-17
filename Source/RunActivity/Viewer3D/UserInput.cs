@@ -154,7 +154,7 @@ namespace Orts.Viewer3D
                 return true;
             var setting = InputSettings.Commands[(int)command];
             return (setting.IsKeyDown(KeyboardState) && !setting.IsKeyDown(LastKeyboardState)) ||
-                SwitchPanelModule.IsPressed(command);
+                SwitchPanelModule.IsDown(command);
         }
 
         public static bool IsReleased(UserCommand command)

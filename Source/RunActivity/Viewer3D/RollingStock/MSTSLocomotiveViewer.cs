@@ -314,7 +314,7 @@ namespace Orts.Viewer3D.RollingStock
 
             foreach (var command in UserInputCommands.Keys)
             {
-                if (UserInput.IsPressed(command) || SwitchPanelModule.IsPressed(command) || SwitchPanelModule.IsDown(command))
+                if (UserInput.IsPressed(command) || SwitchPanelModule.IsDown(command))
                 {
                     UserInputCommands[command][1]();
                     //Debrief eval

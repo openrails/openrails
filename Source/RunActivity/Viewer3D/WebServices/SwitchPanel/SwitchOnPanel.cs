@@ -22,54 +22,40 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
 {
     public class SwitchOnPanel
     {
-        public SwitchOnPanelDefinition Definition = new SwitchOnPanelDefinition();
-        public SwitchOnPanelStatus Status = new SwitchOnPanelStatus();
+        private readonly Viewer Viewer;
 
-        public bool[] IsPressed = new bool[] { false };
+        public SwitchOnPanelDefinition Definition;
+        public SwitchOnPanelStatus Status;
+
         public bool[] IsDown = new bool[] { false };
         public bool[] IsUp = new bool[] { false };
 
-        // almost empty non functioning button
-        public void init0(UserCommand userCommand = ORTS.Common.Input.UserCommand.GamePauseMenu, string description = "")
+        public SwitchOnPanel(Viewer viewer)
         {
-            Definition.NoOffButtons = 0;
-            Definition.Button = TypeOfButton.none;
-            Definition.UserCommand = new UserCommand[] { userCommand };
-            Definition.Description = description;
-            initIs();
+            Viewer = viewer;
+            Definition = new SwitchOnPanelDefinition(Viewer);
+            Status = new SwitchOnPanelStatus(Viewer);
         }
 
-        // 1 button
-        public void init1(UserCommand userCommand, string description, TypeOfButton typeOfButton = TypeOfButton.click)
+        public void initDefinition(UserCommand userCommand)
         {
-            Definition.NoOffButtons = 1;
-            Definition.Button = typeOfButton;
-            Definition.UserCommand = new UserCommand[] { userCommand };
-            Definition.Description = description;
-            initIs();
+            Definition.init(userCommand);
         }
 
-        // 2 buttons
-        public void init2(UserCommand userCommandTop, UserCommand userCommandBottom, string description, TypeOfButton typeOfButton = TypeOfButton.click)
+        public void initDefinitionEmpty()
         {
-            Definition.NoOffButtons = 2;
-            Definition.Button = typeOfButton;
-            Definition.UserCommand = new UserCommand[] { userCommandTop, userCommandBottom };
-            Definition.Description = description;
-            initIs();
+            Definition.initEmpty();
         }
 
         public void initIs()
         {
             if (Definition.NoOffButtons == 1)
             {
-                IsPressed = new bool[] { false };
                 IsDown = new bool[] { false };
                 IsUp = new bool[] { false };
             }
             if (Definition.NoOffButtons == 2)
             {
-                IsPressed = new bool[] { false, false };
                 IsDown = new bool[] { false, false };
                 IsUp = new bool[] { false, false };
             }

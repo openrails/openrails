@@ -27,18 +27,17 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
 {
     public class SwitchPanelModule : WebSocketModule
     {
-        private static SwitchPanelModule SwitchPanelModuleLocal;
+        private static SwitchPanelModule SwitchPanelModuleStatic;
+        private static SwitchesOnPanel SwitchesOnPanelStatic;
         private static bool InitDone = false;
-        private static Viewer Viewer;
         private static int Connections = 0;
 
         public SwitchPanelModule(string url, Viewer viewer) :
             base(url, true)
         {
             AddProtocol("json");
-            SwitchPanelModuleLocal = this;
-            _ = new SwitchesOnPanel(viewer);
-            Viewer = viewer;
+            SwitchPanelModuleStatic = this;
+            SwitchesOnPanelStatic = new SwitchesOnPanel(viewer);
             InitDone = true;
         }
 
@@ -55,188 +54,41 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 case "init":
                     SendAll("init");
                     break;
-                case "buttonClick":
-                    value = int.Parse(switchPanelEvent.Data.ToString());
-                    SwitchesOnPanel.setIsPressed((UserCommand)Enum.ToObject(typeof(UserCommand), value));
-                    break;
                 case "buttonDown":
                     value = int.Parse(switchPanelEvent.Data.ToString());
-                    SwitchesOnPanel.setIsDown((UserCommand)Enum.ToObject(typeof(UserCommand), value));
+                    SwitchesOnPanelStatic.setIsDown((UserCommand)Enum.ToObject(typeof(UserCommand), value));
                     break;
                 case "buttonUp":
                     value = int.Parse(switchPanelEvent.Data.ToString());
-                    SwitchesOnPanel.setIsUp((UserCommand)Enum.ToObject(typeof(UserCommand), value));
+                    SwitchesOnPanelStatic.setIsUp((UserCommand)Enum.ToObject(typeof(UserCommand), value));
                     break;
             }
             return Task.CompletedTask;
         }
 
-        private static void IsPressedDisplayTrackMonitorWindow()
-        {
-            // handle display track monitor from switch panel:
-            // cycle between: off --> static only --> all --> off
-
-            if (!Viewer.TrackMonitorWindow.Visible)
-            {
-                // track monitor window not visible
-                Viewer.TrackMonitorWindow.Visible = true;
-                if (Viewer.TrackMonitorWindow.Monitor.Mode == Popups.TrackMonitor.DisplayMode.All)
-                {
-                    Viewer.TrackMonitorWindow.Monitor.CycleMode();
-                }
-            }
-            else
-            {
-                // visible
-                if (Viewer.TrackMonitorWindow.Monitor.Mode == Popups.TrackMonitor.DisplayMode.StaticOnly)
-                {
-                    Viewer.TrackMonitorWindow.Monitor.CycleMode();
-                }
-                else
-                {
-                    Viewer.TrackMonitorWindow.Visible = false;
-                }
-            }
-        }
-
-        private static void IsPressedDisplayTrainDrivingWindow()
-        {
-            // handle display train driving info from switch panel:
-            // cycle between: off --> normal text mode --> abreviated --> off
-
-            if (!Viewer.TrainDrivingWindow.Visible)
-            {
-                // train driving info window not visible
-                Viewer.TrainDrivingWindow.Visible = true;
-                if (!Viewer.TrainDrivingWindow.normalTextMode)
-                {
-                    Viewer.TrainDrivingWindow.CycleMode();
-                }
-            }
-            else
-            {
-                // visible
-                if (Viewer.TrainDrivingWindow.normalTextMode)
-                {
-                    Viewer.TrainDrivingWindow.CycleMode();
-                }
-                else
-                {
-                    Viewer.TrainDrivingWindow.Visible = false;
-                }
-            }
-        }
-
-        private static void IsPressedDisplayHUD()
-        {
-            if (!Viewer.HUDWindow.Visible)
-            {
-                // HUD not visible
-                Viewer.HUDWindow.TextPage = 0;
-                Viewer.HUDWindow.Visible = true;
-            }
-            else
-            {
-                // visible
-                if (Viewer.HUDWindow.TextPage < Viewer.HUDWindow.TextPagesLength - 1)
-                {
-                    // next HUD page
-                    Viewer.HUDWindow.TabAction();
-
-                }
-                else
-                {
-                    Viewer.HUDWindow.Visible = false;
-                    Viewer.HUDWindow.TextPage = 0;
-                }
-            }
-        }
-
-        public static bool IsPressed(UserCommand userCommand)
-        {
-            bool toBeReturned = false;
-
-            if ((Connections > 0) && InitDone)
-            {
-                if (SwitchesOnPanel.IsPressed(userCommand))
-                {
-                    switch (userCommand)
-                    {
-                        case UserCommand.DisplayTrackMonitorWindow:
-                            IsPressedDisplayTrackMonitorWindow();
-                            break;
-                        case UserCommand.DisplayTrainDrivingWindow:
-                            IsPressedDisplayTrainDrivingWindow();
-                            break;
-                        case UserCommand.DisplayHUD:
-                            IsPressedDisplayHUD();
-                            break;
-                        default:
-                            toBeReturned = true;
-                            break;
-                    }
-                }
-
-            }
-            return toBeReturned;
-        }
-
         public static bool IsDown(UserCommand userCommand)
         {
             if ((Connections > 0) && InitDone)
-            {
-                if (SwitchesOnPanel.IsDown(userCommand))
-                    return true;
-            }
-            return false;
+                return SwitchesOnPanelStatic.IsDown(userCommand);
+            else
+                return false;
         }
 
         public static bool IsUp(UserCommand userCommand)
         {
             if ((Connections > 0) && InitDone)
-            {
-                if (SwitchesOnPanel.IsUp(userCommand))
-                    return true;
-            }
-            return false;
+                return SwitchesOnPanelStatic.IsUp(userCommand);
+            else
+                return false;
         }
 
         public static void SendSwitchPanelIfChanged()
         {
             if ((Connections > 0) && InitDone)
             {
-                int rows = SwitchesOnPanel.GetSwitchesOnPanelArray().GetLength(0);
-                int cols = SwitchesOnPanel.GetSwitchesOnPanelArray().GetLength(1);
-                bool changed = false;
-
-                SwitchesOnPanel.setDefinitions(SwitchesOnPanel.GetSwitchesOnPanelArray());
-
-                for (int i = 0; i < rows; i++)
+                if (SwitchesOnPanelStatic.IsChanged())
                 {
-                    for (int j = 0; j < cols; j++)
-                    {
-                        if (!SwitchesOnPanel.GetSwitchesOnPanelArray()[i, j].Definition.Equals(SwitchesOnPanel.getPreviousSwitchesOnPanelArray()[i, j].Definition))
-                        {
-                            SwitchOnPanelDefinition.deepCopy(
-                                SwitchesOnPanel.getPreviousSwitchesOnPanelArray()[i, j].Definition,
-                                SwitchesOnPanel.GetSwitchesOnPanelArray()[i, j].Definition);
-                            changed = true;
-                        }
-
-                        SwitchesOnPanel.getStatus(SwitchesOnPanel.GetSwitchesOnPanelArray()[i, j].Definition.UserCommand[0],
-                            ref SwitchesOnPanel.GetSwitchesOnPanelArray()[i, j].Status);
-                        if (!SwitchesOnPanel.GetSwitchesOnPanelArray()[i, j].Status.Equals(SwitchesOnPanel.getPreviousSwitchesOnPanelArray()[i, j].Status))
-                        {
-                            SwitchOnPanelStatus.deepCopy(
-                                SwitchesOnPanel.getPreviousSwitchesOnPanelArray()[i, j].Status,
-                                SwitchesOnPanel.GetSwitchesOnPanelArray()[i, j].Status);
-                            changed = true;
-                        }
-                    }
-                }
-                if (changed)
-                {
-                    SwitchPanelModuleLocal.SendAll("buttonClick");
+                    SwitchPanelModuleStatic.SendAll("update");
                 }
             }
         }
@@ -259,7 +111,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
 
         private void SendAll(string type)
         {
-            _ = BroadcastEvent(new SwitchPanelEvent(type, SwitchesOnPanel.GetSwitchesOnPanelArray()));
+            _ = BroadcastEvent(new SwitchPanelEvent(type, SwitchesOnPanelStatic.SwitchesOnPanelArray));
         }
 
         public async Task BroadcastEvent(SwitchPanelEvent jsEvent)
