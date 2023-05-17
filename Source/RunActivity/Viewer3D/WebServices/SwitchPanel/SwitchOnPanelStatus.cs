@@ -17,22 +17,417 @@
 //
 
 using System.Collections.Generic;
+using ORTS.Common.Input;
+using ORTS.Scripting.Api;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks.SubSystems;
+using Orts.Simulation.RollingStocks;
 
 namespace Orts.Viewer3D.WebServices.SwitchPanel
 {
     public class SwitchOnPanelStatus
     {
+        private static Viewer Viewer;
+
         public string Status = "";
         public string Color = "";
         public bool Blinking = false;
 
-        public SwitchOnPanelStatus() { }
+        public SwitchOnPanelStatus(Viewer viewer)
+        {
+            Viewer = viewer;
+        }
 
         public SwitchOnPanelStatus(string status, string color, bool blinking)
         {
             Status = status;
             Color = color;
             Blinking = blinking;
+        }
+
+        private static void getStatusDoors(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            DoorState door;
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            bool flipped = locomotive.GetCabFlipped() ^ locomotive.Flipped;
+
+            if (userCommand == UserCommand.ControlDoorLeft)
+                door = flipped ? locomotive.Doors.RightDoor.State : locomotive.Doors.LeftDoor.State;
+            else
+                door = flipped ? locomotive.Doors.LeftDoor.State : locomotive.Doors.RightDoor.State;
+
+            if (door == DoorState.Open)
+            {
+                switchOnPanelStatus.Color = locomotive.AbsSpeedMpS > 0.1f ? "red" : "orange";
+                switchOnPanelStatus.Blinking = locomotive.AbsSpeedMpS > 0.1f;
+            }
+            if ((door == DoorState.Opening) || (door == DoorState.Closing))
+            {
+                switchOnPanelStatus.Color = locomotive.AbsSpeedMpS > 0.1f ? "red" : "darkorange";
+                switchOnPanelStatus.Blinking = true;
+            }
+            if (door == DoorState.Closed)
+            {
+                switchOnPanelStatus.Color = "";
+                switchOnPanelStatus.Blinking = false;
+            }
+            switchOnPanelStatus.Status = door.ToString();
+        }
+
+        private static void getStatusControlPantograph(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            int pantographIndex = (int)userCommand - (int)UserCommand.ControlPantograph1;
+
+            if (locomotive.Pantographs.List[pantographIndex].State == PantographState.Up)
+            {
+                switchOnPanelStatus.Color = "lightblue";
+            }
+            if ((locomotive.Pantographs.List[pantographIndex].State == PantographState.Raising) ||
+                (locomotive.Pantographs.List[pantographIndex].State == PantographState.Lowering))
+            {
+                switchOnPanelStatus.Color = "lightblue";
+                switchOnPanelStatus.Blinking = true;
+            }
+            switchOnPanelStatus.Status = locomotive.Pantographs.List[pantographIndex].State.ToString();
+        }
+
+        private static void getStatusControlHeadlight(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            switch (locomotive.Headlight)
+            {
+                case 0:
+                    switchOnPanelStatus.Status = Viewer.Catalog.GetString("Off");
+                    break;
+                case 1:
+                    switchOnPanelStatus.Status = Viewer.Catalog.GetString("Dim");
+                    switchOnPanelStatus.Color = "lightyellow";
+                    break;
+                case 2:
+                    switchOnPanelStatus.Status = Viewer.Catalog.GetString("Bright");
+                    switchOnPanelStatus.Color = "lightblue";
+                    break;
+            }
+        }
+
+        private static void getStatusControlCablight(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            switchOnPanelStatus.Status = locomotive.CabLightOn ? Viewer.Catalog.GetString("On") : Viewer.Catalog.GetString("Off");
+            switchOnPanelStatus.Color = locomotive.CabLightOn ? "lightyellow" : "";
+        }
+
+        private static void getStatusControlDirection(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            switch (locomotive.Direction)
+            {
+                case ORTS.Common.Direction.Forward:
+                    switchOnPanelStatus.Color = "lightgreen";
+                    break;
+                case ORTS.Common.Direction.Reverse:
+                    switchOnPanelStatus.Color = "orange";
+                    break;
+            }
+            switchOnPanelStatus.Status = locomotive.Direction.ToString();
+        }
+
+        private static void getStatusControlSander(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            if (locomotive.Sander)
+                switchOnPanelStatus.Color = "yellow";
+        }
+
+        private static void getStatusControlWiper(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            if (locomotive.Wiper)
+                switchOnPanelStatus.Color = "blue";
+        }
+
+        private static void getStatusControlEmergencyPushButton(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            if (locomotive.EmergencyButtonPressed)
+            {
+                switchOnPanelStatus.Status = "SET";
+                switchOnPanelStatus.Color = "red";
+                switchOnPanelStatus.Blinking = true;
+            }
+            else
+            {
+                switchOnPanelStatus.Color = "#FFCCCB"; // lightred
+            }
+        }
+
+        private static void getStatusGameControlMode(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            switch (Viewer.PlayerTrain.ControlMode)
+            {
+                case Train.TRAIN_CONTROL.AUTO_SIGNAL:
+                    switchOnPanelStatus.Color = "lightgreen";
+                    break;
+                case Train.TRAIN_CONTROL.AUTO_NODE:
+                    break;
+                case Train.TRAIN_CONTROL.MANUAL:
+                    switchOnPanelStatus.Color = "#FFCCCB"; // lightred
+                    break;
+                case Train.TRAIN_CONTROL.EXPLORER:
+                    break;
+                case Train.TRAIN_CONTROL.OUT_OF_CONTROL:
+                    switchOnPanelStatus.Color = "red";
+                    switchOnPanelStatus.Blinking = true;
+                    break;
+                case Train.TRAIN_CONTROL.INACTIVE:
+                    break;
+                case Train.TRAIN_CONTROL.TURNTABLE:
+                    break;
+                case Train.TRAIN_CONTROL.UNDEFINED:
+                    break;
+            }
+            switchOnPanelStatus.Status = Viewer.PlayerTrain.ControlMode.ToString();
+        }
+
+        private static void getStatusGameAutopilotMode(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            var autopilot = (locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING);
+            if (autopilot)
+            {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("On");
+                switchOnPanelStatus.Color = "lightgreen";
+            }
+            else
+            {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Off");
+            }
+        }
+
+        private static void getStatusMasterKey(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            if (locomotive.LocomotivePowerSupply.MasterKey.Mode == Simulation.RollingStocks.SubSystems.PowerSupplies.MasterKey.ModeType.AlwaysOn)
+            {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Always On");
+                switchOnPanelStatus.Color = "lightgray";
+            }
+            else
+            {
+                if (locomotive.LocomotivePowerSupply.MasterKey.On)
+                {
+                    switchOnPanelStatus.Status = Viewer.Catalog.GetString("On");
+                    switchOnPanelStatus.Color = "lightblue";
+                }
+                else
+                {
+                    switchOnPanelStatus.Status = Viewer.Catalog.GetString("Off");
+                }
+            }
+        }
+
+        private static void getStatusBatterySwitch(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            if (locomotive.LocomotivePowerSupply.BatterySwitch.Mode == Simulation.RollingStocks.SubSystems.PowerSupplies.BatterySwitch.ModeType.AlwaysOn)
+            {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Always On");
+                switchOnPanelStatus.Color = "lightgray";
+            }
+            else
+            {
+                if (locomotive.LocomotivePowerSupply.BatterySwitch.On)
+                {
+                    switchOnPanelStatus.Status = Viewer.Catalog.GetString("On");
+                    switchOnPanelStatus.Color = "lightblue";
+                }
+                else
+                {
+                    switchOnPanelStatus.Status = Viewer.Catalog.GetString("Off");
+                }
+            }
+        }
+
+        private static void getStatusCircuitBreaker(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSElectricLocomotive locomotive = Viewer.PlayerLocomotive as MSTSElectricLocomotive;
+
+            switchOnPanelStatus.Status = "";
+            switchOnPanelStatus.Color = "";
+
+            string scriptName = locomotive.ElectricPowerSupply.CircuitBreaker.ScriptName;
+            if (scriptName == "Automatic")
+            {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Automatic") + " <br> ";
+                switchOnPanelStatus.Color = "lightgray";
+            }
+
+            switch (locomotive.ElectricPowerSupply.CircuitBreaker.State)
+            {
+                case CircuitBreakerState.Closing:
+                    if (switchOnPanelStatus.Color == "")
+                        switchOnPanelStatus.Color = "lightblue";
+                    switchOnPanelStatus.Blinking = true;
+                    break;
+                case CircuitBreakerState.Closed:
+                    if (switchOnPanelStatus.Color == "")
+                        switchOnPanelStatus.Color = "lightblue";
+                    break;
+            }
+            switchOnPanelStatus.Status += locomotive.ElectricPowerSupply.CircuitBreaker.State.ToString();
+        }
+
+        private static void getStatusTractionCutOffRelay(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSDieselLocomotive locomotive = Viewer.PlayerLocomotive as MSTSDieselLocomotive;
+
+            switchOnPanelStatus.Status = "";
+            switchOnPanelStatus.Color = "";
+
+            string scriptName = locomotive.DieselPowerSupply.TractionCutOffRelay.ScriptName;
+            if (scriptName == "Automatic")
+            {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Automatic") + " <br> ";
+                switchOnPanelStatus.Color = "lightgray";
+            }
+
+            switch (locomotive.DieselPowerSupply.TractionCutOffRelay.State)
+            {
+                case TractionCutOffRelayState.Closing:
+                    if (switchOnPanelStatus.Color == "")
+                        switchOnPanelStatus.Color = "lightblue";
+                    switchOnPanelStatus.Blinking = true;
+                    break;
+                case TractionCutOffRelayState.Closed:
+                    if (switchOnPanelStatus.Color == "")
+                        switchOnPanelStatus.Color = "lightblue";
+                    break;
+            }
+            switchOnPanelStatus.Status += locomotive.DieselPowerSupply.TractionCutOffRelay.State.ToString();
+        }
+
+        private static void getStatusDieselEnginePlayerHelper(MSTSDieselLocomotive Locomotive, ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            switch (Locomotive.DieselEngines.State)
+            {
+                case DieselEngineState.Stopped:
+                    break;
+                case DieselEngineState.Starting:
+                    switchOnPanelStatus.Color = "lightblue";
+                    switchOnPanelStatus.Blinking = true;
+                    break;
+                case DieselEngineState.Running:
+                    switchOnPanelStatus.Color = "lightblue";
+                    break;
+                case DieselEngineState.Stopping:
+                    switchOnPanelStatus.Color = "lightblue";
+                    switchOnPanelStatus.Blinking = true;
+                    break;
+                case DieselEngineState.Unavailable:
+                    switchOnPanelStatus.Color = "lightgray";
+                    break;
+            }
+            switchOnPanelStatus.Status = (Locomotive as MSTSDieselLocomotive).DieselEngines.State.ToString();
+        }
+
+        private static void getStatusDieselEngine(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            Train train = (Viewer.PlayerLocomotive as MSTSLocomotive).Train;
+
+            int count = 0;
+            foreach (TrainCar trainCar in train.Cars)
+            {
+                if (trainCar.GetType() == typeof(MSTSDieselLocomotive))
+                {
+                    count++;
+                    MSTSDieselLocomotive locomotive = trainCar as MSTSDieselLocomotive;
+                    if ((count == 1) && (userCommand == UserCommand.ControlDieselPlayer))
+                    {
+                        getStatusDieselEnginePlayerHelper(locomotive, ref switchOnPanelStatus);
+                    }
+                    if ((count == 2) && (userCommand == UserCommand.ControlDieselHelper))
+                    {
+                        getStatusDieselEnginePlayerHelper(locomotive, ref switchOnPanelStatus);
+                    }
+                }
+            }
+        }
+
+        public static void getStatus(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            switchOnPanelStatus.Status = "";
+            switchOnPanelStatus.Color = "";
+            switchOnPanelStatus.Blinking = false;
+
+            switch (userCommand)
+            {
+                case UserCommand.ControlDoorLeft:
+                case UserCommand.ControlDoorRight:
+                    getStatusDoors(userCommand, ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlPantograph1:
+                case UserCommand.ControlPantograph2:
+                case UserCommand.ControlPantograph3:
+                case UserCommand.ControlPantograph4:
+                    getStatusControlPantograph(userCommand, ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlHeadlightIncrease:
+                case UserCommand.ControlHeadlightDecrease:
+                    getStatusControlHeadlight(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlLight:
+                    getStatusControlCablight(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlBackwards:
+                case UserCommand.ControlForwards:
+                    getStatusControlDirection(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlSander:
+                    getStatusControlSander(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlWiper:
+                    getStatusControlWiper(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlEmergencyPushButton:
+                    getStatusControlEmergencyPushButton(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.GameSwitchManualMode:
+                    getStatusGameControlMode(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.GameAutopilotMode:
+                    getStatusGameAutopilotMode(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlMasterKey:
+                    getStatusMasterKey(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlBatterySwitchClose:
+                    getStatusBatterySwitch(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlCircuitBreakerClosingOrder:
+                    getStatusCircuitBreaker(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlDieselPlayer:
+                    getStatusDieselEngine(UserCommand.ControlDieselPlayer, ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlDieselHelper:
+                    getStatusDieselEngine(UserCommand.ControlDieselHelper, ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlTractionCutOffRelayClosingOrder:
+                    getStatusTractionCutOffRelay(ref switchOnPanelStatus);
+                    break;
+            }
         }
 
         public override bool Equals(object obj)

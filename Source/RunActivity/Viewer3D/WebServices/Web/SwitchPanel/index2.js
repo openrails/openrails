@@ -42,8 +42,8 @@ function createSocket() {
                 initStillToBeDone = false;
             }
         }
-        if (json.type == "buttonClick") {
-            buttonClickReceived(json.data);
+        if (json.type == "update") {
+            updateCells(json.data);
         }
     }
 
@@ -56,12 +56,6 @@ function createSocket() {
     };
 
     return connection;
-}
-
-function sendButtonClick(userCommand) {
-
-    console.log("sendButtonClick: " + userCommand);
-    sendMessage("buttonClick", userCommand);
 }
 
 function sendButtonDown(userCommand) {
@@ -130,11 +124,6 @@ function initReceived(data) {
     updateCells(data);
 }
 
-function buttonClickReceived(data) {
-
-    updateCells(data);
-}
-
 function updateCells(data) {
 
     for (let x = 0; x < rows; x++) {
@@ -198,26 +187,7 @@ function updateCellWithOneButton(div, definition) {
     // one button
     let switchButton = document.createElement("button");
     switchButton.setAttribute("id", definition.UserCommand[0]);
-    if (definition.Button == 1) { // click
-        switchButton.addEventListener("click",
-            function () {
-                sendButtonClick(definition.UserCommand[0]);
-            });
-    }
-    if (definition.Button == 2) { // push
-        ["touchstart", "mousedown"].forEach(evt =>
-            switchButton.addEventListener(evt,
-                function () {
-                    sendButtonDown(definition.UserCommand[0]);
-                })
-        );
-        ["touchend", "mouseup"].forEach(evt =>
-            switchButton.addEventListener(evt,
-                function () {
-                    sendButtonUp(definition.UserCommand[0]);
-                })
-        )
-    }
+    setEventListener(switchButton, definition.UserCommand[0]);
     switchButton.className = "btn1";
     div.appendChild(switchButton);
 
@@ -229,53 +199,16 @@ function updateCellWithOneButton(div, definition) {
 
 function updateCellWithTwoButtons(div, definition) {
 
+    // two buttons (up and down functionality)
     let switchButton1 = document.createElement("button");
     switchButton1.setAttribute("id", definition.UserCommand[0]);
-    if (definition.Button == 1) { // click
-        switchButton1.addEventListener("click",
-            function () {
-                sendButtonClick(definition.UserCommand[0]);
-            });
-    }
-    if (definition.Button == 2) { // push
-        ["touchstart", "mousedown"].forEach(evt =>
-            switchButton1.addEventListener(evt,
-                function () {
-                    sendButtonDown(definition.UserCommand[0]);
-                })
-        );
-        ["touchend", "mouseup"].forEach(evt =>
-            switchButton1.addEventListener(evt,
-                function () {
-                    sendButtonUp(definition.UserCommand[0]);
-                })
-        )
-    }
+    setEventListener(switchButton1, definition.UserCommand[0]);
     switchButton1.className = "btn2";
     div.appendChild(switchButton1);
 
     let switchButton2 = document.createElement("button");
     switchButton2.setAttribute("id", definition.UserCommand[1]);
-    if (definition.Button == 1) { // click
-        switchButton2.addEventListener("click",
-            function () {
-                sendButtonClick(definition.UserCommand[1]);
-            });
-    }
-    if (definition.Button == 2) { // push
-        ["touchstart", "mousedown"].forEach(evt =>
-            switchButton2.addEventListener(evt,
-                function () {
-                    sendButtonDown(definition.UserCommand[1]);
-                })
-        );
-        ["touchend", "mouseup"].forEach(evt =>
-            switchButton2.addEventListener(evt,
-                function () {
-                    sendButtonUp(definition.UserCommand[1]);
-                })
-        )
-    }
+    setEventListener(switchButton2, definition.UserCommand[1]);
     switchButton2.className = "btn2";
     div.appendChild(switchButton2);
 
@@ -296,6 +229,24 @@ function updateCellStatus(definition, status) {
             removeFromBlinkButtons(definition.UserCommand[0])
         }
     }
+}
+
+function setEventListener(switchButton, userCommand) {
+
+    ["touchstart", "mousedown"].forEach(evt =>
+        switchButton.addEventListener(evt,
+            function (e) {
+                e.preventDefault();
+                sendButtonDown(userCommand);
+            })
+    );
+    ["touchend", "mouseup"].forEach(evt =>
+        switchButton.addEventListener(evt,
+            function (e) {
+                e.preventDefault();
+                sendButtonUp(userCommand);
+            })
+    )
 }
 
 function definitionEqual(definition1, definition2) {
@@ -326,10 +277,7 @@ function definitionEqual(definition1, definition2) {
     }
 
     if (equal) {
-        equal =
-            (definition1.Button === definition2.Button) &&
-            (definition1.Description === definition2.Description) &&
-            (definition1.NoOffButtons === definition2.NoOffButtons);
+        equal = (definition1.Description === definition2.Description);
     }
 
     return equal;
@@ -337,7 +285,6 @@ function definitionEqual(definition1, definition2) {
 
 function copyDefinition(definitionTo, definitionFrom) {
 
-    definitionTo.Button = definitionFrom.Button;
     definitionTo.Description = definitionFrom.Description;
     definitionTo.NoOffButtons = definitionFrom.NoOffButtons;
     definitionTo.UserCommand = [];
@@ -356,6 +303,7 @@ function copyDefinition(definitionTo, definitionFrom) {
 let blinkButtons = {};
 
 function blink() {
+
     let userCommand;
     let color;
     for ([userCommand, color] of Object.entries(blinkButtons)) {
@@ -371,7 +319,7 @@ function blink() {
                 switchButton.style.background = color;
             }
         }
-    }, 50);
+    }, 400);
 }
 
 function addToBlinkButtons(userCommand, color) {
@@ -388,7 +336,7 @@ function removeFromBlinkButtons(userCommand) {
     }
 }
 
-setInterval(blink, 500);
+setInterval(blink, 1000);
 
 //
 // sleep time (expects milliseconds)
