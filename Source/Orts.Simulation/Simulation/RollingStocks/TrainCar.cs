@@ -210,8 +210,9 @@ namespace Orts.Simulation.RollingStocks
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
+        public float MaxBrakeShoeForceN;
         public float InitialMaxHandbrakeForceN;  // Initial force when agon initialised
-        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when agon initialised
+        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when wagon initialised
 
         // Coupler Animation
         public AnimatedCoupler FrontCoupler = new AnimatedCoupler();
@@ -959,12 +960,21 @@ namespace Orts.Simulation.RollingStocks
                 float UserFriction = GetUserBrakeShoeFrictionFactor();
                 float ZeroUserFriction = GetZeroUserBrakeShoeFrictionFactor();
                 float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
+                BrakeShoeCoefficientFrictionAdjFactor = 1.0f;
+                BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f;
+                BrakeShoeCoefficientFriction = 1.0f;
 
                 // This section calculates an adjustment factor for the brake force dependent upon the "base" (zero speed) friction value. 
                 //For a user defined case the base value is the zero speed value from the curve entered by the user.
                 // For a "default" case where no user data has been added to the WAG file, the base friction value has been assumed to be 0.2, thus maximum value of 20% applied.
 
-                if (UserFriction != 0)  // User defined friction has been applied in WAG file - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
+                if (UserFriction != 0 && MaxBrakeShoeForceN != 0) // Assume user has set up brakeshoe force and brakeshoe CoF
+                {
+                    BrakeShoeCoefficientFrictionAdjFactor = UserFriction * AdhesionMultiplier;
+                    BrakeShoeRetardCoefficientFrictionAdjFactor = BrakeShoeCoefficientFrictionAdjFactor;
+                    BrakeShoeCoefficientFriction = UserFriction * AdhesionMultiplier; // For display purposes on HUD
+                }
+                else if (UserFriction != 0)  // User defined friction has been applied in WAG file - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
                 {
                     BrakeShoeCoefficientFrictionAdjFactor = UserFriction / ZeroUserFriction * AdhesionMultiplier; // Factor calculated by normalising zero speed value on friction curve applied in WAG file
                     BrakeShoeRetardCoefficientFrictionAdjFactor = UserFriction / ZeroUserFriction * AdhesionMultiplier;

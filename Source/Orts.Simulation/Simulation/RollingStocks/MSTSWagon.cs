@@ -597,7 +597,14 @@ namespace Orts.Simulation.RollingStocks
             // Initialise key wagon parameters
             MassKG = InitialMassKG;
             MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
-            MaxBrakeForceN = InitialMaxBrakeForceN;
+            if (MaxBrakeShoeForceN != 0)
+            {
+                MaxBrakeForceN = MaxBrakeShoeForceN;
+            }
+            else
+            {
+                MaxBrakeForceN = InitialMaxBrakeForceN;
+            }
             CentreOfGravityM = InitialCentreOfGravityM;
 
             if (FreightAnimations != null)
@@ -1129,6 +1136,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsbrakeshoefriction": BrakeShoeFrictionFactor = new Interpolator(stf); break;
                 case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(maxbrakeshoebrakeforce": MaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortswheelbrakeslideprotection":
                   // stf.MustMatch("(");
                     var brakeslideprotection = stf.ReadFloatBlock(STFReader.UNITS.None, null);
@@ -1504,6 +1512,7 @@ namespace Orts.Simulation.RollingStocks
             InitialMaxBrakeForceN = copy.InitialMaxBrakeForceN;
             InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
+            MaxBrakeShoeForceN = copy.MaxBrakeShoeForceN;
             MaxHandbrakeForceN = copy.MaxHandbrakeForceN;
             WindowDeratingFactor = copy.WindowDeratingFactor;
             DesiredCompartmentTempSetpointC = copy.DesiredCompartmentTempSetpointC;
