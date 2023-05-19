@@ -725,7 +725,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 else
                 {
-                CylPressurePSI = demandedPressurePSI;
+                CylPressurePSI = Math.Max(demandedPressurePSI, BrakeLine3PressurePSI);
             }
 
             // During braking wheelslide control is effected throughout the train by additional equipment on each vehicle. In the piping to each pair of brake cylinders are fitted electrically operated 
