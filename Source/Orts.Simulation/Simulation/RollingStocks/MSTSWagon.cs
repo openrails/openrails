@@ -85,8 +85,7 @@ namespace Orts.Simulation.RollingStocks
 
         public bool GenericItem1;
         public bool GenericItem2;
-
-        Interpolator BrakeShoeFrictionFactor;  // Factor of friction for wagon brake shoes
+                
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
         float TempMassDiffRatio;
 
@@ -596,8 +595,9 @@ namespace Orts.Simulation.RollingStocks
 
             // Initialise key wagon parameters
             MassKG = InitialMassKG;
+
             MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
-            if (MaxBrakeShoeForceN != 0)
+            if (MaxBrakeShoeForceN != 0 && BrakeShoeFrictionFactor != null)
             {
                 MaxBrakeForceN = MaxBrakeShoeForceN;
             }

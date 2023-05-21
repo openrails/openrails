@@ -139,6 +139,8 @@ namespace Orts.Simulation.RollingStocks
            0.0f, 31.0f
         };
 
+        public Interpolator BrakeShoeFrictionFactor;  // Factor of friction for wagon brake shoes
+
         public static Interpolator SteamHeatBoilerWaterUsageGalukpH()
         {
             return new Interpolator(SteamUsageLbpH, WaterUsageGalukpH);
@@ -968,7 +970,7 @@ namespace Orts.Simulation.RollingStocks
                 //For a user defined case the base value is the zero speed value from the curve entered by the user.
                 // For a "default" case where no user data has been added to the WAG file, the base friction value has been assumed to be 0.2, thus maximum value of 20% applied.
 
-                if (UserFriction != 0 && MaxBrakeShoeForceN != 0) // Assume user has set up brakeshoe force and brakeshoe CoF
+                if (BrakeShoeFrictionFactor != null && MaxBrakeShoeForceN != 0) // Assume user has set up brakeshoe force and brakeshoe CoF
                 {
                     BrakeShoeCoefficientFrictionAdjFactor = UserFriction * AdhesionMultiplier;
                     BrakeShoeRetardCoefficientFrictionAdjFactor = BrakeShoeCoefficientFrictionAdjFactor;
