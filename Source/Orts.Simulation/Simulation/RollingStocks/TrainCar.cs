@@ -210,9 +210,9 @@ namespace Orts.Simulation.RollingStocks
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
-        public float MaxBrakeShoeForceN;
+        public float MaxBrakeShoeForceN; // This is the force applied to the brake shoe, hence it will be decreased by CoF to give force applied to the wheel
         public float InitialMaxHandbrakeForceN;  // Initial force when agon initialised
-        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when wagon initialised
+        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when wagon initialised, this is the force on the wheel, ie after the brake shoe.
 
         // Coupler Animation
         public AnimatedCoupler FrontCoupler = new AnimatedCoupler();

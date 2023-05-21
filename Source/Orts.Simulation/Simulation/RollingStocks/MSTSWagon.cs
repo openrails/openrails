@@ -676,7 +676,11 @@ namespace Orts.Simulation.RollingStocks
                     LoadEmptyWagonFrontalAreaM2 = WagonFrontalAreaM2;
                 }
 
-                if (FreightAnimations.EmptyMaxBrakeForceN > 0)
+                if (FreightAnimations.EmptyMaxBrakeShoeForceN > 0)
+                {
+                    LoadEmptyMaxBrakeForceN = FreightAnimations.EmptyMaxBrakeShoeForceN;
+                }
+                else if (FreightAnimations.EmptyMaxBrakeForceN > 0)
                 {
                     LoadEmptyMaxBrakeForceN = FreightAnimations.EmptyMaxBrakeForceN;
                 }
@@ -752,8 +756,11 @@ namespace Orts.Simulation.RollingStocks
                         LoadFullWagonFrontalAreaM2 = WagonFrontalAreaM2;
                     }
 
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN > 0)
+                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeShoeForceN > 0)
+                    {
+                        LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeShoeForceN;
+                    }
+                    else if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN > 0)
                     {
                         LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN;
                     }
@@ -839,8 +846,11 @@ namespace Orts.Simulation.RollingStocks
                         LoadFullWagonFrontalAreaM2 = WagonFrontalAreaM2;
                     }
 
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN > 0)
+                    if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeShoeForceN > 0)
+                    {
+                        LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeShoeForceN;
+                    }
+                    else if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN > 0)
                     {
                         LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN;
                     }
