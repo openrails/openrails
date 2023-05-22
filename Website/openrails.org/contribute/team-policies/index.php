@@ -59,6 +59,18 @@ New key assignments should obey the following rules where that is possible.
 </ul>
 Existing key assignments may not be changed without community discussion and approval of the Open Rails Management Team.
 </p>
+
+<h2>Crashes and Derailments</h2>
+<p>
+Open Rails simulates emergency events which bring a train to a standstill, such as a derailment, and provides both a visual indication 
+and a notification of the problem.
+</p>
+<p>
+Open Rails does not show rolling stock leaving the track due to crashes or derailments. 
+We have many members from the rail industry who have spent their working lives preventing incidents that cause injuries and loss of life 
+and we respect that point of view.
+</p>
+
 <?php include "../../shared/tail.php" ?>
 <?php include "../../shared/banners/preload_next_banner.php" ?>
   </body>
