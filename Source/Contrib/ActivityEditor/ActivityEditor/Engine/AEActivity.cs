@@ -20,16 +20,9 @@
 /// Updates : 
 /// 
 
-using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using AEWizard;
-using LibAE;
 using LibAE.Formats;
-using System.Xml.Serialization;
 using Orts.Formats.OR;
 
 namespace ActivityEditor.Engine

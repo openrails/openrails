@@ -29,7 +29,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Orts.Formats.Msts
@@ -1744,7 +1743,7 @@ namespace Orts.Formats.Msts
                 Trace.WriteLine($"SignalScript: {TermParts.PartParameter}, {TermParts.PartType}");
             }
 
-            private static void TraceError(int lineNumber, string tokenType, string termString )
+            private static void TraceError(int lineNumber, string tokenType, string termString)
             {
 #if DEBUG_PRINT_IN
                                 File.AppendAllText(din_fileLoc + @"sigscr.txt", $"Unknown {tokenType} : {termString}\n");

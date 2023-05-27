@@ -93,7 +93,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 motor = value;
                 DriveType = motor != null ? AxleDriveType.MotorDriven : AxleDriveType.ForceDriven;
-                switch(DriveType)
+                switch (DriveType)
                 {
                     case AxleDriveType.MotorDriven:
                         totalInertiaKgm2 = inertiaKgm2 + transmissionRatio * transmissionRatio * motor.InertiaKgm2;
@@ -155,7 +155,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         break;
                 }
             }
-            get 
+            get
             {
                 return inertiaKgm2;
             }
@@ -432,7 +432,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (elapsedClockSeconds <= 0) return;
             float prevSpeedMpS = AxleSpeedMpS;
 
-            if (Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS)-1)*0.01f, 0.001f))
+            if (Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01f, 0.001f))
             {
                 ++NumOfSubstepsPS;
                 waitBeforeSpeedingUp = 100;
@@ -446,13 +446,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
             }
 
-            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1); 
+            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1);
 
             float dt = elapsedClockSeconds / NumOfSubstepsPS;
             float hdt = dt / 2.0f;
             float axleInForceSumN = 0;
             float axleOutForceSumN = 0;
-            for (int i=0; i<NumOfSubstepsPS; i++)
+            for (int i = 0; i < NumOfSubstepsPS; i++)
             {
                 var k1 = GetAxleMotionVariation(AxleSpeedMpS);
                 if (i == 0)
@@ -463,7 +463,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         dt = elapsedClockSeconds / NumOfSubstepsPS;
                         hdt = dt / 2;
                     }
-                  
+
                     if (Math.Sign(AxleSpeedMpS + k1.Item1 * dt) != Math.Sign(AxleSpeedMpS) && BrakeRetardForceN + frictionN > Math.Abs(driveForceN - k1.Item3))
                     {
                         AxlePositionRad += AxleSpeedMpS * hdt;
@@ -515,7 +515,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
             float x = (float)((1 - Math.Sqrt(1 - forceRatio * forceRatio)) / forceRatio);
             AxleSpeedMpS = TrainSpeedMpS + MpS.FromKpH(AdhesionK * x / AdhesionLimit);
-            AxleForceN = (force + res.Item3)/2;
+            AxleForceN = (force + res.Item3) / 2;
         }
 
         /// <summary>

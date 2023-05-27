@@ -77,16 +77,16 @@ namespace Orts.Viewer3D
         /// <see cref="RenderPrimitiveGroup"/>.
         /// </summary>
         public static readonly RenderPrimitiveSequence[] SequenceForBlended = new[] {
-			RenderPrimitiveSequence.CabBlended,
+            RenderPrimitiveSequence.CabBlended,
             RenderPrimitiveSequence.Sky,
-			RenderPrimitiveSequence.WorldBlended,
-			RenderPrimitiveSequence.Lights,
-			RenderPrimitiveSequence.Precipitation,
+            RenderPrimitiveSequence.WorldBlended,
+            RenderPrimitiveSequence.Lights,
+            RenderPrimitiveSequence.Precipitation,
             RenderPrimitiveSequence.Particles,
             RenderPrimitiveSequence.InteriorBlended,
             RenderPrimitiveSequence.Labels,
-			RenderPrimitiveSequence.OverlayBlended,
-		};
+            RenderPrimitiveSequence.OverlayBlended,
+        };
 
         /// <summary>
         /// Mapping from <see cref="RenderPrimitiveGroup"/> to <see cref="RenderPrimitiveSequence"/> for opaque
@@ -94,16 +94,16 @@ namespace Orts.Viewer3D
         /// <see cref="RenderPrimitiveGroup"/>.
         /// </summary>
         public static readonly RenderPrimitiveSequence[] SequenceForOpaque = new[] {
-			RenderPrimitiveSequence.CabOpaque,
+            RenderPrimitiveSequence.CabOpaque,
             RenderPrimitiveSequence.Sky,
-			RenderPrimitiveSequence.WorldOpaque,
-			RenderPrimitiveSequence.Lights,
-			RenderPrimitiveSequence.Precipitation,
+            RenderPrimitiveSequence.WorldOpaque,
+            RenderPrimitiveSequence.Lights,
+            RenderPrimitiveSequence.Precipitation,
             RenderPrimitiveSequence.Particles,
             RenderPrimitiveSequence.InteriorOpaque,
             RenderPrimitiveSequence.Labels,
-			RenderPrimitiveSequence.OverlayOpaque,
-		};
+            RenderPrimitiveSequence.OverlayOpaque,
+        };
 
         /// <summary>
         /// This is an adjustment for the depth buffer calculation which may be used to reduce the chance of co-planar primitives from fighting each other.
@@ -191,15 +191,15 @@ namespace Orts.Viewer3D
         }
     }
 
-	public class RenderItemCollection : IList<RenderItem>, IEnumerator<RenderItem>
-	{
-		RenderItem[] Items = new RenderItem[4];
-		int ItemCount;
-		int EnumeratorIndex;
+    public class RenderItemCollection : IList<RenderItem>, IEnumerator<RenderItem>
+    {
+        RenderItem[] Items = new RenderItem[4];
+        int ItemCount;
+        int EnumeratorIndex;
 
-		public RenderItemCollection()
-		{
-		}
+        public RenderItemCollection()
+        {
+        }
 
         public int Capacity
         {
@@ -209,165 +209,165 @@ namespace Orts.Viewer3D
             }
         }
 
-		public int Count
-		{
+        public int Count
+        {
             get
             {
                 return ItemCount;
             }
-		}
+        }
 
-		public void Sort(IComparer<RenderItem> comparer)
-		{
-			Array.Sort(Items, 0, ItemCount, comparer);
-		}
+        public void Sort(IComparer<RenderItem> comparer)
+        {
+            Array.Sort(Items, 0, ItemCount, comparer);
+        }
 
-		#region IList<RenderItem> Members
+        #region IList<RenderItem> Members
 
-		public int IndexOf(RenderItem item)
-		{
+        public int IndexOf(RenderItem item)
+        {
             throw new NotSupportedException();
-		}
+        }
 
-		public void Insert(int index, RenderItem item)
-		{
+        public void Insert(int index, RenderItem item)
+        {
             throw new NotSupportedException();
-		}
+        }
 
-		public void RemoveAt(int index)
-		{
+        public void RemoveAt(int index)
+        {
             throw new NotSupportedException();
-		}
+        }
 
-		public RenderItem this[int index]
-		{
-			get
-			{
-				throw new NotSupportedException();
-			}
-			set
-			{
+        public RenderItem this[int index]
+        {
+            get
+            {
                 throw new NotSupportedException();
-			}
-		}
+            }
+            set
+            {
+                throw new NotSupportedException();
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region ICollection<RenderItem> Members
+        #region ICollection<RenderItem> Members
 
-		public void Add(RenderItem item)
-		{
-			if (ItemCount == Items.Length)
-			{
-				var items = new RenderItem[Items.Length * 2];
-				Array.Copy(Items, 0, items, 0, Items.Length);
+        public void Add(RenderItem item)
+        {
+            if (ItemCount == Items.Length)
+            {
+                var items = new RenderItem[Items.Length * 2];
+                Array.Copy(Items, 0, items, 0, Items.Length);
                 Items = items;
-			}
-			Items[ItemCount] = item;
-			ItemCount++;
-		}
+            }
+            Items[ItemCount] = item;
+            ItemCount++;
+        }
 
-		public void Clear()
-		{
-			Array.Clear(Items, 0, ItemCount);
-			ItemCount = 0;
-		}
+        public void Clear()
+        {
+            Array.Clear(Items, 0, ItemCount);
+            ItemCount = 0;
+        }
 
-		public bool Contains(RenderItem item)
-		{
+        public bool Contains(RenderItem item)
+        {
             throw new NotSupportedException();
-		}
+        }
 
-		public void CopyTo(RenderItem[] array, int arrayIndex)
-		{
+        public void CopyTo(RenderItem[] array, int arrayIndex)
+        {
             throw new NotSupportedException();
-		}
+        }
 
-		int ICollection<RenderItem>.Count
-		{
+        int ICollection<RenderItem>.Count
+        {
             get
             {
                 throw new NotSupportedException();
             }
-		}
+        }
 
-		public bool IsReadOnly
-		{
+        public bool IsReadOnly
+        {
             get
             {
                 throw new NotSupportedException();
             }
-		}
+        }
 
-		public bool Remove(RenderItem item)
-		{
-			throw new NotSupportedException();
-		}
+        public bool Remove(RenderItem item)
+        {
+            throw new NotSupportedException();
+        }
 
-		#endregion
+        #endregion
 
-		#region IEnumerable<RenderItem> Members
+        #region IEnumerable<RenderItem> Members
 
-		public IEnumerator<RenderItem> GetEnumerator()
-		{
-			Reset();
-			return this;
-		}
+        public IEnumerator<RenderItem> GetEnumerator()
+        {
+            Reset();
+            return this;
+        }
 
-		#endregion
+        #endregion
 
-		#region IEnumerable Members
+        #region IEnumerable Members
 
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
-		#endregion
+        #endregion
 
-		#region IEnumerator<RenderItem> Members
+        #region IEnumerator<RenderItem> Members
 
-		public RenderItem Current
-		{
+        public RenderItem Current
+        {
             get
             {
                 return Items[EnumeratorIndex];
             }
-		}
+        }
 
-		#endregion
+        #endregion
 
-		#region IEnumerator Members
+        #region IEnumerator Members
 
-		object System.Collections.IEnumerator.Current
-		{
+        object System.Collections.IEnumerator.Current
+        {
             get
             {
                 return Current;
             }
-		}
+        }
 
-		public bool MoveNext()
-		{
-			EnumeratorIndex++;
-			return EnumeratorIndex < ItemCount;
-		}
+        public bool MoveNext()
+        {
+            EnumeratorIndex++;
+            return EnumeratorIndex < ItemCount;
+        }
 
-		public void Reset()
-		{
-			EnumeratorIndex = -1;
-		}
+        public void Reset()
+        {
+            EnumeratorIndex = -1;
+        }
 
-		#endregion
+        #endregion
 
-		#region IDisposable Members
+        #region IDisposable Members
 
-		public void Dispose()
-		{
-			// No op.
-		}
+        public void Dispose()
+        {
+            // No op.
+        }
 
-		#endregion
+        #endregion
     }
 
     public class RenderFrame
@@ -391,7 +391,7 @@ namespace Orts.Viewer3D
         SpriteBatchMaterial RenderSurfaceMaterial;
 
         readonly Material DummyBlendedMaterial;
-		readonly Dictionary<Material, RenderItemCollection>[] RenderItems = new Dictionary<Material, RenderItemCollection>[(int)RenderPrimitiveSequence.Sentinel];
+        readonly Dictionary<Material, RenderItemCollection>[] RenderItems = new Dictionary<Material, RenderItemCollection>[(int)RenderPrimitiveSequence.Sentinel];
         readonly RenderItemCollection[] RenderShadowSceneryItems;
         readonly RenderItemCollection[] RenderShadowForestItems;
         readonly RenderItemCollection[] RenderShadowTerrainItems;
@@ -413,7 +413,7 @@ namespace Orts.Viewer3D
             DummyBlendedMaterial = new EmptyMaterial(null);
 
             for (int i = 0; i < RenderItems.Length; i++)
-				RenderItems[i] = new Dictionary<Material, RenderItemCollection>();
+                RenderItems[i] = new Dictionary<Material, RenderItemCollection>();
 
             if (Game.Settings.DynamicShadows)
             {
@@ -479,7 +479,7 @@ namespace Orts.Viewer3D
                     }
                 }
             }
-            
+
             // Clear out (reset) all of the RenderItem lists.
             for (var i = 0; i < RenderItems.Length; i++)
                 foreach (var mat in RenderItems[i].Keys)
@@ -739,7 +739,7 @@ namespace Orts.Viewer3D
             }
         }
 
-        void DrawShadows( GraphicsDevice graphicsDevice, bool logging )
+        void DrawShadows(GraphicsDevice graphicsDevice, bool logging)
         {
             if (logging) Console.WriteLine("  DrawShadows {");
             for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
@@ -796,7 +796,7 @@ namespace Orts.Viewer3D
             // Blur the shadow map.
             if (Game.Settings.ShadowMapBlur)
             {
-				ShadowMap[shadowMapIndex] = ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex]);
+                ShadowMap[shadowMapIndex] = ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex]);
 #if DEBUG_RENDER_STATE
                 DebugRenderState(graphicsDevice, ShadowMapMaterial.ToString() + " ApplyBlur()");
 #endif

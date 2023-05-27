@@ -128,7 +128,7 @@ namespace Orts.Common
             var errorLevel = (int)Math.Round(Math.Log((int)eventType) / Math.Log(2));
             if (errorLevel < Counts.Length)
                 Counts[errorLevel]++;
-            
+
             // Event is less important than error (and critical) and we're logging only errors... bail.
             if (eventType > TraceEventType.Error && OnlyErrors)
                 return;

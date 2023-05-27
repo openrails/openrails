@@ -15,10 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Formats.Msts;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using Orts.Formats.Msts;
 
 namespace Orts.Formats.OR
 {
@@ -40,12 +40,12 @@ namespace Orts.Formats.OR
             if (!segment.isCurved)
             {
                 return FindDistanceToSegment(pt,
-                    new AESegment (segment.associateSegment),
+                    new AESegment(segment.associateSegment),
                     out closest);
             }
             else
             {
-                return FindDistanceToCurve (pt, new AESegment (segment.associateSegment), out closest);
+                return FindDistanceToCurve(pt, new AESegment(segment.associateSegment), out closest);
             }
         }
 
@@ -70,13 +70,13 @@ namespace Orts.Formats.OR
 
             if (t < 0)
             {
-                closest = new PointF (seg.startPoint.X, seg.startPoint.Y);
+                closest = new PointF(seg.startPoint.X, seg.startPoint.Y);
                 dx = pt.X - seg.startPoint.X;
                 dy = pt.Y - seg.startPoint.Y;
             }
             else if (t > 1)
             {
-                closest = new PointF (seg.endPoint.X, seg.endPoint.Y);
+                closest = new PointF(seg.endPoint.X, seg.endPoint.Y);
                 dx = pt.X - seg.endPoint.X;
                 dy = pt.Y - seg.endPoint.Y;
             }
@@ -86,7 +86,7 @@ namespace Orts.Formats.OR
                 dx = pt.X - closest.X;
                 dy = pt.Y - closest.Y;
             }
-            double info = Math.Sqrt (dx * dx + dy * dy);
+            double info = Math.Sqrt(dx * dx + dy * dy);
             return info;
         }
 
@@ -125,7 +125,7 @@ namespace Orts.Formats.OR
             float t2 = ((track.startPoint.X - segArea.startPoint.X) * dy12 + (segArea.startPoint.Y - track.startPoint.Y) * dx12) / -denominator;
 
             // Find the point of intersection.
-            intersection = new PointF (segArea.startPoint.X + dx12 * t1, segArea.startPoint.Y + dy12 * t1);
+            intersection = new PointF(segArea.startPoint.X + dx12 * t1, segArea.startPoint.Y + dy12 * t1);
 
             // The segments intersect if t1 and t2 are between 0 and 1.
             segments_intersect = ((t1 >= 0) && (t1 <= 1) && (t2 >= 0) && (t2 <= 1));
@@ -149,8 +149,8 @@ namespace Orts.Formats.OR
                 t2 = 1;
             }
 
-            close_p1 = new PointF (segArea.startPoint.X + dx12 * t1, segArea.startPoint.Y + dy12 * t1);
-            close_p2 = new PointF (track.startPoint.X + dx34 * t2, track.startPoint.Y + dy34 * t2);
+            close_p1 = new PointF(segArea.startPoint.X + dx12 * t1, segArea.startPoint.Y + dy12 * t1);
+            close_p2 = new PointF(track.startPoint.X + dx34 * t2, track.startPoint.Y + dy34 * t2);
         }
 
 
@@ -180,13 +180,13 @@ namespace Orts.Formats.OR
 
         public static PointF FindStraightIntersection(AESegment segArea, AESegment track)
         {
-//double Ax, double Ay,
-//double Bx, double By,
-//double Cx, double Cy,
-//double Dx, double Dy,
-//double *X, double *Y 
+            //double Ax, double Ay,
+            //double Bx, double By,
+            //double Cx, double Cy,
+            //double Dx, double Dy,
+            //double *X, double *Y 
             PointF pt = PointF.Empty;
-            double  distAB, theCos, theSin, newX, ABpos ;
+            double distAB, theCos, theSin, newX, ABpos;
             double distCD, theCos2, theSin2;
             double ABX, ABY, ACX, ACY, ADX, ADY;
             double AX = segArea.startPoint.X;
@@ -194,7 +194,7 @@ namespace Orts.Formats.OR
             double CDX, CDY, angle1, angle2;
 
             //  Fail if either line segment is zero-length.
-            if ((segArea.startPoint.X == segArea.endPoint.X && segArea.startPoint.Y == segArea.endPoint.Y) 
+            if ((segArea.startPoint.X == segArea.endPoint.X && segArea.startPoint.Y == segArea.endPoint.Y)
                 || (track.startPoint.X == track.endPoint.X && track.startPoint.Y == track.endPoint.Y))
                 return pt;
 
@@ -204,7 +204,7 @@ namespace Orts.Formats.OR
                 (segArea.startPoint.X == track.endPoint.X && segArea.startPoint.Y == track.endPoint.Y) ||
                 (segArea.endPoint.X == track.endPoint.X && segArea.endPoint.Y == track.endPoint.Y))
             {
-                return pt; 
+                return pt;
             }
 
             //  (1) Translate the system so that point A is on the origin.
@@ -230,23 +230,23 @@ namespace Orts.Formats.OR
             angle1 = Math.Acos(theCos) * 180 / Math.PI;   // sup
             angle2 = Math.Acos(theCos2) * 180 / Math.PI;   // sup
             newX = ACX * theCos + ACY * theSin;
-            ACY  = ACY * theCos - ACX * theSin; 
+            ACY = ACY * theCos - ACX * theSin;
             ACX = newX;
             newX = ADX * theCos + ADY * theSin;
-            ADY  = ADY * theCos - ADX * theSin; 
+            ADY = ADY * theCos - ADX * theSin;
             ADX = newX;
 
             if (Math.Abs(angle1 - angle2) < 5)   // sup
                 return pt;   // sup
             //  Fail if segment C-D doesn't cross line A-B.
-            if (ACY < 0 && ADY < 0 || ACY >= 0 && ADY >= 0) 
+            if (ACY < 0 && ADY < 0 || ACY >= 0 && ADY >= 0)
                 return pt;
 
             //  (3) Discover the position of the intersection point along line A-B.
             ABpos = ADX + (ACX - ADX) * ADY / (ADY - ACY);
 
             //  Fail if segment C-D crosses line A-B outside of segment A-B.
-            if (ABpos < 0 || ABpos > distAB) 
+            if (ABpos < 0 || ABpos > distAB)
                 return pt;
 
             //  (4) Apply the discovered position to line A-B in the original coordinate system.
@@ -379,7 +379,7 @@ namespace Orts.Formats.OR
 >>>>>>> .r37
         }
   
-	#endif
+#endif
         public static PointF FindCurveIntersection(AESegment segArea, AESegment track)
         {
             PointF pointA = track.startPoint;
@@ -415,19 +415,19 @@ namespace Orts.Formats.OR
             return PointF.Empty;
         }
 
-        public static double FindDistanceToCurve (PointF pt, AESegment segment, out PointF closest)
+        public static double FindDistanceToCurve(PointF pt, AESegment segment, out PointF closest)
         {
             double dist = 0;
             double savedDist = double.PositiveInfinity;
             PointF current = new PointF(0f, 0f);
             if (!segment.isCurved || segment.radius == 0)
-                return FindDistanceToSegment (pt, segment, out closest);
+                return FindDistanceToSegment(pt, segment, out closest);
 
             PointF pointA = segment.startPoint;
             PointF pointB = segment.endPoint;
             PointF pointCenter = segment.center;
             closest = current;
-            for (int i = 0; i <= segment.step; i++) 
+            for (int i = 0; i <= segment.step; i++)
             {
                 double sub_angle = ((float)i / segment.step) * segment.angleTot;
                 double infox = (1 - Math.Cos(sub_angle)) * (-pointB.X);
@@ -445,7 +445,7 @@ namespace Orts.Formats.OR
                     closest = current;
                 }
             }
-            savedDist = Math.Round (savedDist, 1);
+            savedDist = Math.Round(savedDist, 1);
             return savedDist;
         }
 
@@ -471,7 +471,7 @@ namespace Orts.Formats.OR
             return oddNodes;
         }
 
-        public static int getDirection (TrackNode fromNode, TrackNode toNode)
+        public static int getDirection(TrackNode fromNode, TrackNode toNode)
         {
             foreach (var pin in fromNode.TrPins)
             {

@@ -15,11 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Orts.Parsers.OR;
@@ -62,8 +57,8 @@ namespace Orts.Formats.OR
     public class ContainerParameters
     {
         public string Name;
-        public string ShapeFileName;  
-        public string ContainerType;  
+        public string ShapeFileName;
+        public string ContainerType;
         public Vector3 IntrinsicShapeOffset = new Vector3(0f, 1.17f, 0f);
         public float EmptyMassKG = -1;
         public float MaxMassWhenLoadedKG = -1;
@@ -91,13 +86,13 @@ namespace Orts.Formats.OR
         // restore
         public ContainerParameters(BinaryReader inf)
         {
- //           Overcast = inf.ReadSingle();
+            //           Overcast = inf.ReadSingle();
         }
 
         // save
         public void Save(BinaryWriter outf)
         {
-//            outf.Write(Overcast);
+            //            outf.Write(Overcast);
         }
     }
 }

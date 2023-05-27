@@ -15,10 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Xna.Framework;
-using Orts.Formats.Msts;
 using System;
 using System.Drawing;
+using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
 
 namespace Orts.Formats.OR
 {

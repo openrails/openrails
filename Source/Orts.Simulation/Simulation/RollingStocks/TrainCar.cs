@@ -33,6 +33,11 @@
 // Debug Brake Slide Calculations
 //#define DEBUG_BRAKE_SLIDE
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Formats.Msts;
@@ -47,12 +52,6 @@ using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
 using ORTS.Scripting.Api;
-using ORTS.Settings;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
@@ -107,7 +106,7 @@ namespace Orts.Simulation.RollingStocks
         static float dbfmaxsafecurvespeedmps;//Debrief eval
         public static int DbfEvalTrainOverturned;//Debrief eval
         public bool ldbfevaltrainoverturned = false;
-                                        
+
         // original consist of which car was part (used in timetable for couple/uncouple options)
         public string OrgConsist = string.Empty;
 
@@ -677,7 +676,7 @@ namespace Orts.Simulation.RollingStocks
         }
         public WagonSpecialTypes WagonSpecialType;
 
-    protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
+        protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
         protected float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         protected float TrainCrossSectionAreaM2; // Cross sectional area of the train
         protected float DoubleTunnelCrossSectAreaM2;
@@ -701,7 +700,7 @@ namespace Orts.Simulation.RollingStocks
         public virtual void Initialize()
         {
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
-            
+
             //CurveForceFilter.Initialize();
 
             // Initialize tunnel resistance values
@@ -806,7 +805,7 @@ namespace Orts.Simulation.RollingStocks
                 InitializeCarTemperatures();
                 AmbientTemperatureInitialised = true;
             }
-            
+
             // Update temperature variation for height of car above sea level
             // Typically in clear conditions there is a 9.8 DegC variation for every 1000m (1km) rise, in snow/rain there is approx 5.5 DegC variation for every 1000m (1km) rise
             float TemperatureHeightVariationDegC = 0;
@@ -821,9 +820,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 TemperatureHeightVariationDegC = Me.ToKiloM(CarHeightAboveSeaLevelM) * DryLapseTemperatureC;
             }
-            
+
             TemperatureHeightVariationDegC = MathHelper.Clamp(TemperatureHeightVariationDegC, 0.00f, 30.0f);
-            
+
             CarOutsideTempC = InitialCarOutsideTempC - TemperatureHeightVariationDegC;
 
             // gravity force, M32 is up component of forward vector
@@ -899,9 +898,9 @@ namespace Orts.Simulation.RollingStocks
             double longitude = 0;
 
             new WorldLatLon().ConvertWTC(WorldPosition.TileX, WorldPosition.TileZ, WorldPosition.Location, ref latitude, ref longitude);
-            
+
             float LatitudeDeg = MathHelper.ToDegrees((float)latitude);
-                      
+
 
             // Sets outside temperature dependent upon the season
             if (Simulator.Season == SeasonType.Winter)
@@ -989,7 +988,7 @@ namespace Orts.Simulation.RollingStocks
                 if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
                 {
                     // If advanced adhesion model indicates wheel slip warning, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
-                    if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0) 
+                    if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
                     {
                         BrakeSkidWarning = true;  // set brake skid flag true
                     }
@@ -1025,7 +1024,7 @@ namespace Orts.Simulation.RollingStocks
                             BrakeSkidWarning = true; 	// wagon wheel is about to slip
                         }
                     }
-                    else if ( BrakeWheelTreadForceN < 0.75f * WagonBrakeAdhesiveForceN)
+                    else if (BrakeWheelTreadForceN < 0.75f * WagonBrakeAdhesiveForceN)
                     {
                         BrakeSkidWarning = false; 	// wagon wheel is back to normal
                     }
@@ -1037,7 +1036,7 @@ namespace Orts.Simulation.RollingStocks
                         WheelBrakeSlideProtectionDumpValveLockout = false;
 
                     }
-                    
+
 
 
                     // Calculate adhesive force based upon whether in skid or not
@@ -1049,7 +1048,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal
                     }
-                                   
+
 
                     // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
                     if (!BrakeSkid && AbsSpeedMpS > 0.01)  // Train must be moving forward to experience skid
@@ -1067,7 +1066,7 @@ namespace Orts.Simulation.RollingStocks
                         {
                             BrakeSkid = false; 	// wagon wheel is not slipping
                         }
-                        
+
                     }
                     else
                     {
@@ -1203,11 +1202,11 @@ namespace Orts.Simulation.RollingStocks
             // To achieve an accurate coupler angle calculation the following length need to be calculated. These values can be included in the ENG/WAG file for greatest accuracy, or alternatively OR will
             // calculate some default values based upon the length of the car specified in the "Size" statement. This value may however be inaccurate, and sets the "visual" distance for placement of the 
             // animated coupler. So often it is a good idea to add the values in the WAG file.
-            
+
             var OverhangThisCarM = 0.5f * (CarBodyLengthM - CarBogieCentreLengthM); // Vehicle overhang - B
             var BogieDistanceThisCarM = 0.5f * CarBogieCentreLengthM; // 0.5 * distance between bogie centres - A
             var CouplerDistanceThisCarM = 0.5f * (CarCouplerFaceLengthM - CarBodyLengthM);
-                        
+
             var OverhangBehindCarM = 2.545f;  // Vehicle overhang - B
             var BogieDistanceBehindCarM = 8.23f;  // 0.5 * distance between bogie centres - A
             var CouplerDistanceBehindCarM = 0.5f * (CarCouplerFaceLengthM - CarBodyLengthM);
@@ -1232,7 +1231,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 couplerDistanceM = 0.0001f; // Stop couplerDistance equalling zero as this causes NaN calculations in following calculations.
             }
-            
+
             float BogieCentresAdjVehiclesM = OverhangThisCarM + OverhangBehindCarM + couplerDistanceM; // L value = Overhangs + Coupler spacing - D
 
             if (CarBehind != null)
@@ -1394,7 +1393,7 @@ namespace Orts.Simulation.RollingStocks
 
                         //     Trace.TraceInformation("Buff - CarId {0} Thiscar {1} A {2} B {3} C {4} 180 {5}", CarID, WagonFrontCouplerBuffAngleRad, X, Y, Z, MathHelper.ToRadians(180.0f));
 
-                       // Trace.TraceInformation("Buff - CarId {0} StringThis {1} StringBehind {2} BuffThis {3} BuffAhead {4}", CarID, WagonRearCouplerAngleRad, CarBehind.WagonFrontCouplerAngleRad, WagonRearCouplerBuffAngleRad, CarBehind.WagonFrontCouplerBuffAngleRad);
+                        // Trace.TraceInformation("Buff - CarId {0} StringThis {1} StringBehind {2} BuffThis {3} BuffAhead {4}", CarID, WagonRearCouplerAngleRad, CarBehind.WagonFrontCouplerAngleRad, WagonRearCouplerBuffAngleRad, CarBehind.WagonFrontCouplerBuffAngleRad);
 
                     }
 
@@ -1541,14 +1540,14 @@ namespace Orts.Simulation.RollingStocks
                         float BB1 = 0;
 
                         // Prevent NaN if WagonNumBogies = 0
-                        if ( WagonNumBogies != 0)
+                        if (WagonNumBogies != 0)
                         {
                             // AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
                             AA1 = Math.Abs(CarAhead.CouplerForceUSmoothed.SmoothedValue) * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
                         }
                         else
                         {
-                           // AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad);
+                            // AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad);
                             AA1 = Math.Abs(CarAhead.CouplerForceUSmoothed.SmoothedValue) * (float)Math.Sin(WagonCouplerAngleDerailRad);
                         }
 
@@ -1587,7 +1586,7 @@ namespace Orts.Simulation.RollingStocks
                     var wagonAdhesion = Train.WagonCoefficientFriction;
 
                     // Calculate Nadal derailment coefficient limit
-                    NadalDerailmentCoefficient = ((float) Math.Tan(MaximumWheelFlangeAngleRad) - wagonAdhesion) / (1f + wagonAdhesion * (float) Math.Tan(MaximumWheelFlangeAngleRad));
+                    NadalDerailmentCoefficient = ((float)Math.Tan(MaximumWheelFlangeAngleRad) - wagonAdhesion) / (1f + wagonAdhesion * (float)Math.Tan(MaximumWheelFlangeAngleRad));
 
                     // Calculate Angle of Attack - AOA = sin-1(2 * bogie wheel base / curve radius)
                     AngleOfAttackRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadius);
@@ -1606,7 +1605,7 @@ namespace Orts.Simulation.RollingStocks
 
                     var parameterB = parameterB_1 + parameterB_2;
 
-                    DerailClimbDistanceM = Me.FromFt( (float)((parameterA * parameterB * Me.ToIn(WheelFlangeLengthM)) / ((angleofAttackmRad + (parameterB * Me.ToIn(WheelFlangeLengthM))))) );
+                    DerailClimbDistanceM = Me.FromFt((float)((parameterA * parameterB * Me.ToIn(WheelFlangeLengthM)) / ((angleofAttackmRad + (parameterB * Me.ToIn(WheelFlangeLengthM))))));
 
                     // calculate the time taken to travel the derail climb distance
                     var derailTimeS = DerailClimbDistanceM / AbsSpeedMpS;
@@ -1626,13 +1625,13 @@ namespace Orts.Simulation.RollingStocks
                     {
                         DerailExpected = true;
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("Car {0} has derailed on the curve.", CarID));
-                      //  Trace.TraceInformation("Car Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5} Nadal {6} Coeff {7}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, NadalDerailmentCoefficient, DerailmentCoefficient);
-                     //   Trace.TraceInformation("Car Ahead Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}", CarAhead.CarID, CarAhead.CouplerForceU, CarAhead.CouplerForceUSmoothed.SmoothedValue, CarAhead.TotalWagonLateralDerailForceN, CarAhead.TotalWagonVerticalDerailForceN, CarAhead.WagonCouplerAngleDerailRad);
+                        //  Trace.TraceInformation("Car Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5} Nadal {6} Coeff {7}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, NadalDerailmentCoefficient, DerailmentCoefficient);
+                        //   Trace.TraceInformation("Car Ahead Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}", CarAhead.CarID, CarAhead.CouplerForceU, CarAhead.CouplerForceUSmoothed.SmoothedValue, CarAhead.TotalWagonLateralDerailForceN, CarAhead.TotalWagonVerticalDerailForceN, CarAhead.WagonCouplerAngleDerailRad);
                     }
                     else if (DerailPossible)
                     {
                         DerailElapsedTimeS += elapsedClockSeconds;
-                     //   Trace.TraceInformation("Car Derail Time - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}, Elapsed {6}, DeratilTime {7}, Distance {8} Nadal {9} Coeff {10}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, DerailElapsedTimeS, derailTimeS, DerailClimbDistanceM, NadalDerailmentCoefficient, DerailmentCoefficient);
+                        //   Trace.TraceInformation("Car Derail Time - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}, Elapsed {6}, DeratilTime {7}, Distance {8} Nadal {9} Coeff {10}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, DerailElapsedTimeS, derailTimeS, DerailClimbDistanceM, NadalDerailmentCoefficient, DerailmentCoefficient);
                     }
                     else
                     {
@@ -1645,11 +1644,11 @@ namespace Orts.Simulation.RollingStocks
                         DerailPossible = false;
                     }
 
-//                    if (CarID == "0 - 84" || CarID == "0 - 83" || CarID == "0 - 82" || CarID == "0 - 81" || CarID == "0 - 80" || CarID == "0 - 79")
-//                    {
-//                        Trace.TraceInformation("Nadal - {0}, Adhesion {1} Flange Angle {2}", NadalDerailmentCoefficient, wagonAdhesion, MaximumWheelFlangeAngleRad);
-//                        Trace.TraceInformation("Derailment - CarID {0}, Nadal {1}, Derail {2} Possible {3} Expected {4} Derail Distance {5} ElapsedTime {6} DerailTime {7}", CarID, NadalDerailmentCoefficient, DerailmentCoefficient, DerailPossible, DerailExpected, DerailClimbDistanceM, DerailElapsedTimeS, derailTimeS);
-//                    }
+                    //                    if (CarID == "0 - 84" || CarID == "0 - 83" || CarID == "0 - 82" || CarID == "0 - 81" || CarID == "0 - 80" || CarID == "0 - 79")
+                    //                    {
+                    //                        Trace.TraceInformation("Nadal - {0}, Adhesion {1} Flange Angle {2}", NadalDerailmentCoefficient, wagonAdhesion, MaximumWheelFlangeAngleRad);
+                    //                        Trace.TraceInformation("Derailment - CarID {0}, Nadal {1}, Derail {2} Possible {3} Expected {4} Derail Distance {5} ElapsedTime {6} DerailTime {7}", CarID, NadalDerailmentCoefficient, DerailmentCoefficient, DerailPossible, DerailExpected, DerailClimbDistanceM, DerailElapsedTimeS, derailTimeS);
+                    //                    }
                 }
                 else
                 {
@@ -1704,11 +1703,11 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // If a westerly direction (ie -ve) convert to an angle between 0 and 360
-                if (FrontWagonDirectionDeg< 0)
+                if (FrontWagonDirectionDeg < 0)
                     FrontWagonDirectionDeg += 360;
 
                 // Rear Wagon Direction
-                direction = (float) Math.Atan2(CarBehind.WorldPosition.XNAMatrix.M13, CarBehind.WorldPosition.XNAMatrix.M11);
+                direction = (float)Math.Atan2(CarBehind.WorldPosition.XNAMatrix.M13, CarBehind.WorldPosition.XNAMatrix.M11);
                 float BehindWagonDirectionDeg = MathHelper.ToDegrees((float)direction);
 
 
@@ -1724,15 +1723,15 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // If a westerly direction (ie -ve) convert to an angle between 0 and 360
-                if (BehindWagonDirectionDeg< 0)
+                if (BehindWagonDirectionDeg < 0)
                     BehindWagonDirectionDeg += 360;
 
-                if (FrontWagonDirectionDeg > 270 && BehindWagonDirectionDeg< 90)
+                if (FrontWagonDirectionDeg > 270 && BehindWagonDirectionDeg < 90)
                 {
                     FrontWagonDirectionDeg -= 360;
                 }
 
-                if (FrontWagonDirectionDeg< 90 && BehindWagonDirectionDeg> 270)
+                if (FrontWagonDirectionDeg < 90 && BehindWagonDirectionDeg > 270)
                 {
                     BehindWagonDirectionDeg -= 360;
                 }
@@ -1744,7 +1743,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     curveDirection = "Right";
                 }
-                else if (FrontWagonDirectionDeg<BehindWagonDirectionDeg && directionBandwidth> 0.005)
+                else if (FrontWagonDirectionDeg < BehindWagonDirectionDeg && directionBandwidth > 0.005)
                 {
                     curveDirection = "Left";
                 }
@@ -2016,7 +2015,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
         #endregion
-    
+
         #region Calculate friction force in curves
 
         /// <summary>
@@ -2029,7 +2028,7 @@ namespace Orts.Simulation.RollingStocks
             if (CurrentCurveRadius > 0)
             {
                 if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
-                {                        
+                {
                     float Axles = WheelAxles.Count;
                     float Bogies = Parts.Count - 1;
                     float BogieSize = Axles / Bogies;
@@ -2094,7 +2093,7 @@ namespace Orts.Simulation.RollingStocks
                             //    Approximation for calculating rigid wheelbase for steam locomotives
                             // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
 
-                            RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f); 
+                            RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
                         }
                     }
                 }
@@ -2360,7 +2359,7 @@ namespace Orts.Simulation.RollingStocks
         {
             return 0.03f;
         }
-        
+
         public virtual float GetMaximumSimpleCouplerSlack2M()
         {
             return 0.035f;
@@ -2402,12 +2401,12 @@ namespace Orts.Simulation.RollingStocks
         {
             return 0.1f;
         }
- 
+
         public virtual float GetCouplerCompressionSlackAM()
         {
             return 0;
         }
- 
+
         public virtual float GetCouplerCompressionSlackBM()
         {
             return 0.1f;
@@ -2417,12 +2416,12 @@ namespace Orts.Simulation.RollingStocks
         {
             return 0.05f;
         }
-         
+
         public virtual float GetMaximumCouplerTensionSlack2M()
         {
             return 0.1f;
         }
- 
+
         public virtual float GetMaximumCouplerTensionSlack3M()
         {
             return 0.13f;
@@ -2437,7 +2436,7 @@ namespace Orts.Simulation.RollingStocks
         {
             return 0.1f;
         }
- 
+
         public virtual float GetMaximumCouplerCompressionSlack3M()
         {
             return 0.13f;
@@ -2852,7 +2851,7 @@ namespace Orts.Simulation.RollingStocks
             WorldPosition.XNAMatrix = m;
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
-            
+
             UpdatedTraveler(traveler, elapsedTimeS, distance, speed);
 
             // calculate truck angles
@@ -2907,7 +2906,7 @@ namespace Orts.Simulation.RollingStocks
         #endregion
 
         #region Super-elevation
-        void UpdateSuperElevation(Traveller traveler,  float elapsedTimeS)
+        void UpdateSuperElevation(Traveller traveler, float elapsedTimeS)
         {
             if (Simulator.Settings.UseSuperElevation == 0)
                 return;

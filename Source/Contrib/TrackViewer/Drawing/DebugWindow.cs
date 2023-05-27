@@ -16,10 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS.TrackViewer.Drawing
 {
@@ -35,7 +32,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Draw all available debug windows
         /// </summary>
-        public static void DrawAll() {
+        public static void DrawAll()
+        {
             //Just a safety. Normally there should be no DebugWindows once released.
             if (!System.Diagnostics.Debugger.IsAttached) return;
             foreach (DebugWindow window in debugWindows)

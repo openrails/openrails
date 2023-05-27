@@ -22,18 +22,17 @@
 // #define DEBUG_TURNTABLEINFO
 //
 
-using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
+using Microsoft.Xna.Framework;
+using Orts.Parsers.OR;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
-using Orts.Parsers.OR;
 using ORTS.Common;
 
 namespace Orts.Simulation.Timetables
@@ -922,7 +921,7 @@ namespace Orts.Simulation.Timetables
             return (validPath);
         }
         public bool TestPoolAccess(TTTrain train, out int accessIndex)
-            { 
+        {
             bool validPool = false;
             int reqPath = -1;
             int reqPathIndex = -1;
@@ -2179,7 +2178,7 @@ namespace Orts.Simulation.Timetables
             // search if section in access path
             // direction must be reverse as access path is defined outbound
             int reqPath = -1;
-            for (int iPath=0; iPath <= parentPool.AdditionalTurntableDetails.AccessPaths.Count - 1 && reqPath < 0; iPath++)
+            for (int iPath = 0; iPath <= parentPool.AdditionalTurntableDetails.AccessPaths.Count - 1 && reqPath < 0; iPath++)
             {
                 int routeIndex = parentPool.AdditionalTurntableDetails.AccessPaths[iPath].AccessPath.GetRouteIndex(presentSection, 0);
                 if (routeIndex >= 0 && parentPool.AdditionalTurntableDetails.AccessPaths[iPath].AccessPath[routeIndex].Direction != presentDirection)
@@ -2234,7 +2233,7 @@ namespace Orts.Simulation.Timetables
                 if (parentTurntable.TrainsOnMovingTable.Count > 0)
                 {
                     PrepareMoveOffTable();
-                }                
+                }
                 return (true);
             }
 
@@ -2370,7 +2369,7 @@ namespace Orts.Simulation.Timetables
             }
 
             // rotate clockwise or counterclockwise depending on angle
-            if ( angleToMove < 0)
+            if (angleToMove < 0)
             {
                 parentTurntable.AutoCounterclockwise = true;
 #if DEBUG_TURNTABLEINFO
@@ -2824,7 +2823,7 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
 
-        public bool TestTrainFormation (TTTrain parentTrain)
+        public bool TestTrainFormation(TTTrain parentTrain)
         {
             bool reqReverse = true;
 

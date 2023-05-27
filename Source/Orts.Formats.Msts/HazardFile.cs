@@ -15,45 +15,41 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
-	public class HazardFile
-	{
-		public HazardFile(string filename)
-		{
-			try
-			{
-				using (STFReader stf = new STFReader(filename, false))
-				{
-					stf.ParseFile(new STFReader.TokenProcessor[] {
+    public class HazardFile
+    {
+        public HazardFile(string filename)
+        {
+            try
+            {
+                using (STFReader stf = new STFReader(filename, false))
+                {
+                    stf.ParseFile(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("tr_worldfile", ()=>{ Tr_HazardFile = new Tr_HazardFile(stf); }),
                     });
-					//TODO This should be changed to STFException.TraceError() with defaults values created
-					if (Tr_HazardFile == null) throw new STFException(stf, "Missing Tr_WorldFile");
-				}
-			}
-			finally
-			{
-			}
-		}
-		public Tr_HazardFile Tr_HazardFile;
-	}
+                    //TODO This should be changed to STFException.TraceError() with defaults values created
+                    if (Tr_HazardFile == null) throw new STFException(stf, "Missing Tr_WorldFile");
+                }
+            }
+            finally
+            {
+            }
+        }
+        public Tr_HazardFile Tr_HazardFile;
+    }
 
 
 
-	public class Tr_HazardFile
-	{
-		public Tr_HazardFile(STFReader stf)
-		{
-			stf.MustMatch("(");
-			stf.ParseBlock(new STFReader.TokenProcessor[] {
+    public class Tr_HazardFile
+    {
+        public Tr_HazardFile(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("filename", ()=>{ FileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("workers", ()=>{ Workers = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("distance", ()=>{ Distance = stf.ReadFloatBlock(STFReader.UNITS.None, 10); }),
@@ -64,19 +60,19 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("surprise_key_right", ()=>{ Surprise_Key_Right = stf.ReadVector2Block(STFReader.UNITS.None, Surprise_Key_Right); }),
                 new STFReader.TokenProcessor("success_scarper_key", ()=>{ Success_Scarper_Key = stf.ReadVector2Block(STFReader.UNITS.None, Success_Scarper_Key); }),
            });
-			//TODO This should be changed to STFException.TraceError() with defaults values created
-			if (FileName == null) throw new STFException(stf, "Missing FileName");
-		}
+            //TODO This should be changed to STFException.TraceError() with defaults values created
+            if (FileName == null) throw new STFException(stf, "Missing FileName");
+        }
 
-		public string FileName; // ie OdakyuSE - used for MKR,RDB,REF,RIT,TDB,TIT
-		public string Workers;
-		public float Distance;
-		public float Speed;
-		public Vector2 Idle_Key = new Vector2();
-		public Vector2 Idle_Key2 = new Vector2();
-		public Vector2 Surprise_Key_Left = new Vector2();
-		public Vector2 Surprise_Key_Right = new Vector2();
-		public Vector2 Success_Scarper_Key = new Vector2();
+        public string FileName; // ie OdakyuSE - used for MKR,RDB,REF,RIT,TDB,TIT
+        public string Workers;
+        public float Distance;
+        public float Speed;
+        public Vector2 Idle_Key = new Vector2();
+        public Vector2 Idle_Key2 = new Vector2();
+        public Vector2 Surprise_Key_Left = new Vector2();
+        public Vector2 Surprise_Key_Right = new Vector2();
+        public Vector2 Success_Scarper_Key = new Vector2();
 
-	}
+    }
 }

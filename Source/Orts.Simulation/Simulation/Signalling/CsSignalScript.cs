@@ -1,9 +1,9 @@
-﻿using Orts.Formats.Msts;
-using ORTS.Scripting.Api;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Orts.Formats.Msts;
+using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.Signalling
 {
@@ -223,7 +223,7 @@ namespace Orts.Simulation.Signalling
         /// <param name="id">Id of the signal to query</param>
         /// <param name="sigfn">Consider only heads with a specific signal function</param>
         /// <param name="headindex">Get aspect of nth head of the specified type</param>
-        public string IdTextSignalAspect(int id, string sigfn, int headindex=0)
+        public string IdTextSignalAspect(int id, string sigfn, int headindex = 0)
         {
             if (SignalObject.signalRef.SignalFunctions.TryGetValue(sigfn, out SignalFunction function))
             {
@@ -249,7 +249,7 @@ namespace Orts.Simulation.Signalling
         /// <param name="mostRestrictiveHead">Check most restrictive head per signal</param>
         public Aspect DistMultiSigMR(string sigfnA, string sigfnB, bool mostRestrictiveHead = true)
         {
-            if(mostRestrictiveHead) return (Aspect)SignalHead.dist_multi_sig_mr(SignalFunction(sigfnA), SignalFunction(sigfnB), DebugFileName);
+            if (mostRestrictiveHead) return (Aspect)SignalHead.dist_multi_sig_mr(SignalFunction(sigfnA), SignalFunction(sigfnB), DebugFileName);
             return (Aspect)SignalHead.dist_multi_sig_mr_of_lr(SignalFunction(sigfnA), SignalFunction(sigfnB), DebugFileName);
         }
 
@@ -389,7 +389,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         /// <param name="signalId">Signal ID of the calling signal</param>
         /// <param name="message">Message sent to signal</param>
-        public virtual void HandleSignalMessage(int signalId, string message) {}
+        public virtual void HandleSignalMessage(int signalId, string message) { }
 
         /// <summary>
         /// Called when the simulator

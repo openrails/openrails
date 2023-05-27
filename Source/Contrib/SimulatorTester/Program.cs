@@ -17,13 +17,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Orts.Simulation;
-using ORTS.Common;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Orts.Common;
-using System.Diagnostics;
+using Orts.Simulation;
+using ORTS.Common;
 
 namespace SimulatorTester
 {

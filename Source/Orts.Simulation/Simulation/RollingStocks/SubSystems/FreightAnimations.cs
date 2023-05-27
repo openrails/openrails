@@ -15,16 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using Orts.Simulation.RollingStocks.SubSystems.Controllers;
-using ORTS.Common;
-using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using ORTS.Common;
 
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
@@ -87,7 +87,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 new STFReader.TokenProcessor("isgondola", ()=>{ IsGondola = stf.ReadBoolBlock(false);}),
                 new STFReader.TokenProcessor("loadingarealength", ()=>{ LoadingAreaLength = stf.ReadFloatBlock(STFReader.UNITS.Distance, 12.19f); }),
                 new STFReader.TokenProcessor("aboveloadingarealength", ()=>{ AboveLoadingAreaLength = stf.ReadFloatBlock(STFReader.UNITS.Distance, 12.19f); }),
-                new STFReader.TokenProcessor("intakepoint", ()=> 
+                new STFReader.TokenProcessor("intakepoint", ()=>
                 {
                     GeneralIntakePoint = new IntakePoint(stf);
                 }),
@@ -291,7 +291,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             StaticFreightAnimationsPresent = copyFACollection.StaticFreightAnimationsPresent;
             DiscreteFreightAnimationsPresent = copyFACollection.DiscreteFreightAnimationsPresent;
 
-//            Load(Wagon, LoadDataList);
+            //            Load(Wagon, LoadDataList);
         }
 
         public void Load(string loadFilePath, LoadPosition loadPosition, LoadState loadState)
@@ -306,7 +306,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
                 else
                 {
-                    container.LoadFromContainerFile(loadFilePath, Wagon.Simulator.BasePath +@"\trains\trainset\");
+                    container.LoadFromContainerFile(loadFilePath, Wagon.Simulator.BasePath + @"\trains\trainset\");
                     ContainerManager.LoadedContainers.Add(loadFilePath, container);
                 }
                 container.ComputeLoadWeight(loadState);
@@ -454,7 +454,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (Animations.Count == 0 && loadPosition != LoadPosition.Above) return true;
             freightAnimDiscreteCount = 0;
             foreach (var animation in Animations)
-                if (animation is FreightAnimationDiscrete)               
+                if (animation is FreightAnimationDiscrete)
                     freightAnimDiscreteCount++;
             if (freightAnimDiscreteCount == 0 && loadPosition != LoadPosition.Above) return true;
             // there are already other containers present; check that there aren't superpositions
@@ -597,7 +597,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                             continue;
                         }
                         else
-                        { 
+                        {
                             var multiplier = 1;
                             if (anim.LoadPosition == LoadPosition.Front) multiplier = -1;
                             emptyAnim.Offset.Z = Offset.Z + multiplier * (LoadingAreaLength / 2 - anim.LoadingAreaLength) / 2;
@@ -821,7 +821,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case LoadPosition.CenterFront:
                     switch (EmptyAnimations[other].LoadPosition)
                     {
-                         case LoadPosition.CenterRear:
+                        case LoadPosition.CenterRear:
                             if (Math.Abs(EmptyAnimations[i].LoadingAreaLength - EmptyAnimations[other].LoadingAreaLength) < 0.02)
                             {
                                 EmptyAnimations[i].LoadingAreaLength += EmptyAnimations[other].LoadingAreaLength;
@@ -1037,7 +1037,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             FullORTSDavisDragConstant = freightAnimContin.FullORTSDavisDragConstant;
             FullMaxBrakeForceN = freightAnimContin.FullMaxBrakeForceN;
             FullMaxHandbrakeForceN = freightAnimContin.FullMaxHandbrakeForceN;
-            FullCentreOfGravityM_Y = freightAnimContin.FullCentreOfGravityM_Y;          
+            FullCentreOfGravityM_Y = freightAnimContin.FullCentreOfGravityM_Y;
         }
     }
 
@@ -1081,11 +1081,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 var typeString = stf.ReadStringBlock(null);
                 switch (typeString)
-	            {
+                {
                     default:
                         SubType = FreightAnimationStatic.Type.DEFAULT;
                         break;
-	            }
+                }
             }),
             new STFReader.TokenProcessor("shape", ()=>{ ShapeFileName = stf.ReadStringBlock(null); }),
             new STFReader.TokenProcessor("freightweight", ()=>{ FreightWeight = stf.ReadFloatBlock(STFReader.UNITS.Mass, 0); }),
@@ -1174,7 +1174,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float AboveLoadingAreaLength = -1f;
         public LoadPosition LoadPosition = LoadPosition.Center;
 
-         // for copy
+        // for copy
         public FreightAnimationDiscrete(FreightAnimationDiscrete freightAnimDiscrete, FreightAnimations freightAnimations)
         {
             FreightAnimations = freightAnimations;

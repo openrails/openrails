@@ -15,11 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Drawing;
 using Newtonsoft.Json;
 using Orts.Formats.Msts;
 using ORTS.Common;
-using System;
-using System.Drawing;
 
 namespace Orts.Formats.OR
 {

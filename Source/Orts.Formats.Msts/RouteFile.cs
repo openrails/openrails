@@ -15,13 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using Orts.Parsers.Msts;
 using System.IO;
+using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
@@ -87,9 +84,9 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("routestart", ()=>{ if (RouteStart == null) RouteStart = new RouteStart(stf); }),
                 new STFReader.TokenProcessor("environment", ()=>{ Environment = new TRKEnvironment(stf); }),
                 new STFReader.TokenProcessor("milepostunitskilometers", ()=>{ MilepostUnitsMetric = true; }),
-				new STFReader.TokenProcessor("electrified", ()=>{ Electrified = stf.ReadBoolBlock(false); }),
+                new STFReader.TokenProcessor("electrified", ()=>{ Electrified = stf.ReadBoolBlock(false); }),
                 new STFReader.TokenProcessor("overheadwireheight", ()=>{ OverheadWireHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, 6.0f);}),
- 				new STFReader.TokenProcessor("speedlimit", ()=>{ SpeedLimit = stf.ReadFloatBlock(STFReader.UNITS.Speed, 500.0f); }),
+                 new STFReader.TokenProcessor("speedlimit", ()=>{ SpeedLimit = stf.ReadFloatBlock(STFReader.UNITS.Speed, 500.0f); }),
                 new STFReader.TokenProcessor("defaultcrossingsms", ()=>{ DefaultCrossingSMS = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("defaultcoaltowersms", ()=>{ DefaultCoalTowerSMS = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("defaultdieseltowersms", ()=>{ DefaultDieselTowerSMS = stf.ReadStringBlock(null); }),
@@ -141,22 +138,22 @@ namespace Orts.Formats.Msts
         public TRKEnvironment Environment;
         public bool MilepostUnitsMetric;
         public double MaxLineVoltage;
-		public bool Electrified = true;
-		public double OverheadWireHeight = 6.0;
-		public double SpeedLimit = 500.0f; //global speed limit m/s.
+        public bool Electrified = true;
+        public double OverheadWireHeight = 6.0;
+        public double SpeedLimit = 500.0f; //global speed limit m/s.
         public string DefaultCrossingSMS;
         public string DefaultCoalTowerSMS;
         public string DefaultDieselTowerSMS;
         public string DefaultWaterTowerSMS;
         public string DefaultSignalSMS;
-		public float TempRestrictedSpeed = -1f;
+        public float TempRestrictedSpeed = -1f;
         public Interpolator SuperElevationHgtpRadiusM; // Superelevation of tracks
 
         // Values for calculating Tunnel Resistance - will override default values.
-        public float SingleTunnelAreaM2; 
+        public float SingleTunnelAreaM2;
         public float SingleTunnelPerimeterM;
         public float DoubleTunnelAreaM2;
-        public float DoubleTunnelPerimeterM; 
+        public float DoubleTunnelPerimeterM;
 
         public float ForestClearDistance = 0;
         public bool RemoveForestTreesFromRoads = false;
@@ -173,7 +170,7 @@ namespace Orts.Formats.Msts
         public float TriphaseWidth;
 
         public string DefaultTurntableSMS;
-        public bool ? OpenDoorsInAITrains; // true if option active
+        public bool? OpenDoorsInAITrains; // true if option active
 
         public int SwitchSMSNumber = -1; // defines the number of the switch SMS files in file ttypedat
         public int CurveSMSNumber = -1; // defines the number of the curve SMS files in file ttype.dat
@@ -203,12 +200,12 @@ namespace Orts.Formats.Msts
         public TRKEnvironment(STFReader stf)
         {
             stf.MustMatch("(");
-            for( int i = 0; i < 12; ++i )
+            for (int i = 0; i < 12; ++i)
             {
                 var envfilekey = stf.ReadString();
                 var envfile = stf.ReadStringBlock(null);
                 ENVFileNames.Add(envfilekey, envfile);
-//                Trace.TraceInformation("Environments array key {0} equals file name {1}", envfilekey, envfile);
+                //                Trace.TraceInformation("Environments array key {0} equals file name {1}", envfilekey, envfile);
             }
             stf.SkipRestOfBlock();
         }
@@ -219,7 +216,7 @@ namespace Orts.Formats.Msts
             //return ENVFileNames[index];
             var envfilekey = seasonType.ToString() + weatherType.ToString();
             var envfile = ENVFileNames[envfilekey];
-//            Trace.TraceInformation("Selected Environment file is {1}", envfilekey, envfile);
+            //            Trace.TraceInformation("Selected Environment file is {1}", envfilekey, envfile);
             return envfile;
         }
     }

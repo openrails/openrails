@@ -179,7 +179,7 @@ namespace ORTS
             checkSimpleControlsPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
-            numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
+            numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
             numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
@@ -221,7 +221,7 @@ namespace ORTS
             checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
             labelDataLogTSInterval.Enabled = checkDataLogTrainSpeed.Checked;
             numericDataLogTSInterval.Enabled = checkDataLogTrainSpeed.Checked;
-            checkListDataLogTSContents.Enabled = checkDataLogTrainSpeed.Checked;  
+            checkListDataLogTSContents.Enabled = checkDataLogTrainSpeed.Checked;
             numericDataLogTSInterval.Value = Settings.DataLogTSInterval;
             checkListDataLogTSContents.Items.AddRange(new object[] {
                 catalog.GetString("Time"),
@@ -760,21 +760,21 @@ namespace ORTS
         private void checkAlerter_CheckedChanged(object sender, EventArgs e)
         {
             //Disable checkAlerterExternal when checkAlerter is not checked
-            if (checkAlerter.Checked )
+            if (checkAlerter.Checked)
             {
-                checkAlerterExternal.Enabled = true; 
+                checkAlerterExternal.Enabled = true;
             }
             else
             {
                 checkAlerterExternal.Enabled = false;
-                checkAlerterExternal.Checked = false; 
+                checkAlerterExternal.Checked = false;
             }
         }
 
         private void checkDistantMountains_Click(object sender, EventArgs e)
         {
-           labelDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
-           numericDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
+            labelDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
+            numericDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
         }
 
         private void checkUseAdvancedAdhesion_Click(object sender, EventArgs e)

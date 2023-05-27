@@ -24,13 +24,13 @@ namespace Orts.Common
     public static class ORTSPaths
     {
         //<CJComment> Cleaner to use GetFileFromFolders() instead, but not sure how to test this. </CJComment>
-        public static string FindTrainCarPlugin( string initialFolder, string filename )
+        public static string FindTrainCarPlugin(string initialFolder, string filename)
         {
             string dllPath = initialFolder + "\\" + filename;  // search in trainset folder
             if (File.Exists(dllPath))
                 return dllPath;
-            string rootFolder = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(initialFolder)))+ "\\OpenRails";
-            if( Directory.Exists( rootFolder ) )
+            string rootFolder = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(initialFolder))) + "\\OpenRails";
+            if (Directory.Exists(rootFolder))
             {
                 dllPath = rootFolder + "\\" + filename;
                 if (File.Exists(dllPath))

@@ -15,12 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Newtonsoft.Json;
-using Orts.Formats.Msts;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Newtonsoft.Json;
+using Orts.Formats.Msts;
+using ORTS.Common;
 
 namespace Orts.Formats.OR
 {
@@ -41,9 +41,9 @@ namespace Orts.Formats.OR
         }
     }
 
-    public class DestinationPoint : Dictionary<string, Possibility> 
+    public class DestinationPoint : Dictionary<string, Possibility>
     {
-        public Possibility Add(string desti) 
+        public Possibility Add(string desti)
         {
             if (ContainsKey(desti))
             {
@@ -51,8 +51,8 @@ namespace Orts.Formats.OR
             }
 
             var destination = new Possibility();
-            base.Add(desti,destination); 
-            return destination; 
+            base.Add(desti, destination);
+            return destination;
         }
     }
 
@@ -60,9 +60,9 @@ namespace Orts.Formats.OR
     {
         public DestinationPoint Add(string origin)
         {
-            if (ContainsKey(origin)) 
-            { 
-                return this[origin]; 
+            if (ContainsKey(origin))
+            {
+                return this[origin];
             }
             var desti = new DestinationPoint();
             base.Add(origin, desti);
@@ -189,7 +189,7 @@ namespace Orts.Formats.OR
 
                 if (node2.TrJunctionNode != null)
                 {
-                    AEJunctionItem junction = (AEJunctionItem)paths[pathChecked].ComponentItem[paths[pathChecked].ComponentItem.Count-1];
+                    AEJunctionItem junction = (AEJunctionItem)paths[pathChecked].ComponentItem[paths[pathChecked].ComponentItem.Count - 1];
                     if (!insideJunction.Contains(junction))
                     {
                         insideJunction.Add(junction);
@@ -207,7 +207,7 @@ namespace Orts.Formats.OR
                 }
                 else if (node2.TrEndNode)
                 {
-                    AEBufferItem buffer = (AEBufferItem)paths[pathChecked].ComponentItem[paths[pathChecked].ComponentItem.Count-1];
+                    AEBufferItem buffer = (AEBufferItem)paths[pathChecked].ComponentItem[paths[pathChecked].ComponentItem.Count - 1];
                     if (!buffer.Configured || buffer.DirBuffer == AllowedDir.OUT)
                     {
                         //AEJunctionItem junction = (AEJunctionItem)paths[pathChecked].ComponentItem[paths[pathChecked].jctnIdx];
@@ -228,16 +228,16 @@ namespace Orts.Formats.OR
 
                     }
                 }
-                else 
+                else
                 {
                     int lastIndex = (int)node2.Index;
                     //lastCommonTrack = (int)node2.Index;
                     if (paths[pathChecked].complete)
                     {
                         TrackSegment segment = (TrackSegment)paths[pathChecked].ComponentItem[paths[pathChecked].ComponentItem.Count - 1];
-                        
+
                         if (segment.HasConnector == null ||
-                            (segment.HasConnector != null && 
+                            (segment.HasConnector != null &&
                             (segment.HasConnector.dirConnector == AllowedDir.IN || !segment.HasConnector.isConfigured())))
                         {
                             paths.RemoveAt(pathChecked);
@@ -281,7 +281,7 @@ namespace Orts.Formats.OR
                     MaxPassingYard = path.PassingYard;
                 if (path.PassingYard < ShortPassingYard)
                     ShortPassingYard = path.PassingYard;
-           }
+            }
             return paths;
         }
 
@@ -498,7 +498,7 @@ namespace Orts.Formats.OR
                     elapse.Add(elapsedTime);
                     
 #endif
-                } while (traveller.NextVectorSection() && !complete) ;
+                } while (traveller.NextVectorSection() && !complete);
                 if (currentNode.Index != entryNode && !complete && traveller.TrackNodeLength > PassingYard)
                     PassingYard = traveller.TrackNodeLength;
                 traveller.NextTrackNode();
@@ -530,7 +530,7 @@ namespace Orts.Formats.OR
         public void setComplete(GlobalItem segment)
         {
             complete = true;
-            
+
             if (segment.GetType() == typeof(TrackSegment) && ((TrackSegment)segment).HasConnector != null)
             {
                 outLabel = ((TrackSegment)segment).HasConnector.label;

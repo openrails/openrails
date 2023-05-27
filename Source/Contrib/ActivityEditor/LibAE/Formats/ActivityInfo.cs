@@ -21,16 +21,11 @@
 /// 
 
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using MSTS;
 using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
 using Orts.Formats.OR;
 
 namespace LibAE.Formats
@@ -43,7 +38,7 @@ namespace LibAE.Formats
         [JsonProperty("ConsistPath")]
         string consistPath;
 
-        public ConsistInfo (string name, string path)
+        public ConsistInfo(string name, string path)
         {
             consistName = name;
             consistPath = path;
@@ -77,7 +72,7 @@ namespace LibAE.Formats
 
         }
 
-        public void config (List<string> routes)
+        public void config(List<string> routes)
         {
             foreach (string routeParent in routes)
             {
@@ -101,7 +96,7 @@ namespace LibAE.Formats
                     string fullPathConsist = Path.GetFullPath(consist);
                     ConsistFile consistName = new ConsistFile(fullPathConsist);
                     ConsistInfo conInfo = new ConsistInfo(consistName.ToString(), fullPathConsist);
-                    trainConsists.Add(conInfo); 
+                    trainConsists.Add(conInfo);
                 }
             }
         }

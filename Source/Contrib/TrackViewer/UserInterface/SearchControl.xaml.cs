@@ -16,28 +16,17 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-using System.Windows.Forms.Integration;
 using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Input;
 
 namespace ORTS.TrackViewer.UserInterface
 {
     /// <summary>
     /// The kind of items that can be searched from the search control
     /// </summary>
-    public enum SearchableItem {
+    public enum SearchableItem
+    {
         /// <summary>Search for (rail) track node</summary>
         TrackNode,
         /// <summary>Search for (rail) track item</summary>

@@ -19,12 +19,12 @@
 // #define DEBUG_DEADLOCK
 // print details of deadlock processing
 
-using Orts.Simulation.Physics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Orts.Simulation.Physics;
 
 namespace Orts.Simulation.Signalling
 {

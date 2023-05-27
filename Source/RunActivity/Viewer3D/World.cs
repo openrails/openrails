@@ -18,12 +18,12 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Orts.Common;
-using ORTS.Common;
 using Orts.Viewer3D.RollingStock.SubSystems;
-using System.Collections.Generic;
+using ORTS.Common;
 
 namespace Orts.Viewer3D
 {

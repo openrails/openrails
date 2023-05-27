@@ -82,7 +82,7 @@ namespace Orts.Formats.OR
     /// class TimetableGroupFile
     /// extracts filenames from multiTTfile, extents names to full path
     /// </summary>
-    
+
     public class TimetableGroupFile
     {
         public List<string> TTFiles = new List<string>();

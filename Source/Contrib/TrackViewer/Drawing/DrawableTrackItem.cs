@@ -16,13 +16,9 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Orts.Formats.Msts;
-using ORTS.Common;
-using ORTS.TrackViewer.Properties;
 using Orts.Simulation;
+using ORTS.Common;
 
 namespace ORTS.TrackViewer.Drawing
 {
@@ -59,17 +55,17 @@ namespace ORTS.TrackViewer.Drawing
         /// <returns>A drawable trackitem, with proper subclass</returns>
         public static DrawableTrackItem CreateDrawableTrItem(TrItem originalTrItem)
         {
-            if (originalTrItem is SignalItem)     { return new DrawableSignalItem(originalTrItem); }
-            if (originalTrItem is PlatformItem)   { return new DrawablePlatformItem(originalTrItem); }
-            if (originalTrItem is SidingItem)     { return new DrawableSidingItem(originalTrItem); }
-            if (originalTrItem is SpeedPostItem)  { return new DrawableSpeedPostItem(originalTrItem); }
-            if (originalTrItem is HazzardItem)    { return new DrawableHazardItem(originalTrItem); }
-            if (originalTrItem is PickupItem)     { return new DrawablePickupItem(originalTrItem); }
-            if (originalTrItem is LevelCrItem)    { return new DrawableLevelCrItem(originalTrItem); }
-            if (originalTrItem is SoundRegionItem){ return new DrawableSoundRegionItem(originalTrItem); }
-            if (originalTrItem is RoadLevelCrItem){ return new DrawableRoadLevelCrItem(originalTrItem); }
+            if (originalTrItem is SignalItem) { return new DrawableSignalItem(originalTrItem); }
+            if (originalTrItem is PlatformItem) { return new DrawablePlatformItem(originalTrItem); }
+            if (originalTrItem is SidingItem) { return new DrawableSidingItem(originalTrItem); }
+            if (originalTrItem is SpeedPostItem) { return new DrawableSpeedPostItem(originalTrItem); }
+            if (originalTrItem is HazzardItem) { return new DrawableHazardItem(originalTrItem); }
+            if (originalTrItem is PickupItem) { return new DrawablePickupItem(originalTrItem); }
+            if (originalTrItem is LevelCrItem) { return new DrawableLevelCrItem(originalTrItem); }
+            if (originalTrItem is SoundRegionItem) { return new DrawableSoundRegionItem(originalTrItem); }
+            if (originalTrItem is RoadLevelCrItem) { return new DrawableRoadLevelCrItem(originalTrItem); }
             if (originalTrItem is CarSpawnerItem) { return new DrawableCarSpawnerItem(originalTrItem); }
-            if (originalTrItem is CrossoverItem)  { return new DrawableCrossoverItem(originalTrItem); }
+            if (originalTrItem is CrossoverItem) { return new DrawableCrossoverItem(originalTrItem); }
             return new DrawableEmptyItem(originalTrItem);
         }
 
@@ -134,9 +130,9 @@ namespace ORTS.TrackViewer.Drawing
                 this.angle = signalTraveller.RotY;
 
                 // Shift signal a little bit to be able to distinguish backfacing from normal facing
-                Microsoft.Xna.Framework.Vector3 shiftedLocation = this.WorldLocation.Location + 
-                    0.0001f * new Microsoft.Xna.Framework.Vector3((float) Math.Cos(this.angle), 0f, -(float) Math.Sin(this.angle));
-                this.WorldLocation = new WorldLocation(this.WorldLocation.TileX, this.WorldLocation.TileZ, shiftedLocation );
+                Microsoft.Xna.Framework.Vector3 shiftedLocation = this.WorldLocation.Location +
+                    0.0001f * new Microsoft.Xna.Framework.Vector3((float)Math.Cos(this.angle), 0f, -(float)Math.Sin(this.angle));
+                this.WorldLocation = new WorldLocation(this.WorldLocation.TileX, this.WorldLocation.TileZ, shiftedLocation);
             }
             catch { }
         }
@@ -166,7 +162,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="drawAlways">Do we need to draw anyway, independent of settings?</param>
         internal override bool Draw(DrawArea drawArea, ColorScheme colors, bool drawAlways)
         {
-            if (   drawAlways 
+            if (drawAlways
                 || Properties.Settings.Default.showAllSignals
                 || (Properties.Settings.Default.showSignals && isNormal)
                 )
@@ -337,13 +333,13 @@ namespace ORTS.TrackViewer.Drawing
                 drawArea.DrawExpandingString(this.WorldLocation, this.itemName);
                 returnValue = true;
             }
-            if (Properties.Settings.Default.showStationNames || 
-                (drawAlways && !Properties.Settings.Default.showPlatformNames) )
+            if (Properties.Settings.Default.showStationNames ||
+                (drawAlways && !Properties.Settings.Default.showPlatformNames))
             {   // if drawAlways and no station nor platform name requested, then also show station
                 drawArea.DrawExpandingString(this.WorldLocation, this.stationName);
                 returnValue = true;
             }
-            
+
             return returnValue;
         }
     }

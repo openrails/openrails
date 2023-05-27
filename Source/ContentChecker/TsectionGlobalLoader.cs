@@ -15,14 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.IO;
-using Path = System.IO.Path;
-
 using Orts.Formats.Msts;
+using Path = System.IO.Path;
 
 namespace ContentChecker
 {

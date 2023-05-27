@@ -15,12 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
-using Microsoft.Win32;
 using System.IO;
+using Microsoft.Win32;
 
 namespace MSTS
 {
@@ -44,20 +40,20 @@ namespace MSTS
          */
         {
 
-			if (DefaultLocation == null)
-			{
-				DefaultLocation = "c:\\program files\\microsoft games\\train simulator";
+            if (DefaultLocation == null)
+            {
+                DefaultLocation = "c:\\program files\\microsoft games\\train simulator";
 
-				RegistryKey RK = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Microsoft Games\Train Simulator\1.0");
-				if (RK == null)
-					RK = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Wow6432Node\Microsoft\Microsoft Games\Train Simulator\1.0");
-				if (RK != null)
-					DefaultLocation = (string)RK.GetValue("Path", DefaultLocation);
+                RegistryKey RK = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Microsoft Games\Train Simulator\1.0");
+                if (RK == null)
+                    RK = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Wow6432Node\Microsoft\Microsoft Games\Train Simulator\1.0");
+                if (RK != null)
+                    DefaultLocation = (string)RK.GetValue("Path", DefaultLocation);
 
-				// Verify installation at this location
-				if (!Directory.Exists(DefaultLocation))
-					throw new FileNotFoundException("MSTS directory '" + DefaultLocation + "' does not exist.", DefaultLocation);
-			}
+                // Verify installation at this location
+                if (!Directory.Exists(DefaultLocation))
+                    throw new FileNotFoundException("MSTS directory '" + DefaultLocation + "' does not exist.", DefaultLocation);
+            }
 
             return DefaultLocation;
         }  //

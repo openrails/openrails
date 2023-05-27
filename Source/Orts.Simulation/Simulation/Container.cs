@@ -17,20 +17,19 @@
 
 // This file is the responsibility of the 3D & Environment Team.
 
-using Microsoft.Xna.Framework;
-using Orts.Formats.Msts;
-using Orts.Formats.OR;
-using Orts.Parsers.Msts;
-using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems;
-using Orts.Common;
-using ORTS.Common;
-using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Orts.Common;
+using Orts.Formats.Msts;
+using Orts.Formats.OR;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
+using ORTS.Common;
+using ORTS.Scripting.Api;
 
 namespace Orts.Simulation
 {
@@ -69,7 +68,7 @@ namespace Orts.Simulation
         public float EmptyMassKG;
         public float MaxMassWhenLoadedKG;
         public float WidthM = 2.44f;
-        public float LengthM = 12.19f;       
+        public float LengthM = 12.19f;
         public float HeightM = 2.59f;
         public ContainerType ContainerType = ContainerType.C40ft;
         public bool Flipped = false;
@@ -103,7 +102,7 @@ namespace Orts.Simulation
             RelativeContainerMatrix = Matrix.Multiply(WorldPosition.XNAMatrix, invWagonMatrix);
         }
 
-        public Container (MSTSWagon wagon, string  loadFilePath, ContainerHandlingItem containerStation = null)
+        public Container(MSTSWagon wagon, string loadFilePath, ContainerHandlingItem containerStation = null)
         {
             Wagon = wagon;
             ContainerStation = containerStation;
@@ -150,8 +149,8 @@ namespace Orts.Simulation
                 var totalOffset = containerStation.StackLocations[stackLocationIndex].Position - mstsOffset;
                 totalOffset.Z += LengthM * (containerStation.StackLocations[stackLocationIndex].Flipped ? -1 : 1) / 2;
                 if (containersCount != 0)
-                for (var iPos = containersCount - 1; iPos >= 0; iPos--)
-                    totalOffset.Y += containerStation.StackLocations[stackLocationIndex].Containers[iPos].HeightM;
+                    for (var iPos = containersCount - 1; iPos >= 0; iPos--)
+                        totalOffset.Y += containerStation.StackLocations[stackLocationIndex].Containers[iPos].HeightM;
                 totalOffset.Z *= -1;
                 Vector3.Transform(ref totalOffset, ref containerStation.ShapePosition.XNAMatrix, out totalOffset);
                 WorldPosition.XNAMatrix = containerStation.ShapePosition.XNAMatrix;
@@ -202,7 +201,7 @@ namespace Orts.Simulation
             }
         }
 
-        public void ComputeContainerStationContainerPosition (int stackLocationIndex, int loadPositionVertical)
+        public void ComputeContainerStationContainerPosition(int stackLocationIndex, int loadPositionVertical)
         {
             // compute WorldPosition starting from offsets and position of container station
             var mstsOffset = IntrinsicShapeOffset;
@@ -214,7 +213,7 @@ namespace Orts.Simulation
                 for (var iPos = (stackLocation.Containers.Count - 1); iPos >= 0; iPos--)
                     totalOffset.Y += stackLocation.Containers[iPos].HeightM;
             totalOffset.Z *= -1;
-            Vector3.Transform(ref totalOffset, ref  ContainerStation.ShapePosition.XNAMatrix, out totalOffset);
+            Vector3.Transform(ref totalOffset, ref ContainerStation.ShapePosition.XNAMatrix, out totalOffset);
             WorldPosition.XNAMatrix = ContainerStation.ShapePosition.XNAMatrix;
             WorldPosition.XNAMatrix.Translation = totalOffset;
             WorldPosition.TileX = ContainerStation.ShapePosition.TileX;
@@ -253,27 +252,27 @@ namespace Orts.Simulation
             var containerFile = new ContainerFile(loadFilePath);
             var containerParameters = containerFile.ContainerParameters;
             Name = containerParameters.Name;
-           
+
             ShapeFileName = @"..\" + containerParameters.ShapeFileName;
-            var workingString = containerParameters.ShapeFileName.Replace(@"\" , @"/");
-            var root  = workingString.Substring(0, workingString.IndexOf(@"/"));
+            var workingString = containerParameters.ShapeFileName.Replace(@"\", @"/");
+            var root = workingString.Substring(0, workingString.IndexOf(@"/"));
             BaseShapeFileFolderSlash = baseFolder + root + @"\";
             Enum.TryParse(containerParameters.ContainerType, out ContainerType containerType);
             ContainerType = containerType;
             ComputeDimensions();
             IntrinsicShapeOffset = containerParameters.IntrinsicShapeOffset;
             IntrinsicShapeOffset.Z *= -1;
-            EmptyMassKG = containerParameters.EmptyMassKG != -1 ? containerParameters.EmptyMassKG : DefaultEmptyMassKG[(int)ContainerType] ;
+            EmptyMassKG = containerParameters.EmptyMassKG != -1 ? containerParameters.EmptyMassKG : DefaultEmptyMassKG[(int)ContainerType];
             MaxMassWhenLoadedKG = containerParameters.MaxMassWhenLoadedKG != -1 ? containerParameters.MaxMassWhenLoadedKG : DefaultMaxMassWhenLoadedKG[(int)ContainerType];
         }
 
-        public void ComputeWorldPosition (FreightAnimationDiscrete freightAnimDiscrete)
-         {
+        public void ComputeWorldPosition(FreightAnimationDiscrete freightAnimDiscrete)
+        {
             WorldPosition.XNAMatrix = freightAnimDiscrete.Wagon.WorldPosition.XNAMatrix;
             WorldPosition.TileX = freightAnimDiscrete.Wagon.WorldPosition.TileX;
             WorldPosition.TileZ = freightAnimDiscrete.Wagon.WorldPosition.TileZ;
             var offset = freightAnimDiscrete.Offset;
-//            if (freightAnimDiscrete.Container != null) offset.Y += freightAnimDiscrete.Container.HeightM;
+            //            if (freightAnimDiscrete.Container != null) offset.Y += freightAnimDiscrete.Container.HeightM;
             var translation = Matrix.CreateTranslation(offset - IntrinsicShapeOffset);
             WorldPosition.XNAMatrix = translation * WorldPosition.XNAMatrix;
             var invWagonMatrix = Matrix.Invert(freightAnimDiscrete.Wagon.WorldPosition.XNAMatrix);
@@ -339,7 +338,7 @@ namespace Orts.Simulation
         }
 
 
-    } 
+    }
 
     public class ContainerHandlingItem : FuelPickupItem
     {
@@ -487,7 +486,7 @@ namespace Orts.Simulation
                 case ContainerStationStatus.Idle:
                     Status = status;
                     break;
-                 default:
+                default:
                     Status = ContainerStationStatus.Idle;
                     break;
             }
@@ -529,7 +528,7 @@ namespace Orts.Simulation
             {
                 var tileX = int.Parse(loadStationPopulation.LoadStatID.wfile.Substring(1, 7));
                 var tileZ = int.Parse(loadStationPopulation.LoadStatID.wfile.Substring(8, 7));
-                if (tileX == Location.TileX && tileZ == Location.TileZ  && loadStationPopulation.LoadStatID.UiD == thisWorldObj.UID)
+                if (tileX == Location.TileX && tileZ == Location.TileZ && loadStationPopulation.LoadStatID.UiD == thisWorldObj.UID)
                 {
                     foreach (var loadDataEntry in (loadStationPopulation as ContainerStationPopulation).LoadData)
                     {
@@ -545,7 +544,7 @@ namespace Orts.Simulation
                     break;
                 }
             }
-         }
+        }
 
         public void Preload(string loadFilePath, int stackLocationIndex, LoadState loadState)
         {
@@ -607,7 +606,7 @@ namespace Orts.Simulation
                         MoveGrabber = false;
                         Status = ContainerStationStatus.LoadLowerToPick;
                         TargetY = ComputeTargetYBase(StackLocations[SelectedStackLocationIndex].Containers.Count - 1, SelectedStackLocationIndex) - PickingSurfaceYOffset;
-                        RelativeContainerPosition.M42 = - TargetY + StackLocations[SelectedStackLocationIndex].Containers[StackLocations[SelectedStackLocationIndex].Containers.Count -1].WorldPosition.XNAMatrix.M42 + InitialInvAnimationXNAMatrix.M42;
+                        RelativeContainerPosition.M42 = -TargetY + StackLocations[SelectedStackLocationIndex].Containers[StackLocations[SelectedStackLocationIndex].Containers.Count - 1].WorldPosition.XNAMatrix.M42 + InitialInvAnimationXNAMatrix.M42;
                         MoveY = true;
                     }
                     break;
@@ -714,7 +713,7 @@ namespace Orts.Simulation
 
                                 }
                             }
-                            TargetZ = PickingSurfaceRelativeTopStartPosition.Z - relativeAnimationPosition.Translation.Z - LinkedFreightAnimation.Offset.Z * 
+                            TargetZ = PickingSurfaceRelativeTopStartPosition.Z - relativeAnimationPosition.Translation.Z - LinkedFreightAnimation.Offset.Z *
                                 (WagonFlipped ? -1 : 1);
                             if (Math.Abs(TargetZ) > MinZSpan)
                             {
@@ -744,7 +743,7 @@ namespace Orts.Simulation
                             var addHeight = 0.0f;
                             foreach (var freightAnim in LinkedFreightAnimation.FreightAnimations.Animations)
                             {
-                                if (freightAnim  is FreightAnimationDiscrete discreteFreightAnim && discreteFreightAnim.LoadPosition != LoadPosition.Above)
+                                if (freightAnim is FreightAnimationDiscrete discreteFreightAnim && discreteFreightAnim.LoadPosition != LoadPosition.Above)
                                 {
                                     addHeight = discreteFreightAnim.Container.HeightM;
                                     break;
@@ -805,8 +804,8 @@ namespace Orts.Simulation
                             MoveY = false;
                             HandledContainer = LinkedFreightAnimation.Container;
                             TargetX = PickingSurfaceRelativeTopStartPosition.X;
-                            TargetZ = PickingSurfaceRelativeTopStartPosition.Z - RelativeContainerPosition.Translation.Z - HandledContainer.IntrinsicShapeOffset.Z * 
-                            (ContainerFlipped ? -1 : 1);                              
+                            TargetZ = PickingSurfaceRelativeTopStartPosition.Z - RelativeContainerPosition.Translation.Z - HandledContainer.IntrinsicShapeOffset.Z *
+                            (ContainerFlipped ? -1 : 1);
                             Status = ContainerStationStatus.UnloadHorizontallyMoveToPick;
                             RelativeContainerPosition.M43 = HandledContainer.IntrinsicShapeOffset.Z * (ContainerFlipped ? 1 : -1);
                             MoveX = true;
@@ -823,7 +822,7 @@ namespace Orts.Simulation
                         MoveZ = false;
                         MoveGrabber = false;
                         Status = ContainerStationStatus.UnloadLowerToPick;
-                        TargetY = - PickingSurfaceYOffset + HandledContainer.HeightM + HandledContainer.IntrinsicShapeOffset.Y + GeneralVerticalOffset - PickingSurfaceYOffset;
+                        TargetY = -PickingSurfaceYOffset + HandledContainer.HeightM + HandledContainer.IntrinsicShapeOffset.Y + GeneralVerticalOffset - PickingSurfaceYOffset;
                         RelativeContainerPosition.M42 = PickingSurfaceYOffset - (HandledContainer.HeightM + HandledContainer.IntrinsicShapeOffset.Y);
                         MoveY = true;
                     }
@@ -962,7 +961,7 @@ namespace Orts.Simulation
             RelativeContainerPosition.M42 += PickingSurfaceYOffset;
             RelativeContainerPosition.M41 -= PickingSurfaceRelativeTopStartPosition.X;
             GeneralVerticalOffset = RelativeContainerPosition.M42;
-//            RelativeContainerPosition.Translation += LinkedFreightAnimation.Offset;
+            //            RelativeContainerPosition.Translation += LinkedFreightAnimation.Offset;
             ContainerFlipped = (Math.Abs(InitialInvAnimationXNAMatrix.M11 - container.WorldPosition.XNAMatrix.M11) < 0.1f ? false : true);
             Status = ContainerStationStatus.UnloadRaiseToPick;
             TargetY = PickingSurfaceRelativeTopStartPosition.Y;
@@ -985,7 +984,7 @@ namespace Orts.Simulation
             RelativeContainerPosition.M43 = HandledContainer.IntrinsicShapeOffset.Z * (ContainerFlipped ? 1 : -1);
             Status = ContainerStationStatus.LoadRaiseToPick;
             TargetY = PickingSurfaceRelativeTopStartPosition.Y;
-            MoveY = true; 
+            MoveY = true;
             SetGrabbers(HandledContainer);
         }
 
@@ -1011,7 +1010,7 @@ namespace Orts.Simulation
             }
         }
 
-        public void ReInitPositionOffset (Matrix animationXNAMatrix)
+        public void ReInitPositionOffset(Matrix animationXNAMatrix)
         {
             InitialInvAnimationXNAMatrix = Matrix.Invert(animationXNAMatrix);
         }

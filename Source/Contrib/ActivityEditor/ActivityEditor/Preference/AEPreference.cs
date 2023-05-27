@@ -21,15 +21,12 @@
 /// 
 
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
-using ORTS;
-using ORTS.Settings;
-using LibAE.Formats;
 using Orts.Formats.OR;
+using ORTS.Settings;
 
 namespace ActivityEditor.Preference
 {
@@ -72,7 +69,7 @@ namespace ActivityEditor.Preference
         public bool ShowTrackInfo { get; set; }
         public bool ActivateHorn { get; set; }
         [XmlIgnore]
-        public ActionContainer ActionContainer 
+        public ActionContainer ActionContainer
         {
             get
             {
@@ -82,11 +79,11 @@ namespace ActivityEditor.Preference
                 }
                 return null;
             }
-            protected set { } 
+            protected set { }
         }
         //  Info for AuxAction option window.
         [XmlIgnore]
-        public List<string> AvailableActions 
+        public List<string> AvailableActions
         {
             get
             {
@@ -109,15 +106,15 @@ namespace ActivityEditor.Preference
         }
 
         public bool AllSignalProperty
-        { 
-            get 
-            { 
-                return ShowAllSignal; 
-            } 
-            set 
-            { 
-                ShowAllSignal = value; 
-            } 
+        {
+            get
+            {
+                return ShowAllSignal;
+            }
+            set
+            {
+                ShowAllSignal = value;
+            }
         }
 
         public AEPreference()

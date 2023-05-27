@@ -15,13 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Xna.Framework;
-using Orts.Simulation;
-using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems;
-using ORTS.Common;
 using System.Collections.Generic;
 using System.Linq;
+using Orts.Simulation;
+using ORTS.Common;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems
 {
@@ -148,13 +145,13 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                     }
                 }
             }
-/*            if (ContainerShape.XNAMatrices.Length > 0 && animation is FreightAnimationDiscrete && (animation as FreightAnimationDiscrete).Flipped)
-            {
-                var flipper = Matrix.Identity;
-                flipper.M11 = -1;
-                flipper.M33 = -1;
-                ContainerShape.XNAMatrices[0] *= flipper;
-            }*/
+            /*            if (ContainerShape.XNAMatrices.Length > 0 && animation is FreightAnimationDiscrete && (animation as FreightAnimationDiscrete).Flipped)
+                        {
+                            var flipper = Matrix.Identity;
+                            flipper.M11 = -1;
+                            flipper.M33 = -1;
+                            ContainerShape.XNAMatrices[0] *= flipper;
+                        }*/
         }
 
         public void Mark()

@@ -15,14 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Xna.Framework;
-using Newtonsoft.Json;
-using Orts.Formats.Msts;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
+using Orts.Formats.Msts;
+using ORTS.Common;
 
 namespace Orts.Formats.OR
 {
@@ -232,12 +232,12 @@ namespace Orts.Formats.OR
         public GlobalItem findSegmentFromMouse(PointF pt, double snapSize)
         {
             double positiveInfinity = double.PositiveInfinity;
-            
+
             if (snapSize < 1.0)
             {
                 snapSize = 1.0;
             }
-            
+
             PointF closest = new PointF(0f, 0f);
             TrackSegment segment = null;
             foreach (TrackSegment segment2 in segments)
@@ -337,7 +337,7 @@ namespace Orts.Formats.OR
         }
 
         public override void alignEdition(TypeEditor interfaceType, GlobalItem ownParent)
-        { 
+        {
             setMovable();
             asMetadata = true;
         }
@@ -347,7 +347,7 @@ namespace Orts.Formats.OR
             nameTag = "tag" + info;
         }
 
-        public override void configCoord (MSTSCoord coord)
+        public override void configCoord(MSTSCoord coord)
         {
             base.configCoord(coord);
             typeItem = (int)TypeItem.TAG_ITEM;
@@ -754,7 +754,7 @@ namespace Orts.Formats.OR
         {
             List<StationPath> paths = null;
             //StationPathsHelper.Clear();
-            
+
             for (int i = 0; i < this.stationArea.Count; i++)
             {
                 double positiveInfinity = double.PositiveInfinity;
@@ -821,13 +821,13 @@ namespace Orts.Formats.OR
             {
                 int num = 0;
                 List<System.Drawing.PointF> pointsIntersect = new List<System.Drawing.PointF>();
-                
+
                 List<AESegment> polySegments = getPolySegment();
                 if (segment.associateNodeIdx == 344)
                     num = 0;
                 for (int cntPointSegment = 0; cntPointSegment < polySegments.Count; cntPointSegment++)
                 {
-                    PointF pointIntersect = DrawUtility.FindIntersection(polySegments[cntPointSegment], new AESegment (segment));
+                    PointF pointIntersect = DrawUtility.FindIntersection(polySegments[cntPointSegment], new AESegment(segment));
                     if (!pointIntersect.IsEmpty)
                     {
                         StationAreaItem newPoint = new StationAreaItem(TypeEditor.ROUTECONFIG, this);
@@ -964,15 +964,15 @@ namespace Orts.Formats.OR
             stationConnector.setIcoAngle(Coord.ConvertToPointF(), polyPoint);
         }
 
-        public bool toggleSelected ()
+        public bool toggleSelected()
         {
             selected = !selected;
             return selected;
         }
 
         public override void Update(MSTSCoord coord)
-        {   
-                base.configCoord(coord);
+        {
+            base.configCoord(coord);
         }
 
         public bool IsInterface()
@@ -1153,7 +1153,7 @@ namespace Orts.Formats.OR
             return paths;
         }
 
- 
+
 
     }
     #endregion
@@ -1244,7 +1244,7 @@ namespace Orts.Formats.OR
                     lenFleche = (float)ts.SectionCurve.Radius - lenFleche;
                     if (double.IsNaN(lenFleche))
                         return;
-                    curve = new AESectionCurve (ts.SectionCurve);
+                    curve = new AESectionCurve(ts.SectionCurve);
                     Vector3 v = new Vector3((float)(vectorB.X - vectorA.X), 0, (float)(vectorB.Y - vectorA.Y));
                     Vector3 v2 = Vector3.Cross(Vector3.Up, v);
                     v2.Normalize();

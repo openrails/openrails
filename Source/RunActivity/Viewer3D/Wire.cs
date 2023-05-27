@@ -23,16 +23,16 @@
  * 
  */
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Formats.Msts;
-using Orts.Simulation;
-using ORTS.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Formats.Msts;
+using Orts.Simulation;
+using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
@@ -351,7 +351,7 @@ namespace Orts.Viewer3D
             VerticalNumSegments += (uint)count - 1;
         }
     }
-    
+
     // Dynamic Wire profile class
     public class WireProfile : TrProfile
     {
@@ -570,7 +570,7 @@ namespace Orts.Viewer3D
             if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
             else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
         }
-        
+
         /// <summary>
         /// Builds a Wire LOD to WireProfile specifications as one vertex buffer and one index buffer.
         /// The order in which the buffers are built reflects the nesting in the TrProfile.  The nesting order is:

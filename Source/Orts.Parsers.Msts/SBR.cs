@@ -15,13 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
-using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+using Microsoft.Xna.Framework;
 
 namespace Orts.Parsers.Msts
 {
@@ -132,8 +132,8 @@ namespace Orts.Parsers.Msts
 
         public void VerifyID(TokenID desiredID)
         {
-           if (ID != desiredID)
-               TraceInformation("Expected block " + desiredID + "; got " + ID);
+            if (ID != desiredID)
+                TraceInformation("Expected block " + desiredID + "; got " + ID);
         }
 
         /// <summary>

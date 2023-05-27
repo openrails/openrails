@@ -19,12 +19,10 @@
 // Hence a different class
 
 using System;
-using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-
 using Orts.Formats.Msts;
 using Orts.Simulation;
 
@@ -219,7 +217,7 @@ namespace ORTS.TrackViewer.Editing
             if (patFile.End == null) { return true; }
             if (patFile.TrackPDPs.Count == 0) { return true; }
             if (patFile.TrPathNodes.Count == 0) { return true; }
-            
+
             return false;
         }
 
@@ -602,7 +600,7 @@ namespace ORTS.TrackViewer.Editing
             }
 
             return RemoveDoubles(stationNames);
-            
+
         }
 
         private List<string> StationNamesBetweenNodes(TrainpathNode firstNode, TrainpathNode secondNode)
@@ -621,7 +619,7 @@ namespace ORTS.TrackViewer.Editing
                 TrItem trItem = trackDB.TrItemTable[trackItemIndex];
                 if (trItem.ItemType == TrItem.trItemType.trPLATFORM)
                 {
-                    var traveller = new Traveller(tsectionDat, trackDB.TrackNodes, tn, 
+                    var traveller = new Traveller(tsectionDat, trackDB.TrackNodes, tn,
                         trItem.TileX, trItem.TileZ, trItem.X, trItem.Z, Traveller.TravellerDirection.Forward);
                     if (traveller != null)
                     {
@@ -632,7 +630,7 @@ namespace ORTS.TrackViewer.Editing
                             stationNames.Add(platform.Station);
                         }
                     }
-            
+
                 }
             }
 
@@ -703,14 +701,14 @@ namespace ORTS.TrackViewer.Editing
             //all intermediate nodes
             for (int i = 1; i < lastIndex; i++)
             {
-                mainNodes[i].NextMainNode = mainNodes[i+1];
-                mainNodes[i].NextMainTvnIndex = mainNodes[i+1].NextMainTvnIndex;  // note main TVN index was in reverse direction
+                mainNodes[i].NextMainNode = mainNodes[i + 1];
+                mainNodes[i].NextMainTvnIndex = mainNodes[i + 1].NextMainTvnIndex;  // note main TVN index was in reverse direction
                 mainNodes[i].PrevNode = mainNodes[i - 1];
                 if (mainNodes[i].NodeType != TrainpathNodeType.Reverse)
                 {   // reverse nodes have input and output swapped, but they are not changed themselves!
                     mainNodes[i].ReverseOrientation();
                 }
-                
+
                 if (mainNodes[i].NodeType == TrainpathNodeType.SidingStart)
                 {
                     ReverseSidingPath(mainNodes[i]);
@@ -747,10 +745,10 @@ namespace ORTS.TrackViewer.Editing
             sidingNodes[0].NextSidingTvnIndex = sidingNodes[1].NextSidingTvnIndex;
             sidingNodes[0].NodeType = TrainpathNodeType.SidingStart;
             // no reversing because this node is reversed as part of main path.
-            
+
             // making new connections for all intermediate nodes, and reversing them as well
             // Note order is important.
-            for (int i = 1 ; i < lastIndex ; i++)
+            for (int i = 1; i < lastIndex; i++)
             {
                 sidingNodes[i].NextSidingNode = sidingNodes[i + 1];
                 sidingNodes[i].NextSidingTvnIndex = sidingNodes[i + 1].NextSidingTvnIndex; // this was oriented in the other direction!

@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Simulation;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,6 +26,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
+using ORTS.Common;
 
 namespace Orts.Common.Scripting
 {
@@ -68,7 +67,7 @@ namespace Orts.Common.Scripting
 
             if (path == null || path == "")
                 return null;
-            
+
             path = path.ToLowerInvariant();
 
             var type = String.Format("{0}.{1}", nameSpace, Path.GetFileNameWithoutExtension(path).Replace('-', '_'));
@@ -157,7 +156,7 @@ namespace Orts.Common.Scripting
 
         public Assembly LoadFolder(string path)
         {
-            
+
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("ScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 

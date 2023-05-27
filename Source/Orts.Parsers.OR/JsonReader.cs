@@ -18,14 +18,13 @@
 // Use this define to diagnose issues in the JSON reader below.
 //#define DEBUG_JSON_READER
 
-using Microsoft.Xna.Framework;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 
 namespace Orts.Parsers.OR
 {

@@ -343,7 +343,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             Script.SetCurrentVentilationState = (value) => VentilationState = value;
             Script.SetCurrentHeatingState = (value) => HeatingState = value;
             Script.SetCurrentAirConditioningState = (value) => AirConditioningState = value;
-            Script.SetCurrentElectricTrainSupplyPowerW = (value) => {
+            Script.SetCurrentElectricTrainSupplyPowerW = (value) =>
+            {
                 if (value >= 0f)
                 {
                     ElectricTrainSupplyPowerW = value;
@@ -443,7 +444,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
 
                     float airConditioningElectricPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? AirConditioningPowerW() : 0f;
-                    float airConditioningThermalPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? - AirConditioningPowerW() * AirConditioningYield() : 0f;
+                    float airConditioningThermalPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? -AirConditioningPowerW() * AirConditioningYield() : 0f;
 
                     SetCurrentElectricTrainSupplyPowerW(ContinuousPowerW() + heatingPowerW + airConditioningElectricPowerW);
                     SetCurrentHeatFlowRateW(heatingPowerW + airConditioningThermalPowerW);

@@ -1075,9 +1075,9 @@ namespace Orts.Viewer3D.Debugging
                         if (stepDistance + stepLength >= initialNodeOffset && stepDistance <= initialNodeOffset + DisplayDistance)
                         {
                             var currentLocation = currentPosition.WorldLocation;
-                            scaledA.X = (float)((previousLocation.TileX * WorldLocation.TileSize + previousLocation.Location.X - subX) * xScale); 
+                            scaledA.X = (float)((previousLocation.TileX * WorldLocation.TileSize + previousLocation.Location.X - subX) * xScale);
                             scaledA.Y = (float)(pbCanvas.Height - (previousLocation.TileZ * WorldLocation.TileSize + previousLocation.Location.Z - subY) * yScale);
-                            scaledB.X = (float)((currentLocation.TileX * WorldLocation.TileSize + currentLocation.Location.X - subX) * xScale); 
+                            scaledB.X = (float)((currentLocation.TileX * WorldLocation.TileSize + currentLocation.Location.X - subX) * xScale);
                             scaledB.Y = (float)(pbCanvas.Height - (currentPosition.TileZ * WorldLocation.TileSize + currentPosition.Location.Z - subY) * yScale); g.DrawLine(pathPen, scaledA, scaledB);
                         }
                     }

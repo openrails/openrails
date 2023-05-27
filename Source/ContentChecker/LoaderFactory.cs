@@ -24,8 +24,6 @@
 // 3. The filename in case also the SIMIS header is not unique, or the file does not have a SIMIS header
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.IO;
 
 namespace ContentChecker

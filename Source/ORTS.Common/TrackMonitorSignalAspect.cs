@@ -17,11 +17,6 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace ORTS.Common
 {
     public enum TrackMonitorSignalAspect

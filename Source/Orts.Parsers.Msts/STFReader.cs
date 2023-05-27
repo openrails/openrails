@@ -21,7 +21,6 @@
 // Note:  the SBR classes are more general in that they are capable of reading
 //        both unicode and binary compressed data files.
 
-using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,6 +28,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 
 #region Original STFreader
 #if !NEW_READER
@@ -1192,7 +1192,8 @@ namespace Orts.Parsers.Msts
             return new Color() { PackedValue = STFReader.SwapColorBytes(hex) };
         }
 
-        static uint SwapColorBytes(uint color) {
+        static uint SwapColorBytes(uint color)
+        {
             return (color & 0xFF00FF00) + (byte)(color >> 16) + (uint)((byte)color << 16);
         }
 
@@ -1725,7 +1726,7 @@ namespace Orts.Parsers.Msts
 
             int c;
             #region Skip past any leading whitespace characters
-            for (;;)
+            for (; ; )
             {
                 c = ReadChar();
                 if (IsEof(c)) return UpdateTreeAndStepBack("");
@@ -1748,7 +1749,7 @@ namespace Orts.Parsers.Msts
             else if ((!skip_mode && !string_mode) && ((c == '#') || (c == '_')))
             {
                 #region Move on to a whitespace so we can pick up any token starting with a #
-                for (;;)
+                for (; ; )
                 {
                     c = PeekChar();
                     if ((c == '(') || (c == ')')) break;
@@ -1779,7 +1780,7 @@ namespace Orts.Parsers.Msts
             #region Build Quoted Items - including append operations
             else if (c == '"')
             {
-                for (;;)
+                for (; ; )
                 {
                     c = ReadChar();
                     if (IsEof(c))
@@ -1828,7 +1829,7 @@ namespace Orts.Parsers.Msts
             else if (c != -1)
             {
                 itemBuilder.Append((char)c);
-                for (;;)
+                for (; ; )
                 {
                     c = PeekChar();
                     if ((c == '(') || (c == ')')) break;

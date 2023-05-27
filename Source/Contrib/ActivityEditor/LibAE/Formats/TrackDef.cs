@@ -1,15 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LibAE;
-using Microsoft.Xna.Framework;
-using MSTS;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-
-namespace LibAE.Formats
+﻿namespace LibAE.Formats
 {
 #if false
     //================================================================================================//

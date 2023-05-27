@@ -180,7 +180,7 @@ namespace Orts.Simulation.RollingStocks
                             locog.GearBoxController.CurrentNotch = GearBoxController.CurrentNotch;
                             locog.GearBoxController.SetValue((float)locog.GearBoxController.CurrentNotch);
 
-                            locog.ChangeGearUp();                                                        
+                            locog.ChangeGearUp();
                         }
 
                         if (ControlGearDown)
@@ -188,7 +188,7 @@ namespace Orts.Simulation.RollingStocks
                             locog.GearBoxController.CurrentNotch = GearBoxController.CurrentNotch;
                             locog.GearBoxController.SetValue((float)locog.GearBoxController.CurrentNotch);
 
-                            locog.ChangeGearDown();                            
+                            locog.ChangeGearDown();
                         }
                     }
 
@@ -203,7 +203,7 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
                 }
-                
+
                 // Rest gear flags once all the cars have been processed
                 ControlGearUp = false;
                 ControlGearDown = false;

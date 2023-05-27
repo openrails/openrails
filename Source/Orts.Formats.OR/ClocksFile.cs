@@ -15,14 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Orts.Parsers.Msts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Orts.Parsers.Msts;
 using JsonReader = Orts.Parsers.OR.JsonReader;
 
 namespace Orts.Formats.OR
@@ -78,7 +78,7 @@ namespace Orts.Formats.OR
                     ClockShape = new ClockShape(stringValue, null);
                     ClockShapeList.Add(ClockShape);
                     break;
-                
+
                 case "[].Name":
                     // Parse the property with default value as invalid, so errors can be detected and the object rejected later.
                     stringValue = item.AsString(stringValue);
@@ -104,7 +104,7 @@ namespace Orts.Formats.OR
                     break;
 
                 default:
-                    Trace.TraceWarning($"Unexpected entry \"{item.Path}\" found"); 
+                    Trace.TraceWarning($"Unexpected entry \"{item.Path}\" found");
                     return false;
             }
             return true;

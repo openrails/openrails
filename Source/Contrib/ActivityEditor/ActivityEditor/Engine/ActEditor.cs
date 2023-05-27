@@ -14,11 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ActivityEditor.Engine;
-using AEWizard;
-using LibAE.Formats;
-using Orts.Formats.OR;
-using ORTS.Common;
 /// This module ...
 /// 
 /// Author: Stéfan Paitoni
@@ -30,6 +25,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using ActivityEditor.Engine;
+using AEWizard;
+using LibAE.Formats;
+using Orts.Formats.OR;
+using ORTS.Common;
 
 namespace ActivityEditor
 {
@@ -59,7 +59,7 @@ namespace ActivityEditor
         private bool loadEnabled = false;
         public List<Viewer2D> viewer2ds;
         public Viewer2D selectedViewer;
-        
+
         private bool focusOnViewer = false;
 
         // Commented out as never used
@@ -304,7 +304,7 @@ namespace ActivityEditor
 
         }
         #endregion
-        
+
         private void MoveSelected_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Move Tool");

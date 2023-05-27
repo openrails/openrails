@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Formats.Msts;
 using System.IO;
+using Orts.Formats.Msts;
 
 namespace Orts.Formats.OR
 {
@@ -30,7 +30,7 @@ namespace Orts.Formats.OR
         public string MstsPath { get; set; }
         public AESignals Signals { get; protected set; }
 
-        public MSTSData (string mstsPath, string Route)
+        public MSTSData(string mstsPath, string Route)
         {
             MstsPath = mstsPath;
             RoutePath = Route;
@@ -57,7 +57,7 @@ namespace Orts.Formats.OR
                 TSectionDat = new TrackSectionsFile(MstsPath + @"\GLOBAL\TSECTION.DAT");
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
-            Signals = new AESignals (this, SIGCFG);
+            Signals = new AESignals(this, SIGCFG);
         }
     }
 }

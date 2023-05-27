@@ -31,22 +31,22 @@
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 
 
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
-using System.Diagnostics;
-using System;
-using System.IO;
-using System.Text;
-using Event = Orts.Common.Event;
 using ORTS.Scripting.Api;
-using System.Linq;
-using Orts.Simulation.RollingStocks.SubSystems.Brakes;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -125,7 +125,7 @@ namespace Orts.Simulation.RollingStocks
         // diesel performance reporting
         public float DieselPerformanceTimeS = 0.0f; // Records the time since starting movement
 
-    public DieselEngines DieselEngines;
+        public DieselEngines DieselEngines;
 
         /// <summary>
         /// Used to accumulate a quantity that is not lost because of lack of precision when added to the Fuel level
@@ -309,7 +309,7 @@ namespace Orts.Simulation.RollingStocks
 
                 }
 
-                
+
                 if (MaximumDieselEnginePowerW == 0)
                 {
                     MaximumDieselEnginePowerW = LocomotiveMaxRailOutputPowerW;  // If no value set in ENG file, then set the Prime Mover power to same as RailOutputPower (typically the MaxPower value)
@@ -541,7 +541,7 @@ namespace Orts.Simulation.RollingStocks
             CurrentLocomotiveSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
             DieselEngines.Restore(inf);
             ControllerFactory.Restore(GearBoxController, inf);
-            
+
         }
 
         //================================================================================================//
@@ -966,11 +966,11 @@ namespace Orts.Simulation.RollingStocks
 
             if (DieselEngines.HasGearBox && DieselTransmissionType == DieselTransmissionTypes.Mechanic)
             {
-                    status.AppendFormat("\t{0} {1}-{2}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.GearIndication).ToString(), DieselEngines[0].GearBox.GearBoxType);
+                status.AppendFormat("\t{0} {1}-{2}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex < 0 ? Simulator.Catalog.GetString("N") : (DieselEngines[0].GearBox.GearIndication).ToString(), DieselEngines[0].GearBox.GearBoxType);
             }
-                status.AppendFormat("\t{0} {1}\t\t{2}\n",
-                Simulator.Catalog.GetString("Fuel"),
-                FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
+            status.AppendFormat("\t{0} {1}\t\t{2}\n",
+            Simulator.Catalog.GetString("Fuel"),
+            FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
 
 
             if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
@@ -1059,14 +1059,14 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (RemoteControlGroup == 1)
                 {
-                    throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((Train.LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.CurrentNotch, 1,  8);
+                    throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((Train.LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.CurrentNotch, 1, 8);
                 }
                 else
                 {
                     // The clause here below leads to possible differences of one notch near the notch value, and therefore is commented
- //               if (DynamicBrakeController.NotchCount() > 3)
- //                   throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((DynamicBrakeController.GetNearestNotch(DynamicBrakePercent / 100f)), 1, 8);
- //               else
+                    //               if (DynamicBrakeController.NotchCount() > 3)
+                    //                   throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((DynamicBrakeController.GetNearestNotch(DynamicBrakePercent / 100f)), 1, 8);
+                    //               else
                     throttle = Simulator.Catalog.GetParticularString("Notch", "B") + MathHelper.Clamp((Train.LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.GetNotch(DynamicBrakePercent / 100f), 1, 8);
                 }
             }
@@ -1263,13 +1263,13 @@ namespace Orts.Simulation.RollingStocks
                     table += "\t\t";
                 table += "\n";
             }
-             return table;
+            return table;
         }
 
         public static string GetDpuHeader(bool dpuVerticalFull, int locomotivesInTrain, int dpuMaxNumberOfEngines)
         {
-            if (MaxNumberOfEngines != dpuMaxNumberOfEngines || dpuVerticalFull? DPULabels == null : DpuLabels == null)
-                SetDPULabels(dpuVerticalFull , dpuMaxNumberOfEngines);
+            if (MaxNumberOfEngines != dpuMaxNumberOfEngines || dpuVerticalFull ? DPULabels == null : DpuLabels == null)
+                SetDPULabels(dpuVerticalFull, dpuMaxNumberOfEngines);
             string table = "";
             for (var i = 0; i < (dpuVerticalFull ? DPULabels.Length : DpuLabels.Length); i++)
             {
@@ -1382,7 +1382,7 @@ namespace Orts.Simulation.RollingStocks
 
                 // Calculate steam boiler usage values
                 // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, and steam boiler is not locked out
-                if (CurrentSteamHeatPressurePSI > 0.1 && CurrentLocomotiveSteamHeatBoilerWaterCapacityL > 0 && DieselLevelL > 0 && !IsSteamHeatBoilerLockedOut)      
+                if (CurrentSteamHeatPressurePSI > 0.1 && CurrentLocomotiveSteamHeatBoilerWaterCapacityL > 0 && DieselLevelL > 0 && !IsSteamHeatBoilerLockedOut)
                 {
                     // Set values for visible exhaust based upon setting of steam controller
                     HeatingSteamBoilerVolumeM3pS = 1.5f * SteamHeatController.CurrentValue;
@@ -1401,7 +1401,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     Train.CarSteamHeatOn = false; // turn on steam effects on wagons
                 }
-                
+
 
             }
         }
@@ -1429,7 +1429,7 @@ namespace Orts.Simulation.RollingStocks
             if (DieselEngines.MSTSGearBoxParams.GearBoxMaxTractiveForceForGearsN.Count > 0)
             {
                 if (ThrottleController != null && ThrottleController.MaximumValue > 1 && MaxForceN / DieselEngines.MSTSGearBoxParams.GearBoxMaxTractiveForceForGearsN[0] > 3)
-                    // Tricky things have been made with this .eng file, see e.g Cravens 105; let's correct them
+                // Tricky things have been made with this .eng file, see e.g Cravens 105; let's correct them
                 {
                     for (int i = 0; i < DieselEngines.MSTSGearBoxParams.GearBoxMaxTractiveForceForGearsN.Count; i++)
                         DieselEngines.MSTSGearBoxParams.GearBoxMaxTractiveForceForGearsN[i] *= ThrottleController.MaximumValue;
@@ -1441,7 +1441,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         if (cabView.CVFFile != null && cabView.CVFFile.CabViewControls != null && cabView.CVFFile.CabViewControls.Count > 0)
                         {
-                            foreach ( var control in cabView.CVFFile.CabViewControls)
+                            foreach (var control in cabView.CVFFile.CabViewControls)
                             {
                                 if (control is CVCDiscrete && control.ControlType.Type == CABViewControlTypes.THROTTLE && (control as CVCDiscrete).Values.Count > 0 && (control as CVCDiscrete).Values[(control as CVCDiscrete).Values.Count - 1] > 1)
                                 {

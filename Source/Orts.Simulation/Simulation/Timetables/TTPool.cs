@@ -26,11 +26,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Orts.Parsers.OR;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
-using Orts.Parsers.OR;
 using ORTS.Common;
 
 namespace Orts.Simulation.Timetables
@@ -41,12 +41,12 @@ namespace Orts.Simulation.Timetables
     /// </summary>
     public class Poolholder
     {
-        public Dictionary<string,TimetablePool> Pools;
+        public Dictionary<string, TimetablePool> Pools;
 
         /// <summary>
         /// loader for timetable mode
         /// </summary>
-        public Poolholder (Simulator simulatorref, string[] arguments, CancellationToken cancellation)
+        public Poolholder(Simulator simulatorref, string[] arguments, CancellationToken cancellation)
         {
             // process pools
             PoolInfo TTPool = new PoolInfo(simulatorref);
@@ -83,7 +83,7 @@ namespace Orts.Simulation.Timetables
 
             int nopools = inf.ReadInt32();
             if (nopools > 0)
-            { 
+            {
                 Pools = new Dictionary<string, TimetablePool>();
                 for (int iPool = 0; iPool < nopools; iPool++)
                 {
@@ -115,7 +115,7 @@ namespace Orts.Simulation.Timetables
         /// Save
         /// </summary>
         /// <param name="outf"></param>
-        public void Save (BinaryWriter outf)
+        public void Save(BinaryWriter outf)
         {
             if (Pools == null)
             {
@@ -330,7 +330,7 @@ namespace Orts.Simulation.Timetables
                 newPool.TableVectorIndex = inf.ReadInt32();
                 newPool.TableMiddleEntry = inf.ReadSingle();
                 newPool.TableMiddleExit = inf.ReadSingle();
-                    
+
                 newPool.RemLength = inf.ReadSingle();
 
                 maxStorage = inf.ReadInt32();
@@ -827,7 +827,7 @@ namespace Orts.Simulation.Timetables
         {
             // new route
             Train.TCSubpathRoute newRoute = null;
-            poolStorageState = (int) TTTrain.PoolAccessState.PoolInvalid;
+            poolStorageState = (int)TTTrain.PoolAccessState.PoolInvalid;
 
             // set dispose states
             train.FormsStatic = true;
@@ -1280,7 +1280,7 @@ namespace Orts.Simulation.Timetables
 
                 if (ForceCreation)
                 {
-                    Trace.TraceInformation("Train request : " + train.Name + " from pool " + PoolName + 
+                    Trace.TraceInformation("Train request : " + train.Name + " from pool " + PoolName +
                         " : no engines available in pool, engine is created, at " + moveTimeA.ToString("HH:mm:ss") + "\n");
 #if DEBUG_POOLINFO
                     sob = new StringBuilder();
@@ -1291,7 +1291,7 @@ namespace Orts.Simulation.Timetables
                 }
                 else
                 {
-                    Trace.TraceInformation("Train request : " + train.Name + " from pool " + PoolName + 
+                    Trace.TraceInformation("Train request : " + train.Name + " from pool " + PoolName +
                         " : no engines available in pool, engine is not created , at " + moveTimeA.ToString("HH:mm:ss") + "\n");
 #if DEBUG_POOLINFO
                     sob = new StringBuilder();
@@ -1466,7 +1466,7 @@ namespace Orts.Simulation.Timetables
                     train.OrgAINumber = train.Number;
                     train.Number = 0;
                     train.LeadLocomotiveIndex = selectedTrain.LeadLocomotiveIndex;
-                    for (int carid = 0; carid < train.Cars.Count; carid++ )
+                    for (int carid = 0; carid < train.Cars.Count; carid++)
                     {
                         train.Cars[carid].CarID = selectedTrain.Cars[carid].CarID;
                     }

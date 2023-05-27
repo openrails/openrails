@@ -1,4 +1,4 @@
-﻿﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -16,13 +16,12 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 
-using Microsoft.Xna.Framework;
 using System;
-using ORTS.Common;
-using Orts.Common;
-using ORTS.Scripting.Api;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Microsoft.Xna.Framework;
+using Orts.Common;
+using ORTS.Common;
+using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
@@ -74,7 +73,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 // Adjust brake cylinder pressures as brake pipe varies
                 // straight braked cars will have separate calculations done, if locomotive is not straight braked, then revert car to vacuum single pipe  
-                if (lead.CarBrakeSystemType == "straight_vacuum_single_pipe") 
+                if (lead.CarBrakeSystemType == "straight_vacuum_single_pipe")
                 {
                     (Car as MSTSWagon).NonAutoBrakePresent = true; // Set flag to indicate that non auto brake is set in train
                     bool skiploop = false;
@@ -90,7 +89,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
 
                     if (!skiploop)
-                    {                   
+                    {
                         if (BrakeLine1PressurePSI < CylPressurePSIA && lead.BrakeFlagIncrease) // Increase BP pressure, hence vacuum brakes are being released
                         {
                             float dp = elapsedClockSeconds * MaxReleaseRatePSIpS;
@@ -189,10 +188,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             Car.SignalEvent(Event.TrainBrakePressureStoppedChanging);
                             TrainBrakePressureChanging = false;
                         }
-                            prevCylPressurePSIA = CylPressurePSIA;
-                        
+                        prevCylPressurePSIA = CylPressurePSIA;
 
-                        if (Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI) > 0.001) 
+
+                        if (Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI) > 0.001)
                         {
                             if (!BrakePipePressureChanging)
                             {
@@ -253,7 +252,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         LargeEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.BrakePipeChargingRatePSIorInHgpS); // Single ejector model
                     }
-                        
+
                     float SmallEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.SmallEjectorBrakePipeChargingRatePSIorInHgpS); // Set value for small ejector to operate - fraction set in steam locomotive
                     float TrainPipeLeakLossPSI = lead == null ? 0.0f : (lead.TrainBrakePipeLeakPSIorInHgpS);
                     float AdjTrainPipeLeakLossPSI = 0.0f;
@@ -299,7 +298,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                             lead.BrakeFlagIncrease = true;
                             lead.BrakeFlagDecrease = false;
-                           
+
                             // Apply brakes - brakepipe has to have vacuum increased to max vacuum value (ie decrease psi), vacuum is created by large ejector control
                             lead.BrakeSystem.BrakeLine1PressurePSI -= elapsedClockSeconds * (AdjLargeEjectorChargingRateInHgpS + AdjSmallEjectorChargingRateInHgpS);
                             if (lead.BrakeSystem.BrakeLine1PressurePSI < (OneAtmospherePSI - MaxVacuumPipeLevelPSI))
@@ -326,8 +325,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                         }
 
-                            // Eames type brake with separate release and ejector operating handles
-                            if (lead.LargeEjectorControllerFitted && lead.LargeSteamEjectorIsOn)
+                        // Eames type brake with separate release and ejector operating handles
+                        if (lead.LargeEjectorControllerFitted && lead.LargeSteamEjectorIsOn)
                         {
                             // Apply brakes - brakepipe has to have vacuum increased to max vacuum value (ie decrease psi), vacuum is created by large ejector control
                             lead.BrakeSystem.BrakeLine1PressurePSI -= elapsedClockSeconds * AdjLargeEjectorChargingRateInHgpS;
@@ -342,7 +341,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
                             lead.BrakeFlagIncrease = false;
                             lead.BrakeFlagDecrease = true;
-                                                        
+
                             lead.BrakeSystem.BrakeLine1PressurePSI += elapsedClockSeconds * AdjBrakeServiceTimeFactorPSIpS;
                             if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                             {
@@ -358,7 +357,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     }
                 }
-                                 
+
                 if (((lead.CarBrakeSystemType == "vacuum_single_pipe" || lead.CarBrakeSystemType == "vacuum_twin_pipe") && (Car as MSTSWagon).AuxiliaryReservoirPresent))
                 {
                     // update non calculated values using vacuum single pipe class

@@ -20,8 +20,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace ORTS.ContentManager
 {
@@ -114,16 +112,16 @@ namespace ORTS.ContentManager
             {
                 Debug.WriteLine(String.Format("{0} naively scanning for {2} '{1}'", this, name, type));
 #endif
-                foreach (var child in children)
+            foreach (var child in children)
+            {
+                if (child.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (child.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                    {
 #if DEBUG_CONTENT_GET_SCAN
                         Debug.WriteLine(String.Format("{0} naive scan found match for {2} '{1}'", this, name, type));
 #endif
-                        return child;
-                    }
+                    return child;
                 }
+            }
 #if DEBUG_CONTENT_GET_SCAN
             }
 #endif

@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ORTS.Settings;
 using System;
 using System.Collections.Generic;
+using ORTS.Settings;
 
 namespace ORTS.ContentManager
 {

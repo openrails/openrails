@@ -299,7 +299,7 @@ namespace Orts.Parsers.Msts
         Platform = 360,
         LevelCr = 362,
         Speedpost = 364,
-        Hazard=365,
+        Hazard = 365,
 
 
 
@@ -1691,12 +1691,12 @@ namespace Orts.Parsers.Msts
 
         // these assigned ID's are arbitrary - I haven't seen them in a compressed MSTS W file yet
         // TODO determine proper ID from a compressed world file
-        CarSpawner, 
-        Siding, 
+        CarSpawner,
+        Siding,
         Dyntrack,
         Transfer,
         Gantry,
-        Pickup,  
+        Pickup,
 
         Wagon,
         Engine,
@@ -1707,7 +1707,7 @@ namespace Orts.Parsers.Msts
         ORTSPantographToggle3,
         ORTSPantographToggle4,
         // ORTS Specific for container stations
-        ORTSCraneSound, 
+        ORTSCraneSound,
         ORTSMaxStackedContainers,
         ORTSStackLocations,
         ORTSStackLocationsLength,

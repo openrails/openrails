@@ -46,7 +46,7 @@ namespace ORTS
             Font = SystemFonts.MessageBoxFont;
 
             Save = save;
-			if (!Directory.Exists(UserSettings.SavePackFolder)) Directory.CreateDirectory(UserSettings.SavePackFolder);
+            if (!Directory.Exists(UserSettings.SavePackFolder)) Directory.CreateDirectory(UserSettings.SavePackFolder);
             UpdateFileList(null);
             bExport.Enabled = !(Save == null);
             ofdImportSave.Filter = Application.ProductName + catalog.GetString("Save Packs") + " (*." + SavePackFileExtension + ")|*." + SavePackFileExtension + "|" + catalog.GetString("All files") + " (*.*)|*";
@@ -56,10 +56,10 @@ namespace ORTS
         private void bImportSave_Click_1(object sender, EventArgs e)
         {
             // Show the dialog and get result.
-			ofdImportSave.InitialDirectory = UserSettings.SavePackFolder;
+            ofdImportSave.InitialDirectory = UserSettings.SavePackFolder;
             if (ofdImportSave.ShowDialog() == DialogResult.OK)
             {
-				ExtractFilesFromZip(ofdImportSave.FileName, UserSettings.UserDataFolder);
+                ExtractFilesFromZip(ofdImportSave.FileName, UserSettings.UserDataFolder);
                 UpdateFileList(catalog.GetStringFmt("Save Pack '{0}' imported successfully.", Path.GetFileNameWithoutExtension(ofdImportSave.FileName)));
             }
         }
@@ -72,9 +72,9 @@ namespace ORTS
             // For Zip, see http://weblogs.asp.net/jgalloway/archive/2007/10/25/creating-zip-archives-in-net-without-an-external-library-like-sharpziplib.aspx
 
             // Copy files to new package in folder save_packs
-			var fullFilePath = Path.Combine(UserSettings.UserDataFolder, Save.File);
+            var fullFilePath = Path.Combine(UserSettings.UserDataFolder, Save.File);
             var toFile = Path.GetFileNameWithoutExtension(Save.File) + "." + SavePackFileExtension;
-			var fullZipFilePath = Path.Combine(UserSettings.SavePackFolder, toFile);
+            var fullZipFilePath = Path.Combine(UserSettings.SavePackFolder, toFile);
             foreach (var fileName in new[] {
                 fullFilePath,
                 Path.ChangeExtension(fullFilePath, "png"),
@@ -92,11 +92,11 @@ namespace ORTS
             var objPSI = new System.Diagnostics.ProcessStartInfo();
             var winDir = Environment.GetEnvironmentVariable("windir");
             objPSI.FileName = winDir + @"\explorer.exe";
-			objPSI.Arguments = "\"" + UserSettings.SavePackFolder + "\""; // Opens the Save Packs folder
+            objPSI.Arguments = "\"" + UserSettings.SavePackFolder + "\""; // Opens the Save Packs folder
             if (Save != null)
             {
                 var toFile = Path.GetFileNameWithoutExtension(Save.File) + "." + SavePackFileExtension;
-				var fullZipFilePath = Path.Combine(UserSettings.SavePackFolder, toFile);
+                var fullZipFilePath = Path.Combine(UserSettings.SavePackFolder, toFile);
                 if (File.Exists(fullZipFilePath))
                 {
                     objPSI.Arguments = "/select,\"" + fullZipFilePath + "\""; // Opens the Save Packs folder and selects the exported SavePack
@@ -108,7 +108,7 @@ namespace ORTS
 
         void UpdateFileList(string message)
         {
-			var files = Directory.GetFiles(UserSettings.SavePackFolder, "*." + SavePackFileExtension);
+            var files = Directory.GetFiles(UserSettings.SavePackFolder, "*." + SavePackFileExtension);
             textBoxSavePacks.Text = String.IsNullOrEmpty(message) ? "" : message + "\r\n";
             textBoxSavePacks.Text += catalog.GetPluralStringFmt("Save Pack folder contains {0} save pack:", "Save Pack folder contains {0} save packs:", files.Length);
             foreach (var s in files)

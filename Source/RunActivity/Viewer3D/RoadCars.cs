@@ -17,14 +17,14 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Microsoft.Xna.Framework;
-using Orts.Formats.Msts;
-using Orts.Simulation;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
+using Orts.Simulation;
+using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
@@ -79,7 +79,7 @@ namespace Orts.Viewer3D
             }
 
             var sortedLevelCrossings = new SortedList<float, LevelCrossingItem>();
-            for (var crossingTraveller = new Traveller(Traveller); crossingTraveller.NextSection(); )
+            for (var crossingTraveller = new Traveller(Traveller); crossingTraveller.NextSection();)
                 if (crossingTraveller.IsTrack && crossingTraveller.TN.TrVectorNode.TrItemRefs != null)
                     foreach (var trItemRef in crossingTraveller.TN.TrVectorNode.TrItemRefs)
                         if (Viewer.Simulator.LevelCrossings.RoadCrossingItems.ContainsKey(trItemRef))
@@ -274,7 +274,7 @@ namespace Orts.Viewer3D
                     stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length / 2);
                 else
                     stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length * 0.65f - 4 - cars[spawnerIndex - 1].Speed * 0.5f);
-                }
+            }
 
             // Calculate whether we're too close to the minimum stopping distance (and need to slow down) or going too slowly (and need to speed up).
             var stopDistance = stopDistances.Count > 0 ? stopDistances.Min() - Travelled - Length / 2 : float.MaxValue;
@@ -292,7 +292,7 @@ namespace Orts.Viewer3D
             RearTraveller.Move(distance);
         }
 
-        public void ChangeSpeed (float speed)
+        public void ChangeSpeed(float speed)
         {
             if (speed > 0)
             {

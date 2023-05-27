@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -27,11 +26,11 @@ using Microsoft.Win32;
 
 namespace ORTS.Common
 {
-	/// <summary>
-	/// Base class for all means of persisting settings from the user/game.
-	/// </summary>
-	public abstract class SettingsStore
-	{
+    /// <summary>
+    /// Base class for all means of persisting settings from the user/game.
+    /// </summary>
+    public abstract class SettingsStore
+    {
         /// <summary>Name of a 'section', to distinguish various part within a underlying store</summary>
         protected string Section { get; private set; }
 
@@ -40,9 +39,9 @@ namespace ORTS.Common
         /// </summary>
         /// <param name="section">Name of the 'section', to distinguish various part within a underlying store</param>
 		protected SettingsStore(string section)
-		{
-			Section = section;
-		}
+        {
+            Section = section;
+        }
 
         /// <summary>
         /// Assert that the type expected from the settings store is an allowed type.
@@ -145,29 +144,29 @@ namespace ORTS.Common
         /// <param name="section">Name to distinguish between various 'section's used in underlying store.</param>
         /// <returns>The created SettingsStore</returns>
 		public static SettingsStore GetSettingStore(string filePath, string registryKey, string section)
-		{
-			if (!String.IsNullOrEmpty(filePath) && File.Exists(filePath))
-				return new SettingsStoreLocalIni(filePath, section);
-			if (!String.IsNullOrEmpty(registryKey))
-				return new SettingsStoreRegistry(registryKey, section);
-			throw new ArgumentException("Neither 'filePath' nor 'registryKey' arguments are valid.");
-		}
-	}
+        {
+            if (!String.IsNullOrEmpty(filePath) && File.Exists(filePath))
+                return new SettingsStoreLocalIni(filePath, section);
+            if (!String.IsNullOrEmpty(registryKey))
+                return new SettingsStoreRegistry(registryKey, section);
+            throw new ArgumentException("Neither 'filePath' nor 'registryKey' arguments are valid.");
+        }
+    }
 
-	/// <summary>
+    /// <summary>
     /// Registry implementation of <see cref="SettingsStore"/>.
-	/// </summary>
-	public sealed class SettingsStoreRegistry : SettingsStore
-	{
-		readonly string RegistryKey;
-		readonly RegistryKey Key;
+    /// </summary>
+    public sealed class SettingsStoreRegistry : SettingsStore
+    {
+        readonly string RegistryKey;
+        readonly RegistryKey Key;
 
-		internal SettingsStoreRegistry(string registryKey, string section)
-			: base(section)
-		{
-			RegistryKey = String.IsNullOrEmpty(section) ? registryKey : registryKey + @"\" + section;
-			Key = Registry.CurrentUser.CreateSubKey(RegistryKey);
-		}
+        internal SettingsStoreRegistry(string registryKey, string section)
+            : base(section)
+        {
+            RegistryKey = String.IsNullOrEmpty(section) ? registryKey : registryKey + @"\" + section;
+            Key = Registry.CurrentUser.CreateSubKey(RegistryKey);
+        }
 
         /// <summary>
         /// Return an array of all setting-names that are in the store
@@ -285,9 +284,9 @@ namespace ORTS.Common
         /// <param name="name">name of the setting</param>
         /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, int[] value)
-		{
-			Key.SetValue(name, String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray()), RegistryValueKind.String);
-		}
+        {
+            Key.SetValue(name, String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray()), RegistryValueKind.String);
+        }
 
         /// <summary>
         /// Set a value of a user setting
@@ -304,25 +303,25 @@ namespace ORTS.Common
         /// </summary>
         /// <param name="name">name of the setting</param>
         public override void DeleteUserValue(string name)
-		{
-			Key.DeleteValue(name, false);
-		}
-	}
+        {
+            Key.DeleteValue(name, false);
+        }
+    }
 
-	/// <summary>
+    /// <summary>
     /// INI file implementation of <see cref="SettingsStore"/>.
-	/// </summary>
-	public sealed class SettingsStoreLocalIni : SettingsStore
-	{
-		const string DefaultSection = "ORTS";
+    /// </summary>
+    public sealed class SettingsStoreLocalIni : SettingsStore
+    {
+        const string DefaultSection = "ORTS";
 
-		readonly string FilePath;
+        readonly string FilePath;
 
-		internal SettingsStoreLocalIni(string filePath, string section)
-			: base(String.IsNullOrEmpty(section) ? DefaultSection : section)
-		{
-			FilePath = filePath;
-		}
+        internal SettingsStoreLocalIni(string filePath, string section)
+            : base(String.IsNullOrEmpty(section) ? DefaultSection : section)
+        {
+            FilePath = filePath;
+        }
 
         /// <summary>
         /// Returns an array of all sections within the store, including the one used by this instance.
@@ -447,9 +446,9 @@ namespace ORTS.Common
         /// <param name="name">name of the setting</param>
         /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, bool value)
-		{
-			NativeMethods.WritePrivateProfileString(Section, name, "bool:" + (value ? "true" : "false"), FilePath);
-		}
+        {
+            NativeMethods.WritePrivateProfileString(Section, name, "bool:" + (value ? "true" : "false"), FilePath);
+        }
 
         /// <summary>
         /// Set a value of a user setting
@@ -497,9 +496,9 @@ namespace ORTS.Common
         /// <param name="name">name of the setting</param>
         /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, string value)
-		{
-			NativeMethods.WritePrivateProfileString(Section, name, "string:" + Uri.EscapeDataString(value), FilePath);
-		}
+        {
+            NativeMethods.WritePrivateProfileString(Section, name, "string:" + Uri.EscapeDataString(value), FilePath);
+        }
 
         /// <summary>
         /// Set a value of a user setting
@@ -507,9 +506,9 @@ namespace ORTS.Common
         /// <param name="name">name of the setting</param>
         /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, int[] value)
-		{
-			NativeMethods.WritePrivateProfileString(Section, name, "int[]:" + String.Join(",", ((int[])value).Select(v => Uri.EscapeDataString(v.ToString(CultureInfo.InvariantCulture))).ToArray()), FilePath);
-		}
+        {
+            NativeMethods.WritePrivateProfileString(Section, name, "int[]:" + String.Join(",", ((int[])value).Select(v => Uri.EscapeDataString(v.ToString(CultureInfo.InvariantCulture))).ToArray()), FilePath);
+        }
 
         /// <summary>
         /// Set a value of a user setting
@@ -517,26 +516,26 @@ namespace ORTS.Common
         /// <param name="name">name of the setting</param>
         /// <param name="value">value of the setting</param>
         public override void SetUserValue(string name, string[] value)
-		{
-			NativeMethods.WritePrivateProfileString(Section, name, "string[]:" + String.Join(",", value.Select(v => Uri.EscapeDataString(v)).ToArray()), FilePath);
-		}
+        {
+            NativeMethods.WritePrivateProfileString(Section, name, "string[]:" + String.Join(",", value.Select(v => Uri.EscapeDataString(v)).ToArray()), FilePath);
+        }
 
         /// <summary>
         /// Remove a user setting from the store
         /// </summary>
         /// <param name="name">name of the setting</param>
         public override void DeleteUserValue(string name)
-		{
-			NativeMethods.WritePrivateProfileString(Section, name, null, FilePath);
-		}
-	}
+        {
+            NativeMethods.WritePrivateProfileString(Section, name, null, FilePath);
+        }
+    }
 
     // TODO: This class and its methods should be internal visibility.
     /// <summary>
     /// Native methods for interacting with INI files.
     /// </summary>
 	public static class NativeMethods
-	{
+    {
         /// <summary>
         /// Retrieves all the keys and values for the specified section of an initialization file.
         /// </summary>

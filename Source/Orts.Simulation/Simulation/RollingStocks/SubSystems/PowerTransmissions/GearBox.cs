@@ -15,17 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System;
-using System.Linq;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -233,7 +233,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool ManualGearUp = false;
         public bool ManualGearDown = false;
         public bool clutchLockOut = false;
-        
+
         public int currentGearIndex = -1;
         public int nextGearIndex = -1;
 
@@ -241,7 +241,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                if ((currentGearIndex >= 0)&&(currentGearIndex < NumOfGears))
+                if ((currentGearIndex >= 0) && (currentGearIndex < NumOfGears))
                     return Gears[currentGearIndex];
                 else
                     return null;
@@ -260,7 +260,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
         }
 
-public Gear NextGear 
+        public Gear NextGear
         {
             get
             {
@@ -276,7 +276,7 @@ public Gear NextGear
                     case GearBoxOperation.Manual:
                     case GearBoxOperation.Semiautomatic:
                         int temp = 0;
-                        if(value == null)
+                        if (value == null)
                             nextGearIndex = -1;
                         else
                         {
@@ -310,8 +310,8 @@ public Gear NextGear
             {
                 if (!gearedUp)
                 {
-                    if(++nextGearIndex >= Gears.Count)
-                        nextGearIndex =  (Gears.Count - 1);
+                    if (++nextGearIndex >= Gears.Count)
+                        nextGearIndex = (Gears.Count - 1);
                     else
                         gearedUp = true;
                 }
@@ -327,8 +327,8 @@ public Gear NextGear
             {
                 if (!gearedDown)
                 {
-                    if(--nextGearIndex <= 0)
-                        nextGearIndex =  0;
+                    if (--nextGearIndex <= 0)
+                        nextGearIndex = 0;
                     else
                         gearedDown = true;
                 }
@@ -444,7 +444,7 @@ public Gear NextGear
         {
             get
             {
-                if (ReverseGearBoxIndication )
+                if (ReverseGearBoxIndication)
                 {
                     int tempgear = NumOfGears - CurrentGearIndex;
                     tempgear = MathHelper.Clamp(tempgear, 0, NumOfGears);
@@ -457,11 +457,11 @@ public Gear NextGear
             }
         }
 
-        public float CurrentSpeedMpS 
+        public float CurrentSpeedMpS
         {
             get
             {
-                if(DieselEngine.Locomotive.Direction == Direction.Reverse)
+                if (DieselEngine.Locomotive.Direction == Direction.Reverse)
                     return -(DieselEngine.Locomotive.SpeedMpS);
                 else
                     return (DieselEngine.Locomotive.SpeedMpS);
@@ -492,7 +492,7 @@ public Gear NextGear
         /// <summary>
         /// ShaftRpM is the speed of the input shaft to the gearbox due to the speed of the wheel rotation
         /// </summary>
-        public float ShaftRPM 
+        public float ShaftRPM
         {
             get
             {
@@ -538,24 +538,27 @@ public Gear NextGear
                 if (CurrentGear == null)
                     return false;
                 else
-                    return ((DieselEngine.RealRPM / DieselEngine.MaxRPM * 100f) > CurrentGear.OverspeedPercentage); 
-            } 
+                    return ((DieselEngine.RealRPM / DieselEngine.MaxRPM * 100f) > CurrentGear.OverspeedPercentage);
+            }
         }
 
-        public bool IsOverspeedWarning 
+        public bool IsOverspeedWarning
         {
             get
             {
                 if (CurrentGear == null)
                     return false;
                 else
-                    return ((DieselEngine.RealRPM / DieselEngine.MaxRPM * 100f) > 100f); 
+                    return ((DieselEngine.RealRPM / DieselEngine.MaxRPM * 100f) > 100f);
             }
         }
 
         float clutch;
-        public float ClutchPercent { set { clutch = (value > 100.0f ? 100f : (value < -100f ? -100f : value)) / 100f; }
-            get { return clutch * 100f; } }
+        public float ClutchPercent
+        {
+            set { clutch = (value > 100.0f ? 100f : (value < -100f ? -100f : value)) / 100f; }
+            get { return clutch * 100f; }
+        }
 
         public bool AutoClutch = true;
 
@@ -564,7 +567,7 @@ public Gear NextGear
         public TypesGearBox GearBoxType = TypesGearBox.Unknown;
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxOperation OriginalGearBoxOperation = GearBoxOperation.Manual;
- 
+
         public float rpmRatio;
         public float torqueCurveMultiplier;
         public float throttleFraction;
@@ -663,7 +666,7 @@ public Gear NextGear
                             {
                                 var tractiveEffortLimitN = (DieselEngine.DieselPowerTab[DieselEngine.RealRPM] * (DieselEngine.LoadPercent / 100f)) / CurrentSpeedMpS;
 
-                                if (tractiveForceN > tractiveEffortLimitN )
+                                if (tractiveForceN > tractiveEffortLimitN)
                                 {
                                     tractiveForceN = tractiveEffortLimitN;
                                 }
@@ -717,7 +720,7 @@ public Gear NextGear
                             return 0;
                     }
                     else
-                    {                                               
+                    {
                         if (ClutchPercent >= -20)
                         {
                             float tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
@@ -815,7 +818,7 @@ public Gear NextGear
 
                         // For purposes of calculating engine efficiency the tractive force at maximum gear speed needs to be used.
                         Gears[i].TractiveForceatMaxSpeedN = GearBoxParams.GearBoxTractiveForceAtSpeedN[i] / Locomotive.DieselEngines.Count;
-                    }                        
+                    }
 
                     Gears[i].OverspeedPercentage = GearBoxParams.GearBoxOverspeedPercentageForFailure;
                     Gears[i].UpGearProportion = GearBoxParams.GearBoxUpGearProportion;
@@ -858,7 +861,7 @@ public Gear NextGear
                 if (Gears[iGear].MaxSpeedMpS < CurrentSpeedMpS) continue;
                 else currentGearIndex = nextGearIndex = iGear;
                 break;
-             } 
+            }
 
             gearedUp = false;
             gearedDown = false;

@@ -17,21 +17,21 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Orts.Formats.Msts;
-using Orts.Simulation.AIs;
-using Orts.Simulation.Physics;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Orts.Formats.Msts;
+using Orts.Simulation.AIs;
+using Orts.Simulation.Physics;
+using ORTS.Common;
 
 namespace Orts.Simulation
 {
     public class LevelCrossings
     {
         const float MaximumActivationDistance = 2000;
-        
+
         readonly Simulator Simulator;
         public readonly Dictionary<int, LevelCrossingItem> TrackCrossingItems;
         public readonly Dictionary<int, LevelCrossingItem> RoadCrossingItems;
@@ -42,7 +42,7 @@ namespace Orts.Simulation
         public LevelCrossings(Simulator simulator)
         {
             Simulator = simulator;
-            TrackCrossingItems = simulator.TDB != null && simulator.TDB.TrackDB != null && simulator.TDB.TrackDB.TrackNodes != null && simulator.TDB.TrackDB.TrItemTable != null 
+            TrackCrossingItems = simulator.TDB != null && simulator.TDB.TrackDB != null && simulator.TDB.TrackDB.TrackNodes != null && simulator.TDB.TrackDB.TrItemTable != null
                 ? GetLevelCrossingsFromDB(simulator.TDB.TrackDB.TrackNodes, simulator.TDB.TrackDB.TrItemTable) : new Dictionary<int, LevelCrossingItem>();
             RoadCrossingItems = simulator.RDB != null && simulator.RDB.RoadTrackDB != null && simulator.RDB.RoadTrackDB.TrackNodes != null && simulator.RDB.RoadTrackDB.TrItemTable != null
                 ? GetLevelCrossingsFromDB(simulator.RDB.RoadTrackDB.TrackNodes, simulator.RDB.RoadTrackDB.TrItemTable) : new Dictionary<int, LevelCrossingItem>();
@@ -94,7 +94,7 @@ namespace Orts.Simulation
             var absSpeedMpS = Math.Abs(speedMpS);
             var maxSpeedMpS = train.AllowedMaxSpeedMpS;
             var minCrossingActivationSpeed = 5.0f;  //5.0MpS is equalivalent to 11.1mph.  This is the estimated min speed that MSTS uses to activate the gates when in range.
-            
+
 
             bool validTrain = false;
             bool validStaticConsist = false;
@@ -202,11 +202,11 @@ namespace Orts.Simulation
                 if ((train.TrainType == Train.TRAINTYPE.STATIC) && validStaticConsist)
                 {
                     // This process is to raise the crossing gates if a loose consist rolls through the crossing.
-                    if(speedMpS > 0)
+                    if (speedMpS > 0)
                     {
                         frontDist = crossing.DistanceTo(train.FrontTDBTraveller, minimumDist);
                         rearDist = crossing.DistanceTo(train.RearTDBTraveller, minimumDist);
-                                                
+
                         if (frontDist < 0 && rearDist < 0)
                             crossing.RemoveTrain(train);
                     }
@@ -222,7 +222,7 @@ namespace Orts.Simulation
                     if (frontDist < 0 && rearDist < 0)
                         rearDist = crossing.DistanceTo(new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward), adjustDist);
 
-                   // Testing distance before crossing
+                    // Testing distance before crossing
                     if (frontDist > 0 && frontDist <= adjustDist)
                         crossing.AddTrain(train);
 
@@ -299,7 +299,7 @@ namespace Orts.Simulation
         public LevelCrossingItem SearchNearLevelCrossing(Train train, float reqDist, bool trainForwards, out float frontDist)
         {
             LevelCrossingItem roadItem = LevelCrossingItem.None;
-           frontDist = -1;
+            frontDist = -1;
             Traveller traveller = trainForwards ? train.FrontTDBTraveller :
                 new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
             foreach (var crossing in TrackCrossingItems.Values.Where(ci => ci.CrossingGroup != null))
@@ -344,7 +344,7 @@ namespace Orts.Simulation
             Location = new WorldLocation(trItem.TileX, trItem.TileZ, trItem.X, trItem.Y, trItem.Z);
         }
 
-        public LevelCrossingItem ()
+        public LevelCrossingItem()
         {
 
         }
@@ -352,7 +352,7 @@ namespace Orts.Simulation
         [CallOnThread("Updater")]
         public void AddTrain(Train train)
         {
-            if(train.TrainType == Train.TRAINTYPE.STATIC)
+            if (train.TrainType == Train.TRAINTYPE.STATIC)
             {
                 var staticConsists = StaticConsists;
                 if (!staticConsists.Contains(train))
@@ -404,7 +404,7 @@ namespace Orts.Simulation
                     StaticConsists = newStaticConsists;
                 }
             }
-            else if(trains.Count > 0)
+            else if (trains.Count > 0)
             {
                 if (trains.Contains(train))
                 {
@@ -431,7 +431,7 @@ namespace Orts.Simulation
         internal readonly List<LevelCrossingItem> Items;
         internal readonly float WarningTime;
         internal readonly float MinimumDistance;
-        
+
         public LevelCrossing(IEnumerable<LevelCrossingItem> items, float warningTime, float minimumDistance)
         {
             Items = new List<LevelCrossingItem>(items);

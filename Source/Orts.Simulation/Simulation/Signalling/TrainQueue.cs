@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Simulation.Physics;
 using System.Collections.Generic;
+using Orts.Simulation.Physics;
 
 namespace Orts.Simulation.Signalling
 {

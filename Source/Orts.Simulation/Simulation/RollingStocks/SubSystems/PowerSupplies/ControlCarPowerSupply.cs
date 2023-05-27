@@ -15,10 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Common;
-using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
-using System.IO;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
@@ -32,13 +29,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public bool Activated = false;
         private ControlCarPowerSupply Script => AbstractScript as ControlCarPowerSupply;
 
-//        public ScriptedTractionCutOffRelay TractionCutOffRelay { get; protected set; }
+        //        public ScriptedTractionCutOffRelay TractionCutOffRelay { get; protected set; }
 
         public ScriptedControlCarPowerSupply(MSTSControlTrailerCar controlcar) :
         base(controlcar)
         {
- //           ControlTrailer = controlcar;
-  //          TractionCutOffRelay = new ScriptedTractionCutOffRelay(this);
+            //           ControlTrailer = controlcar;
+            //          TractionCutOffRelay = new ScriptedTractionCutOffRelay(this);
         }
 
 

@@ -15,13 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
-using Orts.Formats.OR;
-using ORTS.Common;
-using ORTS.Menu;
-using ORTS.Settings;
-using ORTS.Updater;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,8 +24,14 @@ using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows.Forms;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
+using Orts.Formats.OR;
+using ORTS.Common;
+using ORTS.Menu;
+using ORTS.Settings;
+using ORTS.Updater;
 using Path = ORTS.Menu.Path;
 
 namespace ORTS
@@ -1138,7 +1137,7 @@ namespace ORTS
             {
                 if (SelectedTimetableSet != null)
                     ShowDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
-                    // Description not shown as no description is available for a timetable set.
+                // Description not shown as no description is available for a timetable set.
 
                 if (SelectedTimetable != null)
                     ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
@@ -1171,7 +1170,7 @@ namespace ORTS
         /// </summary>
         /// <param name="info"></param>
         /// <returns></returns>
-        private string[] HideStartParameters(string [] info)
+        private string[] HideStartParameters(string[] info)
         {
             var fullStartTime = info[0].TrimStart();
             var startTimeArray = fullStartTime.Split('$');
@@ -1352,7 +1351,7 @@ namespace ORTS
             var index = (int)UserSettings.Menu_SelectionIndex.Activity;
             for (var i = 0; i < comboBox.Items.Count; i++)
             {
-                if (comboBox.Items[i] is T && predicate((T)comboBox.Items[i]) || (Settings.Menu_Selection.Length > i && comboBox.Items[i].ToString() == Settings.Menu_Selection[index] ))
+                if (comboBox.Items[i] is T && predicate((T)comboBox.Items[i]) || (Settings.Menu_Selection.Length > i && comboBox.Items[i].ToString() == Settings.Menu_Selection[index]))
                 {
                     comboBox.SelectedIndex = i;
                     return;

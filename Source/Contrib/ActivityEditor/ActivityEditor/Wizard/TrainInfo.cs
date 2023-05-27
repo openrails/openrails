@@ -1,7 +1,5 @@
-﻿using System;
+﻿using System.Linq;
 using System.Windows.Forms;
-using System.Linq;
-using LibAE;
 using LibAE.Formats;
 
 namespace AEWizard
@@ -26,16 +24,16 @@ namespace AEWizard
         {
             this.trainConsistCB.DataSource = activityInfo.trainConsists.Select(o => o.consistName).ToList();
         }
-                // ==================================================================
+        // ==================================================================
         // Protected Properties
         // ==================================================================
-        
+
         /// <summary>
         /// Gets the <see cref="SMS.Windows.Forms.WizardForm">WizardForm</see>
         /// to which this <see cref="SMS.Windows.Forms.WizardPage">WizardPage</see>
         /// belongs.
         /// </summary>
-        
+
         // ==================================================================
         // Private Methods
         // ==================================================================

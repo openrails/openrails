@@ -20,13 +20,13 @@
 // Define this to log each change of the sound sources.
 //#define DEBUG_SOURCE_SOURCES
 
-using Orts.Common;
-using Orts.Processes;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using Orts.Common;
+using Orts.Processes;
+using ORTS.Common;
 
 namespace Orts.Viewer3D.Processes
 {
@@ -152,7 +152,7 @@ namespace Orts.Viewer3D.Processes
                 StartUpdateTime = viewer.RealTime;
                 int RetryUpdate = 0;
                 int restartIndex = -1;
-                
+
                 while (RetryUpdate >= 0)
                 {
                     bool updateInterrupted = false;
@@ -229,10 +229,10 @@ namespace Orts.Viewer3D.Processes
                 //    Trace.TraceInformation("Sound Source Update Interrupted more than once: {0}", UpdateInterrupts);
 
                 // <CSComment> the block below could provide better sound response but is more demanding in terms of CPU time, especially for slow CPUs
-/*              int resptime = (int)((viewer.RealTime - StartUpdateTime) * 1000);
-                SleepTime = 50 - resptime;
-                if (SleepTime < 5)
-                    SleepTime = 5;*/
+                /*              int resptime = (int)((viewer.RealTime - StartUpdateTime) * 1000);
+                                SleepTime = 50 - resptime;
+                                if (SleepTime < 5)
+                                    SleepTime = 5;*/
 #if DEBUG_SOURCE_SOURCES
                 SoundTime += (int)((viewer.RealTime - StartUpdateTime) * 1000);
                 if (viewer.RealTime - ConsoleWriteTime >= 15f)

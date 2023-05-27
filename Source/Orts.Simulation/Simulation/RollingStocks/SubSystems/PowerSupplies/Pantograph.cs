@@ -15,13 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Parsers.Msts;
-using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Orts.Parsers.Msts;
+using ORTS.Scripting.Api;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
@@ -195,7 +195,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public PantographState State { get; private set; }
         public float DelayS { get; private set; }
         public float TimeS { get; private set; }
-        public bool CommandUp {
+        public bool CommandUp
+        {
             get
             {
                 bool value;
@@ -258,7 +259,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Restore(BinaryReader inf)
         {
-            State = (PantographState) Enum.Parse(typeof(PantographState), inf.ReadString());
+            State = (PantographState)Enum.Parse(typeof(PantographState), inf.ReadString());
             DelayS = inf.ReadSingle();
             TimeS = inf.ReadSingle();
         }

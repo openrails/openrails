@@ -16,14 +16,14 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Diagnostics;
-using System.IO;
-using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
-using Orts.Parsers.Msts;
-using ORTS.Common;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Orts.Common;
+using Orts.Parsers.Msts;
+using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -50,7 +50,7 @@ namespace Orts.Formats.Msts
         /// </summary>
         /// <param name="filenamewithpath">Full file name of the .rdb file</param>
         public TrackDatabaseFile(string filenamewithpath)
-        {        
+        {
             using (STFReader stf = new STFReader(filenamewithpath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("trackdb", ()=>{ TrackDB = new TrackDB(stf); }),
@@ -96,7 +96,7 @@ namespace Orts.Formats.Msts
         /// Array of all TrackNodes in the track database
         /// Warning, the first TrackNode is always null.
         /// </summary>
-        public TrackNode[] TrackNodes; 
+        public TrackNode[] TrackNodes;
 
         /// <summary>
         /// Array of all Track Items (TrItem) in the road database
@@ -140,7 +140,7 @@ namespace Orts.Formats.Msts
                 }),
             });
         }
-        
+
         /// <summary>
         /// Find the index of the TrackNode
         /// </summary>
@@ -187,7 +187,7 @@ namespace Orts.Formats.Msts
             for (int i = 0; i < newTrItems.Length; i++)
             {
                 int newId = i + TrItemTable.Length;
-                newTrItems[i].TrItemId = (uint) newId;
+                newTrItems[i].TrItemId = (uint)newId;
                 newTrItemTable[newId] = newTrItems[i];
             }
 
@@ -200,7 +200,7 @@ namespace Orts.Formats.Msts
             {
                 if (trackNode != null)
                 {
-                    try 
+                    try
                     {
                         if (trackNode.UiD != null)
                         {
@@ -327,7 +327,7 @@ namespace Orts.Formats.Msts
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", Justification = "Keeping identifier consistent to use in MSTS")]
         public TrVectorNode TrVectorNode { get; set; }
-        
+
         /// <summary>
         /// True when this TrackNode has nothing else connected to it (that is, it is
         /// a buffer end or an unfinished track) and trains cannot proceed beyond here.
@@ -453,7 +453,7 @@ namespace Orts.Formats.Msts
         /// <summary>
         /// Default (empty) constructor 
         /// </summary>
-        public TrPin() {}
+        public TrPin() { }
 
         /// <summary>
         /// Create a shallow copy of the current TrPin
@@ -522,7 +522,7 @@ namespace Orts.Formats.Msts
             AZ = stf.ReadFloat(STFReader.UNITS.None, null);
             stf.SkipRestOfBlock();
         }
-        
+
         /// <summary>
         /// Constructor from a vector section
         /// </summary>
@@ -554,7 +554,7 @@ namespace Orts.Formats.Msts
         /// The route of a switch that is currently in use.
         /// </summary>
         public int SelectedRoute { get; set; }
-        
+
         /// <summary>
         /// Reference to the parent trackNode
         /// </summary>
@@ -620,7 +620,7 @@ namespace Orts.Formats.Msts
                 TrackShape trackShape = tsectionDat.TrackShapes.Get(ShapeIndex);
                 SectionIdx[] SectionIdxs = trackShape.SectionIdxs;
 
-                for (int index = 0; index <= SectionIdxs.Length-1 ; index++)
+                for (int index = 0; index <= SectionIdxs.Length - 1; index++)
                 {
                     if (index == trackShape.MainRoute) continue;
                     uint[] sections = SectionIdxs[index].TrackSections;
@@ -851,7 +851,7 @@ namespace Orts.Formats.Msts
         /// Describes the various types of Track Items
         /// </summary>
         public enum trItemType
-        {   
+        {
             /// <summary>empty item</summary>
             trEMPTY, // the first, so translates to '0', so this is the default.
             /// <summary>A place where two tracks cross over each other</summary>
@@ -928,7 +928,7 @@ namespace Orts.Formats.Msts
             Debug.Assert(idx == TrItemId, "Index Mismatch");
             stf.SkipRestOfBlock();
         }
-        
+
         /// <summary>
         /// Reads the Rdata from filestream
         /// </summary>
@@ -1159,7 +1159,7 @@ namespace Orts.Formats.Msts
             SigObj = -1;
             ItemType = trItemType.trSPEEDPOST;
             stf.MustMatch("(");
-			stf.ParseBlock(new STFReader.TokenProcessor[] {
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("tritemid", ()=>{ ParseTrItemID(stf, idx); }),
                 new STFReader.TokenProcessor("tritemrdata", ()=>{ TrItemRData(stf); }),
                 new STFReader.TokenProcessor("tritemsdata", ()=>{ TrItemSData(stf); }),
@@ -1168,44 +1168,44 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("speedposttritemdata", ()=>{
                     stf.MustMatch("(");
                     Flags = stf.ReadUInt(null);
-					if ((Flags & 1) != 0) IsWarning = true;
-					if ((Flags & (1 << 1)) != 0) IsLimit = true;
-					if (!IsWarning && !IsLimit) {
-						IsMilePost = true;
-					}
-					else {
-						if (IsWarning && IsLimit)
-						{
-							IsWarning = false;
-							IsResume = true;
-						}
+                    if ((Flags & 1) != 0) IsWarning = true;
+                    if ((Flags & (1 << 1)) != 0) IsLimit = true;
+                    if (!IsWarning && !IsLimit) {
+                        IsMilePost = true;
+                    }
+                    else {
+                        if (IsWarning && IsLimit)
+                        {
+                            IsWarning = false;
+                            IsResume = true;
+                        }
 
-						if ((Flags & (1 << 5)) != 0) IsPassenger = true;
-						if ((Flags & (1 << 6)) != 0) IsFreight = true;
-						if ((Flags & (1 << 7)) != 0) IsFreight = IsPassenger = true;
-						if ((Flags & (1 << 8)) != 0) IsMPH = true;
-						if ((Flags & (1 << 4)) != 0) {
-							ShowNumber = true;
-							if ((Flags & (1 << 9)) != 0) ShowDot = true;
-						}
-					}
+                        if ((Flags & (1 << 5)) != 0) IsPassenger = true;
+                        if ((Flags & (1 << 6)) != 0) IsFreight = true;
+                        if ((Flags & (1 << 7)) != 0) IsFreight = IsPassenger = true;
+                        if ((Flags & (1 << 8)) != 0) IsMPH = true;
+                        if ((Flags & (1 << 4)) != 0) {
+                            ShowNumber = true;
+                            if ((Flags & (1 << 9)) != 0) ShowDot = true;
+                        }
+                    }
 
 
                     //  The number of parameters depends on the flags seeting
                     //  To do: Check flags seetings and parse accordingly.
 		            if (!IsResume)
-		            {
+                    {
                         //SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
                         if (IsMilePost && ((Flags & (1 << 9)) == 0)) SpeedInd = (float)Math.Truncate(stf.ReadDouble(null));
                         else SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
-		            }
+                    }
 
-    		        if (ShowNumber)
-		            {
-			            DisplayNumber = stf.ReadInt(null);
-		            }
-                    
-			        Angle = MathHelper.WrapAngle(stf.ReadFloat(STFReader.UNITS.None, null));
+                    if (ShowNumber)
+                    {
+                        DisplayNumber = stf.ReadInt(null);
+                    }
+
+                    Angle = MathHelper.WrapAngle(stf.ReadFloat(STFReader.UNITS.None, null));
 
                     stf.SkipRestOfBlock();
                 }),
@@ -1218,7 +1218,7 @@ namespace Orts.Formats.Msts
     }
 
     public class TempSpeedPostItem : SpeedPostItem
-    {      
+    {
         /// <summary>
         /// Constructor for creating a speedpost from activity speed restriction zone
         /// </summary>
@@ -1228,7 +1228,7 @@ namespace Orts.Formats.Msts
         /// 
         public WorldPosition WorldPosition;
 
-        public TempSpeedPostItem(Tr_RouteFile routeFile, Position position,  bool isStart, WorldPosition worldPosition, bool isWarning)
+        public TempSpeedPostItem(Tr_RouteFile routeFile, Position position, bool isStart, WorldPosition worldPosition, bool isWarning)
         {
             // TrItemId needs to be set later
             ItemType = trItemType.trSPEEDPOST;
@@ -1246,7 +1246,7 @@ namespace Orts.Formats.Msts
             if (routeFile.MilepostUnitsMetric == true)
             {
                 this.IsMPH = false;
-                SpeedInd = (int)(ORTS.Common.MpS.ToKpH(routeFile.TempRestrictedSpeed) + 0.1f); 
+                SpeedInd = (int)(ORTS.Common.MpS.ToKpH(routeFile.TempRestrictedSpeed) + 0.1f);
             }
             else
             {
@@ -1333,7 +1333,7 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Representa a level Crossing item (so track crossing road)
     /// </summary>
-    [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", Justification="Keeping identifier consistent to use in MSTS")]
+    [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", Justification = "Keeping identifier consistent to use in MSTS")]
     public class LevelCrItem : TrItem
     {
         /// <summary>
@@ -1390,7 +1390,7 @@ namespace Orts.Formats.Msts
             });
         }
     }
-    
+
     /// <summary>
     /// Represents either start or end of a platform (a place where trains can stop).
     /// </summary>

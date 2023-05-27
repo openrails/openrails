@@ -34,7 +34,7 @@ namespace Orts.Formats.OR
     public class TrackCircuitElementConnector : TrackCircuitElement
     {
         public TrackCircuitElementConnector(GlobalItem item, float position)
-            : base (item, position)
+            : base(item, position)
         {
             info = TypeItem.STATION_CONNECTOR;
         }

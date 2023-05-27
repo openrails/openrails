@@ -38,8 +38,8 @@ namespace Orts.Viewer3D.RollingStock
             if (ElectricLocomotive.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
                 ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
                 (car.Train.MUDirection != Direction.N && ElectricLocomotive.LocomotivePowerSupply.MainPowerSupplyOn))))
-                // following reactivates the sound triggers related to certain states
-                // for pantos the sound trigger related to the raised panto must be reactivated, else SignalEvent() would raise also another panto
+            // following reactivates the sound triggers related to certain states
+            // for pantos the sound trigger related to the raised panto must be reactivated, else SignalEvent() would raise also another panto
             {
                 var iPanto = 0;
                 Event evt;
@@ -99,7 +99,7 @@ namespace Orts.Viewer3D.RollingStock
                     new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, true);
                 }
             });
-            UserInputCommands.Add(UserCommand.ControlCircuitBreakerOpeningOrder, new Action[] { () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, false), () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, true)});
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerOpeningOrder, new Action[] { () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, false), () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingAuthorization, new Action[] { Noop, () => new CircuitBreakerClosingAuthorizationCommand(Viewer.Log, !ElectricLocomotive.ElectricPowerSupply.CircuitBreaker.DriverClosingAuthorization) });
             base.InitializeUserInputCommands();
         }

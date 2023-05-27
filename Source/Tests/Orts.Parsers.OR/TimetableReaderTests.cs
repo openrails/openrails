@@ -15,12 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Parsers.OR;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using Orts.Parsers.OR;
 using Xunit;
 
 namespace Tests.Orts.Parsers.OR
@@ -50,7 +46,8 @@ namespace Tests.Orts.Parsers.OR
             }
             using (var file = new TestFile(":"))
             {
-                Assert.Throws<InvalidDataException>(() => {
+                Assert.Throws<InvalidDataException>(() =>
+                {
                     var tr = new TimetableReader(file.FileName);
                 });
             }

@@ -27,18 +27,15 @@
  * 
  */
 
-using Microsoft.Xna.Framework;
+using System;
+using System.IO;
+using System.Text;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
-using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -162,9 +159,9 @@ namespace Orts.Simulation.RollingStocks
             {
 
                 // Update water controller for steam boiler heating tank
-                    WaterController.Update(elapsedClockSeconds);
-                    if (WaterController.UpdateValue > 0.0)
-                        Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeatBoilerWater, CabSetting.Increase, WaterController.CurrentValue * 100);
+                WaterController.Update(elapsedClockSeconds);
+                if (WaterController.UpdateValue > 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeatBoilerWater, CabSetting.Increase, WaterController.CurrentValue * 100);
 
 
                 CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;

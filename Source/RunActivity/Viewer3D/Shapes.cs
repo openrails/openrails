@@ -27,6 +27,12 @@
 // Adds bright green arrows to all normal shapes indicating the direction of their normals.
 //#define DEBUG_SHAPE_NORMALS
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -34,12 +40,6 @@ using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Common;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using Event = Orts.Common.Event;
 using Events = Orts.Common.Events;
 
@@ -427,7 +427,7 @@ namespace Orts.Viewer3D
         }
     }
 
-        //Class AnalogClockShape to animate analog OR-Clocks as child of AnimatedShape <- PoseableShape <- StaticShape
+    //Class AnalogClockShape to animate analog OR-Clocks as child of AnimatedShape <- PoseableShape <- StaticShape
     public class AnalogClockShape : AnimatedShape
     {
         public AnalogClockShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
@@ -455,7 +455,7 @@ namespace Orts.Viewer3D
 
             var anim_node = SharedShape.Animations[0].anim_nodes[iMatrix];
             if (anim_node.controllers.Count == 0)
-                    return;  // missing controllers
+                return;  // missing controllers
 
             // Start with the intial pose in the shape file.
             var xnaPose = SharedShape.Matrices[iMatrix];
@@ -1814,7 +1814,8 @@ namespace Orts.Viewer3D
                    indexData: new ushort[maxIndices],
                    graphicsDevice: material.Viewer.GraphicsDevice,
                    hierarchy: hierarchy,
-                   hierarchyIndex: hierarchyIndex) { }
+                   hierarchyIndex: hierarchyIndex)
+        { }
 
         public void SetVertexData(VertexPositionNormalTexture[] data, int minVertexIndex, int numVertices, int primitiveCount)
         {
@@ -1994,14 +1995,14 @@ namespace Orts.Viewer3D
             Trace.Write("S");
             var filePath = FilePath;
             // commented lines allow reading the animation block from an additional file in an Openrails subfolder
-//           string dir = Path.GetDirectoryName(filePath);
-//            string file = Path.GetFileName(filePath);
-//            string orFilePath = dir + @"\openrails\" + file;
+            //           string dir = Path.GetDirectoryName(filePath);
+            //            string file = Path.GetFileName(filePath);
+            //            string orFilePath = dir + @"\openrails\" + file;
             var sFile = new ShapeFile(filePath, Viewer.Settings.SuppressShapeWarnings);
-//            if (file.ToLower().Contains("turntable") && File.Exists(orFilePath))
-//            {
-//                sFile.ReadAnimationBlock(orFilePath);
-//            }
+            //            if (file.ToLower().Contains("turntable") && File.Exists(orFilePath))
+            //            {
+            //                sFile.ReadAnimationBlock(orFilePath);
+            //            }
 
 
             var textureFlags = Helpers.TextureFlags.None;

@@ -24,13 +24,6 @@
  * 
  */
 
-using GNU.Gettext;
-using Orts.Parsers.Msts;
-using Orts.Simulation;
-using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks;
-using Orts.Common;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -38,6 +31,13 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using GNU.Gettext;
+using Orts.Common;
+using Orts.Parsers.Msts;
+using Orts.Simulation;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using ORTS.Common;
 
 namespace Orts.MultiPlayer
 {
@@ -84,7 +84,7 @@ namespace Orts.MultiPlayer
         public string lastSender = ""; //who last sends me a message
         public bool AmAider = false; //am I aiding the dispatcher?
         public List<string> aiderList;
-        public Dictionary<string, OnlinePlayer> lostPlayer = new Dictionary<string,OnlinePlayer>();
+        public Dictionary<string, OnlinePlayer> lostPlayer = new Dictionary<string, OnlinePlayer>();
         public bool NotServer = true;
         public bool CheckSpad = true;
         public static bool PreferGreen = true;
@@ -164,7 +164,7 @@ namespace Orts.MultiPlayer
             removedLocomotives = new List<OnlineLocomotive>();
             aiderList = new List<string>();
             if (Server != null) NotServer = false;
-            users = new SortedList<double,string>();
+            users = new SortedList<double, string>();
             GetMD5HashFromTDBFile();
         }
         public static MPManager Instance()
@@ -183,7 +183,7 @@ namespace Orts.MultiPlayer
             try
             {
                 Train train = Simulator.PlayerLocomotive.Train;
-                
+
                 MSGControl msgctl;
                 //I am the server, I have control
                 if (IsServer())
@@ -262,7 +262,7 @@ namespace Orts.MultiPlayer
                 }
 #endif
             }
-            
+
             //server updates switch
             if (Server != null && newtime - lastSwitchTime >= MPUpdateInterval)
             {
@@ -274,7 +274,7 @@ namespace Orts.MultiPlayer
                 if (signalStatus.OKtoSend) BroadCast(signalStatus.ToString());
 
             }
-            
+
             //client updates itself
             if (Client != null && Server == null && newtime - lastMoveTime >= 1f)
             {
@@ -367,7 +367,7 @@ namespace Orts.MultiPlayer
             var Locomotive = (MSTSLocomotive)Simulator.PlayerLocomotive;
             if (Locomotive == null) return;
             var train = Locomotive.Train;
-            if (train == null ||train.TrainType == Train.TRAINTYPE.REMOTE) return;//no train or is remotely controlled
+            if (train == null || train.TrainType == Train.TRAINTYPE.REMOTE) return;//no train or is remotely controlled
 
             //var spad = false;
             var maxSpeed = Math.Abs(train.AllowedMaxSpeedMpS) + 3;//allow some margin of error (about 10km/h)
@@ -387,7 +387,7 @@ namespace Orts.MultiPlayer
         public static bool IsClient()
         {
             if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) return false;
-            return true; 
+            return true;
         }
         //check if it is in the server mode && they are players && not allow autoswitch
         public static bool NoAutoSwitch()
@@ -427,7 +427,7 @@ namespace Orts.MultiPlayer
 
         static public void SendToServer(string m)
         {
-            if (m!= null && Client != null) Client.Send(m);
+            if (m != null && Client != null) Client.Send(m);
         }
 
         //nicely shutdown listening threads, and notify the server/other player
@@ -441,7 +441,7 @@ namespace Orts.MultiPlayer
             }
             if (Server != null)
             {
-                Server.BroadCast((new MSGQuit("ServerHasToQuit\t"+GetUserName())).ToString()); //server notify everybody else
+                Server.BroadCast((new MSGQuit("ServerHasToQuit\t" + GetUserName())).ToString()); //server notify everybody else
                 Thread.Sleep(1000);
                 if (Server.ServerComm != null) Server.Stop();
                 if (Client != null) Client.Stop();
@@ -486,7 +486,7 @@ namespace Orts.MultiPlayer
                 MPManager.Instance().lastPlayerAddedTime = Simulator.GameTime;
                 MPManager.Instance().lastSwitchTime = Simulator.GameTime;
 
-                MSGPlayer host = new  MSGPlayer(MPManager.GetUserName(), "1234", Simulator.conFileName, Simulator.patFileName, Simulator.PlayerLocomotive.Train,
+                MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Simulator.conFileName, Simulator.patFileName, Simulator.PlayerLocomotive.Train,
                     Simulator.PlayerLocomotive.Train.Number, Simulator.Settings.AvatarURL);
                 MPManager.BroadCast(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
                 foreach (Train t in Simulator.Trains)
@@ -529,7 +529,7 @@ namespace Orts.MultiPlayer
             {
                 foreach (var p in OnlineTrains.Players)
                 {
-                    if (p.Value.Train == t1 && simulator.GameTime  - p.Value.CreatedTime < 120) { result = false; break; }
+                    if (p.Value.Train == t1 && simulator.GameTime - p.Value.CreatedTime < 120) { result = false; break; }
                     if (p.Value.Train == t2 && simulator.GameTime - p.Value.CreatedTime < 120) { result = false; break; }
                 }
             }
@@ -541,7 +541,7 @@ namespace Orts.MultiPlayer
         /// <summary>
         /// Return a string of information of how many players online and those users who are close
         /// </summary>
-        
+
         SortedList<double, string> users;
 
         public string GetOnlineUsersInfo()
@@ -549,7 +549,7 @@ namespace Orts.MultiPlayer
 
             string info = "";
             if (Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) info = "Your locomotive is a helper\t";
-            info += ("" + (OnlineTrains.Players.Count + 1)+ (OnlineTrains.Players.Count <= 0 ? " player " : "  players "));
+            info += ("" + (OnlineTrains.Players.Count + 1) + (OnlineTrains.Players.Count <= 0 ? " player " : "  players "));
             info += ("" + Simulator.Trains.Count + (Simulator.Trains.Count <= 1 ? " train" : "  trains"));
             TrainCar mine = Simulator.PlayerLocomotive;
             users.Clear();
@@ -563,7 +563,7 @@ namespace Orts.MultiPlayer
                     if (p.Train == null) continue;
                     if (p.Train.Cars.Count <= 0) continue;
                     var d = WorldLocation.GetDistanceSquared(p.Train.RearTDBTraveller.WorldLocation, mine.Train.RearTDBTraveller.WorldLocation);
-                    users.Add(Math.Sqrt(d)+MPManager.Random.NextDouble(), p.Username);
+                    users.Add(Math.Sqrt(d) + MPManager.Random.NextDouble(), p.Username);
                 }
             }
             catch (Exception)
@@ -642,7 +642,7 @@ namespace Orts.MultiPlayer
                                 if (p == p1.Value) continue;
                                 if (p1.Value.Train == p.Train) { hasOtherPlayer = true; break; }//other player has the same train
                             }
-                            if (hasOtherPlayer == false) 
+                            if (hasOtherPlayer == false)
                             {
                                 AddOrRemoveLocomotives(p.Username, p.Train, false);
                                 if (p.Train.Cars.Count > 0)
@@ -726,7 +726,7 @@ namespace Orts.MultiPlayer
             }
         }
 
-        public bool AddOrRemoveLocomotives (string userName, Train t, bool add)
+        public bool AddOrRemoveLocomotives(string userName, Train t, bool add)
         {
             for (int iCar = 0; iCar < t.Cars.Count; iCar++)
             {

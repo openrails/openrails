@@ -15,19 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Orts.Parsers.Msts;
-using ORTS.Common;
-using Orts.Formats.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+using ORTS.Common;
 
 namespace Orts.Simulation
 {
@@ -37,7 +33,7 @@ namespace Orts.Simulation
     /// 
 
 
- 
+
     public class Transfertable : MovingTable
     {
         public float Span; // horizontal or vertical
@@ -62,17 +58,17 @@ namespace Orts.Simulation
 
         public Signals signalRef { get; protected set; }
 
-        public Transfertable(STFReader stf, Simulator simulator): base(stf, simulator)
+        public Transfertable(STFReader stf, Simulator simulator) : base(stf, simulator)
         {
             signalRef = Simulator.Signals;
             string animation;
             WorldPosition.XNAMatrix.M44 = 100000000; //WorlPosition not yet defined, will be loaded when loading related tile
             stf.MustMatch("(");
-              stf.ParseBlock(new[] {
+            stf.ParseBlock(new[] {
                 new STFReader.TokenProcessor("wfile", ()=>{
                     WFile = stf.ReadStringBlock(null);
                     WorldPosition.TileX = int.Parse(WFile.Substring(1, 7));
-                    WorldPosition.TileZ = int.Parse(WFile.Substring(8, 7));                
+                    WorldPosition.TileZ = int.Parse(WFile.Substring(8, 7));
                 }),
                 new STFReader.TokenProcessor("uid", ()=>{ UID = stf.ReadIntBlock(-1); }),
                 new STFReader.TokenProcessor("animation", ()=>{ animation = stf.ReadStringBlock(null);
@@ -324,13 +320,13 @@ namespace Orts.Simulation
                     RelativeRearTravellerXNALocation = Vector3.Transform(XNALocation, invAnimationXNAMatrix);
                     train.ControlMode = Train.TRAIN_CONTROL.TURNTABLE;
                 }
-                Simulator.Confirmer.Information (Simulator.Catalog.GetStringFmt("Transfertable starting transferring train"));
+                Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Transfertable starting transferring train"));
                 // Computing position of cars relative to center of transfertable
 
-             }
-             Forward = isForward;
-             Reverse = !isForward;
-             Continuous = true;
+            }
+            Forward = isForward;
+            Reverse = !isForward;
+            Continuous = true;
         }
 
         public void ComputeCenter(WorldPosition worldPosition)
@@ -393,12 +389,12 @@ namespace Orts.Simulation
                             Connected = true;
                             Forward = false;
                             ConnectedTrackEnd = ConnectedTarget;
-                            Simulator.Confirmer.Information (Simulator.Catalog.GetStringFmt("Transfertable connected"));
+                            Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Transfertable connected"));
                             GoToTarget = true;
                             TargetOffset = Offsets[ConnectedTarget];
                         }
                     }
-                 }
+                }
                 else if (Reverse)
                 {
                     Connected = false;
@@ -425,7 +421,7 @@ namespace Orts.Simulation
         public void TargetExactlyReached()
         {
             Traveller.TravellerDirection direction = Traveller.TravellerDirection.Forward;
-            direction = SaveConnected ^ !MyTrackNodesOrientation[ConnectedTrackEnd]? direction : (direction == Traveller.TravellerDirection.Forward ? Traveller.TravellerDirection.Backward : Traveller.TravellerDirection.Forward);
+            direction = SaveConnected ^ !MyTrackNodesOrientation[ConnectedTrackEnd] ? direction : (direction == Traveller.TravellerDirection.Forward ? Traveller.TravellerDirection.Backward : Traveller.TravellerDirection.Forward);
             GoToTarget = false;
             if (TrainsOnMovingTable.Count == 1)
             {
@@ -445,7 +441,7 @@ namespace Orts.Simulation
             if ((Connected) && MyTrVectorSectionsIndex[ConnectedTrackEnd] != -1 && MyTrackNodesIndex[ConnectedTrackEnd] != -1 &&
                 (MyTrackNodesIndex[ConnectedTrackEnd] == train.FrontTDBTraveller.TN.Index || MyTrackNodesIndex[ConnectedTrackEnd] == train.RearTDBTraveller.TN.Index))
             {
-            return true;
+                return true;
             }
             return false;
         }
@@ -454,7 +450,7 @@ namespace Orts.Simulation
         /// PerformUpdateActions: actions to be performed at every animation step
         /// </summary>
         /// 
-        public void PerformUpdateActions ( Matrix absAnimationMatrix, WorldPosition worldPosition )
+        public void PerformUpdateActions(Matrix absAnimationMatrix, WorldPosition worldPosition)
         {
             TransferTrain(absAnimationMatrix);
             if (GoToTarget && TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].Train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)

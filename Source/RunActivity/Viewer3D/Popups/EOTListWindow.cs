@@ -18,17 +18,11 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Simulation;
-using Orts.Simulation.AIs;
-using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Common;
+using Orts.Simulation;
 using ORTS.Common;
-using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -60,13 +54,13 @@ namespace Orts.Viewer3D.Popups
                     EOTLabel filename, foldername;
                     line.Add(filename = new EOTLabel(colWidth, line.RemainingHeight, Owner.Viewer, eotType, Path.GetFileNameWithoutExtension(eotType), LabelAlignment.Left));
                     line.Add(foldername = new EOTLabel(colWidth - Owner.TextFontDefault.Height, line.RemainingHeight, Owner.Viewer, eotType, (Path.GetDirectoryName(eotType)).Remove(0, Owner.Viewer.Simulator.EOTPath.Length), LabelAlignment.Left));
-                    if (playerLocomotive?.Train != null && eotType.ToLower() == playerLocomotive.Train.EOT?.WagFilePath.ToLower()) 
-                    {                       
+                    if (playerLocomotive?.Train != null && eotType.ToLower() == playerLocomotive.Train.EOT?.WagFilePath.ToLower())
+                    {
                         filename.Color = Color.Red;
                         foldername.Color = Color.Red;
                     }
                 }
-             }
+            }
             return vbox;
         }
 
@@ -127,4 +121,4 @@ namespace Orts.Viewer3D.Popups
             }
         }
     }
- }
+}

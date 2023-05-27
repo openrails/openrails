@@ -110,7 +110,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             {
                 CurrentDMIMode = DMIMode.GaugeOnly;
             }
-            switch(CurrentDMIMode)
+            switch (CurrentDMIMode)
             {
                 case DMIMode.GaugeOnly:
                     Width = 280;
@@ -346,7 +346,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 // Real width of the left area in ETCS specs is 306 px, however in order to have
                 // both screens with the same size I assumed both have 334 px
                 // To be checked
-                int startPos = dmi.CurrentDMIMode == DMIMode.FullSize ? 334 : (334-306)/2;
+                int startPos = dmi.CurrentDMIMode == DMIMode.FullSize ? 334 : (334 - 306) / 2;
                 PlanningWindow = new PlanningWindow(dmi);
                 MenuBar = new MenuBar(dmi);
                 AddToLayout(PlanningWindow, new Point(startPos, DMI.IsSoftLayout ? 0 : 15));
@@ -439,13 +439,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 if (r.DrawAsInteger) DrawIntRectangle(spriteBatch, drawPosition, r.X, r.Y, r.Width, r.Height, r.Color);
                 else DrawRectangle(spriteBatch, drawPosition, r.X, r.Y, r.Width, r.Height, r.Color);
             }
-            foreach(var text in Texts)
+            foreach (var text in Texts)
             {
                 int x = drawPosition.X + (int)Math.Round(text.Position.X * Scale);
                 int y = drawPosition.Y + (int)Math.Round(text.Position.Y * Scale);
                 text.Draw(spriteBatch, new Point(x, y));
             }
-            foreach(var tex in Textures)
+            foreach (var tex in Textures)
             {
                 DrawSymbol(spriteBatch, tex.Texture, drawPosition, tex.Position.Y, tex.Position.Y);
             }
@@ -500,7 +500,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             spriteBatch.Draw(texture, new Vector2(origin.X + x * Scale, origin.Y + y * Scale), null, Color.White, 0, Vector2.Zero, Scale * DMI.MipMapScale, SpriteEffects.None, 0);
         }
-        public WindowTextFont GetFont(float size, bool bold=false)
+        public WindowTextFont GetFont(float size, bool bold = false)
         {
             return DMI.Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(size), bold ? System.Drawing.FontStyle.Bold : System.Drawing.FontStyle.Regular);
         }
@@ -529,7 +529,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             if (!Visible) return;
             base.PrepareFrame(status);
-            foreach(var area in SubAreas)
+            foreach (var area in SubAreas)
             {
                 area.PrepareFrame(status);
             }
@@ -538,7 +538,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             if (!Visible) return;
             base.Draw(spriteBatch, drawPosition);
-            foreach(var area in SubAreas)
+            foreach (var area in SubAreas)
             {
                 if (area.Visible) area.Draw(spriteBatch, new Point((int)Math.Round(drawPosition.X + area.Position.X * Scale), (int)Math.Round(drawPosition.Y + area.Position.Y * Scale)));
             }
@@ -599,7 +599,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             WindowTitle = s;
             int length = (int)(WindowTitleFont.MeasureString(s) / Scale);
             int x = FullScreen ? (334 - length - 5) : 5;
-            WindowTitleText = new TextPrimitive(new Point(x, (24-FontHeightWindowTitle)/2), ColorGrey, WindowTitle, WindowTitleFont);
+            WindowTitleText = new TextPrimitive(new Point(x, (24 - FontHeightWindowTitle) / 2), ColorGrey, WindowTitle, WindowTitleFont);
         }
     }
     public class DMIButton : DMIArea
@@ -616,7 +616,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public bool ShowButtonBorder;
         public float FirstPressed;
         public float LastPressed;
-        public DMIButton(string displayName, bool upType, Action pressedAction, int width, int height, DriverMachineInterface dmi, bool showButtonBorder=false) : base(dmi, width, height)
+        public DMIButton(string displayName, bool upType, Action pressedAction, int width, int height, DriverMachineInterface dmi, bool showButtonBorder = false) : base(dmi, width, height)
         {
             DisplayName = displayName;
             Enabled = false;
@@ -682,7 +682,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         readonly string EnabledSymbol;
         TexturePrimitive DisabledTexture;
         TexturePrimitive EnabledTexture;
-        public DMIIconButton(string enabledSymbol, string disabledSymbol, string displayName, bool upType , Action pressedAction, int width, int height, DriverMachineInterface dmi) :
+        public DMIIconButton(string enabledSymbol, string disabledSymbol, string displayName, bool upType, Action pressedAction, int width, int height, DriverMachineInterface dmi) :
             base(displayName, upType, pressedAction, width, height, dmi, true)
         {
             DisabledSymbol = disabledSymbol;
@@ -813,8 +813,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 DrawPosition.Width = DMI.Width;
                 DrawPosition.Height = DMI.Height;
                 DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
-                DrawPosition.X -= DMI.Width/2;
-                DrawPosition.Y -= DMI.Height/2;
+                DrawPosition.X -= DMI.Width / 2;
+                DrawPosition.Y -= DMI.Height / 2;
                 DMI.ETCSDefaultWindow.BackgroundColor = ColorBackground;
             }
             else

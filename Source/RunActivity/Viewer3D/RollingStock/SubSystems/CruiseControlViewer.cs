@@ -15,13 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Xna.Framework;
 using System;
-using System.Collections.Generic;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
-using Orts.Viewer3D.RollingStock;
-using ORTS.Common;
 using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems

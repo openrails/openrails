@@ -18,6 +18,11 @@
 // This file is the responsibility of the 3D & Environment Team.
 #define SHOW_PHYSICS_GRAPHS     //Matej Pacha - if commented, the physics graphs are not ready for public release
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.AIs;
@@ -30,12 +35,6 @@ using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using ORTS.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -213,8 +212,8 @@ namespace Orts.Viewer3D.Popups
                 LocomotiveGraphsThrottle.AddSample(loco.ThrottlePercent * 0.01f);
                 if (locoD != null)
                 {
-                        LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
-                        LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
+                    LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
+                    LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
                 }
                 if (locoE != null)
                 {
@@ -480,7 +479,7 @@ namespace Orts.Viewer3D.Popups
             else if (Viewer.PlayerTrain.IsWheelSlipWarninq)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel slip warning") + "???");
 
-            if (Viewer.PlayerTrain.IsBrakeSkid )
+            if (Viewer.PlayerTrain.IsBrakeSkid)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel skid") + "!!!");
 
             if (Viewer.PlayerLocomotive.GetSanderOn())
@@ -492,7 +491,7 @@ namespace Orts.Viewer3D.Popups
                     TableAddLine(table, Viewer.Catalog.GetString("Sander on") + "???");
             }
 
-                bool flipped = (Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped() ^ (Viewer.PlayerLocomotive as MSTSLocomotive).Flipped;
+            bool flipped = (Viewer.PlayerLocomotive as MSTSLocomotive).GetCabFlipped() ^ (Viewer.PlayerLocomotive as MSTSLocomotive).Flipped;
             var doorLeftOpen = Viewer.PlayerLocomotive.Train.DoorState(flipped ? DoorSide.Right : DoorSide.Left) != DoorState.Closed;
             var doorRightOpen = Viewer.PlayerLocomotive.Train.DoorState(flipped ? DoorSide.Left : DoorSide.Right) != DoorState.Closed;
             if (doorLeftOpen || doorRightOpen)
@@ -531,7 +530,7 @@ namespace Orts.Viewer3D.Popups
             float tonnage = 0f;
             foreach (var car in train.Cars)
             {
-                if(car.WagonType == TrainCar.WagonTypes.Freight || car.WagonType == TrainCar.WagonTypes.Passenger)
+                if (car.WagonType == TrainCar.WagonTypes.Freight || car.WagonType == TrainCar.WagonTypes.Passenger)
                     tonnage += car.MassKG;
             }
             TableSetCells(table, 0,
@@ -646,7 +645,7 @@ namespace Orts.Viewer3D.Popups
             var train = locomotive.Train;
 
             int numberOfDieselLocomotives = 0;
-            for (var i = 0; i<train.Cars.Count; i++)
+            for (var i = 0; i < train.Cars.Count; i++)
             {
                 if (train.Cars[i] is MSTSDieselLocomotive)
                 {
@@ -659,13 +658,13 @@ namespace Orts.Viewer3D.Popups
                 TableAddLines(table, MSTSDieselLocomotive.GetDebugTableBase(numberOfDieselLocomotives));
                 var k = 0;
                 var dpUnitId = 0;
-                for (var i = 0; i<train.Cars.Count; i++)
+                for (var i = 0; i < train.Cars.Count; i++)
                     if (train.Cars[i] is MSTSDieselLocomotive)
                     {
                         k++;
                         var status = (train.Cars[i] as MSTSDieselLocomotive).GetDPDebugStatus().Split('\t');
                         var fence = (dpUnitId != (dpUnitId = train.Cars[i].RemoteControlGroup)) ? "| " : "";
-                        for (var j = 0; j<status.Length; j++)
+                        for (var j = 0; j < status.Length; j++)
                             table.Cells[row + j, 2 * k] = fence + status[j];
                     }
             }
@@ -902,7 +901,7 @@ namespace Orts.Viewer3D.Popups
                             Viewer.Catalog.GetString("Main reservoir"),
                             FormatStrings.FormatPressure((car as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (car as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
                             Viewer.Catalog.GetString("Compressor"),
-                            (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));                            
+                            (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
                         }
                     }
                 }
@@ -1136,7 +1135,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Bear Temp"),
                 Viewer.Catalog.GetString(" "),
                 Viewer.Catalog.GetString("DerailCoeff")
-                
+
                 );
             TableAddLine(table);
 
@@ -1155,8 +1154,8 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 7, "{0}", FormatStrings.FormatForce(car.TunnelForceN, car.IsMetric));
                 TableSetCell(table, 8, "{0}", FormatStrings.FormatForce(car.WindForceN, car.IsMetric));
                 TableSetCell(table, 9, "{0}", FormatStrings.FormatForce(car.CouplerForceU, car.IsMetric));
-                TableSetCell(table, 10, "{0} : {1}", car.GetCouplerRigidIndication() ? "R" : "F", car.CouplerExceedBreakLimit ? "xxx"+"!!!" : car.CouplerOverloaded ? "O/L"+"???" : car.HUDCouplerForceIndication == 1 ? "Pull" : car.HUDCouplerForceIndication == 2 ? "Push" : "-");
-                TableSetCell(table, 11, "{0}", FormatStrings.FormatVeryShortDistanceDisplay( car.CouplerSlackM, car.IsMetric));
+                TableSetCell(table, 10, "{0} : {1}", car.GetCouplerRigidIndication() ? "R" : "F", car.CouplerExceedBreakLimit ? "xxx" + "!!!" : car.CouplerOverloaded ? "O/L" + "???" : car.HUDCouplerForceIndication == 1 ? "Pull" : car.HUDCouplerForceIndication == 2 ? "Push" : "-");
+                TableSetCell(table, 11, "{0}", FormatStrings.FormatVeryShortDistanceDisplay(car.CouplerSlackM, car.IsMetric));
                 TableSetCell(table, 12, "{0}", FormatStrings.FormatLargeMass(car.MassKG, car.IsMetric, car.IsUK));
                 TableSetCell(table, 13, "{0:F2}%", -car.CurrentElevationPercent);
                 TableSetCell(table, 14, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadius, car.IsMetric));

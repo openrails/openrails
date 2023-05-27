@@ -33,8 +33,8 @@ using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
-using Orts.Viewer3D.RollingStock.SubSystems;
 using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
+using Orts.Viewer3D.RollingStock.SubSystems;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -219,7 +219,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlDPBrake, new Action[] { Noop, () => new DPDynamicBrakeCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlDPMore, new Action[] { Noop, () => new DPMoreCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlDPLess, new Action[] { Noop, () => new DPLessCommand(Viewer.Log) });
-            
+
             base.InitializeUserInputCommands();
         }
 
@@ -236,7 +236,7 @@ namespace Orts.Viewer3D.RollingStock
             if (UserInput.IsPressed(UserCommand.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); }
             if (UserInput.IsPressed(UserCommand.DebugToggleAdvancedAdhesion)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); Locomotive.Simulator.UseAdvancedAdhesion = !Locomotive.Simulator.UseAdvancedAdhesion; }
 
-            ExternalDeviceState[] externalDevices = {UserInput.RDState, UserInput.WebDeviceState};
+            ExternalDeviceState[] externalDevices = { UserInput.RDState, UserInput.WebDeviceState };
             foreach (var external in externalDevices)
             {
                 if (external == null) continue;
@@ -404,7 +404,7 @@ namespace Orts.Viewer3D.RollingStock
             if (Locomotive.TrainControlSystem != null && Locomotive.TrainControlSystem.Sounds.Count > 0)
                 foreach (var script in Locomotive.TrainControlSystem.Sounds.Keys)
                 {
-                         Viewer.SoundProcess.RemoveSoundSources(script);
+                    Viewer.SoundProcess.RemoveSoundSources(script);
                 }
             base.Unload();
         }
@@ -499,9 +499,9 @@ namespace Orts.Viewer3D.RollingStock
                                     pickup.Location = new WorldLocation(
                                         worldFile.TileX, worldFile.TileZ,
                                         pickup.Position.X, pickup.Position.Y, pickup.Position.Z);
-                                  if ((wagon.FreightAnimations != null && ((uint)wagon.FreightAnimations.FreightType == pickup.PickupType || wagon.FreightAnimations.FreightType == MSTSWagon.PickupType.None) &&
-                                    (uint)intake.Type == pickup.PickupType)
-                                 || ((uint)intake.Type == pickup.PickupType && (uint)intake.Type > (uint)MSTSWagon.PickupType.FreightSand && (wagon.WagonType == TrainCar.WagonTypes.Tender || wagon is MSTSLocomotive)))
+                                if ((wagon.FreightAnimations != null && ((uint)wagon.FreightAnimations.FreightType == pickup.PickupType || wagon.FreightAnimations.FreightType == MSTSWagon.PickupType.None) &&
+                                  (uint)intake.Type == pickup.PickupType)
+                               || ((uint)intake.Type == pickup.PickupType && (uint)intake.Type > (uint)MSTSWagon.PickupType.FreightSand && (wagon.WagonType == TrainCar.WagonTypes.Tender || wagon is MSTSLocomotive)))
                                 {
                                     if (intake.Type == MSTSWagon.PickupType.Container)
                                     {
@@ -516,7 +516,7 @@ namespace Orts.Viewer3D.RollingStock
                                         intakePosition.X, intakePosition.Y, -intakePosition.Z);
 
                                     var d2 = WorldLocation.GetDistanceSquared(intakeLocation, pickup.Location);
-                                    if (intake.Type == MSTSWagon.PickupType.Container && containerStation != null && 
+                                    if (intake.Type == MSTSWagon.PickupType.Container && containerStation != null &&
                                         (wagon.Train.FrontTDBTraveller.TN.Index == containerStation.TrackNode.Index ||
                                         wagon.Train.RearTDBTraveller.TN.Index == containerStation.TrackNode.Index) &&
                                         d2 < containerStation.MinZSpan * containerStation.MinZSpan)
@@ -586,11 +586,11 @@ namespace Orts.Viewer3D.RollingStock
         public void ImmediateRefill()
         {
             var loco = this.Locomotive;
-            
+
             if (loco == null)
                 return;
-            
-            foreach(var car in loco.Train.Cars)
+
+            foreach (var car in loco.Train.Cars)
             {
                 // There is no need to check for the tender.  The MSTSSteamLocomotive is the primary key in the refueling process when using immediate refueling.
                 // Electric locomotives may have steam heat boilers fitted, and they can refill these
@@ -622,7 +622,7 @@ namespace Orts.Viewer3D.RollingStock
             }
             float distanceToPickupM = GetDistanceToM(match);
             if (match.IntakePoint.LinkedFreightAnim != null && match.IntakePoint.LinkedFreightAnim is FreightAnimationDiscrete)
-                // for container cranes handle distance management using Z span of crane
+            // for container cranes handle distance management using Z span of crane
             {
                 var containerStation = Viewer.Simulator.ContainerManager.ContainerHandlingItems.Where(item => item.Key == match.Pickup.TrItemIDList[0].dbID).Select(item => item.Value).First();
                 if (distanceToPickupM > containerStation.MinZSpan)
@@ -1863,14 +1863,14 @@ namespace Orts.Viewer3D.RollingStock
                     if (Gauge.Orientation == 0)
                     {
                         destX = (int)(xratio * (Control.PositionX)) + (int)(xratio * (zeropos < xpos ? zeropos : xpos));
-//                        destY = (int)(yratio * Control.PositionY);
+                        //                        destY = (int)(yratio * Control.PositionY);
                         destY = (int)(yratio * (Control.PositionY) - (int)(yratio * (Gauge.Direction == 0 && zeropos > xpos ? (zeropos - xpos) * Math.Sin(DrawRotation) : 0)));
                         destW = ((int)(xratio * xpos) - (int)(xratio * zeropos)) * (xpos >= zeropos ? 1 : -1);
                         destH = (int)(yratio * ypos);
                     }
                     else
                     {
-                        destX = (int)(xratio * Control.PositionX) +(int)(xratio * (Gauge.Direction == 0 && ypos > zeropos ? (ypos - zeropos) * Math.Sin(DrawRotation) : 0));
+                        destX = (int)(xratio * Control.PositionX) + (int)(xratio * (Gauge.Direction == 0 && ypos > zeropos ? (ypos - zeropos) * Math.Sin(DrawRotation) : 0));
                         if (Gauge.Direction != 1 && !IsFire)
                             destY = (int)(yratio * (Control.PositionY + zeropos)) + (ypos > zeropos ? (int)(yratio * (zeropos - ypos)) : 0);
                         else
@@ -2166,9 +2166,9 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.CP_HANDLE:
                     if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0
                             || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
-                            index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
-                        else
-                            index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                    else
+                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
                     break;
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_DISPLAY:
                     if (Locomotive.CruiseControl == null)
@@ -2305,7 +2305,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_CC_SELECTED_SPEED:
                 case CABViewControlTypes.ORTS_MULTI_POSITION_CONTROLLER:
                 case CABViewControlTypes.ORTS_ACCELERATION_IN_TIME:
-				case CABViewControlTypes.ORTS_CC_SPEED_DELTA:											  
+                case CABViewControlTypes.ORTS_CC_SPEED_DELTA:
                 case CABViewControlTypes.ORTS_CC_SPEED_0:
                     index = (int)data;
                     break;
@@ -2704,7 +2704,7 @@ namespace Orts.Viewer3D.RollingStock
 
                         break;
                     }
-					case CABViewControlTypes.ORTS_CC_SPEED_DELTA:
+                case CABViewControlTypes.ORTS_CC_SPEED_DELTA:
                     {
                         p = ChangedValue(0);
                         if (p == 1)

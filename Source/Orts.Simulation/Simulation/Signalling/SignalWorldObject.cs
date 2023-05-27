@@ -15,11 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Formats.Msts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Orts.Formats.Msts;
 
 namespace Orts.Simulation.Signalling
 {

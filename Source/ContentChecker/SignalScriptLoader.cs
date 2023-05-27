@@ -17,9 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 using Orts.Formats.Msts;
@@ -65,7 +62,8 @@ namespace ContentChecker
                 FilesLoaded = 0;
                 Console.WriteLine("signal script files can not be loaded independently. Try the option /d");
             }
-            else {
+            else
+            {
                 // we want to load the signal scripts one by one, not as a group
                 var scriptFiles = new List<string>() { Path.GetFileName(file) };
                 var scrfile = new SIGSCRfile(new SignalScripts(_sigcfg.ScriptPath, scriptFiles,

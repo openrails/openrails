@@ -14,11 +14,9 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 
 using Orts.Formats.Msts;
@@ -34,7 +32,7 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     public class DrawMultiplePaths
     {
-        
+
         /// <summary>For each path name, store the full file name of the .pat file</summary>
         Dictionary<string, string> fullPathNames;
         /// <summary>The paths that have already been loaded (.pat file has been read and parsed)</summary>
@@ -43,14 +41,14 @@ namespace ORTS.TrackViewer.Drawing
         Dictionary<Trainpath, DrawPath> drawPaths;
         /// <summary>List of trainpaths that have been selected</summary>
         List<Trainpath> selectedTrainpaths;
-    
+
         private TrackDB trackDB;
         private TrackSectionsFile tsectionDat;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public DrawMultiplePaths (RouteData routeData, Collection<Path> paths)
+        public DrawMultiplePaths(RouteData routeData, Collection<Path> paths)
         {
             this.trackDB = routeData.TrackDB;
             this.tsectionDat = routeData.TsectionDat;
@@ -138,7 +136,7 @@ namespace ORTS.TrackViewer.Drawing
                 drawPaths[trainpath].ColorSchemeLast = shadedColor;
             }
         }
- 
+
         /// <summary>
         /// Draws the paths that have been selected
         /// </summary>

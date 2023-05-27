@@ -15,12 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using GNU.Gettext;
-using Orts.Formats.Msts;
-using Orts.Formats.OR;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using GNU.Gettext;
+using Orts.Formats.OR;
 
 namespace ORTS.Menu
 {

@@ -90,7 +90,7 @@ namespace ORTS.Common
         /// MSTS WFiles represent some location with a position, quaternion and tile coordinates
         /// This converts it to the ORTS WorldPosition representation
         /// </summary>
-        public WorldPosition (int tileX, int tileZ, Vector3 xnaPosition, Quaternion xnaQuaternion)
+        public WorldPosition(int tileX, int tileZ, Vector3 xnaPosition, Quaternion xnaQuaternion)
         {
             XNAMatrix = Matrix.CreateFromQuaternion(xnaQuaternion);
             XNAMatrix *= Matrix.CreateTranslation(xnaPosition);
@@ -397,5 +397,5 @@ namespace ORTS.Common
         {
             return TileX.GetHashCode() ^ TileZ.GetHashCode() ^ Location.GetHashCode();
         }
-	}
+    }
 }

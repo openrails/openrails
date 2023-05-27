@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,6 +24,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using ORTS.Settings;
 
 namespace ORTS.ContentManager
 {

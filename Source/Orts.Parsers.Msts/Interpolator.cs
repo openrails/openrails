@@ -47,7 +47,7 @@ namespace Orts.Parsers.Msts
         {
             X = other.X;
             Y = other.Y;
-            Y2= other.Y2;
+            Y2 = other.Y2;
             Size = other.Size;
         }
         public Interpolator(STFReader stf)
@@ -58,7 +58,7 @@ namespace Orts.Parsers.Msts
                 list.Add(stf.ReadFloat(STFReader.UNITS.Any, null));
             if (list.Count % 2 == 1)
                 STFException.TraceWarning(stf, "Ignoring extra odd value in Interpolator list.");
-            int n = list.Count/2;
+            int n = list.Count / 2;
             if (n < 2)
                 STFException.TraceWarning(stf, "Interpolator must have at least two value pairs.");
             X = new float[n];
@@ -66,8 +66,8 @@ namespace Orts.Parsers.Msts
             Size = n;
             for (int i = 0; i < n; i++)
             {
-                X[i] = list[2*i];
-                Y[i] = list[2*i+1];
+                X[i] = list[2 * i];
+                Y[i] = list[2 * i + 1];
                 if (i > 0 && X[i - 1] >= X[i])
                     STFException.TraceWarning(stf, "Interpolator x values must be increasing.");
             }
@@ -79,30 +79,30 @@ namespace Orts.Parsers.Msts
                 if (x < X[PrevIndex] || x > X[PrevIndex + 1])
                 {
                     if (x < X[1])
-                        PrevIndex= 0;
-                    else if (x > X[Size-2])
-                        PrevIndex= Size-2;
+                        PrevIndex = 0;
+                    else if (x > X[Size - 2])
+                        PrevIndex = Size - 2;
                     else
                     {
-                        int i= 0;
-                        int j= Size-1;
-                        while (j-i > 1)
+                        int i = 0;
+                        int j = Size - 1;
+                        while (j - i > 1)
                         {
-                            int k= (i+j)/2;
+                            int k = (i + j) / 2;
                             if (X[k] > x)
-                                j= k;
+                                j = k;
                             else
-                                i= k;
+                                i = k;
                         }
-                        PrevIndex= i;
+                        PrevIndex = i;
                     }
                 }
-                float d= X[PrevIndex+1] - X[PrevIndex];
-                float a= (X[PrevIndex+1]-x)/d;
-                float b= (x-X[PrevIndex])/d;
-                float y= a*Y[PrevIndex] + b*Y[PrevIndex+1];
-                if (Y2 != null && a>=0 && b>=0)
-                    y+= ((a*a*a-a)*Y2[PrevIndex] + (b*b*b-b)*Y2[PrevIndex+1])*d*d/6;
+                float d = X[PrevIndex + 1] - X[PrevIndex];
+                float a = (X[PrevIndex + 1] - x) / d;
+                float b = (x - X[PrevIndex]) / d;
+                float y = a * Y[PrevIndex] + b * Y[PrevIndex + 1];
+                if (Y2 != null && a >= 0 && b >= 0)
+                    y += ((a * a * a - a) * Y2[PrevIndex] + (b * b * b - b) * Y2[PrevIndex + 1]) * d * d / 6;
                 return y;
             }
             set
@@ -113,7 +113,7 @@ namespace Orts.Parsers.Msts
             }
         }
         public float MinX() { return X[0]; }
-        public float MaxX() { return X[Size-1]; }
+        public float MaxX() { return X[Size - 1]; }
         public float MaxY()
         {
             float x;
@@ -121,10 +121,10 @@ namespace Orts.Parsers.Msts
         }
         public float MaxY(out float x)
         {
-            int maxi= 0;
-            for (int i=1; i<Size; i++)
+            int maxi = 0;
+            for (int i = 1; i < Size; i++)
                 if (Y[maxi] < Y[i])
-                    maxi= i;
+                    maxi = i;
             x = X[maxi];
             return Y[maxi];
         }
@@ -149,50 +149,50 @@ namespace Orts.Parsers.Msts
             if (Y2 != null)
             {
                 for (int i = 0; i < Size; i++)
-                    Y2[i]*= factor;
+                    Y2[i] *= factor;
             }
         }
         public void ComputeSpline()
         {
-            ComputeSpline(null,null);
+            ComputeSpline(null, null);
         }
         public void ComputeSpline(float? yp1, float? yp2)
         {
-            Y2= new float[Size];
-            float[] u= new float[Size];
+            Y2 = new float[Size];
+            float[] u = new float[Size];
             if (yp1 == null)
             {
-                Y2[0]= 0;
-                u[0]= 0;
+                Y2[0] = 0;
+                u[0] = 0;
             }
             else
             {
-                Y2[0]= -.5f;
-                float d= X[1]-X[0];
-                u[0]= 3/d * ((Y[1]-Y[0])/d-yp1.Value);
+                Y2[0] = -.5f;
+                float d = X[1] - X[0];
+                u[0] = 3 / d * ((Y[1] - Y[0]) / d - yp1.Value);
             }
-            for (int i=1; i<Size-1; i++)
+            for (int i = 1; i < Size - 1; i++)
             {
-                float sig= (X[i]-X[i-1]) / (X[i+1]-X[i-1]);
-                float p= sig*Y2[i-1] + 2;
-                Y2[i]= (sig-1)/p;
-                u[i]= (6*((Y[i+1]-Y[i])/(X[i+1]-X[i]) -
-                    (Y[i]-Y[i-1])/(X[i]-X[i-1])) / (X[i+1]-X[i-1]) -
-                    sig*u[i-1]) / p;
+                float sig = (X[i] - X[i - 1]) / (X[i + 1] - X[i - 1]);
+                float p = sig * Y2[i - 1] + 2;
+                Y2[i] = (sig - 1) / p;
+                u[i] = (6 * ((Y[i + 1] - Y[i]) / (X[i + 1] - X[i]) -
+                    (Y[i] - Y[i - 1]) / (X[i] - X[i - 1])) / (X[i + 1] - X[i - 1]) -
+                    sig * u[i - 1]) / p;
             }
             if (yp2 == null)
             {
-                Y2[Size-1]= 0;
+                Y2[Size - 1] = 0;
             }
             else
             {
-                float d= X[Size-1]-X[Size-2];
-                Y2[Size-1]= (3/d *(yp2.Value-(Y[Size-1]-Y[Size-2])/d)- .5f*u[Size-2])/(.5f*Y2[Size-2]+1);
+                float d = X[Size - 1] - X[Size - 2];
+                Y2[Size - 1] = (3 / d * (yp2.Value - (Y[Size - 1] - Y[Size - 2]) / d) - .5f * u[Size - 2]) / (.5f * Y2[Size - 2] + 1);
             }
-            for (int i=Size-2; i>=0; i--)
-                Y2[i]= Y2[i]*Y2[i+1] + u[i];
+            for (int i = Size - 2; i >= 0; i--)
+                Y2[i] = Y2[i] * Y2[i + 1] + u[i];
         }
-        
+
         // restore game state
         public Interpolator(BinaryReader inf)
         {
@@ -229,7 +229,7 @@ namespace Orts.Parsers.Msts
 
         public void test(string label, int n)
         {
-            float dx = (MaxX() - MinX()) / (n-1);
+            float dx = (MaxX() - MinX()) / (n - 1);
             for (int i = 0; i < n; i++)
             {
                 float x = MinX() + i * dx;
@@ -480,9 +480,9 @@ namespace Orts.Parsers.Msts
         public bool AcceptsNegativeValues() { return HasNegativeValues; }
     }
 
-     /// <summary>
-     /// two dimensional Interpolated table lookup - Generic
-     /// </summary>
+    /// <summary>
+    /// two dimensional Interpolated table lookup - Generic
+    /// </summary>
     public class Interpolator2D
     {
         float[] X;  // must be in increasing order

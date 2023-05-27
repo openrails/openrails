@@ -14,10 +14,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ORTS.TrackViewer.Editing
 {
@@ -88,7 +85,7 @@ namespace ORTS.TrackViewer.Editing
         {
 
             int tvnIndex = OriginalNodeAsVector.TvnIndex;
-            if ( (IsFrom && IsConnectingForward) || (!IsFrom && !IsConnectingForward))
+            if ((IsFrom && IsConnectingForward) || (!IsFrom && !IsConnectingForward))
             {
                 // the first junction node of the reconnect path is after the vector node.
                 this.ConnectingJunctionIndex = OriginalNodeAsVector.GetNextJunctionIndex(tvnIndex);
@@ -115,7 +112,8 @@ namespace ORTS.TrackViewer.Editing
             DetermineJunction();
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return "Connectable " + OriginalNode.ToString();
         }
     }
@@ -199,14 +197,15 @@ namespace ORTS.TrackViewer.Editing
             }
 
             ConnectableNode candidate = connectableNodeOptions[0];
-            
-            if (ExistsConnectionSameTrack(fromNode, candidate, firstTvnIndex)) {
+
+            if (ExistsConnectionSameTrack(fromNode, candidate, firstTvnIndex))
+            {
                 ActualReconnectNode = candidate;
                 return true;
             }
 
             return false;
-        
+
         }
 
         /// <summary>
@@ -244,7 +243,7 @@ namespace ORTS.TrackViewer.Editing
             {
                 if (fromAsVector.ForwardOriented == fromAsVector.IsEarlierOnTrackThan(toAsVector)) return false;
             }
-            
+
             return true;
         }
 

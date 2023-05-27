@@ -114,7 +114,7 @@ namespace Orts.Viewer3D.Popups
                             totalDistance += cache.Length;
                         }
                         var nodeIndex = cacheNode.TrackNodeIndex;
-                        while (cacheNode.TrackNodeIndex == nodeIndex && cacheNode.NextSection());
+                        while (cacheNode.TrackNodeIndex == nodeIndex && cacheNode.NextSection()) ;
                     }
 
                     var switchErrorDistance = initialNodeOffset + DisplayDistance + SignalWarningDistance;
@@ -211,7 +211,7 @@ namespace Orts.Viewer3D.Popups
                             }
                             else if (switchObj != null)
                             {
-								primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, objDistance >= switchErrorDistance ? Color.Red : Color.White, String.Format("Switch ({0}, {1}-way, {2} set)", switchObj.TrackNode.Index, switchObj.TrackNode.Outpins, switchObj.TrackNode.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefaultOutlined));
+                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, objDistance >= switchErrorDistance ? Color.Red : Color.White, String.Format("Switch ({0}, {1}-way, {2} set)", switchObj.TrackNode.Index, switchObj.TrackNode.Outpins, switchObj.TrackNode.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefaultOutlined));
                             }
                             else if (signalObj != null)
                             {
@@ -361,7 +361,8 @@ namespace Orts.Viewer3D.Popups
             Signal,
         }
 
-        public class TrackSectionCacheEntry {
+        public class TrackSectionCacheEntry
+        {
             public int Age;
             public Traveller.TravellerDirection Direction;
             public float Length;

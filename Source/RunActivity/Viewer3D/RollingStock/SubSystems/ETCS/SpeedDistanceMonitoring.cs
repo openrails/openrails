@@ -17,15 +17,14 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Simulation.RollingStocks;
-using Orts.Viewer3D.Popups;
-using ORTS.Common;
-using ORTS.Scripting.Api.ETCS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Viewer3D.Popups;
+using ORTS.Common;
+using ORTS.Scripting.Api.ETCS;
 using static Orts.Viewer3D.RollingStock.Subsystems.ETCS.DriverMachineInterface;
 
 namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
@@ -536,7 +535,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             if (status.CurrentMode == Mode.OS || status.CurrentMode == Mode.SR) return;
 
             float dist = status.TargetDistanceM.Value;
-            
+
             var text = (((int)(dist / 10)) * 10).ToString();
             var fontSize = TargetDistanceFont.MeasureString(text) / Scale;
             TargetDistanceText = new TextPrimitive(new Point((int)(54 - fontSize), (int)(30 - FontHeightTargetDistance) / 2), ColorGrey, text, TargetDistanceFont);

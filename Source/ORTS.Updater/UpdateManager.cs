@@ -15,10 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Ionic.Zip;
-using Newtonsoft.Json;
-using ORTS.Common;
-using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -34,6 +30,10 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Ionic.Zip;
+using Newtonsoft.Json;
+using ORTS.Common;
+using ORTS.Settings;
 
 namespace ORTS.Updater
 {

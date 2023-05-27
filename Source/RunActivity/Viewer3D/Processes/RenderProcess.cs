@@ -17,13 +17,13 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using System.Diagnostics;
+using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Processes;
 using ORTS.Common;
-using System;
-using System.Diagnostics;
-using System.Windows.Forms;
 using static ORTS.Settings.UserSettings;
 
 namespace Orts.Viewer3D.Processes

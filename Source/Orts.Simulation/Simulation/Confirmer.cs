@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ORTS.Common;
 using System;
 using System.Diagnostics;
+using ORTS.Common;
 
 namespace Orts.Simulation
 {
@@ -27,11 +27,12 @@ namespace Orts.Simulation
         [GetString("Information")] Information,
         [GetString("Warning")] Warning,
         [GetString("Error")] Error,
-		[GetString("MSG")] MSG,
+        [GetString("MSG")] MSG,
     };
 
     // <CJComment> Some of these are not cab controls or even controls. However they all make good use of structured text. </CJComment>
-    public enum CabControl {
+    public enum CabControl
+    {
         None
         // Power
       , Reverser
@@ -122,7 +123,8 @@ namespace Orts.Simulation
       , CabRadio
     }
 
-    public enum CabSetting {
+    public enum CabSetting
+    {
         Name        // name of control
         , Off       // 2 or 3 state control/reset/initialise
         , Neutral   // 2 or 3 state control
@@ -162,7 +164,7 @@ namespace Orts.Simulation
         // be replaced with French and other languages.
         //
         //                      control, off/reset/initialize, neutral, on/apply/switch, decrease, increase, warn
-        readonly string[][] ConfirmText; 
+        readonly string[][] ConfirmText;
 
         readonly Simulator Simulator;
         readonly double DefaultDurationS;
@@ -182,12 +184,12 @@ namespace Orts.Simulation
             ConfirmText = new string[][] {
                 new string [] { GetString("<none>") } 
                 // Power
-                , new string [] { GetParticularString("NonSteam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
-                , new string [] { GetString("Throttle"), null, null, null, GetString("close"), GetString("open"), GetString("locked. Release dynamic brake then re-try.") } 
+                , new string [] { GetParticularString("NonSteam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") }
+                , new string [] { GetString("Throttle"), null, null, null, GetString("close"), GetString("open"), GetString("locked. Release dynamic brake then re-try.") }
                 , new string [] { GetString("Wheel-slip"), GetString("over"), null, GetString("occurring. Tractive power greatly reduced."), null, null, GetString("warning") } 
                 // Electric power
                 , new string [] { GetString("Power"), GetString("off"), null, GetString("on") }
-                , new string [] { GetString("Pantograph 1"), GetString("lower"), null, GetString("raise") } 
+                , new string [] { GetString("Pantograph 1"), GetString("lower"), null, GetString("raise") }
                 , new string [] { GetString("Pantograph 2"), GetString("lower"), null, GetString("raise") }
                 , new string [] { GetString("Pantograph 3"), GetString("lower"), null, GetString("raise") }
                 , new string [] { GetString("Pantograph 4"), GetString("lower"), null, GetString("raise") }
@@ -201,50 +203,50 @@ namespace Orts.Simulation
                 , new string [] { GetString("Boiler Water Tank"), null, null, GetString("re-fueled"), null, GetString("level") }
                 , new string [] { GetString("Traction cut-off relay"), GetString("open"), null, GetString("close") }
                 // Steam power
-                , new string [] { GetParticularString("Steam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
+                , new string [] { GetParticularString("Steam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") }
                 , new string [] { GetString("Regulator"), null, null, null, GetString("close"), GetString("open") }    // Throttle for steam locomotives
-                , new string [] { GetString("Injector 1"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") } 
+                , new string [] { GetString("Injector 1"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") }
                 , new string [] { GetString("Injector 2"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") }
                 , new string [] { GetString("Blowdown Valve"), GetString("close"), null, GetString("open") }
-                , new string [] { GetString("Blower"), null, null, null, GetString("decrease"), GetString("increase") } 
-                , new string [] { GetString("SteamHeat"), null, null, null, GetString("decrease"), GetString("increase") } 
-                , new string [] { GetString("Damper"), null, null, null, GetString("close"), GetString("open") } 
+                , new string [] { GetString("Blower"), null, null, null, GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("SteamHeat"), null, null, null, GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("Damper"), null, null, null, GetString("close"), GetString("open") }
                 , new string [] { GetString("Firebox Door"), null, null, null, GetString("close"), GetString("open") }
-                , new string [] { GetString("Firing Rate"), null, null, null, GetString("decrease"), GetString("increase") } 
-                , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") } 
-                , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") } 
-                , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") } 
+                , new string [] { GetString("Firing Rate"), null, null, null, GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") }
+                , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("LargeEjector"), null, null, null, GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("VacuumExhauster"), GetString("normal"), null, GetString("fast") }
-                , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 
+                , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") }
                 , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") }
                 // General
                 , new string [] { GetString("Water Scoop"), GetString("up"), null, GetString("down") }
                 // Braking
-                , new string [] { GetString("Train Brake"), null, null, null, GetString("release"), GetString("apply") } 
+                , new string [] { GetString("Train Brake"), null, null, null, GetString("release"), GetString("apply") }
                 , new string [] { GetString("Engine Brake"), null, null, null, GetString("release"), GetString("apply") }
                 , new string [] { GetString("Brakeman Brake"), null, null, null, GetString("release"), GetString("apply") }
                 , new string [] { GetString("Dynamic Brake"), GetString("off"), null, GetString("setup"), GetString("decrease"), GetString("increase") }
-                , new string [] { GetString("Emergency Brake"), GetString("release"), null, GetString("apply") } 
-                , new string [] { GetString("Bail Off"), GetString("disengage"), null, GetString("engage") } 
-                , new string [] { GetString("Brakes"), GetString("initialize"), null, null, null, null, GetString("cannot initialize. Stop train then re-try.") } 
-                , new string [] { GetString("Handbrake"), GetString("none"), null, GetString("full") } 
-                , new string [] { GetString("Retainers"), GetString("off"), null, GetString("on"), null, null, null, null, GetString("Exhaust"), GetString("High Pressure"), GetString("Low Pressure"), GetString("Slow Direct") } 
+                , new string [] { GetString("Emergency Brake"), GetString("release"), null, GetString("apply") }
+                , new string [] { GetString("Bail Off"), GetString("disengage"), null, GetString("engage") }
+                , new string [] { GetString("Brakes"), GetString("initialize"), null, null, null, null, GetString("cannot initialize. Stop train then re-try.") }
+                , new string [] { GetString("Handbrake"), GetString("none"), null, GetString("full") }
+                , new string [] { GetString("Retainers"), GetString("off"), null, GetString("on"), null, null, null, null, GetString("Exhaust"), GetString("High Pressure"), GetString("Low Pressure"), GetString("Slow Direct") }
                 , new string [] { GetString("Brake Hose"), GetString("disconnect"), null, GetString("connect") }
                 , new string [] { GetString("Quick Release"), GetString("off"), null, GetString("on") }
                 , new string [] { GetString("Overcharge"), GetString("off"), null, GetString("on") }
                 // Cab Devices
-                , new string [] { GetString("Sander"), GetString("off"), null, GetString("on") } 
-                , new string [] { GetString("Alerter"), GetString("acknowledge"), null, GetParticularString("Alerter", "sound") } 
-                , new string [] { GetString("Horn"), GetString("off"), null, GetParticularString("Horn", "sound") } 
+                , new string [] { GetString("Sander"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("Alerter"), GetString("acknowledge"), null, GetParticularString("Alerter", "sound") }
+                , new string [] { GetString("Horn"), GetString("off"), null, GetParticularString("Horn", "sound") }
                 , new string [] { GetString("Whistle"), GetString("off"), null, GetString("blow") }        // Horn for steam locomotives
-                , new string [] { GetString("Bell"), GetString("off"), null, GetString("ring") } 
-                , new string [] { GetString("Headlight"), GetString("off"), GetString("dim"), GetString("bright") } 
-                , new string [] { GetString("Cab Light"), GetString("off"), null, GetString("on") } 
-                , new string [] { GetString("Wipers"), GetString("off"), null, GetString("on") } 
-                , new string [] { GetString("Cab"), null, null, GetParticularString("Cab", "change"), null, null, GetString("changing is not available"), GetString("changing disabled. Close throttle, set reverser to neutral, stop train then re-try.") } 
+                , new string [] { GetString("Bell"), GetString("off"), null, GetString("ring") }
+                , new string [] { GetString("Headlight"), GetString("off"), GetString("dim"), GetString("bright") }
+                , new string [] { GetString("Cab Light"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("Wipers"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("Cab"), null, null, GetParticularString("Cab", "change"), null, null, GetString("changing is not available"), GetString("changing disabled. Close throttle, set reverser to neutral, stop train then re-try.") }
                 , new string [] { GetString("Odometer"), null, null, GetParticularString("Odometer", "reset"), GetParticularString("Odometer", "counting down"), GetParticularString("Odometer", "counting up") }
                 , new string [] { GetString("Battery"), GetString("off"), null, GetString("on") }
                 , new string [] { GetString("Master key"), GetString("off"), null, GetString("on") }
@@ -252,18 +254,18 @@ namespace Orts.Simulation
                 , new string [] { GetString("Max acceleration"), null, null, null }
                 , new string [] { GetString("Restricted speed zone"), GetString("off"), null, GetString("on") }
                 // Train Devices
-                , new string [] { GetString("Doors Left"), GetString("close"), null, GetString("open") } 
-                , new string [] { GetString("Doors Right"), GetString("close"), null, GetString("open") } 
+                , new string [] { GetString("Doors Left"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("Doors Right"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("Mirror"), GetString("retract"), null, GetString("extend") } 
                 // Track Devices
-                , new string [] { GetString("Switch Ahead"), null, null, GetParticularString("Switch", "change"), null, null, GetString("locked. Use Control+M to change signals to manual mode then re-try.") } 
+                , new string [] { GetString("Switch Ahead"), null, null, GetParticularString("Switch", "change"), null, null, GetString("locked. Use Control+M to change signals to manual mode then re-try.") }
                 , new string [] { GetString("Switch Behind"), null, null, GetParticularString("Switch", "change"), null, null, GetString("locked. Use Control+M to change signals to manual mode then re-try.") } 
                 // Simulation
-                , new string [] { GetString("Simulation Speed"), GetString("reset"), null, null, GetString("decrease"), GetString("increase") } 
-                , new string [] { GetString("Uncouple After") } 
-                , new string [] { GetString("Activity"), GetString("quit"), null, GetString("resume") } 
-                , new string [] { GetString("Replay"), null, null, null, null, null, GetString("Overriding camera replay. Press Escape to resume camera replay.") } 
-                , new string [] { GetString("Gearbox"), null, null, null, GetString("down"), GetString("up"), GetString("locked. Use shaft before changing gear.") } 
+                , new string [] { GetString("Simulation Speed"), GetString("reset"), null, null, GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("Uncouple After") }
+                , new string [] { GetString("Activity"), GetString("quit"), null, GetString("resume") }
+                , new string [] { GetString("Replay"), null, null, null, null, null, GetString("Overriding camera replay. Press Escape to resume camera replay.") }
+                , new string [] { GetString("Gearbox"), null, null, null, GetString("down"), GetString("up"), GetString("locked. Use shaft before changing gear.") }
                 , new string [] { GetString("Signal mode"), GetString("manual"), null, GetString("auto"), null, null, GetString("locked. Stop train, then re-try.") } 
                 // Freight Load
                 , new string [] { GetString("Wagon"), GetString("Wagon fully unloaded"), null, GetString("Wagon fully loaded"), null, GetString("Freight load") }
@@ -281,7 +283,8 @@ namespace Orts.Simulation
             Message(control, Simulator.Catalog.GetString("{0} {1}"), ConfirmText[(int)control][0], text);
         }
 
-        public void Confirm( CabControl control, CabSetting setting ) {
+        public void Confirm(CabControl control, CabSetting setting)
+        {
             Message(control, Simulator.Catalog.GetString("{0}"), ConfirmText[(int)control][(int)setting]);
         }
 
@@ -350,11 +353,11 @@ namespace Orts.Simulation
             Message(CabControl.None, ConfirmLevel.Information, message);
         }
 
-		public void MSG(string message)
-		{
-			Message(CabControl.None, ConfirmLevel.MSG, message);
-		}
-		
+        public void MSG(string message)
+        {
+            Message(CabControl.None, ConfirmLevel.MSG, message);
+        }
+
         public void Warning(string message)
         {
             Message(CabControl.None, ConfirmLevel.Warning, message);
@@ -409,19 +412,19 @@ namespace Orts.Simulation
                 format = "{1} - " + format;
 
             // message displays longer if more severe
-			var duration = DefaultDurationS;
-			if (level >= ConfirmLevel.Warning) duration *= 2;
-			if (level >= ConfirmLevel.MSG) duration *= 5;
+            var duration = DefaultDurationS;
+            if (level >= ConfirmLevel.Warning) duration *= 2;
+            if (level >= ConfirmLevel.MSG) duration *= 5;
 
             if (DisplayMessage != null)
                 DisplayMessage(
-                    this, 
+                    this,
                     new DisplayMessageEventArgs(
-                        key: String.Format("{0}/{1}", control, level), 
+                        key: String.Format("{0}/{1}", control, level),
                         text: String.Format(
-                            format, 
-                            ConfirmText[(int)control][0], 
-                            Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(level)), message), 
+                            format,
+                            ConfirmText[(int)control][0],
+                            Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(level)), message),
                         duration));
         }
     }

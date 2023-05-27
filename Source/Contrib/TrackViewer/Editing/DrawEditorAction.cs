@@ -36,7 +36,7 @@ namespace ORTS.TrackViewer.Editing
             lowerLeft = new Vector2(xLowerLeft, yLowerLeft);
         }
 
-    
+
         /// <summary>
         /// Draw (print) the values of longitude and latitude
         /// </summary>
@@ -44,7 +44,7 @@ namespace ORTS.TrackViewer.Editing
         public void Draw(PathEditor editor)
         {
             if (editor == null) { return; }
-            if (!Properties.Settings.Default.showEditorAction) { return;}
+            if (!Properties.Settings.Default.showEditorAction) { return; }
             BasicShapes.DrawString(lowerLeft, DrawColors.colorsNormal.Text, editor.CurrentActionDescription);
         }
     }

@@ -17,10 +17,10 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System.Linq;
 using Microsoft.Xna.Framework.Input;
 using Orts.MultiPlayer;
 using ORTS.Common;
-using System.Linq;
 
 namespace Orts.Viewer3D.Popups
 {

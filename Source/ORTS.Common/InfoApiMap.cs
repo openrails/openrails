@@ -21,7 +21,8 @@ using ORTS.Common;
 
 namespace Orts.Common
 {
-    public enum TypeOfPointOnApiMap {
+    public enum TypeOfPointOnApiMap
+    {
         Track,
         Named,
         Rest
@@ -53,7 +54,7 @@ namespace Orts.Common
         public float LonMin;
         public float LonMax;
 
-        public InfoApiMap(string powerSupplyName) 
+        public InfoApiMap(string powerSupplyName)
         {
             InitTypeOfLocomotive(powerSupplyName);
 

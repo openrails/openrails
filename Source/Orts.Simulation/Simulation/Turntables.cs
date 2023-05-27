@@ -15,19 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using Orts.Formats.Msts;
-using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks;
-using Orts.Simulation.Signalling;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using Microsoft.Xna.Framework;
+using Orts.Parsers.Msts;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.Signalling;
+using ORTS.Common;
 
 namespace Orts.Simulation
 {
@@ -148,7 +145,7 @@ namespace Orts.Simulation
             outf.Write(vector.Z);
         }
 
-                /// <summary>
+        /// <summary>
         /// Restores the general variable parameters
         /// Called from within the Simulator class.
         /// </summary>
@@ -307,7 +304,7 @@ namespace Orts.Simulation
         }
 
 
-        public virtual void StartContinuous (bool isClockwise)
+        public virtual void StartContinuous(bool isClockwise)
         {
 
         }
@@ -843,7 +840,7 @@ namespace Orts.Simulation
         public void TargetExactlyReached()
         {
             Traveller.TravellerDirection direction = ForwardConnected ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward;
-            direction = SaveForwardConnected ^ !MyTrackNodesOrientation[ConnectedTrackEnd]? direction : (direction == Traveller.TravellerDirection.Forward ? Traveller.TravellerDirection.Backward : Traveller.TravellerDirection.Forward);
+            direction = SaveForwardConnected ^ !MyTrackNodesOrientation[ConnectedTrackEnd] ? direction : (direction == Traveller.TravellerDirection.Forward ? Traveller.TravellerDirection.Backward : Traveller.TravellerDirection.Forward);
             GoToTarget = false;
             if (TrainsOnMovingTable.Count == 1)
             {
@@ -864,8 +861,8 @@ namespace Orts.Simulation
             if ((ForwardConnected || RearConnected) && MyTrVectorSectionsIndex[ConnectedTrackEnd] != -1 && MyTrackNodesIndex[ConnectedTrackEnd] != -1 &&
                 (MyTrackNodesIndex[ConnectedTrackEnd] == train.FrontTDBTraveller.TN.Index || MyTrackNodesIndex[ConnectedTrackEnd] == train.RearTDBTraveller.TN.Index))
             {
-            direction = ForwardConnected ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward;
-            return true;
+                direction = ForwardConnected ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward;
+                return true;
             }
             direction = Traveller.TravellerDirection.Forward;
             return false;
@@ -900,7 +897,7 @@ namespace Orts.Simulation
         /// PerformUpdateActions: actions to be performed at every animation step
         /// </summary>
         /// 
-        public void PerformUpdateActions ( Matrix absAnimationMatrix)
+        public void PerformUpdateActions(Matrix absAnimationMatrix)
         {
             RotateTrain(absAnimationMatrix);
             if ((GoToTarget || GoToAutoTarget) && TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].Train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
@@ -918,7 +915,7 @@ namespace Orts.Simulation
         public bool BackOnBoard;
         public Simulator Simulator;
 
-        public TrainOnMovingTable (Train train, Simulator simulator)
+        public TrainOnMovingTable(Train train, Simulator simulator)
         {
             Train = train;
             Simulator = simulator;
@@ -929,7 +926,7 @@ namespace Orts.Simulation
             Simulator = simulator;
         }
 
-        public void Save (BinaryWriter outf)
+        public void Save(BinaryWriter outf)
         {
             outf.Write(Train.Number);
             outf.Write(FrontOnBoard);
@@ -943,7 +940,7 @@ namespace Orts.Simulation
             BackOnBoard = inf.ReadBoolean();
         }
 
-        public void SetFrontState (bool frontOnBoard)
+        public void SetFrontState(bool frontOnBoard)
         {
             FrontOnBoard = frontOnBoard;
         }

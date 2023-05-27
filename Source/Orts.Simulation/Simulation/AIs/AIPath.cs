@@ -22,14 +22,14 @@
  * Could this be used for player trains also?
  * 
  */
-using Orts.Formats.Msts;
-using Orts.Formats.OR;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Orts.Formats.Msts;
+using Orts.Formats.OR;
+using ORTS.Common;
 
 namespace Orts.Simulation.AIs
 {
@@ -88,7 +88,7 @@ namespace Orts.Simulation.AIs
                 if (tpn.HasNextMainNode)
                 {
                     node.NextMainNode = Nodes[(int)tpn.nextMainNode];
-                    node.NextMainTVNIndex = node.FindTVNIndex(node.NextMainNode, TDB, tsectiondat, i == 0 ? -1 : Nodes[i-1].NextMainTVNIndex );
+                    node.NextMainTVNIndex = node.FindTVNIndex(node.NextMainNode, TDB, tsectiondat, i == 0 ? -1 : Nodes[i - 1].NextMainTVNIndex);
                     if (node.JunctionIndex >= 0)
                         node.IsFacingPoint = TestFacingPoint(node.JunctionIndex, node.NextMainTVNIndex);
                     if (node.NextMainTVNIndex < 0)
@@ -292,7 +292,7 @@ namespace Orts.Simulation.AIs
         /// Constructor from other AIPathNode
         /// </summary>
         /// <param name="otherNode"></param>
-        
+
         public AIPathNode(AIPathNode otherNode)
         {
             ID = otherNode.ID;
@@ -348,34 +348,34 @@ namespace Orts.Simulation.AIs
             }
 
             WaitTimeS = (int)((tpn.pathFlags >> 16) & 0xffff); // get the AAAA part.
-            // computations for absolute wait times are made within AITrain.cs
-/*            if (WaitTimeS >= 30000 && WaitTimeS < 40000)
-            {
-                // real wait time. 
-                // waitTimeS (in decimal notation) = 3HHMM  (hours and minuts)
-                int hour = (WaitTimeS / 100) % 100;
-                int minute = WaitTimeS % 100;
-                WaitUntil = 60 * (minute + 60 * hour);
-                WaitTimeS = 0;
-            }*/
+                                                               // computations for absolute wait times are made within AITrain.cs
+            /*            if (WaitTimeS >= 30000 && WaitTimeS < 40000)
+                        {
+                            // real wait time. 
+                            // waitTimeS (in decimal notation) = 3HHMM  (hours and minuts)
+                            int hour = (WaitTimeS / 100) % 100;
+                            int minute = WaitTimeS % 100;
+                            WaitUntil = 60 * (minute + 60 * hour);
+                            WaitTimeS = 0;
+                        }*/
             // computations are made within AITrain.cs
-/*            else if (WaitTimeS >= 40000 && WaitTimeS < 60000)
-            {
-                // Uncouple if a wait=stop point
-                // waitTimeS (in decimal notation) = 4NNSS (uncouple NN cars, wait SS seconds)
-                //                                or 5NNSS (uncouple NN cars, keep rear, wait SS seconds)
-                NCars = (WaitTimeS / 100) % 100;
-                if (WaitTimeS >= 50000)
-                    NCars = -NCars;
-                WaitTimeS %= 100;
-                if (Type == AIPathNodeType.Stop)
-                    Type = AIPathNodeType.Uncouple;
-            }
-            else if (WaitTimeS >= 60000)  // this is old and should be removed/reused
-            {
-                // waitTimes = 6xSSS  with waitTime SSS seconds.
-                WaitTimeS %= 1000;
-            } */
+            /*            else if (WaitTimeS >= 40000 && WaitTimeS < 60000)
+                        {
+                            // Uncouple if a wait=stop point
+                            // waitTimeS (in decimal notation) = 4NNSS (uncouple NN cars, wait SS seconds)
+                            //                                or 5NNSS (uncouple NN cars, keep rear, wait SS seconds)
+                            NCars = (WaitTimeS / 100) % 100;
+                            if (WaitTimeS >= 50000)
+                                NCars = -NCars;
+                            WaitTimeS %= 100;
+                            if (Type == AIPathNodeType.Stop)
+                                Type = AIPathNodeType.Uncouple;
+                        }
+                        else if (WaitTimeS >= 60000)  // this is old and should be removed/reused
+                        {
+                            // waitTimes = 6xSSS  with waitTime SSS seconds.
+                            WaitTimeS %= 1000;
+                        } */
 
         }
 

@@ -75,13 +75,13 @@ namespace Orts.Simulation.Timetables
                     switch (poolInfo.Strings[lineindex][0].ToLower().Trim())
                     {
                         // skip comment
-                        case "#comment" :
+                        case "#comment":
                             lineindex++;
                             break;
-                         
+
                         // process name
                         // do not increase lineindex as that is done in called method
-                        case "#name" :
+                        case "#name":
                             TimetablePool newPool = new TimetablePool(poolInfo, ref lineindex, simulator);
                             // store if valid pool
                             if (!String.IsNullOrEmpty(newPool.PoolName))
@@ -97,7 +97,7 @@ namespace Orts.Simulation.Timetables
                             }
                             break;
 
-                        default :
+                        default:
                             if (!String.IsNullOrEmpty(poolInfo.Strings[lineindex][0]))
                             {
                                 Trace.TraceInformation("Invalid definition in file " + filePath + " at line " + lineindex + " : " +

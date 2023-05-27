@@ -16,8 +16,8 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using Microsoft.Xna.Framework;
-using ORTS.Common;
 using Orts.Common;
+using ORTS.Common;
 
 namespace ORTS.TrackViewer.Drawing
 {
@@ -48,15 +48,15 @@ namespace ORTS.TrackViewer.Drawing
         public void Draw(WorldLocation mstsLocation)
         {
             if (!Properties.Settings.Default.showLonLat) return;
-            
+
             double latitude = 1f;
             double longitude = 1f;
             worldLoc.ConvertWTC(mstsLocation.TileX, mstsLocation.TileZ, mstsLocation.Location, ref latitude, ref longitude);
             string latitudeDegrees = MathHelper.ToDegrees((float)latitude).ToString("F5", System.Globalization.CultureInfo.CurrentCulture);
             string longitudeDegrees = MathHelper.ToDegrees((float)longitude).ToString("F5", System.Globalization.CultureInfo.CurrentCulture);
-            string locationText = String.Format(System.Globalization.CultureInfo.CurrentCulture, 
+            string locationText = String.Format(System.Globalization.CultureInfo.CurrentCulture,
                 "Lon = {0}; Lat = {1}", longitudeDegrees, latitudeDegrees);
-            BasicShapes.DrawString(lowerLeft, DrawColors.colorsNormal.Text, locationText);           
+            BasicShapes.DrawString(lowerLeft, DrawColors.colorsNormal.Text, locationText);
         }
     }
 }

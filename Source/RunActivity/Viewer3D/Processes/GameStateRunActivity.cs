@@ -18,6 +18,14 @@
 // Define this to include extra data on loading performance and progress indications.
 //#define DEBUG_LOADING
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
@@ -27,14 +35,6 @@ using Orts.Simulation;
 using Orts.Viewer3D.Debugging;
 using ORTS.Common;
 using ORTS.Settings;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace Orts.Viewer3D.Processes
 {
@@ -64,14 +64,14 @@ namespace Orts.Viewer3D.Processes
         /// *.evaluation.txt for the text evaluation if an activity evaluation has been requested.
         /// </summary>
         public class SaveSet
-        { 
+        {
             public string FileStem { get; }
 
-        // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
-        // that are likely to match the previously chosen route and activity.
-        // Append the current date and time, so that each file is unique.
-        // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which is not valid in filenames.
-        public SaveSet()
+            // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
+            // that are likely to match the previously chosen route and activity.
+            // Append the current date and time, so that each file is unique.
+            // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which is not valid in filenames.
+            public SaveSet()
             {
                 FileStem = String.Format("{0} {1} {2:yyyy-MM-dd HH.mm.ss}",
                     Simulator.Activity != null
@@ -138,7 +138,7 @@ namespace Orts.Viewer3D.Processes
                 frame.AddPrimitive(LoadingBar.Material, LoadingBar, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
             }
 
-            if (Simulator != null && Simulator.TimetableMode && TimetableLoadingBar != null 
+            if (Simulator != null && Simulator.TimetableMode && TimetableLoadingBar != null
                 && Simulator.TimetableLoadedFraction < 0.99f    // 0.99 to hide loading bar at end of timetable pre-run
             )
             {
@@ -162,7 +162,7 @@ namespace Orts.Viewer3D.Processes
 
             // Look for an action to perform.
             var action = "";
-            var actions = new[] { "start", "resume", "replay", "replay_from_save", "test"};
+            var actions = new[] { "start", "resume", "replay", "replay_from_save", "test" };
             foreach (var possibleAction in actions)
                 if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction, StringComparer.OrdinalIgnoreCase))
                 {
@@ -351,7 +351,7 @@ namespace Orts.Viewer3D.Processes
             {
                 Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
                 // wait 5 seconds to see if you get a reply from server with updated position/consist data, else go on
-               
+
                 System.Threading.Thread.Sleep(5000);
                 if (Simulator.Trains[0].jumpRequested)
                 {
@@ -374,7 +374,7 @@ namespace Orts.Viewer3D.Processes
         {
             if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) return; //no save for multiplayer sessions yet
             if (ContainerManager.ActiveOperationsCounter > 0)
-                // don't save if performing a container load/unload
+            // don't save if performing a container load/unload
             {
                 Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Game save is not allowed during container load/unload"));
                 return;
@@ -418,7 +418,7 @@ namespace Orts.Viewer3D.Processes
                 Viewer.Save(outf, saveSet.FileStem);
                 // Save multiplayer parameters
                 if (MPManager.IsMultiPlayer() && MPManager.IsServer())
-                    MPManager.OnlineTrains.Save (outf);
+                    MPManager.OnlineTrains.Save(outf);
 
                 SaveEvaluation(outf);
 
@@ -437,7 +437,7 @@ namespace Orts.Viewer3D.Processes
 
             // Copy the evaluation file to the save folder
             if (File.Exists(Program.EvaluationFilename))
-                File.Copy(Program.EvaluationFilename, Path.Combine(UserSettings.UserDataFolder, saveSet.FileStem + ".evaluation.txt"), true); 
+                File.Copy(Program.EvaluationFilename, Path.Combine(UserSettings.UserDataFolder, saveSet.FileStem + ".evaluation.txt"), true);
         }
 
         private static void SaveEvaluation(BinaryWriter outf)
@@ -1171,7 +1171,7 @@ namespace Orts.Viewer3D.Processes
         {
             if (!HasExtension(path, ".act"))
                 return null;
-            
+
             ActivityFile act = null;
             try
             {
@@ -1340,7 +1340,7 @@ namespace Orts.Viewer3D.Processes
             {
                 Material.Dispose();
             }
-            
+
             public override void Draw(GraphicsDevice graphicsDevice)
             {
                 graphicsDevice.SetVertexBuffer(VertexBuffer);
@@ -1389,7 +1389,7 @@ namespace Orts.Viewer3D.Processes
 
         class LoadingBarPrimitive : LoadingPrimitive
         {
-            public LoadingBarPrimitive(Game game )
+            public LoadingBarPrimitive(Game game)
                 : base(game)
             {
             }

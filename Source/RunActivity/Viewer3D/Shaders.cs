@@ -124,8 +124,8 @@ namespace Orts.Viewer3D
             projection.SetValue(p);
 
             int vIn = Program.Simulator.Settings.DayAmbientLight;
-            
-            float FullBrightness = (float)vIn / 20.0f ;
+
+            float FullBrightness = (float)vIn / 20.0f;
             //const float HalfShadowBrightness = 0.75;
             const float HalfNightBrightness = 0.6f;
             const float ShadowBrightness = 0.5f;
@@ -334,7 +334,7 @@ namespace Orts.Viewer3D
                 var skyColor1 = Day2Night(0.25f, -0.25f, -0.5f, value.Y);
                 var skyColor2 = MathHelper.Clamp(skyColor1 + 0.55f, 0, 1);
                 var skyColor3 = 0.001f / (0.8f * Math.Abs(value.Y - 0.1f));
-                skyColor.SetValue(new Vector3(skyColor1, skyColor2, skyColor3)); 
+                skyColor.SetValue(new Vector3(skyColor1, skyColor2, skyColor3));
 
                 // Fade moon during daylight
                 var moonColor1 = value.Y > 0.1f ? (1 - value.Y) / 1.5f : 1;
@@ -363,9 +363,9 @@ namespace Orts.Viewer3D
         int _moonPhase;
         public float Random
         {
-            set 
-            { 
-                _moonPhase = (int)value; 
+            set
+            {
+                _moonPhase = (int)value;
                 moonTexCoord.SetValue(new Vector2((value % 2) / 2, (int)(value / 2) / 4));
             }
         }
@@ -386,7 +386,7 @@ namespace Orts.Viewer3D
 
         public float WindDirection
         {
-            set 
+            set
             {
                 var totalWindDisplacement = 50 * WindSpeed * _time; // This exaggerates the wind speed, but it is necessary to get a visible effect
                 windDisplacement.SetValue(new Vector2(-(float)Math.Sin(value) * totalWindDisplacement, (float)Math.Cos(value) * totalWindDisplacement));
@@ -442,14 +442,14 @@ namespace Orts.Viewer3D
             moonMaskTexture = Parameters["MoonMaskTexture"];
             cloudMapTexture = Parameters["CloudMapTexture"];
         }
-        
+
 
         // This function dims the lighting at night, with a transition period as the sun rises or sets
         static float Day2Night(float startNightTrans, float finishNightTrans, float minDarknessCoeff, float sunDirectionY)
         {
             int vIn = Program.Simulator.Settings.DayAmbientLight;
-            float dayAmbientLight = (float)vIn / 20.0f ;
-              
+            float dayAmbientLight = (float)vIn / 20.0f;
+
             // The following two are used to interpoate between day and night lighting (y = mx + b)
             var slope = (dayAmbientLight - minDarknessCoeff) / (startNightTrans - finishNightTrans); // "m"
             var incpt = dayAmbientLight - slope * startNightTrans; // "b"
