@@ -189,6 +189,7 @@ namespace Orts.Viewer3D
         public Vector3 FarPoint { get; private set; }
 
         public bool DebugViewerEnabled { get; set; }
+        public bool DebugViewerBetaEnabled { get; set; }
         public bool SoundDebugFormEnabled { get; set; }
 
         public TRPFile TRP; // Track profile file
@@ -1156,6 +1157,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.GameResetOutOfControlMode)) new ResetOutOfControlModeCommand(Log);
 
             if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
+            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcherBeta)) { DebugViewerBetaEnabled = !DebugViewerBetaEnabled; return; }
             if (UserInput.IsPressed(UserCommand.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
 
             if (UserInput.IsPressed(UserCommand.CameraJumpSeeSwitch))
