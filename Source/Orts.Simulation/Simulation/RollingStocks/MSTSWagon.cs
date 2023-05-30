@@ -1147,6 +1147,19 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsmaxbrakeshoeforce": MaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(ortsbrakeshoetype":
+                    stf.MustMatch("(");
+                    var brakeShoeType = stf.ReadString();
+                    try
+                    {
+                        BrakeShoeType = (BrakeShoeTypes)Enum.Parse(typeof(BrakeShoeTypes), brakeShoeType);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Assumed unknown brake shoe type " + brakeShoeType);
+                    }
+                    break;
+
                 case "wagon(ortswheelbrakeslideprotection":
                   // stf.MustMatch("(");
                     var brakeslideprotection = stf.ReadFloatBlock(STFReader.UNITS.None, null);
@@ -1480,6 +1493,7 @@ namespace Orts.Simulation.RollingStocks
             HasPassengerCapacity = copy.HasPassengerCapacity;
             WagonType = copy.WagonType;
             WagonSpecialType = copy.WagonSpecialType;
+            BrakeShoeType = copy.BrakeShoeType;
             FreightShapeFileName = copy.FreightShapeFileName;
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
@@ -3969,46 +3983,6 @@ namespace Orts.Simulation.RollingStocks
             if (FreightAnimations.LoadedOne != null) fraction = FreightAnimations.LoadedOne.LoadPerCent / 100;
             return fraction;
         }
-
-        /// <summary>
-        /// Returns the Brake shoe coefficient.
-        /// </summary>
-
-        public override float GetUserBrakeShoeFrictionFactor()
-        {
-            var frictionfraction = 0.0f;
-            if ( BrakeShoeFrictionFactor == null)
-            {
-                frictionfraction = 0.0f;
-            }
-            else
-            {
-                frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
-            }
-            
-            return frictionfraction;
-        }
-
-        /// <summary>
-        /// Returns the Brake shoe coefficient at zero speed.
-        /// </summary>
-
-        public override float GetZeroUserBrakeShoeFrictionFactor()
-        {
-            var frictionfraction = 0.0f;
-            if (BrakeShoeFrictionFactor == null)
-            {
-                frictionfraction = 0.0f;
-            }
-            else
-            {
-                frictionfraction = BrakeShoeFrictionFactor[0.0f];
-            }
-
-            return frictionfraction;
-        }       
-      
-        
         
         /// <summary>
         /// Starts a continuous increase in controlled value.
