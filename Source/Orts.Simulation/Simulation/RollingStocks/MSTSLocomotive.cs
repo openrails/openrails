@@ -379,6 +379,7 @@ namespace Orts.Simulation.RollingStocks
         public double? DynamicBrakeCommandStartTime;
         protected bool DynamicBrakeBlendingOverride; // true when DB lever >0% should always override the blending. When false, the bigger command is applied.
         protected bool DynamicBrakeBlendingForceMatch = true; // if true, dynamic brake blending tries to achieve the same braking force as the airbrake would have.
+        protected bool DynamicBrakeControllerSetupLock; // if true if dynamic brake lever will lock until dynamic brake is available
 
         public float DynamicBrakeBlendingPercent { get; protected set; } = -1;
 
@@ -2036,7 +2037,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             ThrottleController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
                             ThrottleController.CurrentValue * 100);
                     }
-                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0 && DynamicBrake)
+                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0 && (DynamicBrake || !DynamicBrakeControllerSetupLock))
                     {
                         Simulator.Confirmer.UpdateWithPerCent(
                             CabControl.DynamicBrake,
@@ -2242,7 +2243,7 @@ public List<CabView> CabViewList = new List<CabView>();
             }
             if (DynamicBrakeController != null && DynamicBrakeIntervention >= 0)
             {
-                if (DynamicBrake)
+                if (DynamicBrake || !DynamicBrakeControllerSetupLock)
                 {
                     DynamicBrakeController.Update(elapsedClockSeconds);
                     DynamicBrakeIntervention = DynamicBrakeController.CurrentValue;
@@ -4461,7 +4462,7 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 DynamicBrakeChangeActiveState(true);
             }
-            else if (DynamicBrake)
+            else if (DynamicBrake || !DynamicBrakeControllerSetupLock)
             {
                 SignalEvent(Event.DynamicBrakeChange);
                 DynamicBrakeController.StartIncrease(target);
@@ -4493,7 +4494,7 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 DynamicBrakeChangeActiveState(false);
             }
-            else if (DynamicBrake)
+            else if (DynamicBrake || !DynamicBrakeControllerSetupLock)
             {
                 SignalEvent(Event.DynamicBrakeChange);
                 DynamicBrakeController.StartDecrease(target);
@@ -4548,7 +4549,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 DynamicBrakeChangeActiveState(false);
                 return;
             }
-            if (!DynamicBrake || CruiseControl != null && CruiseControl.UseThrottleAsForceSelector && !CruiseControl.DynamicBrakePriority && !CruiseControl.UseThrottleInCombinedControl)
+            if ((!DynamicBrake && DynamicBrakeControllerSetupLock) || CruiseControl != null && CruiseControl.UseThrottleAsForceSelector && !CruiseControl.DynamicBrakePriority && !CruiseControl.UseThrottleInCombinedControl)
                 return;
 
             var controller = DynamicBrakeController;
