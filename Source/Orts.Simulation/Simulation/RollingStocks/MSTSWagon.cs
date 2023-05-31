@@ -597,13 +597,24 @@ namespace Orts.Simulation.RollingStocks
             MassKG = InitialMassKG;
 
             MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
-            if (MaxBrakeShoeForceN != 0 && BrakeShoeFrictionFactor != null)
+            if (MaxBrakeShoeForceN != 0 && BrakeShoeType != BrakeShoeTypes.Unknown)
             {
                 MaxBrakeForceN = MaxBrakeShoeForceN;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("BrakeShoeType set to {0}, with a MaxBrakeShoeForce of {1}", BrakeShoeType, FormatStrings.FormatForce(MaxBrakeForceN, IsMetric));
+                }
+                
             }
             else
             {
                 MaxBrakeForceN = InitialMaxBrakeForceN;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("BrakeShoeType set to {0}, with a MaxBrakeForce of {1}", BrakeShoeType, FormatStrings.FormatForce(MaxBrakeForceN, IsMetric));
+                }
             }
             CentreOfGravityM = InitialCentreOfGravityM;
 
