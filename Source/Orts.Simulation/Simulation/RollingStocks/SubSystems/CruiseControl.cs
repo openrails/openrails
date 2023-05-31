@@ -138,6 +138,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool ZeroSelectedSpeedWhenPassingToThrottleMode = false;
         public bool DynamicBrakeCommandHasPriorityOverCruiseControl = true;
         public bool TrainBrakeCommandHasPriorityOverCruiseControl = true;
+        public bool TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl = true;
         public bool HasIndependentThrottleDynamicBrakeLever = false;
         public bool HasProportionalSpeedSelector = false;
         public bool SpeedSelectorIsDiscrete = false;
@@ -146,6 +147,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool EnableSelectedSpeedSelectionWhenManualModeSet = false;
         public bool ModeSwitchAllowedWithThrottleNotAtZero = false;
         public bool UseTrainBrakeAndDynBrake = false;
+        public bool UseDynBrake = true;
         protected float SpeedDeltaToEnableTrainBrake = 5;
         protected float SpeedDeltaToEnableFullTrainBrake = 10;
         public float MinimumSpeedForCCEffectMpS = 0;
@@ -167,6 +169,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         protected bool reducingForce = false;
         protected float skidSpeedDegratation = 0;
         public bool TrainBrakePriority = false;
+        public bool TrainBrakePriorityIfCCAccelerating = false;
         public bool WasBraking = false;
         public bool WasForceReset = true;
 
@@ -250,6 +253,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             ZeroSelectedSpeedWhenPassingToThrottleMode = other.ZeroSelectedSpeedWhenPassingToThrottleMode;
             DynamicBrakeCommandHasPriorityOverCruiseControl = other.DynamicBrakeCommandHasPriorityOverCruiseControl;
             TrainBrakeCommandHasPriorityOverCruiseControl = other.TrainBrakeCommandHasPriorityOverCruiseControl;
+            TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl = other.TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl;
             HasIndependentThrottleDynamicBrakeLever = other.HasIndependentThrottleDynamicBrakeLever;
             HasProportionalSpeedSelector = other.HasProportionalSpeedSelector;
             DisableManualSwitchToAutoWhenSetSpeedNotAtTop = other.DisableManualSwitchToAutoWhenSetSpeedNotAtTop;
@@ -257,6 +261,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             SpeedSelectorIsDiscrete = other.SpeedSelectorIsDiscrete;
             DoComputeNumberOfAxles = other.DoComputeNumberOfAxles;
             UseTrainBrakeAndDynBrake = other.UseTrainBrakeAndDynBrake;
+            UseDynBrake = other.UseDynBrake;
             SpeedDeltaToEnableTrainBrake = other.SpeedDeltaToEnableTrainBrake;
             SpeedDeltaToEnableFullTrainBrake = other.SpeedDeltaToEnableFullTrainBrake;
             MinimumSpeedForCCEffectMpS = other.MinimumSpeedForCCEffectMpS;
@@ -345,10 +350,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     case "zeroselectedspeedwhenpassingtothrottlemode": ZeroSelectedSpeedWhenPassingToThrottleMode = stf.ReadBoolBlock(false); break;
                     case "dynamicbrakecommandhaspriorityovercruisecontrol": DynamicBrakeCommandHasPriorityOverCruiseControl = stf.ReadBoolBlock(true); break;
                     case "trainbrakecommandhaspriorityovercruisecontrol": TrainBrakeCommandHasPriorityOverCruiseControl = stf.ReadBoolBlock(true); break;
+                    case "trainbrakecommandhaspriorityoveracceleratingcruisecontrol": TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl = stf.ReadBoolBlock(true); break;
                     case "hasindependentthrottledynamicbrakelever": HasIndependentThrottleDynamicBrakeLever = stf.ReadBoolBlock(false); break;
                     case "hasproportionalspeedselector": HasProportionalSpeedSelector = stf.ReadBoolBlock(false); break;
                     case "speedselectorisdiscrete": SpeedSelectorIsDiscrete = stf.ReadBoolBlock(false); break;
                     case "usetrainbrakeanddynbrake": UseTrainBrakeAndDynBrake = stf.ReadBoolBlock(false); break;
+                    case "usedynbrake": UseDynBrake = stf.ReadBoolBlock(false); break;
                     case "speeddeltatoenabletrainbrake": SpeedDeltaToEnableTrainBrake = stf.ReadFloatBlock(STFReader.UNITS.Speed, 5f); break;
                     case "speeddeltatoenablefulltrainbrake": SpeedDeltaToEnableFullTrainBrake = stf.ReadFloatBlock(STFReader.UNITS.Speed, 10f); break;
                     case "minimumspeedforcceffect": MinimumSpeedForCCEffectMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 0f); break;
@@ -506,15 +513,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     trainBrakePercent = 0;
                 }
                 else if ((Locomotive.TrainBrakeController.MaxPressurePSI - Locomotive.BrakeSystem.BrakeLine1PressurePSI > 1 ||
-                    Locomotive.Train.BrakeLine4 > 0) && TrainBrakePriority && !CCIsUsingTrainBrake)
+                    Locomotive.Train.BrakeLine4 > 0) && TrainBrakePriority && !CCIsUsingTrainBrake && (!(TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl && CCThrottleOrDynBrakePercent <= 0) || TrainBrakeCommandHasPriorityOverCruiseControl))
                 {
                     reducingForce = true;
                     timeFromEngineMoved = 0;
                     if (CCThrottleOrDynBrakePercent > 0)
                         CCThrottleOrDynBrakePercent = 0;
                 }
-                else if (TrainBrakePriority || DynamicBrakePriority || (ThrottleNeutralPosition && SelectedSpeedMpS == 0) || SelectedMaxAccelerationPercent == 0 ||
-                    (ForceResetRequiredAfterBraking &&
+                else if (TrainBrakePriority && (TrainBrakeCommandHasPriorityOverCruiseControl || TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl && CCThrottleOrDynBrakePercent > 0)
+                    || DynamicBrakePriority || (ThrottleNeutralPosition && SelectedSpeedMpS == 0) || SelectedMaxAccelerationPercent == 0 ||
+                    (ForceResetRequiredAfterBraking && (!(TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl && CCThrottleOrDynBrakePercent <= 0) || TrainBrakeCommandHasPriorityOverCruiseControl) &&
                         (!WasForceReset || (WasBraking && SelectedMaxAccelerationPercent > 0))))
                 {
                     if (SpeedSelMode == SpeedSelectorMode.Parking)
@@ -528,6 +536,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     float prevTrainBrakePercent = trainBrakePercent;
                     CalculateRequiredForce(elapsedClockSeconds, Locomotive.AbsWheelSpeedMpS);
                     CCThrottleOrDynBrakePercent = MathHelper.Clamp(CCThrottleOrDynBrakePercent, -100, 100);
+                    if (CCThrottleOrDynBrakePercent > 0 && ForceResetRequiredAfterBraking && (!WasForceReset || WasBraking && SelectedMaxAccelerationPercent > 0))
+                    {
+                        CCThrottleOrDynBrakePercent = 0;
+                    }
                     if (CCThrottleOrDynBrakePercent >= 0)
                     {
                         Locomotive.ThrottlePercent = CCThrottleOrDynBrakePercent;
@@ -1194,7 +1206,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     else
                     {
                         deltaSpeedMpS = SetSpeedMpS + (trainElevation < -0.01 ? trainElevation * (SelectedNumberOfAxles / 12) : 0) - AbsWheelSpeedMpS;
-                        if (Locomotive.DynamicBrakeAvailable)
+                        if (Locomotive.DynamicBrakeAvailable && UseDynBrake)
                         {
                             AccelerationDemandMpSS = (float)-Math.Sqrt(-StartReducingSpeedDeltaDownwards * deltaSpeedMpS);
 
@@ -1240,7 +1252,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     }
                     else
                     {
-                        if (Locomotive.DynamicBrakeAvailable)
+                        if (Locomotive.DynamicBrakeAvailable && UseDynBrake)
                         {
                             float val = (float)Math.Abs(StartReducingSpeedDeltaDownwards * coeff * ((deltaSpeedMpS + 0.5f) / 3));
                             AccelerationDemandMpSS = -(float)Math.Sqrt(val);
