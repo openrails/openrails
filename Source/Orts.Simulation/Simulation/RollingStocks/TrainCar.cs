@@ -3220,15 +3220,12 @@ namespace Orts.Simulation.RollingStocks
             return 0f;
         }
 
-
         /// <summary>
         /// Returns the coefficient of friction (CoF) for the brake shoe. For legacy operation, it will be a "representation" of the CoF that will adjust 
         /// the brake retard force with speed.
         /// </summary>
-
         public virtual float GetBrakeShoeFrictionFactor()
-        {
-            
+        {            
             var frictionfraction = 0.0f;
             float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
 
@@ -3257,7 +3254,6 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (BrakeShoeFrictionFactor != null)  // User defined friction has been applied in WAG file, but brake shoe has not be described, hence a legacy condition - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
                     {
-
                         float userFriction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
                         float zeroUserFriction = BrakeShoeFrictionFactor[MpS.ToKpH(0)];
 
@@ -3275,14 +3271,12 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 return frictionfraction;
-
             }
             else
             {
                 frictionfraction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f); // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula; // For simple friction use "default" curve
                 return frictionfraction;
             }
-
         }
 
         /// <summary>
@@ -3328,7 +3322,6 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 return frictionfraction;
-
             }
             else
             {
