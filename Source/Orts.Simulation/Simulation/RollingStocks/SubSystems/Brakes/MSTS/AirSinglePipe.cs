@@ -721,6 +721,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             else Car.BrakeShoeForceN = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2);
 
             float brakeShoeFriction = Car.GetBrakeShoeFrictionFactor();
+            Car.HuDBrakeShoeFriction = Car.GetBrakeShoeFrictionCoefficientHuD();
 
             Car.BrakeRetardForceN = Car.BrakeShoeForceN * brakeShoeFriction; // calculates value of force applied to wheel, independent of wheel skid
             if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
