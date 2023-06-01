@@ -616,6 +616,17 @@ namespace Orts.Simulation.RollingStocks
                     Trace.TraceInformation("BrakeShoeType set to {0}, with a MaxBrakeForce of {1}", BrakeShoeType, FormatStrings.FormatForce(MaxBrakeForceN, IsMetric));
                 }
             }
+
+            // Initialise number of brake shoes per wagon
+            if (NumberCarBrakeShoes == 0 && WagonType == WagonTypes.Engine)
+            {
+                NumberCarBrakeShoes = LocoNumDrvAxles * 4.0f; // Assume 4 brake shoes per axle
+            }
+            else if (NumberCarBrakeShoes == 0)
+            {
+                NumberCarBrakeShoes = WagonNumAxles * 4.0f; // Assume 4 brake shoes per axle
+            }
+
             CentreOfGravityM = InitialCentreOfGravityM;
 
             if (FreightAnimations != null)
@@ -1157,6 +1168,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsmaxbrakeshoeforce": MaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(ortsnumberwagonbrakeshoes": NumberCarBrakeShoes = stf.ReadIntBlock(null); break;
                 case "wagon(ortsbrakeshoetype":
                     stf.MustMatch("(");
                     var brakeShoeType = stf.ReadString();
@@ -1547,6 +1559,7 @@ namespace Orts.Simulation.RollingStocks
             InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
             MaxBrakeShoeForceN = copy.MaxBrakeShoeForceN;
+            NumberCarBrakeShoes = copy.NumberCarBrakeShoes;
             MaxHandbrakeForceN = copy.MaxHandbrakeForceN;
             WindowDeratingFactor = copy.WindowDeratingFactor;
             DesiredCompartmentTempSetpointC = copy.DesiredCompartmentTempSetpointC;
