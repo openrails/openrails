@@ -160,6 +160,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             BleedOffValveOpen = false;
 
             float brakeShoeFriction = Car.GetBrakeShoeFrictionFactor();
+            Car.HuDBrakeShoeFriction = Car.GetBrakeShoeFrictionCoefficientHuD();
 
             Car.BrakeRetardForceN = ( Car.MaxHandbrakeForceN * HandbrakePercent / 100) * brakeShoeFriction; // calculates value of force applied to wheel, independent of wheel skid
             if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
