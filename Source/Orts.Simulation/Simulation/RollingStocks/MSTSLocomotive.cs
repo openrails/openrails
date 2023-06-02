@@ -1492,7 +1492,6 @@ public List<CabView> CabViewList = new List<CabView>();
                     Trace.TraceInformation("Number of Locomotive Drive Axles set to default value of {0}", LocoNumDrvAxles);
                 }
             }
-
             if (TractionMotorType == TractionMotorTypes.AC)
             {
                 InductionMotor motor = new InductionMotor(LocomotiveAxle, this);

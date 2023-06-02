@@ -597,10 +597,15 @@ namespace Orts.Simulation.RollingStocks
             MassKG = InitialMassKG;
 
             MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
-
             if (MaxBrakeShoeForceN != 0 && BrakeShoeType != BrakeShoeTypes.Unknown)
             {
-                MaxBrakeForceN = MaxBrakeShoeForceN;             
+                MaxBrakeForceN = MaxBrakeShoeForceN;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("BrakeShoeType set to {0}, with a MaxBrakeShoeForce of {1}", BrakeShoeType, FormatStrings.FormatForce(MaxBrakeForceN, IsMetric));
+                }
+                
             }
             else
             {
@@ -608,7 +613,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Unknown BrakeShoeType set to OR default (Cast Iron) with a MaxBrakeForce of {0}", FormatStrings.FormatForce(MaxBrakeForceN, IsMetric));
+                    Trace.TraceInformation("BrakeShoeType set to {0}, with a MaxBrakeForce of {1}", BrakeShoeType, FormatStrings.FormatForce(MaxBrakeForceN, IsMetric));
                 }
             }
 
@@ -616,20 +621,10 @@ namespace Orts.Simulation.RollingStocks
             if (NumberCarBrakeShoes == 0 && WagonType == WagonTypes.Engine)
             {
                 NumberCarBrakeShoes = LocoNumDrvAxles * 4.0f; // Assume 4 brake shoes per axle
-
-                if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType == BrakeShoeTypes.CastIron || BrakeShoeType == BrakeShoeTypes.HiFrictionCompost))
-                {
-                    Trace.TraceInformation("Number of Locomotive Brakeshoes set to default value of {0}", NumberCarBrakeShoes);
-                }
             }
-            else if (NumberCarBrakeShoes == 0 )
+            else if (NumberCarBrakeShoes == 0)
             {
                 NumberCarBrakeShoes = WagonNumAxles * 4.0f; // Assume 4 brake shoes per axle
-
-                if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType == BrakeShoeTypes.CastIron || BrakeShoeType == BrakeShoeTypes.HiFrictionCompost))
-                {
-                    Trace.TraceInformation("Number of Wagon Brakeshoes set to default value of {0}", NumberCarBrakeShoes);
-                }
             }
 
             CentreOfGravityM = InitialCentreOfGravityM;
