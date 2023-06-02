@@ -6307,6 +6307,10 @@ namespace Orts.Simulation.RollingStocks
 
         public override string GetDebugStatus()
         {
+            // calculate values for display, so that display value doesn't go negative
+            var superheatTempDisplayC = C.FromF(CurrentSuperheatTempF);
+            superheatTempDisplayC = MathHelper.Clamp(superheatTempDisplayC, 0.0f, C.FromF(MaxSuperheatRefTempF));
+
             var status = new StringBuilder(base.GetDebugStatus());
 
             status.AppendFormat("\n\n\t\t === {0} === \t\t\n", Simulator.Catalog.GetString("Key Inputs"));
@@ -6378,7 +6382,8 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("MaxSupH"),
                 FormatStrings.FormatTemperature(C.FromF(MaxSuperheatRefTempF), IsMetric, false),
                 Simulator.Catalog.GetString("CurSupH"),
-                FormatStrings.FormatTemperature(C.FromF(CurrentSuperheatTempF), IsMetric, false));
+                FormatStrings.FormatTemperature(superheatTempDisplayC, IsMetric, false)
+                );
 
             status.AppendFormat("\n\t\t === {0} === \t\t{1}/{2}\n",
                 Simulator.Catalog.GetString("Steam Usage"),
