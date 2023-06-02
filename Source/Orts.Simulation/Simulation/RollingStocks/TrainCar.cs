@@ -3296,7 +3296,7 @@ namespace Orts.Simulation.RollingStocks
                 // https://iopscience.iop.org/article/10.1088/1742-6596/1614/1/012086/pdf
 
                 float NewtonsTokNewtons = 0.001f;
-                float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN;
+                float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
 
                 if (BrakeShoeType == BrakeShoeTypes.CastIron)
                 {
