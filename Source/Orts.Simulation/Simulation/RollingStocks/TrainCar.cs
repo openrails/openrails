@@ -139,8 +139,6 @@ namespace Orts.Simulation.RollingStocks
            0.0f, 31.0f
         };
 
-        public Interpolator BrakeShoeFrictionFactor;  // Factor of friction for wagon brake shoes
-
         public static Interpolator SteamHeatBoilerWaterUsageGalukpH()
         {
             return new Interpolator(SteamUsageLbpH, WaterUsageGalukpH);
@@ -212,10 +210,8 @@ namespace Orts.Simulation.RollingStocks
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
-        public float MaxBrakeShoeForceN; // This is the force applied to the brake shoe, hence it will be decreased by CoF to give force applied to the wheel
-        public float NumberCarBrakeShoes;
         public float InitialMaxHandbrakeForceN;  // Initial force when agon initialised
-        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when wagon initialised, this is the force on the wheel, ie after the brake shoe.
+        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when agon initialised
 
         // Coupler Animation
         public AnimatedCoupler FrontCoupler = new AnimatedCoupler();
@@ -272,11 +268,13 @@ namespace Orts.Simulation.RollingStocks
         public bool BrakeSkid = false;
         public bool BrakeSkidWarning = false;
         public bool HUDBrakeSkid = false;
-
+        public float BrakeShoeCoefficientFriction = 1.0f; // Brake Shoe coefficient - for simple adhesion model set to 1
+        public float BrakeShoeCoefficientFrictionAdjFactor = 1.0f; // Factor to adjust Brake force by - based upon changing friction coefficient with speed, will change when wheel goes into skid
+        public float BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f; // Factor of adjust Retard Brake force by - independent of skid
+        float DefaultBrakeShoeCoefficientFriction;  // A default value of brake shoe friction is no user settings are present.
         float BrakeWheelTreadForceN; // The retarding force apparent on the tread of the wheel
         float WagonBrakeAdhesiveForceN; // The adhesive force existing on the wheels of the wagon
         public float SkidFriction = 0.08f; // Friction if wheel starts skidding - based upon wheel dynamic friction of approx 0.08
-        public float HuDBrakeShoeFriction;
 
         public float AuxTenderWaterMassKG;    // Water mass in auxiliary tender
         public string AuxWagonType;           // Store wagon type for use with auxilary tender calculations
@@ -580,7 +578,6 @@ namespace Orts.Simulation.RollingStocks
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
         public float BrakeForceN;    // brake force applied to slow train (Newtons) - will be impacted by wheel/rail friction
         public float BrakeRetardForceN;    // brake force applied to wheel by brakeshoe (Newtons) independent of friction wheel/rail friction
-        public float BrakeShoeForceN;
 
         // Sum of all the forces acting on a Traincar in the direction of driving.
         // MotiveForceN and GravityForceN act to accelerate the train. The others act to brake the train.
@@ -680,16 +677,7 @@ namespace Orts.Simulation.RollingStocks
         }
         public WagonSpecialTypes WagonSpecialType;
 
-        public enum BrakeShoeTypes
-        {
-            Unknown,
-            CastIron,
-            HiFrictionCompost,
-            UserDefined,
-        }
-        public BrakeShoeTypes BrakeShoeType;
-
-        protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
+    protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
         protected float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         protected float TrainCrossSectionAreaM2; // Cross sectional area of the train
         protected float DoubleTunnelCrossSectAreaM2;
@@ -967,6 +955,35 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
             {
 
+                // Get user defined brake shoe coefficient if defined in WAG file
+                float UserFriction = GetUserBrakeShoeFrictionFactor();
+                float ZeroUserFriction = GetZeroUserBrakeShoeFrictionFactor();
+                float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
+
+                // This section calculates an adjustment factor for the brake force dependent upon the "base" (zero speed) friction value. 
+                //For a user defined case the base value is the zero speed value from the curve entered by the user.
+                // For a "default" case where no user data has been added to the WAG file, the base friction value has been assumed to be 0.2, thus maximum value of 20% applied.
+
+                if (UserFriction != 0)  // User defined friction has been applied in WAG file - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
+                {
+                    BrakeShoeCoefficientFrictionAdjFactor = UserFriction / ZeroUserFriction * AdhesionMultiplier; // Factor calculated by normalising zero speed value on friction curve applied in WAG file
+                    BrakeShoeRetardCoefficientFrictionAdjFactor = UserFriction / ZeroUserFriction * AdhesionMultiplier;
+                    BrakeShoeCoefficientFriction = UserFriction * AdhesionMultiplier; // For display purposes on HUD
+                }
+                else
+                // User defined friction NOT applied in WAG file - Assume MaxBrakeForce is incorrectly set in the WAG, so adjustment is required 
+                {
+                    DefaultBrakeShoeCoefficientFriction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f) * AdhesionMultiplier; // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula
+                    BrakeShoeCoefficientFrictionAdjFactor = DefaultBrakeShoeCoefficientFriction / 0.2f * AdhesionMultiplier;  // Assuming that current MaxBrakeForce has been set with an existing Friction Coff of 0.2f, an adjustment factor needs to be developed to reduce the MAxBrakeForce by a relative amount
+                    BrakeShoeRetardCoefficientFrictionAdjFactor = DefaultBrakeShoeCoefficientFriction / 0.2f * AdhesionMultiplier;
+                    BrakeShoeCoefficientFriction = DefaultBrakeShoeCoefficientFriction * AdhesionMultiplier;  // For display purposes on HUD
+                }
+
+                // Clamp adjustment factor to a value of 1.0 - i.e. the brakeforce can never exceed the Brake Force value defined in the WAG file
+                BrakeShoeCoefficientFrictionAdjFactor = MathHelper.Clamp(BrakeShoeCoefficientFrictionAdjFactor, 0.01f, 1.0f);
+                BrakeShoeRetardCoefficientFrictionAdjFactor = MathHelper.Clamp(BrakeShoeRetardCoefficientFrictionAdjFactor, 0.01f, 1.0f);
+
+
                 // ************  Check if diesel or electric - assumed already be cover by advanced adhesion model *********
 
                 if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
@@ -1019,7 +1036,9 @@ namespace Orts.Simulation.RollingStocks
                         WheelBrakeSlideProtectionTimerS = wheelBrakeSlideTimerResetValueS;
                         WheelBrakeSlideProtectionDumpValveLockout = false;
 
-                    }       
+                    }
+                    
+
 
                     // Calculate adhesive force based upon whether in skid or not
                     if (BrakeSkid)
@@ -1059,11 +1078,16 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     BrakeSkid = false; 	// wagon wheel is not slipping
+                    BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f;
                 }
             }
             else  // set default values if simple adhesion model, or if diesel or electric locomotive is used, which doesn't check for brake skid.
             {
                 BrakeSkid = false; 	// wagon wheel is not slipping
+                BrakeShoeCoefficientFrictionAdjFactor = 1.0f;  // Default value set to leave existing brakeforce constant regardless of changing speed
+                BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f;
+                BrakeShoeCoefficientFriction = 1.0f;  // Default value for display purposes
+
             }
 
 #if DEBUG_BRAKE_SLIDE
@@ -3221,114 +3245,14 @@ namespace Orts.Simulation.RollingStocks
             return 0f;
         }
 
-        /// <summary>
-        /// Returns the coefficient of friction (CoF) for the brake shoe. For legacy operation, it will be a "representation" of the CoF that will adjust 
-        /// the brake retard force with speed.
-        /// </summary>
-        public virtual float GetBrakeShoeFrictionFactor()
-        {            
-            var frictionfraction = 0.0f;
-            float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
-
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
-            {
-                // Formula 9 and 10 from the paper "Study of the influence of the brake shoe temperature and wheel tread on braking effectiveness" by P Ivanov1, A Khudonogov1,
-                // E Dulskiy1, N Manuilov1, A Khamnaeva1, A Korsun1, S Treskin is used for the Cast Iron and Hi Friction Composite brake shoe friction curves.
-                // https://iopscience.iop.org/article/10.1088/1742-6596/1614/1/012086/pdf
-
-                float NewtonsTokNewtons = 0.001f;
-                float brakeShoeForcekN = (NewtonsTokNewtons * BrakeShoeForceN) / NumberCarBrakeShoes;
-
-                if (BrakeShoeType == BrakeShoeTypes.CastIron)
-                {
-                    frictionfraction = 0.6f * ((1.6f * brakeShoeForcekN + 100.0f) / (8.0f * brakeShoeForcekN + 100.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 100.0f) / (5.0f * MpS.ToKpH(AbsSpeedMpS) + 100.0f));
-                }
-                else if (BrakeShoeType == BrakeShoeTypes.HiFrictionCompost)
-                {
-                    frictionfraction = 0.44f * ((0.1f * brakeShoeForcekN + 20.0f) / (0.4f * brakeShoeForcekN + 20.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 150.0f) / (2.0f * MpS.ToKpH(AbsSpeedMpS) + 150.0f));
-                }
-                else if (BrakeShoeType == BrakeShoeTypes.UserDefined)
-                {
-                    frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
-                }
-                else // default curve - assume that this is legacy stock
-                {
-                    if (BrakeShoeFrictionFactor != null)  // User defined friction has been applied in WAG file, but brake shoe has not be described, hence a legacy condition - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
-                    {
-                        float userFriction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
-                        float zeroUserFriction = BrakeShoeFrictionFactor[MpS.ToKpH(0)];
-
-                        frictionfraction = userFriction / zeroUserFriction * AdhesionMultiplier; // Factor calculated by normalising zero speed value on friction curve applied in WAG file
-                    }
-                    else
-                    {
-                        // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula
-                        float defaultBrakeShoeCoefficientFriction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f) * AdhesionMultiplier;
-
-                        // Assuming that current MaxBrakeForce has been set with an existing Friction CoF of 0.2f, an adjustment factor needs to be developed to reduce
-                        // the MAxBrakeForce by a relative amount. Note force will be higher then ENG file value at low speed and reduce to actual value at higher speeds.
-                        frictionfraction = defaultBrakeShoeCoefficientFriction / 0.2f * AdhesionMultiplier;  // Assuming that current MaxBrakeForce has been set with an existing Friction CoF of 0.2f, an adjustment factor needs to be developed to reduce the MAxBrakeForce by a relative amount
-                    }
-                }
-
-                return frictionfraction;
-            }
-            else
-            {
-                frictionfraction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f); // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula; // For simple friction use "default" curve
-                return frictionfraction;
-            }
+        public virtual float GetUserBrakeShoeFrictionFactor()
+        {
+            return 0f;
         }
 
-        /// <summary>
-        /// Returns the coefficient of friction (CoF) of the brake shoe for display on the HuD.
-        /// For legacy operation, it will be different to the "representation" of the CoF calculated above, and be the actual CoF.
-        /// </summary>
-        public virtual float GetBrakeShoeFrictionCoefficientHuD()
+        public virtual float GetZeroUserBrakeShoeFrictionFactor()
         {
-            var frictionfraction = 0.0f;
-            float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
-
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
-            {
-                // Formula 9 and 10 from the paper "Study of the influence of the brake shoe temperature and wheel tread on braking effectiveness" by P Ivanov1, A Khudonogov1,
-                // E Dulskiy1, N Manuilov1, A Khamnaeva1, A Korsun1, S Treskin is used for the Cast Iron and Hi Friction Composite brake shoe friction curves.
-                // https://iopscience.iop.org/article/10.1088/1742-6596/1614/1/012086/pdf
-
-                float NewtonsTokNewtons = 0.001f;
-                float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN;
-
-                if (BrakeShoeType == BrakeShoeTypes.CastIron)
-                {
-                    frictionfraction = 0.6f * ((1.6f * brakeShoeForcekN + 100.0f) / (8.0f * brakeShoeForcekN + 100.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 100.0f) / (5.0f * MpS.ToKpH(AbsSpeedMpS) + 100.0f));
-                }
-                else if (BrakeShoeType == BrakeShoeTypes.HiFrictionCompost)
-                {
-                    frictionfraction = 0.44f * ((0.1f * brakeShoeForcekN + 20.0f) / (0.4f * brakeShoeForcekN + 20.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 150.0f) / (2.0f * MpS.ToKpH(AbsSpeedMpS) + 150.0f));
-                }
-                else if (BrakeShoeType == BrakeShoeTypes.UserDefined)
-                {
-                    frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
-                }
-                else // default curve - assume that this is legacy stock
-                {
-                    if (BrakeShoeFrictionFactor != null)  // User defined friction has been applied in WAG file, but brake shoe has not be described, hence a legacy condition - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
-                    {
-                        frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
-                    }
-                    else
-                    {
-                        frictionfraction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f) * AdhesionMultiplier; // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula
-                    }
-                }
-
-                return frictionfraction;
-            }
-            else
-            {
-                frictionfraction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f); // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula; // For simple friction use "default" curve
-                return frictionfraction;
-            }
+            return 0f;
         }
 
         public virtual void InitializeCarHeatingVariables()

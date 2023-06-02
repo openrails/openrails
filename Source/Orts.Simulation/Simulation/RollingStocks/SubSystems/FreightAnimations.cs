@@ -67,7 +67,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float EmptyORTSWagonFrontalAreaM2 = -9999;
         public float EmptyORTSDavisDragConstant = -9999;
         public float EmptyMaxBrakeForceN = -9999;
-        public float EmptyMaxBrakeShoeForceN = -9999;
         public float EmptyMaxHandbrakeForceN = -9999;
         public float EmptyCentreOfGravityM_Y = -9999; // get centre of gravity after adjusted for freight animation
         public bool ContinuousFreightAnimationsPresent = false; // Flag to indicate that a continuous freight animation is present
@@ -105,7 +104,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 new STFReader.TokenProcessor("emptyortswagonfrontalarea", ()=>{ EmptyORTSWagonFrontalAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, -1); }),
                 new STFReader.TokenProcessor("emptyortsdavisdragconstant", ()=>{ EmptyORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, -1); }),
                 new STFReader.TokenProcessor("emptymaxbrakeforce", ()=>{ EmptyMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-                new STFReader.TokenProcessor("emptymaxbrakeshoeforce", ()=>{ EmptyMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("emptymaxhandbrakeforce", ()=>{ EmptyMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("emptycentreofgravity_y", ()=>{ EmptyCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
                 new STFReader.TokenProcessor("freightanimcontinuous", ()=>
@@ -287,7 +285,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             EmptyORTSWagonFrontalAreaM2 = copyFACollection.EmptyORTSWagonFrontalAreaM2;
             EmptyORTSDavisDragConstant = copyFACollection.EmptyORTSDavisDragConstant;
             EmptyMaxBrakeForceN = copyFACollection.EmptyMaxBrakeForceN;
-            EmptyMaxBrakeShoeForceN = copyFACollection.EmptyMaxBrakeShoeForceN;
             EmptyMaxHandbrakeForceN = copyFACollection.EmptyMaxHandbrakeForceN;
             EmptyCentreOfGravityM_Y = copyFACollection.EmptyCentreOfGravityM_Y;
             ContinuousFreightAnimationsPresent = copyFACollection.ContinuousFreightAnimationsPresent;
@@ -985,7 +982,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float FullORTSWagonFrontalAreaM2 = -9999;
         public float FullORTSDavisDragConstant = -9999;
         public float FullMaxBrakeForceN = -9999;
-        public float FullMaxBrakeShoeForceN = -9999;
         public float FullMaxHandbrakeForceN = -9999;
         public float FullCentreOfGravityM_Y = -9999; // get centre of gravity after adjusted for freight animation
 
@@ -1012,7 +1008,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 new STFReader.TokenProcessor("fullortswagonfrontalarea", ()=>{ FullORTSWagonFrontalAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, -1); }),
                 new STFReader.TokenProcessor("fullortsdavisdragconstant", ()=>{ FullORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, -1); }),
                 new STFReader.TokenProcessor("fullmaxbrakeforce", ()=>{ FullMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-                new STFReader.TokenProcessor("fullmaxbrakeshoeforce", ()=>{ FullMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("fullmaxhandbrakeforce", ()=>{ FullMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); })
             });
@@ -1041,7 +1036,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             FullORTSWagonFrontalAreaM2 = freightAnimContin.FullORTSWagonFrontalAreaM2;
             FullORTSDavisDragConstant = freightAnimContin.FullORTSDavisDragConstant;
             FullMaxBrakeForceN = freightAnimContin.FullMaxBrakeForceN;
-            FullMaxBrakeShoeForceN = freightAnimContin.FullMaxBrakeShoeForceN;
             FullMaxHandbrakeForceN = freightAnimContin.FullMaxHandbrakeForceN;
             FullCentreOfGravityM_Y = freightAnimContin.FullCentreOfGravityM_Y;          
         }
@@ -1076,7 +1070,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float FullStaticORTSWagonFrontalAreaM2 = -9999;
         public float FullStaticORTSDavisDragConstant = -9999;
         public float FullStaticMaxBrakeForceN = -9999;
-        public float FullStaticMaxBrakeShoeForceN = -9999;
         public float FullStaticMaxHandbrakeForceN = -9999;
         public float FullStaticCentreOfGravityM_Y = -9999; // get centre of gravity after adjusted for freight animation
 
@@ -1132,7 +1125,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             new STFReader.TokenProcessor("fullortswagonfrontalarea", ()=>{ FullStaticORTSWagonFrontalAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, -1); }),
             new STFReader.TokenProcessor("fullortsdavisdragconstant", ()=>{ FullStaticORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, -1); }),
             new STFReader.TokenProcessor("fullmaxbrakeforce", ()=>{ FullStaticMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-            new STFReader.TokenProcessor("fullmaxbrakeshoeforce", ()=>{ FullStaticMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
             new STFReader.TokenProcessor("fullmaxhandbrakeforce", ()=>{ FullStaticMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
             new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullStaticCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); })
             });
@@ -1158,7 +1150,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             FullStaticORTSWagonFrontalAreaM2 = freightAnimStatic.FullStaticORTSWagonFrontalAreaM2;
             FullStaticORTSDavisDragConstant = freightAnimStatic.FullStaticORTSDavisDragConstant;
             FullStaticMaxBrakeForceN = freightAnimStatic.FullStaticMaxBrakeForceN;
-            FullStaticMaxBrakeShoeForceN = freightAnimStatic.FullStaticMaxBrakeShoeForceN;
             FullStaticMaxHandbrakeForceN = freightAnimStatic.FullStaticMaxHandbrakeForceN;
             FullStaticCentreOfGravityM_Y = freightAnimStatic.FullStaticCentreOfGravityM_Y;
         }

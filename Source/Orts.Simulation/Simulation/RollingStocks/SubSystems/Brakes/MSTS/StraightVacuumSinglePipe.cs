@@ -128,34 +128,30 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
 
                     // Adjust braking force as brake cylinder pressure varies.
-
+                    float f;
                     if (!Car.BrakesStuck)
                     {
 
                         float brakecylinderfraction = ((OneAtmospherePSI - CylPressurePSIA) / MaxForcePressurePSI);
                         brakecylinderfraction = MathHelper.Clamp(brakecylinderfraction, 0, 1);
 
-                        Car.BrakeShoeForceN = Car.MaxBrakeForceN * brakecylinderfraction;
+                        f = Car.MaxBrakeForceN * brakecylinderfraction;
 
-                        if (Car.BrakeShoeForceN < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
-                            Car.BrakeShoeForceN = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
+                        if (f < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
+                            f = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
                     }
                     else
                     {
-                        Car.BrakeShoeForceN = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2);
+                        f = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2);
                     }
-
-                    float brakeShoeFriction = Car.GetBrakeShoeFrictionFactor();
-                    Car.HuDBrakeShoeFriction = Car.GetBrakeShoeFrictionCoefficientHuD();
-
-                    Car.BrakeRetardForceN = Car.BrakeShoeForceN * brakeShoeFriction; // calculates value of force applied to wheel, independent of wheel skid
+                    Car.BrakeRetardForceN = f * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
                     if (Car.BrakeSkid) // Test to see if wheels are skiding due to excessive brake force
                     {
-                        Car.BrakeForceN = Car.BrakeShoeForceN * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
+                        Car.BrakeForceN = f * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
                     }
                     else
                     {
-                        Car.BrakeForceN = Car.BrakeShoeForceN * brakeShoeFriction; // In advanced adhesion model brake shoe coefficient varies with speed, in simple odel constant force applied as per value in WAG file, will vary with wheel skid.
+                        Car.BrakeForceN = f * Car.BrakeShoeCoefficientFrictionAdjFactor; // In advanced adhesion model brake shoe coefficient varies with speed, in simple odel constant force applied as per value in WAG file, will vary with wheel skid.
                     }
 
                     // If wagons are not attached to the locomotive, then set wagon BC pressure to same as locomotive in the Train brake line
