@@ -618,13 +618,13 @@ namespace Orts.Simulation.RollingStocks
             {
                 var LocoTest = Simulator.PlayerLocomotive as MSTSLocomotive;
 
-                if (LocoTest != null && !LocoTest.DriveWheelOnlyBrakes)
+                if (LocoTest != null && LocoTest.DriveWheelOnlyBrakes)
                 {
-                    NumberCarBrakeShoes = LocoNumDrvAxles * 4 + WagonNumAxles * 4; // Assume 4 brake shoes per axle on all wheels
+                    NumberCarBrakeShoes = LocoNumDrvAxles * 4; // Assume 4 brake shoes per axle on drive wheels only                    
                 }
                 else
                 {
-                    NumberCarBrakeShoes = LocoNumDrvAxles * 4; // Assume 4 brake shoes per axle on drive wheels only
+                    NumberCarBrakeShoes = (LocoNumDrvAxles * 4) + (WagonNumAxles * 4); // Assume 4 brake shoes per axle on all wheels
                 } 
 
                 if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType == BrakeShoeTypes.CastIron || BrakeShoeType == BrakeShoeTypes.HiFrictionCompost))
