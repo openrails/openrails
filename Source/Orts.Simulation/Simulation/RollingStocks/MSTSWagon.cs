@@ -615,7 +615,16 @@ namespace Orts.Simulation.RollingStocks
             // Initialise number of brake shoes per wagon
             if (NumberCarBrakeShoes == 0 && WagonType == WagonTypes.Engine)
             {
-                NumberCarBrakeShoes = LocoNumDrvAxles * 4.0f; // Assume 4 brake shoes per axle
+                var LocoTest = Simulator.PlayerLocomotive as MSTSLocomotive;
+
+                if (LocoTest != null && !LocoTest.DriveWheelOnlyBrakes)
+                {
+                    NumberCarBrakeShoes = LocoNumDrvAxles * 4 + WagonNumAxles * 4; // Assume 4 brake shoes per axle on all wheels
+                }
+                else
+                {
+                    NumberCarBrakeShoes = LocoNumDrvAxles * 4; // Assume 4 brake shoes per axle on drive wheels only
+                } 
 
                 if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType == BrakeShoeTypes.CastIron || BrakeShoeType == BrakeShoeTypes.HiFrictionCompost))
                 {
@@ -624,7 +633,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else if (NumberCarBrakeShoes == 0)
             {
-                NumberCarBrakeShoes = WagonNumAxles * 4.0f; // Assume 4 brake shoes per axle
+                NumberCarBrakeShoes = WagonNumAxles * 4; // Assume 4 brake shoes per axle
 
                 if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType == BrakeShoeTypes.CastIron || BrakeShoeType == BrakeShoeTypes.HiFrictionCompost))
                 {
@@ -1173,7 +1182,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsmaxbrakeshoeforce": MaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(ortsnumbercarbrakeshoes": NumberCarBrakeShoes = stf.ReadIntBlock(null); break;
+                case "wagon(ortsnumbercarbrakeshoes": NumberCarBrakeShoes = stf.ReadIntBlock(null); break;
                 case "wagon(ortsbrakeshoetype":
                     stf.MustMatch("(");
                     var brakeShoeType = stf.ReadString();
