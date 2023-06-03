@@ -3318,7 +3318,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else
                     {
-                        frictionfraction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f) * AdhesionMultiplier; // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula
+                        frictionfraction = 7.6f / ((MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f) * AdhesionMultiplier; // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula
                     }
                 }
 
@@ -3326,7 +3326,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                frictionfraction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f); // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula; // For simple friction use "default" curve
+                frictionfraction = 7.6f / ((MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f); // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula; // For simple friction use "default" curve
                 return frictionfraction;
             }
         }
