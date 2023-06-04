@@ -169,6 +169,9 @@ namespace Orts.Viewer3D
                         var pngPath = Path.ChangeExtension(path, ".png");
                         if (File.Exists(pngPath))
                             return Get(GraphicsDevice, pngPath);
+                        var acePath = Path.ChangeExtension(path, ".ace");
+                        if (File.Exists(pngPath))
+                            return Get(acePath, defaultTexture, required, extensionFilter);
                     } 
                     if (File.Exists(path))
                         Trace.WriteLine(new FileLoadException(path, error));
