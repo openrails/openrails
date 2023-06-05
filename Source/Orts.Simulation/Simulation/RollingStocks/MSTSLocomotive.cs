@@ -1813,7 +1813,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 && ThrottlePercent == 0 && !(DynamicBrakeController != null && DynamicBrakeBlendingOverride && DynamicBrakeController.CurrentValue > 0))
             {
                 float maxCylPressurePSI = airPipeSystem.GetMaxCylPressurePSI();
-                float target = airPipeSystem.AutoCylPressurePSI * airPipeSystem.RelayValveRatio / maxCylPressurePSI;
+                float target = airPipeSystem.AutoCylPressurePSI / maxCylPressurePSI;
 
                 if (!DynamicBrakeBlended)
                 {
