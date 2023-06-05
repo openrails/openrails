@@ -310,6 +310,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
+            BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
+            BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
+            BrakeLine3PressurePSI = 0;
+            if (maxPressurePSI > 0)
+                ControlResPressurePSI = maxPressurePSI;
+            FullServPressurePSI = fullServPressurePSI;
+            AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
+            CylPressurePSI = AutoCylPressurePSI * RelayValveRatio;
+            AuxResPressurePSI = Math.Max(TwoPipes ? maxPressurePSI : maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
+            if ((Car as MSTSWagon).EmergencyReservoirPresent)
+                EmergResPressurePSI = Math.Max(AuxResPressurePSI, maxPressurePSI);
+            TripleValveState = AutoCylPressurePSI < 1 ? ValveState.Release : ValveState.Lap;
+            HoldingValve = ValveState.Release;
+            HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
+            SetRetainer(RetainerSetting.Exhaust);
+            if (Car is MSTSLocomotive loco) 
+            {
+                loco.MainResPressurePSI = loco.MaxMainResPressurePSI;
+            }
+        }
+
+        public override void Initialize()
+        {
             // reducing size of Emergency Reservoir for short (fake) cars
             if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && Car.CarLengthM <= 1)
             EmergResVolumeM3 = Math.Min (0.02f, EmergResVolumeM3);
@@ -329,27 +352,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (MaxTripleValveCylPressurePSI == 0) MaxTripleValveCylPressurePSI = MaxCylPressurePSI / RelayValveRatio;
             if (EngineRelayValveRatio == 0) EngineRelayValveRatio = RelayValveRatio;
 
-            BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
-            BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
-            BrakeLine3PressurePSI = 0;
-            if (maxPressurePSI > 0)
-                ControlResPressurePSI = maxPressurePSI;
-            FullServPressurePSI = fullServPressurePSI;
-            AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
-            CylPressurePSI = AutoCylPressurePSI * RelayValveRatio;
-            AuxResPressurePSI = Math.Max(TwoPipes ? maxPressurePSI : maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
-            if ((Car as MSTSWagon).EmergencyReservoirPresent)
-                EmergResPressurePSI = Math.Max(AuxResPressurePSI, maxPressurePSI);
-            TripleValveState = AutoCylPressurePSI < 1 ? ValveState.Release : ValveState.Lap;
-            HoldingValve = ValveState.Release;
-            HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
-            SetRetainer(RetainerSetting.Exhaust);
-            MSTSLocomotive loco = Car as MSTSLocomotive;
-            if (loco != null) 
-            {
-                loco.MainResPressurePSI = loco.MaxMainResPressurePSI;
-            }
-
             if (EmergResVolumeM3 > 0 && EmergAuxVolumeRatio > 0 && BrakePipeVolumeM3 > 0)
                 AuxBrakeLineVolumeRatio = EmergResVolumeM3 / EmergAuxVolumeRatio / BrakePipeVolumeM3;
             else
@@ -357,7 +359,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                      
             if (CylVolumeM3 == 0) CylVolumeM3 = EmergResVolumeM3 / EmergAuxVolumeRatio / AuxCylVolumeRatio;
             
-            RelayValveFitted |= (loco != null && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) || (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve;
+            RelayValveFitted |= (Car is MSTSLocomotive loco && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) || (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve;
         }
 
         /// <summary>
