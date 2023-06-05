@@ -170,7 +170,7 @@ namespace Orts.Viewer3D
                         if (File.Exists(pngPath))
                             return Get(GraphicsDevice, pngPath);
                         var acePath = Path.ChangeExtension(path, ".ace");
-                        if (File.Exists(pngPath))
+                        if (File.Exists(acePath))
                             return Get(acePath, defaultTexture, required, extensionFilter);
                     } 
                     if (File.Exists(path))
