@@ -3281,7 +3281,9 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                frictionfraction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f); // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula; // For simple friction use "default" curve
+                // set default values if simple adhesion model, or if diesel or electric locomotive is used, which doesn't check for brake skid.
+
+                frictionfraction = 1.0f;  // Default value set to leave existing brakeforce constant regardless of changing speed
                 return frictionfraction;
             }
         }
@@ -3332,7 +3334,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                frictionfraction = 7.6f / ((MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f); // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula; // For simple friction use "default" curve
+                frictionfraction = 1.0f;  // Default value set to leave existing brakeforce constant regardless of changing speed
                 return frictionfraction;
             }
         }
