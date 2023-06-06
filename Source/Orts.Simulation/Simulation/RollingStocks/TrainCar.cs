@@ -3259,6 +3259,9 @@ namespace Orts.Simulation.RollingStocks
                         float zeroUserFriction = BrakeShoeFrictionFactor[MpS.ToKpH(0)];
 
                         frictionfraction = userFriction / zeroUserFriction * AdhesionMultiplier; // Factor calculated by normalising zero speed value on friction curve applied in WAG file
+
+                        // Clamp adjustment factor to a value of 1.0 - i.e. the brakeforce can never exceed the Brake Force value defined in the WAG file
+                        frictionfraction = MathHelper.Clamp(frictionfraction, 0.01f, 1.0f);
                     }
                     else
                     {
@@ -3268,6 +3271,9 @@ namespace Orts.Simulation.RollingStocks
                         // Assuming that current MaxBrakeForce has been set with an existing Friction CoF of 0.2f, an adjustment factor needs to be developed to reduce
                         // the MAxBrakeForce by a relative amount. Note force will be higher then ENG file value at low speed and reduce to actual value at higher speeds.
                         frictionfraction = defaultBrakeShoeCoefficientFriction / 0.2f * AdhesionMultiplier;  // Assuming that current MaxBrakeForce has been set with an existing Friction CoF of 0.2f, an adjustment factor needs to be developed to reduce the MAxBrakeForce by a relative amount
+
+                        // Clamp adjustment factor to a value of 1.0 - i.e. the brakeforce can never exceed the Brake Force value defined in the WAG file
+                        frictionfraction = MathHelper.Clamp(frictionfraction, 0.01f, 1.0f);
                     }
                 }
 
