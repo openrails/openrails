@@ -366,25 +366,3 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
-/Source/RunActivity/Content/LightGlow.png
-/Source/RunActivity/Content/SignalAspects.png
-/Source/RunActivity/Content/SignalLightGlow.png
-/Source/RunActivity/Content/SkyDome1.png
-/Source/RunActivity/Content/Snowflake.png
-/Source/RunActivity/Content/SwitchStates.png
-/Source/RunActivity/Content/TrackMonitorImages.png
-/Source/RunActivity/Content/Window.png
-/Source/RunActivity/Content/WindowLabelShadow.png
-/Source/RunActivity/Content/WindowScrollbar.png
-/Source/RunActivity/Content/LightGlow.png
-/Source/RunActivity/Content/SignalAspects.png
-/Source/RunActivity/Content/SignalLightGlow.png
-/Source/RunActivity/Content/SkyDome1.png
-/Source/RunActivity/Content/Snowflake.png
-/Source/RunActivity/Content/SwitchStates.png
-/Source/RunActivity/Content/TrackMonitorImages.png
-/Source/RunActivity/Content/Window.png
-/Source/RunActivity/Content/WindowLabelShadow.png
-/Source/RunActivity/Content/WindowScrollbar.png
-/.gitignore
-/Source/RunActivity/Content/WindowScrollbar.png
