@@ -2739,6 +2739,34 @@ These changes introduce an extra challenge to train braking, but provide a more 
 
 For example, in a lot of normal Westinghouse brake systems, a minimum pressure reduction was applied by moving the brake controller to the LAP position. Typically Westinghouse recommended values of between 7 and 10 psi.
 
+Brake Shoe Force
+----------------
+
+As indicated above the ``MaxBrakeForce`` parameter in the WAG file is the actual force applied to the wheel after reduction by the friction coefficient, often railway companies will provide an Net Braking Ratio (NBR) value to 
+specify the amount of force to be applied to the brake shoe. This force is then reduced by the brake shoe CoF to determine the actual force applied to the wheel.
+
+To facilitate the direct usage of the NBR value in the WAG file, the following parameters can be used. NB: When using these parameters the ``MaxBrakeForce`` parameter is not required.
+
+Brake Shoe Force - This is the current change being implemented. The following changes and parameter are included.
+
+``ORTSMaxBrakeShoeForce`` - the force applied to the brake shoe is the main braking force.
+
+``ORTSBrakeShoeType`` - this defines a number of different brake shoe types and curves. To provide a more realistic representation of the braking force the default CoF curves are 2D, ie 
+they are impacted by both the speed and Brake Shoe Force.  Typically ``ORTSBrakeShoeType`` will have one of the following keywords included - 
+``CastIron`` - cast iron brake shoe, 2D as above, ``HiFrictionCompost`` - high friction composite shoe, 2D as above, ``UserDefined`` - is a user defined curve 
+using the ORTSBrakeShoeFriction parameter, 1D (ie, speed only, see above section for the parameter format).
+
+``ORTSNumberCarBrakeShoes`` - to facilitate the operation of the default 2D curves above it is necessary to configure the number of brake shoes for each car.
+
+Whilst OR will attempt to set some defaults if parameters are left out, the most realistic operation will be achieved by using all the relevant parameters.
+
+The following two legacy arrangements can be used as an alternative to the above method,
+
+-  Legacy #1 - legacy arrangements using MaxBrakeForce on its own will remain unchanged. This in effect is an old MSTS file.
+
+- Legacy #2 - where MaxBrakeForce and ORTSBrakeShoeFriction have been set, legacy operation will remain unchanged.
+
+
 Train Brake Pipe Losses
 -----------------------
 
