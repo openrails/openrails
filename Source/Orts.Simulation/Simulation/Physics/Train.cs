@@ -5460,7 +5460,7 @@ namespace Orts.Simulation.Physics
                 if (car is MSTSLocomotive) locoBehind = false;
                 if (car.SpeedMpS > 0)
                 {
-                    car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
+                    car.SpeedMpS += (car.TotalForceN / car.MassKG) * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
                     // If car is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  
@@ -5473,7 +5473,7 @@ namespace Orts.Simulation.Physics
                 }
                 else if (car.SpeedMpS < 0)
                 {
-                    car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
+                    car.SpeedMpS += (car.TotalForceN / car.MassKG) * elapsedTime;
                     if (car.SpeedMpS > 0)
                         car.SpeedMpS = 0;
                     // If car is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  
