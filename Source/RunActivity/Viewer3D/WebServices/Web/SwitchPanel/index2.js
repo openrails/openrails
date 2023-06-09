@@ -30,7 +30,7 @@ function createSocket() {
     const connection = new WebSocket(uri, "json");
 
     connection.onopen = function (evt) {
-        console.log("websocket opened");
+        console.log("websocket opened: " + evt.type);
     };
 
     connection.onmessage = function (evt) {
@@ -48,11 +48,11 @@ function createSocket() {
     }
 
     connection.onerror = function (evt) {
-        console.error("websocket error", evt);
+        console.error("websocket error: ", evt.type);
     }
 
-    connection.onclose = function (event) {
-        console.log("WebSocket is closed now");
+    connection.onclose = function (evt) {
+        console.log("WebSocket is closed now: " + evt.type);
     };
 
     return connection;
@@ -187,7 +187,7 @@ function updateCellWithOneButton(div, definition) {
     // one button
     let switchButton = document.createElement("button");
     switchButton.setAttribute("id", definition.UserCommand[0]);
-    setEventListener(switchButton, definition.UserCommand[0]);
+    setEventListener(switchButton);
     switchButton.className = "btn1";
     div.appendChild(switchButton);
 
@@ -202,13 +202,13 @@ function updateCellWithTwoButtons(div, definition) {
     // two buttons (up and down functionality)
     let switchButton1 = document.createElement("button");
     switchButton1.setAttribute("id", definition.UserCommand[0]);
-    setEventListener(switchButton1, definition.UserCommand[0]);
+    setEventListener(switchButton1);
     switchButton1.className = "btn2";
     div.appendChild(switchButton1);
 
     let switchButton2 = document.createElement("button");
     switchButton2.setAttribute("id", definition.UserCommand[1]);
-    setEventListener(switchButton2, definition.UserCommand[1]);
+    setEventListener(switchButton2);
     switchButton2.className = "btn2";
     div.appendChild(switchButton2);
 
@@ -231,20 +231,24 @@ function updateCellStatus(definition, status) {
     }
 }
 
-function setEventListener(switchButton, userCommand) {
+function setEventListener(switchButton) {
 
     ["touchstart", "mousedown"].forEach(evt =>
         switchButton.addEventListener(evt,
             function (e) {
                 e.preventDefault();
-                sendButtonDown(userCommand);
+                sendButtonDown(this.id);
+                this.style.borderRadius = "90px";
+                this.parentElement.style.background = "black";
             })
     );
     ["touchend", "mouseup"].forEach(evt =>
         switchButton.addEventListener(evt,
             function (e) {
                 e.preventDefault();
-                sendButtonUp(userCommand);
+                sendButtonUp(this.id);
+                this.style.borderRadius = "12px";
+                this.parentElement.style.background = "";
             })
     )
 }

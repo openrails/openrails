@@ -34,7 +34,7 @@ function openFullscreen() {
     }
 }
 
-document.addEventListener('fullscreenchange', (event) => {
+document.addEventListener('fullscreenchange', () => {
     
     if (document.fullscreenElement) {
         console.log('Entered fullscreen:');

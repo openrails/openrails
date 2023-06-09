@@ -38,11 +38,6 @@ div {
 	height: 100%;
 }
 
-.btn1:active, .btn2:active {
-    background: black;
-    border-radius: 90px;
-}
-
 .btn0 {
     vertical-align: top;
     height: 90%;

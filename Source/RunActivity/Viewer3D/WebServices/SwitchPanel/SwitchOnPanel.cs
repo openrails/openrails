@@ -27,8 +27,8 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         public SwitchOnPanelDefinition Definition;
         public SwitchOnPanelStatus Status;
 
-        public bool[] IsDown = new bool[] { false };
-        public bool[] IsUp = new bool[] { false };
+        public bool[] IsPressed = new bool[] { false };
+        public bool[] IsReleased = new bool[] { false };
 
         public SwitchOnPanel(Viewer viewer)
         {
@@ -51,13 +51,13 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         {
             if (Definition.NoOffButtons == 1)
             {
-                IsDown = new bool[] { false };
-                IsUp = new bool[] { false };
+                IsPressed = new bool[] { false };
+                IsReleased = new bool[] { false };
             }
             if (Definition.NoOffButtons == 2)
             {
-                IsDown = new bool[] { false, false };
-                IsUp = new bool[] { false, false };
+                IsPressed = new bool[] { false, false };
+                IsReleased = new bool[] { false, false };
             }
         }
     }

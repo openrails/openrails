@@ -56,11 +56,11 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     break;
                 case "buttonDown":
                     value = int.Parse(switchPanelEvent.Data.ToString());
-                    SwitchesOnPanelStatic.setIsDown((UserCommand)Enum.ToObject(typeof(UserCommand), value));
+                    SwitchesOnPanelStatic.setIsPressed((UserCommand)Enum.ToObject(typeof(UserCommand), value));
                     break;
                 case "buttonUp":
                     value = int.Parse(switchPanelEvent.Data.ToString());
-                    SwitchesOnPanelStatic.setIsUp((UserCommand)Enum.ToObject(typeof(UserCommand), value));
+                    SwitchesOnPanelStatic.setIsReleased((UserCommand)Enum.ToObject(typeof(UserCommand), value));
                     break;
             }
             return Task.CompletedTask;
@@ -69,7 +69,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         public static bool IsDown(UserCommand userCommand)
         {
             if ((Connections > 0) && InitDone)
-                return SwitchesOnPanelStatic.IsDown(userCommand);
+                return SwitchesOnPanelStatic.IsPressed(userCommand);
             else
                 return false;
         }
@@ -77,7 +77,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         public static bool IsUp(UserCommand userCommand)
         {
             if ((Connections > 0) && InitDone)
-                return SwitchesOnPanelStatic.IsUp(userCommand);
+                return SwitchesOnPanelStatic.IsReleased(userCommand);
             else
                 return false;
         }
@@ -129,5 +129,4 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
         }
     }
-
 }

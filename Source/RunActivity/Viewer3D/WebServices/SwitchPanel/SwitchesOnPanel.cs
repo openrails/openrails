@@ -75,16 +75,6 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     SwitchesOnPanelArray[1, 3].initDefinition(UserCommand.ControlPantograph2);
                     SwitchesOnPanelArray[1, 4].initDefinition(UserCommand.ControlCircuitBreakerClosingOrder);
                     SwitchesOnPanelArray[1, 5].initDefinition(UserCommand.ControlHeadlightIncrease);
-
-                    SwitchesOnPanelArray[2, 0].initDefinition(UserCommand.GameChangeCab);
-                    SwitchesOnPanelArray[2, 1].initDefinition(UserCommand.GameSwitchManualMode);
-                    SwitchesOnPanelArray[2, 2].initDefinition(UserCommand.GameAutopilotMode);
-
-                    SwitchesOnPanelArray[3, 0].initDefinition(UserCommand.GameMultiPlayerDispatcher);
-                    SwitchesOnPanelArray[3, 1].initDefinition(UserCommand.DisplayTrackMonitorWindow);
-                    SwitchesOnPanelArray[3, 2].initDefinition(UserCommand.DisplayTrainDrivingWindow);
-                    SwitchesOnPanelArray[3, 3].initDefinition(UserCommand.DisplayNextStationWindow);
-                    SwitchesOnPanelArray[3, 9].initDefinition(UserCommand.DisplayHUD);
                     break;
 
                 case TrainCar.EngineTypes.Diesel:
@@ -104,57 +94,53 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     SwitchesOnPanelArray[1, 3].initDefinition(UserCommand.ControlDieselHelper);
                     SwitchesOnPanelArray[1, 4].initDefinition(UserCommand.ControlTractionCutOffRelayClosingOrder);
                     SwitchesOnPanelArray[1, 5].initDefinition(UserCommand.ControlHeadlightIncrease);
-
-                    SwitchesOnPanelArray[2, 0].initDefinition(UserCommand.GameChangeCab);
-                    SwitchesOnPanelArray[2, 1].initDefinition(UserCommand.GameSwitchManualMode);
-                    SwitchesOnPanelArray[2, 2].initDefinition(UserCommand.GameAutopilotMode);
-
-                    SwitchesOnPanelArray[3, 0].initDefinition(UserCommand.GameMultiPlayerDispatcher);
-                    SwitchesOnPanelArray[3, 1].initDefinition(UserCommand.DisplayTrackMonitorWindow);
-                    SwitchesOnPanelArray[3, 2].initDefinition(UserCommand.DisplayTrainDrivingWindow);
-                    SwitchesOnPanelArray[3, 3].initDefinition(UserCommand.DisplayNextStationWindow);
-                    SwitchesOnPanelArray[3, 9].initDefinition(UserCommand.DisplayHUD);
                     break;
 
                 case TrainCar.EngineTypes.Steam:
                     SwitchesOnPanelArray[0, 0].initDefinition(UserCommand.ControlDoorLeft);
                     SwitchesOnPanelArray[0, 9].initDefinition(UserCommand.ControlDoorRight);
-
-                    SwitchesOnPanelArray[3, 0].initDefinition(UserCommand.GameMultiPlayerDispatcher);
-                    SwitchesOnPanelArray[3, 1].initDefinition(UserCommand.DisplayTrackMonitorWindow);
-                    SwitchesOnPanelArray[3, 2].initDefinition(UserCommand.DisplayTrainDrivingWindow);
-                    SwitchesOnPanelArray[3, 3].initDefinition(UserCommand.DisplayNextStationWindow);
-                    SwitchesOnPanelArray[3, 9].initDefinition(UserCommand.DisplayHUD);
                     break;
 
                 case TrainCar.EngineTypes.Control:
                     // currently do not know what to do with this type as I have no example
                     SwitchesOnPanelArray[0, 0].initDefinition(UserCommand.ControlDoorLeft);
                     SwitchesOnPanelArray[0, 9].initDefinition(UserCommand.ControlDoorRight);
-
-                    SwitchesOnPanelArray[3, 0].initDefinition(UserCommand.GameMultiPlayerDispatcher);
-                    SwitchesOnPanelArray[3, 1].initDefinition(UserCommand.DisplayTrackMonitorWindow);
-                    SwitchesOnPanelArray[3, 2].initDefinition(UserCommand.DisplayTrainDrivingWindow);
-                    SwitchesOnPanelArray[3, 3].initDefinition(UserCommand.DisplayNextStationWindow);
-                    SwitchesOnPanelArray[3, 9].initDefinition(UserCommand.DisplayHUD);
                     break;
             }
+
+            SwitchesOnPanelArray[2, 0].initDefinition(UserCommand.GameChangeCab);
+            SwitchesOnPanelArray[2, 1].initDefinition(UserCommand.GameSwitchManualMode);
+            SwitchesOnPanelArray[2, 2].initDefinition(UserCommand.GameAutopilotMode);
+            SwitchesOnPanelArray[2, 3].initDefinition(UserCommand.GameSwitchAhead);
+            SwitchesOnPanelArray[2, 4].initDefinition(UserCommand.GameSwitchBehind);
+            SwitchesOnPanelArray[2, 5].initDefinition(UserCommand.GameClearSignalForward);
+
+            SwitchesOnPanelArray[3, 0].initDefinition(UserCommand.GameMultiPlayerDispatcher);
+            SwitchesOnPanelArray[3, 1].initDefinition(UserCommand.DisplayTrackMonitorWindow);
+            SwitchesOnPanelArray[3, 2].initDefinition(UserCommand.DisplayTrainDrivingWindow);
+            SwitchesOnPanelArray[3, 3].initDefinition(UserCommand.DisplayNextStationWindow);
+            SwitchesOnPanelArray[3, 4].initDefinition(UserCommand.DisplaySwitchWindow);
+            SwitchesOnPanelArray[3, 5].initDefinition(UserCommand.DisplayTrainOperationsWindow);
+            SwitchesOnPanelArray[3, 6].initDefinition(UserCommand.DisplayTrainDpuWindow);
+            SwitchesOnPanelArray[3, 7].initDefinition(UserCommand.DisplayTrainListWindow);
+            SwitchesOnPanelArray[3, 8].initDefinition(UserCommand.DisplayEOTListWindow);
+            SwitchesOnPanelArray[3, 9].initDefinition(UserCommand.DisplayHUD);
         }
 
         private enum isTypeOfButtonAction
         {
-            down,
-            up
+            isPressed,
+            isReleased
         }
 
-        public void setIsDown(UserCommand userCommand)
+        public void setIsPressed(UserCommand userCommand)
         {
-            setIs(userCommand, isTypeOfButtonAction.down);
+            setIs(userCommand, isTypeOfButtonAction.isPressed);
         }
 
-        public void setIsUp(UserCommand userCommand)
+        public void setIsReleased(UserCommand userCommand)
         {
-            setIs(userCommand, isTypeOfButtonAction.up);
+            setIs(userCommand, isTypeOfButtonAction.isReleased);
         }
 
         private void setIs(UserCommand userCommand, isTypeOfButtonAction isTypeOfButtonAction)
@@ -165,29 +151,29 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 {
                     if (switchOnPanel.Definition.UserCommand[k] == userCommand)
                     {
-                        if (isTypeOfButtonAction == isTypeOfButtonAction.down)
-                            switchOnPanel.IsDown[k] = true;
-                        if (isTypeOfButtonAction == isTypeOfButtonAction.up)
-                            switchOnPanel.IsUp[k] = true;
+                        if (isTypeOfButtonAction == isTypeOfButtonAction.isPressed)
+                            switchOnPanel.IsPressed[k] = true;
+                        if (isTypeOfButtonAction == isTypeOfButtonAction.isReleased)
+                            switchOnPanel.IsReleased[k] = true;
                     }
                 }
             }
         }
 
-        public bool IsDown(UserCommand userCommand)
+        public bool IsPressed(UserCommand userCommand)
         {
-            if (Is(userCommand, isTypeOfButtonAction.down))
+            if (Is(userCommand, isTypeOfButtonAction.isPressed))
             {
                 switch (userCommand)
                 {
                     case UserCommand.DisplayTrackMonitorWindow:
-                        IsDownDisplayTrackMonitorWindow();
+                        IsPressedDisplayTrackMonitorWindow();
                         return false;
                     case UserCommand.DisplayTrainDrivingWindow:
-                        IsDownDisplayTrainDrivingWindow();
+                        IsPressedDisplayTrainDrivingWindow();
                         return false;
                     case UserCommand.DisplayHUD:
-                        IsDownDisplayHUD();
+                        IsPressedDisplayHUD();
                         return false;
                     default:
                         return true;
@@ -197,12 +183,11 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             {
                 return false;
             }
-
         }
 
-        public bool IsUp(UserCommand userCommand)
+        public bool IsReleased(UserCommand userCommand)
         {
-            return Is(userCommand, isTypeOfButtonAction.up);
+            return Is(userCommand, isTypeOfButtonAction.isReleased);
         }
 
         private bool Is(UserCommand userCommand, isTypeOfButtonAction isTypeOfButtonAction)
@@ -215,20 +200,20 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     {
                         switch (isTypeOfButtonAction)
                         {
-                            case isTypeOfButtonAction.down:
-                                if (switchOnPanel.IsDown[k])
+                            case isTypeOfButtonAction.isPressed:
+                                if (switchOnPanel.IsPressed[k])
                                 {
-                                    switchOnPanel.IsDown[k] = false;
+                                    switchOnPanel.IsPressed[k] = false;
                                     return true;
                                 }
                                 else
                                 {
                                     return false;
                                 }
-                            case isTypeOfButtonAction.up:
-                                if (switchOnPanel.IsUp[k])
+                            case isTypeOfButtonAction.isReleased:
+                                if (switchOnPanel.IsReleased[k])
                                 {
-                                    switchOnPanel.IsUp[k] = false;
+                                    switchOnPanel.IsReleased[k] = false;
                                     return true;
                                 }
                                 else
@@ -242,7 +227,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             return false;
         }
 
-        private void IsDownDisplayTrackMonitorWindow()
+        private void IsPressedDisplayTrackMonitorWindow()
         {
             // handle display track monitor from switch panel:
             // cycle between: off --> static only --> all --> off
@@ -270,7 +255,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
         }
 
-        private void IsDownDisplayTrainDrivingWindow()
+        private void IsPressedDisplayTrainDrivingWindow()
         {
             // handle display train driving info from switch panel:
             // cycle between: off --> normal text mode --> abreviated --> off
@@ -298,7 +283,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
         }
 
-        private void IsDownDisplayHUD()
+        private void IsPressedDisplayHUD()
         {
             if (!Viewer.HUDWindow.Visible)
             {

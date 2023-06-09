@@ -22,6 +22,7 @@ using ORTS.Scripting.Api;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks;
+using ORTS.Common;
 
 namespace Orts.Viewer3D.WebServices.SwitchPanel
 {
@@ -72,7 +73,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 switchOnPanelStatus.Color = "";
                 switchOnPanelStatus.Blinking = false;
             }
-            switchOnPanelStatus.Status = door.ToString();
+            switchOnPanelStatus.Status = Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(door));
         }
 
         private static void getStatusControlPantograph(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -91,7 +92,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 switchOnPanelStatus.Color = "lightblue";
                 switchOnPanelStatus.Blinking = true;
             }
-            switchOnPanelStatus.Status = locomotive.Pantographs.List[pantographIndex].State.ToString();
+            switchOnPanelStatus.Status = GetStringAttribute.GetPrettyName(locomotive.Pantographs.List[pantographIndex].State);
         }
 
         private static void getStatusControlHeadlight(ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -135,7 +136,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     switchOnPanelStatus.Color = "orange";
                     break;
             }
-            switchOnPanelStatus.Status = locomotive.Direction.ToString();
+            switchOnPanelStatus.Status = Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(locomotive.Direction));
         }
 
         private static void getStatusControlSander(ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -195,7 +196,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 case Train.TRAIN_CONTROL.UNDEFINED:
                     break;
             }
-            switchOnPanelStatus.Status = Viewer.PlayerTrain.ControlMode.ToString();
+            switchOnPanelStatus.Status = GetStringAttribute.GetPrettyName(Viewer.PlayerTrain.ControlMode);
         }
 
         private static void getStatusGameAutopilotMode(ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -299,7 +300,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             string scriptName = locomotive.DieselPowerSupply.TractionCutOffRelay.ScriptName;
             if (scriptName == "Automatic")
             {
-                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Automatic") + " <br> ";
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Always on") + " <br> ";
                 switchOnPanelStatus.Color = "lightgray";
             }
 
@@ -339,7 +340,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     switchOnPanelStatus.Color = "lightgray";
                     break;
             }
-            switchOnPanelStatus.Status = (Locomotive as MSTSDieselLocomotive).DieselEngines.State.ToString();
+            switchOnPanelStatus.Status = Viewer.Catalog.GetParticularString("Engine", (Locomotive as MSTSDieselLocomotive).DieselEngines.State.ToString());
         }
 
         private static void getStatusDieselEngine(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -447,9 +448,9 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         public override int GetHashCode()
         {
             var hashCode = -1070463442;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Status);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Color);
-            hashCode = hashCode * -1521134295 + Blinking.GetHashCode();
+            hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Status);
+            hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Color);
+            hashCode = (hashCode * -1521134295) + Blinking.GetHashCode();
             return hashCode;
         }
     }
