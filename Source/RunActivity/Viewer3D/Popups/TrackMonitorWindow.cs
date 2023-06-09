@@ -39,7 +39,7 @@ namespace Orts.Viewer3D.Popups
         Label SpeedAllowed;
         Label ControlMode;
         Label Gradient;
-        public TrackMonitor Monitor { get; private set; }
+        TrackMonitor Monitor;
 
         readonly Dictionary<Train.TRAIN_CONTROL, string> ControlModeLabels;
 
@@ -191,10 +191,10 @@ namespace Orts.Viewer3D.Popups
         readonly Viewer Viewer;
         private bool metric => Viewer.MilepostUnitsMetric;
         private readonly SavingProperty<int> StateProperty;
-        public DisplayMode Mode
+        private DisplayMode Mode
         {
             get => (DisplayMode)StateProperty.Value;
-            private set
+            set
             {
                 StateProperty.Value = (int)value;
             }

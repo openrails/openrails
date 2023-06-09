@@ -147,13 +147,6 @@ If you choose to develop your own pages, please consider sharing them with the O
 
 .. image:: images/web-page-map.png
 
-- | The Switch Panel page shows a html panel with a selection of 40 buttons. Buttons which can be used to issue Open Rails commands, normally entered via the keyboard.
-  | This panel is most usefull when used on a touch enabled device, such as a tablet.
-  | The adress of the panel is "<OR host>:2150/SwitchPanel/index.html", where <OR host> must be replaced with the hostname or ip adress of the host where Open Rails is running. 
-  | Not all buttons are yet filled. Depends also on the type of locomotive.
-
-.. image:: images/switch-panel.png
-
 .. _web-server-api:
 
 Application Programming Interfaces (APIs)

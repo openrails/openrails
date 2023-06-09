@@ -33,7 +33,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework.Input;
-using Orts.Viewer3D.WebServices.SwitchPanel;
 using ORTS.Common.Input;
 using ORTS.Settings;
 using Game = Orts.Viewer3D.Processes.Game;
@@ -153,8 +152,7 @@ namespace Orts.Viewer3D
             if (RDState != null && RDState.IsPressed(command))
                 return true;
             var setting = InputSettings.Commands[(int)command];
-            return (setting.IsKeyDown(KeyboardState) && !setting.IsKeyDown(LastKeyboardState)) ||
-                SwitchPanelModule.IsDown(command);
+            return setting.IsKeyDown(KeyboardState) && !setting.IsKeyDown(LastKeyboardState);
         }
 
         public static bool IsReleased(UserCommand command)
