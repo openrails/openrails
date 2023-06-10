@@ -581,7 +581,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     Car.BrakeShoeForceN = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
                 }
             }
-            else Car.BrakeShoeForceN = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2);
+            else
+            {
+                Car.BrakeShoeForceN = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2);
+            }
 
             float brakeShoeFriction = Car.GetBrakeShoeFrictionFactor();
             Car.HuDBrakeShoeFriction = Car.GetBrakeShoeFrictionCoefficientHuD();
