@@ -138,7 +138,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         Car.BrakeShoeForceN = Car.MaxBrakeForceN * brakecylinderfraction;
 
                         if (Car.BrakeShoeForceN < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
+                        {
                             Car.BrakeShoeForceN = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
+                        }
                     }
                     else
                     {
