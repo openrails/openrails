@@ -149,7 +149,10 @@ namespace Orts.Viewer3D
                 return;
             }
             if (isInside)
+            {
                 _inSources.Add(new SoundSource(Viewer, Car, fullPath));
+                _inSources.Last().IsInternalTrackSound = true;
+            }
             else
                 _outSources.Add(new SoundSource(Viewer, Car, fullPath));
         }
@@ -674,6 +677,7 @@ namespace Orts.Viewer3D
         private Orts.Formats.Msts.Deactivation DeactivationConditions;
         public bool IsEnvSound;
         public bool IsExternal = true;
+        public bool IsInternalTrackSound = false;
         public bool Ignore3D;
         /// <summary>
         /// MSTS treats Stereo() tagged mono wav files specially. This is a flag
@@ -1421,6 +1425,12 @@ namespace Orts.Viewer3D
                 if (SoundSource.Viewer.Camera.AttachedCar == null || ((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar).ExternalSoundPassThruPercent == -1)
                     volume *= Program.Viewer.Settings.ExternalSoundPassThruPercent * 0.01f;
                 else volume *= ((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar).ExternalSoundPassThruPercent * 0.01f;
+            }
+
+            if (SoundSource.IsInternalTrackSound && SoundSource.Viewer.Camera.Style != Camera.Styles.External)
+            {
+                if (((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar)?.TrackSoundPassThruPercent != -1)
+                    volume *= ((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar).TrackSoundPassThruPercent * 0.01f;
             }
 
             ALSoundSource.Volume = volume;

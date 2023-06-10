@@ -107,6 +107,7 @@ namespace Orts.Simulation.RollingStocks
         public string InteriorSoundFileName;
         public string Cab3DSoundFileName;
         public float ExternalSoundPassThruPercent = -1;
+        public float TrackSoundPassThruPercent = -1;
         public float WheelRadiusM = Me.FromIn(18.0f);  // Provide some defaults in case it's missing from the wag - Wagon wheels could vary in size from approx 10" to 25".
         protected float StaticFrictionFactorN;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
         float FrictionLowSpeedN; // Davis low speed value 0 - 5 mph
@@ -1435,6 +1436,7 @@ namespace Orts.Simulation.RollingStocks
                     FreightAnimations = new FreightAnimations(stf, this);
                     break;
                 case "wagon(ortsexternalsoundpassedthroughpercent": ExternalSoundPassThruPercent = stf.ReadFloatBlock(STFReader.UNITS.None, -1); break;
+                case "wagon(ortstracksoundpassedthroughpercent": TrackSoundPassThruPercent = stf.ReadFloatBlock(STFReader.UNITS.None, -1); break;
                 case "wagon(ortsalternatepassengerviewpoints": // accepted only if there is already a passenger viewpoint
                     if (HasInsideView)
                     {
@@ -1561,6 +1563,7 @@ namespace Orts.Simulation.RollingStocks
             SlipWarningThresholdPercent = copy.SlipWarningThresholdPercent;
             Lights = copy.Lights;
             ExternalSoundPassThruPercent = copy.ExternalSoundPassThruPercent;
+            TrackSoundPassThruPercent = copy.TrackSoundPassThruPercent;
             foreach (PassengerViewPoint passengerViewPoint in copy.PassengerViewpoints)
                 PassengerViewpoints.Add(passengerViewPoint);
             foreach (ViewPoint headOutViewPoint in copy.HeadOutViewpoints)
