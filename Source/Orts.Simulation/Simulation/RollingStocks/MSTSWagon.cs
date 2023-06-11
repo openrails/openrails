@@ -626,7 +626,7 @@ namespace Orts.Simulation.RollingStocks
                     NumberCarBrakeShoes = (LocoNumDrvAxles * 4) + (WagonNumAxles * 4); // Assume 4 brake shoes per axle on all wheels
                 } 
 
-                if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType == BrakeShoeTypes.Cast_Iron || BrakeShoeType == BrakeShoeTypes.Hi_Friction_Compost))
+                if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType == BrakeShoeTypes.Cast_Iron || BrakeShoeType == BrakeShoeTypes.High_Friction_Composite))
                 {
                     Trace.TraceInformation("Number of Locomotive Brakeshoes set to default value of {0}", NumberCarBrakeShoes);
                 }
@@ -635,7 +635,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 NumberCarBrakeShoes = WagonNumAxles * 4; // Assume 4 brake shoes per axle
 
-                if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType == BrakeShoeTypes.Cast_Iron || BrakeShoeType == BrakeShoeTypes.Hi_Friction_Compost))
+                if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType == BrakeShoeTypes.Cast_Iron || BrakeShoeType == BrakeShoeTypes.High_Friction_Composite))
                 {
                     Trace.TraceInformation("Number of Wagon Brakeshoes set to default value of {0}", NumberCarBrakeShoes);
                 }
