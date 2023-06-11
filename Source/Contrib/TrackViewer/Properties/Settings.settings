@@ -122,6 +122,12 @@
     <Setting Name="showSoundRegions" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="showEvents" Type="System.Boolean" Scope="User">
+        <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="showEventNames" Type="System.Boolean" Scope="User">
+        <Value Profile="(Default)">False</Value>
+    </Setting>
     <Setting Name="showLabels" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
@@ -156,6 +162,9 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="statusShowNames" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="statusShowEventNames" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="statusShowTerrain" Type="System.Boolean" Scope="User">

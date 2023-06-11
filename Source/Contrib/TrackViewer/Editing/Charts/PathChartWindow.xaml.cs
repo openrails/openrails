@@ -91,15 +91,6 @@ namespace ORTS.TrackViewer.Editing.Charts
             }
 
         }
-
-        /// <summary>
-        /// Set the title of the window
-        /// </summary>
-        /// <param name="newTitle"></param>
-        public void SetTitle(string newTitle)
-        {
-            this.Title = newTitle;
-        }
         #endregion
 
         #region Window events
