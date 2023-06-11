@@ -683,9 +683,9 @@ namespace Orts.Simulation.RollingStocks
         public enum BrakeShoeTypes
         {
             Unknown,
-            CastIron,
-            HiFrictionCompost,
-            UserDefined,
+            Cast_Iron,
+            High_Friction_Composite,
+            User_Defined,
         }
         public BrakeShoeTypes BrakeShoeType;
 
@@ -3239,15 +3239,15 @@ namespace Orts.Simulation.RollingStocks
                 float NewtonsTokNewtons = 0.001f;
                 float brakeShoeForcekN = (NewtonsTokNewtons * BrakeShoeForceN) / NumberCarBrakeShoes;
 
-                if (BrakeShoeType == BrakeShoeTypes.CastIron)
+                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron)
                 {
                     frictionfraction = 0.6f * ((1.6f * brakeShoeForcekN + 100.0f) / (8.0f * brakeShoeForcekN + 100.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 100.0f) / (5.0f * MpS.ToKpH(AbsSpeedMpS) + 100.0f));
                 }
-                else if (BrakeShoeType == BrakeShoeTypes.HiFrictionCompost)
+                else if (BrakeShoeType == BrakeShoeTypes.High_Friction_Composite)
                 {
                     frictionfraction = 0.44f * ((0.1f * brakeShoeForcekN + 20.0f) / (0.4f * brakeShoeForcekN + 20.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 150.0f) / (2.0f * MpS.ToKpH(AbsSpeedMpS) + 150.0f));
                 }
-                else if (BrakeShoeType == BrakeShoeTypes.UserDefined)
+                else if (BrakeShoeType == BrakeShoeTypes.User_Defined)
                 {
                     frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
                 }
@@ -3306,15 +3306,15 @@ namespace Orts.Simulation.RollingStocks
                 float NewtonsTokNewtons = 0.001f;
                 float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
 
-                if (BrakeShoeType == BrakeShoeTypes.CastIron)
+                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron)
                 {
                     frictionfraction = 0.6f * ((1.6f * brakeShoeForcekN + 100.0f) / (8.0f * brakeShoeForcekN + 100.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 100.0f) / (5.0f * MpS.ToKpH(AbsSpeedMpS) + 100.0f));
                 }
-                else if (BrakeShoeType == BrakeShoeTypes.HiFrictionCompost)
+                else if (BrakeShoeType == BrakeShoeTypes.High_Friction_Composite)
                 {
                     frictionfraction = 0.44f * ((0.1f * brakeShoeForcekN + 20.0f) / (0.4f * brakeShoeForcekN + 20.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 150.0f) / (2.0f * MpS.ToKpH(AbsSpeedMpS) + 150.0f));
                 }
-                else if (BrakeShoeType == BrakeShoeTypes.UserDefined)
+                else if (BrakeShoeType == BrakeShoeTypes.User_Defined)
                 {
                     frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
                 }

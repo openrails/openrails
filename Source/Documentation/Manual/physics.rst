@@ -2759,7 +2759,7 @@ Brake Shoe Force - This is the current change being implemented. The following c
 
 ``ORTSBrakeShoeType`` - this defines a number of different brake shoe types and curves. To provide a more realistic representation of the braking force the default CoF curves are 2D, ie 
 they are impacted by both the speed and Brake Shoe Force.  Typically ``ORTSBrakeShoeType`` will have one of the following keywords included - 
-``CastIron`` - cast iron brake shoe, 2D as above, ``HiFrictionCompost`` - high friction composite shoe, 2D as above, ``UserDefined`` - is a user defined curve 
+``Cast_Iron`` - cast iron brake shoe, 2D as above, ``Hi_Friction_Composite`` - high friction composite shoe, 2D as above, ``User_Defined`` - is a user defined curve 
 using the ORTSBrakeShoeFriction parameter, 1D (ie, speed only, see above section for the parameter format).
 
 ``ORTSNumberCarBrakeShoes`` - to facilitate the operation of the default 2D curves above it is necessary to configure the number of brake shoes for each car.
