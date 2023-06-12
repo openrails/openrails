@@ -4883,7 +4883,7 @@ namespace Orts.Simulation.RollingStocks
                     TractiveEffortLbsF = 0.0f; 
                 }
                 TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
-                
+
                 // Calculate IHP
                 // IHP = (MEP x CylStroke(ft) x cylArea(sq in) x No Strokes (/min)) / 33000) - this is per cylinder
 

@@ -1985,7 +1985,7 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 mpc.Update(elapsedClockSeconds);
             }
-
+                
 
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
 
@@ -2802,8 +2802,8 @@ public List<CabView> CabViewList = new List<CabView>();
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
             {
                 WheelSpeedSlipMpS = LocomotiveAxles[0].AxleSpeedMpS;
-                    WheelSpeedMpS = SpeedMpS;
-                }
+                WheelSpeedMpS = SpeedMpS;
+            }
             else WheelSpeedMpS = LocomotiveAxles[0].AxleSpeedMpS; 
 
         }
