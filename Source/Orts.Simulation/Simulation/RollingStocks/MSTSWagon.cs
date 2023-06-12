@@ -72,6 +72,23 @@ namespace Orts.Simulation.RollingStocks
         public Doors Doors;        
         public Door RightDoor => Doors.RightDoor;
         public Door LeftDoor => Doors.LeftDoor;
+
+        public enum WindowState
+            // Don't change the order of entries within this enum
+        {
+            Closed,
+            Closing,
+            Opening,
+            Open,
+        }
+
+        public static int LeftWindowFrontIndex = 0;
+        public static int RightWindowFrontIndex = 1;
+        public static int LeftWindowRearIndex = 2;
+        public static int RightWindowRearIndex = 3;
+        public WindowState[] WindowStates = new WindowState[4];
+        public float[] SoundHeardInternallyCorrection = new float[2];
+
         public bool MirrorOpen;
         public bool UnloadingPartsOpen;
         public bool WaitForAnimationReady; // delay counter to start loading/unliading is on;
@@ -1812,6 +1829,10 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(DerailPossible);
             outf.Write(DerailExpected);
             outf.Write(DerailElapsedTimeS);
+            for (int index = 0; index < 4; index++)
+            {
+                outf.Write((int)WindowStates[index]);
+            }
 
             LocomotiveAxles.Save(outf);
 
@@ -1867,6 +1888,10 @@ namespace Orts.Simulation.RollingStocks
             DerailPossible = inf.ReadBoolean();
             DerailExpected = inf.ReadBoolean();
             DerailElapsedTimeS = inf.ReadSingle();
+            for (int index = 0; index < 4; index++)
+            {
+                WindowStates[index] = (WindowState)inf.ReadInt32();
+            }
 
             MoveParamsToAxle();
             LocomotiveAxles.Restore(inf);
@@ -3494,6 +3519,22 @@ namespace Orts.Simulation.RollingStocks
             if (MirrorOpen) SignalEvent(Event.MirrorOpen); // hook for sound trigger
             else SignalEvent(Event.MirrorClose);
             if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
+        }
+
+        public void ToggleWindow(bool rear, bool left)
+        {
+            var open = false;
+            var index = (left ? 0 : 1) + 2 * (rear ? 1 : 0);
+                if (WindowStates[index] == WindowState.Closed || WindowStates[index] == WindowState.Closing)
+                    WindowStates[index] = WindowState.Opening;
+                else if (WindowStates[index] == WindowState.Open || WindowStates[index] == WindowState.Opening)
+                    WindowStates[index] = WindowState.Closing;
+                if (WindowStates[index] == WindowState.Opening) open = true;
+
+
+            if (open) SignalEvent(Event.WindowOpening); // hook for sound trigger
+            else SignalEvent(Event.WindowClosing);
+            if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(left ^ rear ? CabControl.WindowLeft : CabControl.WindowRight, open ? CabSetting.On : CabSetting.Off);
         }
 
         public void FindControlActiveLocomotive()
