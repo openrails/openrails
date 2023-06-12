@@ -43,6 +43,7 @@ using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -149,12 +150,13 @@ namespace Orts.Simulation.RollingStocks
         public float Curtius_KnifflerC = 0.161f;             //                                      speedMpS * 3.6 + B
         public float AdhesionK = 0.7f;   //slip characteristics slope
         public float AxleInertiaKgm2;    //axle inertia
-        public float AdhesionDriveWheelRadiusM;
         public float WheelSpeedMpS;
         public float WheelSpeedSlipMpS; // speed of wheel if locomotive is slipping
         public float SlipWarningThresholdPercent = 70;
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
         public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
+
+        public Axles LocomotiveAxles; // Only used at locomotives for efficiency
 
         // Colours for smoke and steam effects
         public Color ExhaustTransientColor = Color.Black;
@@ -349,6 +351,7 @@ namespace Orts.Simulation.RollingStocks
         {
             Pantographs = new Pantographs(this);
             Doors = new Doors(this);
+            LocomotiveAxles = new Axles(this);
         }
 
         public void Load()
@@ -982,6 +985,7 @@ namespace Orts.Simulation.RollingStocks
             Pantographs.Initialize();
             Doors.Initialize();
             PassengerCarPowerSupply?.Initialize();
+            LocomotiveAxles.Initialize();
 
             base.Initialize();
                        
@@ -1012,9 +1016,9 @@ namespace Orts.Simulation.RollingStocks
 
         public override void InitializeMoving()
         {
-            PassengerCarPowerSupply?.InitializeMoving();
-
             base.InitializeMoving();
+            PassengerCarPowerSupply?.InitializeMoving();
+            LocomotiveAxles.InitializeMoving();
         }
 
         /// <summary>
@@ -1385,15 +1389,8 @@ namespace Orts.Simulation.RollingStocks
                     SlipWarningThresholdPercent = stf.ReadFloat(STFReader.UNITS.None, 70.0f); if (SlipWarningThresholdPercent <= 0) SlipWarningThresholdPercent = 70.0f;
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(ortsadhesion(wheelset(axle(ortsinertia":
-                    stf.MustMatch("(");
-                    AxleInertiaKgm2 = stf.ReadFloat(STFReader.UNITS.RotationalInertia, null);
-                    stf.SkipRestOfBlock();
-                    break;
-                case "wagon(ortsadhesion(wheelset(axle(ortsradius":
-                    stf.MustMatch("(");
-                    AdhesionDriveWheelRadiusM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    stf.SkipRestOfBlock();
+                case "wagon(ortsadhesion(wheelset":
+                    LocomotiveAxles.Parse(lowercasetoken, stf);
                     break;
                 case "wagon(lights":
                     Lights = new LightCollection(stf);
@@ -1559,7 +1556,6 @@ namespace Orts.Simulation.RollingStocks
             Curtius_KnifflerC = copy.Curtius_KnifflerC;
             AdhesionK = copy.AdhesionK;
             AxleInertiaKgm2 = copy.AxleInertiaKgm2;
-            AdhesionDriveWheelRadiusM = copy.AdhesionDriveWheelRadiusM;
             SlipWarningThresholdPercent = copy.SlipWarningThresholdPercent;
             Lights = copy.Lights;
             ExternalSoundPassThruPercent = copy.ExternalSoundPassThruPercent;
@@ -1622,6 +1618,20 @@ namespace Orts.Simulation.RollingStocks
             {
                 PowerSupply = new ScriptedPassengerCarPowerSupply(this);
                 PassengerCarPowerSupply.Copy(copy.PassengerCarPowerSupply);
+            }
+            LocomotiveAxles.Copy(copy.LocomotiveAxles);
+            MoveParamsToAxle();
+        }
+
+        /// <summary>
+        /// We are moving parameters from locomotive to axle. 
+        /// </summary>
+        public void MoveParamsToAxle()
+        {
+            foreach (var axle in LocomotiveAxles)
+            {
+                axle.SlipWarningTresholdPercent = SlipWarningThresholdPercent;
+                axle.AdhesionK = AdhesionK;
             }
         }
 
@@ -1736,6 +1746,8 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(DerailExpected);
             outf.Write(DerailElapsedTimeS);
 
+            LocomotiveAxles.Save(outf);
+
             base.Save(outf);
         }
 
@@ -1788,6 +1800,9 @@ namespace Orts.Simulation.RollingStocks
             DerailPossible = inf.ReadBoolean();
             DerailExpected = inf.ReadBoolean();
             DerailElapsedTimeS = inf.ReadSingle();
+
+            MoveParamsToAxle();
+            LocomotiveAxles.Restore(inf);
 
             base.Restore(inf);
         }

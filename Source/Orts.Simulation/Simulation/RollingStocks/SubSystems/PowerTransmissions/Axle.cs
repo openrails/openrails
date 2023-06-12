@@ -17,8 +17,14 @@
 
 using System;
 using System.IO;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using ORTS.Common;
+using Orts.Parsers.Msts;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
+using SharpDX.Direct2D1;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -40,6 +46,251 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         ForceDriven = 2
     }
+
+    /// <summary>
+    /// Sums individual axle values to create a total value
+    /// </summary>
+
+    public class Axles : ISubSystem<Axles>
+    {
+        /// <summary>
+        /// List of axles
+        /// </summary>
+        public List<Axle> AxleList = new List<Axle>();
+        /// <summary>
+        /// Number of axles
+        /// </summary>
+        public int Count { get { return AxleList.Count; } }
+        /// <summary>
+        /// Reference to the car
+        /// </summary>
+        protected readonly TrainCar Car;
+
+        /// <summary>
+        /// Get total axle out force with brake force substracted
+        /// </summary>
+        public float CompensatedForceN
+        {
+            get
+            {
+                float forceN = 0;
+                foreach (var axle in AxleList)
+                {
+                    forceN += axle.CompensatedAxleForceN;
+                }
+                return forceN;
+            }
+        }
+        /// <summary>
+        /// Get total axle out force
+        /// </summary>
+        public float AxleForceN
+        {
+            get
+            {
+                float forceN = 0;
+                foreach (var axle in AxleList)
+                {
+                    forceN += axle.AxleForceN;
+                }
+                return forceN;
+            }
+        }
+        public bool IsWheelSlip
+        {
+            get
+            {
+                foreach (var axle in AxleList)
+                {
+                    if (axle.IsWheelSlip) return true;
+                }
+                return false;
+            }
+        }
+        public bool IsWheelSlipWarning
+        {
+            get
+            {
+                foreach (var axle in AxleList)
+                {
+                    if (axle.IsWheelSlipWarning) return true;
+                }
+                return false;
+            }
+        }
+        public int NumOfSubstepsPS
+        {
+            get
+            {
+                int sub = 0;
+                foreach (var axle in AxleList)
+                {
+                    if (axle.NumOfSubstepsPS > sub) sub = axle.NumOfSubstepsPS;
+                }
+                return sub;
+            }
+        }
+        public float SlipSpeedMpS
+        {
+            get
+            {
+                float speed = 0;
+                foreach (var axle in AxleList)
+                {
+                    if (Math.Abs(axle.SlipSpeedMpS) > speed) speed = axle.SlipSpeedMpS;
+                }
+                return speed;
+            }
+        }
+        public float SlipSpeedPercent
+        {
+            get
+            {
+                float slip = 0;
+                foreach (var axle in AxleList)
+                {
+                    if (Math.Abs(axle.SlipSpeedPercent) > slip) slip = axle.SlipSpeedPercent;
+                }
+                return slip;
+            }
+        }
+        public float SlipDerivationPercentpS
+        {
+            get
+            {
+                float slip = 0;
+                foreach (var axle in AxleList)
+                {
+                    if (Math.Abs(axle.SlipDerivationPercentpS) > slip) slip = axle.SlipDerivationPercentpS;
+                }
+                return slip;
+            }
+        }
+        public double ResetTime;
+        public Axles(TrainCar car)
+        {
+            Car = car;
+        }
+        public Axle this[int i]
+        {
+            get { return AxleList[i]; }
+            set { AxleList[i] = value; }
+        }
+        public void Add(Axle axle)
+        {
+            AxleList.Add(axle);
+        }
+
+        /// <summary>
+        /// Parses all the parameters within the ENG file
+        /// </summary>
+        /// <param name="stf">reference to the ENG file reader</param>
+        public void Parse(string lowercasetoken, STFReader stf)
+        {
+            switch (lowercasetoken)
+            {
+                case "wagon(ortsadhesion(wheelset":
+                    AxleList.Clear();
+                    stf.MustMatch("(");
+                    stf.ParseBlock(
+                        new[] {
+                            new STFReader.TokenProcessor(
+                                "axle",
+                                () => {
+                                    var axle = new Axle();
+                                    AxleList.Add(axle);
+                                    axle.Parse(stf);
+                                }
+                            )
+                        });
+                    if (AxleList.Count == 0)
+                        throw new InvalidDataException("Wheelset block with no axles");
+                    break;
+            }
+        }
+        public void Copy(Axles other)
+        {
+            AxleList = new List<Axle>();
+            foreach (var ax in other.AxleList)
+            {
+                var axle = new Axle();
+                axle.Copy(ax);
+                AxleList.Add(axle);
+            }
+        }
+
+        public void Initialize()
+        {
+            ResetTime = Car.Simulator.GameTime;
+            foreach (var axle in AxleList)
+            {
+                if (Car is MSTSLocomotive locomotive)
+                {
+                    if (axle.InertiaKgm2 <= 0) axle.InertiaKgm2 = locomotive.AxleInertiaKgm2 / AxleList.Count;
+                    if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * locomotive.DrvWheelWeightKg / AxleList.Count;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
+                    if (axle.DampingNs <= 0) axle.DampingNs = locomotive.MassKG / 1000.0f / AxleList.Count;
+                    if (axle.FrictionN <= 0) axle.FrictionN = locomotive.MassKG / 1000.0f / AxleList.Count;
+                }
+                axle.Initialize();
+            }
+        }
+
+        public void InitializeMoving()
+        {
+            ResetTime = Car.Simulator.GameTime;
+            foreach (var axle in AxleList)
+            {
+                axle.TrainSpeedMpS = Car.SpeedMpS;
+                axle.InitializeMoving();
+            }
+        }
+        /// <summary>
+        /// Saves status of each axle on the list
+        /// </summary>
+        /// <param name="outf"></param>
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(AxleList.Count);
+            foreach (var axle in AxleList)
+                axle.Save(outf);
+        }
+
+        /// <summary>
+        /// Restores status of each axle on the list
+        /// </summary>
+        /// <param name="inf"></param>
+        public void Restore(BinaryReader inf)
+        {
+            int count = inf.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                if (i >= AxleList.Count)
+                {
+                    AxleList.Add(new Axle());
+                    AxleList[i].Initialize();
+                }
+                AxleList[i].Restore(inf);
+            }
+        }
+        /// <summary>
+        /// Updates each axle on the list
+        /// </summary>
+        /// <param name="elapsedClockSeconds">Time span within the simulation cycle</param>
+        public void Update(float elapsedClockSeconds)
+        {
+            foreach (var axle in AxleList)
+            {
+                axle.Update(elapsedClockSeconds);
+            }
+        }
+        public List<Axle>.Enumerator GetEnumerator()
+        {
+            return AxleList.GetEnumerator();
+        }
+    }
+
+
+
     /// <summary>
     /// Axle class by Matej Pacha (c)2011, University of Zilina, Slovakia (matej.pacha@kves.uniza.sk)
     /// The class is used to manage and simulate axle forces considering adhesion problems.
@@ -52,7 +303,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     ///  
     /// Every computation within Axle class uses SI-units system with xxxxxUUU unit notation
     /// </summary>
-    public class Axle
+    public class Axle : ISubSystem<Axle>
     {
         public int NumOfSubstepsPS { get; set; }
 
@@ -362,8 +613,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         public float SlipWarningTresholdPercent { set; get; }
 
-        public double ResetTime = 0;
-
         /// <summary>
         /// Nonparametric constructor of Axle class instance
         /// - sets motor parameter to null
@@ -379,16 +628,55 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             DriveType = AxleDriveType.ForceDriven;
             totalInertiaKgm2 = inertiaKgm2;
         }
+        public void Initialize()
+        {
+            AxleSpeedMpS = 0;
+            motor?.Initialize();
+        }
+        public void InitializeMoving()
+        {
+            AxleSpeedMpS = TrainSpeedMpS;
+            motor?.InitializeMoving();
+        }
+        public void Parse(STFReader stf)
+        {
+            stf.MustMatch("(");
+            while (!stf.EndOfBlock())
+            {
+                switch (stf.ReadItem().ToLower())
+                {
+                    case "ortsradius":
+                        WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
+                        break;
+                    case "ortsinertia":
+                        InertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.RotationalInertia, null);
+                        break;
+                    case "weight":
+                        AxleWeightN = 9.81f * stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
+                        break;
+                    case "(":
+                        stf.SkipRestOfBlock();
+                        break;
+                }
+            }
+        }
+        public void Copy(Axle other)
+        {
+            WheelRadiusM = other.WheelRadiusM;
+            InertiaKgm2 = other.InertiaKgm2;
+            AxleWeightN = other.AxleWeightN;
+        }
 
         /// <summary>
-        /// A constructor that restores the game state.
+        /// Restores the game state.
         /// </summary>
         /// <param name="inf">The save stream to read from.</param>
-        public Axle(BinaryReader inf) : this()
+        public void Restore(BinaryReader inf)
         {
             previousSlipPercent = inf.ReadSingle();
             previousSlipSpeedMpS = inf.ReadSingle();
             AxleForceN = inf.ReadSingle();
+            AxleSpeedMpS = inf.ReadSingle();
         }
 
         /// <summary>
@@ -400,6 +688,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             outf.Write(previousSlipPercent);
             outf.Write(previousSlipSpeedMpS);
             outf.Write(AxleForceN);
+            outf.Write(AxleSpeedMpS);
         }
 
         /// <summary>
@@ -573,27 +862,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 slipDerivationPercentpS = (SlipSpeedPercent - previousSlipPercent) / timeSpan;
                 previousSlipPercent = SlipSpeedPercent;
             }
-        }
-
-        /// <summary>
-        /// Resets all integral values (set to zero)
-        /// </summary>
-        public void Reset()
-        {
-            AxleSpeedMpS = 0;
-            motor?.Reset();
-
-        }
-
-        /// <summary>
-        /// Resets all integral values to given initial condition
-        /// </summary>
-        /// <param name="initValue">Initial condition</param>
-        public void Reset(double resetTime, float initValue)
-        {
-            AxleSpeedMpS = initValue;
-            ResetTime = resetTime;
-            motor?.Reset();
         }
 
         /// <summary>
