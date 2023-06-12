@@ -584,7 +584,6 @@ namespace Orts.Simulation.RollingStocks
         public float MaxTractiveEffortLbf;     // Maximum theoritical tractive effort for locomotive
         public float DisplayMaxTractiveEffortLbf;     // HuD display value of maximum theoritical tractive effort for locomotive
 
-        float DisplayTractiveEffortLbsF; // Value of Tractive effort to display in HUD
         float MaxCriticalSpeedTractiveEffortLbf;  // Maximum power value @ critical speed of piston
         float DisplayCriticalSpeedTractiveEffortLbf;  // Display power value @ speed of piston
         float absStartTractiveEffortN = 0.0f;      // Record starting tractive effort
@@ -790,7 +789,6 @@ namespace Orts.Simulation.RollingStocks
                     Cylinder2CrankAngleRad = stf.ReadFloat(STFReader.UNITS.Angle, 0.0f);
                     Cylinder3CrankAngleRad = stf.ReadFloat(STFReader.UNITS.Angle, 0.0f);
                     Cylinder4CrankAngleRad = stf.ReadFloat(STFReader.UNITS.Angle, 0.0f);
-                    Trace.TraceInformation("Input - CrankAngle {0} {1} {2} {3}", Cylinder1CrankAngleRad, Cylinder2CrankAngleRad, Cylinder3CrankAngleRad, Cylinder4CrankAngleRad);
                     stf.SkipRestOfBlock();
                     break;
                 case "engine(cylinderstroke": CylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1290,6 +1288,9 @@ namespace Orts.Simulation.RollingStocks
                     WheelCrankAngleDiffRad[0] = MathHelper.ToRadians(0.0f);
                     WheelCrankAngleDiffRad[1] = MathHelper.ToRadians(90.0f);
                 }
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("CrankAngle set to default values {0} rad {1} rad {2} rad {3} rad", WheelCrankAngleDiffRad[0], WheelCrankAngleDiffRad[1], WheelCrankAngleDiffRad[2], WheelCrankAngleDiffRad[3]);
             }
             else // set values set by user
             {
@@ -1297,6 +1298,10 @@ namespace Orts.Simulation.RollingStocks
                 WheelCrankAngleDiffRad[1] = Cylinder2CrankAngleRad;
                 WheelCrankAngleDiffRad[2] = Cylinder3CrankAngleRad;
                 WheelCrankAngleDiffRad[3] = Cylinder4CrankAngleRad;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("CrankAngle set to user values {0} rad {1} rad {2} rad {3} rad", WheelCrankAngleDiffRad[0], WheelCrankAngleDiffRad[1], WheelCrankAngleDiffRad[2], WheelCrankAngleDiffRad[3]);
+
             }
 
                 // ******************  Test Locomotive and Gearing type *********************** 
@@ -2533,7 +2538,16 @@ namespace Orts.Simulation.RollingStocks
             SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp(SmokeColorUnits, 0.25f, 1));
 
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
-            var variable1 = Math.Abs(WheelSpeedSlipMpS / DriverWheelRadiusM / MathHelper.Pi * 5);
+            // If wheel is not slipping then use normal wheel speed, this reduces oscillations in variable1 which causes issues with sounds.
+            var variable1 = 0.0f;
+            if (WheelSlip)
+            {
+                variable1 = Math.Abs(WheelSpeedSlipMpS / DriverWheelRadiusM / MathHelper.Pi * 5);
+            }
+            else
+            {
+                variable1 = Math.Abs(WheelSpeedMpS / DriverWheelRadiusM / MathHelper.Pi * 5);
+            }
             Variable1 = ThrottlePercent == 0 ? 0 : variable1;
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmoothed * 100;
@@ -4869,8 +4883,7 @@ namespace Orts.Simulation.RollingStocks
                     TractiveEffortLbsF = 0.0f; 
                 }
                 TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
-                DisplayTractiveEffortLbsF = TractiveEffortLbsF;
-
+                
                 // Calculate IHP
                 // IHP = (MEP x CylStroke(ft) x cylArea(sq in) x No Strokes (/min)) / 33000) - this is per cylinder
 
@@ -4978,25 +4991,6 @@ namespace Orts.Simulation.RollingStocks
 
             if (absSpeedMpS == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
                 TractiveForceN = 0;
-
-            // Based upon max IHP, limit motive force.
-
-            if (IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
-            {
-                TractiveForceN = N.FromLbf((MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(SpeedMpS)));
-                IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
-                IsCritTELimit = true; // Flag if limiting TE
-            }
-            else
-            {
-                IsCritTELimit = false; // Reset flag if limiting TE
-            }
-
-            DrawBarPullLbsF = N.ToLbf(Math.Abs(TractiveForceN) - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
-            DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
-
-            DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(absSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
-            DrawbarHorsePowerHP = MathHelper.Clamp(DrawbarHorsePowerHP, 0, DrawbarHorsePowerHP); // clamp value so it doesn't go negative
 
             #region - Steam Adhesion Model Input for Steam Locomotives
 
@@ -5377,7 +5371,21 @@ namespace Orts.Simulation.RollingStocks
                 TractiveForceN = 0.5f;
             }
 
-#endregion
+            #endregion
+
+
+            // Based upon max IHP, limit motive force.
+
+            if (IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
+            {
+                TractiveForceN = N.FromLbf((MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(SpeedMpS)));
+                IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
+                IsCritTELimit = true; // Flag if limiting TE
+            }
+            else
+            {
+                IsCritTELimit = false; // Reset flag if limiting TE
+            }
 
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (absSpeedMpS < 1.0)
@@ -6310,6 +6318,14 @@ namespace Orts.Simulation.RollingStocks
 
         public override string GetDebugStatus()
         {
+
+
+            DrawBarPullLbsF = N.ToLbf(Math.Abs(MotiveForceN) - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
+            DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
+
+            DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(absSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
+            DrawbarHorsePowerHP = MathHelper.Clamp(DrawbarHorsePowerHP, 0, DrawbarHorsePowerHP); // clamp value so it doesn't go negative
+
             var status = new StringBuilder(base.GetDebugStatus());
 
             status.AppendFormat("\n\n\t\t === {0} === \t\t\n", Simulator.Catalog.GetString("Key Inputs"));
@@ -6752,7 +6768,7 @@ namespace Orts.Simulation.RollingStocks
                          Simulator.Catalog.GetString("StartTE"),
                          FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
                          Simulator.Catalog.GetString("TE"),
-                         FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
+                         FormatStrings.FormatForce(MotiveForceN, IsMetric),
                          Simulator.Catalog.GetString("Draw"),
                          FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
                          Simulator.Catalog.GetString("CritSpeed"),
@@ -6797,7 +6813,7 @@ namespace Orts.Simulation.RollingStocks
                          Simulator.Catalog.GetString("StartTE"),
                          FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
                          Simulator.Catalog.GetString("TE"),
-                         FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
+                         FormatStrings.FormatForce(MotiveForceN, IsMetric),
                          Simulator.Catalog.GetString("Draw"),
                          FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
                          Simulator.Catalog.GetString("CritSpeed"),
