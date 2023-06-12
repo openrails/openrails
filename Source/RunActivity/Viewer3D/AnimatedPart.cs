@@ -141,6 +141,16 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
+        /// Updates an animated part that toggles between two states and returns relative value of 
+        /// animation key (between 0 and 1).
+        /// </summary>
+        public float UpdateAndReturnState(bool state, ElapsedTime elapsedTime)
+        {
+            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds);
+            return AnimationKey / FrameCount;
+        }
+
+        /// <summary>
         /// Updates an animated part that loops (e.g. running gear), changing by the given amount.
         /// </summary>
         public void UpdateLoop(float change)
