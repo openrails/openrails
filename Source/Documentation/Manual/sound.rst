@@ -403,6 +403,17 @@ Trigger       Function
 243           GenericItem2Off
 =========     =====================================
 
+Following triggers are related to windows animation:
+
+.. _sound-windows:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+260           WindowClosing
+261           WindowOpening
+=========     =====================================
+
 Variable Triggers
 -----------------
 
