@@ -66,6 +66,7 @@ namespace Orts.Simulation
       , FiringIsManual
       , FireShovelfull
       , CylinderCocks
+      , SteamBooster
       , CylinderCompound
       , LargeEjector
       , SmallEjector
@@ -213,7 +214,8 @@ namespace Orts.Simulation
                 , new string [] { GetString("Firing Rate"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") } 
-                , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") } 
+                , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("SteamBooster"), null, null, null, GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("LargeEjector"), null, null, null, GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") }

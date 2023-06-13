@@ -631,7 +631,7 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// This function updates periodically the locomotive's motive force.
         /// </summary>
-        protected override void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
+        protected override void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS, int numberofengines)
         {
             // This section calculates the motive force of the locomotive as follows:
             // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 

@@ -484,7 +484,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Axle speed value, in metric meters per second
         /// </summary>
-        public float AxleSpeedMpS { get; private set; }
+        public float AxleSpeedMpS { get; set; }
         /// <summary>
         /// Axle angular position in radians
         /// </summary>

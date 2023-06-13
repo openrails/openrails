@@ -189,6 +189,8 @@
         [GetString("Control Blower Decrease")] ControlBlowerDecrease,
         [GetString("Control Steam Heat Increase")] ControlSteamHeatIncrease,
         [GetString("Control Steam Heat Decrease")] ControlSteamHeatDecrease,
+        [GetString("Control Steam Booster Increase")] ControlSteamBoosterIncrease,
+        [GetString("Control Steam Booster Decrease")] ControlSteamBoosterDecrease,
         [GetString("Control Damper Increase")] ControlDamperIncrease,
         [GetString("Control Damper Decrease")] ControlDamperDecrease,
         [GetString("Control Firebox Open")] ControlFireboxOpen,
