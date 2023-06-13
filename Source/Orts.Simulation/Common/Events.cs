@@ -198,10 +198,6 @@ namespace Orts.Common
         VigilanceAlarmReset,
         WaterScoopDown,
         WaterScoopUp,
-        WindowClosing,
-        WindowOpening,
-        WindowsClosed,
-        WindowsOpen,
         WiperOff,
         WiperOn,
         _HeadlightDim,
@@ -531,11 +527,6 @@ namespace Orts.Common
                         case 250: return Event.OverchargeBrakingOn;
                         case 251: return Event.OverchargeBrakingOff;
                         case 252: return Event.EmergencyVentValveOn;
-
-                        case 260: return Event.WindowClosing;
-                        case 261: return Event.WindowOpening;
-                        case 262: return Event.WindowsClosed;
-                        case 263: return Event.WindowsOpen;
 
                         // Cruise Control
                         case 298: return Event.LeverFromZero;

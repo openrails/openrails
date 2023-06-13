@@ -70,10 +70,6 @@ namespace Orts.Viewer3D.RollingStock
         AnimatedPart LeftDoor;
         AnimatedPart RightDoor;
         AnimatedPart Mirrors;
-        AnimatedPart LeftWindowFront;
-        AnimatedPart RightWindowFront;
-        AnimatedPart LeftWindowRear;
-        AnimatedPart RightWindowRear;
         protected AnimatedPart Wipers;
         protected AnimatedPart Bell;
         protected AnimatedPart Item1Continuous;
@@ -325,10 +321,6 @@ namespace Orts.Viewer3D.RollingStock
             LeftDoor = new AnimatedPart(TrainCarShape);
             RightDoor = new AnimatedPart(TrainCarShape);
             Mirrors = new AnimatedPart(TrainCarShape);
-            LeftWindowFront = new AnimatedPart(TrainCarShape);
-            RightWindowFront = new AnimatedPart(TrainCarShape);
-            LeftWindowRear = new AnimatedPart(TrainCarShape);
-            RightWindowRear = new AnimatedPart(TrainCarShape);
             Wipers = new AnimatedPart(TrainCarShape);
             UnloadingParts = new AnimatedPart(TrainCarShape);
             Bell = new AnimatedPart(TrainCarShape);
@@ -421,10 +413,6 @@ namespace Orts.Viewer3D.RollingStock
             LeftDoor.SetState(MSTSWagon.LeftDoor.State >= DoorState.Opening);
             RightDoor.SetState(MSTSWagon.RightDoor.State >= DoorState.Opening);
             Mirrors.SetState(MSTSWagon.MirrorOpen);
-            LeftWindowFront.SetState(MSTSWagon.WindowStates[MSTSWagon.LeftWindowFrontIndex] >= MSTSWagon.WindowState.Opening);
-            RightWindowFront.SetState(MSTSWagon.WindowStates[MSTSWagon.RightWindowFrontIndex] >= MSTSWagon.WindowState.Opening);
-            LeftWindowRear.SetState(MSTSWagon.WindowStates[MSTSWagon.LeftWindowRearIndex] >= MSTSWagon.WindowState.Opening);
-            RightWindowRear.SetState(MSTSWagon.WindowStates[MSTSWagon.RightWindowRearIndex] >= MSTSWagon.WindowState.Opening);
             Item1TwoState.SetState(MSTSWagon.GenericItem1);
             Item2TwoState.SetState(MSTSWagon.GenericItem2);
             UnloadingParts.SetState(MSTSWagon.UnloadingPartsOpen);
@@ -543,22 +531,6 @@ namespace Orts.Viewer3D.RollingStock
             {
                 Mirrors.AddMatrix(matrix);
             }
-            else if (matrixName.StartsWith("LEFTWINDOWFRONT")) // Windows
-            {
-                LeftWindowFront.AddMatrix(matrix);
-            }
-            else if (matrixName.StartsWith("RIGHTWINDOWFRONT")) // Windows
-            {
-                RightWindowFront.AddMatrix(matrix);
-            }
-            else if (matrixName.StartsWith("LEFTWINDOWREAR")) // Windows
-            {
-                LeftWindowRear.AddMatrix(matrix);
-            }
-            else if (matrixName.StartsWith("RIGHTWINDOWREAR")) // Windows
-            {
-                RightWindowRear.AddMatrix(matrix);
-            }
             else if (matrixName.StartsWith("UNLOADINGPARTS")) // unloading parts
             {
                 UnloadingParts.AddMatrix(matrix);
@@ -620,8 +592,6 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlDoorLeft, new Action[] { Noop, () => new ToggleDoorsLeftCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlDoorRight, new Action[] { Noop, () => new ToggleDoorsRightCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlMirror, new Action[] { Noop, () => new ToggleMirrorsCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommand.ControlWindowLeft, new Action[] { Noop, () => new ToggleWindowLeftCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommand.ControlWindowRight, new Action[] { Noop, () => new ToggleWindowRightCommand(Viewer.Log) });
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -645,10 +615,6 @@ namespace Orts.Viewer3D.RollingStock
             LeftDoor.UpdateState(MSTSWagon.LeftDoor.State >= DoorState.Opening, elapsedTime);
             RightDoor.UpdateState(MSTSWagon.RightDoor.State >= DoorState.Opening, elapsedTime);
             Mirrors.UpdateState(MSTSWagon.MirrorOpen, elapsedTime);
-            LeftWindowFront.UpdateState(MSTSWagon.WindowStates[MSTSWagon.LeftWindowFrontIndex] >= MSTSWagon.WindowState.Opening, elapsedTime);
-            RightWindowFront.UpdateState(MSTSWagon.WindowStates[MSTSWagon.RightWindowFrontIndex] >= MSTSWagon.WindowState.Opening, elapsedTime);
-            LeftWindowRear.UpdateState(MSTSWagon.WindowStates[MSTSWagon.LeftWindowRearIndex] >= MSTSWagon.WindowState.Opening, elapsedTime);
-            RightWindowRear.UpdateState(MSTSWagon.WindowStates[MSTSWagon.RightWindowRearIndex] >= MSTSWagon.WindowState.Opening, elapsedTime);
             UnloadingParts.UpdateState(MSTSWagon.UnloadingPartsOpen, elapsedTime);
             Item1TwoState.UpdateState(MSTSWagon.GenericItem1, elapsedTime);
             Item2TwoState.UpdateState(MSTSWagon.GenericItem2, elapsedTime);
