@@ -415,6 +415,7 @@ Uncheck this option for a more detailed behaviour in which the player has to swi
 
 The default setting is checked.
 
+In timetable mode, power status is not affected by these options.
 
 .. _options-forced-red:
 
