@@ -272,6 +272,8 @@ namespace Orts.Common
 
         MPCChangePosition,
 
+        SteamBoosterChange,
+
     }
 
     public static class Events
@@ -545,6 +547,8 @@ namespace Orts.Common
                         case 304: return Event.CruiseControlAlert1;
 
                         case 310: return Event.MPCChangePosition;
+
+                        case 320: return Event.SteamBoosterChange;
 
                         default: return 0;
                     }
