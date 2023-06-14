@@ -1827,7 +1827,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 {
                     if (DynamicBrakeBlendingForceMatch)
                     {
-                        float diff = target * MaxBrakeForceN - DynamicBrakeForceN;
+                        float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
                         float threshold = 100;
                         if (diff > threshold && DynamicBrakeIntervention < 1)
                             DynamicBrakeIntervention = Math.Min(DynamicBrakeIntervention + elapsedClockSeconds, 1);

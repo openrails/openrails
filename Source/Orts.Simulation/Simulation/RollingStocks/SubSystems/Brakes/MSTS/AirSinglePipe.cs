@@ -622,15 +622,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 }
                             }
                         }
-                        if (loco.DynamicBrakePercent > 0 && Car.MaxBrakeForceN > 0)
+                        if (loco.DynamicBrakePercent > 0 && Car.FrictionBrakeBlendingMaxForceN > 0)
                         {
                             if (loco.DynamicBrakePartialBailOff)
                             {
-                                var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                                var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                                if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.MaxBrakeForceN)
+                                var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.FrictionBrakeBlendingMaxForceN;
+                                var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.FrictionBrakeBlendingMaxForceN;
+                                if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.FrictionBrakeBlendingMaxForceN)
                                 {
-                                    demandedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.MaxBrakeForceN*MaxCylPressurePSI, 0), MaxCylPressurePSI);
+                                    demandedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.FrictionBrakeBlendingMaxForceN * MaxCylPressurePSI, 0), MaxCylPressurePSI);
                                     if (demandedPressurePSI > CylPressurePSI && demandedPressurePSI < CylPressurePSI + 4) // Allow some margin for unnecessary air brake application
                                     {
                                         demandedPressurePSI = CylPressurePSI;

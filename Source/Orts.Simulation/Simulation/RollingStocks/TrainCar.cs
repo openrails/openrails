@@ -579,9 +579,10 @@ namespace Orts.Simulation.RollingStocks
 
         public float TunnelForceN;  // Resistive force due to tunnel, in Newtons
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
-        public float BrakeForceN;    // brake force applied to slow train (Newtons) - will be impacted by wheel/rail friction
+        public float BrakeForceN;    // current braking force applied to slow train (Newtons) - will be impacted by wheel/rail friction
         public float BrakeRetardForceN;    // brake force applied to wheel by brakeshoe (Newtons) independent of friction wheel/rail friction
         public float BrakeShoeForceN;
+        public float FrictionBrakeBlendingMaxForceN; // This is the maximum force for the friction barke when it is blended with the dynamic brake
 
         // Sum of all the forces acting on a Traincar in the direction of driving.
         // MotiveForceN and GravityForceN act to accelerate the train. The others act to brake the train.
