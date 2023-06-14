@@ -598,6 +598,8 @@ namespace Orts.Simulation.RollingStocks
 
             MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
 
+            FrictionBrakeBlendingMaxForceN = InitialMaxBrakeForceN; // set the value of braking when blended with dynamic brakes
+
             if (MaxBrakeShoeForceN != 0 && BrakeShoeType != BrakeShoeTypes.Unknown)
             {
                 MaxBrakeForceN = MaxBrakeShoeForceN;            
