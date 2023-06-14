@@ -1806,7 +1806,7 @@ namespace Orts.Viewer3D
                 graphicsDevice.SetVertexBuffers(VertexBufferBindings);
                 if (IndexBuffer != null)
                 {
-                    graphicsDevice.Indices = IndexBuffer;
+                graphicsDevice.Indices = IndexBuffer;
                     graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: 0, startIndex: PrimitiveOffset, primitiveCount: PrimitiveCount);
                 }
                 else
@@ -2602,8 +2602,8 @@ namespace Orts.Viewer3D
                     else
                     {
                         // .s lod-ding is based on distance levels
-                        while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
-                            displayDetailLevel--;
+                    while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
+                        displayDetailLevel--;
                     }
                 }
 
@@ -2650,12 +2650,12 @@ namespace Orts.Viewer3D
             bones = null; // standard scenery material has no skin and bones
             var xnaMatrix = Matrix.Identity;
             var hi = shapePrimitive.HierarchyIndex;
-            while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
-            {
-                Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
-                hi = shapePrimitive.Hierarchy[hi];
-            }
-            Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+                        while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
+                        {
+                            Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
+                            hi = shapePrimitive.Hierarchy[hi];
+                        }
+                        Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
             return xnaMatrix;
         }
 
@@ -2665,11 +2665,11 @@ namespace Orts.Viewer3D
             Matrix matrix = Matrix.Identity;
             if (h != null && h.Length > iNode)
             {
-                while (iNode != -1)
-                {
-                    matrix *= Matrices[iNode];
-                    iNode = h[iNode];
-                }
+            while (iNode != -1)
+            {
+                matrix *= Matrices[iNode];
+                iNode = h[iNode];
+            }
             }
             return matrix;
         }

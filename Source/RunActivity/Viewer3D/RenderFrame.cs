@@ -199,7 +199,7 @@ namespace Orts.Viewer3D
         }
     }
 
-    public class RenderItemCollection : IList<RenderItem>, IEnumerator<RenderItem>
+	public class RenderItemCollection : IList<RenderItem>, IEnumerator<RenderItem>
 	{
 		RenderItem[] Items = new RenderItem[4];
 		int ItemCount;

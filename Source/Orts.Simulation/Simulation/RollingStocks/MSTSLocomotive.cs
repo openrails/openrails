@@ -2005,7 +2005,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
 
                         if (this is MSTSDieselLocomotive dieselLocomotive)
-                            {
+                        {
                             for (var i = 0; i < dieselLocomotive.DieselEngines.Count; i++)
                             {
                                 var de = dieselLocomotive.DieselEngines[i];
@@ -2014,7 +2014,7 @@ public List<CabView> CabViewList = new List<CabView>();
                                     if (de.State != DieselEngineState.Running)
                                         de.Initialize();
                                 }
-                                 if (de.GearBox != null)
+                                if (de.GearBox != null)
                                     de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
                             }
                         }

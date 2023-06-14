@@ -281,7 +281,7 @@ namespace Orts.Viewer3D
             {
                 Textures[path].Dispose();
                 Textures.Remove(path);
-        }
+            }
         }
 
         [CallOnThread("Updater")]
@@ -506,7 +506,7 @@ namespace Orts.Viewer3D
             return Materials[materialKey];
         }
 
-        public bool LoadNightTextures()
+       public bool LoadNightTextures()
         {
             int count = 0;
             foreach (SceneryMaterial material in from material in Materials.Values
@@ -566,9 +566,9 @@ namespace Orts.Viewer3D
                 if (Materials[key] == material)
                 {
                     MaterialMarks[key] = true;
-                break;
+                    break;
+                }
             }
-        }
         }
 
         public void Sweep()
@@ -622,7 +622,7 @@ namespace Orts.Viewer3D
                 SceneryShader.EnvironmentMapDiffuseTexture = BlackCubeTexture;
                 SceneryShader.BrdfLutTexture = BlackTexture;
             }
-
+            
             if (Viewer.Settings.UseMSTSEnv == false)
             {
                 SceneryShader.Overcast = Viewer.Simulator.Weather.CloudCoverFactor;
@@ -1001,7 +1001,7 @@ namespace Orts.Viewer3D
                 shader.ImageTexture = NightTexture;
                 shader.ImageTextureIsNight = true;
             }
-            else
+             else
             {
                 shader.ImageTexture = Texture;
                 shader.ImageTextureIsNight = false;
