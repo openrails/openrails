@@ -343,7 +343,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         case ModeType.Switch:
                             CommandSwitch = false;
-                            Wagon.SignalEvent(Event.BatterySwitchCommandOn);
+                            Wagon.SignalEvent(Event.BatterySwitchCommandOff);
                             break;
                         case ModeType.PushButtons:
                             CommandButtonOff = true;
