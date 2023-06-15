@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using static Orts.Simulation.RollingStocks.TrainCar;
+using ORTS.Common;
 
 namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
@@ -106,6 +107,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                         }
                     }
                     break;
+                default:
+                    Trace.TraceInformation("ORTSSteamEngines not parsed correctly");
+                    break;
 
             }
         }
@@ -146,7 +150,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             outf.Write(SEList.Count);
             foreach (SteamEngine se in SEList)
+            {
                 se.Save(outf);
+            }
         }
 
         /// <summary>
