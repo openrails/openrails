@@ -1525,7 +1525,8 @@ if AIFireOn, AIFireReset are triggered or if boiler pressure or BoilerHeat
 drops too low.
 
 Once AIFireOn or AIFireOff have been used, the safety valves work normally
-as for manual firing.
+as for manual firing until they are reset back to the same operation by the
+pressure dropping to a low enough level.
 
 AIFireReset - (``<Ctrl+Alt+H>``) - turns off both of the above
 functions when desired.
