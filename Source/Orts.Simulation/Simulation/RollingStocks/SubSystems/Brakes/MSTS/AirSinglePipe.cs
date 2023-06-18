@@ -746,7 +746,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSI;
             }
-
+            
             if (!Car.BrakesStuck)
             {
                 Car.BrakeShoeForceN = Car.MaxBrakeForceN * Math.Min(CylPressurePSI / MaxCylPressurePSI, 1);

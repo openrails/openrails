@@ -86,7 +86,7 @@ namespace Orts.Simulation.RollingStocks
 
         public bool GenericItem1;
         public bool GenericItem2;
-
+                
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
         float TempMassDiffRatio;
 
@@ -607,7 +607,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-            MaxBrakeForceN = InitialMaxBrakeForceN;
+                MaxBrakeForceN = InitialMaxBrakeForceN;
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
@@ -4036,7 +4036,7 @@ namespace Orts.Simulation.RollingStocks
             if (FreightAnimations.LoadedOne != null) fraction = FreightAnimations.LoadedOne.LoadPerCent / 100;
             return fraction;
         }
-
+        
         /// <summary>
         /// Starts a continuous increase in controlled value.
         /// </summary>

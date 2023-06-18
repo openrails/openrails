@@ -7223,8 +7223,8 @@ namespace Orts.Simulation.RollingStocks
                     );
             }
 
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && SteamEngineType != SteamEngineTypes.Geared) 
-                // Only display slip monitor if advanced adhesion is set and simplecontrols/physics not set
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && SteamEngineType != SteamEngineTypes.Geared)
+            // Only display slip monitor if advanced adhesion is set and simplecontrols/physics not set
             {
                 status.AppendFormat("\n\t\t === {0} ===  \t\t{1}\t\t{2}\n\n",
                     Simulator.Catalog.GetString("Slip Monitor"),
