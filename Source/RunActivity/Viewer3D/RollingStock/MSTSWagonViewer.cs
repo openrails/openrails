@@ -70,10 +70,10 @@ namespace Orts.Viewer3D.RollingStock
         AnimatedPart LeftDoor;
         AnimatedPart RightDoor;
         AnimatedPart Mirrors;
-        AnimatedPart LeftWindowFront;
-        AnimatedPart RightWindowFront;
-        AnimatedPart LeftWindowRear;
-        AnimatedPart RightWindowRear;
+        protected AnimatedPart LeftWindowFront;
+        protected AnimatedPart RightWindowFront;
+        protected AnimatedPart LeftWindowRear;
+        protected AnimatedPart RightWindowRear;
         protected AnimatedPart Wipers;
         protected AnimatedPart Bell;
         protected AnimatedPart Item1Continuous;
@@ -736,6 +736,13 @@ namespace Orts.Viewer3D.RollingStock
                 foreach (ParticleEmitterViewer drawer in drawers)
                     drawer.PrepareFrame(frame, elapsedTime);
 
+            if (!(car is MSTSLocomotive) && (LeftWindowFront.FrameCount > 0 || RightWindowFront.FrameCount > 0))
+            {
+                if (LeftWindowFront.FrameCount > 0)
+                    car.SoundHeardInternallyCorrection[MSTSWagon.LeftWindowFrontIndex] = LeftWindowFront.AnimationKeyFraction();
+                if (RightWindowFront.FrameCount > 0)
+                    car.SoundHeardInternallyCorrection[MSTSWagon.RightWindowFrontIndex] = RightWindowFront.AnimationKeyFraction();
+            }
         }
 
 

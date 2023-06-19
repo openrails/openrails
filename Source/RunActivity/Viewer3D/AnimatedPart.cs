@@ -151,6 +151,14 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
+        /// Returns the animation key fraction (between 0 and 1)
+        /// </summary>
+        public float AnimationKeyFraction()
+        {
+            return AnimationKey / FrameCount;
+        }
+
+        /// <summary>
         /// Updates an animated part that loops (e.g. running gear), changing by the given amount.
         /// </summary>
         public void UpdateLoop(float change)
