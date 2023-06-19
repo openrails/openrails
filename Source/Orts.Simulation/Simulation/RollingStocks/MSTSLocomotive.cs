@@ -1981,8 +1981,6 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 // TODO  this is a wild simplification for electric and diesel electric
                 UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS, 0);
-
-                ApplyDirectionToTractiveForce();
             }
 
             foreach (MultiPositionController mpc in MultiPositionControllers)
@@ -2051,10 +2049,10 @@ public List<CabView> CabViewList = new List<CabView>();
                             DynamicBrakeController.CurrentValue * 100);
                     }
 
-                    // SimpleControlPhysics and if locomotive is a control car advanced adhesion will be "disabled".
-                    if ((Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics) && (EngineType != EngineTypes.Control && SteamEngineType != SteamEngineTypes.Compound || SteamEngineType != SteamEngineTypes.Simple))
+                    // Test to see whether to use SimpleControlPhysics, if locomotive is a control car advanced adhesion will be "disabled" as it has no drive wheels?
+                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control)
                     {
-                        AdvancedAdhesion(elapsedClockSeconds, 0); // Use advanced adhesion model
+                        AdvancedAdhesion(elapsedClockSeconds); // Use advanced adhesion model
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
                     }
                     else
@@ -2348,7 +2346,7 @@ public List<CabView> CabViewList = new List<CabView>();
         /// <summary>
         /// This function updates periodically the locomotive's motive force.
         /// </summary>
-        protected virtual void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS, int numberofengines)
+        protected virtual void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS, int numberofengine)
         {
             // Method to set force and power info
             // An alternative method in the steam locomotive will override this and input force and power info for it.
@@ -2414,7 +2412,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 AverageForceN = w * AverageForceN + (1 - w) * TractiveForceN;
             }
 
-            ApplyDirectionToTractiveForce();
+            ApplyDirectionToTractiveForce(ref TractiveForceN);
 
             // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
             // Note typically only one of the above will only ever be non-zero at the one time.
@@ -2469,21 +2467,21 @@ public List<CabView> CabViewList = new List<CabView>();
         /// <summary>
         /// This function applies a sign to the motive force as a function of the direction of the train.
         /// </summary>
-        protected virtual void ApplyDirectionToTractiveForce()
+        protected virtual void ApplyDirectionToTractiveForce(ref float tractiveForceN)
         {
             if (Train.IsPlayerDriven)
             {
                 switch (Direction)
                 {
                     case Direction.Forward:
-                        //MotiveForceN *= 1;     //Not necessary
+                        //tractiveForceN *= 1;     //Not necessary
                         break;
                     case Direction.Reverse:
-                        TractiveForceN *= -1;
+                        tractiveForceN *= -1;
                         break;
                     case Direction.N:
                     default:
-                        TractiveForceN *= 0;
+                        tractiveForceN *= 0;
                         break;
                 }
             }
@@ -2492,7 +2490,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 switch (Direction)
                 {
                     case Direction.Reverse:
-                        TractiveForceN *= -1;
+                        tractiveForceN *= -1;
                         break;
                     default:
                         break;
@@ -2782,7 +2780,7 @@ public List<CabView> CabViewList = new List<CabView>();
         /// If UseAdvancedAdhesion is false, the basic force limits are calculated the same way MSTS calculates them, but
         /// the weather handling is different and Curtius-Kniffler curves are considered as a static limit
         /// </summary>
-        public virtual void AdvancedAdhesion(float elapsedClockSeconds, int numberofengine)
+        public virtual void AdvancedAdhesion(float elapsedClockSeconds)
         {
 
             if (LocoNumDrvAxles <= 0)

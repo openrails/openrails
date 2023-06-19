@@ -27,11 +27,12 @@ using System.IO;
 using System.Text;
 using static Orts.Simulation.RollingStocks.TrainCar;
 using ORTS.Common;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 
 namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
 
-    public class SteamEngines : IEnumerable, ISubSystem<SteamEngines>
+    public class SteamEngines : ISubSystem<SteamEngines>
     {
         /// <summary>
         /// A list of auxiliaries
@@ -206,14 +207,11 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public List<SteamEngine>.Enumerator GetEnumerator()
         {
-            return (IEnumerator)GetEnumerator();
-        }
 
-        public SteamEnum GetEnumerator()
-        {
-            return new SteamEnum(SEList.ToArray());
+            return SEList.GetEnumerator();
+
         }
 
         public static string SetDebugLabels()
@@ -330,21 +328,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// LP Steam Cylinders stroke
         /// </summary>
         public float LPCylindersStrokeM;
-
-        /// <summary>
-        /// Drive Wheel weight
-        /// </summary>
-        public float DriveWheelWeightKg;
-
-        /// <summary>
-        /// Drive Wheel number
-        /// </summary>
-        public int NumberDriveWheelAxles;
-
-        /// <summary>
-        /// Drive Wheel radius
-        /// </summary>
-        public float DriveWheelRadiusM;
 
         public enum AuxiliarySteamEngineTypes
         {
@@ -543,17 +526,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float LPPressure_f_AtmPSI;
 
         /// <summary>
-        /// Force out of wheel axle model after slip
-        /// </summary>
-        public float CompensatedAxleForceN;
-
-        /// <summary>
-        /// Previous axle speed
-        /// </summary>
-        public float previousAxleSpeedMpS;
-
-
-        /// <summary>
         /// Mean Effective Pressure
         /// </summary>
         public float MeanEffectivePressurePSI;
@@ -583,30 +555,16 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public float SteamStaticWheelForce;
 
-        /// <summary>
-        /// Axle weight for engine
-        /// </summary>
-        public float AxleWeightN;
-
-        /// <summary>
-        /// wheel slip for engine
-        /// </summary>
-        public bool WheelSlip;
-
-
         public enum SettingsFlags
         {
             NumberCylindersF = 0x0001,
             CylindersDiameterF = 0x0002,
-            CylinderStrokeF = 0x0003,
-            LPNumberCylindersF = 0x0004,
-            LPCylindersDiameterF = 0x0005,
-            LPCylinderStrokeF = 0x0006,
-            DriveWheelWeightF = 0x0007,
-            DriveWheelRadiusF = 0x0008,
-            BoosterCutoffF = 0x0009,
-            BoosterGearRatioF = 0x0010,
-            NumberDriveWheelAxlesF = 0x0011,
+            CylinderStrokeF = 0x0004,
+            LPNumberCylindersF = 0x0008,
+            LPCylindersDiameterF = 0x0010,
+            LPCylinderStrokeF = 0x0020,
+            BoosterCutoffF = 0x0040,
+            BoosterGearRatioF = 0x0080,
         }
 
         public int Id
@@ -626,6 +584,10 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         protected Simulator Simulator => Locomotive.Simulator;
 
+        protected int AttachedAxleId;
+
+        public Axle AttachedAxle => Locomotive.LocomotiveAxles[AttachedAxleId];
+
         SettingsFlags initLevel;          //level of initialization
         /// <summary>
         /// Initialization flag - is true when sufficient number of parameters is read succesfully
@@ -634,14 +596,14 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                if (initLevel == (SettingsFlags.NumberCylindersF | SettingsFlags.CylindersDiameterF | SettingsFlags.CylinderStrokeF | SettingsFlags.LPNumberCylindersF | SettingsFlags.LPCylindersDiameterF | SettingsFlags.LPCylinderStrokeF | SettingsFlags.DriveWheelWeightF | SettingsFlags.DriveWheelRadiusF | SettingsFlags.BoosterCutoffF | SettingsFlags.BoosterGearRatioF | SettingsFlags.NumberDriveWheelAxlesF))
+                if (initLevel == (SettingsFlags.NumberCylindersF | SettingsFlags.CylindersDiameterF | SettingsFlags.CylinderStrokeF | SettingsFlags.LPNumberCylindersF | SettingsFlags.LPCylindersDiameterF | SettingsFlags.LPCylinderStrokeF))
 
                     return true;
                 else
                     return false;
             }
         }
-        
+
 
         public SteamEngine(MSTSSteamLocomotive locomotive)
         {
@@ -671,11 +633,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "lpnumcylinders": LPNumberCylinders = stf.ReadIntBlock(null); initLevel |= SettingsFlags.LPNumberCylindersF; break;
                     case "lpcylinderstroke": LPCylindersStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); initLevel |= SettingsFlags.LPCylinderStrokeF; break;
                     case "lpcylinderdiameter": LPCylindersDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); initLevel |= SettingsFlags.LPCylindersDiameterF; break;
-                    case "drivewheelweight": DriveWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); initLevel |= SettingsFlags.DriveWheelWeightF; break;
-                    case "drivewheelradius": DriveWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); initLevel |= SettingsFlags.DriveWheelRadiusF; break;
                     case "boostercutoff": BoosterCutoff = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.BoosterCutoffF; break;
                     case "boostergearratio": BoosterGearRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.BoosterGearRatioF; break;
-                    case "numberdrivewheelaxles": NumberDriveWheelAxles = stf.ReadIntBlock(null); initLevel |= SettingsFlags.NumberDriveWheelAxlesF; break;
+                    case "attachedaxle": AttachedAxleId = stf.ReadIntBlock(null); break;
 
                     case "auxiliarysteamenginetype":
                         stf.MustMatch("(");
@@ -706,10 +666,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             LPNumberCylinders = other.LPNumberCylinders;
             LPCylindersStrokeM = other.LPCylindersStrokeM;
             LPCylindersDiameterM = other.LPCylindersDiameterM;
-            DriveWheelWeightKg = other.DriveWheelWeightKg;
-            DriveWheelRadiusM = other.DriveWheelRadiusM;
             BoosterCutoff = other.BoosterCutoff;
             BoosterGearRatio = other.BoosterGearRatio;
+            AttachedAxleId = other.AttachedAxleId;
         }
 
         public void Initialize()
@@ -746,7 +705,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         /// <summary>
-        /// Fix or define a steam engine code block. If the user has not defned a diesel eng, then OR will use this section to create one.
+        /// Fix or define a steam engine code block. If the user has not defned a steam engine in the ENG file, then OR will use this section to create one.
         /// If the user has left a parameter out of the code, then OR uses this section to try and set the missing values to a default value.
         /// Error code has been provided that will provide the user with an indication if a parameter has been left out.
         /// </summary>
@@ -915,7 +874,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("LP Cylinder Stroke: set at MSTS default value (BASIC Config) = {0}", LPCylindersStrokeM);
-
                 }
                 else if (Locomotive.MSTSLPNumCylinders == 0) // No default "MSTS" value present, set to arbitary value
                 {
@@ -924,95 +882,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("LP Cylinder Stroke: not found in Steam Engine Configuration (BASIC Config): set at arbitary value = {0}", LPCylindersStrokeM);
-
-                }
-            }
-
-
-            if ((initLevel & SettingsFlags.DriveWheelRadiusF) == 0)
-            {
-                if (SteamEngineConfigured && Locomotive.DriverWheelRadiusM != 0) // Advanced conf - Steam Eng block defined but no CylinderStroke present
-                {
-                    DriveWheelRadiusM = Locomotive.DriverWheelRadiusM;
-
-                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Drive Wheel Radius: not found in Steam Engine Configuration (ADVANCED Config): set to default value = {0}", DriveWheelRadiusM);
-
-                }
-                else if (DriveWheelRadiusM == 0 && Locomotive.DriverWheelRadiusM != 0)  // Basic conf - No steam ENG block defined, use the default "MSTS" value
-                {
-                    DriveWheelRadiusM = Locomotive.DriverWheelRadiusM;
-
-                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Drive Wheel Radius: set at MSTS default value (BASIC Config) = {0}", DriveWheelRadiusM);
-
-                }
-                else if (Locomotive.DriverWheelRadiusM == 0) // No default "MSTS" value present, set to arbitary value
-                {
-                    DriveWheelRadiusM = 1;
-                    Locomotive.DriverWheelRadiusM = DriveWheelRadiusM;
-
-                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Drive Wheel Radius: not found in Steam Engine Configuration (BASIC Config): set at arbitary value = {0}", DriveWheelRadiusM);
-
-                }
-            }
-
-            if ((initLevel & SettingsFlags.DriveWheelWeightF) == 0)
-            {
-                if (SteamEngineConfigured && Locomotive.DrvWheelWeightKg != 0) // Advanced conf - Steam Eng block defined but no CylinderStroke present
-                {
-                    DriveWheelWeightKg = Locomotive.DrvWheelWeightKg;
-
-                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Drive Wheel Weight: not found in Steam Engine Configuration (ADVANCED Config): set to default value = {0}", DriveWheelWeightKg);
-
-                }
-                else if (DriveWheelWeightKg == 0 && Locomotive.DrvWheelWeightKg != 0)  // Basic conf - No steam ENG block defined, use the default "MSTS" value
-                {
-                    DriveWheelWeightKg = Locomotive.DrvWheelWeightKg;
-
-                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Drive Wheel Weight: set at MSTS default value (BASIC Config) = {0}", DriveWheelWeightKg);
-
-                }
-                else if (Locomotive.DrvWheelWeightKg == 0) // No default "MSTS" value present, set to arbitary value
-                {
-                    DriveWheelWeightKg = 1;
-                    Locomotive.DrvWheelWeightKg = DriveWheelWeightKg;
-
-                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Drive Wheel Weight: not found in Steam Engine Configuration (BASIC Config): set at arbitary value = {0}", DriveWheelWeightKg);
-
-                }
-            }
-
-            if ((initLevel & SettingsFlags.NumberDriveWheelAxlesF) == 0)
-            {
-                if (SteamEngineConfigured && Locomotive.LocoNumDrvAxles != 0) // Advanced conf - Steam Eng block defined but no number of drive wheels present
-                {
-                    NumberDriveWheelAxles = Locomotive.LocoNumDrvAxles;
-
-                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Number of Axles: not found in Steam Engine Configuration (ADVANCED Config): set to default value = {0}", NumberDriveWheelAxles);
-
-                }
-                else if (NumberDriveWheelAxles == 0 && Locomotive.LocoNumDrvAxles != 0)  // Basic conf - No steam ENG block defined, use the default "MSTS" value
-                {
-                    NumberDriveWheelAxles = Locomotive.LocoNumDrvAxles;
-
-                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Number of Axles: set at MSTS default value (BASIC Config) = {0}", NumberDriveWheelAxles);
-
-                }
-                else if (Locomotive.LocoNumDrvAxles == 0) // No default "MSTS" value present, set to arbitary value
-                {
-                    NumberDriveWheelAxles = 2;
-                    Locomotive.LocoNumDrvAxles = NumberDriveWheelAxles;
-
-                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Number of Axles: not found in Steam Engine Configuration (BASIC Config): set at arbitary value = {0}", NumberDriveWheelAxles);
-
                 }
             }
 
@@ -1025,19 +894,15 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if ((initLevel & SettingsFlags.BoosterGearRatioF) == 0)
             {
-                BoosterCutoff = 1.0f;
+                BoosterGearRatio = 1.0f;
                 if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("Booster Gear Ratio: not found in Steam Engine Configuration (BASIC Config): set at arbitary value = {0}", BoosterGearRatio);
             }
-
-
         }
 
         public void InitDieselRailPowers(MSTSSteamLocomotive loco)
         {
 
         }
-
     }
-
 }
