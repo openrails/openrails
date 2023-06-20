@@ -29,7 +29,7 @@ using System.Text;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
-    public class DieselEngines : IEnumerable, ISubSystem<DieselEngines>
+    public class DieselEngines : ISubSystem<DieselEngines>
     {
         /// <summary>
         /// A list of auxiliaries
@@ -386,14 +386,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public List<DieselEngine>.Enumerator GetEnumerator()
         {
-            return (IEnumerator)GetEnumerator();
-        }
-
-        public DieselEnum GetEnumerator()
-        {
-            return new DieselEnum(DEList.ToArray());
+            return DEList.GetEnumerator();
         }
 
         public static string SetDebugLabels()
@@ -514,54 +509,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 percent = runningPower / totalpossiblepower;
                 return percent;
-            }
-        }
-    }
-
-    public class DieselEnum : IEnumerator
-    {
-        public DieselEngine[] deList;
-
-        // Enumerators are positioned before the first element
-        // until the first MoveNext() call.
-        int position = -1;
-
-        public DieselEnum(DieselEngine[] list)
-        {
-            deList = list;
-        }
-
-        public bool MoveNext()
-        {
-            position++;
-            return (position < deList.Length);
-        }
-
-        public void Reset()
-        {
-            position = -1;
-        }
-
-        object IEnumerator.Current
-        {
-            get
-            {
-                return Current;
-            }
-        }
-
-        public DieselEngine Current
-        {
-            get
-            {
-                try
-                {
-                    return deList[position];
-                }
-                catch (IndexOutOfRangeException)
-                {
-                    throw new InvalidOperationException();
-                }
             }
         }
     }

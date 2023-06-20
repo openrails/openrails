@@ -1828,7 +1828,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 {
                     if (DynamicBrakeBlendingForceMatch)
                     {
-                        float diff = target * MaxBrakeForceN - DynamicBrakeForceN;
+                        float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
                         float threshold = 100;
                         if (diff > threshold && DynamicBrakeIntervention < 1)
                             DynamicBrakeIntervention = Math.Min(DynamicBrakeIntervention + elapsedClockSeconds, 1);
@@ -1998,23 +1998,19 @@ public List<CabView> CabViewList = new List<CabView>();
                     if (RemoteControlGroup != -1)
                     {
                         if (!LocomotivePowerSupply.MainPowerSupplyOn)
-                        {
                             Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
 
-                            if (this is MSTSDieselLocomotive)
+                        if (this is MSTSDieselLocomotive dieselLocomotive)
+                        {
+                            for (var i = 0; i < dieselLocomotive.DieselEngines.Count; i++)
                             {
-                                foreach (DieselEngine de in (this as MSTSDieselLocomotive).DieselEngines)
+                                var de = dieselLocomotive.DieselEngines[i];
+                                if (!LocomotivePowerSupply.MainPowerSupplyOn)
                                 {
                                     if (de.State != DieselEngineState.Running)
                                         de.Initialize();
                                 }
-                            }
-                        }
-                        if (this is MSTSDieselLocomotive)
-                        {
-                            foreach (DieselEngine de in (this as MSTSDieselLocomotive).DieselEngines)
-                            {
-                                 if (de.GearBox != null)
+                                if (de.GearBox != null)
                                     de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
                             }
                         }

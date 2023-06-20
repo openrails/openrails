@@ -6388,6 +6388,10 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatBTU), IsMetric)
                 );
 
+            // calculate values for display, so that display value doesn't go negative
+            var superheatTempDisplayC = C.FromF(CurrentSuperheatTempF);
+            superheatTempDisplayC = MathHelper.Clamp(superheatTempDisplayC, 0.0f, C.FromF(MaxSuperheatRefTempF));
+
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
                 Simulator.Catalog.GetString("Temp:"),
                 Simulator.Catalog.GetString("Flue"),
@@ -6397,7 +6401,8 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("MaxSupH"),
                 FormatStrings.FormatTemperature(C.FromF(MaxSuperheatRefTempF), IsMetric, false),
                 Simulator.Catalog.GetString("CurSupH"),
-                FormatStrings.FormatTemperature(C.FromF(CurrentSuperheatTempF), IsMetric, false));
+                FormatStrings.FormatTemperature(superheatTempDisplayC, IsMetric, false)
+                );
 
             status.AppendFormat("\n\t\t === {0} === \t\t{1}/{2}\n",
                 Simulator.Catalog.GetString("Steam Usage"),
@@ -6838,8 +6843,8 @@ namespace Orts.Simulation.RollingStocks
                     );
             }
 
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && SteamEngineType != SteamEngineTypes.Geared) 
-                // Only display slip monitor if advanced adhesion is set and simplecontrols/physics not set
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && SteamEngineType != SteamEngineTypes.Geared)
+            // Only display slip monitor if advanced adhesion is set and simplecontrols/physics not set
             {
                 status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Slip Monitor"));
                 status.AppendFormat("{0}\t{1}\t{2:N0}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8:N2}\t{9}\t{10}\t{11:N2}\t{12}\t{13}\t{14:N1}\n",
