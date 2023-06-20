@@ -1259,7 +1259,7 @@ Keyboard commands to toggle window state are listed :ref:`here <driving-anim-com
 Names of the animations are as follows.
 
 Names for the windows animations as seen from the external camera views (the ones to be inserted in the .s 
-file of the trainset)::
+file of the trainset) must start with following strings::
 
   LEFTWINDOWFRONT
   RIGHTWINDOWFRONT
@@ -1394,6 +1394,20 @@ using a transparent graphic. So, clicking on the window, you change its state. T
 both to 2D and 3D cabs.
 
 Sound triggers for windows animation are listed :ref:`here <sound-windows>` .
+
+Specifics for carriage window animations
+----------------------------------------
+
+One window to the left and one window to the right of the carriage may be animated. 
+They can be opened and closed only via keyboard (Ctrl-Q for left window and 
+Ctrl-Shift-Q for right window, as for locomotives).
+
+Note that the carriage must have only the main shape file (no passenger view shape file). 
+This main shape file can include also the inside structure of the carriage; note that when 
+a .wag or .eng file has an Inside block defined, and such block doesn't include a line 
+specifying the .s file, OR will use the main shape file to display the 
+inside. So such shape file will display the window animation both with 
+the passenger camera (inside view) and with the external cameras (outside views).
 
 C# engine scripting
 ===================
