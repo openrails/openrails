@@ -2849,13 +2849,13 @@ public List<CabView> CabViewList = new List<CabView>();
             max1 = MaxForceN;
             //add sander
             if (Sander && AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
-                    {
-                        switch (Simulator.WeatherType)
-                        {
+            {
+                switch (Simulator.WeatherType)
+                {
                     case WeatherType.Clear: SandingFrictionFactor = 1.2f; break;
                     case WeatherType.Rain: SandingFrictionFactor = 1.8f; break;
                     case WeatherType.Snow: SandingFrictionFactor = 2.5f; break;
-                        }
+                }
                 if (SanderSpeedEffectUpToMpS > 0.0f) // Reduce sander effectiveness if max effective speed is defined
                 {
                     SandingFrictionFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS);
@@ -3134,7 +3134,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
             }
 
-            BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f); 
+            BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f);
 
             // Increase friction coefficient when sanding
             if (Sander && AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
@@ -3144,11 +3144,11 @@ public List<CabView> CabViewList = new List<CabView>();
                     case WeatherType.Clear: SandingFrictionCoefficientFactor = 1.40f; break;
                     case WeatherType.Rain: SandingFrictionCoefficientFactor = 1.25f; break;
                     case WeatherType.Snow: SandingFrictionCoefficientFactor = 1.50f; break;
-                        }
+                }
                 if (SanderSpeedEffectUpToMpS > 0.0f) // Reduce sander effectiveness if max effective speed is defined
-                    {
+                {
                     SandingFrictionCoefficientFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS);
-                        }
+                }
                 BaseFrictionCoefficientFactor *= Math.Max(SandingFrictionCoefficientFactor, 1.0f); // Prevent sand from harming adhesion above max effective speed
             }
 
