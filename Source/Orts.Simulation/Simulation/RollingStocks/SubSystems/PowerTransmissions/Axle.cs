@@ -658,17 +658,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 switch (stf.ReadItem().ToLower())
                 {
-                    case "drivewheelradius":
+                    case "wheelradius":
                         WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                         break;
-                    case "drivewheelinertia":
+                    case "wheelinertia":
                         InertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.RotationalInertia, null);
                         break;
-                    case "drivewheelweight":
+                    case "wheelweight":
                         WheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                         AxleWeightN = 9.81f * WheelWeightKg;
                         break;
-                    case "numberdrivewheelaxles":
+                    case "numberwheelaxles":
                         NumberWheelAxles = stf.ReadIntBlock(null);
                         break;
                     case "(":
