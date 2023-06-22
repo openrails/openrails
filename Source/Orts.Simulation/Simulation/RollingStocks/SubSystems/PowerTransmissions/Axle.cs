@@ -658,9 +658,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 switch (stf.ReadItem().ToLower())
                 {
+                    case "ortsradius":
                     case "wheelradius":
                         WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                         break;
+                    case "ortsinertia":
                     case "wheelinertia":
                         InertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.RotationalInertia, null);
                         break;
