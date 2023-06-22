@@ -630,7 +630,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
         public void Initialize()
         {
-            AxleSpeedMpS = 0;
             motor?.Initialize();
         }
         public void InitializeMoving()
