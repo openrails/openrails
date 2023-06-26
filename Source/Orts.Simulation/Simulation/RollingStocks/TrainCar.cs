@@ -684,7 +684,7 @@ namespace Orts.Simulation.RollingStocks
         public enum BrakeShoeTypes
         {
             Unknown,
-            Cast_Iron,
+            Cast_Iron_P6,
             Cast_Iron_P10,
             Disc_Pads,
             High_Friction_Composite,
@@ -3243,53 +3243,21 @@ namespace Orts.Simulation.RollingStocks
                 // Karwatzki developed a formula for brakeshoe friction that used 5 constant values k1, ..... , k5.
                 // Wende present a number of different brake shoes k values, two sets of which line up with the UIC values above.
 
-                float NewtonsTokNewtons = 0.001f;
-                float brakeShoeForcekN = (NewtonsTokNewtons * BrakeShoeForceN) / NumberCarBrakeShoes;
-                float k1 = 0;
-                float k2 = 0;
-                float k3 = 0;
-                float k4 = 0;
-                float k5 = 0;
-
-                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron)
+                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P6)
                 {
-                    k1 = 0.024f;
-                    k2 = 62.5f;
-                    k3 = 12.5f;
-                    k4 = 100f;
-                    k5 = 20f;
-
-                    frictionfraction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.024f, 62.5f, 12.5f, 100, 20);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P10)
                 {
-                    k1 = 0.05f;
-                    k2 = 62.5f;
-                    k3 = 31.25f;
-                    k4 = 100f;
-                    k5 = 20f;
-
-                    frictionfraction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.05f, 62.5f, 31.25f, 100, 20);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.High_Friction_Composite)
                 {
-                    k1 = 0.055f;
-                    k2 = 200f;
-                    k3 = 50f;
-                    k4 = 150f;
-                    k5 = 75f;
-
-                    frictionfraction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.055f, 200, 50, 150, 75);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.Disc_Pads)
                 {
-                    k1 = 0.385f;
-                    k2 = -24.5f;
-                    k3 = -27.2f;
-                    k4 = 39.5f;
-                    k5 = 33f;
-
-                    frictionfraction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.385f, -24.5f, -27.2f, 39.5f, 33);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.User_Defined)
                 {
@@ -3351,53 +3319,21 @@ namespace Orts.Simulation.RollingStocks
                 // Karwatzki developed a formula for brakeshoe friction that used 5 constant values k1, ..... , k5.
                 // Wende present a number of different brake shoes k values, two sets of which line up with the UIC values above.
 
-                float NewtonsTokNewtons = 0.001f;
-                float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
-                float k1 = 0;
-                float k2 = 0;
-                float k3 = 0;
-                float k4 = 0;
-                float k5 = 0;
-
-                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron)
+                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P6)
                 {
-                    k1 = 0.024f;
-                    k2 = 62.5f;
-                    k3 = 12.5f;
-                    k4 = 100f;
-                    k5 = 20f;
-
-                    frictionfraction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+                    frictionfraction = KarwatzkiBrakeShoeFriction (0.024f, 62.5f, 12.5f, 100, 20);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P10)
                 {
-                    k1 = 0.05f;
-                    k2 = 62.5f;
-                    k3 = 31.25f;
-                    k4 = 100f;
-                    k5 = 20f;
-
-                    frictionfraction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.05f, 62.5f, 31.25f, 100, 20);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.High_Friction_Composite)
                 {
-                    k1 = 0.055f;
-                    k2 = 200f;
-                    k3 = 50f;
-                    k4 = 150f;
-                    k5 = 75f;
-
-                    frictionfraction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.055f, 200, 50f, 150, 75);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.Disc_Pads)
                 {
-                    k1 = 0.385f;
-                    k2 = -24.5f;
-                    k3 = -27.2f;
-                    k4 = 39.5f;
-                    k5 = 33f;
-
-                    frictionfraction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.385f, -24.5f, -27.2f, 39.5f, 33);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.User_Defined)
                 {
@@ -3422,6 +3358,16 @@ namespace Orts.Simulation.RollingStocks
                 frictionfraction = 1.0f;  // Default value set to leave existing brakeforce constant regardless of changing speed
                 return frictionfraction;
             }
+        }
+
+        public float KarwatzkiBrakeShoeFriction ( float k1, float k2, float k3, float k4, float k5 )
+        {
+                var friction = 0.0f;
+                float NewtonsTokNewtons = 0.001f;
+                float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
+                friction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+
+                return friction;
         }
 
         public virtual void InitializeCarHeatingVariables()
