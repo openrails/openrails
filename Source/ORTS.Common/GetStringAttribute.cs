@@ -49,7 +49,7 @@ namespace ORTS.Common
         public string Context { get; protected set; }
         public GetParticularStringAttribute(string context, string name) : base(name) { Context = context; }
 
-        public static string GetParticularPrettyName(Enum value, string context)
+        public static string GetParticularPrettyName(string context, Enum value)
         {
             var type = value.GetType();
             string toBeReturned = type.GetField(Enum.GetName(type, value))

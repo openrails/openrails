@@ -46,86 +46,65 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     switch (locomotive.LocomotivePowerSupply.BatterySwitch.Mode)
                     {
                         case Simulation.RollingStocks.SubSystems.PowerSupplies.BatterySwitch.ModeType.AlwaysOn:
-                            init0(ORTS.Common.Input.UserCommand.ControlBatterySwitchClose, GetParticularString("SwitchPanel", "Battery switch"));
+                            init0(ORTS.Common.Input.UserCommand.ControlBatterySwitchClose);
                             break;
                         case Simulation.RollingStocks.SubSystems.PowerSupplies.BatterySwitch.ModeType.Switch:
-                            init1(ORTS.Common.Input.UserCommand.ControlBatterySwitchClose, GetParticularString("SwitchPanel", "Battery switch"));
+                            init1(ORTS.Common.Input.UserCommand.ControlBatterySwitchClose);
                             break;
                         case Simulation.RollingStocks.SubSystems.PowerSupplies.BatterySwitch.ModeType.PushButtons:
-                            init2(ORTS.Common.Input.UserCommand.ControlBatterySwitchClose, ORTS.Common.Input.UserCommand.ControlBatterySwitchOpen, GetParticularString("SwitchPanel", "Battery switch"));
+                            init2(ORTS.Common.Input.UserCommand.ControlBatterySwitchClose, ORTS.Common.Input.UserCommand.ControlBatterySwitchOpen);
                             break;
                     }
                     break;
 
                 case ORTS.Common.Input.UserCommand.ControlMasterKey:
                     if (locomotive.LocomotivePowerSupply.MasterKey.Mode == Simulation.RollingStocks.SubSystems.PowerSupplies.MasterKey.ModeType.AlwaysOn)
-                        init0(ORTS.Common.Input.UserCommand.ControlMasterKey, GetParticularString("SwitchPanel", "Master key"));
+                        init0(ORTS.Common.Input.UserCommand.ControlMasterKey);
                     else
-                        init1(ORTS.Common.Input.UserCommand.ControlMasterKey, GetParticularString("SwitchPanel", "Master key"));
+                        init1(ORTS.Common.Input.UserCommand.ControlMasterKey);
                     break;
 
                 case ORTS.Common.Input.UserCommand.ControlCircuitBreakerClosingOrder:
                     if ((locomotive as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.ScriptName == "Automatic")
-                        init0(ORTS.Common.Input.UserCommand.ControlCircuitBreakerClosingOrder, GetParticularString("SwitchPanel", "Circuit breaker"));
+                        init0(ORTS.Common.Input.UserCommand.ControlCircuitBreakerClosingOrder);
                     else
-                        init1(ORTS.Common.Input.UserCommand.ControlCircuitBreakerClosingOrder, GetParticularString("SwitchPanel", "Circuit breaker"));
+                        init1(ORTS.Common.Input.UserCommand.ControlCircuitBreakerClosingOrder);
                     break;
 
                 case ORTS.Common.Input.UserCommand.ControlGearUp:
                     if ((locomotive as MSTSDieselLocomotive).DieselEngines.HasGearBox)
-                        init2(ORTS.Common.Input.UserCommand.ControlGearUp, ORTS.Common.Input.UserCommand.ControlGearDown, GetParticularString("SwitchPanel", "Gear"));
+                        init2(ORTS.Common.Input.UserCommand.ControlGearUp, ORTS.Common.Input.UserCommand.ControlGearDown);
                     else
-                        init0(ORTS.Common.Input.UserCommand.ControlGearUp, GetParticularString("SwitchPanel", "Gear"));
+                        init0(ORTS.Common.Input.UserCommand.ControlGearUp);
                     break;
 
                 case ORTS.Common.Input.UserCommand.ControlTractionCutOffRelayClosingOrder:
                     if ((locomotive as MSTSDieselLocomotive).DieselPowerSupply.TractionCutOffRelay.ScriptName == "Automatic")
-                        init0(ORTS.Common.Input.UserCommand.ControlTractionCutOffRelayClosingOrder, GetParticularString("SwitchPanel", "Traction cut-off"));
+                        init0(ORTS.Common.Input.UserCommand.ControlTractionCutOffRelayClosingOrder);
                     else
-                        init1(ORTS.Common.Input.UserCommand.ControlTractionCutOffRelayClosingOrder, GetParticularString("SwitchPanel", "Traction cut-off"));
+                        init1(ORTS.Common.Input.UserCommand.ControlTractionCutOffRelayClosingOrder);
                     break;
 
                 case ORTS.Common.Input.UserCommand.DisplayNextStationWindow:
                     Orts.Simulation.Activity act = Viewer.Simulator.ActivityRun;
                     if ((act != null) && (act.EventList.Count) > 0)
-                        init1(ORTS.Common.Input.UserCommand.DisplayNextStationWindow, GetParticularStringAttribute.GetParticularPrettyName(userCommand, "SwitchPanel"));
+                        init1(ORTS.Common.Input.UserCommand.DisplayNextStationWindow);
                     else
-                        init0(ORTS.Common.Input.UserCommand.DisplayNextStationWindow, GetParticularStringAttribute.GetParticularPrettyName(userCommand, "SwitchPanel"));
+                        init0(ORTS.Common.Input.UserCommand.DisplayNextStationWindow);
                     break;
 
                 case ORTS.Common.Input.UserCommand.ControlHeadlightIncrease:
-                    init2(ORTS.Common.Input.UserCommand.ControlHeadlightIncrease, ORTS.Common.Input.UserCommand.ControlHeadlightDecrease, GetParticularString("SwitchPanel", "Front Light"));
+                    init2(ORTS.Common.Input.UserCommand.ControlHeadlightIncrease, ORTS.Common.Input.UserCommand.ControlHeadlightDecrease);
                     break;
 
                 case ORTS.Common.Input.UserCommand.ControlForwards:
-                    init2(ORTS.Common.Input.UserCommand.ControlForwards, ORTS.Common.Input.UserCommand.ControlBackwards, GetParticularString("SwitchPanel", "Direction"));
+                    init2(ORTS.Common.Input.UserCommand.ControlForwards, ORTS.Common.Input.UserCommand.ControlBackwards);
                     break;
 
                 default:
-                    string description = determineDescription(userCommand);
-
-                    init1(userCommand, description);
+                    init1(userCommand);
                     break;
             }
-        }
-
-        public void initEmpty()
-        {
-            init0();
-        }
-
-        private string determineDescription(UserCommand userCommand)
-        {
-            string description = GetParticularStringAttribute.GetParticularPrettyName(userCommand, "SwitchPanel");
-
-            description = capitalize(Viewer.Catalog.GetParticularString("SwitchPanel", description));
-
-            return description;
-        }
-
-        private string GetParticularString(string context, string description)
-        {
-            return capitalize(Viewer.Catalog.GetParticularString(context, description));
         }
 
         private string capitalize(string value)
@@ -140,28 +119,47 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
         }
 
+        // empty button
+        public void initEmpty()
+        {
+            NoOffButtons = 0;
+            UserCommand = new UserCommand[] { ORTS.Common.Input.UserCommand.GamePauseMenu };
+            Description = "";
+        }
+
         // almost empty non functioning button
-        private void init0(UserCommand userCommand = ORTS.Common.Input.UserCommand.GamePauseMenu, string description = "")
+        private void init0(UserCommand userCommand)
         {
             NoOffButtons = 0;
             UserCommand = new UserCommand[] { userCommand };
-            Description = description;
+            Description = determineDescription(userCommand);
         }
 
         // 1 button
-        private void init1(UserCommand userCommand, string description)
+        private void init1(UserCommand userCommand)
         {
             NoOffButtons = 1;
             UserCommand = new UserCommand[] { userCommand };
-            Description = description;
+            Description = determineDescription(userCommand);
         }
 
         // 2 buttons
-        private void init2(UserCommand userCommandTop, UserCommand userCommandBottom, string description)
+        private void init2(UserCommand userCommandTop, UserCommand userCommandBottom)
         {
             NoOffButtons = 2;
             UserCommand = new UserCommand[] { userCommandTop, userCommandBottom };
-            Description = description;
+            Description = determineDescription(userCommandTop);
+        }
+
+        private string determineDescription(UserCommand userCommand)
+        {
+            // get the user command enum description for SwitchPanel
+            string description = GetParticularStringAttribute.GetParticularPrettyName("SwitchPanel", userCommand);
+
+            // translate the description
+            description = capitalize(Viewer.Catalog.GetParticularString("SwitchPanel", description));
+
+            return description;
         }
 
         public override bool Equals(object obj)

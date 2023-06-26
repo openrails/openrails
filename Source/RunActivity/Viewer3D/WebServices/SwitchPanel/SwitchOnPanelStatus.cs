@@ -73,7 +73,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 switchOnPanelStatus.Color = "";
                 switchOnPanelStatus.Blinking = false;
             }
-            switchOnPanelStatus.Status = Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(door));
+            switchOnPanelStatus.Status = Viewer.Catalog.GetParticularString("Door", GetStringAttribute.GetPrettyName(door));
         }
 
         private static void getStatusControlPantograph(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -92,7 +92,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 switchOnPanelStatus.Color = "lightblue";
                 switchOnPanelStatus.Blinking = true;
             }
-            switchOnPanelStatus.Status = GetStringAttribute.GetPrettyName(locomotive.Pantographs.List[pantographIndex].State);
+            switchOnPanelStatus.Status = Viewer.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(locomotive.Pantographs.List[pantographIndex].State));
         }
 
         private static void getStatusControlHeadlight(ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -119,8 +119,8 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         {
             MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
 
-            switchOnPanelStatus.Status = locomotive.CabLightOn ? Viewer.Catalog.GetString("On") : Viewer.Catalog.GetString("Off");
             switchOnPanelStatus.Color = locomotive.CabLightOn ? "lightyellow" : "";
+            switchOnPanelStatus.Status = locomotive.CabLightOn ? Viewer.Catalog.GetString("On") : Viewer.Catalog.GetString("Off");
         }
 
         private static void getStatusControlDirection(ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -136,7 +136,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     switchOnPanelStatus.Color = "orange";
                     break;
             }
-            switchOnPanelStatus.Status = Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(locomotive.Direction));
+            switchOnPanelStatus.Status = Viewer.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(locomotive.Direction));
         }
 
         private static void getStatusControlSander(ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -196,7 +196,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 case Train.TRAIN_CONTROL.UNDEFINED:
                     break;
             }
-            switchOnPanelStatus.Status = GetStringAttribute.GetPrettyName(Viewer.PlayerTrain.ControlMode);
+            switchOnPanelStatus.Status = Viewer.Catalog.GetParticularString("TrainControl", GetStringAttribute.GetPrettyName(Viewer.PlayerTrain.ControlMode));
         }
 
         private static void getStatusGameAutopilotMode(ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -287,7 +287,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                         switchOnPanelStatus.Color = "lightblue";
                     break;
             }
-            switchOnPanelStatus.Status += locomotive.ElectricPowerSupply.CircuitBreaker.State.ToString();
+            switchOnPanelStatus.Status += Viewer.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(locomotive.ElectricPowerSupply.CircuitBreaker.State));
         }
 
         private static void getStatusTractionCutOffRelay(ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -316,7 +316,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                         switchOnPanelStatus.Color = "lightblue";
                     break;
             }
-            switchOnPanelStatus.Status += locomotive.DieselPowerSupply.TractionCutOffRelay.State.ToString();
+            switchOnPanelStatus.Status += Viewer.Catalog.GetParticularString("TractionCutOffRelay", GetStringAttribute.GetPrettyName(locomotive.DieselPowerSupply.TractionCutOffRelay.State));
         }
 
         private static void getStatusDieselEnginePlayerHelper(MSTSDieselLocomotive Locomotive, ref SwitchOnPanelStatus switchOnPanelStatus)
@@ -340,7 +340,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     switchOnPanelStatus.Color = "lightgray";
                     break;
             }
-            switchOnPanelStatus.Status = Viewer.Catalog.GetParticularString("Engine", (Locomotive as MSTSDieselLocomotive).DieselEngines.State.ToString());
+            switchOnPanelStatus.Status = Viewer.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName((Locomotive as MSTSDieselLocomotive).DieselEngines.State));
         }
 
         private static void getStatusDieselEngine(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
