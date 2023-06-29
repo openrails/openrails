@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common.Input;
 using ORTS.Common;
+using Orts.Simulation.Physics;
 
 namespace Orts.Viewer3D.WebServices.SwitchPanel
 {
@@ -99,6 +100,23 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
 
                 case ORTS.Common.Input.UserCommand.ControlForwards:
                     init2(ORTS.Common.Input.UserCommand.ControlForwards, ORTS.Common.Input.UserCommand.ControlBackwards);
+                    break;
+
+                case ORTS.Common.Input.UserCommand.ControlHandbrakeFull:
+                    Train train = Viewer.PlayerLocomotive.Train;
+
+                    int handBrakeCount = 0;
+
+                    for (int i = 0; i < train.Cars.Count; i++)
+                    {
+                        if ((train.Cars[i] as MSTSWagon).HandBrakePresent)
+                            handBrakeCount++;
+                    }
+
+                    if (handBrakeCount > 0)
+                        init2(ORTS.Common.Input.UserCommand.ControlHandbrakeFull, ORTS.Common.Input.UserCommand.ControlHandbrakeNone);
+                    else
+                        init0(ORTS.Common.Input.UserCommand.ControlHandbrakeFull);
                     break;
 
                 default:

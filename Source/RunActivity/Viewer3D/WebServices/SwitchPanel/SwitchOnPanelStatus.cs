@@ -366,6 +366,45 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
         }
 
+        private static void getStatusHandbrake(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            Train train = Viewer.PlayerLocomotive.Train;
+
+            int handBrakeCount = 0;
+            int handBrakeOn = 0;
+
+            for (int i = 0; i < train.Cars.Count; i++)
+            {
+                if ((train.Cars[i] as MSTSWagon).HandBrakePresent)
+                {
+                    handBrakeCount++;
+                    if ((train.Cars[i] as MSTSWagon).GetTrainHandbrakeStatus())
+                        handBrakeOn++;
+                }
+            }
+
+            switchOnPanelStatus.Color = "";
+            if ((handBrakeOn > 0) && (handBrakeCount != handBrakeOn))
+            {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("On") + "/" + Viewer.Catalog.GetString("Off");
+                switchOnPanelStatus.Color = "orange";
+            } else
+            {
+                if (handBrakeOn > 0)
+                {
+                    switchOnPanelStatus.Status = Viewer.Catalog.GetString("Full");
+                    switchOnPanelStatus.Color = "orange";
+                }
+                else
+                {
+                    if (handBrakeCount > 0)
+                    {
+                        switchOnPanelStatus.Status = Viewer.Catalog.GetString("Off");
+                    }
+                }
+            }
+        }
+
         public static void getStatus(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
         {
             switchOnPanelStatus.Status = "";
@@ -427,6 +466,9 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     break;
                 case UserCommand.ControlTractionCutOffRelayClosingOrder:
                     getStatusTractionCutOffRelay(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlHandbrakeFull:
+                    getStatusHandbrake(ref switchOnPanelStatus);
                     break;
             }
         }

@@ -136,7 +136,7 @@
         [GetString("Control Brake Quick Release")] [GetParticularString("SwitchPanel", "")] ControlBrakeQuickRelease,
         [GetString("Control Brake Overcharge")] [GetParticularString("SwitchPanel", "")] ControlBrakeOvercharge,
         [GetString("Control Initialize Brakes")] [GetParticularString("SwitchPanel", "")] ControlInitializeBrakes,
-        [GetString("Control Handbrake Full")] [GetParticularString("SwitchPanel", "")] ControlHandbrakeFull,
+        [GetString("Control Handbrake Full")] [GetParticularString("SwitchPanel", "Handbrake")] ControlHandbrakeFull,
         [GetString("Control Handbrake None")] [GetParticularString("SwitchPanel", "")] ControlHandbrakeNone,
         [GetString("Control Odometer Show/Hide")] [GetParticularString("SwitchPanel", "")] ControlOdoMeterShowHide,
         [GetString("Control Odometer Reset")] [GetParticularString("SwitchPanel", "")] ControlOdoMeterReset,
