@@ -409,7 +409,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         break;
                 }
             }
-            get
+            get 
             {
                 return inertiaKgm2;
             }
@@ -643,7 +643,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
         public void Initialize()
         {
-            AxleSpeedMpS = 0;
             motor?.Initialize();
         }
         public void InitializeMoving()
@@ -658,17 +657,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 switch (stf.ReadItem().ToLower())
                 {
-                    case "drivewheelradius":
+                    case "ortsradius":
+                    case "wheelradius":
                         WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                         break;
-                    case "drivewheelinertia":
+                    case "ortsinertia":
+                    case "wheelinertia":
                         InertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.RotationalInertia, null);
                         break;
-                    case "drivewheelweight":
+                    case "wheelweight":
                         WheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                         AxleWeightN = 9.81f * WheelWeightKg;
                         break;
-                    case "numberdrivewheelaxles":
+                    case "numberwheelaxles":
                         NumberWheelAxles = stf.ReadIntBlock(null);
                         break;
                     case "(":
@@ -758,7 +759,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
             }
 
-            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1);
+            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1); 
 
             float dt = elapsedClockSeconds / NumOfSubstepsPS;
             float hdt = dt / 2.0f;
@@ -775,7 +776,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         dt = elapsedClockSeconds / NumOfSubstepsPS;
                         hdt = dt / 2;
                     }
-
+                  
                     if (Math.Sign(AxleSpeedMpS + k1.Item1 * dt) != Math.Sign(AxleSpeedMpS) && BrakeRetardForceN + frictionN > Math.Abs(driveForceN - k1.Item3))
                     {
                         AxlePositionRad += AxleSpeedMpS * hdt;

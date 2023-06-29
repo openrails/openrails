@@ -91,11 +91,6 @@ namespace Orts.Simulation.RollingStocks
 
         public float LocomotiveMaxRailOutputPowerW;
 
-        public int currentGearIndexRestore = -1;
-        public int currentnextGearRestore = -1;
-        public bool gearSaved;
-        public int dieselEngineRestoreState;
-
         public float EngineRPM;
         public SmoothedData ExhaustParticles = new SmoothedData(1);
         public SmoothedData ExhaustMagnitude = new SmoothedData(1);
@@ -474,17 +469,6 @@ namespace Orts.Simulation.RollingStocks
                 {
                     CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
                 }
-            }
-
-            // TO BE LOOKED AT - fix restoration process for gearbox and gear controller
-            // It appears that the gearbox is initialised in two different places to cater for Basic and Advanced ENG file configurations(?).
-            // Hence the restore values recovered in gearbox class are being overwritten , and resume was not working correctly
-            // Hence restore gear position values are read as part of the diesel and restored at this point.
-            if (gearSaved)
-            {
-                DieselEngines[0].GearBox.nextGearIndex = currentnextGearRestore;
-                DieselEngines[0].GearBox.currentGearIndex = currentGearIndexRestore;
-                GearBoxController.SetValue((float)DieselEngines[0].GearBox.currentGearIndex);
             }
 
             if (Simulator.Settings.VerboseConfigurationMessages)

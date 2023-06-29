@@ -952,9 +952,8 @@ namespace Orts.Simulation.Physics
             {
                 for (int i = 0; i < count; ++i)
                 {
-                    TrainCar car = RollingStock.Load(simulator, this, inf.ReadString(), false);
+                    TrainCar car = RollingStock.Load(simulator, this, inf.ReadString());
                     car.Restore(inf);
-                    car.Initialize();
                 }
             }
             SetDPUnitIDs(true);

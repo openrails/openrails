@@ -165,7 +165,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write(ScriptName);
             outf.Write(DelayS);
             outf.Write(State.ToString());
             outf.Write(DriverClosingOrder);
@@ -176,7 +175,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Restore(BinaryReader inf)
         {
-            ScriptName = inf.ReadString();
             DelayS = inf.ReadSingle();
             State = (TractionCutOffRelayState)Enum.Parse(typeof(TractionCutOffRelayState), inf.ReadString());
             DriverClosingOrder = inf.ReadBoolean();

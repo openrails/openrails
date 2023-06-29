@@ -2192,6 +2192,7 @@ namespace Orts.Simulation.RollingStocks
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
+                
 
                 SteamEngines[i].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[i].TractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
 
@@ -2215,16 +2216,10 @@ namespace Orts.Simulation.RollingStocks
 
                 SteamEngines[i].TractiveForceN = 0;
 
-                if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
-                {
-
-                    UpdateTractiveForce(elapsedClockSeconds, 0, 0, 0, i);
-                }
-                else
-                {
-                    UpdateTractiveForce(elapsedClockSeconds, 0, 0, 0, i);
-                }
+                UpdateTractiveForce(elapsedClockSeconds, 0, 0, 0, i);
+                
                 TractiveForceN += SteamEngines[i].TractiveForceN;
+
 
                 MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
             }
@@ -5350,23 +5345,6 @@ namespace Orts.Simulation.RollingStocks
                         totalDrvWeightN += N.FromLbf(excessBalanceForcelbf - verticalThrustForcelbf);
                     }
 
-                    /*                    if (DisplayTangentialWheelTreadForceLbf > SteamStaticWheelForce || WheelSlip)
-                    {
-                        //  Trace.TraceInformation("MaxSpeed {0}", MaxLocoSpeedMpH);
-
-                        Trace.TraceInformation("Cylinder Pressures - Cylinder {0} CylinderPressure {1} forwardPressure {2} backwardPressure {3} InitialPressure {4} CutoffPressure {5} forwardPosition {6} backwardPosition {7}", i+1, crankCylinderPressure, forwardCylinderPressure, backwardCylinderPressure, slipInitialPressureAtmPSI, slipCutoffPressureAtmPSI, forwardCylinderPosition, backwardCylinderPosition);
-
-                        Trace.TraceInformation("Crank Angle {0} Cylinder Position {1} AxlePosition {2} Cylinder {3} CylArea {4} CylPress {5}", MathHelper.ToDegrees(crankAngleRad), crankCylinderPosition, MathHelper.ToDegrees(LocomotiveAxle.AxlePositionRad), i, Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)), crankCylinderPressure);
-
-                        Trace.TraceInformation("Tang.CrankFactor {0} RecInertiaFactor {1}, ConInertiaFactor {2} VerticalForceFactor {3} InertiaSpeedFactor {4}", tangentialCrankForceFactor, reciprocatingInertiaAngleFactor, connectRodInertiaAngleFactor, verticalThrustFactor, inertiaSpeedCorrectionFactor);
-
-                        Trace.TraceInformation("PistonForce {0}lbf RodForce {1}lbf RecForce {2}lbf", pistonForceLbf, connectRodInertiaForcelbf, reciprocatingInertiaForcelbf);
-
-                        Trace.TraceInformation("VerticalThrustForce {0}lbf ExcessBalanceForce {1}lbf", verticalThrustForcelbf, excessBalanceForcelbf);
-
-                    }
-                    */
-
 #if DEBUG_STEAM_SLIP
                     if (throttle > 0.01 && (absSpeedMpS < 0.2 || absSpeedMpS > 17.7 && absSpeedMpS < 18.2))
                     {
@@ -5518,17 +5496,26 @@ namespace Orts.Simulation.RollingStocks
                 IsCritTELimit = false; // Reset flag if limiting TE
             }
 
-            // Find the maximum TE for debug i.e. @ start and full throttle
-            if (absSpeedMpS < 1.0)
+            ApplyDirectionToTractiveForce(ref SteamEngines[numberofengine].TractiveForceN);
+
+            // Set tractive force to zero if throttle is closed
+            if (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
             {
-                if (Math.Abs(MotiveForceN) > absStartTractiveEffortN && Math.Abs(TractiveForceN) < MaxForceN)
+                var boosterthrottle = SteamBoosterController.CurrentValue;
+                if (boosterthrottle < 0.01)
                 {
-                    absStartTractiveEffortN = Math.Abs(TractiveForceN); // update to new maximum TE
+                    SteamEngines[numberofengine].TractiveForceN = 0;
+                }
+            }
+            else
+            {
+
+                if (throttle < 0.001)
+                {
+                    SteamEngines[numberofengine].TractiveForceN = 0;
                 }
             }
 
-            ApplyDirectionToTractiveForce(ref SteamEngines[numberofengine].TractiveForceN);
-            
             SteamEngines[numberofengine].AttachedAxle.DriveForceN = SteamEngines[numberofengine].TractiveForceN;
         }
         public override void AdvancedAdhesion(float elapsedClockSeconds)
