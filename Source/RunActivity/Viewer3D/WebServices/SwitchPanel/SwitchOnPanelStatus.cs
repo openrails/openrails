@@ -383,7 +383,6 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 }
             }
 
-            switchOnPanelStatus.Color = "";
             if ((handBrakeOn > 0) && (handBrakeCount != handBrakeOn))
             {
                 switchOnPanelStatus.Status = Viewer.Catalog.GetString("On") + "/" + Viewer.Catalog.GetString("Off");
@@ -402,6 +401,32 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                         switchOnPanelStatus.Status = Viewer.Catalog.GetString("Off");
                     }
                 }
+            }
+        }
+
+        private static void getStatusBrakehose(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            Train train = Viewer.PlayerLocomotive.Train;
+            int brakeHoseConnectedCount = 0;
+            int angleCockAOpenCount = 0;
+            int angleCockBOpenCount = 0;
+
+            for (int i = 0; i < train.Cars.Count; i++)
+            {
+                TrainCar car = train.Cars[i];
+                if ((train.Cars[i].BrakeSystem.FrontBrakeHoseConnected) && (i > 0))
+                    brakeHoseConnectedCount++;
+                if ((train.Cars[i].BrakeSystem.AngleCockAOpen) && (i > 0))
+                    angleCockAOpenCount++;
+                if ((train.Cars[i].BrakeSystem.AngleCockBOpen) && (i < (train.Cars.Count - 1)))
+                    angleCockBOpenCount++;
+            }
+
+            if ((brakeHoseConnectedCount == (train.Cars.Count - 1)) &&
+                (angleCockAOpenCount == (train.Cars.Count - 1)) &&
+                (angleCockBOpenCount == (train.Cars.Count - 1))) {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Connected");
+                switchOnPanelStatus.Color = "lightgreen";
             }
         }
 
@@ -469,6 +494,9 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     break;
                 case UserCommand.ControlHandbrakeFull:
                     getStatusHandbrake(ref switchOnPanelStatus);
+                    break;
+                case UserCommand.ControlBrakeHoseConnect:
+                    getStatusBrakehose(ref switchOnPanelStatus);
                     break;
             }
         }

@@ -143,7 +143,7 @@
         [GetString("Control Odometer Direction")] [GetParticularString("SwitchPanel", "")] ControlOdoMeterDirection,
         [GetString("Control Retainers On")] [GetParticularString("SwitchPanel", "")] ControlRetainersOn,
         [GetString("Control Retainers Off")] [GetParticularString("SwitchPanel", "")] ControlRetainersOff,
-        [GetString("Control Brake Hose Connect")] [GetParticularString("SwitchPanel", "")] ControlBrakeHoseConnect,
+        [GetString("Control Brake Hose Connect")] [GetParticularString("SwitchPanel", "Brake hose")] ControlBrakeHoseConnect,
         [GetString("Control Brake Hose Disconnect")] [GetParticularString("SwitchPanel", "")] ControlBrakeHoseDisconnect,
         [GetString("Control Alerter")] [GetParticularString("SwitchPanel", "Alerter")] ControlAlerter,
         [GetString("Control Emergency Push Button")] [GetParticularString("SwitchPanel", "Emergency")] ControlEmergencyPushButton,

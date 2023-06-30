@@ -119,6 +119,10 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                         init0(ORTS.Common.Input.UserCommand.ControlHandbrakeFull);
                     break;
 
+                case ORTS.Common.Input.UserCommand.ControlBrakeHoseConnect:
+                    init2(ORTS.Common.Input.UserCommand.ControlBrakeHoseConnect, ORTS.Common.Input.UserCommand.ControlBrakeHoseDisconnect);
+                    break;
+
                 default:
                     init1(userCommand);
                     break;
