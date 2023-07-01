@@ -23,16 +23,19 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
+using System;
+using System.Diagnostics;
 
 namespace Orts.Viewer3D.WebServices.SwitchPanel
 {
     public class SwitchOnPanelStatus
     {
-        private static Viewer Viewer;
-
         public string Status = "";
         public string Color = "";
         public bool Blinking = false;
+
+        private static Viewer Viewer;
+        private static List<UserCommand> ExceptionForCommand = new List<UserCommand>();
 
         public SwitchOnPanelStatus(Viewer viewer)
         {
@@ -436,68 +439,82 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             switchOnPanelStatus.Color = "";
             switchOnPanelStatus.Blinking = false;
 
-            switch (userCommand)
+            try
             {
-                case UserCommand.ControlDoorLeft:
-                case UserCommand.ControlDoorRight:
-                    getStatusDoors(userCommand, ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlPantograph1:
-                case UserCommand.ControlPantograph2:
-                case UserCommand.ControlPantograph3:
-                case UserCommand.ControlPantograph4:
-                    getStatusControlPantograph(userCommand, ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlHeadlightIncrease:
-                case UserCommand.ControlHeadlightDecrease:
-                    getStatusControlHeadlight(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlLight:
-                    getStatusControlCablight(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlBackwards:
-                case UserCommand.ControlForwards:
-                    getStatusControlDirection(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlSander:
-                    getStatusControlSander(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlWiper:
-                    getStatusControlWiper(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlEmergencyPushButton:
-                    getStatusControlEmergencyPushButton(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.GameSwitchManualMode:
-                    getStatusGameControlMode(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.GameAutopilotMode:
-                    getStatusGameAutopilotMode(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlMasterKey:
-                    getStatusMasterKey(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlBatterySwitchClose:
-                    getStatusBatterySwitch(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlCircuitBreakerClosingOrder:
-                    getStatusCircuitBreaker(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlDieselPlayer:
-                    getStatusDieselEngine(UserCommand.ControlDieselPlayer, ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlDieselHelper:
-                    getStatusDieselEngine(UserCommand.ControlDieselHelper, ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlTractionCutOffRelayClosingOrder:
-                    getStatusTractionCutOffRelay(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlHandbrakeFull:
-                    getStatusHandbrake(ref switchOnPanelStatus);
-                    break;
-                case UserCommand.ControlBrakeHoseConnect:
-                    getStatusBrakehose(ref switchOnPanelStatus);
-                    break;
+                switch (userCommand)
+                {
+                    case UserCommand.ControlDoorLeft:
+                    case UserCommand.ControlDoorRight:
+                        getStatusDoors(userCommand, ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlPantograph1:
+                    case UserCommand.ControlPantograph2:
+                    case UserCommand.ControlPantograph3:
+                    case UserCommand.ControlPantograph4:
+                        getStatusControlPantograph(userCommand, ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlHeadlightIncrease:
+                    case UserCommand.ControlHeadlightDecrease:
+                        getStatusControlHeadlight(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlLight:
+                        getStatusControlCablight(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlBackwards:
+                    case UserCommand.ControlForwards:
+                        getStatusControlDirection(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlSander:
+                        getStatusControlSander(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlWiper:
+                        getStatusControlWiper(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlEmergencyPushButton:
+                        getStatusControlEmergencyPushButton(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.GameSwitchManualMode:
+                        getStatusGameControlMode(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.GameAutopilotMode:
+                        getStatusGameAutopilotMode(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlMasterKey:
+                        getStatusMasterKey(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlBatterySwitchClose:
+                        getStatusBatterySwitch(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlCircuitBreakerClosingOrder:
+                        getStatusCircuitBreaker(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlDieselPlayer:
+                        getStatusDieselEngine(UserCommand.ControlDieselPlayer, ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlDieselHelper:
+                        getStatusDieselEngine(UserCommand.ControlDieselHelper, ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlTractionCutOffRelayClosingOrder:
+                        getStatusTractionCutOffRelay(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlHandbrakeFull:
+                        getStatusHandbrake(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlBrakeHoseConnect:
+                        getStatusBrakehose(ref switchOnPanelStatus);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!ExceptionForCommand.Contains(userCommand))
+                {
+                    // exception not yet logged
+                    ExceptionForCommand.Add(userCommand);
+
+                    Trace.Write("Error in Switch Panel function \"getStatus\" getting status for " + userCommand + ":");
+                    Trace.WriteLine(ex);
+                }
             }
         }
 

@@ -46,7 +46,6 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         {
             var text = Encoding.GetString(rxBuffer);
             var switchPanelEvent = JsonConvert.DeserializeObject<SwitchPanelEvent>(text);
-            Trace.TraceInformation("Got message of type {0} {1}", switchPanelEvent.Type, switchPanelEvent.Data);
 
             int value;
             switch (switchPanelEvent.Type)
@@ -96,7 +95,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         /// <inheritdoc />
         protected override Task OnClientConnectedAsync(IWebSocketContext context)
         {
-            Trace.TraceInformation("client connected");
+            Trace.TraceInformation("SwitchPanel, client connected");
             Connections++;
             return Task.CompletedTask;
         }
@@ -104,7 +103,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         /// <inheritdoc />
         protected override Task OnClientDisconnectedAsync(IWebSocketContext context)
         {
-            Trace.TraceInformation("client disconnected");
+            Trace.TraceInformation("SwitchPanel, client disconnected");
             Connections--;
             return Task.CompletedTask;
         }
@@ -123,9 +122,8 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
             catch (Exception e)
             {
-                string error = e.ToString();
-                Console.WriteLine("Json serialize error:" + error);
-                throw;
+                Trace.TraceInformation("SwitchPanel, Json serialize error:");
+                Trace.WriteLine(e);
             }
         }
     }
