@@ -20,7 +20,9 @@ You are free to make any modifications to the Open Rails code that you like; tha
 
 In most cases, you can get started immediately with making the changes and creating a pull request. We do ask for some additional steps to be taken for some bugs and all new features, but they can come before or after the pull request. Please feel free to share ideas and proposals as pull requests!
 
-**Note:** You must start your work from the "master" branch and merged pull requests back into the "master" branch, unless we direct you otherwise.
+**Note:** You must fork the Open Rails repository before you start working on it. We do not allow you to push branches to the official repository.
+
+**Note:** You should do your work on separate branches; they must be created from the "master" branch and pull requests must merge back into the "master" branch, unless we direct you otherwise.
 
 ### Documentation and translations
 
@@ -160,7 +162,7 @@ When we start preparing for a new Stable Version, all code in the Testing Versio
 
 ### Submitting your code
 
-When you're done writing code, you should make a pull request on GitHub. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
+When you're done writing code, you should make a pull request on GitHub from your fork's branch back to the official repository's "master" branch. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
 
 * Bug report
 * Road-map card
