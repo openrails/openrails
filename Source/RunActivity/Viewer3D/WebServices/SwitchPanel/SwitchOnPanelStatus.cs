@@ -140,6 +140,10 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     break;
             }
             switchOnPanelStatus.Status = Viewer.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(locomotive.Direction));
+            if (locomotive.EngineType == TrainCar.EngineTypes.Steam)
+            {
+                switchOnPanelStatus.Status += " " + Math.Abs(Convert.ToInt32(locomotive.Train.MUReverserPercent)) + "%";
+            }
         }
 
         private static void getStatusControlSander(ref SwitchOnPanelStatus switchOnPanelStatus)

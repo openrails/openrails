@@ -102,7 +102,11 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
 
                 case TrainCar.EngineTypes.Steam:
                     SwitchesOnPanelArray[0, 0].initDefinition(UserCommand.ControlDoorLeft);
+                    SwitchesOnPanelArray[0, 1].initDefinition(UserCommand.ControlForwards);
                     SwitchesOnPanelArray[0, 9].initDefinition(UserCommand.ControlDoorRight);
+
+                    SwitchesOnPanelArray[1, 6].initDefinition(UserCommand.ControlHandbrakeFull);
+                    SwitchesOnPanelArray[1, 7].initDefinition(UserCommand.ControlBrakeHoseConnect);
                     break;
 
                 case TrainCar.EngineTypes.Control:
