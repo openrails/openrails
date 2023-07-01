@@ -8,13 +8,24 @@
     /// </remarks>
     public enum UserCommand
     {
-        [GetString("Game Pause Menu")] [GetParticularString("SwitchPanel", "")] GamePauseMenu,
-        [GetString("Game Save")] [GetParticularString("SwitchPanel", "")] GameSave,
-        [GetString("Game Quit")] [GetParticularString("SwitchPanel", "")] GameQuit,
-        [GetString("Game Pause")] [GetParticularString("SwitchPanel", "")] GamePause,
-        [GetString("Game Screenshot")] [GetParticularString("SwitchPanel", "")] GameScreenshot,
-        [GetString("Game Fullscreen")] [GetParticularString("SwitchPanel", "")] GameFullscreen,
-        [GetString("Game Switch Ahead")] [GetParticularString("SwitchPanel", "Switch Ahead")] GameSwitchAhead,
+        [GetString("Game Pause Menu")] GamePauseMenu,
+        [GetString("Game Save")] GameSave,
+        [GetString("Game Quit")] GameQuit,
+        [GetString("Game Pause")] GamePause,
+        [GetString("Game Screenshot")] GameScreenshot,
+        [GetString("Game Fullscreen")] GameFullscreen,
+        /*
+         * comment to be removed
+         * 
+         */
+        //
+        [GetString("Game External Controller (RailDriver)")] GameExternalCabController,
+        //
+        /*
+         * comment to be removed
+         * 
+         */
+        [GetString("Game Switch Ahead")] GameSwitchAhead,
         [GetString("Game Switch Behind")] [GetParticularString("SwitchPanel", "Switch Behind")] GameSwitchBehind,
         [GetString("Game Switch Picked")] [GetParticularString("SwitchPanel", "")] GameSwitchPicked,
         [GetString("Game Signal Picked")] [GetParticularString("SwitchPanel", "")] GameSignalPicked,

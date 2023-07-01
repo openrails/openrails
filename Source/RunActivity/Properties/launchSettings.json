@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RunActivity": {
+      "commandName": "Project",
+      "commandLineArgs": "-start -exploreactivity \"F:\\OpenRails\\NewForestRouteV3\\ROUTES\\Watersnake\\PATHS\\RL820RWessexComb70A30Mn.pat\" \"F:\\OpenRails\\NewForestRouteV3\\TRAINS\\CONSISTS\\~con-test.con\" 12:00 1 0"
+    }
+  }
+}
