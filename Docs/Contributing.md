@@ -28,6 +28,12 @@ If you'd like to improve the [documentation](./), [manual](../Source/Documentati
 
 There are no requirements for the pull request.
 
+### Contributed projects
+
+If you'd like to improve the [contributed projects](../Source/Contrib) you can get started immediately.
+
+There are no requirements for the pull request.
+
 ### Bug process
 
 If you'd like to fix a bug, you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our bug tracker on Launchpad](https://bugs.launchpad.net/or). If it has not, you can report the bug *and* fix it!
