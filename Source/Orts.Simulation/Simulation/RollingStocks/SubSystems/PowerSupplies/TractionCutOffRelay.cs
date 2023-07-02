@@ -34,7 +34,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public Simulator Simulator => LocomotivePowerSupply.Locomotive.Simulator;
 
         public bool Activated = false;
-        string ScriptName = "Automatic";
+        public string ScriptName { get; protected set; } = "Automatic";
         TractionCutOffRelay Script;
 
         public float DelayS { get; protected set; } = 0f;

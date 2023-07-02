@@ -1,0 +1,71 @@
+/*
+COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+
+This file is part of Open Rails.
+
+Open Rails is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Open Rails is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Open Rails. If not, see <http://www.gnu.org/licenses/ > .
+*/
+
+body, table {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    text-align: center;
+    position: absolute;
+}
+
+table, td {
+	table-layout: fixed;
+	border: 1px solid black;
+}
+
+tr {
+    height: 25%;
+}
+
+div {
+	height: 100%;
+}
+
+.btn0 {
+    vertical-align: top;
+    height: 90%;
+    width: 100%;
+    border-radius: 12px;
+    background: lightgray;
+}
+
+.btn1 {
+	vertical-align: top;
+    height: 90%;
+    width: 100%;
+	border-radius: 12px
+}
+
+.btn2 {
+    vertical-align: top;
+    height: 45%;
+    width: 100%;
+    border-radius: 12px
+}
+
+label {
+    overflow: hidden;
+    white-space: nowrap;
+    display: block;
+    height: 10%;
+    width: 100%;
+    min-width: 1px;
+}
+

@@ -35,6 +35,7 @@ using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock.SubSystems;
 using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
+using Orts.Viewer3D.WebServices.SwitchPanel;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -326,7 +327,7 @@ namespace Orts.Viewer3D.RollingStock
                         train.DbfEvalValueChanged = true;//Debrief eval
                     }
                 }
-                else if (UserInput.IsReleased(command))
+                else if (UserInput.IsReleased(command) || SwitchPanelModule.IsUp(command))
                 {
                     UserInputCommands[command][0]();
                     //Debrief eval
@@ -2111,7 +2112,6 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.BLOWER:
                 case CABViewControlTypes.DAMPERS_FRONT:
                 case CABViewControlTypes.STEAM_HEAT:
-                case CABViewControlTypes.STEAM_BOOSTER:
                 case CABViewControlTypes.ORTS_WATER_SCOOP:
                 case CABViewControlTypes.WATER_INJECTOR1:
                 case CABViewControlTypes.WATER_INJECTOR2:
@@ -2427,7 +2427,6 @@ namespace Orts.Viewer3D.RollingStock
                     }
                     break;
                 case CABViewControlTypes.STEAM_HEAT: Locomotive.SetSteamHeatValue(ChangedValue(Locomotive.SteamHeatController.IntermediateValue)); break;
-                case CABViewControlTypes.STEAM_BOOSTER: (Locomotive as MSTSSteamLocomotive).SetSteamBoosterValue(ChangedValue((Locomotive as MSTSSteamLocomotive).SteamBoosterController.IntermediateValue)); break;
                 case CABViewControlTypes.ORTS_WATER_SCOOP: if (((Locomotive as MSTSSteamLocomotive).WaterScoopDown ? 1 : 0) != ChangedValue(Locomotive.WaterScoopDown ? 1 : 0)) new ToggleWaterScoopCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
                     new CircuitBreakerClosingOrderCommand(Viewer.Log, ChangedValue((Locomotive as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0) > 0);

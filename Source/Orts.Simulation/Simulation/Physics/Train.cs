@@ -319,14 +319,14 @@ namespace Orts.Simulation.Physics
 
         public enum TRAIN_CONTROL
         {
-            AUTO_SIGNAL,
-            AUTO_NODE,
-            MANUAL,
-            EXPLORER,
-            OUT_OF_CONTROL,
-            INACTIVE,
-            TURNTABLE,
-            UNDEFINED
+            [GetParticularString("TrainControl", "Auto Signal")] AUTO_SIGNAL,
+            [GetParticularString("TrainControl", "Auto Node")] AUTO_NODE,
+            [GetParticularString("TrainControl", "Manual")] MANUAL,
+            [GetParticularString("TrainControl", "Explorer")] EXPLORER,
+            [GetParticularString("TrainControl", "Out of Control")] OUT_OF_CONTROL,
+            [GetParticularString("TrainControl", "Inactive")] INACTIVE,
+            [GetParticularString("TrainControl", "Turntable")] TURNTABLE,
+            [GetParticularString("TrainControl", "Undefined")] UNDEFINED
         }
 
         private TRAIN_CONTROL controlMode = TRAIN_CONTROL.UNDEFINED;
