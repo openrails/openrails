@@ -175,11 +175,26 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
 
         private string determineDescription(UserCommand userCommand)
         {
-            // get the user command enum description for SwitchPanel
-            string description = GetParticularStringAttribute.GetParticularPrettyName("SwitchPanel", userCommand);
 
-            // translate the description
-            description = capitalize(Viewer.Catalog.GetParticularString("SwitchPanel", description));
+            string description = "";
+
+            if (userCommand != ORTS.Common.Input.UserCommand.GameSwitchAhead)
+            {
+                // get the user command enum description for SwitchPanel
+                description = GetParticularStringAttribute.GetParticularPrettyName("SwitchPanel", userCommand);
+
+                // translate the description
+                description = capitalize(Viewer.Catalog.GetParticularString("SwitchPanel", description));
+            }
+            else
+            {
+                // this is a workaround to solve a merge conflict with PR 757 "Unify RailDriver code implementations"
+                // once both PR 757 and this one PR 831 are merged into master file this else can be removed
+                // and the file Source\ORTS.Common\Input\UserCommand.cs to be changed
+                description = capitalize(Viewer.Catalog.GetParticularString("SwitchPanel", "Switch Ahead"));
+            }
+
+
 
             return description;
         }

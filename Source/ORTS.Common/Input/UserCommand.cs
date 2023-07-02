@@ -14,17 +14,6 @@
         [GetString("Game Pause")] GamePause,
         [GetString("Game Screenshot")] GameScreenshot,
         [GetString("Game Fullscreen")] GameFullscreen,
-        /*
-         * comment to be removed
-         * 
-         */
-        //
-        [GetString("Game External Controller (RailDriver)")] GameExternalCabController,
-        //
-        /*
-         * comment to be removed
-         * 
-         */
         [GetString("Game Switch Ahead")] GameSwitchAhead,
         [GetString("Game Switch Behind")] [GetParticularString("SwitchPanel", "Switch Behind")] GameSwitchBehind,
         [GetString("Game Switch Picked")] [GetParticularString("SwitchPanel", "")] GameSwitchPicked,
