@@ -1,17 +1,17 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
-// 
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -20,72 +20,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace Orts.Common
+namespace ORTS.Common
 {
-    public class NullLogger : TextWriter
-    {
-        public NullLogger()
-        {
-        }
-
-        public override Encoding Encoding
-        {
-            get
-            {
-                return Encoding.UTF8;
-            }
-        }
-
-        public override void Write(char value)
-        {
-        }
-    }
-
-    public class FileTeeLogger : TextWriter
-    {
-        public readonly string FileName;
-        public readonly TextWriter Console;
-
-        public FileTeeLogger(string fileName, TextWriter console)
-        {
-            FileName = fileName;
-            Console = console;
-        }
-
-        public override Encoding Encoding
-        {
-            get
-            {
-                return Encoding.UTF8;
-            }
-        }
-
-        public override void Write(char value)
-        {
-            // Everything in TextWriter boils down to Write(char), but
-            // actually implementing just this would be horribly inefficient
-            // since we open and close the file every time. Instead, we
-            // implement Write(string) and Write(char[], int, int) which
-            // should mean we only end up here if called directly by user
-            // code. Which we won't support unless necessary.
-            throw new NotImplementedException();
-        }
-
-        public override void Write(string value)
-        {
-            Console.Write(value);
-            using (var writer = new StreamWriter(FileName, true, Encoding))
-            {
-                writer.Write(value);
-            }
-        }
-
-        public override void Write(char[] buffer, int index, int count)
-        {
-            Write(new String(buffer, index, count));
-        }
-    }
-
     public class ORTraceListener : TraceListener
     {
         public readonly TextWriter Writer;
@@ -128,7 +64,7 @@ namespace Orts.Common
             var errorLevel = (int)Math.Round(Math.Log((int)eventType) / Math.Log(2));
             if (errorLevel < Counts.Length)
                 Counts[errorLevel]++;
-            
+
             // Event is less important than error (and critical) and we're logging only errors... bail.
             if (eventType > TraceEventType.Error && OnlyErrors)
                 return;
@@ -214,15 +150,6 @@ namespace Orts.Common
 
         class LogicalOperation
         {
-        }
-    }
-
-    public sealed class FatalException : Exception
-    {
-        public FatalException(Exception innerException)
-            : base("A fatal error has occurred", innerException)
-        {
-            Debug.Assert(innerException != null, "The inner exception of a FatalException must not be null.");
         }
     }
 }
