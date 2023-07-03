@@ -643,7 +643,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
         public void Initialize()
         {
-            AxleSpeedMpS = 0;
             motor?.Initialize();
         }
         public void InitializeMoving()
@@ -698,6 +697,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             previousSlipSpeedMpS = inf.ReadSingle();
             AxleForceN = inf.ReadSingle();
             AxleSpeedMpS = inf.ReadSingle();
+            NumOfSubstepsPS = inf.ReadInt32();
+            integratorError = inf.ReadSingle();
         }
 
         /// <summary>
@@ -710,6 +711,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             outf.Write(previousSlipSpeedMpS);
             outf.Write(AxleForceN);
             outf.Write(AxleSpeedMpS);
+            outf.Write(NumOfSubstepsPS);
+            outf.Write(integratorError);
         }
 
         /// <summary>

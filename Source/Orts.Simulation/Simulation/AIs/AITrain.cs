@@ -129,6 +129,8 @@ namespace Orts.Simulation.AIs
         public static float minStopDistanceM = 3.0f;           // minimum clear distance for stopping at signal in station
         public static float signalApproachDistanceM = 20.0f;   // final approach to signal
 
+        private readonly List<ObjectItemInfo> processedList = new List<ObjectItemInfo>(); // internal processing list for CheckSignalObjects()
+
 #if WITH_PATH_DEBUG
         //  Only for EnhancedActCompatibility
         public string currentAIState = "";
@@ -1164,10 +1166,12 @@ namespace Orts.Simulation.AIs
             }
 
             float validSpeed = AllowedMaxSpeedMpS;
-            List<ObjectItemInfo> processedList = new List<ObjectItemInfo>();
+            processedList.Clear();
 
-            foreach (ObjectItemInfo thisInfo in SignalObjectItems.Where(item => !item.speed_isWarning))
+            foreach (ObjectItemInfo thisInfo in SignalObjectItems)
             {
+                if (thisInfo.speed_isWarning)
+                    continue;
 
                 // check speedlimit
                 if (CheckTrain)

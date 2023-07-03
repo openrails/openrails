@@ -1374,9 +1374,6 @@
             // checkElectricPowerConnected
             // 
             this.checkElectricPowerConnected.AutoSize = true;
-            this.checkElectricPowerConnected.Checked = true;
-            this.checkElectricPowerConnected.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkElectricPowerConnected.Enabled = false;
             this.checkElectricPowerConnected.Location = new System.Drawing.Point(26, 238);
             this.checkElectricPowerConnected.Name = "checkElectricPowerConnected";
             this.checkElectricPowerConnected.Size = new System.Drawing.Size(153, 17);
