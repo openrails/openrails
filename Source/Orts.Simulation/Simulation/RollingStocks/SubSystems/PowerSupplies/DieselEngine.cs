@@ -1586,14 +1586,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             OutputPowerW = inf.ReadSingle();
             DieselTemperatureDeg = inf.ReadSingle();
             GovernorEnabled = inf.ReadBoolean();
-
-            bool gearSaved = inf.ReadBoolean();  // read boolean which indicates gear data was saved
-
-            if (gearSaved)
-            {
-                GearBox = new GearBox(this);
-                GearBox.Restore(inf);
-            }
+            GearBox?.Restore(inf);
         }
 
         public void Save(BinaryWriter outf)
@@ -1603,16 +1596,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             outf.Write(OutputPowerW);
             outf.Write(DieselTemperatureDeg);
             outf.Write(GovernorEnabled);
-
-            if (GearBox != null)
-            {
-                outf.Write(true);
-                GearBox.Save(outf);
-            }
-            else
-            {
-                outf.Write(false);
-            }
+            GearBox?.Save(outf);
         }
 
         /// <summary>
