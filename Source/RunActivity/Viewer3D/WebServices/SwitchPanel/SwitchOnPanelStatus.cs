@@ -437,6 +437,23 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
         }
 
+        private static void getStatusCylinderCocks(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSSteamLocomotive locomotive = Viewer.PlayerLocomotive as MSTSSteamLocomotive;
+
+            bool cylinderCocksAreOpen = locomotive.CylinderCocksAreOpen;
+            if (locomotive.CylinderCocksAreOpen)
+            {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Open");
+                switchOnPanelStatus.Color = "orange";
+            }
+            else
+            {
+                switchOnPanelStatus.Status = Viewer.Catalog.GetString("Closed");
+
+            }
+        }
+
         public static void getStatus(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
         {
             switchOnPanelStatus.Status = "";
@@ -506,6 +523,9 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                         break;
                     case UserCommand.ControlBrakeHoseConnect:
                         getStatusBrakehose(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlCylinderCocks:
+                        getStatusCylinderCocks(ref switchOnPanelStatus);
                         break;
                 }
             }
