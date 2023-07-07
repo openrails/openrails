@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2022-08-17 02:43:29+0200\n"
-"PO-Revision-Date: 2022-08-17 02:43:29+0200\n"
+"POT-Creation-Date: 2023-02-21 17:54:10+0300\n"
+"PO-Revision-Date: 2023-02-21 17:54:11+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -1010,30 +1010,82 @@ msgid "Control AI Fire Reset"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:221
-msgid "Control DP Move To Front"
+msgid "Control Speed Regulator Mode Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:222
-msgid "Control DP Move To Back"
+msgid "Control Speed Regulator Mode Descrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:223
-msgid "Control DP Traction"
+msgid "Control Selected Speed Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:224
-msgid "Control DP Idle"
+msgid "Control Selected Speed Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:225
-msgid "Control DP Brake"
+msgid "Control Speed Regulator Max Acceleration Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:226
-msgid "Control DP More"
+msgid "Control Speed Regulator Max Acceleration Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:227
+msgid "Control Number Of Axles Increase"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:228
+msgid "Control Number Of Axles Decrease"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:229
+msgid "Control Restricted Speed Zone Active"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:230
+msgid "Control Cruise Control Mode Increase"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:231
+msgid "Control Cruise Control Mode Decrease"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:232
+msgid "Control Train Type Change (Passenger/Cargo)"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:233
+msgid "Control Selected Speed To Zero"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:235
+msgid "Control DP Move To Front"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:236
+msgid "Control DP Move To Back"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:237
+msgid "Control DP Traction"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:238
+msgid "Control DP Idle"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:239
+msgid "Control DP Brake"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:240
+msgid "Control DP More"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:241
 msgid "Control DP Less"
 msgstr ""
 

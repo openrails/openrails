@@ -733,15 +733,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 }
                             }
                         }
-                        if (loco.DynamicBrakePercent > 0 && Car.MaxBrakeForceN > 0)
+                        if (loco.DynamicBrakePercent > 0 && Car.FrictionBrakeBlendingMaxForceN > 0)
                         {
                             if (loco.DynamicBrakePartialBailOff)
                             {
-                                var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                                var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                                if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.MaxBrakeForceN)
+                                var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.FrictionBrakeBlendingMaxForceN;
+                                var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.FrictionBrakeBlendingMaxForceN;
+                                if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.FrictionBrakeBlendingMaxForceN)
                                 {
-                                    demandedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.MaxBrakeForceN*MaxCylPressurePSI, 0), MaxCylPressurePSI);
+                                    demandedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.FrictionBrakeBlendingMaxForceN * MaxCylPressurePSI, 0), MaxCylPressurePSI);
                                     if (demandedPressurePSI > CylPressurePSI && demandedPressurePSI < CylPressurePSI + 4) // Allow some margin for unnecessary air brake application
                                     {
                                         demandedPressurePSI = CylPressurePSI;
@@ -857,23 +857,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSI;
             }
-
-            float f;
+            
             if (!Car.BrakesStuck)
             {
-                f = Car.MaxBrakeForceN * MathHelper.Clamp((CylPressurePSI - BrakeCylinderSpringPressurePSI) / (MaxCylPressurePSI - BrakeCylinderSpringPressurePSI), 0, 1);
-                if (f < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
-                    f = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
+                Car.BrakeShoeForceN = Car.MaxBrakeForceN * Math.Min(CylPressurePSI / MaxCylPressurePSI, 1);
+                if (Car.BrakeShoeForceN < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
+                    Car.BrakeShoeForceN = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
             }
-            else f = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2); 
-            Car.BrakeRetardForceN = f * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
+            else Car.BrakeShoeForceN = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2);
+
+            float brakeShoeFriction = Car.GetBrakeShoeFrictionFactor();
+            Car.HuDBrakeShoeFriction = Car.GetBrakeShoeFrictionCoefficientHuD();
+
+            Car.BrakeRetardForceN = Car.BrakeShoeForceN * brakeShoeFriction; // calculates value of force applied to wheel, independent of wheel skid
             if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
             {
-                Car.BrakeForceN = f * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
+                Car.BrakeForceN = Car.BrakeShoeForceN * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
             }
             else
             {
-                Car.BrakeForceN = f * Car.BrakeShoeCoefficientFrictionAdjFactor; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
+                Car.BrakeForceN = Car.BrakeShoeForceN * brakeShoeFriction; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
             }
 
             // sound trigger checking runs every half second, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)

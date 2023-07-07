@@ -1828,7 +1828,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 {
                     if (DynamicBrakeBlendingForceMatch)
                     {
-                        float diff = target * MaxBrakeForceN - DynamicBrakeForceN;
+                        float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
                         float threshold = 100;
                         if (diff > threshold && DynamicBrakeIntervention < 1)
                             DynamicBrakeIntervention = Math.Min(DynamicBrakeIntervention + elapsedClockSeconds, 1);
@@ -2827,6 +2827,7 @@ public List<CabView> CabViewList = new List<CabView>();
  
             float max0 = DrvWheelWeightKg * 9.81f * uMax;  //Ahesion limit in [N]
             float max1;
+            float SandingFrictionFactor = 1;
 
             if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
             {
@@ -2845,30 +2846,19 @@ public List<CabView> CabViewList = new List<CabView>();
             //float max1 = (Sander ? .95f : Adhesion2) * max0;  //Not used this way
             max1 = MaxForceN;
             //add sander
-            if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
+            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
             {
-                if (SanderSpeedEffectUpToMpS > 0.0f)
+                switch (Simulator.WeatherType)
                 {
-                    if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
-                    {
-                        switch (Simulator.WeatherType)
-                        {
-                            case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.2f; break;
-                            case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.8f; break;
-                            case WeatherType.Snow: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 2.5f; break;
-                        }
-                    }
+                    case WeatherType.Clear: SandingFrictionFactor = 1.2f; break;
+                    case WeatherType.Rain: SandingFrictionFactor = 1.8f; break;
+                    case WeatherType.Snow: SandingFrictionFactor = 2.5f; break;
                 }
-                else
-                    if (Sander)
+                if (SanderSpeedEffectUpToMpS > 0.0f) // Reduce sander effectiveness if max effective speed is defined
                 {
-                    switch (Simulator.WeatherType)
-                    {
-                        case WeatherType.Clear: max0 *= 1.2f; break;
-                        case WeatherType.Rain: max0 *= 1.8f; break;
-                        case WeatherType.Snow: max0 *= 2.5f; break;
-                    }
+                    SandingFrictionFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS);
                 }
+                max0 *= Math.Max(SandingFrictionFactor, 1.0f); // Prevent sand from harming adhesion above max effective speed
             }
 
             max1 = max0;
@@ -3142,92 +3132,22 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
             }
 
-            BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f); 
+            BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f);
 
-            // Snow covered track
-            if (Simulator.WeatherType == WeatherType.Snow)
+            // Increase friction coefficient when sanding
+            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
             {
-                if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
+                switch (Simulator.WeatherType)
                 {
-                    if (SanderSpeedEffectUpToMpS > 0.0f)
-                    {
-                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
-                        {
-                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.50f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
-
-                        }
-                    }
-                    else
-                    {
-                        if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
-                        {
-                            SandingFrictionCoefficientFactor = 1.50f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 150% adhesion (best case)
-                        }
-                    }
+                    case WeatherType.Clear: SandingFrictionCoefficientFactor = 1.40f; break;
+                    case WeatherType.Rain: SandingFrictionCoefficientFactor = 1.25f; break;
+                    case WeatherType.Snow: SandingFrictionCoefficientFactor = 1.50f; break;
                 }
-                else if (Sander && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
+                if (SanderSpeedEffectUpToMpS > 0.0f) // Reduce sander effectiveness if max effective speed is defined
                 {
-                    SandingFrictionCoefficientFactor = 1.50f;
-                    BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 150% adhesion (best case)
+                    SandingFrictionCoefficientFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS);
                 }
-            }
-            else if (Simulator.WeatherType == WeatherType.Rain)
-            {
-                if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
-                {
-                    if (SanderSpeedEffectUpToMpS > 0.0f)
-                    {
-                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
-                        {
-                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.25f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
-
-                        }
-                    }
-                    else
-                    {
-                        if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
-                        {
-                            SandingFrictionCoefficientFactor = 1.25f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 125% adhesion (best case)
-                        }
-                    }
-                }
-                else if (Sander && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
-                {
-                    SandingFrictionCoefficientFactor = 1.25f;
-                    BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 125% adhesion (best case)
-                }
-            }
-            else // dry weather
-            {
-                if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
-                {
-                    if (SanderSpeedEffectUpToMpS > 0.0f)
-                    {
-                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
-                        {
-                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.40f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
-                        }
-                    }
-                    else
-                    {
-                        if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
-                        {
-                            SandingFrictionCoefficientFactor = 1.40f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 140% adhesion (best case)
-                        }
-                    }
-                }
-                else if (Sander && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
-                {
-                    SandingFrictionCoefficientFactor = 1.40f;
-                    BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 140% adhesion (best case)
-                }
-
+                BaseFrictionCoefficientFactor *= Math.Max(SandingFrictionCoefficientFactor, 1.0f); // Prevent sand from harming adhesion above max effective speed
             }
 
             // For wagons use base Curtius-Kniffler adhesion factor - u = 0.33
@@ -3282,7 +3202,7 @@ public List<CabView> CabViewList = new List<CabView>();
         // The following assumptions have been made:
         //
 
-            if (Sander)  // If sander is on adjust parameters
+            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)  // If sander switch is on, and not blocked by speed, adjust parameters
             {
                 if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
                 {
