@@ -103,10 +103,19 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 case TrainCar.EngineTypes.Steam:
                     SwitchesOnPanelArray[0, 0].initDefinition(UserCommand.ControlDoorLeft);
                     SwitchesOnPanelArray[0, 1].initDefinition(UserCommand.ControlForwards);
+                    SwitchesOnPanelArray[0, 2].initDefinition(UserCommand.ControlCylinderCocks);
+                    SwitchesOnPanelArray[0, 3].initDefinition(UserCommand.ControlLight);
+                    SwitchesOnPanelArray[0, 4].initDefinition(UserCommand.ControlEmergencyPushButton);
+                    SwitchesOnPanelArray[0, 5].initDefinition(UserCommand.ControlAlerter);
+                    SwitchesOnPanelArray[0, 6].initDefinition(UserCommand.ControlSander);
+                    SwitchesOnPanelArray[0, 7].initDefinition(UserCommand.ControlWiper);
                     SwitchesOnPanelArray[0, 9].initDefinition(UserCommand.ControlDoorRight);
 
-                    SwitchesOnPanelArray[1, 6].initDefinition(UserCommand.ControlHandbrakeFull);
-                    SwitchesOnPanelArray[1, 7].initDefinition(UserCommand.ControlBrakeHoseConnect);
+                    SwitchesOnPanelArray[1, 0].initDefinition(UserCommand.ControlBatterySwitchClose);
+                    SwitchesOnPanelArray[1, 1].initDefinition(UserCommand.ControlMasterKey);
+                    SwitchesOnPanelArray[1, 2].initDefinition(UserCommand.ControlHeadlightIncrease);
+                    SwitchesOnPanelArray[1, 3].initDefinition(UserCommand.ControlHandbrakeFull);
+                    SwitchesOnPanelArray[1, 4].initDefinition(UserCommand.ControlBrakeHoseConnect);
                     break;
 
                 case TrainCar.EngineTypes.Control:

@@ -129,18 +129,6 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
         }
 
-        private string capitalize(string value)
-        {
-            if (value.Length > 0)
-            {
-                return char.ToUpper(value[0]) + value.Substring(1);
-            } 
-            else
-            {
-                return "";
-            }
-        }
-
         // empty button
         public void initEmpty()
         {
@@ -175,26 +163,125 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
 
         private string determineDescription(UserCommand userCommand)
         {
-
             string description = "";
 
-            if (userCommand != ORTS.Common.Input.UserCommand.GameSwitchAhead)
+            /*
+             * this code could be simplified, however the GetParticularString is necessar to make translations possible
+             */
+            switch (userCommand)
             {
-                // get the user command enum description for SwitchPanel
-                description = GetParticularStringAttribute.GetParticularPrettyName("SwitchPanel", userCommand);
-
-                // translate the description
-                description = capitalize(Viewer.Catalog.GetParticularString("SwitchPanel", description));
+                case ORTS.Common.Input.UserCommand.GameSwitchAhead:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Switch Ahead");
+                    break;
+                case ORTS.Common.Input.UserCommand.GameSwitchBehind:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Switch Behind");
+                    break;
+                case ORTS.Common.Input.UserCommand.GameChangeCab:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Change Cab");
+                    break;
+                case ORTS.Common.Input.UserCommand.GameMultiPlayerDispatcher:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Map");
+                    break;
+                case ORTS.Common.Input.UserCommand.GameSwitchManualMode:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Switch Manual");
+                    break;
+                case ORTS.Common.Input.UserCommand.GameClearSignalForward:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Clear Signal Forward");
+                    break;
+                case ORTS.Common.Input.UserCommand.GameAutopilotMode:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Autopilot");
+                    break;
+                case ORTS.Common.Input.UserCommand.DisplayTrackMonitorWindow:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Track Monitor");
+                    break;
+                case ORTS.Common.Input.UserCommand.DisplayHUD:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "HUD");
+                    break;
+                case ORTS.Common.Input.UserCommand.DisplayTrainDrivingWindow:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Train Driving");
+                    break;
+                case ORTS.Common.Input.UserCommand.DisplaySwitchWindow:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Switch");
+                    break;
+                case ORTS.Common.Input.UserCommand.DisplayTrainOperationsWindow:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Train Operations");
+                    break;
+                case ORTS.Common.Input.UserCommand.DisplayTrainDpuWindow:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Train Dpu");
+                    break;
+                case ORTS.Common.Input.UserCommand.DisplayNextStationWindow:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Next Station");
+                    break;
+                case ORTS.Common.Input.UserCommand.DisplayTrainListWindow:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Train List");
+                    break;
+                case ORTS.Common.Input.UserCommand.DisplayEOTListWindow:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "EOT List");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlForwards:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Direction");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlGearUp:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Gear");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlHandbrakeFull:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Handbrake");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlBrakeHoseConnect:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Brake hose");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlAlerter:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Alerter");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlEmergencyPushButton:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Emergency");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlSander:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Sander");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlWiper:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Wiper");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlDoorLeft:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Door Left");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlDoorRight:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Door Right");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlLight:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Light");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlPantograph1:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Pantograph 1");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlPantograph2:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Pantograph 2");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlBatterySwitchClose:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Battery Switch");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlMasterKey:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Master Key");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlCircuitBreakerClosingOrder:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Circuit Breaker");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlTractionCutOffRelayClosingOrder:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Traction Cut-Off");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlDieselPlayer:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Diesel Player");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlDieselHelper:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Diesel Helper");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlHeadlightIncrease:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Front light");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlCylinderCocks:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Cyl Cocks");
+                    break;
             }
-            else
-            {
-                // this is a workaround to solve a merge conflict with PR 757 "Unify RailDriver code implementations"
-                // once both PR 757 and this one PR 831 are merged into master file this else can be removed
-                // and the file Source\ORTS.Common\Input\UserCommand.cs to be changed
-                description = capitalize(Viewer.Catalog.GetParticularString("SwitchPanel", "Switch Ahead"));
-            }
-
-
 
             return description;
         }

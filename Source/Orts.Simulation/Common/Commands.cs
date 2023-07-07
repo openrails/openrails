@@ -1532,6 +1532,29 @@ namespace Orts.Common
 
 
     // Steam controls
+    // Steam booster command
+    [Serializable()]
+    public sealed class ContinuousSteamBoosterCommand : ContinuousCommand
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ContinuousSteamBoosterCommand(CommandLog log, int injector, bool toState, float? target, double startTime)
+            : base(log, toState, target, startTime)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            {
+                Receiver.SteamBoosterChangeTo(ToState, Target);
+            }
+            // Report();
+        }
+    }
+
+    // Steam heat command
     [Serializable()]
     public sealed class ContinuousSteamHeatCommand : ContinuousCommand
     {
