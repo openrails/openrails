@@ -271,7 +271,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortsinitialapplicationthreshold": InitialApplicationThresholdPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 1.0f); break;
                 case "wagon(ortscylinderspringpressure": BrakeCylinderSpringPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsmaxservicecylinderpressure": ServiceMaxCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
-    }
+            }
         }
 
         public override void Save(BinaryWriter outf)
@@ -294,19 +294,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(BleedOffValveOpen);
             outf.Write((int)HoldingValve);
             outf.Write(CylVolumeM3);
-            outf.Write(EmergResQuickRelease);
-            outf.Write(UniformChargingThresholdPSI);
-            outf.Write(UniformChargingRatio);
             outf.Write(QuickServiceActive);
-            outf.Write(QuickServiceLimitPSI);
-            outf.Write(QuickServiceApplicationRatePSIpS);
-            outf.Write(QuickServiceVentRatePSIpS);
-            outf.Write(AcceleratedApplicationRatio);
-            outf.Write(AcceleratedApplicationLimitPSIpS);
-            outf.Write(InitialApplicationThresholdPSI);
-            outf.Write(BrakeCylinderSpringPressurePSI);
-            outf.Write(ServiceMaxCylPressurePSI);
-    }
+        }
 
         public override void Restore(BinaryReader inf)
         {
@@ -328,19 +317,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             BleedOffValveOpen = inf.ReadBoolean();
             HoldingValve = (ValveState)inf.ReadInt32();
             CylVolumeM3 = inf.ReadSingle();
-            EmergResQuickRelease = inf.ReadBoolean();
-            UniformChargingThresholdPSI = inf.ReadSingle();
-            UniformChargingRatio = inf.ReadSingle();
             QuickServiceActive = inf.ReadBoolean();
-            QuickServiceLimitPSI = inf.ReadSingle();
-            QuickServiceApplicationRatePSIpS = inf.ReadSingle();
-            QuickServiceVentRatePSIpS = inf.ReadSingle();
-            AcceleratedApplicationRatio = inf.ReadSingle();
-            AcceleratedApplicationLimitPSIpS = inf.ReadSingle();
-            InitialApplicationThresholdPSI = inf.ReadSingle();
-            BrakeCylinderSpringPressurePSI = inf.ReadSingle();
-            ServiceMaxCylPressurePSI = inf.ReadSingle();
-    }
+        }
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
