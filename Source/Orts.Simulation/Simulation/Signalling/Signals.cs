@@ -58,7 +58,7 @@ namespace Orts.Simulation.Signalling
         private Dictionary<int, int> SpeedPostRefList = new Dictionary<int, int>();
         public static SIGSCRfile scrfile;
         public static CsSignalScripts CsSignalScripts;
-        public readonly IDictionary<string, SignalFunction> SignalFunctions;
+        public readonly Dictionary<string, SignalFunction> SignalFunctions;
         public IList<string> ORTSNormalsubtypes;
 
         public int noSignals;
@@ -93,7 +93,7 @@ namespace Orts.Simulation.Signalling
             SignalHeadList = new Dictionary<uint, SignalObject>();
             Dictionary<int, int> platformList = new Dictionary<int, int>();
 
-            SignalFunctions = sigcfg.SignalFunctions;
+            SignalFunctions = new Dictionary<string, SignalFunction>(sigcfg.SignalFunctions);
             ORTSNormalsubtypes = sigcfg.ORTSNormalSubtypes;
 
             trackDB = simulator.TDB.TrackDB;

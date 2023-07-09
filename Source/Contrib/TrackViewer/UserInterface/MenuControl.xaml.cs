@@ -116,6 +116,8 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowAllSignals.IsChecked = Properties.Settings.Default.showAllSignals;
             menuShowPickups.IsChecked = Properties.Settings.Default.showPickups;
             menuShowSoundRegions.IsChecked = Properties.Settings.Default.showSoundRegions;
+            menuShowEvents.IsChecked = Properties.Settings.Default.showEvents;
+            menuShowEventNames.IsChecked = Properties.Settings.Default.showEventNames;
 
             menuShowPATfile.IsChecked = Properties.Settings.Default.showPATfile;
             menuShowTrainpath.IsChecked = Properties.Settings.Default.showTrainpath;
@@ -132,6 +134,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuStatusShowTerrain.IsChecked = Properties.Settings.Default.statusShowTerrain;
             menuStatusShowSignal.IsChecked = Properties.Settings.Default.statusShowSignal;
             menuStatusShowNames.IsChecked = Properties.Settings.Default.statusShowNames;
+            menuStatusShowEventNames.IsChecked = Properties.Settings.Default.statusShowEventNames;
 
 
             menuDrawRoads.IsChecked = Properties.Settings.Default.drawRoads;
@@ -215,6 +218,8 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.showAllSignals = menuShowAllSignals.IsChecked;
             Properties.Settings.Default.showHazards = menuShowHazards.IsChecked;
             Properties.Settings.Default.showSoundRegions = menuShowSoundRegions.IsChecked;
+            Properties.Settings.Default.showEvents = menuShowEvents.IsChecked;
+            Properties.Settings.Default.showEventNames = menuShowEventNames.IsChecked;
             Properties.Settings.Default.showPickups = menuShowPickups.IsChecked;
 
             Properties.Settings.Default.showPATfile = menuShowPATfile.IsChecked;
@@ -229,6 +234,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.statusShowTerrain = menuStatusShowTerrain.IsChecked && (menuShowTerrain.IsChecked || menuShowDMTerrain.IsChecked);
             Properties.Settings.Default.statusShowSignal = menuStatusShowSignal.IsChecked && menuShowSignals.IsChecked;
             Properties.Settings.Default.statusShowNames = menuStatusShowNames.IsChecked;
+            Properties.Settings.Default.statusShowEventNames = menuStatusShowEventNames.IsChecked;
 
             Properties.Settings.Default.drawRoads = menuDrawRoads.IsChecked;
             Properties.Settings.Default.showCarSpawners = menuShowCarSpawners.IsChecked;
@@ -288,6 +294,8 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowHazards.IsChecked = isChecked;
             menuShowSignals.IsChecked = isChecked;
             menuShowAllSignals.IsChecked = isChecked;
+            menuShowEvents.IsChecked = isChecked;
+            menuShowEventNames.IsChecked = isChecked;
             menuShowPickups.IsChecked = isChecked;
             menuShowSoundRegions.IsChecked = isChecked;
 
@@ -336,6 +344,7 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 CloseOtherPathsWindow();
                 PopulateRoutes();
+                PopulateActivitiesEmpty();
             }
         }
 
@@ -374,7 +383,59 @@ namespace ORTS.TrackViewer.UserInterface
                     CloseOtherPathsWindow();
                     trackViewer.SetRoute(route);
                     UpdateMenuSettings();
+                    Properties.Settings.Default.CurrentActivityName = "";
                     return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Empty the activities menu after folder change and before route choice
+        /// </summary>
+        public void PopulateActivitiesEmpty()
+        {
+            menuSelectActivity.Items.Clear();
+            menuSelectActivity.UpdateLayout();
+            Properties.Settings.Default.CurrentActivityName = "";
+        }
+
+        /// <summary>
+        /// Update the menu to show the available activitiy names wich contain location events
+        /// </summary>
+        public void PopulateActivitiesMenu()
+        {
+            menuSelectActivity.Items.Clear();
+            if (trackViewer.RouteData != null)
+            {
+                if (trackViewer.RouteData.ActivityNames != null)
+                {
+                    foreach (string activityName in trackViewer.RouteData.ActivityNames)
+                    {
+                        MenuItem menuItem = new MenuItem
+                        {
+                            Header = activityName,
+                            IsCheckable = false,
+                            IsChecked = false
+                        };
+                        menuItem.Click += new RoutedEventHandler(MenuSelectActivity_Click);
+                        menuSelectActivity.Items.Add(menuItem);
+                    }
+                }
+            }
+            menuSelectActivity.UpdateLayout();
+        }
+
+        /// <summary>
+        /// The user has selected an activity, figure out which one and store it.
+        /// </summary>
+        private void MenuSelectActivity_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem selectedActvityItem = sender as MenuItem;
+            foreach (string activityName in trackViewer.RouteData.ActivityNames)
+            {
+                if (activityName == (string)selectedActvityItem.Header)
+                {
+                    Properties.Settings.Default.CurrentActivityName = activityName;
                 }
             }
         }
@@ -387,6 +448,7 @@ namespace ORTS.TrackViewer.UserInterface
             CloseOtherPathsWindow();
             trackViewer.ReloadRoute();
             UpdateMenuSettings();
+            Properties.Settings.Default.CurrentActivityName = "";
         }
 
         /// <summary>
@@ -599,6 +661,8 @@ namespace ORTS.TrackViewer.UserInterface
             shortcuts.Append(TrackViewer.catalog.GetString("ctrl-Y\t\tRedo in path editor\n"));
             shortcuts.Append("\n");
             shortcuts.Append(TrackViewer.catalog.GetString("alt-?\t\tVarious keys to open submenus\n"));
+            shortcuts.Append("\n");
+            shortcuts.Append(TrackViewer.catalog.GetString("mouse-right click\tOn event shows event message\n"));
             MessageBox.Show(shortcuts.ToString(), TrackViewer.catalog.GetString("Keyboard shortcuts"));
         }
 

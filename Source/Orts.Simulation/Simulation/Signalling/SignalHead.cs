@@ -56,6 +56,8 @@ namespace Orts.Simulation.Signalling
 
         public string SignalTypeName => signalType?.Name ?? string.Empty;
 
+        public int[] LocalFloats;
+
         /// <summary>
         /// Constructor for signals
         /// </summary>

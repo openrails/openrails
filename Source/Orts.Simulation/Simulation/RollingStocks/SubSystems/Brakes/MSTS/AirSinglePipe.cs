@@ -52,6 +52,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float MaxAuxilaryChargingRatePSIpS = 1.684f;
         protected float BrakeInsensitivityPSIpS = 0.07f;
         protected float EmergencyValveActuationRatePSIpS = 0;
+        protected float EmergencyDumpValveRatePSIpS = 0;
+        protected float EmergencyDumpValveTimerS = 120;
+        protected float? EmergencyDumpStartTime;
         protected float EmergResChargingRatePSIpS = 1.684f;
         protected float EmergAuxVolumeRatio = 1.4f;
         protected bool RelayValveFitted = false;
@@ -123,6 +126,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             MaxAuxilaryChargingRatePSIpS = thiscopy.MaxAuxilaryChargingRatePSIpS;
             BrakeInsensitivityPSIpS = thiscopy.BrakeInsensitivityPSIpS;
             EmergencyValveActuationRatePSIpS = thiscopy.EmergencyValveActuationRatePSIpS;
+            EmergencyDumpValveRatePSIpS = thiscopy.EmergencyDumpValveRatePSIpS;
+            EmergencyDumpValveTimerS = thiscopy.EmergencyDumpValveTimerS;
             EmergResChargingRatePSIpS = thiscopy.EmergResChargingRatePSIpS;
             EmergAuxVolumeRatio = thiscopy.EmergAuxVolumeRatio;
             TwoPipes = thiscopy.TwoPipes;
@@ -245,6 +250,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "wagon(ortsbrakeinsensitivity": BrakeInsensitivityPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 0.07f); break;
                 case "wagon(ortsemergencyvalveactuationrate": EmergencyValveActuationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 15f); break;
+                case "wagon(ortsemergencydumpvalverate": EmergencyDumpValveRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 15f); break;
+                case "wagon(ortsemergencydumpvalvetimer": EmergencyDumpValveTimerS = stf.ReadFloatBlock(STFReader.UNITS.Time, 120.0f); break;
                 case "wagon(ortsmainrespipeauxrescharging": MRPAuxResCharging = this is AirTwinPipe && stf.ReadBoolBlock(true); break;
                 case "wagon(ortsbrakerelayvalveratio":
                     RelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null);
@@ -335,7 +342,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             // reducing size of Emergency Reservoir for short (fake) cars
             if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && Car.CarLengthM <= 1)
-            EmergResVolumeM3 = Math.Min (0.02f, EmergResVolumeM3);
+                EmergResVolumeM3 = Math.Min (0.02f, EmergResVolumeM3);
 
             // Install a plain triple valve if no brake valve defined
             // Do not install it for tenders if not defined, to allow tenders with straight brake only
@@ -351,6 +358,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             if (MaxTripleValveCylPressurePSI == 0) MaxTripleValveCylPressurePSI = MaxCylPressurePSI / RelayValveRatio;
             if (EngineRelayValveRatio == 0) EngineRelayValveRatio = RelayValveRatio;
+
+            if ((Car as MSTSWagon).EmergencyReservoirPresent && EmergencyValveActuationRatePSIpS == 0)
+                EmergencyValveActuationRatePSIpS = 15;
 
             if (EmergResVolumeM3 > 0 && EmergAuxVolumeRatio > 0 && BrakePipeVolumeM3 > 0)
                 AuxBrakeLineVolumeRatio = EmergResVolumeM3 / EmergAuxVolumeRatio / BrakePipeVolumeM3;
@@ -376,23 +386,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public void UpdateTripleValveState(float elapsedClockSeconds)
         {
+            var prevState = TripleValveState;
             var valveType = (Car as MSTSWagon).BrakeValve;
+            bool disableGradient = !(Car.Train.LeadLocomotive is MSTSLocomotive) && Car.Train.TrainType != Orts.Simulation.Physics.Train.TRAINTYPE.STATIC;
             if (valveType == MSTSWagon.BrakeValveType.Distributor)
             {
                 float targetPressurePSI = (ControlResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
-                if (targetPressurePSI > AutoCylPressurePSI && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
+                if (!disableGradient && targetPressurePSI > AutoCylPressurePSI && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
                     TripleValveState = ValveState.Emergency;
                 else if (targetPressurePSI < AutoCylPressurePSI - (TripleValveState != ValveState.Release ? 2.2f : 0f)
                     || targetPressurePSI < 2.2f) // The latter is a UIC regulation (0.15 bar)
                     TripleValveState = ValveState.Release;
                 else if (TripleValveState != ValveState.Emergency && targetPressurePSI > AutoCylPressurePSI + (TripleValveState != ValveState.Apply ? 2.2f : 0f))
                     TripleValveState = ValveState.Apply;
-                else
+                else if (TripleValveState != ValveState.Emergency)
                     TripleValveState = ValveState.Lap;
             }
             else if (valveType == MSTSWagon.BrakeValveType.TripleValve || valveType == MSTSWagon.BrakeValveType.DistributingValve)
             {
-                if (BrakeLine1PressurePSI < AuxResPressurePSI - 1 && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
+                if (!disableGradient && BrakeLine1PressurePSI < AuxResPressurePSI - 1 && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
                     TripleValveState = ValveState.Emergency;
                 else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
                     TripleValveState = ValveState.Release;
@@ -407,6 +419,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 TripleValveState = ValveState.Release;
             }
+            if (TripleValveState == ValveState.Emergency)
+            {
+                if (prevState != ValveState.Emergency)
+                {
+                    EmergencyDumpStartTime = (float)Car.Simulator.GameTime;
+                    Car.SignalEvent(Event.EmergencyVentValveOn);
+                }
+            }
+            else EmergencyDumpStartTime = null;
             prevBrakePipePressurePSI = BrakeLine1PressurePSI;
         }
 
@@ -475,6 +496,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             dp = (EmergResPressurePSI - AuxResPressurePSI) / (1 + EmergAuxVolumeRatio);
                         EmergResPressurePSI -= dp;
                         AuxResPressurePSI += dp * EmergAuxVolumeRatio;
+                    }
+                    if (EmergencyDumpValveTimerS == 0)
+                    {
+                        if (BrakeLine1PressurePSI < 1) EmergencyDumpStartTime = null;
+                    }
+                    else if (Car.Simulator.GameTime - EmergencyDumpStartTime > EmergencyDumpValveTimerS)
+                    {
+                        EmergencyDumpStartTime = null;
+                    }
+                    if (EmergencyDumpValveRatePSIpS > 0 && EmergencyDumpStartTime != null)
+                    {
+                        BrakeLine1PressurePSI -= elapsedClockSeconds * EmergencyDumpValveRatePSIpS;
+                        if (BrakeLine1PressurePSI < 0)
+                            BrakeLine1PressurePSI = 0;
                     }
                 }
             }
@@ -622,15 +657,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 }
                             }
                         }
-                        if (loco.DynamicBrakePercent > 0 && Car.MaxBrakeForceN > 0)
+                        if (loco.DynamicBrakePercent > 0 && Car.FrictionBrakeBlendingMaxForceN > 0)
                         {
                             if (loco.DynamicBrakePartialBailOff)
                             {
-                                var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                                var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.MaxBrakeForceN;
-                                if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.MaxBrakeForceN)
+                                var requiredBrakeForceN = Math.Min(AutoCylPressurePSI / MaxCylPressurePSI, 1) * Car.FrictionBrakeBlendingMaxForceN;
+                                var localBrakeForceN = loco.DynamicBrakeForceN + Math.Min(CylPressurePSI / MaxCylPressurePSI, 1) * Car.FrictionBrakeBlendingMaxForceN;
+                                if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.FrictionBrakeBlendingMaxForceN)
                                 {
-                                    demandedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.MaxBrakeForceN*MaxCylPressurePSI, 0), MaxCylPressurePSI);
+                                    demandedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN)/Car.FrictionBrakeBlendingMaxForceN * MaxCylPressurePSI, 0), MaxCylPressurePSI);
                                     if (demandedPressurePSI > CylPressurePSI && demandedPressurePSI < CylPressurePSI + 4) // Allow some margin for unnecessary air brake application
                                     {
                                         demandedPressurePSI = CylPressurePSI;
@@ -755,23 +790,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSI;
             }
-
-            float f;
+            
             if (!Car.BrakesStuck)
             {
-                f = Car.MaxBrakeForceN * Math.Min(CylPressurePSI / MaxCylPressurePSI, 1);
-                if (f < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
-                    f = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
+                Car.BrakeShoeForceN = Car.MaxBrakeForceN * Math.Min(CylPressurePSI / MaxCylPressurePSI, 1);
+                if (Car.BrakeShoeForceN < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
+                    Car.BrakeShoeForceN = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
             }
-            else f = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2); 
-            Car.BrakeRetardForceN = f * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
+            else Car.BrakeShoeForceN = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2);
+
+            float brakeShoeFriction = Car.GetBrakeShoeFrictionFactor();
+            Car.HuDBrakeShoeFriction = Car.GetBrakeShoeFrictionCoefficientHuD();
+
+            Car.BrakeRetardForceN = Car.BrakeShoeForceN * brakeShoeFriction; // calculates value of force applied to wheel, independent of wheel skid
             if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
             {
-                Car.BrakeForceN = f * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
+                Car.BrakeForceN = Car.BrakeShoeForceN * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
             }
             else
             {
-                Car.BrakeForceN = f * Car.BrakeShoeCoefficientFrictionAdjFactor; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
+                Car.BrakeForceN = Car.BrakeShoeForceN * brakeShoeFriction; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
             }
 
             // sound trigger checking runs every half second, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
