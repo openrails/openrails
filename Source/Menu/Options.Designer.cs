@@ -119,8 +119,6 @@
             this.checkBoilerPreheated = new System.Windows.Forms.CheckBox();
             this.checkSimpleControlsPhysics = new System.Windows.Forms.CheckBox();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
-            this.labelAdhesionMovingAverageFilterSize = new System.Windows.Forms.Label();
-            this.numericAdhesionMovingAverageFilterSize = new System.Windows.Forms.NumericUpDown();
             this.checkBreakCouplers = new System.Windows.Forms.CheckBox();
             this.checkUseAdvancedAdhesion = new System.Windows.Forms.CheckBox();
             this.tabPageKeyboard = new System.Windows.Forms.TabPage();
@@ -271,7 +269,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             this.tabPageSimulation.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericAdhesionMovingAverageFilterSize)).BeginInit();
             this.tabPageKeyboard.SuspendLayout();
             this.tabPageDataLogger.SuspendLayout();
             this.tabPageRailDriver.SuspendLayout();
@@ -1382,8 +1379,6 @@
             this.tabPageSimulation.Controls.Add(this.checkBoilerPreheated);
             this.tabPageSimulation.Controls.Add(this.checkSimpleControlsPhysics);
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
-            this.tabPageSimulation.Controls.Add(this.labelAdhesionMovingAverageFilterSize);
-            this.tabPageSimulation.Controls.Add(this.numericAdhesionMovingAverageFilterSize);
             this.tabPageSimulation.Controls.Add(this.checkBreakCouplers);
             this.tabPageSimulation.Controls.Add(this.checkUseAdvancedAdhesion);
             this.tabPageSimulation.Location = new System.Drawing.Point(4, 22);
@@ -1499,34 +1494,6 @@
             this.checkCurveSpeedDependent.Text = "Curve dependent speed limit";
             this.checkCurveSpeedDependent.UseVisualStyleBackColor = true;
             // 
-            // labelAdhesionMovingAverageFilterSize
-            // 
-            this.labelAdhesionMovingAverageFilterSize.AutoSize = true;
-            this.labelAdhesionMovingAverageFilterSize.Location = new System.Drawing.Point(86, 31);
-            this.labelAdhesionMovingAverageFilterSize.Margin = new System.Windows.Forms.Padding(3);
-            this.labelAdhesionMovingAverageFilterSize.Name = "labelAdhesionMovingAverageFilterSize";
-            this.labelAdhesionMovingAverageFilterSize.Size = new System.Drawing.Size(173, 13);
-            this.labelAdhesionMovingAverageFilterSize.TabIndex = 2;
-            this.labelAdhesionMovingAverageFilterSize.Text = "Adhesion moving average filter size";
-            // 
-            // numericAdhesionMovingAverageFilterSize
-            // 
-            this.numericAdhesionMovingAverageFilterSize.Location = new System.Drawing.Point(26, 29);
-            this.numericAdhesionMovingAverageFilterSize.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericAdhesionMovingAverageFilterSize.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericAdhesionMovingAverageFilterSize.Name = "numericAdhesionMovingAverageFilterSize";
-            this.numericAdhesionMovingAverageFilterSize.Size = new System.Drawing.Size(54, 20);
-            this.numericAdhesionMovingAverageFilterSize.TabIndex = 1;
-            this.numericAdhesionMovingAverageFilterSize.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
             // checkBreakCouplers
             // 
             this.checkBreakCouplers.AutoSize = true;
@@ -1546,7 +1513,6 @@
             this.checkUseAdvancedAdhesion.TabIndex = 0;
             this.checkUseAdvancedAdhesion.Text = "Advanced adhesion model";
             this.checkUseAdvancedAdhesion.UseVisualStyleBackColor = true;
-            this.checkUseAdvancedAdhesion.Click += new System.EventHandler(this.checkUseAdvancedAdhesion_Click);
             // 
             // tabPageKeyboard
             // 
@@ -2709,8 +2675,8 @@
             this.trackAdhesionFactor.Size = new System.Drawing.Size(292, 26);
             this.trackAdhesionFactor.TabIndex = 28;
             this.trackAdhesionFactor.TickFrequency = 10;
-            this.toolTip1.SetToolTip(this.trackAdhesionFactor, "Default is 130%");
-            this.trackAdhesionFactor.Value = 130;
+            this.toolTip1.SetToolTip(this.trackAdhesionFactor, "Default is 100%");
+            this.trackAdhesionFactor.Value = 100;
             this.trackAdhesionFactor.ValueChanged += new System.EventHandler(this.trackAdhesionFactor_ValueChanged);
             // 
             // checkUseMSTSEnv
@@ -2909,7 +2875,6 @@
             this.tabPageSimulation.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericAdhesionMovingAverageFilterSize)).EndInit();
             this.tabPageKeyboard.ResumeLayout(false);
             this.tabPageDataLogger.ResumeLayout(false);
             this.tabPageDataLogger.PerformLayout();
@@ -3019,8 +2984,6 @@
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ComboBox comboDataLogSpeedUnits;
         private System.Windows.Forms.Label label19;
-        private System.Windows.Forms.Label labelAdhesionMovingAverageFilterSize;
-        private System.Windows.Forms.NumericUpDown numericAdhesionMovingAverageFilterSize;
         private System.Windows.Forms.TabPage tabPageEvaluate;
         private System.Windows.Forms.CheckedListBox checkListDataLogTSContents;
         private System.Windows.Forms.Label labelDataLogTSInterval;

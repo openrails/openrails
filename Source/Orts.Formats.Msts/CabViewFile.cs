@@ -130,7 +130,6 @@ namespace Orts.Formats.Msts
         DAMPERS_FRONT,
         DAMPERS_BACK,
         STEAM_HEAT,
-        STEAM_BOOSTER,
         WATER_INJECTOR1,
         WATER_INJECTOR2,
         SMALL_EJECTOR,

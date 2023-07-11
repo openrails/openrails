@@ -226,13 +226,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 if (Car is MSTSLocomotive locomotive)
                 {
-                    if (axle.WheelRadiusM <= 0) axle.WheelRadiusM = locomotive.DriverWheelRadiusM;
                     if (axle.InertiaKgm2 <= 0) axle.InertiaKgm2 = locomotive.AxleInertiaKgm2 / AxleList.Count;
-                    if (axle.WheelWeightKg <= 0) axle.WheelWeightKg = locomotive.DrvWheelWeightKg / AxleList.Count;
-                    if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * axle.WheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
+                    if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * locomotive.DrvWheelWeightKg / AxleList.Count;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
                     if (axle.DampingNs <= 0) axle.DampingNs = locomotive.MassKG / 1000.0f / AxleList.Count;
                     if (axle.FrictionN <= 0) axle.FrictionN = locomotive.MassKG / 1000.0f / AxleList.Count;
-                    if (axle.NumberWheelAxles <= 0) axle.NumberWheelAxles = 1;
                 }
                 axle.Initialize();
             }
@@ -347,7 +344,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 motor = value;
                 DriveType = motor != null ? AxleDriveType.MotorDriven : AxleDriveType.ForceDriven;
-                switch (DriveType)
+                switch(DriveType)
                 {
                     case AxleDriveType.MotorDriven:
                         totalInertiaKgm2 = inertiaKgm2 + transmissionRatio * transmissionRatio * motor.InertiaKgm2;
@@ -409,7 +406,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         break;
                 }
             }
-            get
+            get 
             {
                 return inertiaKgm2;
             }
@@ -474,11 +471,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float WheelRadiusM;
 
         /// <summary>
-        /// Wheel number
-        /// </summary>
-        public int NumberWheelAxles;
-
-        /// <summary>
         /// Static adhesion coefficient, as given by Curtius-Kniffler formula
         /// </summary>
         public float AdhesionLimit;
@@ -492,7 +484,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Axle speed value, in metric meters per second
         /// </summary>
-        public float AxleSpeedMpS { get; set; }
+        public float AxleSpeedMpS { get; private set; }
         /// <summary>
         /// Axle angular position in radians
         /// </summary>
@@ -506,11 +498,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// Compensated Axle force value, this provided the motive force equivalent excluding brake force, in Newtons
         /// </summary>
         public float CompensatedAxleForceN { get; protected set; }
-
-        /// <summary>
-        /// Wheel mass parameter in kilograms
-        /// </summary>
-        public float WheelWeightKg;
 
         /// <summary>
         /// Read/Write axle weight parameter in Newtons
@@ -658,19 +645,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 switch (stf.ReadItem().ToLower())
                 {
                     case "ortsradius":
-                    case "wheelradius":
                         WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                         break;
                     case "ortsinertia":
-                    case "wheelinertia":
                         InertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.RotationalInertia, null);
                         break;
-                    case "wheelweight":
-                        WheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
-                        AxleWeightN = 9.81f * WheelWeightKg;
-                        break;
-                    case "numberwheelaxles":
-                        NumberWheelAxles = stf.ReadIntBlock(null);
+                    case "weight":
+                        AxleWeightN = 9.81f * stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                         break;
                     case "(":
                         stf.SkipRestOfBlock();
@@ -682,9 +663,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             WheelRadiusM = other.WheelRadiusM;
             InertiaKgm2 = other.InertiaKgm2;
-            WheelWeightKg = other.WheelWeightKg;
             AxleWeightN = other.AxleWeightN;
-            NumberWheelAxles = other.NumberWheelAxles;
         }
 
         /// <summary>
@@ -745,7 +724,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (elapsedClockSeconds <= 0) return;
             float prevSpeedMpS = AxleSpeedMpS;
 
-            if (Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01f, 0.001f))
+            if (Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS)-1)*0.01f, 0.001f))
             {
                 ++NumOfSubstepsPS;
                 waitBeforeSpeedingUp = 100;
@@ -759,13 +738,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
             }
 
-            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1);
+            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1); 
 
             float dt = elapsedClockSeconds / NumOfSubstepsPS;
             float hdt = dt / 2.0f;
             float axleInForceSumN = 0;
             float axleOutForceSumN = 0;
-            for (int i = 0; i < NumOfSubstepsPS; i++)
+            for (int i=0; i<NumOfSubstepsPS; i++)
             {
                 var k1 = GetAxleMotionVariation(AxleSpeedMpS);
                 if (i == 0)
@@ -776,7 +755,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         dt = elapsedClockSeconds / NumOfSubstepsPS;
                         hdt = dt / 2;
                     }
-
+                  
                     if (Math.Sign(AxleSpeedMpS + k1.Item1 * dt) != Math.Sign(AxleSpeedMpS) && BrakeRetardForceN + frictionN > Math.Abs(driveForceN - k1.Item3))
                     {
                         AxlePositionRad += AxleSpeedMpS * hdt;
@@ -828,7 +807,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
             float x = (float)((1 - Math.Sqrt(1 - forceRatio * forceRatio)) / forceRatio);
             AxleSpeedMpS = TrainSpeedMpS + MpS.FromKpH(AdhesionK * x / AdhesionLimit);
-            AxleForceN = (force + res.Item3) / 2;
+            AxleForceN = (force + res.Item3)/2;
         }
 
         /// <summary>

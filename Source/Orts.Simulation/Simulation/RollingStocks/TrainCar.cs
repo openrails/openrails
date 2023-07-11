@@ -544,8 +544,7 @@ namespace Orts.Simulation.RollingStocks
         // TrainCar.Update() must set these variables
         public float MotiveForceN;   // ie motor power in Newtons  - signed relative to direction of car -
         public float TractiveForceN = 0f; // Raw tractive force for electric sound variable2
-        public SmoothedData MotiveForceSmoothN = new SmoothedData(0.5f);
-        public float MotiveForceSmoothedN;
+        public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
         public float PrevMotiveForceN;
         // Gravity forces have negative values on rising grade. 
         // This means they have the same sense as the motive forces and will push the train downhill.
@@ -639,7 +638,7 @@ namespace Orts.Simulation.RollingStocks
         protected int WagonNumAxles; // Number of axles on a wagon
         protected int InitWagonNumAxles; // Initial read of number of axles on a wagon
         protected float MSTSWagonNumWheels; // Number of axles on a wagon - used to read MSTS value as default
-        public int LocoNumDrvAxles; // Number of drive axles on locomotive
+        protected int LocoNumDrvAxles; // Number of drive axles on locomotive
         protected float MSTSLocoNumDrvWheels; // Number of drive axles on locomotive - used to read MSTS value as default
         public float DriverWheelRadiusM = Me.FromIn(30.0f); // Drive wheel radius of locomotive wheels - Wheel radius of loco drive wheels can be anywhere from about 10" to 40".
 
@@ -716,6 +715,7 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void Initialize()
         {
+            BrakeSystem.Initialize();
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
             
             //CurveForceFilter.Initialize();

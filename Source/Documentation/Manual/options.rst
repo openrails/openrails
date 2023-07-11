@@ -355,13 +355,6 @@ by MSTS, while the advanced one is based on a model more similar to reality.
 For more information read the section on :ref:`Adhesion Models <physics-adhesion>` later in this
 manual.
 
-Adhesion moving average filter size
------------------------------------
-
-The computations related to adhesion are passed through a moving average
-filter. Higher values cause smoother operation, but also less
-responsiveness. 10 is the default filter size.
-
 Break couplers
 --------------
 
