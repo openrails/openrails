@@ -546,17 +546,17 @@ namespace Orts.Common
                         case 251: return Event.OverchargeBrakingOff;
                         case 252: return Event.EmergencyVentValveOn;
 
+                        case 253: return Event.VoltageSelectorDecrease;
+                        case 254: return Event.VoltageSelectorIncrease;
+                        case 255: return Event.PantographSelectorDecrease;
+                        case 256: return Event.PantographSelectorIncrease;
+                        case 257: return Event.PowerLimitationSelectorDecrease;
+                        case 258: return Event.PowerLimitationSelectorIncrease;
+
                         case 260: return Event.WindowClosing;
                         case 261: return Event.WindowOpening;
                         case 262: return Event.WindowsClosed;
                         case 263: return Event.WindowsOpen;
-
-                        case 252: return Event.VoltageSelectorDecrease;
-                        case 253: return Event.VoltageSelectorIncrease;
-                        case 254: return Event.PantographSelectorDecrease;
-                        case 255: return Event.PantographSelectorIncrease;
-                        case 256: return Event.PowerLimitationSelectorDecrease;
-                        case 257: return Event.PowerLimitationSelectorIncrease;
 
                         // Cruise Control
                         case 298: return Event.LeverFromZero;
