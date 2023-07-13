@@ -715,6 +715,7 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void Initialize()
         {
+            BrakeSystem.Initialize();
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
             
             //CurveForceFilter.Initialize();
