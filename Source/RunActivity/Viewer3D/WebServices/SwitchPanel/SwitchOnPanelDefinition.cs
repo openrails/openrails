@@ -86,14 +86,6 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                         init1(ORTS.Common.Input.UserCommand.ControlTractionCutOffRelayClosingOrder);
                     break;
 
-                case ORTS.Common.Input.UserCommand.DisplayNextStationWindow:
-                    Orts.Simulation.Activity act = Viewer.Simulator.ActivityRun;
-                    if ((act != null) && (act.EventList.Count) > 0)
-                        init1(ORTS.Common.Input.UserCommand.DisplayNextStationWindow);
-                    else
-                        init0(ORTS.Common.Input.UserCommand.DisplayNextStationWindow);
-                    break;
-
                 case ORTS.Common.Input.UserCommand.ControlHeadlightIncrease:
                     init2(ORTS.Common.Input.UserCommand.ControlHeadlightIncrease, ORTS.Common.Input.UserCommand.ControlHeadlightDecrease);
                     break;
