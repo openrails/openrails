@@ -52,7 +52,7 @@ namespace Orts
         [ThreadName("Render")]
         static void Main(string[] args)
         {
-            var options = args.Where(a => a.StartsWith("-") || a.StartsWith("/")).Select(a => a.Substring(1));
+            var options = args.Where(a => a.StartsWith("-") || a.StartsWith("/") && !a.TrimStart('/').Contains("/")).Select(a => a.Substring(1));
             var settings = new UserSettings(options);
 
             //enables loading of dll for specific architecture(32 or 64bit) from distinct folders, useful when both versions require same name (as for OpenAL32.dll)

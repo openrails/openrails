@@ -540,7 +540,7 @@ namespace ORTS
                     var rewriteNeeded = false;
                     // savedArgs[0] contains Activity or Path filepath
                     var filePath = savedArgs[0];
-                    if( !System.IO.File.Exists(filePath) )
+                    if (!Vfs.FileExists(filePath))
                     {
                         // Show the dialog and get result.
                         openFileDialog1.InitialDirectory = MSTSPath.Base();
@@ -555,7 +555,7 @@ namespace ORTS
                     {
                         // savedArgs[1] contains Consist filepath
                         filePath = savedArgs[1];
-                        if( !System.IO.File.Exists(filePath) )
+                        if (!Vfs.FileExists(filePath))
                         {
                             // Show the dialog and get result.
                             openFileDialog1.InitialDirectory = MSTSPath.Base();

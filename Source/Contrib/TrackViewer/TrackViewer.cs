@@ -55,8 +55,6 @@ namespace ORTS.TrackViewer
         public readonly static string TrackViewerVersion = "2018/01/09";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
-        /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
-        public Folder InstallFolder { get; private set; }
         /// <summary>List of available routes (in the install directory)</summary>
         public Collection<Route> Routes { get; private set; } // Collection because of FxCop
         /// <summary>List of available paths in the current route</summary>
@@ -145,7 +143,7 @@ namespace ORTS.TrackViewer
             this.commandLineArgs = args;
 
             graphics = new GraphicsDeviceManager(this);
-            ContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
+            ContentPath = System.IO.Path.Combine(Vfs.ExecutablePath, "Content");
 
             Content.RootDirectory = "Content";
             graphics.PreferredBackBufferWidth = 1024;
@@ -214,9 +212,9 @@ namespace ORTS.TrackViewer
                 }
                 catch {}
             }
-            InstallFolder = new Folder("default", Properties.Settings.Default.installDirectory);
+            Vfs.Initialize(Properties.Settings.Default.installDirectory, Application.ExecutablePath);
 
-            FindRoutes(InstallFolder);
+            FindRoutes();
 
             drawPathChart = new DrawPathChart();
 
@@ -704,6 +702,7 @@ namespace ORTS.TrackViewer
             //Let's first see if it exists and whether it is a file or directory
             string routeFolder = givenPathOrFile;
             bool givenFileIsPat = false;
+            string installFolder = null;
             if (System.IO.Directory.Exists(givenPathOrFile))
             {
                 // It is a directory
@@ -731,8 +730,9 @@ namespace ORTS.TrackViewer
                         break;
 
                     default:
-                        MessageBox.Show(string.Format(catalog.GetString("Route cannot be loaded.\nExtension {0} is not supported"), extension));
-                        return;
+                        // Considered as a vfs config file.
+                        installFolder = givenPathOrFile;
+                        break;
                 }
             }
             else
@@ -742,17 +742,18 @@ namespace ORTS.TrackViewer
                 return;
             }
 
-            string installFolder = System.IO.Directory.GetParent(System.IO.Directory.GetParent(routeFolder).ToString()).ToString();
+            installFolder = installFolder ?? System.IO.Directory.GetParent(System.IO.Directory.GetParent(routeFolder).ToString()).ToString();
             if (!SetSelectedInstallFolder(installFolder)) {
                 MessageBox.Show(string.Format(catalog.GetString("Route cannot be loaded.\nWhile trying to open {0} the folder {1} was inferred as (MSTS or similar) install folder but does not contain expected files"), givenPathOrFile, installFolder));
                 return;
             }
+            var routeDir = System.IO.Path.GetFileName(routeFolder.TrimEnd('/', '\\')).ToUpper();
 
             foreach (ORTS.Menu.Route route in this.Routes)
             {
                 //MessageBox.Show(route.Path);
 
-                if (route.Path.ToUpper() == routeFolder.ToUpper())
+                if (System.IO.Path.GetFileName(route.Path.TrimEnd('/', '\\')).ToUpper() == routeDir)
                 {
                     SetRoute(route);
 
@@ -772,6 +773,24 @@ namespace ORTS.TrackViewer
             MessageBox.Show(string.Format(catalog.GetString("Route cannot be loaded.\n{0} somehow could not be translated into a loadable route"), givenPathOrFile));
         }
 
+        public bool SelectVfsConfigFile()
+        {
+            if (!CanDiscardModifiedPath()) return false;
+            string filePath = "";
+
+            var openFileDialog = new OpenFileDialog();
+            if (Properties.Settings.Default?.installDirectory != null)
+            {
+                openFileDialog.InitialDirectory = Properties.Settings.Default.installDirectory;
+            }
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+                filePath = openFileDialog.FileName;
+            if (string.IsNullOrEmpty(filePath))
+                return false;
+
+            return SetSelectedInstallFolder(filePath);
+        }
+
         /// <summary>
         /// Open up a dialog so the user can select the install directory
         /// (which should contain a sub-directory called ROUTES).
@@ -783,9 +802,9 @@ namespace ORTS.TrackViewer
             string folderPath = "";
 
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            if (InstallFolder != null)
+            if (Properties.Settings.Default?.installDirectory != null)
             {
-                folderBrowserDialog.SelectedPath = InstallFolder.Path;
+                folderBrowserDialog.SelectedPath = Properties.Settings.Default.installDirectory;
             }
             folderBrowserDialog.ShowNewFolderButton = false;
             DialogResult dialogResult = folderBrowserDialog.ShowDialog();
@@ -805,16 +824,14 @@ namespace ORTS.TrackViewer
 
         private bool SetSelectedInstallFolder(string folderPath)
         {
+            Vfs.Initialize(folderPath, System.IO.Path.GetDirectoryName(Application.ExecutablePath));
             drawTerrain?.Clear();
-            Folder newInstallFolder = new Folder("installFolder", folderPath);
-            bool foundroutes = FindRoutes(newInstallFolder);
+            bool foundroutes = FindRoutes();
             if (!foundroutes)
             {
                 MessageBox.Show(folderPath + ": " + catalog.GetString("Directory is not a valid install directory.\nThe install directory needs to contain ROUTES, GLOBAL, ..."));
                 return false;
             }
-
-            InstallFolder = newInstallFolder;
 
             // make sure the current route is disabled,
             CurrentRoute = null;
@@ -832,10 +849,9 @@ namespace ORTS.TrackViewer
         /// Find the available routes, and if possible load the first one.
         /// </summary>
         /// <returns>True if the route loading was successfull</returns>
-        private bool FindRoutes(Folder newInstallFolder)
+        private bool FindRoutes()
         {
-            if (newInstallFolder == null) return false;
-            List<Route> newRoutes = Route.GetRoutes(newInstallFolder).OrderBy(r => r.ToString()).ToList();
+            List<Route> newRoutes = Route.GetRoutes().OrderBy(r => r.ToString()).ToList();
 
             if (newRoutes.Count > 0)
             {

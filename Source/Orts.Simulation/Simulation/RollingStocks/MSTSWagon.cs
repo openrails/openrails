@@ -399,7 +399,7 @@ namespace Orts.Simulation.RollingStocks
             string dir = Path.GetDirectoryName(wagFilePath);
             string file = Path.GetFileName(wagFilePath);
             string orFile = dir + @"\openrails\" + file;
-            if (File.Exists(orFile))
+            if (Vfs.FileExists(orFile))
                 wagFilePath = orFile;
 
             using (STFReader stf = new STFReader(wagFilePath, true))
@@ -412,41 +412,41 @@ namespace Orts.Simulation.RollingStocks
             }
 
             var wagonFolderSlash = Path.GetDirectoryName(WagFilePath) + @"\";
-            if (MainShapeFileName != null && !File.Exists(wagonFolderSlash + MainShapeFileName))
+            if (MainShapeFileName != null && !Vfs.FileExists(wagonFolderSlash + MainShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + MainShapeFileName);
                 MainShapeFileName = string.Empty;
             }
-            if (FreightShapeFileName != null && !File.Exists(wagonFolderSlash + FreightShapeFileName))
+            if (FreightShapeFileName != null && !Vfs.FileExists(wagonFolderSlash + FreightShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FreightShapeFileName);
                 FreightShapeFileName = null;
             }
-            if (InteriorShapeFileName != null && !File.Exists(wagonFolderSlash + InteriorShapeFileName))
+            if (InteriorShapeFileName != null && !Vfs.FileExists(wagonFolderSlash + InteriorShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + InteriorShapeFileName);
                 InteriorShapeFileName = null;
             }
 
-            if (FrontCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCoupler.Closed.ShapeFileName))
+            if (FrontCoupler.Closed.ShapeFileName != null && !Vfs.FileExists(wagonFolderSlash + FrontCoupler.Closed.ShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
                 FrontCoupler.Closed.ShapeFileName = null;
             }
 
-            if (RearCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearCoupler.Closed.ShapeFileName))
+            if (RearCoupler.Closed.ShapeFileName != null && !Vfs.FileExists(wagonFolderSlash + RearCoupler.Closed.ShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
                 RearCoupler.Closed.ShapeFileName = null;
             }
 
-            if (FrontAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHose.Connected.ShapeFileName))
+            if (FrontAirHose.Connected.ShapeFileName != null && !Vfs.FileExists(wagonFolderSlash + FrontAirHose.Connected.ShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
                 FrontAirHose.Connected.ShapeFileName = null;
             }
 
-            if (RearAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHose.Connected.ShapeFileName))
+            if (RearAirHose.Connected.ShapeFileName != null && !Vfs.FileExists(wagonFolderSlash + RearAirHose.Connected.ShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
                 RearAirHose.Connected.ShapeFileName = null;
@@ -653,7 +653,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 foreach (var ortsFreightAnim in FreightAnimations.Animations)
                 {
-                    if (ortsFreightAnim.ShapeFileName != null && !File.Exists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
+                    if (ortsFreightAnim.ShapeFileName != null && !Vfs.FileExists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
                     {
                         Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
                         ortsFreightAnim.ShapeFileName = null;
@@ -921,8 +921,8 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 if (!FreightAnimations.MSTSFreightAnimEnabled) FreightShapeFileName = null;
-                if (FreightAnimations.WagonEmptyWeight != -1)
-                {
+                    if (FreightAnimations.WagonEmptyWeight != -1)
+                    {
                     // Computes mass when it carries containers
                     float totalContainerMassKG = 0;
                     if (FreightAnimations.Animations != null)
@@ -935,25 +935,25 @@ namespace Orts.Simulation.RollingStocks
                     }
                     CalculateTotalMass(totalContainerMassKG);
 
-                    if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
-                    {
-                        // Update brake parameters   
-                        MaxBrakeForceN = LoadFullMaxBrakeForceN;
-                        MaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
+                        if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
+                        {
+                            // Update brake parameters   
+                            MaxBrakeForceN = LoadFullMaxBrakeForceN;
+                            MaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
 
-                        // Update friction related parameters
-                        DavisAN = LoadFullORTSDavis_A;
-                        DavisBNSpM = LoadFullORTSDavis_B;
-                        DavisCNSSpMM = LoadFullORTSDavis_C;
-                        DavisDragConstant = LoadFullDavisDragConstant;
-                        WagonFrontalAreaM2 = LoadFullWagonFrontalAreaM2;
+                            // Update friction related parameters
+                            DavisAN = LoadFullORTSDavis_A;
+                            DavisBNSpM = LoadFullORTSDavis_B;
+                            DavisCNSSpMM = LoadFullORTSDavis_C;
+                            DavisDragConstant = LoadFullDavisDragConstant;
+                            WagonFrontalAreaM2 = LoadFullWagonFrontalAreaM2;
 
-                        // Update CoG related parameters
-                        CentreOfGravityM.Y = LoadFullCentreOfGravityM_Y;
+                            // Update CoG related parameters
+                            CentreOfGravityM.Y = LoadFullCentreOfGravityM_Y;
+
+                        }
 
                     }
-
-                }
                 if (FreightAnimations.LoadedOne != null) // If it is a Continuouos freight animation, set freight wagon parameters to FullatStart
                 {
                     WeightLoadController.CurrentValue = FreightAnimations.LoadedOne.LoadPerCent / 100;
@@ -2042,13 +2042,13 @@ namespace Orts.Simulation.RollingStocks
                         if (WeightLoadController.UpdateValue != 0.0)
                             Simulator.Confirmer.UpdateWithPerCent(CabControl.FreightLoad,
                                 CabSetting.Increase, WeightLoadController.CurrentValue * 100);
-                        // Update wagon parameters sensitive to wagon mass change
-                        // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
+                    // Update wagon parameters sensitive to wagon mass change
+                    // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
                         TempMassDiffRatio = WeightLoadController.CurrentValue;
-                        // Update brake parameters
+                   // Update brake parameters
                         MaxBrakeForceN = ((LoadFullMaxBrakeForceN - LoadEmptyMaxBrakeForceN) * TempMassDiffRatio) + LoadEmptyMaxBrakeForceN;
                         MaxHandbrakeForceN = ((LoadFullMaxHandbrakeForceN - LoadEmptyMaxHandbrakeForceN) * TempMassDiffRatio) + LoadEmptyMaxHandbrakeForceN;
-                        // Update friction related parameters
+                  // Update friction related parameters
                         DavisAN = ((LoadFullORTSDavis_A - LoadEmptyORTSDavis_A) * TempMassDiffRatio) + LoadEmptyORTSDavis_A;
                         DavisBNSpM = ((LoadFullORTSDavis_B - LoadEmptyORTSDavis_B) * TempMassDiffRatio) + LoadEmptyORTSDavis_B;
                         DavisCNSSpMM = ((LoadFullORTSDavis_C - LoadEmptyORTSDavis_C) * TempMassDiffRatio) + LoadEmptyORTSDavis_C;
@@ -2074,12 +2074,12 @@ namespace Orts.Simulation.RollingStocks
                     FreightAnimations.LoadedOne = null;
                     FreightAnimations.FreightType = PickupType.None;
                 }
-                                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
+                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
                 {
                     WaitForAnimationReady = false;
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Starting unload"));
                     if (FreightAnimations.LoadedOne is FreightAnimationContinuous)
-                        WeightLoadController.StartDecrease(WeightLoadController.MinimumValue);
+                    WeightLoadController.StartDecrease(WeightLoadController.MinimumValue);
                 }
             }
 
@@ -2093,7 +2093,7 @@ namespace Orts.Simulation.RollingStocks
                         if (anim is FreightAnimationDiscrete discreteAnim && discreteAnim.Container != null)
                         {
                             totalContainerMassKG += discreteAnim.Container.MassKG;
-                        }
+        }
                 }
 
                 // Updates the mass of the wagon considering all types of loads
@@ -4093,7 +4093,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Incompatible data"));
                 return;
-            }
+    }
             controller.CommandStartTime = Simulator.ClockTime;  // for Replay to use */
 
             FreightAnimations.FreightType = (MSTSWagon.PickupType)type;
@@ -4188,7 +4188,7 @@ namespace Orts.Simulation.RollingStocks
                 containerStation = containerManager.ContainerHandlingItems.Where(item => item.Key == pickup.TrItemIDList[0].dbID).Select(item => item.Value).First();
                 if (containerStation.Containers.Count == 0 && !onlyUnload)
                     return validity;
-            }
+    }
             if (load.Container != null && !onlyUnload)
                 return validity;
             else if (load.Container == null && onlyUnload)

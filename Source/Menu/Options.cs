@@ -27,6 +27,7 @@ using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
 using MSTS;
+using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
 using ORTS.Updater;
@@ -250,6 +251,7 @@ namespace ORTS
             {
                 tabOptions.SelectedTab = tabPageContent;
                 buttonContentBrowse.Enabled = false; // Initial state because browsing a null path leads to an exception
+                buttonContentFile.Enabled = false;
                 try
                 {
                     bindingSourceContent.Add(new ContentFolder() { Name = "Train Simulator", Path = MSTSPath.Base() });
@@ -337,6 +339,8 @@ namespace ORTS
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;   // Inverted as "Show warnings" is better UI than "Suppress warnings"
+            numericVfsLogLevel.Value = Settings.VfsLogLevel;
+            checkVfsAutoMount.Checked = Settings.VfsAutoMount;
             checkCorrectQuestionableBrakingParams.Checked = Settings.CorrectQuestionableBrakingParams;
             numericActRandomizationLevel.Value = Settings.ActRandomizationLevel;
             numericActWeatherRandomizationLevel.Value = Settings.ActWeatherRandomizationLevel;
@@ -524,6 +528,8 @@ namespace ORTS
             Settings.AdhesionFactor = (int)trackAdhesionFactor.Value;
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
+            Settings.VfsLogLevel = Vfs.LogLevel = (int)numericVfsLogLevel.Value;
+            Settings.VfsAutoMount = Vfs.AutoMount = checkVfsAutoMount.Checked;
             Settings.CorrectQuestionableBrakingParams = checkCorrectQuestionableBrakingParams.Checked;
             Settings.ActRandomizationLevel = (int)numericActRandomizationLevel.Value;
             Settings.ActWeatherRandomizationLevel = (int)numericActWeatherRandomizationLevel.Value;
@@ -590,7 +596,7 @@ namespace ORTS
         {
             int level = trackAdhesionFactor.Value - trackAdhesionFactorChange.Value;
             // Adjust level to be proportional to weather 
-            level -= 40;
+                level -= 40;
 
             if (level > 159)
                 AdhesionLevelValue.Text = catalog.GetString("Very easy");
@@ -665,7 +671,7 @@ namespace ORTS
         private void dataGridViewContent_SelectionChanged(object sender, EventArgs e)
         {
             var current = bindingSourceContent.Current as ContentFolder;
-            textBoxContentName.Enabled = buttonContentBrowse.Enabled = current != null;
+            textBoxContentName.Enabled = buttonContentBrowse.Enabled = buttonContentFile.Enabled = current != null;
             if (current == null)
             {
                 textBoxContentName.Text = textBoxContentPath.Text = "";
@@ -707,6 +713,26 @@ namespace ORTS
                     var current = bindingSourceContent.Current as ContentFolder;
                     System.Diagnostics.Debug.Assert(current != null, "List should not be empty");
                     textBoxContentPath.Text = current.Path = folderBrowser.SelectedPath;
+                    if (String.IsNullOrEmpty(current.Name))
+                        // Don't need to set current.Name here as next statement triggers event textBoxContentName_TextChanged()
+                        // which does that and also checks for duplicate names 
+                        textBoxContentName.Text = Path.GetFileName(textBoxContentPath.Text);
+                    bindingSourceContent.ResetCurrentItem();
+                }
+            }
+        }
+
+        private void buttonContentFile_Click(object sender, EventArgs e)
+        {
+            using (var folderBrowser = new OpenFileDialog())
+            {
+                folderBrowser.InitialDirectory = textBoxContentPath.Text;
+                folderBrowser.Title = catalog.GetString("Select an installation profile configuration file to add:");
+                if (folderBrowser.ShowDialog(this) == DialogResult.OK)
+                {
+                    var current = bindingSourceContent.Current as ContentFolder;
+                    System.Diagnostics.Debug.Assert(current != null, "List should not be empty");
+                    textBoxContentPath.Text = current.Path = folderBrowser.FileName;
                     if (String.IsNullOrEmpty(current.Name))
                         // Don't need to set current.Name here as next statement triggers event textBoxContentName_TextChanged()
                         // which does that and also checks for duplicate names 
