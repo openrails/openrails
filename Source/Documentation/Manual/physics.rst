@@ -2753,7 +2753,8 @@ Brake Shoe Force - This is the current change being implemented. The following c
 
 ``ORTSBrakeShoeType`` - this defines a number of different brake shoe types and curves. To provide a more realistic representation of the braking force the default CoF curves are 2D, ie 
 they are impacted by both the speed and Brake Shoe Force.  Typically ``ORTSBrakeShoeType`` will have one of the following keywords included - 
-``Cast_Iron`` - cast iron brake shoe, 2D as above, ``Hi_Friction_Composite`` - high friction composite shoe, 2D as above, ``User_Defined`` - is a user defined curve 
+``Cast_Iron_P6`` - older cast iron brake shoes, 2D as above, ``Cast_Iron_P10`` - newer cast iron brake shoes with increased phosphorous, 2D as above, ``Hi_Friction_Composite`` 
+- high friction composite shoe, 2D as above, ``Disc_Pads`` - brakes with disc pads, 2D as above, ``User_Defined`` - is a user defined curve 
 using the ORTSBrakeShoeFriction parameter, 1D (ie, speed only, see above section for the parameter format).
 
 ``ORTSNumberCarBrakeShoes`` - to facilitate the operation of the default 2D curves above it is necessary to configure the number of brake shoes for each car.
@@ -2971,8 +2972,15 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 
 .. index::
    single: BrakePipeVolume
+   single: ORTSBrakeCylinderVolume
    single: ORTSEmergencyValveActuationRate
+   single: ORTSEmergencyDumpValveRate
+   single: ORTSEmergencyDumpValveTimer
    single: ORTSMainResPipeAuxResCharging
+   single: ORTSBrakeRelayValveRatio
+   single: ORTSEngineBrakeRelayValveRatio
+   single: ORTSBrakeRelayValveApplicationRate
+   single: ORTSBrakeRelayValveReleaseRate
    single: ORTSMainResChargingRate
    single: ORTSEngineBrakeReleaseRate
    single: ORTSEngineBrakeApplicationRate
@@ -2996,16 +3004,39 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   brake servicetimefactor instead, but the Open Rails Development team
   doesn't believe this is worth the effort by the user for the added
   realism.
+- ``Wagon(ORTSBrakeCylinderVolume`` - Volume of car's brake cylinder. This allows
+  specifying the brake cylinder volume independently of triple valve ratio.
+  This is useful when the cylinder is not directly attached to a triple valve,
+  e. g. when a relay valve exists.
 - ``Wagon(ORTSEmergencyValveActuationRate`` -- Threshold rate for emergency
   brake actuation of the triple valve. If the pressure in the brake pipe
   decreases at a higher rate than specified, the triple valve will switch to
   emergency mode.
+- ``Wagon(ORTSEmergencyDumpValveRate)``-- Rate at which BP is locally discharged
+  at every wagon during an emergency brake application.
+- ``Wagon(ORTSEmergencyDumpValveTimer)``-- Timer for emergency dump valve to close
+  after it is activated. If set to 0, it will close as soon as BP is discharged.
+  Default value will prevent BP from being charged for 2 minutes.
 - ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
   for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
   reservoirs. If set to false, the main reservoir pipe will not be used
   by the brake system.
 - ``Wagon(ORTSEPBrakeControlsBrakePipe`` -- Set to 1 for UIC EP brake: brake pipe
   pressure is electrically controlled at every fitted car.
+- ``Wagon(ORTSBrakeRelayValveRatio`` -- Determines the proportionality constant
+  between pressure as demanded by the triple valve and brake cylinder pressure.
+  This is achieved via a relay valve which sets BC pressure proportionally.
+  Relay valves may be installed to achieve higher brake cylinder pressures,
+  dynamic brake blending or variable load compensation.
+- ``Wagon(ORTSBrakeRelayValveRatio`` -- Same as above, but for the engine brake
+- ``Wagon(ORTSBrakeRelayValveApplicationRate`` -- Brake cylinder pressure application
+  rate achieved by the relay valve, if fitted.
+- ``Wagon(ORTSBrakeRelayValveReleaseRate`` -- Brake cylinder pressure release
+  rate achieved by the relay valve, if fitted.
+- ``Wagon(ORTSMaxTripleValveCylinderPressure`` -- Maximum cylinder pressure demanded
+  by the triple valve. For example, UIC distributors set maximum cylinder pressure
+  to 3.8 bar when brake pipe is below 3.5 bar, and further brake pipe discharging
+  does not increase cylinder pressure.
 - ``Engine(ORTSMainResChargingRate`` -- Rate of main reservoir pressure change
   in psi per second when the compressor is on (default .4).
 - ``Engine(ORTSEngineBrakeReleaseRate`` -- Rate of engine brake pressure

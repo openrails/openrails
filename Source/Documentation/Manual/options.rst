@@ -407,6 +407,16 @@ Uncheck this option for a more detailed behaviour in which the player has to sta
 The default setting is checked.
 
 
+At game start, Electric - power connected
+-----------------------------------
+
+When this option is checked, stationary electric locos start the simulation with power available.
+Uncheck this option for a more detailed behaviour in which the player has to switch on electrical equipment.
+
+The default setting is checked.
+
+In timetable mode, power status is not affected by these options.
+
 .. _options-forced-red:
 
 Forced red at station stops

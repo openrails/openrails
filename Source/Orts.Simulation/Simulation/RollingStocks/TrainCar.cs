@@ -684,7 +684,9 @@ namespace Orts.Simulation.RollingStocks
         public enum BrakeShoeTypes
         {
             Unknown,
-            Cast_Iron,
+            Cast_Iron_P6,
+            Cast_Iron_P10,
+            Disc_Pads,
             High_Friction_Composite,
             User_Defined,
         }
@@ -713,6 +715,7 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void Initialize()
         {
+            BrakeSystem.Initialize();
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
             
             //CurveForceFilter.Initialize();
@@ -3236,17 +3239,26 @@ namespace Orts.Simulation.RollingStocks
                 // Formula 9 and 10 from the paper "Study of the influence of the brake shoe temperature and wheel tread on braking effectiveness" by P Ivanov1, A Khudonogov1,
                 // E Dulskiy1, N Manuilov1, A Khamnaeva1, A Korsun1, S Treskin is used for the Cast Iron and Hi Friction Composite brake shoe friction curves.
                 // https://iopscience.iop.org/article/10.1088/1742-6596/1614/1/012086/pdf
+                //
+                // These formulas are based upon the work of Karwatzki, which is described further in "Fahrdynamik des Schienenverkehrs" by Dietrich Wende 2003.
+                // Karwatzki developed a formula for brakeshoe friction that used 5 constant values k1, ..... , k5.
+                // Wende present a number of different brake shoes k values, two sets of which line up with the UIC values above.
 
-                float NewtonsTokNewtons = 0.001f;
-                float brakeShoeForcekN = (NewtonsTokNewtons * BrakeShoeForceN) / NumberCarBrakeShoes;
-
-                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron)
+                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P6)
                 {
-                    frictionfraction = 0.6f * ((1.6f * brakeShoeForcekN + 100.0f) / (8.0f * brakeShoeForcekN + 100.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 100.0f) / (5.0f * MpS.ToKpH(AbsSpeedMpS) + 100.0f));
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.024f, 62.5f, 12.5f, 100, 20);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P10)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.05f, 62.5f, 31.25f, 100, 20);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.High_Friction_Composite)
                 {
-                    frictionfraction = 0.44f * ((0.1f * brakeShoeForcekN + 20.0f) / (0.4f * brakeShoeForcekN + 20.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 150.0f) / (2.0f * MpS.ToKpH(AbsSpeedMpS) + 150.0f));
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.055f, 200, 50, 150, 75);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.Disc_Pads)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.385f, -24.5f, -27.2f, 39.5f, 33);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.User_Defined)
                 {
@@ -3303,17 +3315,26 @@ namespace Orts.Simulation.RollingStocks
                 // Formula 9 and 10 from the paper "Study of the influence of the brake shoe temperature and wheel tread on braking effectiveness" by P Ivanov1, A Khudonogov1,
                 // E Dulskiy1, N Manuilov1, A Khamnaeva1, A Korsun1, S Treskin is used for the Cast Iron and Hi Friction Composite brake shoe friction curves.
                 // https://iopscience.iop.org/article/10.1088/1742-6596/1614/1/012086/pdf
+                //
+                // These formulas are based upon the work of Karwatzki, which is described further in "Fahrdynamik des Schienenverkehrs" by Dietrich Wende 2003.
+                // Karwatzki developed a formula for brakeshoe friction that used 5 constant values k1, ..... , k5.
+                // Wende present a number of different brake shoes k values, two sets of which line up with the UIC values above.
 
-                float NewtonsTokNewtons = 0.001f;
-                float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
-
-                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron)
+                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P6)
                 {
-                    frictionfraction = 0.6f * ((1.6f * brakeShoeForcekN + 100.0f) / (8.0f * brakeShoeForcekN + 100.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 100.0f) / (5.0f * MpS.ToKpH(AbsSpeedMpS) + 100.0f));
+                    frictionfraction = KarwatzkiBrakeShoeFriction (0.024f, 62.5f, 12.5f, 100, 20);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P10)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.05f, 62.5f, 31.25f, 100, 20);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.High_Friction_Composite)
                 {
-                    frictionfraction = 0.44f * ((0.1f * brakeShoeForcekN + 20.0f) / (0.4f * brakeShoeForcekN + 20.0f)) * ((MpS.ToKpH(AbsSpeedMpS) + 150.0f) / (2.0f * MpS.ToKpH(AbsSpeedMpS) + 150.0f));
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.055f, 200, 50f, 150, 75);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.Disc_Pads)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.385f, -24.5f, -27.2f, 39.5f, 33);
                 }
                 else if (BrakeShoeType == BrakeShoeTypes.User_Defined)
                 {
@@ -3338,6 +3359,16 @@ namespace Orts.Simulation.RollingStocks
                 frictionfraction = 1.0f;  // Default value set to leave existing brakeforce constant regardless of changing speed
                 return frictionfraction;
             }
+        }
+
+        public float KarwatzkiBrakeShoeFriction ( float k1, float k2, float k3, float k4, float k5 )
+        {
+                var friction = 0.0f;
+                float NewtonsTokNewtons = 0.001f;
+                float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
+                friction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+
+                return friction;
         }
 
         public virtual void InitializeCarHeatingVariables()

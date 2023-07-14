@@ -259,6 +259,7 @@ namespace Orts.Common
 
         OverchargeBrakingOn,
         OverchargeBrakingOff,
+        EmergencyVentValveOn,
 
         // Cruise Control
         LeverFromZero,
@@ -527,6 +528,7 @@ namespace Orts.Common
 
                         case 250: return Event.OverchargeBrakingOn;
                         case 251: return Event.OverchargeBrakingOff;
+                        case 252: return Event.EmergencyVentValveOn;
 
                         case 260: return Event.WindowClosing;
                         case 261: return Event.WindowOpening;
