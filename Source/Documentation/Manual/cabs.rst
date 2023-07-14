@@ -819,6 +819,8 @@ and the mirrors.
 The control blocks are like the one shown for the cab light. The Type strings 
 are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
 
+Animation for 2D cab windows is described :ref:`here <features-windows>` .
+
 .. _cabs-generic-items:
 
 Cab controls for generic items
@@ -1025,6 +1027,7 @@ Rotation may be applied, with the same syntax, also to DigitalClock cab controls
 
 Display and animation of cabview controls in side views of 2D cabs
 ------------------------------------------------------------------
+.. _cabs-side-views:
 
 This is possible adding after the CabViewControls ( ) compound block an 
 ORTSCabviewControls ( ) compound block, that has the same format as the 
@@ -1177,6 +1180,7 @@ Development Rules
   font. If no ace is specified, the default will be used.
 - Mirrors and doors can be operated from 3D cabs. The names used are 
   ``LEFTDOOR``, ``RIGHTDOOR`` and ``MIRRORS``.
+- Animation for 3D cab windows is described :ref:`here <features-windows>` .  
 - like the 2D cabs, also 3D cabs can have a night version. Night textures, named like the 
   corresponding day textures, must be located within a ``NIGHT`` subfolder of the 
   ``CABVIEW3D`` folder. To enable night cabs an ``.sd`` file with the same name as the 

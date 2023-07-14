@@ -857,6 +857,7 @@ namespace Orts.Viewer3D
         protected virtual void SetCameraCar(TrainCar car)
         {
             attachedCar = car;
+            Viewer.Simulator.SetWagonCommandReceivers((MSTSWagon)car);
         }
 
         protected virtual bool IsCameraFlipped()
