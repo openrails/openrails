@@ -75,8 +75,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float QuickServiceLimitPSI;
         protected float QuickServiceApplicationRatePSIpS;
         protected float QuickServiceVentRatePSIpS;
-        protected float AcceleratedApplicationRatio;
-        protected float AcceleratedApplicationLimitPSIpS = 10.0f;
+        protected float AcceleratedApplicationFactor;
+        protected float AcceleratedApplicationLimitPSIpS = 5.0f;
         protected float InitialApplicationThresholdPSI = 1.0f;
         protected float BrakeCylinderSpringPressurePSI;
         protected float ServiceMaxCylPressurePSI;
@@ -161,7 +161,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             QuickServiceLimitPSI = thiscopy.QuickServiceLimitPSI;
             QuickServiceApplicationRatePSIpS = thiscopy.QuickServiceApplicationRatePSIpS;
             QuickServiceVentRatePSIpS = thiscopy.QuickServiceVentRatePSIpS;
-            AcceleratedApplicationRatio = thiscopy.AcceleratedApplicationRatio;
+            AcceleratedApplicationFactor = thiscopy.AcceleratedApplicationFactor;
             AcceleratedApplicationLimitPSIpS = thiscopy.AcceleratedApplicationLimitPSIpS;
             InitialApplicationThresholdPSI = thiscopy.InitialApplicationThresholdPSI;
             BrakeCylinderSpringPressurePSI = thiscopy.BrakeCylinderSpringPressurePSI;
@@ -303,8 +303,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortsquickservicelimit": QuickServiceLimitPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsquickserviceapplicationrate": QuickServiceApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsquickserviceventrate": QuickServiceVentRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-                case "wagon(ortsacceleratedapplicationratio": AcceleratedApplicationRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(ortsacceleratedapplicationmaxventrate": AcceleratedApplicationLimitPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 10.0f); break;
+                case "wagon(ortsacceleratedapplicationfactor": AcceleratedApplicationFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsacceleratedapplicationmaxventrate": AcceleratedApplicationLimitPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 5.0f); break;
                 case "wagon(ortsinitialapplicationthreshold": InitialApplicationThresholdPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 1.0f); break;
                 case "wagon(ortscylinderspringpressure": BrakeCylinderSpringPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsmaxservicecylinderpressure": ServiceMaxCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -512,7 +512,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
             }
             else EmergencyDumpStartTime = null;
-            prevBrakePipePressurePSI = BrakeLine1PressurePSI;
         }
 
         public override void Update(float elapsedClockSeconds)
@@ -574,9 +573,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 else
                 {
-                    if (TripleValveState == ValveState.Apply && AcceleratedApplicationRatio > 0) // Accelerated application: Air is vented from the brake pipe to speed up service applications
+                    if (AcceleratedApplicationFactor > 0) // Accelerated application: Air is vented from the brake pipe to speed up service applications
                     {
-                        dpPipe = Math.Min(BrakePipeChange * AcceleratedApplicationRatio, elapsedClockSeconds * AcceleratedApplicationLimitPSIpS); // Amount of air vented is proportional to pressure reduction from external sources
+                        dpPipe = Math.Min(BrakePipeChange * AcceleratedApplicationFactor, elapsedClockSeconds * AcceleratedApplicationLimitPSIpS); // Amount of air vented is proportional to pressure reduction from external sources
                     }
                     dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                 }
@@ -686,14 +685,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // Handle brake release: reduce cylinder pressure if all triple valve, EP holding valve and retainers allow so
+            if (threshold < 2.2f) // Prevent brakes getting stuck with a small amount of air on distributor systems
+                threshold = 0;
             float minCylPressurePSI = Math.Max(threshold, RetainerPressureThresholdPSI);
+
             if (TripleValveState == ValveState.Release && HoldingValve == ValveState.Release && AutoCylPressurePSI > minCylPressurePSI)
             {
                 float dp = elapsedClockSeconds * ReleaseRatePSIpS;
-                if (AutoCylPressurePSI < minCylPressurePSI + 1)
+                if (AutoCylPressurePSI < threshold + 1 && threshold > 2.2f)
                     dp *= MathHelper.Clamp(AutoCylPressurePSI - threshold, 0.1f, 1.0f); // Reduce release rate if nearing target pressure to prevent toggling between release and lap
                 if (AutoCylPressurePSI - dp < minCylPressurePSI)
-                    dp = AutoCylPressurePSI-minCylPressurePSI;
+                    dp = AutoCylPressurePSI - minCylPressurePSI;
                 if (dp < 0)
                     dp = 0;
                 AutoCylPressurePSI -= dp;
@@ -751,6 +753,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 if (AuxResPressurePSI < BrakeLine1PressurePSI && (valveType == MSTSWagon.BrakeValveType.Distributor ? true : TripleValveState == ValveState.Release) && !BleedOffValveOpen)
                 {
+                    if (AuxResPressurePSI > BrakeLine1PressurePSI - 1)
+                        dpAux *= MathHelper.Clamp(BrakeLine1PressurePSI - AuxResPressurePSI, 0.1f, 1.0f); // Reduce recharge rate if nearing target pressure to smooth out changes in brake pipe
                     if (UniformChargingRatio > 0) // Uniform charging: Aux res charging is slowed down when the brake pipe is substantially higher than the aux res
                     {
                         if (!UniformChargingActive && AuxResPressurePSI < BrakeLine1PressurePSI - UniformChargingThresholdPSI)
@@ -965,7 +969,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             
             if (!Car.BrakesStuck)
             {
-                Car.BrakeShoeForceN = Car.MaxBrakeForceN * Math.Min(CylPressurePSI / MaxCylPressurePSI, 1);
+                Car.BrakeShoeForceN = Car.MaxBrakeForceN * MathHelper.Clamp((CylPressurePSI - BrakeCylinderSpringPressurePSI) / (MaxCylPressurePSI - BrakeCylinderSpringPressurePSI), 0, 1);
                 if (Car.BrakeShoeForceN < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
                     Car.BrakeShoeForceN = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
             }

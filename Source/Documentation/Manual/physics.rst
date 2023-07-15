@@ -2976,11 +2976,23 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSEmergencyValveActuationRate
    single: ORTSEmergencyDumpValveRate
    single: ORTSEmergencyDumpValveTimer
+   single: ORTSEmergencyResQuickRelease
    single: ORTSMainResPipeAuxResCharging
    single: ORTSBrakeRelayValveRatio
    single: ORTSEngineBrakeRelayValveRatio
    single: ORTSBrakeRelayValveApplicationRate
    single: ORTSBrakeRelayValveReleaseRate
+   single: ORTSMaxTripleValveCylinderPressure
+   single: ORTSMaxServiceCylinderPressure
+   single: ORTSUniformChargingThreshold
+   single: ORTSUniformChargingRatio
+   single: ORTSQuickServiceLimit
+   single: ORTSQuickServiceApplicationRate
+   single: ORTSQuickServiceVentRate
+   single: ORTSAcceleratedApplicationFactor
+   single: ORTSAcceleratedApplicationMaxVentRate
+   single: ORTSInitialApplicationThreshold
+   single: ORTSCylinderSpringPressure
    single: ORTSMainResChargingRate
    single: ORTSEngineBrakeReleaseRate
    single: ORTSEngineBrakeApplicationRate
@@ -3012,11 +3024,14 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   brake actuation of the triple valve. If the pressure in the brake pipe
   decreases at a higher rate than specified, the triple valve will switch to
   emergency mode.
-- ``Wagon(ORTSEmergencyDumpValveRate)``-- Rate at which BP is locally discharged
+- ``Wagon(ORTSEmergencyDumpValveRate`` -- Rate at which BP is locally discharged
   at every wagon during an emergency brake application.
-- ``Wagon(ORTSEmergencyDumpValveTimer)``-- Timer for emergency dump valve to close
+- ``Wagon(ORTSEmergencyDumpValveTimer`` -- Timer for emergency dump valve to close
   after it is activated. If set to 0, it will close as soon as BP is discharged.
   Default value will prevent BP from being charged for 2 minutes.
+- ``Wagon(ORTSEmergencyResQuickRelease`` -- Set to 1 (default 0) to enable quick release,
+  in which emergency reservoir air is used to increase the brake pipe pressure
+  during release. Remains active until brake cylinder pressure drops below 5 psi.
 - ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
   for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
   reservoirs. If set to false, the main reservoir pipe will not be used
@@ -3037,6 +3052,40 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   by the triple valve. For example, UIC distributors set maximum cylinder pressure
   to 3.8 bar when brake pipe is below 3.5 bar, and further brake pipe discharging
   does not increase cylinder pressure.
+- ``Wagon(ORTSMaxServiceCylinderPressure`` -- Sets the maximum cylinder pressure
+  demanded during service applications. During emergency applications,
+  brake cylinder pressure is instead limited by ``ORTSMaxTripleValveCylinderPressure``.
+- ``Wagon(ORTSUniformChargingThreshold`` -- The pressure difference between the brake
+  pipe and auxiliary reservoir at which uniform charging activates during release
+  (default 3 psi), usually used to reduce the rate of auxiliary reservoir charging.
+- ``Wagon(ORTSUniformChargingRatio`` -- Factor used to divide auxiliary reservoir
+  charging rate by when uniform charging is active. Eg: setting of 2 will halve
+  charging rate while uniform charging is active (defaults to 0, disabling the feature).
+- ``Wagon(ORTSQuickServiceLimit`` -- Quick service activates when triple valve
+  initially changes from release to apply, and will remain active until brake
+  cylinder pressure reaches the pressure specified here (default 0,
+  which disables quick service).
+- ``Wagon(ORTSQuickServiceApplicationRate`` -- Optional setting for brake cylinder
+  application rate during quick service, can be used to increase speed of initial
+  applications. Has no effect if set lower than ``MaxApplicationRate`` (default 0).
+- ``Wagon(ORTSQuickServiceVentRate`` -- Optional ability for the brake pipe
+  pressure to be locally reduced at the specified rate while quick service is active
+  (default 0).
+- ``Wagon(ORTSAcceleratedApplicationFactor`` -- Triple valves can speed up applications
+  by measuring the rate of brake pipe reduction, multiplying the reduction
+  by the factor specified here, then locally venting that amount of brake pipe air.
+  Eg: a factor of 0.5 will speed up brake pipe propogation by +50%. Warning: Large
+  factors can cause out of control brake pipe reductions, avoid settings larger
+  than 1 (default 0, which disables the feature entirely).
+- ``Wagon(ORTSAcceleratedApplicationMaxVentRate`` -- Sets the maximum rate
+  at which accelerated application will reduce the brake pipe pressure
+  (default 5 psi/s).
+- ``Wagon(ORTSInitialApplicationThreshold`` -- The pressure difference between
+  the brake pipe and auxiliary reservoir at which the triple valve will
+  change from release to apply (default 1 psi).
+- ``Wagon(ORTSCylinderSpringPressure`` -- Below the specified pressure, no
+  brake force will be developed, simulating the pressure required to
+  overcome the brake cylinder return spring (default 0).
 - ``Engine(ORTSMainResChargingRate`` -- Rate of main reservoir pressure change
   in psi per second when the compressor is on (default .4).
 - ``Engine(ORTSEngineBrakeReleaseRate`` -- Rate of engine brake pressure
