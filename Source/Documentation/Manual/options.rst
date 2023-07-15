@@ -408,7 +408,7 @@ The default setting is checked.
 
 
 At game start, Electric - power connected
------------------------------------
+-----------------------------------------
 
 When this option is checked, stationary electric locos start the simulation with power available.
 Uncheck this option for a more detailed behaviour in which the player has to switch on electrical equipment.
@@ -602,6 +602,15 @@ specific width and height to be used.
 
 The format is <width>x<height>, for example 1024x768.
 
+.. -options-out-of-focus:
+
+Notify out of focus
+-------------------
+
+When this option is checked, on the corners of the Open Rails main window a red rectangle is shown when the window is not in focus.
+Just a reminder that the main window currently does not react on keystrokes.
+
+The default setting is unchecked.
 
 .. _options-window-glass:
 

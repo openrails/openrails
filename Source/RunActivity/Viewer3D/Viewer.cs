@@ -102,6 +102,7 @@ namespace Orts.Viewer3D
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
         public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
         public EOTListWindow EOTListWindow { get; private set; } // to select EOT
+        private OutOfFocusWindow OutOfFocusWindow; // to show colored rectangle around the main window when not in focus
 
         // Route Information
         public TileManager Tiles { get; private set; }
@@ -503,6 +504,8 @@ namespace Orts.Viewer3D
             TrainListWindow = new TrainListWindow(WindowManager);
             TTDetachWindow = new TTDetachWindow(WindowManager);
             EOTListWindow = new EOTListWindow(WindowManager);
+            if (Settings.OutOfFocus)
+                OutOfFocusWindow = new OutOfFocusWindow(WindowManager);
             WindowManager.Initialize();
 
             InfoDisplay = new InfoDisplay(this);
@@ -857,6 +860,9 @@ namespace Orts.Viewer3D
             if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
 
             WindowManager.PrepareFrame(frame, elapsedTime);
+
+            if (Settings.OutOfFocus)
+                OutOfFocusWindow.Visible = !this.Game.IsActive;
         }
 
         private void LoadDefectCarSound(TrainCar car, string filename)
