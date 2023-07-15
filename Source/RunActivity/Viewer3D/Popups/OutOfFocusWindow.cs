@@ -70,6 +70,5 @@ namespace Orts.Viewer3D.Popups
         {
             return (float)((System.Math.PI / 180) * angle);
         }
-
     }
 }
