@@ -45,7 +45,7 @@ namespace Orts.Viewer3D.Popups
         VertexBuffer WindowVertexBuffer;
         IndexBuffer WindowIndexBuffer;
 
-        readonly bool DoNotDisplayWindow = false;
+        readonly bool DoNotDisplayWindow;
 
         public Window(WindowManager owner, int width, int height, string caption)
         {
@@ -65,10 +65,11 @@ namespace Orts.Viewer3D.Popups
             }
 
             Caption = caption;
+            DoNotDisplayWindow = false;
             Owner.Add(this);
         }
 
-        public Window(WindowManager owner)
+        protected Window(WindowManager owner)
         {
             Owner = owner;
             DoNotDisplayWindow = true;

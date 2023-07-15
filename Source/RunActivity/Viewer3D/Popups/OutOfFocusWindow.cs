@@ -39,6 +39,23 @@ namespace Orts.Viewer3D.Popups
             Height = owner.Viewer.GraphicsDevice.Viewport.Height;
         }
 
+        private float ConvertToRadiansFromDegrees(int angle)
+        {
+            return (float)((System.Math.PI / 180) * angle);
+        }
+
+        private void DrawLine(SpriteBatch SpriteBatch, int X, int Y, int width, int height, int degrees)
+        {
+            SpriteBatch.Draw(
+                Line,
+                new Rectangle(X, Y, width, height),
+                null,
+                Color,
+                ConvertToRadiansFromDegrees(degrees),
+                new Vector2(0, 0),
+                SpriteEffects.None, 0);
+        }
+
         public override void Draw(SpriteBatch SpriteBatch)
         {
             // top
@@ -52,23 +69,6 @@ namespace Orts.Viewer3D.Popups
 
             // right
             DrawLine(SpriteBatch, Width, Thickness, Height, Thickness, 90);
-        }
-
-        private void DrawLine(SpriteBatch SpriteBatch, int X, int Y, int width, int height, int degrees)
-        {
-            SpriteBatch.Draw(
-                Line,
-                new Rectangle(X, Y, width, height),
-                null,
-                Color,
-                (float)ConvertToRadiansFromDegrees(degrees),
-                new Vector2(0, 0),
-                SpriteEffects.None, 0);
-         }
-
-        private float ConvertToRadiansFromDegrees(int angle)
-        {
-            return (float)((System.Math.PI / 180) * angle);
         }
     }
 }
