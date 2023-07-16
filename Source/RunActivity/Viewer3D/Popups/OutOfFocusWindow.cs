@@ -39,14 +39,24 @@ namespace Orts.Viewer3D.Popups
             Height = owner.Viewer.GraphicsDevice.Viewport.Height;
         }
 
-        private float ConvertToRadiansFromDegrees(int angle)
+        public override void Draw(SpriteBatch spriteBatch)
         {
-            return (float)((System.Math.PI / 180) * angle);
+            // top
+            DrawLine(spriteBatch, 0, 0, Width, Thickness, 0);
+
+            // bottom
+            DrawLine(spriteBatch, 0, Height - Thickness, Width, Thickness, 0);
+
+            // left
+            DrawLine(spriteBatch, Thickness, Thickness, Height, Thickness, 90);
+
+            // right
+            DrawLine(spriteBatch, Width, Thickness, Height, Thickness, 90);
         }
 
-        private void DrawLine(SpriteBatch SpriteBatch, int X, int Y, int width, int height, int degrees)
+        private void DrawLine(SpriteBatch spriteBatch, int X, int Y, int width, int height, int degrees)
         {
-            SpriteBatch.Draw(
+            spriteBatch.Draw(
                 Line,
                 new Rectangle(X, Y, width, height),
                 null,
@@ -56,19 +66,9 @@ namespace Orts.Viewer3D.Popups
                 SpriteEffects.None, 0);
         }
 
-        public override void Draw(SpriteBatch SpriteBatch)
+        private float ConvertToRadiansFromDegrees(int angle)
         {
-            // top
-            DrawLine(SpriteBatch, 0, 0, Width, Thickness, 0);
-
-            // bottom
-            DrawLine(SpriteBatch, 0, Height - Thickness, Width, Thickness, 0);
-
-            // left
-            DrawLine(SpriteBatch, Thickness, Thickness, Height, Thickness, 90);
-
-            // right
-            DrawLine(SpriteBatch, Width, Thickness, Height, Thickness, 90);
+            return (float)((System.Math.PI / 180) * angle);
         }
     }
 }
