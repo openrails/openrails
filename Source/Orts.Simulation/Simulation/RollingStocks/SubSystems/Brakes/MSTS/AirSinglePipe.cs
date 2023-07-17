@@ -77,7 +77,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float QuickServiceVentRatePSIpS;
         protected float AcceleratedApplicationFactor;
         protected float AcceleratedApplicationLimitPSIpS = 5.0f;
-        protected float InitialApplicationThresholdPSI = 1.0f;
+        protected float InitialApplicationThresholdPSI;
+        protected float TripleValveSensitivityPSI;
         protected float BrakeCylinderSpringPressurePSI;
         protected float ServiceMaxCylPressurePSI;
         protected float AcceleratedEmergencyReleaseThresholdPSI = 20.0f;
@@ -164,6 +165,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             AcceleratedApplicationFactor = thiscopy.AcceleratedApplicationFactor;
             AcceleratedApplicationLimitPSIpS = thiscopy.AcceleratedApplicationLimitPSIpS;
             InitialApplicationThresholdPSI = thiscopy.InitialApplicationThresholdPSI;
+            TripleValveSensitivityPSI = thiscopy.TripleValveSensitivityPSI;
             BrakeCylinderSpringPressurePSI = thiscopy.BrakeCylinderSpringPressurePSI;
             ServiceMaxCylPressurePSI = thiscopy.ServiceMaxCylPressurePSI;
         }
@@ -305,7 +307,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortsquickserviceventrate": QuickServiceVentRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsacceleratedapplicationfactor": AcceleratedApplicationFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsacceleratedapplicationmaxventrate": AcceleratedApplicationLimitPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 5.0f); break;
-                case "wagon(ortsinitialapplicationthreshold": InitialApplicationThresholdPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 1.0f); break;
+                case "wagon(ortsinitialapplicationthreshold": InitialApplicationThresholdPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortscylinderspringpressure": BrakeCylinderSpringPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsmaxservicecylinderpressure": ServiceMaxCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
             }
@@ -404,6 +406,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if ((Car as MSTSWagon).EmergencyReservoirPresent && EmergencyValveActuationRatePSIpS == 0)
                 EmergencyValveActuationRatePSIpS = 15;
 
+            if (InitialApplicationThresholdPSI == 0)
+            {
+                if ((Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.Distributor)
+                    InitialApplicationThresholdPSI = 2.2f; // UIC spec: brakes should release if brake pipe is within 0.15 bar of control res
+                else
+                    InitialApplicationThresholdPSI = 1.0f;
+            }
+
+            if (TripleValveSensitivityPSI == 0)
+            {
+                if ((Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.Distributor)
+                    TripleValveSensitivityPSI = 1.4f; // UIC spec: brakes should respond to 0.1 bar changes in brake pipe
+                else
+                    TripleValveSensitivityPSI = 1.0f;
+            }
+
             if (EmergResVolumeM3 > 0 && EmergAuxVolumeRatio > 0 && BrakePipeVolumeM3 > 0)
             {
                 AuxBrakeLineVolumeRatio = EmergResVolumeM3 / EmergAuxVolumeRatio / BrakePipeVolumeM3;
@@ -440,7 +458,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             if (valveType == MSTSWagon.BrakeValveType.Distributor)
             {
-                float targetPressurePSI = (ControlResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
+                float applicationPSI = ControlResPressurePSI - BrakeLine1PressurePSI;
+                float targetPressurePSI = applicationPSI * AuxCylVolumeRatio;
                 if (!disableGradient && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
                 {
                     if (prevState == ValveState.Release) // If valve transitions from release to emergency, quick service activates
@@ -450,17 +469,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                     TripleValveState = ValveState.Emergency;
                 }
-                else if (TripleValveState != ValveState.Emergency && 
-                    targetPressurePSI > AutoCylPressurePSI + (TripleValveState == ValveState.Release ? AuxCylVolumeRatio * InitialApplicationThresholdPSI : (TripleValveState == ValveState.Apply ? 0.0f : 2.2f)))
+                else if (TripleValveState != ValveState.Emergency && targetPressurePSI > AutoCylPressurePSI + (TripleValveState == ValveState.Apply ? 0.0f : TripleValveSensitivityPSI * AuxCylVolumeRatio))
                 {
-                    if (prevState == ValveState.Release) // If valve transitions from release to apply, quick service activates
+                    if (prevState == ValveState.Release)
                     {
-                        QuickServiceActive = true;
-                        UniformChargingActive = false;
+                        if (applicationPSI > InitialApplicationThresholdPSI) // If valve transitions from release to apply, quick service activates
+                        {
+                            QuickServiceActive = true;
+                            UniformChargingActive = false;
+
+                            TripleValveState = ValveState.Apply;
+                        }
                     }
-                    TripleValveState = ValveState.Apply;
+                    else
+                    {
+                        TripleValveState = ValveState.Apply;
+                    }
                 }
-                else if (targetPressurePSI < AutoCylPressurePSI - (TripleValveState == ValveState.Release ? 0.0f : 2.2f) || targetPressurePSI < 2.2f)
+                else if (targetPressurePSI < AutoCylPressurePSI - (TripleValveState == ValveState.Release ? 0.0f : TripleValveSensitivityPSI * AuxCylVolumeRatio) || applicationPSI < InitialApplicationThresholdPSI)
                 {
                     TripleValveState = ValveState.Release;
                 }
@@ -480,17 +506,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                     TripleValveState = ValveState.Emergency;
                 }
-                else if (TripleValveState != ValveState.Emergency && 
-                    BrakeLine1PressurePSI < AuxResPressurePSI - (TripleValveState == ValveState.Release ? InitialApplicationThresholdPSI : (TripleValveState == ValveState.Apply ? 0.0f : 1.0f)))
+                else if (TripleValveState != ValveState.Emergency && BrakeLine1PressurePSI < AuxResPressurePSI - (TripleValveState == ValveState.Apply ? 0.0f : TripleValveSensitivityPSI))
                 {
-                    if (prevState == ValveState.Release) // If valve transitions from release to apply, quick service activates
+                    if (prevState == ValveState.Release)
                     {
-                        QuickServiceActive = true;
-                        UniformChargingActive = false;
+                        if (BrakeLine1PressurePSI < AuxResPressurePSI - InitialApplicationThresholdPSI) // If valve transitions from release to apply, quick service activates
+                        {
+                            QuickServiceActive = true;
+                            UniformChargingActive = false;
+
+                            TripleValveState = ValveState.Apply;
+                        }
                     }
-                    TripleValveState = ValveState.Apply;
+                    else
+                    {
+                        TripleValveState = ValveState.Apply;
+                    }
                 }
-                else if (BrakeLine1PressurePSI > AuxResPressurePSI + (TripleValveState == ValveState.Release ? 0.0f : 2.0f))
+                else if (BrakeLine1PressurePSI > AuxResPressurePSI + (TripleValveState == ValveState.Release ? 0.0f : TripleValveSensitivityPSI * 2))
                 {
                     TripleValveState = ValveState.Release;
                 }
@@ -685,14 +718,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // Handle brake release: reduce cylinder pressure if all triple valve, EP holding valve and retainers allow so
-            if (threshold < 2.2f) // Prevent brakes getting stuck with a small amount of air on distributor systems
+            if (threshold < InitialApplicationThresholdPSI * AuxCylVolumeRatio) // Prevent brakes getting stuck with a small amount of air on distributor systems
                 threshold = 0;
             float minCylPressurePSI = Math.Max(threshold, RetainerPressureThresholdPSI);
 
             if (TripleValveState == ValveState.Release && HoldingValve == ValveState.Release && AutoCylPressurePSI > minCylPressurePSI)
             {
                 float dp = elapsedClockSeconds * ReleaseRatePSIpS;
-                if (AutoCylPressurePSI < threshold + 1 && threshold > 2.2f)
+                if (AutoCylPressurePSI < threshold + 1 && threshold > InitialApplicationThresholdPSI * AuxCylVolumeRatio)
                     dp *= MathHelper.Clamp(AutoCylPressurePSI - threshold, 0.1f, 1.0f); // Reduce release rate if nearing target pressure to prevent toggling between release and lap
                 if (AutoCylPressurePSI - dp < minCylPressurePSI)
                     dp = AutoCylPressurePSI - minCylPressurePSI;
