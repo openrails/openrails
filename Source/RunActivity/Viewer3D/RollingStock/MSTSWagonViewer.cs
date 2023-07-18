@@ -59,10 +59,10 @@ namespace Orts.Viewer3D.RollingStock
 
         // Wheels are rotated by hand instead of in the shape file.
         float WheelRotationR;
-        List<int> WheelPartIndexes = new List<int>();
+        Dictionary<int,List<int>> WheelPartIndexes = new Dictionary<int,List<int>>(); // List of wheels attached to each axle
 
         // Everything else is animated through the shape file.
-        AnimatedPart RunningGear;
+        Dictionary<int,AnimatedPart> RunningGears; // List of animated parts linked to every axle
         AnimatedPart Pantograph1;
         AnimatedPart Pantograph2;
         AnimatedPart Pantograph3;
@@ -317,7 +317,12 @@ namespace Orts.Viewer3D.RollingStock
             if (car.InteriorShapeFileName != null)
                 InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.Interior, 30.0f);
 
-            RunningGear = new AnimatedPart(TrainCarShape);
+            RunningGears = new Dictionary<int,AnimatedPart>();
+            for (int i=-1; i<car.LocomotiveAxles.Count; i++)
+            {
+                RunningGears[i] = new AnimatedPart(TrainCarShape);
+                WheelPartIndexes[i] = new List<int>();
+            }
             Pantograph1 = new AnimatedPart(TrainCarShape);
             Pantograph2 = new AnimatedPart(TrainCarShape);
             Pantograph3 = new AnimatedPart(TrainCarShape);
@@ -346,14 +351,14 @@ namespace Orts.Viewer3D.RollingStock
             Viewer.SoundProcess.AddSoundSource(this, new TrackSoundSource(MSTSWagon, Viewer));
 
             // Determine if it has first pantograph. So we can match unnamed panto parts correctly
-            for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
+            for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
                 if (TrainCarShape.SharedShape.MatrixNames[i].Contains('1'))
                 {
                     if (TrainCarShape.SharedShape.MatrixNames[i].ToUpper().StartsWith("PANTO")) { HasFirstPanto = true; break; }
                 }
 
             // Check bogies and wheels to find out what we have.
-            for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
+            for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
             {
                 if (TrainCarShape.SharedShape.MatrixNames[i].Equals("BOGIE1"))
                 {
@@ -373,7 +378,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS"))
                     if (TrainCarShape.SharedShape.MatrixNames[i].Length == 8)
                     {
-                        var tpmatrix = TrainCarShape.SharedShape.GetAnimationParent(i);
+                        var tpmatrix = TrainCarShape.SharedShape.GetParentMatrix(i);
                         if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS11") && tpmatrix == bogieMatrix1)
                             bogie1Axles += 1;
                         if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS12") && tpmatrix == bogieMatrix1)
@@ -402,10 +407,9 @@ namespace Orts.Viewer3D.RollingStock
                     }
             }
 
-            // Using only animations not parented by other animations, thus wheels part of a bogie will be enumerated in another round.
             // Match up all the matrices with their parts.
-            for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
-                if (TrainCarShape.SharedShape.GetAnimationParent(i) == -1)
+            for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                if (TrainCarShape.Hierarchy[i] == -1)
                     MatchMatrixToPart(car, i, 0);
 
             car.SetUpWheels();
@@ -432,56 +436,69 @@ namespace Orts.Viewer3D.RollingStock
             InitializeUserInputCommands();
         }
 
-        /// <summary>
-        /// This is part of the animation handling. Enlisting the various animations and structuring them into their specific class.
-        /// </summary>
-        /// <param name="car">The car to process.</param>
-        /// <param name="matrix">For stf files it is the target node id, for gltf shapes it is the animation id.</param>
-        /// <param name="bogieMatrix">The node id of the containing bogie. 0 if there is no bogie above.</param>
         void MatchMatrixToPart(MSTSWagon car, int matrix, int bogieMatrix)
         {
             var matrixName = TrainCarShape.SharedShape.MatrixNames[matrix].ToUpper();
-            var targetNode = TrainCarShape.SharedShape.GetAnimationTargetNode(matrix);
             // Gate all RunningGearPartIndexes on this!
-            var matrixAnimated = !TrainCarShape.SharedShape.IsAnimationArticulation(matrix);
+            var matrixAnimated = TrainCarShape.SharedShape.Animations != null && TrainCarShape.SharedShape.Animations.Count > 0 && TrainCarShape.SharedShape.Animations[0].anim_nodes.Count > matrix && TrainCarShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0;
+            int? LinkedAxleIndex = null;
+            for (int i=0; i<car.LocomotiveAxles.Count; i++)
+            {
+                if (car.LocomotiveAxles[i].AnimatedParts.Contains(matrixName))
+                {
+                    LinkedAxleIndex = i;
+                    break;
+                }
+            }
             if (matrixName.StartsWith("WHEELS") && (matrixName.Length == 7 || matrixName.Length == 8 || matrixName.Length == 9))
             {
                 // Standard WHEELS length would be 8 to test for WHEELS11. Came across WHEELS tag that used a period(.) between the last 2 numbers, changing max length to 9.
                 // Changing max length to 9 is not a problem since the initial WHEELS test will still be good.
-                var m = TrainCarShape.SharedShape.GetMatrixProduct(targetNode);
+                var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
                 //someone uses wheel to animate fans, thus check if the wheel is not too high (lower than 3m), will animate it as real wheel
                 if (m.M42 < 3)
                 {
+                    var id = 0;
                     // Model makers are not following the standard rules, For example, one tender uses naming convention of wheels11/12 instead of using Wheels1,2,3 when not part of a bogie.
                     // The next 2 lines will sort out these axles.
-                    var tmatrix = TrainCarShape.SharedShape.GetParentMatrix(targetNode);
+                    var tmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
                     if (matrixName.Length == 8 && bogieMatrix == 0 && tmatrix == 0) // In this test, both tmatrix and bogieMatrix are 0 since these wheels are not part of a bogie.
-                        matrixName = matrixName.Substring(0, 7); // Changing wheel name so that it reflects its actual use since it is not p
-                    if (matrixName.Length == 8 || matrixName.Length == 9 || !matrixAnimated)
-                        WheelPartIndexes.Add(targetNode);
-                    else
-                        RunningGear.AddMatrix(matrix); // TODO: test this in the gltf case
-                    var id = 0;
+                        matrixName = TrainCarShape.SharedShape.MatrixNames[matrix].Substring(0, 7); // Changing wheel name so that it reflects its actual use since it is not p
                     if (matrixName.Length == 8 || matrixName.Length == 9)
                         Int32.TryParse(matrixName.Substring(6, 1), out id);
-                    var pmatrix = TrainCarShape.SharedShape.GetAnimationTargetNode(TrainCarShape.SharedShape.GetAnimationParent(matrix));
+                    if (matrixName.Length == 8 || matrixName.Length == 9 || !matrixAnimated)
+                        WheelPartIndexes[LinkedAxleIndex ?? -1].Add(matrix);
+                    else
+                        RunningGears[LinkedAxleIndex ?? (car.LocomotiveAxles.Count > 0 ? 0 : -1)].AddMatrix(matrix);
+                    var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
                     car.AddWheelSet(m.M43, id, pmatrix, matrixName.ToString(), bogie1Axles, bogie2Axles);
                 }
                 // Standard wheels are processed above, but wheels used as animated fans that are greater than 3m are processed here.
                 else
-                    RunningGear.AddMatrix(matrixAnimated ? matrix : targetNode);
+                    RunningGears[LinkedAxleIndex ?? -1].AddMatrix(matrix);
             }
             else if (matrixName.StartsWith("BOGIE") && matrixName.Length <= 6) //BOGIE1 is valid, BOGIE11 is not, it is used by some modelers to indicate this is part of bogie1
             {
-                var id = 1;
                 if (matrixName.Length == 6)
+                {
+                    var id = 1;
                     Int32.TryParse(matrixName.Substring(5), out id);
-                var m = TrainCarShape.SharedShape.GetMatrixProduct(targetNode);
-                car.AddBogie(m.M43, targetNode, id, matrixName.ToString(), numBogie1, numBogie2);
-                bogieMatrix = targetNode; // Bogie matrix needs to be saved for test with axles.
+                    var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
+                    car.AddBogie(m.M43, matrix, id, matrixName.ToString(), numBogie1, numBogie2);
+                    bogieMatrix = matrix; // Bogie matrix needs to be saved for test with axles.
+                }
+                else
+                {
+                    // Since the string content is BOGIE, Int32.TryParse(matrixName.Substring(5), out id) is not needed since its sole purpose is to
+                    //  parse the string number from the string.
+                    var id = 1;
+                    var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
+                    car.AddBogie(m.M43, matrix, id, matrixName.ToString(), numBogie1, numBogie2);
+                    bogieMatrix = matrix; // Bogie matrix needs to be saved for test with axles.
+                }
                 // Bogies contain wheels!
-                for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
-                    if (TrainCarShape.SharedShape.GetAnimationParent(i) == matrix)
+                for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                    if (TrainCarShape.Hierarchy[i] == matrix)
                         MatchMatrixToPart(car, i, bogieMatrix);
             }
             else if (matrixName.StartsWith("WIPER")) // wipers
@@ -602,11 +619,11 @@ namespace Orts.Viewer3D.RollingStock
             }
             else
             {
-                if (matrixAnimated && matrix != 0 && !ConsistGenerator.GltfVisualTestRun)
-                    RunningGear.AddMatrix(matrix);
+                if (matrixAnimated && matrix != 0)
+                    RunningGears[LinkedAxleIndex ?? (car.LocomotiveAxles.Count > 0 ? 0 : -1)].AddMatrix(matrix);
 
-                for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
-                    if (TrainCarShape.SharedShape.GetAnimationParent(i) == targetNode)
+                for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                    if (TrainCarShape.Hierarchy[i] == matrix)
                         MatchMatrixToPart(car, i, 0);
             }
         }
@@ -747,68 +764,80 @@ namespace Orts.Viewer3D.RollingStock
         {
                         
             float distanceTravelledM = 0.0f; // Distance travelled by non-driven wheels
-            float distanceTravelledDrivenM = 0.0f;  // Distance travelled by driven wheels
             float AnimationWheelRadiusM = MSTSWagon.WheelRadiusM; // Radius of non driven wheels
             float AnimationDriveWheelRadiusM = MSTSWagon.DriverWheelRadiusM; // Radius of driven wheels
 
             if (MSTSWagon.IsDriveable && MSTSWagon.Simulator.UseAdvancedAdhesion && !MSTSWagon.Simulator.Settings.SimpleControlPhysics)
             {
+                var loco = MSTSWagon as MSTSLocomotive;
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                                distanceTravelledM = MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
-
-                distanceTravelledM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
-                if (Car.EngineType == Orts.Simulation.RollingStocks.TrainCar.EngineTypes.Steam)
+                distanceTravelledM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
+                if (Car.BrakeSkid && !loco.DriveWheelOnlyBrakes) distanceTravelledM = 0;
+                foreach (var kvp in RunningGears)
                 {
-                    distanceTravelledDrivenM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.WheelSpeedSlipMpS * elapsedTime.ClockSeconds;
+                    if (!kvp.Value.Empty())
+                    {
+                        var axle = kvp.Key >= 0 && kvp.Key < loco.LocomotiveAxles.Count ? loco.LocomotiveAxles[kvp.Key] : null;
+                        if (axle != null)
+                            //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
+                            kvp.Value.UpdateLoop(((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * axle.AxleSpeedMpS * elapsedTime.ClockSeconds / MathHelper.TwoPi / axle.WheelRadiusM);
+                        else if (AnimationDriveWheelRadiusM > 0.001)
+                            kvp.Value.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
                 }
-                else  // Other driveable rolling stocked.
+                        
+                }
+                foreach (var kvp in WheelPartIndexes)
                 {
-                    distanceTravelledDrivenM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
+                    var axle = kvp.Key < loco.LocomotiveAxles.Count && kvp.Key >= 0 ? loco.LocomotiveAxles[kvp.Key] : (Car.EngineType == TrainCar.EngineTypes.Steam ? null : loco.LocomotiveAxles[0]);
+                    Matrix wheelRotationMatrix;
+                    if (axle != null)
+                    {
+                        //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
+                        wheelRotationMatrix = Matrix.CreateRotationX(((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * -axle.AxlePositionRad);
+                    }
+                    else
+                    {
+                        var rotationalDistanceR = distanceTravelledM / AnimationWheelRadiusM;  // in radians
+                        WheelRotationR = MathHelper.WrapAngle(WheelRotationR - rotationalDistanceR);
+                        wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
+                    }
+                    foreach (var iMatrix in kvp.Value)
+                    {
+                        TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
+                    }
                 }
             }
             else // set values for simple adhesion
             {
                 distanceTravelledM = ((MSTSWagon.IsDriveable && MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
-                distanceTravelledDrivenM = distanceTravelledM;
-            }
-
-            if (Car.BrakeSkid) // if car wheels are skidding because of brakes locking wheels up then stop wheels rotating.
+                if (Car.BrakeSkid) distanceTravelledM = 0;
+                foreach (var kvp in RunningGears)
             {
-                // Temporary bug fix (CSantucci)
-                if (MSTSWagon is MSTSLocomotive loco && loco.DriveWheelOnlyBrakes)
-                {
-                    distanceTravelledDrivenM = 0.0f;
+                    if (!kvp.Value.Empty() && AnimationDriveWheelRadiusM > 0.001)
+                        kvp.Value.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
                 }
-                else
-                {
-                    distanceTravelledM = 0.0f;
-                    distanceTravelledDrivenM = 0.0f;
-                }
-            }
-
-            // Running gear and drive wheel rotation (animation) in steam locomotives
-            if (!RunningGear.Empty() && AnimationDriveWheelRadiusM > 0.001)
-                RunningGear.UpdateLoop(distanceTravelledDrivenM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
-
-
             // Wheel rotation (animation) - for non-drive wheels in steam locomotives and all wheels in other stock
             if (WheelPartIndexes.Count > 0)
              {
-                var wheelCircumferenceM = MathHelper.TwoPi * AnimationWheelRadiusM;
-                var rotationalDistanceR = MathHelper.TwoPi * distanceTravelledM / wheelCircumferenceM;  // in radians
+                    var rotationalDistanceR = distanceTravelledM / AnimationWheelRadiusM;  // in radians
                 WheelRotationR = MathHelper.WrapAngle(WheelRotationR - rotationalDistanceR);
                 var wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
-                foreach (var iMatrix in WheelPartIndexes)
+                    foreach (var kvp in WheelPartIndexes)
+                    {
+                        foreach (var iMatrix in kvp.Value)
                  {
                     TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
                  }
               }
+                }
+            }
 
 #if DEBUG_WHEEL_ANIMATION
 
             Trace.TraceInformation("========================== Debug Animation in MSTSWagonViewer.cs ==========================================");
-            Trace.TraceInformation("Slip speed - Car ID: {0} WheelDistance: {1} SlipWheelDistance: {2}", Car.CarID, distanceTravelledM, distanceTravelledDrivenM);
+            Trace.TraceInformation("Slip speed - Car ID: {0} WheelDistance: {1}", Car.CarID, distanceTravelledM);
             Trace.TraceInformation("Wag Speed - Wheelspeed: {0} Slip: {1} Train: {2}", MSTSWagon.WheelSpeedMpS, MSTSWagon.WheelSpeedSlipMpS, MSTSWagon.SpeedMpS);
             Trace.TraceInformation("Wheel Radius - DriveWheel: {0} NonDriveWheel: {1}", AnimationDriveWheelRadiusM, AnimationWheelRadiusM);
 

@@ -613,6 +613,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         public float SlipWarningTresholdPercent { set; get; }
 
+        public List<string> AnimatedParts = new List<string>();
+
         /// <summary>
         /// Nonparametric constructor of Axle class instance
         /// - sets motor parameter to null
@@ -653,6 +655,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     case "weight":
                         AxleWeightN = 9.81f * stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                         break;
+                    case "animatedparts":
+                        foreach (var part in stf.ReadStringBlock("").ToUpper().Replace(" ", "").Split(','))
+                        {
+                            if (part != "") AnimatedParts.Add(part);
+                        }
+                        break;
                     case "(":
                         stf.SkipRestOfBlock();
                         break;
@@ -664,6 +672,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             WheelRadiusM = other.WheelRadiusM;
             InertiaKgm2 = other.InertiaKgm2;
             AxleWeightN = other.AxleWeightN;
+            AnimatedParts.Clear();
+            AnimatedParts.AddRange(other.AnimatedParts);
         }
 
         /// <summary>
