@@ -859,10 +859,10 @@ namespace Orts.Viewer3D
             // TODO: This is not correct. The ActivityWindow's PrepareFrame is already called by the WindowManager!
             if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
 
-            WindowManager.PrepareFrame(frame, elapsedTime);
-
             if (Settings.OutOfFocus)
                 OutOfFocusWindow.Visible = !this.Game.IsActive;
+
+            WindowManager.PrepareFrame(frame, elapsedTime);
         }
 
         private void LoadDefectCarSound(TrainCar car, string filename)
