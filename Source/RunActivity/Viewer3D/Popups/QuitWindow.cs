@@ -70,6 +70,7 @@ namespace Orts.Viewer3D.Popups
         void buttonSave_Click(Control arg1, Point arg2)
         {
             GameStateRunActivity.Save();
+            Owner.Viewer.LastSave = Owner.Viewer.RealTime + 60 * 15;
         }
 
         void buttonContinue_Click(Control arg1, Point arg2)
