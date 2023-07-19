@@ -276,6 +276,8 @@ namespace ORTS.Settings
         [Default("1024x768")]
         public string WindowSize { get; set; }
         [Default(false)]
+        public bool OutOfFocus { get; set; }
+        [Default(false)]
         public bool WindowGlass { get; set; }
         [Default(0)]
         public int SuppressConfirmations { get; set; }

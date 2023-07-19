@@ -103,6 +103,7 @@ namespace Orts.Viewer3D
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
         public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
         public EOTListWindow EOTListWindow { get; private set; } // to select EOT
+        private OutOfFocusWindow OutOfFocusWindow; // to show colored rectangle around the main window when not in focus
 
         // Route Information
         public TileManager Tiles { get; private set; }
@@ -500,6 +501,8 @@ namespace Orts.Viewer3D
             TrainListWindow = new TrainListWindow(WindowManager);
             TTDetachWindow = new TTDetachWindow(WindowManager);
             EOTListWindow = new EOTListWindow(WindowManager);
+            if (Settings.OutOfFocus)
+                OutOfFocusWindow = new OutOfFocusWindow(WindowManager);
             WindowManager.Initialize();
 
             InfoDisplay = new InfoDisplay(this);
@@ -852,6 +855,9 @@ namespace Orts.Viewer3D
             InfoDisplay.PrepareFrame(frame, elapsedTime);
             // TODO: This is not correct. The ActivityWindow's PrepareFrame is already called by the WindowManager!
             if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
+
+            if (Settings.OutOfFocus)
+                OutOfFocusWindow.Visible = !this.Game.IsActive;
 
             WindowManager.PrepareFrame(frame, elapsedTime);
 

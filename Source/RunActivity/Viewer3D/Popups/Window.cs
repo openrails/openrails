@@ -45,6 +45,8 @@ namespace Orts.Viewer3D.Popups
         VertexBuffer WindowVertexBuffer;
         IndexBuffer WindowIndexBuffer;
 
+        readonly bool DoNotDisplayWindow;
+
         public Window(WindowManager owner, int width, int height, string caption)
         {
             Owner = owner;
@@ -63,6 +65,14 @@ namespace Orts.Viewer3D.Popups
             }
 
             Caption = caption;
+            DoNotDisplayWindow = false;
+            Owner.Add(this);
+        }
+
+        protected Window(WindowManager owner)
+        {
+            Owner = owner;
+            DoNotDisplayWindow = true;
             Owner.Add(this);
         }
 
@@ -224,6 +234,11 @@ namespace Orts.Viewer3D.Popups
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            if (DoNotDisplayWindow)
+            {
+                return;
+            }
+
             if (WindowVertexBuffer == null)
             {
                 // Edges/corners are 32px (1/4th image size).
