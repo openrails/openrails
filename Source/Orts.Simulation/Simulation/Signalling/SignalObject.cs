@@ -1006,6 +1006,15 @@ namespace Orts.Simulation.Signalling
         }
 
         /// <summary>
+        /// opp_sig_id : returns ident of next opposite signal of required type
+        /// search using trainpath of enabled train
+        /// </summary>
+        public int opp_sig_id_trainpath(SignalFunction function)
+        {
+            return SONextSignalOppTrainpath(function);
+        }
+
+        /// <summary>
         /// this_sig_noSpeedReduction : Returns the setting if speed must be reduced on RESTRICTED or STOP_AND_PROCEED
         /// returns TRUE if speed reduction must be suppressed
         /// </summary>
@@ -1657,6 +1666,51 @@ namespace Orts.Simulation.Signalling
                             thisTC = thisSection.ActivePins[pinIndex, 1].Link;
                             direction = thisSection.ActivePins[pinIndex, 1].Direction;
                         }
+                    }
+                }
+            }
+
+            return signalFound;
+        }
+
+        /// <summary>
+        /// Find next signal in opp direction using path of enabled train
+        /// </summary>
+        public int SONextSignalOppTrainpath(SignalFunction function)
+        {
+            int signalFound = -1;
+
+            // if enabled train is set
+            if (enabledTrain != null)
+            {
+                var pathposindex = enabledTrain.Train.PresentPosition[1].RouteListIndex;
+
+                // get route index of signal
+                var signalindex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCReference, pathposindex);
+
+                while (signalFound < 0 && signalindex >= 0)
+                {
+                    int tcindex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex][signalindex].TCSectionIndex;
+                    int direction = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex][signalindex].Direction;
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[tcindex];
+
+                    // check if required type of signal is along this section
+                    if (function == SignalFunction.NORMAL)
+                    {
+                        signalFound = thisSection.EndSignals[direction == 0 ? 1 : 0] != null ? thisSection.EndSignals[direction].thisRef : -1;
+                    }
+                    else
+                    {
+                        TrackCircuitSignalList thisListrev = thisSection.CircuitItems.TrackCircuitSignals[direction == 0 ? 1 : 0][function];
+                        if (thisListrev.TrackCircuitItem.Count > 0)
+                        {
+                            signalFound = thisListrev.TrackCircuitItem[0].SignalRef.thisRef;
+                        }
+                    }
+
+                    if (signalFound < 0)
+                    {
+                        signalindex -= 1;
                     }
                 }
             }
