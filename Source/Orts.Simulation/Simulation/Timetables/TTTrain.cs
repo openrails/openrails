@@ -1017,7 +1017,7 @@ namespace Orts.Simulation.Timetables
                         StationStop newStop = CalculateStationStop(signalRef.PlatformDetailsList[altPlatformIndex].PlatformReference[0],
                         orgStop.ArrivalTime, orgStop.DepartTime, orgStop.arrivalDT, orgStop.departureDT, clearingDistanceM, minStopDistanceM,
                         orgStop.Terminal, orgStop.ActualMinStopTime, orgStop.KeepClearFront, orgStop.KeepClearRear, orgStop.ForcePosition,
-                        orgStop.CloseupSignal, orgStop.Closeup, orgStop.RestrictPlatformToSignal, orgStop.ExtendPlatformToSignal, orgStop.EndStop);
+                        orgStop.CloseupSignal, orgStop.Closeup, orgStop.RestrictPlatformToSignal, orgStop.ExtendPlatformToSignal, orgStop.EndStop, orgStop.AllowDepartEarly);
 
                         // add new holding signal if required
                         if (newStop.HoldSignal && newStop.ExitSignal >= 0)
@@ -1406,7 +1406,7 @@ namespace Orts.Simulation.Timetables
 
         public StationStop CalculateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM,
             float minStopDistance, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal, 
-            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop)
+            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly)
         {
             int platformIndex;
             int activeSubroute = 0;
@@ -1491,6 +1491,7 @@ namespace Orts.Simulation.Timetables
                         restrictPlatformToSignal,
                         extendPlatformToSignal,
                         endStop,
+                        allowdepartearly,
                         StationStop.STOPTYPE.STATION_STOP);
 
                 thisStation.arrivalDT = arrivalDT;
@@ -2105,11 +2106,11 @@ namespace Orts.Simulation.Timetables
         /// <returns></returns>
         public bool CreateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM,
             float minStopDistanceM, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal, 
-            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop)
+            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly)
         {
             StationStop thisStation = CalculateStationStop(platformStartID, arrivalTime, departTime, arrivalDT, departureDT, clearingDistanceM,
                 minStopDistanceM, terminal, actMinStopTime, keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup,
-                restrictPlatformToSignal, extendPlatformToSignal, endStop);
+                restrictPlatformToSignal, extendPlatformToSignal, endStop, allowdepartearly);
 
             if (thisStation != null)
             {
