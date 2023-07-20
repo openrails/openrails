@@ -10722,7 +10722,14 @@ namespace Orts.Simulation.Timetables
                                     if (!StationStops[0].EndStop)
                                     {
                                         if (!DriverOnlyOperation) Simulator.SoundNotify = Event.PermissionToDepart;  // sound departure if not doo
-                                        DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
+                                        if (StationStops[0].AllowDepartEarly)
+                                        {
+                                            DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. Early departure allowed.");
+                                        }
+                                        else
+                                        {
+                                            DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
+                                        }
                                     }
                                 }
                             }
