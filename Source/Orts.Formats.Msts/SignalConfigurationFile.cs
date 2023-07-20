@@ -1052,6 +1052,8 @@ namespace Orts.Formats.Msts
         public float SpeedMpS { get; private set; }
         /// <summary>Set to true if SignalFlags ASAP option specified, meaning train needs to go to speed As Soon As Possible</summary>
         public bool Asap { get; private set; }
+        /// <summary>Set to true if SignalFlags NoSpeedUpdate option specified, meaning speed limits are not in any way affected by the state of this signal>
+        public bool NoSpeedUpdate { get; private set; }
         /// <summary>Set to true if SignalFlags RESET option specified (ORTS only)</summary>
         public bool Reset; 
         /// <summary>Set to true if no speed reduction is required for RESTRICTED or STOP_AND_PROCEED aspects (ORTS only) </summary>
@@ -1068,6 +1070,7 @@ namespace Orts.Formats.Msts
             DrawStateName = String.Copy(reqName);
             SpeedMpS = -1;
             Asap = false;
+            NoSpeedUpdate = false;
             NoSpeedReduction = false;
         }
 
@@ -1099,6 +1102,7 @@ namespace Orts.Formats.Msts
                         switch (stf.ReadString().ToLower())
                         {
                             case "asap": Asap = true; break;
+                            case "nospeedupdate": NoSpeedUpdate = true; break;
                             case "or_speedreset": Reset = true; break;
                             case "or_nospeedreduction": NoSpeedReduction = true; break;
                             default: stf.StepBackOneItem(); STFException.TraceInformation(stf, "Skipped unknown DrawLight flag " + stf.ReadString()); break;
