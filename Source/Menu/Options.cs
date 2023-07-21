@@ -148,6 +148,10 @@ namespace ORTS
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
             checkEnableTCSScripts.Checked = !Settings.DisableTCSScripts;    // Inverted as "Enable scripts" is better UI than "Disable scripts"
+            checkAutoSaveActive.Checked = Settings.AutoSaveActive;
+            ButtonAutoSave15.Checked = checkAutoSaveActive.Checked & Settings.AutoSaveInterval == 15;
+            ButtonAutoSave30.Checked = checkAutoSaveActive.Checked & Settings.AutoSaveInterval == 30;
+            ButtonAutoSave60.Checked = checkAutoSaveActive.Checked & Settings.AutoSaveInterval == 60;
 
             // Audio tab
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
@@ -841,12 +845,6 @@ namespace ORTS
                 Settings.AutoSaveInterval = 60;
                 ButtonAutoSave15.Checked = false;
                 ButtonAutoSave30.Checked = false;
-            }
-            else
-            {
-                Settings.AutoSaveInterval = 15;
-                ButtonAutoSave30.Checked = false;
-                ButtonAutoSave60.Checked = false;
             }
         }
 
