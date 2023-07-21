@@ -270,6 +270,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (evt)
             {
                 case PowerSupplyEvent.QuickPowerOn:
+                case PowerSupplyEvent.ForcedPowerOn:
                     QuickPowerOn = true;
                     SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOn);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
@@ -278,7 +279,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOnElectricTrainSupply);
                     break;
 
+                case PowerSupplyEvent.QuickPowerOnConditional:
+                case PowerSupplyEvent.ForcedPowerOnConditional:
+                    QuickPowerOn = true;
+                    SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOn);
+                    SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
+                    SignalEventToPantographs(PowerSupplyEvent.RaisePantographConditional);
+                    SignalEventToOtherTrainVehicles(PowerSupplyEvent.RaisePantographConditional);
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOnElectricTrainSupply);
+                    break;
+
                 case PowerSupplyEvent.QuickPowerOff:
+                case PowerSupplyEvent.ForcedPowerOff:
                     QuickPowerOn = false;
                     SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOffElectricTrainSupply);
                     SignalEventToCircuitBreaker(PowerSupplyEvent.OpenCircuitBreaker);
@@ -286,6 +298,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     SignalEventToOtherTrainVehicles(PowerSupplyEvent.LowerPantograph);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOffMasterKey);
                     SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOff);
+                    break;
+
+                case PowerSupplyEvent.QuickPowerOffPantoUp:
+                case PowerSupplyEvent.ForcedPowerOffPantoUp:
+                    QuickPowerOn = false;
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOffElectricTrainSupply);
+                    SignalEventToCircuitBreaker(PowerSupplyEvent.OpenCircuitBreaker);
+                    SignalEventToMasterKey(PowerSupplyEvent.TurnOffMasterKey);
+                    SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOff);
+                    // raise pantographs as panto conditions might have changed
+                    SignalEventToPantographs(PowerSupplyEvent.RaisePantographConditional);
+                    SignalEventToOtherTrainVehicles(PowerSupplyEvent.RaisePantographConditional);
                     break;
 
                 default:
