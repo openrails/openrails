@@ -3468,6 +3468,22 @@ namespace Orts.Simulation.RollingStocks
                             SignalEvent(Event.PantographToggle);
                         }
                         break;
+                    case PowerSupplyEvent.RaisePantographConditional:
+                        // if wagon has conditional pantographs, try raise all otherwise raise panto 1
+                        if (Pantographs != null)
+                        {
+                            if (Pantographs.List[0].PantoDirectionInfo != null)
+                            {
+                                Pantographs.HandleEvent(evt);
+                                SignalEvent(Event.PantographToggle);
+                }
+                            else
+                            {
+                                Pantographs.HandleEvent(PowerSupplyEvent.RaisePantograph, 1);
+                                SignalEvent(Event.PantographToggle);
+            }
+                        }
+                        break;
                 }
             }
 
@@ -4136,8 +4152,17 @@ namespace Orts.Simulation.RollingStocks
 
         }
 
+        /// <summary>
+        /// get power state value for sound stream controls
+        /// overriden by diesel and electric locomotives
+        /// </summary>
+
+        public virtual float GetPowerEventValue()
+        {
+            return (0);
     }
 
+    }
 
 
     /// <summary>
