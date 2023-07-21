@@ -1392,12 +1392,26 @@ namespace Orts.Viewer3D
                 {
                     float x = 0;
                     if (SoundSource.Car != null)
+                    {
                         x = ReadValue(MSTSStream.FrequencyCurve.Control, SoundSource.Car);
+                    }
                     else if (SoundSource.Viewer.Camera.AttachedCar != null)
+                    {
                         x = ReadValue(MSTSStream.FrequencyCurve.Control, (MSTSWagon)SoundSource.Viewer.Camera.AttachedCar);
+                    }
+
                     float y = Interpolate(x, MSTSStream.FrequencyCurve);
+
+                    // negative x : engine winding down or winding up with RPM < idle RPM
+                    if (MSTSStream.FrequencyCurve.Control == VolumeCurve.Controls.Variable2Controlled && x < 0)
+                    {
+                        y = -x * Interpolate(0, MSTSStream.FrequencyCurve);
+                    }
+
                     if (SoundSource.MstsMonoTreatment && ALSoundSource.MstsMonoTreatment)
+                    {
                         y *= 2;
+                    }
 
                     ALSoundSource.PlaybackSpeed = y / ALSoundSource.SampleRate;
                     NeedsFrequentUpdate = x != 0;
@@ -1407,6 +1421,7 @@ namespace Orts.Viewer3D
             float volume = SoundSource.Volume * Volume;
 
             if (MSTSStream != null && MSTSStream.VolumeCurves.Count > 0)
+            {
                 for (int i = 0; i < MSTSStream.VolumeCurves.Count; i++)
                 {
                     float x;
@@ -1417,8 +1432,18 @@ namespace Orts.Viewer3D
                     else
                         x = SoundSource.DistanceSquared;
 
-                    volume *= Interpolate(x, MSTSStream.VolumeCurves[i]);
+                    float volmultiplier = Interpolate(x, MSTSStream.VolumeCurves[i]);
+
+                    // negative x for variable2 : engine winding down or winding up with RPM < idle RPM
+
+                    if (MSTSStream.VolumeCurves[i].Control == VolumeCurve.Controls.Variable2Controlled && x < 0)
+                    {
+                        volmultiplier = -x * Interpolate(0, MSTSStream.VolumeCurves[i]);
                 }
+
+                    volume *= volmultiplier;
+                }
+            }
 
             if (SoundSource.IsExternal && SoundSource.Viewer.Camera.Style != Camera.Styles.External && !SoundSource.IsUnattenuated)
             {
@@ -1483,7 +1508,20 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.VolumeCurve.Controls.DistanceControlled: return SoundSource.DistanceSquared;
                 case Orts.Formats.Msts.VolumeCurve.Controls.SpeedControlled: return car.AbsSpeedMpS;
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable1Controlled: return car.Variable1;
-                case Orts.Formats.Msts.VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
+                case Orts.Formats.Msts.VolumeCurve.Controls.Variable2Controlled:
+                    {
+                        var returnvar = car.Variable2;
+                        if (car is MSTSDieselLocomotive)
+                        {
+                            var thisEngine = car as MSTSDieselLocomotive;
+                            if (thisEngine.DieselEngines[0].RealRPM < thisEngine.IdleRPM)
+                            {
+                                // ensure variable is <0 and >= -1 when engine is revving up or down
+                                returnvar = (-0.0001f - 0.9999f * (thisEngine.DieselEngines[0].RealRPM / thisEngine.IdleRPM));
+                            }
+                        }
+                        return (returnvar);
+                    }
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
                 case Orts.Formats.Msts.VolumeCurve.Controls.BrakeCylControlled: return car.BrakeSystem.GetCylPressurePSI();
                 case Orts.Formats.Msts.VolumeCurve.Controls.CurveForceControlled: return car.CurveForceNFiltered;
@@ -1918,6 +1956,7 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Power_Off:
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
@@ -1932,6 +1971,7 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Power_On:
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
@@ -2006,6 +2046,9 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
                     return car.CurveForceNFiltered;
+                case Orts.Formats.Msts.Variable_Trigger.Events.Power_On:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Power_Off:
+                    return car.GetPowerEventValue();
                 default:
                     return 0;
             }
