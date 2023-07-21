@@ -20,6 +20,7 @@ using System.IO;
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
+using Orts.Simulation.Timetables;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
@@ -164,7 +165,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Update(float elapsedSeconds)
         {
-            if (Locomotive.Train.TrainType == Train.TRAINTYPE.AI || Locomotive.Train.TrainType == Train.TRAINTYPE.AI_AUTOGENERATE
+            // processing for AI trains in timetable mode as circuit breaker may be opened for AI trains
+            if (Locomotive.Train.TrainType != Train.TRAINTYPE.PLAYER && Locomotive.Train is TTTrain)
+            {
+                CircuitBreakerState prevstate = State;
+                State = Locomotive.Pantographs.State == PantographState.Up ? CircuitBreakerState.Closed : CircuitBreakerState.Open;
+
+                if (prevstate != State)
+                {
+                    switch (State)
+                    {
+                        case CircuitBreakerState.Open:
+                            Locomotive.SignalEvent(Event.CircuitBreakerOpen);
+                            break;
+
+                        case CircuitBreakerState.Closed:
+                            Locomotive.SignalEvent(Event.CircuitBreakerClosed);
+                            break;
+                    }
+                }
+            }
+            else if (Locomotive.Train.TrainType == Train.TRAINTYPE.AI || Locomotive.Train.TrainType == Train.TRAINTYPE.AI_AUTOGENERATE
                 || Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
             {
                 State = CircuitBreakerState.Closed;
