@@ -1995,7 +1995,8 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 case Train.TRAINTYPE.AI:
                 case Train.TRAINTYPE.AI_PLAYERHOSTING:
-                    if (RemoteControlGroup != -1)
+                    // do not automatically switch on power for AI in timetable mode
+                    if (RemoteControlGroup != -1 && !Simulator.TimetableMode)
                     {
                         if (!LocomotivePowerSupply.MainPowerSupplyOn)
                             Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
@@ -2647,6 +2648,7 @@ public List<CabView> CabViewList = new List<CabView>();
         /// </summary>
         protected virtual void UpdateCompressor(float elapsedClockSeconds)
         {
+            bool powerstate = LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
 
             var reservoirChargingRate = MainResChargingRatePSIpS;
 
@@ -2685,8 +2687,21 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
             }
 
+            // for electrical engines controlled by control car, check power state of engine and not of control car
+            else if (!powerstate && EngineType == EngineTypes.Control)
+            {
+                foreach (var loco in Train.Cars.OfType<MSTSLocomotive>())
+                {
+                    if (loco.LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn)
+                    {
+                        powerstate = true;
+                        break;
+                    }
+                }
+            }
+
             // Turn compressor on and off
-            if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+            if (MainResPressurePSI < CompressorRestartPressurePSI && powerstate && !CompressorIsOn)
             {
                 SignalEvent(Event.CompressorOn);
                 foreach (var car in Train.Cars)
@@ -4693,6 +4708,33 @@ public List<CabView> CabViewList = new List<CabView>();
             LocomotivePowerSupply.HandleEvent(toState ? PowerSupplyEvent.QuickPowerOn : PowerSupplyEvent.QuickPowerOff);
         }
 
+        public void SetPowerConditionalPantographs()
+        {
+            LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.QuickPowerOnConditional);
+        }
+
+        public void SetPowerOffPantoUp()
+        {
+            LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.QuickPowerOffPantoUp);
+        }
+
+        public void SetPowerForced(bool toState)
+        {
+            // in preupdate, just switch on the engines
+            LocomotivePowerSupply.HandleEvent(toState ? PowerSupplyEvent.ForcedPowerOn : PowerSupplyEvent.ForcedPowerOff);
+        }
+
+        public void SetPowerForcedConditionalPantographs()
+        {
+            LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.ForcedPowerOnConditional);
+        }
+
+        public void SetPowerForcedOffPantoUp()
+        {
+            // in preupdate, just switch on the engines
+            LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.ForcedPowerOffPantoUp);
+        }
+
         internal void ToggleMUCommand(bool ToState)
         {
             RemoteControlGroup = ToState ? 0 : -1;
@@ -5859,6 +5901,26 @@ public List<CabView> CabViewList = new List<CabView>();
         /// To be overridden by MSTSSteamLocomotive and MSTSDieselLocomotive.
         /// </summary>
         public virtual void RefillImmediately()
+        {
+        }
+
+        /// <summary>
+        /// To be overriden by MSTSDieselLocomotive and MSTSElectricLocomotive
+        /// Checks if engine(s) has (have) required power state
+        /// </summary>
+        /// <param name="reqState"> : true if PowerOn required</param>
+        /// <returns>true if engine(s) has (have) required power state</returns>
+        /// default : returns power on
+        public virtual bool HasRequiredEngineState(bool reqState)
+        {
+            return (reqState);
+        }
+
+        /// <summary>
+        /// To be overriden by MSTSDieselLocomotive and MSTSElectricLocomotive
+        /// Updates engine state only
+        /// </summary>
+        public virtual void UpdateEngineState(float elapsedClockSeconds)
         {
         }
 
