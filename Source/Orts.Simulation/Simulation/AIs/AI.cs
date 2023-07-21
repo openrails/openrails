@@ -774,7 +774,7 @@ namespace Orts.Simulation.AIs
                             {
                                 TTTrain trainTT = train as TTTrain;
                                 int presentTime = Convert.ToInt32(Math.Floor(clockTime));
-                                trainTT.UpdateAIStaticState(presentTime);
+                                trainTT.UpdateAIStaticState(presentTime, intervalTime);
                             }
                         }
 
