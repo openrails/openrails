@@ -171,6 +171,8 @@ namespace Orts.Simulation.Timetables
 
         public string PoolName = String.Empty;
         public bool ForceCreation;
+        public bool PowerOff;                                 // engines are stored with power switched off
+        public bool PantoUp;                                  // electric engines keep panto up   
 
         public struct PoolDetails
         {
@@ -287,6 +289,8 @@ namespace Orts.Simulation.Timetables
         {
             PoolName = inf.ReadString();
             ForceCreation = inf.ReadBoolean();
+            PowerOff = inf.ReadBoolean();
+            PantoUp = inf.ReadBoolean();
 
             int noPools = inf.ReadInt32();
             for (int iPool = 0; iPool < noPools; iPool++)
@@ -356,6 +360,8 @@ namespace Orts.Simulation.Timetables
         {
             outf.Write(PoolName);
             outf.Write(ForceCreation);
+            outf.Write(PowerOff);
+            outf.Write(PantoUp);
 
             outf.Write(StoragePool.Count);
 
@@ -423,6 +429,8 @@ namespace Orts.Simulation.Timetables
             string storagePathName = String.Copy(inputLine[1]);
 
             int? maxStoredUnits = null;
+            bool poweroff = false;
+            bool pantoup = false;
 
             lineindex++;
             inputLine = fileContents.Strings[lineindex];
@@ -487,6 +495,14 @@ namespace Orts.Simulation.Timetables
                             {
                                 switch (inputLine[nextfield].ToLower().Trim())
                                 {
+                                    case "poweroff":
+                                        poweroff = true;
+                                        break;
+
+                                    case "pantoup":
+                                        pantoup = true;
+                                        break;
+
                                     default:
                                         break;
                                 }
@@ -518,6 +534,8 @@ namespace Orts.Simulation.Timetables
             newPool.StorageLength = 0.0f;
             newPool.RemLength = 0.0f;
             newPool.maxStoredUnits = maxStoredUnits;
+            PowerOff = poweroff;
+            PantoUp = pantoup;
 
             bool pathValid = true;
             TimetableInfo TTInfo = new TimetableInfo(simulatorref);
@@ -1445,7 +1463,8 @@ namespace Orts.Simulation.Timetables
             Trace.TraceInformation("Pool : {0} : train {1} extracted as {2}", PoolName, selectedTrain.Name, train.Name);
 #endif
             // set details for new train from existing train
-            bool validFormed = train.StartFromAITrain(selectedTrain, presentTime, occupiedSections);
+            bool reversed = false;
+            bool validFormed = train.StartFromAITrain(selectedTrain, presentTime, occupiedSections, out reversed);
 
             if (validFormed)
             {
@@ -1558,6 +1577,30 @@ namespace Orts.Simulation.Timetables
 
                     train.TrainType = Train.TRAINTYPE.AI;
                     train.AI.TrainsToAdd.Add(train);
+
+                    // switch power
+                    int poweroffdelay = 0;
+                    if (reversed && train.HasDirectionalPantographs)
+                    // reversed and if train has directional pantographs, switch power off and on unless power off is set
+                    {
+                        // if power is on, switch off otherwise only switch on
+                        if (train.PowerState)
+                        {
+                            poweroffdelay = 10 + Simulator.Random.Next(20);
+                            train.SetRequiredPowerChange(TTTrain.PowerActionType.Off, poweroffdelay, null);
+                }
+                        poweroffdelay += 30 + Simulator.Random.Next(10);
+                        train.SetRequiredPowerChange(TTTrain.PowerActionType.On, poweroffdelay, null);
+                    }
+                    else if (!train.PowerState)
+                    // set power on
+                    {
+                        poweroffdelay = train.FormedPowerOffDelay + Simulator.Random.Next(30);
+                        train.SetRequiredPowerChange(TTTrain.PowerActionType.On, poweroffdelay, null);
+                    }
+
+                    // delay start movement until power is on
+                    train.RestdelayS += poweroffdelay;
                 }
 
                 train.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
