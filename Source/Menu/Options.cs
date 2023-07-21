@@ -440,6 +440,8 @@ namespace ORTS
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = !checkEnableTCSScripts.Checked; // Inverted as "Enable scripts" is better UI than "Disable scripts"
+            Settings.AutoSaveActive = checkAutoSaveActive.Checked;
+            Settings.AutoSaveInterval = ButtonAutoSave15.Checked ? 15 : ButtonAutoSave30.Checked ? 30 : 60;
 
             // Audio tab
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
@@ -798,6 +800,56 @@ namespace ORTS
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
 
+        private void checkAutoSave_checkchanged(object sender, EventArgs e)
+        {
+            if (checkAutoSaveActive.Checked)
+            {
+                ButtonAutoSave15.Enabled = true;
+                ButtonAutoSave15.Checked = Settings.AutoSaveInterval == 15;
+                ButtonAutoSave30.Enabled = true;
+                ButtonAutoSave30.Checked = Settings.AutoSaveInterval == 30;
+                ButtonAutoSave60.Enabled = true;
+                ButtonAutoSave60.Checked = Settings.AutoSaveInterval == 60;
+            }
+            else
+            {
+                ButtonAutoSave15.Checked = false;
+                ButtonAutoSave15.Enabled = false;
+                ButtonAutoSave30.Checked = false;
+                ButtonAutoSave30.Enabled = false;
+                ButtonAutoSave60.Checked = false;
+                ButtonAutoSave60.Enabled = false;
+            }
+        }
+
+        private void buttonAutoSaveInterval_checkchanged(object sender, EventArgs e)
+        {
+            if (ButtonAutoSave15.Checked)
+            {
+                Settings.AutoSaveInterval = 15;
+                ButtonAutoSave30.Checked = false;
+                ButtonAutoSave60.Checked = false;
+            }
+            else if (ButtonAutoSave30.Checked)
+            {
+                Settings.AutoSaveInterval = 30;
+                ButtonAutoSave15.Checked = false;
+                ButtonAutoSave60.Checked = false;
+            }
+            else if (ButtonAutoSave60.Checked)
+            {
+                Settings.AutoSaveInterval = 60;
+                ButtonAutoSave15.Checked = false;
+                ButtonAutoSave30.Checked = false;
+            }
+            else
+            {
+                Settings.AutoSaveInterval = 15;
+                ButtonAutoSave30.Checked = false;
+                ButtonAutoSave60.Checked = false;
+            }
+        }
+
         #region Help for Options
         // The icons all share the same code which assumes they are named according to a simple scheme as follows:
         //   1. To add a new Help Icon, copy an existing one and paste it onto the tab.
@@ -1081,5 +1133,6 @@ namespace ORTS
                 hover.Leave();
         }
         #endregion
+
     }
 }
