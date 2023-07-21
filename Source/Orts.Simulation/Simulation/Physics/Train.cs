@@ -548,6 +548,27 @@ namespace Orts.Simulation.Physics
             return WagonsAttached;
         }
 
+        public virtual bool GetPantoIndication()
+        {
+            bool haspanto = false;
+            foreach (var car in Cars)
+            {
+                if (car is MSTSWagon)
+                {
+                    MSTSWagon wagon = car as MSTSWagon;
+                    if (wagon.Pantographs != null && wagon.Pantographs.Count > 0)
+                    {
+                        if (wagon.Pantographs.State >= PantographState.Raising)
+                        {
+                            haspanto = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            return (haspanto);
+        }
+
         //================================================================================================//
         //
         // Constructor
@@ -1858,7 +1879,7 @@ namespace Orts.Simulation.Physics
             if (GetAIMovementState() == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
             {
                 int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
-                UpdateAIStaticState(presentTime);
+                UpdateAIStaticState(presentTime, elapsedClockSeconds);
             }
 
             if (TrainType == TRAINTYPE.STATIC)
@@ -16169,7 +16190,7 @@ namespace Orts.Simulation.Physics
         /// <summary>
         /// Update AI Static state - dummy method to allow virtualization by child classes
         /// </summary>
-        public virtual void UpdateAIStaticState(int presentTime)
+        public virtual void UpdateAIStaticState(int presentTime, float elapsedClockSeconds)
         {
         }
 
