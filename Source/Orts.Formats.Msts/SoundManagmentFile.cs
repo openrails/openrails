@@ -338,8 +338,23 @@ namespace Orts.Formats.Msts
 
     public class Variable_Trigger : Trigger
     {
-        public enum Events { Speed_Inc_Past, Speed_Dec_Past, Distance_Inc_Past, Distance_Dec_Past,
-        Variable1_Inc_Past, Variable1_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past
+        public enum Events { 
+            Speed_Inc_Past, 
+            Speed_Dec_Past, 
+            Distance_Inc_Past, 
+            Distance_Dec_Past,
+            Variable1_Inc_Past, 
+            Variable1_Dec_Past, 
+            Variable2_Inc_Past, 
+            Variable2_Dec_Past, 
+            Variable3_Inc_Past, 
+            Variable3_Dec_Past, 
+            BrakeCyl_Inc_Past, 
+            BrakeCyl_Dec_Past, 
+            CurveForce_Inc_Past, 
+            CurveForce_Dec_Past,
+            Power_On,
+            Power_Off,
         };
 
         public Events Event;
@@ -379,6 +394,18 @@ namespace Orts.Formats.Msts
                 case "brakecyl_dec_past": Event = Events.BrakeCyl_Dec_Past; break;
                 case "curveforce_inc_past": Event = Events.CurveForce_Inc_Past; break;
                 case "curveforce_dec_past": Event = Events.CurveForce_Dec_Past; break;
+                case "power_on":
+                    {
+                        Event = Events.Power_On;
+                        Threshold = 0.5f;
+            }
+                    break;
+                case "power_off":
+                    {
+                        Event = Events.Power_Off;
+                        Threshold = 0.5f;
+                    }
+                    break;
             }
 
            
