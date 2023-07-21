@@ -28,6 +28,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.AIs;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -57,6 +58,12 @@ namespace Orts.Viewer3D
         public bool CarCoupledFront;
         public bool CarCoupledRear;
         public bool CarBatteryOn;
+        public bool TrainPowerOn;
+        public bool SpecialLightsSelected;
+
+        public SpecialLightsCondition SpecialLights;
+        public List<string> SpecialLightsSelection = new List<string>();
+
 
         public bool IsLightConeActive { get { return ActiveLightCone != null; } }
         List<LightPrimitive> LightPrimitives = new List<LightPrimitive>();
@@ -141,7 +148,9 @@ namespace Orts.Viewer3D
             if (UpdateState())
             {
                 foreach (var lightPrimitive in LightPrimitives)
+                {
                     lightPrimitive.UpdateState(this);
+                }
 #if DEBUG_LIGHT_STATES
                 Console.WriteLine();
 #endif
@@ -244,8 +253,42 @@ namespace Orts.Viewer3D
             // Coupling
             var newCarCoupledFront = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.LastCar : Car.Train.FirstCar) != Car);
             var newCarCoupledRear = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.FirstCar : Car.Train.LastCar) != Car);
-            // Nattery
+            // Battery
             var newCarBatteryOn = Car is MSTSWagon wagon ? wagon.PowerSupply?.BatteryState == PowerSupplyState.PowerOn : true;
+            // Train power (for AI trains only, for player train PowerOn is always assumed)
+            bool newPowerOn = Car.Train is AITrain AIt ? AIt.PowerState : true;
+
+            // Special Lights
+            var newSpecialLights = Car.SpecialLights;
+            List<string> newSpecialLightsSelection = new List<string>(Car.SpecialLightSelection);
+
+            // test change in special lights list
+
+            var specialLightsChanged = false;
+            if (newSpecialLights != SpecialLights)
+            {
+                specialLightsChanged = true;
+            }
+            else if (newSpecialLights == SpecialLightsCondition.Special_additional || newSpecialLights == SpecialLightsCondition.Special_only)
+            {
+                if (newSpecialLightsSelection.Count != SpecialLightsSelection.Count)
+                {
+                    specialLightsChanged = true;
+                }
+                else
+                {
+                    List<string> tempSpecialLightSelection = new List<string>(newSpecialLightsSelection);
+                    for (int i = SpecialLightsSelection.Count - 1; i >= 0; i--)
+                    {
+                        if (tempSpecialLightSelection.Contains(SpecialLightsSelection[i]))
+                        {
+                            tempSpecialLightSelection.Remove(tempSpecialLightSelection[i]);
+                            SpecialLightsSelection.RemoveAt(i);
+                        }
+                    }
+                    specialLightsChanged = (tempSpecialLightSelection.Count > 0 || SpecialLightsSelection.Count > 0);
+                }
+            }
 
             if (
                 (TrainHeadlight != newTrainHeadlight) ||
@@ -259,7 +302,10 @@ namespace Orts.Viewer3D
                 (Weather != newWeather) ||
                 (CarCoupledFront != newCarCoupledFront) ||
                 (CarCoupledRear != newCarCoupledRear) ||
-                (CarBatteryOn != newCarBatteryOn))
+                (CarBatteryOn != newCarBatteryOn) ||
+                (CarBatteryOn != newCarBatteryOn) ||
+                (TrainPowerOn != newPowerOn) ||
+                specialLightsChanged)
             {
                 TrainHeadlight = newTrainHeadlight;
                 CarIsReversed = newCarIsReversed;
@@ -273,6 +319,9 @@ namespace Orts.Viewer3D
                 CarCoupledFront = newCarCoupledFront;
                 CarCoupledRear = newCarCoupledRear;
                 CarBatteryOn = newCarBatteryOn;
+                TrainPowerOn = newPowerOn;
+                SpecialLights = newSpecialLights;
+                SpecialLightsSelection = newSpecialLightsSelection;
 
 #if DEBUG_LIGHT_STATES
                 Console.WriteLine();
@@ -351,9 +400,72 @@ namespace Orts.Viewer3D
         internal void UpdateState(LightViewer lightViewer)
         {
             var oldEnabled = Enabled;
-            Enabled = true;
-            if (Light.Headlight != LightHeadlightCondition.Ignore)
+            Enabled = lightViewer.SpecialLights != SpecialLightsCondition.Off;
+
+            // check conditions which always apply
+            if (Enabled && Light.Unit != LightUnitCondition.Ignore)
             {
+                if (Light.Unit == LightUnitCondition.Middle)
+                    Enabled &= !lightViewer.CarIsFirst && !lightViewer.CarIsLast;
+                else if (Light.Unit == LightUnitCondition.First)
+                    Enabled &= lightViewer.CarIsFirst && !lightViewer.CarIsReversed;
+                else if (Light.Unit == LightUnitCondition.Last)
+                    Enabled &= lightViewer.CarIsLast && !lightViewer.CarIsReversed;
+                else if (Light.Unit == LightUnitCondition.LastRev)
+                    Enabled &= lightViewer.CarIsLast && lightViewer.CarIsReversed;
+                else if (Light.Unit == LightUnitCondition.FirstRev)
+                    Enabled &= lightViewer.CarIsFirst && lightViewer.CarIsReversed;
+                else
+                    Enabled &= false;
+            }
+            if (Enabled && Light.TimeOfDay != LightTimeOfDayCondition.Ignore)
+            {
+                if (Light.TimeOfDay == LightTimeOfDayCondition.Day)
+                    Enabled &= lightViewer.IsDay;
+                else if (Light.TimeOfDay == LightTimeOfDayCondition.Night)
+                    Enabled &= !lightViewer.IsDay;
+                else
+                    Enabled &= false;
+            }
+            if (Enabled && Light.Weather != LightWeatherCondition.Ignore)
+            {
+                if (Light.Weather == LightWeatherCondition.Clear)
+                    Enabled &= lightViewer.Weather == WeatherType.Clear;
+                else if (Light.Weather == LightWeatherCondition.Rain)
+                    Enabled &= lightViewer.Weather == WeatherType.Rain;
+                else if (Light.Weather == LightWeatherCondition.Snow)
+                    Enabled &= lightViewer.Weather == WeatherType.Snow;
+                else
+                    Enabled &= false;
+            }
+            if (Enabled && Light.Coupling != LightCouplingCondition.Ignore)
+            {
+                if (Light.Coupling == LightCouplingCondition.Front)
+                    Enabled &= lightViewer.CarCoupledFront && !lightViewer.CarCoupledRear;
+                else if (Light.Coupling == LightCouplingCondition.Rear)
+                    Enabled &= !lightViewer.CarCoupledFront && lightViewer.CarCoupledRear;
+                else if (Light.Coupling == LightCouplingCondition.Both)
+                    Enabled &= lightViewer.CarCoupledFront && lightViewer.CarCoupledRear;
+                else
+                    Enabled &= false;
+            }
+            if (Enabled && Light.TrainPower != LightPowerCondition.Ignore)
+            {
+                if (Light.TrainPower == LightPowerCondition.On)
+                    Enabled &= lightViewer.TrainPowerOn;
+                else if (Light.TrainPower == LightPowerCondition.Off)
+                    Enabled &= !lightViewer.TrainPowerOn;
+                else
+                    Enabled &= false;
+            }
+
+            // check conditions which apply for normal and special_additional
+
+            if (Enabled && lightViewer.SpecialLights == SpecialLightsCondition.Normal || lightViewer.SpecialLights == SpecialLightsCondition.Special_additional)
+            {
+
+                if (Enabled && Light.Headlight != LightHeadlightCondition.Ignore)
+                {
                 if (Light.Headlight == LightHeadlightCondition.Off)
                     Enabled &= lightViewer.TrainHeadlight == 0;
                 else if (Light.Headlight == LightHeadlightCondition.Dim)
@@ -369,7 +481,7 @@ namespace Orts.Viewer3D
                 else
                     Enabled &= false;
             }
-            if (Light.Unit != LightUnitCondition.Ignore)
+                if (Enabled && Light.Unit != LightUnitCondition.Ignore)
             {
                 if (Light.Unit == LightUnitCondition.Middle)
                     Enabled &= !lightViewer.CarIsFirst && !lightViewer.CarIsLast;
@@ -384,7 +496,7 @@ namespace Orts.Viewer3D
                 else
                     Enabled &= false;
             }
-            if (Light.Penalty != LightPenaltyCondition.Ignore)
+                if (Enabled && Light.Penalty != LightPenaltyCondition.Ignore)
             {
                 if (Light.Penalty == LightPenaltyCondition.No)
                     Enabled &= !lightViewer.Penalty;
@@ -393,7 +505,7 @@ namespace Orts.Viewer3D
                 else
                     Enabled &= false;
             }
-            if (Light.Control != LightControlCondition.Ignore)
+                if (Enabled && Light.Control != LightControlCondition.Ignore)
             {
                 if (Light.Control == LightControlCondition.AI)
                     Enabled &= !lightViewer.CarIsPlayer;
@@ -402,7 +514,7 @@ namespace Orts.Viewer3D
                 else
                     Enabled &= false;
             }
-            if (Light.Service != LightServiceCondition.Ignore)
+                if (Enabled && Light.Service != LightServiceCondition.Ignore)
             {
                 if (Light.Service == LightServiceCondition.No)
                     Enabled &= !lightViewer.CarInService;
@@ -411,7 +523,7 @@ namespace Orts.Viewer3D
                 else
                     Enabled &= false;
             }
-            if (Light.TimeOfDay != LightTimeOfDayCondition.Ignore)
+                if (Enabled && Light.TimeOfDay != LightTimeOfDayCondition.Ignore)
             {
                 if (Light.TimeOfDay == LightTimeOfDayCondition.Day)
                     Enabled &= lightViewer.IsDay;
@@ -420,7 +532,7 @@ namespace Orts.Viewer3D
                 else
                     Enabled &= false;
             }
-            if (Light.Weather != LightWeatherCondition.Ignore)
+                if (Enabled && Light.Weather != LightWeatherCondition.Ignore)
             {
                 if (Light.Weather == LightWeatherCondition.Clear)
                     Enabled &= lightViewer.Weather == WeatherType.Clear;
@@ -431,7 +543,7 @@ namespace Orts.Viewer3D
                 else
                     Enabled &= false;
             }
-            if (Light.Coupling != LightCouplingCondition.Ignore)
+                if (Enabled && Light.Coupling != LightCouplingCondition.Ignore)
             {
                 if (Light.Coupling == LightCouplingCondition.Front)
                     Enabled &= lightViewer.CarCoupledFront && !lightViewer.CarCoupledRear;
@@ -442,7 +554,7 @@ namespace Orts.Viewer3D
                 else
                     Enabled &= false;
             }
-            if (Light.Battery != LightBatteryCondition.Ignore)
+                if (Enabled && Light.Battery != LightBatteryCondition.Ignore)
             {
                 if (Light.Battery == LightBatteryCondition.On)
                     Enabled &= lightViewer.CarBatteryOn;
@@ -452,11 +564,25 @@ namespace Orts.Viewer3D
                     Enabled &= false;
             }
 
+
+                // if light setting is normal and this is special light, disable
+                if (Enabled && lightViewer.SpecialLights == SpecialLightsCondition.Normal && !String.IsNullOrEmpty(Light.ORTSSpecialLight))
+                {
+                    Enabled &= false;
+                }
+
+                // check conditions for special
+                if (Enabled && (lightViewer.SpecialLights == SpecialLightsCondition.Special_only || lightViewer.SpecialLights == SpecialLightsCondition.Special_additional))
+                {
+                    Enabled &= lightViewer.SpecialLightsSelection.Contains(Light.ORTSSpecialLight);
+                }
+
             if (oldEnabled != Enabled)
             {
                 FadeIn = Enabled;
                 FadeOut = !Enabled;
                 FadeTime = 0;
+            }
             }
 
 #if DEBUG_LIGHT_STATES
