@@ -69,6 +69,23 @@ namespace Orts.Simulation.Timetables
         public string CreateFromPool = String.Empty;        // train is to be created from pool
         public TimetablePool.PoolExitDirectionEnum CreatePoolDirection = TimetablePool.PoolExitDirectionEnum.Undefined;
                                                             // required direction on leaving pool (if applicable)
+
+        public enum PowerActionType
+        {
+            On,
+            Off_PantoUp,
+            Off,
+        }
+
+        public PowerActionType PowerOffOnCreate = PowerActionType.On;    // power state on create
+
+        public struct PowerAction                           // struct for power actions
+        {
+            public PowerActionType RequiredPowerAction;     // required action for power if delayed power action required
+            public double PowerActionDelay;                 // required time for power action
+        }
+        public List<PowerAction> PowerActionRequired = new List<PowerAction>(); // list with required power actions
+
         public string ForcedConsistName = String.Empty;     // forced consist name for extraction from pool
 
         public string ttanalysisreport = String.Empty;      // string holding last analysis report, to avoid continouos output of same string
@@ -113,6 +130,10 @@ namespace Orts.Simulation.Timetables
         public bool SetStop = false;                                      //indicates train must copy station stop from formed train
         public bool FormsAtStation = false;                               //indicates train must form into next service at last station, route must be curtailed to that stop
         public bool leadLocoAntiSlip = false;                             //anti slip indication for original leading engine
+        public PowerActionType PowerOffOnFormed = PowerActionType.On;     //indicates required power state on forms
+        public int FormedPowerOffDelay = 0;                               //power off delay on formed
+        public bool HasDirectionalPantographs = false;                    //train has engines or wagons with directional pantographs
+        public bool NoPantoSwitchOnReverse = false;                       //train will not switch pantos when reversing
 
         // detach details
         public Dictionary<int, List<DetachInfo>> DetachDetails = new Dictionary<int, List<DetachInfo>>();
@@ -125,6 +146,7 @@ namespace Orts.Simulation.Timetables
 
         // attach details
         public AttachInfo AttachDetails;                                  // attach details
+        public bool AttachOnForms;                                        // attach takes place as train forms new train
         public Dictionary<int, List<int>> NeedAttach = new Dictionary<int, List<int>>();
         // key is platform reference or -1 for attach to static train, list are trains which are to attach
 
@@ -214,6 +236,10 @@ namespace Orts.Simulation.Timetables
         public List<TriggerActivation> activatedTrainTriggers = new List<TriggerActivation>();
         public string Briefing { get; set; } = "";
 
+        public SpecialLightsCondition[] TrainSpecialLights = new SpecialLightsCondition[(int)SpecialLightsPhase.LastEntry];  // special light selection
+        public List<string>[] TrainSpecialLightSelection = new List<string>[(int)SpecialLightsPhase.LastEntry];              // special lights set through timetable commands
+                                                                                                                             // [0] = prestart, [1] = active, [2] = postform (using SpecialLightsPhase enum)
+
         //================================================================================================//
         /// <summary>
         /// Constructor
@@ -259,6 +285,12 @@ namespace Orts.Simulation.Timetables
             SpeedSettings.detachSpeedMpS = null;
             SpeedSettings.movingtableSpeedMpS = null;
             SpeedSettings.restrictedSet = false;
+
+            for (int i = 0; i <= (int)SpecialLightsPhase.PostForms; i++)
+            {
+                TrainSpecialLights[i] = SpecialLightsCondition.Normal;
+                TrainSpecialLightSelection[i] = new List<string>();
+        }
         }
 
         //================================================================================================//
@@ -285,6 +317,13 @@ namespace Orts.Simulation.Timetables
 
             // copy speed values
             SpeedSettings = TTrain.SpeedSettings;
+
+            // preset light conditions
+            for (int i = 0; i <= (int)SpecialLightsPhase.PostForms; i++)
+            {
+                TrainSpecialLights[i] = SpecialLightsCondition.Normal;
+                TrainSpecialLightSelection[i] = new List<string>();
+        }
         }
 
         //================================================================================================//
@@ -303,6 +342,19 @@ namespace Orts.Simulation.Timetables
             CreateInPool = inf.ReadString();
             ForcedConsistName = inf.ReadString();
             CreatePoolDirection = (TimetablePool.PoolExitDirectionEnum)inf.ReadInt32();
+
+            PowerOffOnCreate = (PowerActionType)inf.ReadInt32();
+
+            PowerActionRequired = new List<PowerAction>();
+            int powerActions = inf.ReadInt32();
+
+            for (int i = 0; i < powerActions; i++)
+            {
+                PowerAction thisAction = new PowerAction();
+                thisAction.RequiredPowerAction = (PowerActionType)inf.ReadInt32();
+                thisAction.PowerActionDelay = inf.ReadDouble();
+                PowerActionRequired.Add(thisAction);
+            }
 
             MaxAccelMpSSP = inf.ReadSingle();
             MaxAccelMpSSF = inf.ReadSingle();
@@ -384,6 +436,10 @@ namespace Orts.Simulation.Timetables
             OrgAINumber = inf.ReadInt32();
             SetStop = inf.ReadBoolean();
             FormsAtStation = inf.ReadBoolean();
+            PowerOffOnFormed = (PowerActionType)inf.ReadInt32();
+            FormedPowerOffDelay = inf.ReadInt32();
+            HasDirectionalPantographs = inf.ReadBoolean();
+            NoPantoSwitchOnReverse = inf.ReadBoolean();
 
             int totalDetachLists = inf.ReadInt32();
             DetachDetails = new Dictionary<int, List<DetachInfo>>();
@@ -413,6 +469,8 @@ namespace Orts.Simulation.Timetables
             {
                 AttachDetails = new AttachInfo(inf);
             }
+
+            AttachOnForms = inf.ReadBoolean();
 
             PickUpTrains = new List<int>();
             int totalPickUpTrains = inf.ReadInt32();
@@ -597,6 +655,18 @@ namespace Orts.Simulation.Timetables
 
             Briefing = inf.ReadString();
 
+            for (int il = 0; il <= (int)SpecialLightsPhase.PostForms; il++)
+            {
+                TrainSpecialLights[il] = (SpecialLightsCondition)inf.ReadInt32();
+                TrainSpecialLightSelection[il] = new List<string>();
+
+                int SpecialLightLength = inf.ReadInt32();
+                for (int i = 0; i < SpecialLightLength; i++)
+                {
+                    TrainSpecialLightSelection[il].Add(inf.ReadString());
+                }
+            }
+
             // reset actions if train is active
             bool activeTrain = true;
 
@@ -610,7 +680,31 @@ namespace Orts.Simulation.Timetables
 
             if (activeTrain)
             {
+                SpecialLightsPhase runphase = SpecialLightsPhase.Active;
+
+                // copy light conditions to all cars
+                foreach (var car in Cars)
+                {
+                    car.SpecialLights = TrainSpecialLights[(int)runphase];
+                    car.SpecialLightSelection = TrainSpecialLightSelection[(int)runphase];
+                }
+
                 ResetActions(true);
+            }
+            else
+            {
+                // copy light information to all cars
+                SpecialLightsPhase runphase = SpecialLightsPhase.Active;
+                if (MovementState == AI_MOVEMENT_STATE.AI_STATIC)
+                {
+                    runphase = (StartTime.HasValue && StartTime.Value > AI.clockTime) ? SpecialLightsPhase.PreStart : SpecialLightsPhase.PostForms;
+        }
+
+                foreach (var car in Cars)
+                {
+                    car.SpecialLights = TrainSpecialLights[(int)runphase];
+                    car.SpecialLightSelection = TrainSpecialLightSelection[(int)runphase];
+                }
             }
         }
 
@@ -661,6 +755,15 @@ namespace Orts.Simulation.Timetables
             outf.Write(CreateInPool);
             outf.Write(ForcedConsistName);
             outf.Write((int)CreatePoolDirection);
+
+            outf.Write((int)PowerOffOnCreate);
+
+            outf.Write(PowerActionRequired.Count);
+            foreach (PowerAction thisAction in PowerActionRequired)
+            {
+                outf.Write((int)thisAction.RequiredPowerAction);
+                outf.Write(thisAction.PowerActionDelay);
+            }
 
             outf.Write(MaxAccelMpSSP);
             outf.Write(MaxAccelMpSSF);
@@ -751,6 +854,10 @@ namespace Orts.Simulation.Timetables
             outf.Write(OrgAINumber);
             outf.Write(SetStop);
             outf.Write(FormsAtStation);
+            outf.Write((int)PowerOffOnFormed);
+            outf.Write(FormedPowerOffDelay);
+            outf.Write(HasDirectionalPantographs);
+            outf.Write(NoPantoSwitchOnReverse);
 
             outf.Write(DetachDetails.Count);
             foreach (KeyValuePair<int, List<DetachInfo>> thisDetachInfo in DetachDetails)
@@ -777,6 +884,8 @@ namespace Orts.Simulation.Timetables
                 outf.Write(true);
                 AttachDetails.Save(outf);
             }
+
+            outf.Write(AttachOnForms);
 
             outf.Write(PickUpTrains.Count);
             foreach (int thisTrainNumber in PickUpTrains)
@@ -905,6 +1014,16 @@ namespace Orts.Simulation.Timetables
             outf.Write(DriverOnlyOperation);
             outf.Write(ForceReversal);
             outf.Write(Briefing);
+
+            for (int il = 0; il <= (int)SpecialLightsPhase.PostForms; il++)
+            {
+                outf.Write((int)TrainSpecialLights[il]);
+                outf.Write(TrainSpecialLightSelection[il].Count);
+                foreach (var i in TrainSpecialLightSelection[il])
+                {
+                    outf.Write(i);
+        }
+            }
         }
 
 
@@ -1261,12 +1380,25 @@ namespace Orts.Simulation.Timetables
                      StationStops[0].PlatformItem.Name + "\n");
 #endif
                     }
+
+                    foreach (var car in Cars)
+                    {
+                        car.SpecialLights = TrainSpecialLights[(int)SpecialLightsPhase.Active];
+                        car.SpecialLightSelection = TrainSpecialLightSelection[(int)SpecialLightsPhase.Active];
+                }
                 }
                 // start train as static
                 else
                 {
                     MovementState = AI_MOVEMENT_STATE.AI_STATIC;   // start in STATIC mode until required activate time
+
+                    // set correct light states
+                    foreach (var car in Cars)
+                    {
+                        car.SpecialLights = TrainSpecialLights[(int)SpecialLightsPhase.PreStart];
+                        car.SpecialLightSelection = TrainSpecialLightSelection[(int)SpecialLightsPhase.PreStart];
                 }
+            }
             }
 
             if (CheckTrain)
@@ -2455,8 +2587,10 @@ namespace Orts.Simulation.Timetables
         /// <param name="otherTrain"></param>
         /// <returns></returns>
 
-        public bool StartFromAITrain(TTTrain otherTrain, int presentTime, TrackCircuitSection[] occupiedTrack)
+        public bool StartFromAITrain(TTTrain otherTrain, int presentTime, TrackCircuitSection[] occupiedTrack, out bool reversed)
         {
+            reversed = false;
+
             // check if new train has route at present position of front of train
             int usedRefPosition = 0;
             int startPositionIndex = TCRoute.TCRouteSubpaths[0].GetRouteIndex(otherTrain.PresentPosition[0].TCSectionIndex, 0);
@@ -2504,6 +2638,7 @@ namespace Orts.Simulation.Timetables
                 Length = otherTrain.Length;
                 MassKg = otherTrain.MassKg;
                 LeadLocomotiveIndex = otherTrain.LeadLocomotiveIndex;
+                HasDirectionalPantographs = otherTrain.HasDirectionalPantographs;
 
                 // copy other train speed if not restricted for either train
                 if (!otherTrain.SpeedSettings.restrictedSet && !SpeedSettings.restrictedSet)
@@ -2522,6 +2657,7 @@ namespace Orts.Simulation.Timetables
                 if (TCRoute.TCRouteSubpaths[0][usedPositionIndex].Direction != otherTrain.PresentPosition[usedRefPosition].TCDirection)
                 {
                     ReverseFormation(false);
+                    reversed = (otherTrain.TrainType != TRAINTYPE.PLAYER && otherTrain.TrainType != TRAINTYPE.INTENDED_PLAYER);
 
                     // if reversal is required and units must be detached at start : reverse detached units position
                     if (DetachDetails.ContainsKey(-1))
@@ -2655,6 +2791,18 @@ namespace Orts.Simulation.Timetables
 
             CalculatePositionOfCars(elapsedClockSeconds, distanceM);
 
+            CheckPowerChange();
+
+            // update engine state for all engines in consist
+            foreach (var car in Cars)
+            {
+                if (car is MSTSLocomotive)
+                {
+                    MSTSLocomotive loco = car as MSTSLocomotive;
+                    loco.UpdateEngineState(elapsedClockSeconds);
+                }
+            }
+
             DistanceTravelledM += distanceM;
 
             // perform overall update
@@ -2760,12 +2908,15 @@ namespace Orts.Simulation.Timetables
             // Check to see if wagons are attached to train
             WagonsAttached = GetWagonsAttachedIndication();
 
+            // check if power change required
+            CheckPowerChange();
+
             //Exit here when train is static consist (no further actions required)
 
             if (GetAIMovementState() == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
             {
                 int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
-                UpdateAIStaticState(presentTime);
+                UpdateAIStaticState(presentTime, elapsedClockSeconds);
             }
 
             if (TrainType == TRAINTYPE.STATIC)
@@ -2860,6 +3011,29 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
         /// <summary>
+        /// Update trains in AIStatic mode
+        /// Override from AITrain
+        /// </summary>
+
+        public override void UpdateAIStatic(float elapsedClockSeconds)
+        {
+
+            CalculatePositionOfCars(0, 0);          //required to make train visible ; set elapsed time to zero to avoid actual movement
+
+            CheckPowerChange();                     // check if power change required
+
+            foreach (var car in Cars)               //loop through engines to set correct engine state
+            {
+                if (car is MSTSLocomotive)
+                {
+                    MSTSLocomotive loco = car as MSTSLocomotive;
+                    loco.UpdateEngineState(elapsedClockSeconds);
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// If approaching turntable and there is a train ahead, check if train is beyond turntable
         /// </summary>
 
@@ -2945,7 +3119,7 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         /// <param name="presentTime"></param>
 
-        public override void UpdateAIStaticState(int presentTime)
+        public override void UpdateAIStaticState(int presentTime, float elapsedClockSeconds)
         {
 #if DEBUG_CHECKTRAIN
             if (!CheckTrain)
@@ -2978,12 +3152,6 @@ namespace Orts.Simulation.Timetables
                 if (ActivateTime > (24 * 3600) && ActivateTime < presentTime) reqActivate = true;
             }
 
-            bool maystart = true;
-            if (TriggeredActivationRequired)
-            {
-                maystart = false;
-            }
-
             // check if anything needs to attach or transfer
             if (reqActivate)
             {
@@ -2993,7 +3161,6 @@ namespace Orts.Simulation.Timetables
                     if (needAttachList.Count > 0)
                     {
                         reqActivate = false;
-                        maystart = false;
                     }
                 }
 
@@ -3002,7 +3169,6 @@ namespace Orts.Simulation.Timetables
                     if (NeedTrainTransfer.ContainsKey(occSection.Index))
                     {
                         reqActivate = false;
-                        maystart = false;
                         break;
                     }
                 }
@@ -3061,16 +3227,7 @@ namespace Orts.Simulation.Timetables
                     File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
                 }
 
-                foreach (var car in Cars)
-                {
-                    if (car is MSTSLocomotive)
-                    {
-                        MSTSLocomotive loco = car as MSTSLocomotive;
-                        loco.SetPower(true);
-                    }
-                }
-                PowerState = true;
-
+                // intended player train
                 if (TrainType == TRAINTYPE.INTENDED_PLAYER)
                 {
                     if (CheckTrain)
@@ -3079,45 +3236,53 @@ namespace Orts.Simulation.Timetables
                     }
 
                     TrainType = TRAINTYPE.PLAYER;
-                }
-
                 PostInit(true);
-
-                if (TrainType == TRAINTYPE.PLAYER)
-                {
-                    SetupStationStopHandling();
                 }
-
-                return;
-            }
-
-            // switch off power for all engines until 20 secs before start
-
-            if (ActivateTime.HasValue && TrainHasPower() && maystart)
+                // AI train
+                else if (TrainType != TRAINTYPE.PLAYER)
             {
-                if (PowerState && ActivateTime.Value < (presentTime - 20))
-                {
+                    bool allEnginesOn = true;
+                    bool reqStart = false;
+
                     foreach (var car in Cars)
                     {
                         if (car is MSTSLocomotive)
                         {
                             MSTSLocomotive loco = car as MSTSLocomotive;
-                            loco.SetPower(false);
+                            if (loco.HasRequiredEngineState(false)) // engine is stopped
+                            {
+                                allEnginesOn = false;
+                                reqStart = true;
                         }
+                            else if (!loco.HasRequiredEngineState(true)) // engine not yet running
+                            {
+                                allEnginesOn = false;
+                                loco.UpdateEngineState(elapsedClockSeconds);
                     }
-                    PowerState = false;
                 }
-                else if (!PowerState) // switch power on 20 secs before start
+                    }
+
+                    if (CheckTrain)
                 {
-                    foreach (var car in Cars)
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() + " : start required : " + reqStart + " ; engines on : " + allEnginesOn + "\n");
+                    }
+
+                    if (reqStart)
                     {
-                        if (car is MSTSLocomotive)
+                        TrainPowerChange(PowerActionType.On, Simulator.PreUpdate);
+                    }
+
+                    if (allEnginesOn)
                         {
-                            MSTSLocomotive loco = car as MSTSLocomotive;
-                            loco.SetPower(true);
+                        PowerState = true;
+                        PostInit(true);
                         }
                     }
-                    PowerState = true;
+                // player train
+                else
+                {
+                    PostInit(true);
+                    SetupStationStopHandling();
                 }
             }
         }
@@ -5376,11 +5541,11 @@ namespace Orts.Simulation.Timetables
                                 // check if any other train needs to be activated
                                 ActivateTriggeredTrain(TriggerActivationType.Dispose, -1);
 
-                                TTCouple(OtherTrain, thisTrainFront, otherTrainFront); // couple this train to other train (this train is aborted)
+                                TTCouple(OtherTrain, thisTrainFront, otherTrainFront, true); // couple this train to other train (this train is aborted)
                             }
                             else if (pickUpTrain)
                             {
-                                OtherTrain.TTCouple(this, otherTrainFront, thisTrainFront); // couple other train to this train (other train is aborted)
+                                OtherTrain.TTCouple(this, otherTrainFront, thisTrainFront, true); // couple other train to this train (other train is aborted)
                                 NeedPickUp = false;
                             }
                             else if (transferTrain)
@@ -6552,19 +6717,7 @@ namespace Orts.Simulation.Timetables
         {
             TrainType = TRAINTYPE.PLAYER;
             InitializeBrakes();
-
-            foreach (var tcar in Cars)
-            {
-                if (tcar is MSTSLocomotive)
-                {
-                    MSTSLocomotive loco = tcar as MSTSLocomotive;
-                    loco.SetPower(true);
-                    loco.AntiSlip = leadLocoAntiSlip;
                 }
-            }
-
-            PowerState = true;
-        }
 
         //================================================================================================//
         /// <summary>
@@ -6613,7 +6766,8 @@ namespace Orts.Simulation.Timetables
                         if (readyToAttach)
                         {
                             ProcessRouteEndTimetablePlayer();  // perform end of route actions
-                            TTCouple(attachTrain, thisTrainFront, otherTrainFront);
+                            AttachOnForms = AttachDetails.StationPlatformReference == -1;
+                            TTCouple(attachTrain, thisTrainFront, otherTrainFront, true);
                         }
                     }
                 }
@@ -6693,7 +6847,7 @@ namespace Orts.Simulation.Timetables
 
                             if (readyToPickUp)
                             {
-                                otherTTTrain.TTCouple(this, otherTrainFront, thisTrainFront);
+                                otherTTTrain.TTCouple(this, otherTrainFront, thisTrainFront, true);
                                 NeedPickUp = false;
                                 break;
                             }
@@ -6932,9 +7086,17 @@ namespace Orts.Simulation.Timetables
                         }
 
                         bool goingToAttach = false;
-                        if (AttachDetails != null && AttachDetails.Valid && AttachDetails.ReadyToAttach && AttachDetails.AttachTrain == occTTTrain.OrgAINumber)
+                        if (AttachDetails != null && AttachDetails.Valid && AttachDetails.AttachTrain == occTTTrain.OrgAINumber)
                         {
+                            if (!AttachDetails.ReadyToAttach)
+                            {
+                                CheckReadyToAttach();
+                            }
+
+                            if (AttachDetails.ReadyToAttach)
+                            {
                             goingToAttach = true;
+                        }
                         }
 
                         if (goingToAttach)
@@ -7191,7 +7353,6 @@ namespace Orts.Simulation.Timetables
                     if (CheckEndOfRoutePositionTT())
                     {
                         pickUpTrain = true;
-                        PickUpStaticOnForms = false;
                         NeedPickUp = true;
                     }
                     // check position other train or check remaining route
@@ -7256,7 +7417,6 @@ namespace Orts.Simulation.Timetables
                         if (validtrain)
                         {
                             pickUpTrain = true;
-                            PickUpStaticOnForms = false;
                             NeedPickUp = true;
                         }
                     }
@@ -7518,6 +7678,197 @@ namespace Orts.Simulation.Timetables
                 }
             }
             return (false);
+        }
+
+
+        //================================================================================================//
+        /// <summary>
+        /// Set required power change and change time delay
+        /// </summary>
+
+        public void SetRequiredPowerChange(PowerActionType powerState, int? powerStateDelay, double? powerStateTime)
+        {
+            PowerAction thisAction = new PowerAction();
+            thisAction.RequiredPowerAction = powerState;
+
+            // use delay offset
+            if (powerStateDelay.HasValue)
+            {
+                thisAction.PowerActionDelay = Convert.ToDouble(powerStateDelay.Value) + AI.clockTime;
+            }
+            // use actual time
+            else if (powerStateTime.HasValue)
+            {
+                thisAction.PowerActionDelay = powerStateTime.Value;
+            }
+            // immediately (allow 1 sec delay for processing)
+            else
+            {
+                thisAction.PowerActionDelay = 1 + AI.clockTime;
+            }
+
+            PowerActionRequired.Add(thisAction);
+
+            // sort list on action time
+            PowerActionRequired.Sort(delegate (PowerAction x, PowerAction y)
+            {
+                return (x.PowerActionDelay.CompareTo(y.PowerActionDelay));
+            });
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check if train power switch required
+        /// </summary>
+
+        public void CheckPowerChange()
+        {
+            // check if power change required
+            for (int i = PowerActionRequired.Count - 1; i >= 0; i--)
+            {
+                PowerAction thisAction = PowerActionRequired[i];
+                if (thisAction.PowerActionDelay < AI.clockTime)
+                {
+                    PowerState = thisAction.RequiredPowerAction == PowerActionType.On ? true : false;
+                    TrainPowerChange(thisAction.RequiredPowerAction, Simulator.PreUpdate);
+                    PowerActionRequired.RemoveAt(i);
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Switch train power
+        /// </summary>
+
+        public void TrainPowerChange(PowerActionType reqPower, bool reqForced)
+        {
+            if (CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() + " - Set power change : " + reqPower + " ( forced : " + reqForced + ")\n");
+            }
+
+            bool reqPowerState = reqPower == PowerActionType.On;
+
+            foreach (var car in Cars)
+            {
+                if (car is MSTSDieselLocomotive)
+                {
+                    MSTSLocomotive loco = car as MSTSDieselLocomotive;
+                    if (reqForced)
+                    {
+                        loco.SetPowerForced(reqPowerState);
+                    }
+                    else
+                    {
+                        loco.SetPower(reqPowerState);
+                    }
+                }
+                else if (car is MSTSElectricLocomotive)
+                {
+                    MSTSLocomotive loco = car as MSTSElectricLocomotive;
+                    if (HasDirectionalPantographs)
+                    {
+                        if (reqPower == PowerActionType.On)
+                        {
+                            if (reqForced)
+                            {
+                                loco.SetPowerForcedConditionalPantographs();
+                            }
+                            else
+                            {
+                                loco.SetPowerConditionalPantographs();
+                            }
+                        }
+                        else if (reqPower == PowerActionType.Off_PantoUp)
+                        {
+                            if (reqForced)
+                            {
+                                loco.SetPowerForcedOffPantoUp();
+                            }
+                            else
+                            {
+                                loco.SetPowerOffPantoUp();
+                            }
+                        }
+                        else
+                        {
+                            if (reqForced)
+                            {
+                                loco.SetPowerForced(false);
+                            }
+                            else
+                            {
+                                loco.SetPower(false);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (reqPower == PowerActionType.On)
+                        {
+                            if (reqForced)
+                            {
+                                loco.SetPowerForced(true);
+                            }
+                            else
+                            {
+                                loco.SetPower(true);
+                            }
+                        }
+                        else if (reqPower == PowerActionType.Off_PantoUp)
+                        {
+                            if (reqForced)
+                            {
+                                loco.SetPowerForcedOffPantoUp();
+                            }
+                            else
+                            {
+                                loco.SetPowerOffPantoUp();
+                            }
+                        }
+                        else
+                        {
+                            if (reqForced)
+                            {
+                                loco.SetPowerForced(false);
+                            }
+                            else
+                            {
+                                loco.SetPower(false);
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check if train has any wagons with directional pantographs
+        /// </summary>
+
+        public bool CheckDirectionalPantographs()
+        {
+            bool directionalPanto = false;
+
+            foreach (var car in Cars)
+            {
+                MSTSWagon wagon = car as MSTSWagon;
+                if (wagon.Pantographs != null && wagon.Pantographs.Count > 0)
+                {
+                    foreach (var panto in wagon.Pantographs.List)
+                    {
+                        if (panto.PantoDirectionInfo != null && panto.PantoDirectionInfo.Count > 0)
+                        {
+                            directionalPanto = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            return (directionalPanto);
         }
 
         //================================================================================================//
@@ -9235,9 +9586,12 @@ namespace Orts.Simulation.Timetables
                          Number.ToString() + " continued, part : " + TCRoute.activeSubpath.ToString() + "\n");
                 }
 
+                bool reversed = false;
+
                 if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
                 {
                     ReverseFormation(TrainType == TRAINTYPE.PLAYER);
+                    reversed = TrainType != TRAINTYPE.PLAYER; // used for setting pantographs, not done on player train
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -9247,6 +9601,7 @@ namespace Orts.Simulation.Timetables
                 else if (positionNow == PresentPosition[1].TCSectionIndex && directionNow != PresentPosition[1].TCDirection)
                 {
                     ReverseFormation(TrainType == TRAINTYPE.PLAYER);
+                    reversed = TrainType != TRAINTYPE.PLAYER; // used for setting pantographs, not done on player train
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -9298,6 +9653,16 @@ namespace Orts.Simulation.Timetables
 
                 SwitchToNodeControl(-1);
                 ResetActions(true);
+
+                // switch pantographs if required
+                if (reversed && HasDirectionalPantographs && !NoPantoSwitchOnReverse)
+                {
+                    int poweroffdelay = 10 + Simulator.Random.Next(20);
+                    SetRequiredPowerChange(PowerActionType.Off, poweroffdelay, null);
+                    poweroffdelay += 30 + Simulator.Random.Next(10);
+                    SetRequiredPowerChange(PowerActionType.On, poweroffdelay, null);
+                    if (RestdelayS < 60f) RestdelayS += 60f; // add required delay
+            }
             }
             else
             {
@@ -9412,6 +9777,36 @@ namespace Orts.Simulation.Timetables
                         thisPool.AddUnit(this, false);
                         Update(0);
                     }
+
+                    if (thisPool.PowerOff)
+                    {
+                        int powerOffDelay = 30 + Simulator.Random.Next(30);
+                        if (thisPool.PantoUp)
+                        {
+                            SetRequiredPowerChange(PowerActionType.Off_PantoUp, powerOffDelay, null);
+                }
+                        else
+                        {
+                            SetRequiredPowerChange(PowerActionType.Off, powerOffDelay, null);
+            }
+                    }
+                }
+                else
+                {
+                    // train is terminated
+                    // set power as defined in forms
+                    if (PowerOffOnFormed != PowerActionType.On)
+                    {
+                        int powerOffDelay = FormedPowerOffDelay + Simulator.Random.Next(30);
+                        SetRequiredPowerChange(PowerOffOnFormed, powerOffDelay, null);
+                    }
+
+                    // set lights for postform phase
+                    foreach (var car in Cars)
+                    {
+                        car.SpecialLights = TrainSpecialLights[(int)SpecialLightsPhase.PostForms];
+                        car.SpecialLightSelection = TrainSpecialLightSelection[(int)SpecialLightsPhase.PostForms];
+                    }
                 }
             }
 
@@ -9477,7 +9872,8 @@ namespace Orts.Simulation.Timetables
                 RemoveTrain();
 
                 // set details for new train from existing train
-                bool validFormed = formedTrain.StartFromAITrain(this, presentTime, occupiedSections);
+                bool reversed = false;
+                bool validFormed = formedTrain.StartFromAITrain(this, presentTime, occupiedSections, out reversed);
 
 #if DEBUG_TRACEINFO
                         Trace.TraceInformation("{0} formed into {1}", Name, formedTrain.Name);
@@ -9527,6 +9923,12 @@ namespace Orts.Simulation.Timetables
                         else
                         {
                             formedTrain.InitializeBrakes();
+                            if (HasDirectionalPantographs || PowerOffOnFormed != PowerActionType.On)
+                            // set power as required
+                            {
+                                int poweroffdelay = FormedPowerOffDelay + Simulator.Random.Next(30);
+                                formedTrain.SetRequiredPowerChange(PowerOffOnFormed, poweroffdelay, null);
+                        }
                         }
 
                         if (AI.Simulator.PlayerLocomotive == null && (formedTrain.NeedAttach == null || formedTrain.NeedAttach.Count <= 0))
@@ -9549,6 +9951,22 @@ namespace Orts.Simulation.Timetables
                     {
                         formedTrain.TrainType = Train.TRAINTYPE.AI;
                         AI.TrainsToAdd.Add(formedTrain);
+
+                        // switch power - set command for formed train as this train is removed
+                        if (reversed && HasDirectionalPantographs && PowerOffOnFormed != PowerActionType.Off)
+                        // reversed and if train has directional pantographs, switch power off and on unless power off is set
+                        {
+                            int poweroffdelay = 10 + Simulator.Random.Next(20);
+                            formedTrain.SetRequiredPowerChange(PowerActionType.Off, poweroffdelay, null);
+                            poweroffdelay += 30 + Simulator.Random.Next(10);
+                            formedTrain.SetRequiredPowerChange(PowerOffOnFormed, poweroffdelay, null);
+                    }
+                        else if (HasDirectionalPantographs || PowerOffOnFormed != PowerActionType.On)
+                        // set power as required
+                        {
+                            int poweroffdelay = FormedPowerOffDelay + Simulator.Random.Next(30);
+                            formedTrain.SetRequiredPowerChange(PowerOffOnFormed, poweroffdelay, null);
+                        }
                     }
 
                     formedTrain.MovementState = AI_MOVEMENT_STATE.AI_STATIC;
@@ -9565,6 +9983,14 @@ namespace Orts.Simulation.Timetables
                             formedTrain.StationStops[0].CalculateDepartTime(presentTime, this);
                         }
                     }
+
+                    // copy light conditions to all cars
+                    foreach (var car in formedTrain.Cars)
+                    {
+                        car.SpecialLights = formedTrain.TrainSpecialLights[(int)SpecialLightsPhase.PreStart];
+                        car.SpecialLightSelection = formedTrain.TrainSpecialLightSelection[(int)SpecialLightsPhase.PreStart];
+                }
+
                 }
                 else if (!autogenStart)
                 {
@@ -9807,11 +10233,11 @@ namespace Orts.Simulation.Timetables
                         endOfRoute = true;
                     }
 
-                    // test length of track beyond station
+                    // test length of track beyond station - do not count station section itself
                     else
                     {
                         float remainLength = 0;
-                        for (int Index = stationRouteIndex; Index <= lastValidRouteIndex; Index++)
+                        for (int Index = stationRouteIndex + 1; Index <= lastValidRouteIndex; Index++)
                         {
                             remainLength += signalRef.TrackCircuitList[ValidRoute[0][Index].TCSectionIndex].Length;
                             if (remainLength > 2 * Length) break;
@@ -10032,6 +10458,45 @@ namespace Orts.Simulation.Timetables
             if (endOfRoute && DistanceTravelledM < 0.1) endOfRoute = false;
 
             return (endOfRoute);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// set power state on start
+        /// </summary>
+
+        public void SetPowerStateOnStart()
+        {
+            bool reqPowerOn = true;
+            bool reqPowerChange = false; // power change only required when train is created from scratch
+            PowerActionType reqPowerAction = PowerActionType.On;
+
+            if (FormedOfType == FormCommand.Created || FormedOfType == FormCommand.None)
+            {
+                reqPowerChange = true;
+                if (Created && PowerOffOnCreate != PowerActionType.On)
+                {
+                    reqPowerOn = false;
+                    reqPowerAction = PowerOffOnCreate;
+                }
+            }
+
+            if (!String.IsNullOrEmpty(CreateInPool))
+            {
+                reqPowerChange = true;
+                TimetablePool thisPool = Simulator.PoolHolder.Pools[CreateInPool];
+                if (thisPool.PowerOff)
+                {
+                    reqPowerOn = false;
+                    reqPowerAction = thisPool.PantoUp ? PowerActionType.Off_PantoUp : PowerActionType.Off;
+                }
+            }
+
+            if (reqPowerChange)
+            {
+                PowerState = reqPowerOn;
+                TrainPowerChange(reqPowerAction, true);
+            }
         }
 
         //================================================================================================//
@@ -10777,6 +11242,57 @@ namespace Orts.Simulation.Timetables
                             }
                         }
 
+                        // if not in station, check if behind train which is in station and has station stop
+
+                        if (!AtStation)
+                        {
+                            // check route list from present position to station, and check if section occupied by train in station
+                            int stationindex = ValidRoute[0].GetRouteIndex(StationStops[0].PlatformItem.TCSectionIndex[0], frontIndex);
+
+                            // station is on route and beyond present position
+                            if (stationindex > 0 && stationindex > stopIndex)
+                            {
+
+                                // get train ahead
+                                float addOffset = 0;
+                                float distanceToTrain = 0;
+                                bool trainAheadAtStation = false;
+
+                                var thisSection = signalRef.TrackCircuitList[ValidRoute[0][stopIndex].TCSectionIndex];
+                                var trainInfo = thisSection.TestTrainAhead(this, PresentPosition[0].TCOffset, PresentPosition[0].TCDirection);
+
+                                if (trainInfo.Count <= 0)
+                                {
+                                    addOffset = thisSection.Length - PresentPosition[0].TCOffset;
+                                    for (int routeindex = stopIndex + 1; routeindex <= stationindex && trainInfo.Count <= 0; routeindex++)
+                                    {
+                                        thisSection = signalRef.TrackCircuitList[ValidRoute[0][routeindex].TCSectionIndex];
+                                        trainInfo = thisSection.TestTrainAhead(this, 0, ValidRoute[0][routeindex].Direction);
+
+                                        if (trainInfo.Count <= 0)
+                                        {
+                                            addOffset += thisSection.Length;
+                                        }
+                                    }
+                                }
+
+                                // if train found : check distance and check if other train is in station
+
+                                if (trainInfo.Count > 0)
+                                {
+                                    foreach (KeyValuePair<Train, float> trainAhead in trainInfo) // always just one
+                                    {
+                                        TTTrain OtherTrain = trainAhead.Key as TTTrain;
+                                        distanceToTrain = trainAhead.Value + addOffset;
+                                        trainAheadAtStation = OtherTrain.AtStation & (OtherTrain.StationStops[0].PlatformReference == StationStops[0].PlatformReference);
+
+                                        AtStation = distanceToTrain < 10 * keepDistanceCloseupM && trainAheadAtStation;
+                                    }
+                                }
+                            }
+                        }
+
+                        // train is at station
                         if (AtStation)
                         {
                             MovementState = AI_MOVEMENT_STATE.STATION_STOP;
@@ -11170,7 +11686,11 @@ namespace Orts.Simulation.Timetables
                     // set details for new train from existing train
                     TrackCircuitSection[] occupiedSections = new TrackCircuitSection[OccupiedTrack.Count];
                     OccupiedTrack.CopyTo(occupiedSections);
-                    bool validFormed = formedTrain.StartFromAITrain(this, presentTime, occupiedSections);
+
+                    // reversed state is not used for player train but must be set as parameter for StartFromAITrain
+                    bool reversed = false;
+                    bool validFormed = formedTrain.StartFromAITrain(this, presentTime, occupiedSections, out reversed);
+
 
 #if DEBUG_TRACEINFO
                         Trace.TraceInformation("{0} formed into {1}", Name, formedTrain.Name);
@@ -11623,7 +12143,8 @@ namespace Orts.Simulation.Timetables
         /// <param name="attachTrain"></param>
         /// <param name="thisTrainFront"></param>
         /// <param name="attachTrainFront"></param>
-        public void TTCouple(TTTrain attachTrain, bool thisTrainFront, bool attachTrainFront)
+        /// <param name="powerChangeAllowed"></param>
+        public void TTCouple(TTTrain attachTrain, bool thisTrainFront, bool attachTrainFront, bool powerChangeAllowed)
         {
             // stop train
             SpeedMpS = 0;
@@ -11632,7 +12153,11 @@ namespace Orts.Simulation.Timetables
                 car.SpeedMpS = 0;
             }
 
-            if (TrainType != TRAINTYPE.PLAYER) AdjustControlsThrottleOff();
+            if (TrainType != TRAINTYPE.PLAYER)
+            {
+                AdjustControlsThrottleOff();
+            }
+
             physicsUpdate(0);
 
             // stop attach train
@@ -11642,7 +12167,76 @@ namespace Orts.Simulation.Timetables
                 car.SpeedMpS = 0;
             }
 
-            if (attachTrain.TrainType != TRAINTYPE.PLAYER) attachTrain.AdjustControlsThrottleOff();
+            // set power changes
+
+            if (attachTrain.TrainType != TRAINTYPE.PLAYER)
+            {
+                attachTrain.AdjustControlsThrottleOff();
+            }
+
+            // power change not allowed on transfer
+
+            bool reversed = false;
+            bool powerOn = attachTrain.MovementState != AI_MOVEMENT_STATE.AI_STATIC;
+            bool powerOff = false;
+            bool pantoup = false;
+
+            if (TrainType != TRAINTYPE.PLAYER && attachTrain.TrainType != TRAINTYPE.PLAYER && powerChangeAllowed)
+            {
+                // switch off power on train - set command for attachtrain as this train is removed
+                if (AttachOnForms)
+                {
+                    AttachOnForms = false;
+                    if (PowerOffOnFormed != PowerActionType.On)
+                    {
+                        powerOn = false;
+                        powerOff = true;
+                        pantoup = PowerOffOnFormed == PowerActionType.Off_PantoUp;
+                    }
+                }
+
+                if (attachTrain.PickUpStaticOnForms)
+                {
+                    attachTrain.PickUpStaticOnForms = false;
+                    if (attachTrain.PowerOffOnFormed != PowerActionType.On)
+                    {
+                        powerOn = false;
+                        powerOff = true;
+                        pantoup = attachTrain.PowerOffOnFormed == PowerActionType.Off_PantoUp;
+                    }
+                }
+
+                // if attach or pickup is to active train, switch power on immediately after couple
+                if (attachTrain.MovementState != AI_MOVEMENT_STATE.AI_STATIC)
+                {
+                    bool allEnginesOn = true;
+                    foreach (var car in attachTrain.Cars)
+                    {
+                        if (car is MSTSLocomotive)
+                        {
+                            MSTSLocomotive loco = car as MSTSLocomotive;
+                            if (!loco.HasRequiredEngineState(true)) // engine not yet running
+                            {
+                                allEnginesOn = false;
+                            }
+                        }
+                    }
+                    foreach (var car in Cars)
+                    {
+                        if (car is MSTSLocomotive)
+                        {
+                            MSTSLocomotive loco = car as MSTSLocomotive;
+                            if (!loco.HasRequiredEngineState(true)) // engine not yet running
+                            {
+                                allEnginesOn = false;
+                            }
+                        }
+                    }
+
+                    powerOn = !allEnginesOn;
+                }
+            }
+
             attachTrain.physicsUpdate(0);
 
             // set message for checktrain
@@ -11655,9 +12249,45 @@ namespace Orts.Simulation.Timetables
             if (thisTrainFront == attachTrainFront)
             {
                 ReverseFormation(TrainType == TRAINTYPE.PLAYER);
+                if (TrainType != TRAINTYPE.PLAYER && TrainType != TRAINTYPE.INTENDED_PLAYER)
+                {
+                    reversed = (AttachDetails != null && AttachDetails.SetBack) ? false : true;  // not a valid reversal in case of setback
+            }
             }
 
-            var attachCar = Cars[0];
+            // switch power if required except when player train is involved
+
+            if (TrainType != TRAINTYPE.PLAYER && TrainType != TRAINTYPE.INTENDED_PLAYER && attachTrain.TrainType != TRAINTYPE.PLAYER)
+            {
+                int poweroffdelay = 0;
+
+                // if reversed and train as directional pantographs, power must be switched off and on
+                if (reversed && HasDirectionalPantographs)
+                {
+                    powerOff = true;
+                    pantoup = false;
+                    powerOn = true;
+                }
+
+                // set power off and on for attach train as this train will be removed
+                if (powerOff)
+                {
+                    poweroffdelay = 10 + Simulator.Random.Next(20);
+                    attachTrain.SetRequiredPowerChange(pantoup ? PowerActionType.Off_PantoUp : PowerActionType.Off, poweroffdelay, null);
+                }
+
+                // set power on
+                if (powerOn)
+                {
+                    poweroffdelay += 10 + Simulator.Random.Next(10);
+                    attachTrain.SetRequiredPowerChange(PowerActionType.On, poweroffdelay, null);
+                }
+            }
+
+            // get existing light settings so these can be copied to attached cars
+            var attachSpecialLights = attachTrain.Cars[0].SpecialLights;
+            var attachSpecialLightSelection = attachTrain.Cars[0].SpecialLightSelection;
+
 
             int playerLocomotiveIndex = -1;
             if (TrainType == TRAINTYPE.PLAYER || TrainType == TRAINTYPE.INTENDED_PLAYER)
@@ -11670,6 +12300,8 @@ namespace Orts.Simulation.Timetables
             }
 
             // attach to front of waiting train
+            var attachCar = Cars[0];
+
             if (attachTrainFront)
             {
                 attachCar = Cars[Cars.Count - 1];
@@ -11704,8 +12336,6 @@ namespace Orts.Simulation.Timetables
             Cars.Clear();
             attachTrain.Length += Length;
             float distanceTravelledCorrection = 0;
-
-            attachTrain.ReinitializeEOT();
 
             // recalculate position of formed train
             if (attachTrainFront)  // coupled to front, so rear position is still valid
@@ -11771,8 +12401,16 @@ namespace Orts.Simulation.Timetables
             // set various items
             attachTrain.CheckFreight();
             attachTrain.SetDPUnitIDs();
+            attachTrain.ReinitializeEOT();
             attachCar.SignalEvent(Event.Couple);
             attachTrain.ProcessSpeedSettings();
+            attachTrain.HasDirectionalPantographs = attachTrain.CheckDirectionalPantographs();
+
+            foreach (var car in attachTrain.Cars)
+            {
+                car.SpecialLights = attachSpecialLights;
+                car.SpecialLightSelection = attachSpecialLightSelection;
+            }
 
             // adjust set actions for updated distance travelled value
             if (distanceTravelledCorrection > 0)
@@ -11944,8 +12582,11 @@ namespace Orts.Simulation.Timetables
                 Simulator.Trains.Remove(this);
 
                 // reassign leadlocomotive to reset index
+                if (playerLocomotiveIndex >= 0)
+                {
                 attachTrain.LeadLocomotiveIndex = playerLocomotiveIndex;
                 attachTrain.LeadLocomotive = attachTrain.Simulator.PlayerLocomotive = attachTrain.Cars[playerLocomotiveIndex];
+                }
 
                 // correctly insert new player train
                 attachTrain.AI.TrainsToRemoveFromAI.Add(attachTrain);
@@ -12106,9 +12747,6 @@ namespace Orts.Simulation.Timetables
 
             }
 
-            ReinitializeEOT();
-            newTrain.ReinitializeEOT();
-
             // and fix up the travellers
             if (DetachPosition)
             {
@@ -12157,8 +12795,12 @@ namespace Orts.Simulation.Timetables
             // check freight for both trains
             CheckFreight();
             SetDPUnitIDs();
+            ReinitializeEOT();
+            HasDirectionalPantographs = CheckDirectionalPantographs();
             newTrain.CheckFreight();
             newTrain.SetDPUnitIDs();
+            newTrain.ReinitializeEOT();
+            newTrain.HasDirectionalPantographs = newTrain.CheckDirectionalPantographs();
 
             // check speed values for both trains
             ProcessSpeedSettings();
@@ -13335,6 +13977,8 @@ namespace Orts.Simulation.Timetables
         public bool PlayerAutoDetach;
         public int? DetachTime;
         public bool Valid;
+        public TTTrain.PowerActionType DetachPowerOff = TTTrain.PowerActionType.On;
+        public int DetachPowerOffDelay;
 
         //================================================================================================//
         /// <summary>
@@ -13554,6 +14198,49 @@ namespace Orts.Simulation.Timetables
                         formedTrainDefined = true;
                         break;
 
+                    // power off
+                    case "poweroff":
+                        bool pantoup = false;
+                        if (Qualifier.QualifierValues != null && Qualifier.QualifierValues.Count > 0)
+                        {
+                            if (Qualifier.QualifierValues[0] == "pantoup")
+                            {
+                                pantoup = true;
+                            }
+                            else
+                            {
+                                Trace.TraceInformation("Train : {0} : invalid value for poweroff in detach command: {1} \n", thisTrain.Name, Qualifier.QualifierValues[0]);
+                            }
+                        }
+
+                        DetachPowerOff = pantoup ? TTTrain.PowerActionType.Off_PantoUp : TTTrain.PowerActionType.Off;
+                        DetachPowerOffDelay = 30 + Simulator.Random.Next(30);
+                        break;
+
+                    // power off delay
+                    case "poweroffdelay":
+                        if (DetachPowerOff == TTTrain.PowerActionType.On)
+                        {
+                            Trace.TraceInformation("Train {0} : PowerOffDelay in Detach command : defined without or before poweroff qualifier", thisTrain.Name);
+                        }
+                        else if (Qualifier.QualifierValues == null || Qualifier.QualifierValues.Count <= 0)
+                        {
+                            Trace.TraceInformation("Train {0} : PowerOffDelay in Detach command : missing value", thisTrain.Name);
+                        }
+                        else
+                        {
+                            try
+                            {
+                                DetachPowerOffDelay = Convert.ToInt32(Qualifier.QualifierValues[0]); // defined in seconds
+                            }
+                            catch
+                            {
+                                Trace.TraceInformation("Train {0} : invalid value in PowerOffDelay in Detach command : {1} \n",
+                                    thisTrain.Name, Qualifier.QualifierValues[0]);
+                            }
+                        }
+                        break;
+
                     // manual or auto detach for player train (note : not yet implemented)
                     case "manual":
                         PlayerAutoDetach = false;
@@ -13630,6 +14317,10 @@ namespace Orts.Simulation.Timetables
             }
 
             DetachFormedStatic = inf.ReadBoolean();
+
+            DetachPowerOff = (TTTrain.PowerActionType)inf.ReadInt32();
+            DetachPowerOffDelay = inf.ReadInt32();
+
             Valid = inf.ReadBoolean();
         }
 
@@ -13679,6 +14370,10 @@ namespace Orts.Simulation.Timetables
             }
 
             outf.Write(DetachFormedStatic);
+
+            outf.Write((int)DetachPowerOff);
+            outf.Write(DetachPowerOffDelay);
+
             outf.Write(Valid);
         }
 
@@ -13800,11 +14495,12 @@ namespace Orts.Simulation.Timetables
                         }
 
                         // detachable portion has no power, so detach immediately
+                        // if neither portion has power, keep remaining portion as player train
 
                         bool playerEngineInRemainingPortion = CheckPlayerPowerPortion(train);
 
                         // player engine is in remaining portion
-                        if (playerEngineInRemainingPortion)
+                        if (playerEngineInRemainingPortion || (!detachablePower && !keepPower))
                         {
                             if (!ReverseDetachedTrain.HasValue)
                             {
@@ -13813,6 +14509,7 @@ namespace Orts.Simulation.Timetables
                             int newLocoIndex = train.TTUncoupleBehind(newTrain, ReverseDetachedTrain.Value, train.LeadLocomotiveIndex, false);
                             train.LeadLocomotiveIndex = newLocoIndex;
                             train.Simulator.Confirmer.Information(train.DetachUnits.ToString() + " units detached as train : " + newTrain.Name);
+                            Trace.TraceInformation("Detach : " + train.DetachUnits.ToString() + " units detached as train : " + newTrain.Name + "\n");
                             train.DetachActive[1] = -1;
 
                             // set proper details for new train
@@ -13885,6 +14582,9 @@ namespace Orts.Simulation.Timetables
 
                         bool newIsPlayer = newTrain.TrainType == Train.TRAINTYPE.INTENDED_PLAYER;
                         newTrain.LeadLocomotiveIndex = train.TTUncoupleBehind(newTrain, ReverseDetachedTrain.Value, -1, newIsPlayer);
+
+                        if (DetachPowerOff != TTTrain.PowerActionType.On) newTrain.SetRequiredPowerChange(DetachPowerOff, DetachPowerOffDelay, null);
+
                         train.DetachActive[1] = -1;
                     }
 
@@ -14012,6 +14712,9 @@ namespace Orts.Simulation.Timetables
             if (playerEngineInRemainingPortion)
             {
                 train.LeadLocomotiveIndex = newLocoIndex;
+
+                // switch power for other portion if required
+                if (DetachPowerOff != TTTrain.PowerActionType.On) newTrain.SetRequiredPowerChange(DetachPowerOff, DetachPowerOffDelay, null);
             }
 
             // player engine is in detached portion, so switch trains
@@ -14026,6 +14729,9 @@ namespace Orts.Simulation.Timetables
                 train.AI.TrainsToRemoveFromAI.Add(train);
                 train.AI.TrainsToAdd.Add(train);
                 train.MUDirection = Direction.Forward;
+
+                // switch power for other portion if required
+                if (DetachPowerOff != TTTrain.PowerActionType.On) newTrain.SetRequiredPowerChange(DetachPowerOff, DetachPowerOffDelay, null);
 
                 // set proper details for new formed train
                 newTrain.AI.TrainsToRemoveFromAI.Add(newTrain);
@@ -14280,6 +14986,9 @@ namespace Orts.Simulation.Timetables
 
         public bool ReadyToAttach;                          // trains are ready to attach
 
+        public double? AttachPowerOnTime = null;            // time at which power on must be switched on, in clockSeconds
+        public TTTrain.PowerActionType AttachPowerOff = TTTrain.PowerActionType.On;                // power state after attach
+
         //================================================================================================//
         /// <summary>
         /// Constructor for attach details at station
@@ -14292,6 +15001,8 @@ namespace Orts.Simulation.Timetables
             FirstIn = false;
             SetBack = false;
             ReadyToAttach = false;
+            AttachPowerOff = TTTrain.PowerActionType.On;
+            AttachPowerOnTime = null;
 
             StationPlatformReference = stationPlatformReference;
 
@@ -14335,6 +15046,55 @@ namespace Orts.Simulation.Timetables
                             {
                                 SetBack = true;
                                 FirstIn = true;
+                            }
+                            break;
+
+                        // deadintow not yet fully implemented due to complexity of hauling engines dead in tow
+                        //case "deadintow":
+                        //    deadintow = true;
+                        //    break;
+
+                        case "poweroff":
+                            if (StationPlatformReference >= 0)
+                            {
+                                Trace.TraceWarning("Train {0} : station attach command : PowerOff not allowed for attach at station", thisTrain.Name);
+                            }
+                            else
+                            {
+                                bool pantoup = false;
+                                if (thisQualifier.QualifierValues != null && thisQualifier.QualifierValues.Count > 0)
+                                {
+                                    if (thisQualifier.QualifierValues[0] == "pantoup")
+                                    {
+                                        pantoup = true;
+                                    }
+                                    else
+                                    {
+                                        Trace.TraceInformation("Train : {0} : invalid value for poweroff in attach command: {1} \n", thisTrain.Name, thisQualifier.QualifierValues[0]);
+                                    }
+                                }
+
+                                AttachPowerOff = pantoup ? TTTrain.PowerActionType.Off_PantoUp : TTTrain.PowerActionType.Off;
+                            }
+                            break;
+
+                        case "poweron":
+                            if (thisQualifier.QualifierValues == null | thisQualifier.QualifierValues.Count <= 0)
+                            {
+                                Trace.TraceWarning("Train {0} : attach command : PowerOn defined without time value", thisTrain.Name);
+                            }
+                            else
+                            {
+                                TimeSpan powerontime;
+                                bool validTime = TimeSpan.TryParse(thisQualifier.QualifierValues[0], out powerontime);
+                                if (validTime)
+                                {
+                                    AttachPowerOnTime = Math.Max(Convert.ToDouble(powerontime.TotalSeconds), 1);
+                                }
+                                else
+                                {
+                                    Trace.TraceWarning("Train {0} : attach command : invalid time string for PowerOn : {1} ", thisTrain.Name, thisQualifier.QualifierValues[0]);
+                                }
                             }
                             break;
 
@@ -14388,6 +15148,15 @@ namespace Orts.Simulation.Timetables
 
             Valid = inf.ReadBoolean();
             ReadyToAttach = inf.ReadBoolean();
+
+            AttachPowerOff = (TTTrain.PowerActionType)inf.ReadInt32();
+
+            AttachPowerOnTime = null;
+            if (inf.ReadBoolean())
+            {
+                AttachPowerOnTime = inf.ReadDouble();
+        }
+
         }
 
         //================================================================================================//
@@ -14406,6 +15175,17 @@ namespace Orts.Simulation.Timetables
 
             outf.Write(Valid);
             outf.Write(ReadyToAttach);
+
+            outf.Write((int)AttachPowerOff);
+            if (AttachPowerOnTime.HasValue)
+            {
+                outf.Write(true);
+                outf.Write(AttachPowerOnTime.Value);
+        }
+            else
+            {
+                outf.Write(false);
+            }
         }
 
         //================================================================================================//
@@ -14435,6 +15215,7 @@ namespace Orts.Simulation.Timetables
         {
             bool trainFound = false;
             TTTrain attachedTrain = null;
+            bool attachplayer = false;
 
             foreach (TTTrain otherTrain in trainList)
             {
@@ -14455,6 +15236,7 @@ namespace Orts.Simulation.Timetables
                     AttachTrain = playerTrain.OrgAINumber;
                     attachedTrain = playerTrain;
                     trainFound = true;
+                    attachplayer = true;
                 }
             }
 
@@ -14499,6 +15281,21 @@ namespace Orts.Simulation.Timetables
                     needAttachList.Add(dettrain.OrgAINumber);
                     attachedTrain.NeedAttach.Add(StationPlatformReference, needAttachList);
                 }
+
+                // set power off command
+                if (AttachPowerOff != TTTrain.PowerActionType.On)
+                {
+                    dettrain.PowerOffOnFormed = AttachPowerOff;
+            }
+
+                // if attach train is not player train, set power info
+                if (!attachplayer)
+                {
+                    if (AttachPowerOnTime.HasValue)
+                    {
+                        attachedTrain.SetRequiredPowerChange(TTTrain.PowerActionType.On, null, AttachPowerOnTime);
+                    }
+                }
             }
             else
             // if not found, set attach to invalid (nothing to attach to)
@@ -14532,7 +15329,7 @@ namespace Orts.Simulation.Timetables
         /// <param name="thisTrain"></param>
         public PickUpInfo(int stationPlatformReference, TTTrainCommands thisCommand, TTTrain thisTrain)
         {
-            Valid = true;
+            Valid = false;
             StationPlatformReference = stationPlatformReference;
             PickUpTrain = -1;
             PickUpStatic = false;
@@ -14545,25 +15342,35 @@ namespace Orts.Simulation.Timetables
                     int seppos = thisTrain.Name.IndexOf(':');
                     PickUpTrainName = String.Concat(PickUpTrainName, ":", thisTrain.Name.Substring(seppos + 1).ToLower());
                 }
+                Valid = true;
             }
-            else if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
+            else
             {
-                switch (thisCommand.CommandQualifiers[0].QualifierName)
+                foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
                 {
+                    switch (thisQualifier.QualifierName)
+                    {
                     case "static" :
                         PickUpStatic = true;
                         StationPlatformReference = stationPlatformReference;
+                            Valid = true;
                         break;
+
+                        // deadintow not yet fully implemented due to complexity of hauling engines dead in tow
+                        //case "deadintow":
+                        //    DeadInTow = true;
+                        //    break;
 
                     default :
                         Trace.TraceInformation("Train : {0} : unknown pickup qualifier : {1}", thisTrain.Name, thisCommand.CommandQualifiers[0].QualifierName);
                         break;
                 }
             }
-            else
+            }
+
+            if (!Valid)
             {
                 Trace.TraceInformation("Train : {0} : pick-up command must include a train name or static qualifier", thisTrain.Name);
-                Valid = false;
             }
         }
 
@@ -15164,11 +15971,11 @@ namespace Orts.Simulation.Timetables
                 Trace.TraceInformation("Train {0} : transfer command : transfer requires all units of train {0} to transfer to train {1}", thisTrain.Name, GivingTrain.Name, TakingTrain.Name);
                 if (thisTrain.OrgAINumber == GivingTrain.OrgAINumber)
                 {
-                    thisTrain.TTCouple(TakingTrain, true, frontpos);
+                    thisTrain.TTCouple(TakingTrain, true, frontpos, false);
                 }
                 else
                 {
-                    GivingTrain.TTCouple(thisTrain, frontpos, true);
+                    GivingTrain.TTCouple(thisTrain, frontpos, true, false);
                 }
             }
             else
@@ -15193,7 +16000,7 @@ namespace Orts.Simulation.Timetables
                 thisDetach.PerformDetach(GivingTrain, false);
 
                 // attach temp train to taking train
-                tempTrain.TTCouple(TakingTrain, GiveTrainFront, TakeTrainFront);
+                tempTrain.TTCouple(TakingTrain, GiveTrainFront, TakeTrainFront, false);
 
                 // remove train from need transfer list
                 if (StationPlatformReference >= 0)
