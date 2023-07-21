@@ -1349,6 +1349,51 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
+        /// Checks if engine(s) has (have) required power state
+        /// </summary>
+        /// <param name="reqState"> : true if PowerOn required</param>
+        /// <returns>true if engine(s) has (have) required power state</returns>
+        public override bool HasRequiredEngineState(bool reqState)
+        {
+            bool engineState = true;
+            if (reqState)
+            {
+                foreach (DieselEngine thisEngine in DieselEngines)
+                {
+                    if (thisEngine.State != DieselEngineState.Running) engineState = false;
+                }
+            }
+            else
+            {
+                foreach (DieselEngine thisEngine in DieselEngines)
+                {
+                    if (thisEngine.State != DieselEngineState.Stopped) engineState = false;
+                }
+            }
+            return (engineState);
+        }
+
+        /// <summary>
+        /// Updates engine state only
+        /// </summary>
+        public override void UpdateEngineState(float elapsedClockSeconds)
+        {
+            DieselEngines.Update(elapsedClockSeconds);
+            LocomotivePowerSupply?.Update(elapsedClockSeconds);
+
+            ExhaustParticles.Update(elapsedClockSeconds, DieselEngines[0].ExhaustParticles);
+            ExhaustMagnitude.Update(elapsedClockSeconds, DieselEngines[0].ExhaustMagnitude);
+            ExhaustColorR.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.R);
+            ExhaustColorG.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.G);
+            ExhaustColorB.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.B);
+
+            if (DieselEngines[0].RealRPM == 0)
+            {
+                ExhaustParticles.ForceSmoothValue(0);
+            }
+        }
+
+        /// <summary>
         /// Sets coal and water supplies to full immediately.
         /// Provided in case route lacks pickup points for diesel oil.
         /// </summary>
@@ -1500,5 +1545,15 @@ namespace Orts.Simulation.RollingStocks
             // Check also for very low DieselEngineIdleRPM
             if (IdleRPM < 10) IdleRPM = Math.Max(150, MaxRPM / 10);
         }
+
+        /// <summary>
+        /// get power state value for sound stream controls
+        /// </summary>
+
+        public override float GetPowerEventValue()
+        {
+            return ((DieselEngines[0].RealRPM < 0.85 * DieselEngines[0].IdleRPM) ? 0 : 1);
+        }
+
     } // class DieselLocomotive
 }
