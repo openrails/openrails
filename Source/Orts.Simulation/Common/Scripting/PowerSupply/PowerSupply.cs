@@ -95,7 +95,16 @@ namespace ORTS.Scripting.Api
         public virtual void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
         {
             // By default, send the event to every component
+            switch (evt)
+            {
+                case PowerSupplyEvent.RaisePantographConditional:
+                    SignalEventToPantographs(evt);
+                    break;
+
+                default:
             SignalEventToBatterySwitch(evt);
+                    break;
+        }
         }
 
         public virtual void HandleEventFromLeadLocomotive(PowerSupplyEvent evt, int id)
@@ -108,7 +117,9 @@ namespace ORTS.Scripting.Api
     public enum PowerSupplyEvent
     {
         QuickPowerOn,
+        QuickPowerOnConditional,
         QuickPowerOff,
+        QuickPowerOffPantoUp,
         TogglePlayerEngine,
         ToggleHelperEngine,
         CloseBatterySwitch,
@@ -120,6 +131,7 @@ namespace ORTS.Scripting.Api
         TurnOnMasterKey,
         TurnOffMasterKey,
         RaisePantograph,
+        RaisePantographConditional,
         LowerPantograph,
         CloseCircuitBreaker,
         OpenCircuitBreaker,
@@ -146,6 +158,12 @@ namespace ORTS.Scripting.Api
         SwitchOnElectricTrainSupply,
         SwitchOffElectricTrainSupply,
         StallEngine,
+        ForcedPowerOn,
+        ForcedPowerOnConditional,
+        ForcedPowerOff,
+        ForcedPowerOffPantoUp,
+        ForcedStartEngine,
+        ForcedStopEngine,
     }
 
     public enum PowerSupplyType
