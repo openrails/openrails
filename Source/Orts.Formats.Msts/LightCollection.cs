@@ -188,6 +188,46 @@ namespace Orts.Formats.Msts
         On,
         Off,
     }
+
+    /// <summary>
+    /// Specifies if the light must be illuminated on if train power supply is on or off.
+    /// </summary>
+    public enum LightPowerCondition
+    {
+        Ignore,
+        On,
+        Off,
+    }
+
+    /// <summary>
+    /// Specifies use of special ORST lights (defined through timetable commands)
+    /// Normal - normal lights are in use
+    /// Off - no lights shown at all
+    /// Special - as set through timetable commands, in variable SpecialLightsCommand in TrainCar class
+    /// Special_additional - special lights shown additional to normal lights
+    /// Special_ony - special lights only are shown, normal lights are off
+    /// </summary>
+    public enum SpecialLightsCondition
+    {
+        Normal,
+        Off,
+        Special_additional,
+        Special_only,
+    }
+
+    /// <summary>
+    /// Specifies train existance phase during which special lights settings are used
+    /// PreStart : during AI_STATIC phase, when train is inactive (after create, forms or detach), before start time
+    /// Running : after start time
+    /// PostForms : after forms or detach, but only if static (otherwise light setting of new formed train is used)
+    /// </summary>
+    public enum SpecialLightsPhase
+    {
+        PreStart,
+        Active,
+        PostForms,
+        LastEntry,          // keep this as last entry for array size
+    }
     #endregion
 
     /// <summary>
@@ -207,6 +247,8 @@ namespace Orts.Formats.Msts
         public LightWeatherCondition Weather;
         public LightCouplingCondition Coupling;
         public LightBatteryCondition Battery;
+        public LightPowerCondition TrainPower;
+        public string ORTSSpecialLight;
         public bool Cycle;
         public float FadeIn;
         public float FadeOut;
@@ -228,6 +270,8 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("weather", ()=>{ Weather = (LightWeatherCondition)stf.ReadIntBlock(null); }),
                     new STFReader.TokenProcessor("coupling", ()=>{ Coupling = (LightCouplingCondition)stf.ReadIntBlock(null); }),
                     new STFReader.TokenProcessor("ortsbattery", ()=>{ Battery = (LightBatteryCondition)stf.ReadIntBlock(null); }),
+                    new STFReader.TokenProcessor("ortstrainpower", ()=>{ TrainPower = (LightPowerCondition)stf.ReadIntBlock(null); }),
+                    new STFReader.TokenProcessor("ortsspeciallight", ()=>{ ORTSSpecialLight = stf.ReadStringBlock(String.Empty); }),
                 });}),
                 new STFReader.TokenProcessor("cycle", ()=>{ Cycle = 0 != stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("fadein", ()=>{ FadeIn = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
@@ -262,6 +306,8 @@ namespace Orts.Formats.Msts
             Weather = light.Weather;
             Coupling = light.Coupling;
             Battery = light.Battery;
+            TrainPower = light.TrainPower;
+            ORTSSpecialLight = light.ORTSSpecialLight;
             Cycle = light.Cycle;
             FadeIn = light.FadeIn;
             FadeOut = light.FadeOut;
