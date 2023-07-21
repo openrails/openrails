@@ -284,6 +284,8 @@ namespace Orts.Simulation.RollingStocks
         public LightCollection Lights;
         public FreightAnimations FreightAnimations;
         public int Headlight;
+        public SpecialLightsCondition SpecialLights = SpecialLightsCondition.Normal; // special light selection
+        public List<string> SpecialLightSelection = new List<string>();                    // special lights set through timetable commands
 
         // instance variables set by train physics when it creates the traincar
         public Train Train;  // the car is connected to this train
