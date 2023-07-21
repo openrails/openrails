@@ -400,6 +400,8 @@ namespace Orts.Simulation.Timetables
 
             PoolName = inf.ReadString();
             ForceCreation = inf.ReadBoolean();
+            PowerOff = inf.ReadBoolean();
+            PantoUp = inf.ReadBoolean();
 
             AdditionalTurntableDetails.AccessPaths = new List<AccessPathDetails>();
 
@@ -495,6 +497,8 @@ namespace Orts.Simulation.Timetables
         {
             outf.Write(PoolName);
             outf.Write(ForceCreation);
+            outf.Write(PowerOff);
+            outf.Write(PantoUp);
 
             // save access path information
             outf.Write(AdditionalTurntableDetails.AccessPaths.Count);
@@ -1117,7 +1121,8 @@ namespace Orts.Simulation.Timetables
             train.ValidRoute[0] = new Train.TCSubpathRoute(train.TCRoute.TCRouteSubpaths[0]);
 
             // set details for new train from existing train
-            bool validFormed = train.StartFromAITrain(selectedTrain, presentTime, occupiedSections);
+            bool reversed = false;
+            bool validFormed = train.StartFromAITrain(selectedTrain, presentTime, occupiedSections, out reversed);
 
             if (validFormed)
             {
@@ -1228,6 +1233,30 @@ namespace Orts.Simulation.Timetables
 
                     train.TrainType = Train.TRAINTYPE.AI;
                     train.AI.TrainsToAdd.Add(train);
+
+                    // switch power
+                    int poweroffdelay = 0;
+                    if (reversed && train.HasDirectionalPantographs)
+                    // reversed and if train has directional pantographs, switch power off and on unless power off is set
+                    {
+                        // if power is on, switch off otherwise only switch on
+                        if (train.PowerState)
+                        {
+                            poweroffdelay = 10 + Simulator.Random.Next(20);
+                            train.SetRequiredPowerChange(TTTrain.PowerActionType.Off, poweroffdelay, null);
+                }
+                        poweroffdelay += 30 + Simulator.Random.Next(10);
+                        train.SetRequiredPowerChange(TTTrain.PowerActionType.On, poweroffdelay, null);
+                    }
+                    else if (!train.PowerState)
+                    // set power on
+                    {
+                        poweroffdelay = train.FormedPowerOffDelay + Simulator.Random.Next(30);
+                        train.SetRequiredPowerChange(TTTrain.PowerActionType.On, poweroffdelay, null);
+                    }
+
+                    // delay start movement until power is on
+                    train.RestdelayS += poweroffdelay;
                 }
 
                 train.SetFormedOccupied();
@@ -2550,6 +2579,12 @@ namespace Orts.Simulation.Timetables
                     {
                         File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
                     }
+
+                    // if train has pantographs, switch off power
+                    if (parentTrain.GetPantoIndication())
+                    {
+                        parentTrain.TrainPowerChange(TTTrain.PowerActionType.Off, parentTrain.Simulator.PreUpdate);
+                    }
                     break;
 
                 case MovingTableStateEnum.StorageToMovingTable:
@@ -2562,6 +2597,12 @@ namespace Orts.Simulation.Timetables
                     if (parentTrain.CheckTrain)
                     {
                         File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + parentPool.PoolName + " : Table state set to " + MovingTableState.ToString() + "\n");
+                    }
+
+                    // if train has pantographs, switch off power
+                    if (parentTrain.GetPantoIndication())
+                    {
+                        parentTrain.TrainPowerChange(TTTrain.PowerActionType.Off, parentTrain.Simulator.PreUpdate);
                     }
                     break;
 
@@ -2669,6 +2710,12 @@ namespace Orts.Simulation.Timetables
 
             // reverse formation if required
             if (reverseFormation) parentTrain.ReverseCars();
+
+            // if train power is off, restore power
+            if (!parentTrain.PowerState)
+            {
+                parentTrain.TrainPowerChange(TTTrain.PowerActionType.On, parentTrain.Simulator.PreUpdate);
+            }
 
             // get traveller at start of path tracknode
             TrackCircuitSection thisSection = parentTrain.signalRef.TrackCircuitList[parentTrain.ValidRoute[0][0].TCSectionIndex];
