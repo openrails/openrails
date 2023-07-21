@@ -1303,7 +1303,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 ExhaustColor = ExhaustDecelColor;
             }
 
+            if (Simulator.PreUpdate)
+            {
+                // clamp RPM at IdleRPM if Running, as delta may be very large during preupdate
+                RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, State == DieselEngineState.Running ? IdleRPM : 0);
+            }
+            else
+            {
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
+            }
 
             RawRpM = RealRPM; // As RealRpM may sometimes change in the diesel mechanic configuration, this value used where the "actual" is required for calculation purposes.
 
@@ -1572,6 +1580,30 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     break;
 
+                // used to switch engine on during preupdate
+                case PowerSupplyEvent.ForcedStartEngine:
+                    State = DieselEngineState.Running;
+                    RealRPM = IdleRPM;
+                    DemandedRPM = IdleRPM;
+
+                    if (HasGearBox && Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                    {
+                        GearBox.ClutchPercent = 0f;
+                    }
+                    break;
+
+                // used to switch engine off during preupdate
+                case PowerSupplyEvent.ForcedStopEngine:
+                    State = DieselEngineState.Stopped;
+                    RealRPM = 0;
+                    DemandedRPM = 0;
+
+                    if (HasGearBox && Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                    {
+                        GearBox.ClutchPercent = 100f;
+                    }
+                    break;
+
                 case PowerSupplyEvent.StallEngine:
                     if (State == DieselEngineState.Running)
                     {
@@ -1597,6 +1629,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             Locomotive.dieselEngineRestoreState = inf.ReadInt32();
             State = (DieselEngineState)Locomotive.dieselEngineRestoreState;
             RealRPM = inf.ReadSingle();
+            DemandedRPM = inf.ReadSingle();
             OutputPowerW = inf.ReadSingle();
             DieselTemperatureDeg = inf.ReadSingle();
             GovernorEnabled = inf.ReadBoolean();
@@ -1614,6 +1647,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             outf.Write((int)State);
             outf.Write(RealRPM);
+            outf.Write(DemandedRPM);
             outf.Write(OutputPowerW);
             outf.Write(DieselTemperatureDeg);
             outf.Write(GovernorEnabled);
