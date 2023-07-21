@@ -350,6 +350,56 @@ namespace Orts.Simulation.RollingStocks
             base.SwitchToAutopilotControl();
         }
 
+        /// <summary>
+        /// Checks if engine(s) has (have) required power state
+        /// </summary>
+        /// <param name="reqState"> : true if PowerOn required</param>
+        /// <returns>true if engine(s) has (have) required power state</returns>
+        public override bool HasRequiredEngineState(bool reqState)
+        {
+            bool engineState = true;
+
+            if (reqState)
+            {
+                bool panto = false;
+                foreach (var pantograph in Pantographs.List)
+                {
+                    if (pantograph.State == PantographState.Up)
+                    {
+                        panto = true;
+                    }
+                }
+                if (!panto) engineState = false;
+                if (!(ElectricPowerSupply.CircuitBreaker.State == CircuitBreakerState.Closed) && !(ElectricPowerSupply.CircuitBreaker.State == CircuitBreakerState.Unavailable))
+                    engineState = false;
+            }
+            else
+            {
+                bool panto = true;
+                foreach (var pantograph in Pantographs.List)
+                {
+                    if (pantograph.State != PantographState.Down)
+                    {
+                        panto = false;
+                    }
+                }
+                if (!panto) engineState = false;
+                if (ElectricPowerSupply.CircuitBreaker.State == CircuitBreakerState.Closed && !(ElectricPowerSupply.CircuitBreaker.State == CircuitBreakerState.Unavailable))
+                    engineState = false;
+            }
+            return (engineState);
+        }
+
+        /// <summary>
+        /// Updates engine state only
+        /// </summary>
+        public override void UpdateEngineState(float elapsedClockSeconds)
+        {
+            Pantographs.Update(elapsedClockSeconds);
+            ElectricPowerSupply.CircuitBreaker.Update(elapsedClockSeconds);
+            LocomotivePowerSupply?.Update(elapsedClockSeconds);
+        }
+
         public override string GetStatus()
         {
             var status = new StringBuilder();
@@ -457,6 +507,15 @@ namespace Orts.Simulation.RollingStocks
                 return WaterController.CurrentValue;
             }
             return 0f;
+        }
+
+        /// <summary>
+        /// get power state value for sound stream controls
+        /// </summary>
+
+        public override float GetPowerEventValue()
+        {
+            return ((ElectricPowerSupply.CircuitBreaker.State == CircuitBreakerState.Closed) ? 1 : 0);
         }
 
     } // class ElectricLocomotive
