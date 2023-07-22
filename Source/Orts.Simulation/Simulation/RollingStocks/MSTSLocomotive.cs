@@ -2712,7 +2712,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     }
                 }
             }
-            else if ((MainResPressurePSI >= MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
+            else if ((MainResPressurePSI >= MaxMainResPressurePSI || !powerstate) && CompressorIsOn)
             {
                 SignalEvent(Event.CompressorOff);
             }

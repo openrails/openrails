@@ -79,7 +79,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 if (panto.PantoDirectionInfo != null && panto.PantoDirectionInfo.Count > 0)
                 {
                     panto.NoPantoSwap = true;
-        }
+                }
                 else if (nopantoswap)
                 {
                     panto.NoPantoSwap = true;
@@ -379,7 +379,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 foreach (var thisInfo in pantograph.PantoDirectionInfo)
                 {
                     PantoDirectionInfo.Add(thisInfo);
-        }
+                }
             }
 
             NoPantoSwap = pantograph.NoPantoSwap;
@@ -387,7 +387,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Restore(BinaryReader inf)
         {
-            State = (PantographState) Enum.Parse(typeof(PantographState), inf.ReadString());
+            State = (PantographState)Enum.Parse(typeof(PantographState), inf.ReadString());
             DelayS = inf.ReadSingle();
             TimeS = inf.ReadSingle();
 
@@ -401,7 +401,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     thisInfo.Direction = (PantoDirections)inf.ReadInt32();
                     thisInfo.MaxSpeed = inf.ReadSingle();
                     PantoDirectionInfo.Add(thisInfo);
-        }
+                }
             }
 
             NoPantoSwap = inf.ReadBoolean();
@@ -419,7 +419,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Update(float elapsedClockSeconds)
         {
-            bool allowaction = false;
             switch (State)
             {
                 case PantographState.Lowering:
@@ -456,14 +455,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                     if (!Wagon.Flipped && thisInfo.MaxSpeed != 0 && Math.Abs(Wagon.SpeedMpS) > thisInfo.MaxSpeed)
                                     {
                                         reqlower = true;
-            }
+                                    }
                                     break;
 
                                 case PantoDirections.Backward:
                                     if (Wagon.Flipped && thisInfo.MaxSpeed != 0 && Math.Abs(Wagon.SpeedMpS) > thisInfo.MaxSpeed)
                                     {
                                         reqlower = true;
-        }
+                                    }
                                     break;
                             }
                         }
@@ -580,7 +579,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                         if (thisInfo.MaxSpeed == 0 || Math.Abs(Wagon.SpeedMpS) < thisInfo.MaxSpeed)
                                         {
                                             raiseValid = true;
-            }
+                                        }
                                     }
                                     break;
 
@@ -663,7 +662,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if (PantoDirectionInfo == null)
             {
                 outf.Write(-1);
-        }
+            }
             else
             {
                 outf.Write(PantoDirectionInfo.Count);

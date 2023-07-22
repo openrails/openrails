@@ -1244,7 +1244,7 @@ namespace Orts.Simulation.Timetables
                         {
                             poweroffdelay = 10 + Simulator.Random.Next(20);
                             train.SetRequiredPowerChange(TTTrain.PowerActionType.Off, poweroffdelay, null);
-                }
+                        }
                         poweroffdelay += 30 + Simulator.Random.Next(10);
                         train.SetRequiredPowerChange(TTTrain.PowerActionType.On, poweroffdelay, null);
                     }

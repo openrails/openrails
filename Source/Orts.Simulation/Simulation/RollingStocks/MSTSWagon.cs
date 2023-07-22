@@ -3476,12 +3476,12 @@ namespace Orts.Simulation.RollingStocks
                             {
                                 Pantographs.HandleEvent(evt);
                                 SignalEvent(Event.PantographToggle);
-                }
+                            }
                             else
                             {
                                 Pantographs.HandleEvent(PowerSupplyEvent.RaisePantograph, 1);
                                 SignalEvent(Event.PantographToggle);
-            }
+                            }
                         }
                         break;
                 }

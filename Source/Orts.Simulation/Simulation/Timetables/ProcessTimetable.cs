@@ -39,6 +39,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.Timetables
@@ -147,7 +148,7 @@ namespace Orts.Simulation.Timetables
                 PreInitPlayerTrain(playerTrain);
             }
 
-            // reduce trainlist using player train info and parameters
+            // create AI trainlist
             bool addPathNoLoadFailure;
             trainList = BuildAITrains(cancellation, trainInfoList, playerTrain, arguments, out addPathNoLoadFailure);
             if (!addPathNoLoadFailure) loadPathNoFailure = false;
@@ -886,7 +887,7 @@ namespace Orts.Simulation.Timetables
             if (playerTrain.PowerActionRequired != null)
             {
                 playerTrain.PowerActionRequired.Clear();
-        }
+            }
         }
 
         //================================================================================================//
@@ -1240,10 +1241,24 @@ namespace Orts.Simulation.Timetables
                             infpath.Close();
                         }
                         catch
+                    try
+                    {
+                        var infpath = new BinaryReader(new FileStream(formedpathFilefullBinary, FileMode.Open, FileAccess.Read));
+                        outPath = new AIPath(simulator.TDB, simulator.TSectionDat, infpath);
+                        infpath.Close();
+
+                        if (outPath.Nodes != null)
                         {
-                            binaryloaded = false;
+                            Paths.Add(formedpathFilefull, outPath);
+                            binaryloaded = true;
                         }
                     }
+                    }
+                    catch
+                    {
+                        binaryloaded = false;
+                    }
+                    //}
                 }
 
                 if (!binaryloaded)
@@ -1355,7 +1370,7 @@ namespace Orts.Simulation.Timetables
                 {
                     SpecialLights[i] = SpecialLightsCondition.Normal;
                     SpecialLightSelection[i] = new List<string>();
-            }
+                }
             }
 
             //================================================================================================//
@@ -1390,7 +1405,7 @@ namespace Orts.Simulation.Timetables
                     else
                     {
                         string[] nameParts = Name.Split('$');
-                        thisTTTrain.Name = nameParts[0].Trim();
+                        thisTTTrain.Name = nameParts[0].Trim() + ":" + TTDescription;
                     }
                 }
                 else
@@ -1508,6 +1523,7 @@ namespace Orts.Simulation.Timetables
                                             thisTTTrain.DetachDetails.Add(-1, tempList);
                                         }
                                         break;
+
                                     case "pickup":
                                         if (!DisposeDetails.FormTrain)
                                         {
@@ -1543,7 +1559,7 @@ namespace Orts.Simulation.Timetables
                                             {
                                                 thisTTTrain.TransferTrainDetails.Add(-1, newList); // set key to -1 to work out reference later
                                             }
-                                        } 
+                                        }
                                         break;
 
                                     case "activate":
@@ -1748,11 +1764,11 @@ namespace Orts.Simulation.Timetables
                     StartCommands.Add(new TTTrainCommands(startString));
                 }
 
-                    // first command is start time except for static
-                    if (!String.Equals(StartCommands[0].CommandToken, "static"))
-                    {
-                        startTimeString = StartCommands[0].CommandToken;
-                        activateTimeString = StartCommands[0].CommandToken;
+                // first command is start time except for static
+                if (!String.Equals(StartCommands[0].CommandToken, "static"))
+                {
+                    startTimeString = StartCommands[0].CommandToken;
+                    activateTimeString = StartCommands[0].CommandToken;
 
                     // check additional qualifiers
                     if (StartCommands[0].CommandQualifiers != null && StartCommands[0].CommandQualifiers.Count > 0)
@@ -1778,41 +1794,41 @@ namespace Orts.Simulation.Timetables
                             }
                         }
                     }
-                        StartCommands.RemoveAt(0);
-                    }
+                    StartCommands.RemoveAt(0);
+                }
 
-                    foreach (TTTrainCommands thisCommand in StartCommands)
+                foreach (TTTrainCommands thisCommand in StartCommands)
+                {
+                    switch (thisCommand.CommandToken)
                     {
-                        switch (thisCommand.CommandToken)
-                        {
                         // check for create - syntax : $create [=starttime] [/ahead = train] [/pool = pool] [/poweroff]
-                            case "create":
-                                created = true;
+                        case "create":
+                            created = true;
 
-                                // process starttime
-                                if (thisCommand.CommandValues != null && thisCommand.CommandValues.Count > 0)
-                                {
-                                    startTimeString = String.Copy(thisCommand.CommandValues[0]);
-                                }
-                                else
-                                // if not set, start at 1 second (same start time as for static so /ahead will work for both create and static)
-                                {
-                                    startTimeString = "00:00:01";
-                                }
+                            // process starttime
+                            if (thisCommand.CommandValues != null && thisCommand.CommandValues.Count > 0)
+                            {
+                                startTimeString = String.Copy(thisCommand.CommandValues[0]);
+                            }
+                            else
+                            // if not set, start at 1 second (same start time as for static so /ahead will work for both create and static)
+                            {
+                                startTimeString = "00:00:01";
+                            }
 
-                                // check additional qualifiers
-                                if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
+                            // check additional qualifiers
+                            if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
+                            {
+                                foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
                                 {
-                                    foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
+                                    switch (thisQualifier.QualifierName)
                                     {
-                                        switch (thisQualifier.QualifierName)
-                                        {
-                                            case "ahead":
-                                                if (thisQualifier.QualifierValues != null && thisQualifier.QualifierValues.Count > 0)
-                                                {
-                                                    createAhead = String.Copy(thisQualifier.QualifierValues[0]);
-                                                }
-                                                break;
+                                        case "ahead":
+                                            if (thisQualifier.QualifierValues != null && thisQualifier.QualifierValues.Count > 0)
+                                            {
+                                                createAhead = String.Copy(thisQualifier.QualifierValues[0]);
+                                            }
+                                            break;
 
                                         case "poweroff":
                                             powerOffOnCreate = true;
@@ -1829,66 +1845,66 @@ namespace Orts.Simulation.Timetables
                                             }
                                             break;
 
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+                            break;
+
+                        // pool : created from pool - syntax : $pool = pool [/direction = backward | forward]
+                        case "pool":
+                            if (thisCommand.CommandValues == null || thisCommand.CommandValues.Count < 1)
+                            {
+                                Trace.TraceInformation("Missing poolname for train {0}, train not included", thisTTTrain.Name + "\n");
+                            }
+                            else
+                            {
+                                createFromPool = String.Copy(thisCommand.CommandValues[0]);
+                                if (thisCommand.CommandQualifiers != null)
+                                {
+                                    foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
+                                    {
+                                        switch (thisQualifier.QualifierName.ToLower().Trim())
+                                        {
+                                            case "set_consist_name":
+                                                setConsistName = true;
+                                                break;
+
+                                            case "direction":
+                                                createPoolDirection = String.Copy(thisQualifier.QualifierValues[0]);
+                                                break;
+
                                             default:
                                                 break;
                                         }
                                     }
                                 }
-                                break;
+                            }
+                            break;
 
-                            // pool : created from pool - syntax : $pool = pool [/direction = backward | forward]
-                            case "pool":
-                                if (thisCommand.CommandValues == null || thisCommand.CommandValues.Count < 1)
-                                {
-                                Trace.TraceInformation("Missing poolname for train {0}, train not included", thisTTTrain.Name + "\n");
-                                }
-                                else
-                                {
-                                    createFromPool = String.Copy(thisCommand.CommandValues[0]);
-                                    if (thisCommand.CommandQualifiers != null)
-                                    {
-                                        foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
-                                        {
-                                            switch (thisQualifier.QualifierName.ToLower().Trim())
-                                            {
-                                                case "set_consist_name":
-                                                    setConsistName = true;
-                                                    break;
-
-                                                case "direction":
-                                                    createPoolDirection = String.Copy(thisQualifier.QualifierValues[0]);
-                                                    break;
-
-                                                default:
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                }
-                                break;
-
-                            // check for $next : set special flag to start after midnight
-                            case "next":
-                                startNextNight = true;
-                                break;
+                        // check for $next : set special flag to start after midnight
+                        case "next":
+                            startNextNight = true;
+                            break;
 
                         // static : syntax : $static [/ahead = train] [/poweroff]
-                            case "static":
-                                createStatic = true;
+                        case "static":
+                            createStatic = true;
 
-                                // check additional qualifiers
-                                if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
+                            // check additional qualifiers
+                            if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
+                            {
+                                foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
                                 {
-                                    foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
+                                    switch (thisQualifier.QualifierName)
                                     {
-                                        switch (thisQualifier.QualifierName)
-                                        {
-                                            case "ahead":
-                                                if (thisQualifier.QualifierValues != null && thisQualifier.QualifierValues.Count > 0)
-                                                {
-                                                    createAhead = String.Copy(thisQualifier.QualifierValues[0]);
-                                                }
-                                                break;
+                                        case "ahead":
+                                            if (thisQualifier.QualifierValues != null && thisQualifier.QualifierValues.Count > 0)
+                                            {
+                                                createAhead = String.Copy(thisQualifier.QualifierValues[0]);
+                                            }
+                                            break;
 
                                         case "poweroff":
                                             powerOffOnCreate = true;
@@ -1905,41 +1921,41 @@ namespace Orts.Simulation.Timetables
                                             }
                                             break;
 
-                                            case "pool":
-                                                if (thisQualifier.QualifierValues != null && thisQualifier.QualifierValues.Count > 0)
+                                        case "pool":
+                                            if (thisQualifier.QualifierValues != null && thisQualifier.QualifierValues.Count > 0)
+                                            {
+                                                createInPool = String.Copy(thisQualifier.QualifierValues[0]);
+                                                if (!simulator.PoolHolder.Pools.ContainsKey(createInPool))
                                                 {
-                                                    createInPool = String.Copy(thisQualifier.QualifierValues[0]);
-                                                    if (!simulator.PoolHolder.Pools.ContainsKey(createInPool))
-                                                    {
                                                     Trace.TraceInformation("Train : " + thisTTTrain.Name + " : no such pool : " + createInPool + " ; train not created");
-                                                        createInPool = String.Empty;
-                                                    }
+                                                    createInPool = String.Empty;
                                                 }
-                                                break;
+                                            }
+                                            break;
 
-                                            default:
-                                                break;
-                                        }
+                                        default:
+                                            break;
                                     }
                                 }
+                            }
 
                             if (!String.IsNullOrEmpty(createInPool) && powerOffOnCreate)
                             {
                                 Trace.TraceInformation("Train : " + thisTTTrain.Name + " : poweroff setting ignored as train is created in pool");
                             }
-                                break;
+                            break;
 
-                            // activated : set activated flag
-                            case "activated" :
-                                activationRequired = true;
-                                break;
+                        // activated : set activated flag
+                        case "activated":
+                            activationRequired = true;
+                            break;
 
-                            // invalid command
-                            default:
-                                Trace.TraceInformation("Train : " + Name + " invalid command for start value : " + thisCommand.CommandToken + "\n");
-                                break;
-                        }
+                        // invalid command
+                        default:
+                            Trace.TraceInformation("Train : " + Name + " invalid command for start value : " + thisCommand.CommandToken + "\n");
+                            break;
                     }
+                }
 
                 TimeSpan startingTime;
                 bool validSTime = TimeSpan.TryParse(startTimeString, out startingTime);
@@ -2019,7 +2035,7 @@ namespace Orts.Simulation.Timetables
                     if (created && powerOffOnCreate && String.IsNullOrEmpty(createFromPool))
                     {
                         thisTTTrain.PowerOffOnCreate = powerPantoUp ? TTTrain.PowerActionType.Off_PantoUp : TTTrain.PowerActionType.Off;
-                }
+                    }
                 }
                 else if (!String.IsNullOrEmpty(createInPool))
                 {
@@ -2762,7 +2778,7 @@ namespace Orts.Simulation.Timetables
                         wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
                     else if (wagon.IsEOT)
                     {
-                        wagonFolder =  simulator.BasePath + @"\trains\orts_eot\" + wagon.Folder;
+                        wagonFolder = simulator.BasePath + @"\trains\orts_eot\" + wagon.Folder;
                         wagonFilePath = wagonFolder + @"\" + wagon.Name + ".eot";
                     }
 
@@ -2887,7 +2903,7 @@ namespace Orts.Simulation.Timetables
                         newStop.Commands = new List<TTTrainCommands>();
                     }
 
-                    newStop.Commands.Add(new TTTrainCommands(String.Concat("stoptime=",stationDetails.actMinStopTime.Value.ToString().Trim())));
+                    newStop.Commands.Add(new TTTrainCommands(String.Concat("stoptime=", stationDetails.actMinStopTime.Value.ToString().Trim())));
                 }
 
                 // process restrict to signal
@@ -3111,11 +3127,11 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TRACEINFO
                     if (trainFound)
                     {
-                        Trace.TraceInformation("Dispose : {0} {1} {2} ", TTTrain.Name, DisposeDetails.FormType.ToString(), otherTrainName[1]);
+                        Trace.TraceInformation("Dispose : {0} {1} {2} ", thisTTTrain.Name, DisposeDetails.FormType.ToString(), otherTrainName[1]);
                     }
                     else
                     {
-                        Trace.TraceInformation("Dispose : {0} : cannot find {1} ", TTTrain.Name, otherTrainName[1]);
+                        Trace.TraceInformation("Dispose : {0} : cannot find {1} ", thisTTTrain.Name, otherTrainName[1]);
                     }
 #endif
                 }
@@ -3738,7 +3754,7 @@ namespace Orts.Simulation.Timetables
 
                     // create station stop info
                     validStop = actTrain.CreateStationStop(actPlatformID, arrivalTime, departureTime, arrivalDT, departureDT, AITrain.clearingDistanceM,
-                        AITrain.minStopDistanceM, terminal, actMinStopTime,keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, endStop);
+                        AITrain.minStopDistanceM, terminal, actMinStopTime, keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, endStop);
 
                     // override holdstate using stop info - but only if exit signal is defined
 
@@ -4077,23 +4093,23 @@ namespace Orts.Simulation.Timetables
                                 switch (formedTrainQualifiers.QualifierName)
                                 {
                                     case "runround":
-                                    RunRound = true;
-                                    RunRoundPath = String.Copy(formedTrainQualifiers.QualifierValues[0]);
-                                    RunRoundTime = -1;
+                                        RunRound = true;
+                                        RunRoundPath = String.Copy(formedTrainQualifiers.QualifierValues[0]);
+                                        RunRoundTime = -1;
                                         break;
 
                                     case "rrtime":
-                                    TimeSpan RRSpan;
-                                    TimeSpan.TryParse(formedTrainQualifiers.QualifierValues[0], out RRSpan);
-                                    RunRoundTime = Convert.ToInt32(RRSpan.TotalSeconds);
+                                        TimeSpan RRSpan;
+                                        TimeSpan.TryParse(formedTrainQualifiers.QualifierValues[0], out RRSpan);
+                                        RunRoundTime = Convert.ToInt32(RRSpan.TotalSeconds);
                                         break;
 
                                     case "setstop":
-                                    SetStop = true;
+                                        SetStop = true;
                                         break;
 
                                     case "atstation":
-                                    FormsAtStation = true;
+                                        FormsAtStation = true;
                                         break;
 
                                     case "closeup":
@@ -4102,9 +4118,9 @@ namespace Orts.Simulation.Timetables
 
                                     case "speed":
                                         try
-                                {
+                                        {
                                             DisposeSpeed = Convert.ToSingle(formedTrainQualifiers.QualifierValues[0]);
-                                }
+                                        }
                                         catch
                                         {
                                             Trace.TraceInformation("Train : {0} : invalid value for runround speed : {1} \n", trainName, formedTrainQualifiers.QualifierValues[0]);
@@ -4114,11 +4130,11 @@ namespace Orts.Simulation.Timetables
                                     case "poweroff":
                                         bool pantoup = false;
                                         if (formedTrainQualifiers.QualifierValues != null && formedTrainQualifiers.QualifierValues.Count > 0)
-                                {
+                                        {
                                             if (formedTrainQualifiers.QualifierValues[0] == "pantoup")
                                             {
                                                 pantoup = true;
-                                }
+                                            }
                                             else
                                             {
                                                 Trace.TraceInformation("Train : {0} : invalid value for poweroff in forms command : {1} \n", trainName, formedTrainQualifiers.QualifierValues[0]);
@@ -4131,7 +4147,7 @@ namespace Orts.Simulation.Timetables
 
                                     case "poweroffdelay":
                                         if (PowerOffOnForms == TTTrain.PowerActionType.On)
-                                {
+                                        {
                                             Trace.TraceInformation("Train {0} : PowerOffDelay in Forms command : defined without or before poweroff qualifier", trainName);
                                         }
                                         else if (formedTrainQualifiers.QualifierValues == null || formedTrainQualifiers.QualifierValues.Count <= 0)
@@ -4140,23 +4156,23 @@ namespace Orts.Simulation.Timetables
                                         }
                                         else
                                         {
-                                    try
-                                    {
+                                            try
+                                            {
                                                 FormedPowerOffDelay = Convert.ToInt32(formedTrainQualifiers.QualifierValues[0]); // defined in seconds
-                                    }
-                                    catch
-                                    {
+                                            }
+                                            catch
+                                            {
                                                 Trace.TraceInformation("Train {0} : invalid value in PowerOffDelay in Forms command : {1} \n",
                                                     trainName, formedTrainQualifiers.QualifierValues[0]);
-                                    }
-                                }
+                                            }
+                                        }
                                         break;
 
                                     default:
                                         Trace.TraceInformation("Train {0} : invalid qualifier in {1} command : {2} \n", trainName, typeOfDispose, formedTrainQualifiers.QualifierName);
                                         break;
+                                }
                             }
-                        }
 
                             break;
                         }

@@ -102,9 +102,9 @@ namespace ORTS.Scripting.Api
                     break;
 
                 default:
-            SignalEventToBatterySwitch(evt);
+                    SignalEventToBatterySwitch(evt);
                     break;
-        }
+            }
         }
 
         public virtual void HandleEventFromLeadLocomotive(PowerSupplyEvent evt, int id)

@@ -1386,7 +1386,7 @@ namespace Orts.Viewer3D
             if (ALSoundSource == null)
                 return;
 
-            if (MSTSStream != null && MSTSStream.FrequencyCurve != null) 
+            if (MSTSStream != null && MSTSStream.FrequencyCurve != null)
             {
                 if (SoundSource.Car != null || SoundSource.Viewer.Camera.AttachedCar != null)
                 {
@@ -1439,7 +1439,7 @@ namespace Orts.Viewer3D
                     if (MSTSStream.VolumeCurves[i].Control == VolumeCurve.Controls.Variable2Controlled && x < 0)
                     {
                         volmultiplier = -x * Interpolate(0, MSTSStream.VolumeCurves[i]);
-                }
+                    }
 
                     volume *= volmultiplier;
                 }

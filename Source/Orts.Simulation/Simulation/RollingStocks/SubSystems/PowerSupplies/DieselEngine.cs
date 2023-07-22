@@ -1310,7 +1310,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
             else
             {
-            RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
+                RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
             }
 
             RawRpM = RealRPM; // As RealRpM may sometimes change in the diesel mechanic configuration, this value used where the "actual" is required for calculation purposes.

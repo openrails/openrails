@@ -1485,7 +1485,7 @@ namespace Orts.Simulation.Timetables
                     train.OrgAINumber = train.Number;
                     train.Number = 0;
                     train.LeadLocomotiveIndex = selectedTrain.LeadLocomotiveIndex;
-                    for (int carid = 0; carid < train.Cars.Count; carid++ )
+                    for (int carid = 0; carid < train.Cars.Count; carid++)
                     {
                         train.Cars[carid].CarID = selectedTrain.Cars[carid].CarID;
                     }
@@ -1588,7 +1588,7 @@ namespace Orts.Simulation.Timetables
                         {
                             poweroffdelay = 10 + Simulator.Random.Next(20);
                             train.SetRequiredPowerChange(TTTrain.PowerActionType.Off, poweroffdelay, null);
-                }
+                        }
                         poweroffdelay += 30 + Simulator.Random.Next(10);
                         train.SetRequiredPowerChange(TTTrain.PowerActionType.On, poweroffdelay, null);
                     }
