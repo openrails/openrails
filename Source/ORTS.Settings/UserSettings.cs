@@ -212,8 +212,6 @@ namespace ORTS.Settings
         public bool SimpleControlPhysics { get; set; }
         [Default(true)]
         public bool UseAdvancedAdhesion { get; set; }
-        [Default(10)]
-        public int AdhesionMovingAverageFilterSize { get; set; }
         [Default(false)]
         public bool BreakCouplers { get; set; }
         [Default(false)]
