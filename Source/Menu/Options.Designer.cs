@@ -2940,7 +2940,7 @@
         private System.Windows.Forms.PictureBox pbVerticalSync;
         private System.Windows.Forms.PictureBox pbModelInstancing;
         private System.Windows.Forms.Label labelDefaultDetail;
-        private System.Windows.Forms.PictureBox pbViewingFOV;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.PictureBox pbViewingFOV;
     }
 }
