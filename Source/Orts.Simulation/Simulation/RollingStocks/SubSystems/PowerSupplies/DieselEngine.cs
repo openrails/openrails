@@ -1014,7 +1014,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             RealRPM = IdleRPM;
             State = DieselEngineState.Running;
-
+            if (ThrottleRPMTab != null)
+            {
+                DemandedRPM = ThrottleRPMTab[Locomotive.ThrottlePercent];
+                DemandedRPM = MathHelper.Clamp(DemandedRPM, IdleRPM, MaxRPM);  // Clamp throttle setting within bounds
+                RealRPM = DemandedRPM;
+            }
             GearBox?.InitializeMoving();
         }
 
