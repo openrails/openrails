@@ -275,7 +275,7 @@ namespace ORTS.Settings
         public bool FullScreen { get; set; }
         [Default("1024x768")]
         public string WindowSize { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool OutOfFocus { get; set; }
         [Default(false)]
         public bool WindowGlass { get; set; }
