@@ -593,7 +593,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 float dp = 0;
                 float dpPipe = 0;
-                float BrakePipeChange = Math.Max(prevBrakePipePressurePSI - BrakeLine1PressurePSI, 0);
+                float brakePipeChange = Math.Max(prevBrakePipePressurePSI - BrakeLine1PressurePSI, 0);
                 if (QuickServiceActive) // Quick service: Brake pipe pressure is locally reduced to speed up initial reduction
                 {
                     if (QuickServiceVentRatePSIpS > 0)
@@ -610,7 +610,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     if (AcceleratedApplicationFactor > 0) // Accelerated application: Air is vented from the brake pipe to speed up service applications
                     {
-                        dpPipe = Math.Min(BrakePipeChange * AcceleratedApplicationFactor, elapsedClockSeconds * AcceleratedApplicationLimitPSIpS); // Amount of air vented is proportional to pressure reduction from external sources
+                        dpPipe = Math.Min(brakePipeChange * AcceleratedApplicationFactor, elapsedClockSeconds * AcceleratedApplicationLimitPSIpS); // Amount of air vented is proportional to pressure reduction from external sources
                     }
                     dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                 }
@@ -649,7 +649,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         if (EmergencyDumpValveTimerS != 0 && EmergencyDumpStartTime == null && BrakeLine1PressurePSI > AcceleratedEmergencyReleaseThresholdPSI)
                         {
-                            // Accelerated emergency release: Aux res and BP air are routed into the brake pipe once the emergency application is complete, speeds up emergency release
+                            // Accelerated emergency release: Aux res and BC air are routed into the brake pipe once the emergency application is complete, speeds up emergency release
                             // Triggers at 20 psi brake pipe pressure
 
                             dp = elapsedClockSeconds * MaxReleaseRatePSIpS;
@@ -760,7 +760,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         EmergResPressurePSI -= dp / EmergAuxVolumeRatio;
                     }
                 }
-                if (AuxResPressurePSI > EmergResPressurePSI && (valveType == MSTSWagon.BrakeValveType.Distributor ? true : TripleValveState == ValveState.Release))
+                if (AuxResPressurePSI > EmergResPressurePSI && (valveType == MSTSWagon.BrakeValveType.Distributor || TripleValveState == ValveState.Release))
                 {
                     float dp = elapsedClockSeconds * EmergResChargingRatePSIpS;
                     if (EmergResPressurePSI + dp > AuxResPressurePSI - dp * EmergAuxVolumeRatio)
@@ -786,7 +786,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else // Charge from brake pipe
             {
-                if (AuxResPressurePSI < BrakeLine1PressurePSI && (valveType == MSTSWagon.BrakeValveType.Distributor ? true : TripleValveState == ValveState.Release) && !BleedOffValveOpen)
+                if (AuxResPressurePSI < BrakeLine1PressurePSI && (valveType == MSTSWagon.BrakeValveType.Distributor || TripleValveState == ValveState.Release) && !BleedOffValveOpen)
                 {
                     if (AuxResPressurePSI > BrakeLine1PressurePSI - 1)
                         dpAux *= MathHelper.Clamp(BrakeLine1PressurePSI - AuxResPressurePSI, 0.1f, 1.0f); // Reduce recharge rate if nearing target pressure to smooth out changes in brake pipe
