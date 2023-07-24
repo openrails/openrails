@@ -26,11 +26,11 @@
 // #define DEBUG_ALLOWCRASH
 // removes catch and allows program to crash on error statement
 //
-#define DEBUG_PRINT_PROCESS
+// #define DEBUG_PRINT_PROCESS
 // prints processing details
 // set TBD_debug_ref to TDB index of required signals
 //
-#define DEBUG_PRINT_ENABLED
+// #define DEBUG_PRINT_ENABLED
 // prints processing details of all enabled signals
 //
 
