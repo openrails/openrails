@@ -109,11 +109,12 @@
             this.checkDynamicShadows = new System.Windows.Forms.CheckBox();
             this.checkWire = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
-            this.checkElectricPowerConnected = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.checkDieselEnginesStarted = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkElectricPowerConnected = new System.Windows.Forms.CheckBox();
+            this.labelLocoStartActivity = new System.Windows.Forms.Label();
             this.checkUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
+            this.checkDieselEnginesStarted = new System.Windows.Forms.CheckBox();
             this.checkDoorsAITrains = new System.Windows.Forms.CheckBox();
             this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             this.checkBoilerPreheated = new System.Windows.Forms.CheckBox();
@@ -210,7 +211,6 @@
             this.numericUseSuperElevation = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -1370,17 +1370,6 @@
             this.tabPageSimulation.Text = "Simulation";
             this.tabPageSimulation.UseVisualStyleBackColor = true;
             // 
-            // checkElectricPowerConnected
-            // 
-            this.checkElectricPowerConnected.AutoSize = true;
-            this.checkElectricPowerConnected.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkElectricPowerConnected.Location = new System.Drawing.Point(27, 132);
-            this.checkElectricPowerConnected.Name = "checkElectricPowerConnected";
-            this.checkElectricPowerConnected.Size = new System.Drawing.Size(153, 17);
-            this.checkElectricPowerConnected.TabIndex = 11;
-            this.checkElectricPowerConnected.Text = "Electric - power connected";
-            this.checkElectricPowerConnected.UseVisualStyleBackColor = true;
-            // 
             // label4
             // 
             this.label4.AutoSize = true;
@@ -1390,21 +1379,10 @@
             this.label4.TabIndex = 10;
             this.label4.Text = "At game start, locomotives have:";
             // 
-            // checkDieselEnginesStarted
-            // 
-            this.checkDieselEnginesStarted.AutoSize = true;
-            this.checkDieselEnginesStarted.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkDieselEnginesStarted.Location = new System.Drawing.Point(27, 114);
-            this.checkDieselEnginesStarted.Name = "checkDieselEnginesStarted";
-            this.checkDieselEnginesStarted.Size = new System.Drawing.Size(142, 17);
-            this.checkDieselEnginesStarted.TabIndex = 9;
-            this.checkDieselEnginesStarted.Text = "Diesel - engine(s) started";
-            this.checkDieselEnginesStarted.UseVisualStyleBackColor = true;
-            // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.checkElectricPowerConnected);
-            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.labelLocoStartActivity);
             this.groupBox1.Controls.Add(this.checkUseLocationPassingPaths);
             this.groupBox1.Controls.Add(this.checkDieselEnginesStarted);
             this.groupBox1.Controls.Add(this.checkDoorsAITrains);
@@ -1417,6 +1395,27 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Activity Options";
             // 
+            // checkElectricPowerConnected
+            // 
+            this.checkElectricPowerConnected.AutoSize = true;
+            this.checkElectricPowerConnected.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkElectricPowerConnected.Location = new System.Drawing.Point(27, 132);
+            this.checkElectricPowerConnected.Name = "checkElectricPowerConnected";
+            this.checkElectricPowerConnected.Size = new System.Drawing.Size(153, 17);
+            this.checkElectricPowerConnected.TabIndex = 11;
+            this.checkElectricPowerConnected.Text = "Electric - power connected";
+            this.checkElectricPowerConnected.UseVisualStyleBackColor = true;
+            // 
+            // labelLocoStartActivity
+            // 
+            this.labelLocoStartActivity.AutoSize = true;
+            this.labelLocoStartActivity.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelLocoStartActivity.Location = new System.Drawing.Point(7, 98);
+            this.labelLocoStartActivity.Name = "labelLocoStartActivity";
+            this.labelLocoStartActivity.Size = new System.Drawing.Size(161, 13);
+            this.labelLocoStartActivity.TabIndex = 47;
+            this.labelLocoStartActivity.Text = "At game start, locomotives have:";
+            // 
             // checkUseLocationPassingPaths
             // 
             this.checkUseLocationPassingPaths.AutoSize = true;
@@ -1427,6 +1426,17 @@
             this.checkUseLocationPassingPaths.TabIndex = 46;
             this.checkUseLocationPassingPaths.Text = "Location-linked passing path processing";
             this.checkUseLocationPassingPaths.UseVisualStyleBackColor = true;
+            // 
+            // checkDieselEnginesStarted
+            // 
+            this.checkDieselEnginesStarted.AutoSize = true;
+            this.checkDieselEnginesStarted.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkDieselEnginesStarted.Location = new System.Drawing.Point(27, 114);
+            this.checkDieselEnginesStarted.Name = "checkDieselEnginesStarted";
+            this.checkDieselEnginesStarted.Size = new System.Drawing.Size(142, 17);
+            this.checkDieselEnginesStarted.TabIndex = 9;
+            this.checkDieselEnginesStarted.Text = "Diesel - engine(s) started";
+            this.checkDieselEnginesStarted.UseVisualStyleBackColor = true;
             // 
             // checkDoorsAITrains
             // 
@@ -2650,16 +2660,6 @@
             this.ElevationText.TabIndex = 1;
             this.ElevationText.Text = "Super-elevation";
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(7, 98);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(161, 13);
-            this.label1.TabIndex = 47;
-            this.label1.Text = "At game start, locomotives have:";
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2884,6 +2884,7 @@
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox checkShadowAllShapes;
         private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
+        private System.Windows.Forms.Label labelLocoStartActivity;
         private System.Windows.Forms.CheckBox checkDieselEnginesStarted;
         private System.Windows.Forms.PictureBox pbAlerter;
         private System.Windows.Forms.PictureBox pbRetainers;
@@ -2940,7 +2941,6 @@
         private System.Windows.Forms.PictureBox pbVerticalSync;
         private System.Windows.Forms.PictureBox pbModelInstancing;
         private System.Windows.Forms.Label labelDefaultDetail;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.PictureBox pbViewingFOV;
     }
 }

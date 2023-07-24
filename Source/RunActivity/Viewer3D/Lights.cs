@@ -275,7 +275,7 @@ namespace Orts.Viewer3D
                 {
                     for (int i = SpecialLightsSelection.Count - 1; i >= 0; i--)
                     {
-                        if (Car.SpecialLightSelection.Contains(SpecialLightsSelection[i]))
+                        if (!Car.SpecialLightSelection.Contains(SpecialLightsSelection[i]))
                         {
                             specialLightsChanged = true;
                         }
@@ -314,7 +314,8 @@ namespace Orts.Viewer3D
                 CarBatteryOn = newCarBatteryOn;
                 TrainPowerOn = newPowerOn;
                 SpecialLights = Car.SpecialLights;
-                SpecialLightsSelection = Car.SpecialLightSelection;
+                SpecialLightsSelection.Clear();
+                SpecialLightsSelection.AddRange(Car.SpecialLightSelection);
 
 #if DEBUG_LIGHT_STATES
                 Console.WriteLine();
@@ -564,27 +565,27 @@ namespace Orts.Viewer3D
                     else
                         Enabled &= false;
                 }
-
-
-                // if light setting is normal and this is special light, disable
-                if (Enabled && lightViewer.SpecialLights == SpecialLightsCondition.Normal && !String.IsNullOrEmpty(Light.ORTSSpecialLight))
-                {
-                    Enabled &= false;
-                }
-
-                // check conditions for special
-                if (Enabled && (lightViewer.SpecialLights == SpecialLightsCondition.Special_only || lightViewer.SpecialLights == SpecialLightsCondition.Special_additional))
-                {
-                    Enabled &= lightViewer.SpecialLightsSelection.Contains(Light.ORTSSpecialLight);
-                }
-
-                if (oldEnabled != Enabled)
-                {
-                    FadeIn = Enabled;
-                    FadeOut = !Enabled;
-                    FadeTime = 0;
-                }
             }
+
+            // if light setting is normal and this is special light, disable
+            if (Enabled && lightViewer.SpecialLights == SpecialLightsCondition.Normal && !String.IsNullOrEmpty(Light.ORTSSpecialLight))
+            {
+                Enabled &= false;
+            }
+
+            // check conditions for special
+            if (Enabled && (lightViewer.SpecialLights == SpecialLightsCondition.Special_only || lightViewer.SpecialLights == SpecialLightsCondition.Special_additional))
+            {
+                Enabled &= lightViewer.SpecialLightsSelection.Contains(Light.ORTSSpecialLight);
+            }
+
+            if (oldEnabled != Enabled)
+            {
+                FadeIn = Enabled;
+                FadeOut = !Enabled;
+                FadeTime = 0;
+            }
+
 
 #if DEBUG_LIGHT_STATES
             Console.WriteLine(LightViewer.PrimitiveStateFormat, Light.Index, Enabled, Light.Type, Light.Headlight, Light.Unit, Light.Penalty, Light.Control, Light.Service, Light.TimeOfDay, Light.Weather, Light.Coupling);
