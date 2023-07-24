@@ -2920,6 +2920,11 @@
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
         private System.Windows.Forms.CheckBox checkEnableTCSScripts;
+        private System.Windows.Forms.CheckBox checkAutoSaveActive;
+        private System.Windows.Forms.Label labelAutoSaveInterval;
+        private System.Windows.Forms.RadioButton ButtonAutoSave60;
+        private System.Windows.Forms.RadioButton ButtonAutoSave30;
+        private System.Windows.Forms.RadioButton ButtonAutoSave15;
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
         private System.Windows.Forms.CheckBox checkOverspeedMonitor;
         private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;
@@ -2993,10 +2998,5 @@
         private System.Windows.Forms.PictureBox pbModelInstancing;
         private System.Windows.Forms.Label labelDefaultDetail;
         private System.Windows.Forms.PictureBox pbViewingFOV;
-        private System.Windows.Forms.CheckBox checkAutoSaveActive;
-        private System.Windows.Forms.Label labelAutoSaveInterval;
-        private System.Windows.Forms.RadioButton ButtonAutoSave60;
-        private System.Windows.Forms.RadioButton ButtonAutoSave30;
-        private System.Windows.Forms.RadioButton ButtonAutoSave15;
     }
 }
