@@ -412,7 +412,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 if ((Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.Distributor)
                     InitialApplicationThresholdPSI = 2.2f; // UIC spec: brakes should release if brake pipe is within 0.15 bar of control res
-            else
+                else
                     InitialApplicationThresholdPSI = 1.0f;
             }
 
@@ -480,7 +480,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             QuickServiceActive = true;
                             UniformChargingActive = false;
 
-                    TripleValveState = ValveState.Apply;
+                            TripleValveState = ValveState.Apply;
                         }
                     }
                     else
@@ -495,7 +495,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 else if (TripleValveState != ValveState.Emergency)
                 {
                     TripleValveState = ValveState.Lap;
-            }
+                }    
             }
             else if (valveType == MSTSWagon.BrakeValveType.TripleValve || valveType == MSTSWagon.BrakeValveType.DistributingValve)
             {
@@ -517,7 +517,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             QuickServiceActive = true;
                             UniformChargingActive = false;
 
-                    TripleValveState = ValveState.Apply;
+                            TripleValveState = ValveState.Apply;
                         }
                     }
                     else
@@ -532,7 +532,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 else if (TripleValveState == ValveState.Apply)
                 {
                     TripleValveState = ValveState.Lap;
-            }
+                }
             }
             else
             {
@@ -666,12 +666,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         }
                         else
                         {
-                        dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                        if (EmergResPressurePSI - dp < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
-                            dp = (EmergResPressurePSI - AuxResPressurePSI) / (1 + EmergAuxVolumeRatio);
-                        EmergResPressurePSI -= dp;
-                        AuxResPressurePSI += dp * EmergAuxVolumeRatio;
-                    }
+                            dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+                            if (EmergResPressurePSI - dp < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
+                                dp = (EmergResPressurePSI - AuxResPressurePSI) / (1 + EmergAuxVolumeRatio);
+                            EmergResPressurePSI -= dp;
+                            AuxResPressurePSI += dp * EmergAuxVolumeRatio;
+                        }
                     }
 
                     if (EmergencyDumpValveTimerS == 0)
@@ -735,7 +735,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     dp = 0;
                 AutoCylPressurePSI -= dp;
             }
-
+            
             // Manage emergency res charging
             if ((Car as MSTSWagon).EmergencyReservoirPresent)
             {
@@ -750,13 +750,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         BrakeLine1PressurePSI += dp * EmergBrakeLineVolumeRatio;
                     }
                     else // Quick recharge: Emergency res air used to recharge aux res on older control valves
-            {
-                float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
+                    {
+                        float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
                         if (AuxResPressurePSI + dp > EmergResPressurePSI - dp / EmergAuxVolumeRatio)
                             dp = (EmergResPressurePSI - AuxResPressurePSI) * EmergAuxVolumeRatio / (1 + EmergAuxVolumeRatio);
                         if (BrakeLine1PressurePSI < AuxResPressurePSI + dp)
                             dp = (BrakeLine1PressurePSI - AuxResPressurePSI);
-                AuxResPressurePSI += dp;
+                        AuxResPressurePSI += dp;
                         EmergResPressurePSI -= dp / EmergAuxVolumeRatio;
                     }
                 }
