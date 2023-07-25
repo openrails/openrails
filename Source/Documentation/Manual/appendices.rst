@@ -123,7 +123,8 @@ The following folders are also written to by Open Rails.
    Save images          AppData\\Roaming\\Open Rails\\shunt_1 2021-07-18 19.46.35.png
    Replays              AppData\\Roaming\\Open Rails\\shunt_1 2021-07-18 19.46.35.replay
    Evaluations          AppData\\Roaming\\Open Rails\\shunt_1 2021-07-18 19.46.35.dbfeval
-   Loading progress bar AppData\\Roaming\\Open Rails\\Load Cache\\3cd9... ...0ce2.dat
+   Loading progress bar AppData\\Roaming\\Open Rails\\Cache\\Load\\3cd9... ...0ce2.cache-or
+   Timetable path files AppData\\Roaming\\Open Rails\\Cache\\Path\\4ae2... ...4132.cache-or
    ==================== ========================================================================================
 
 
