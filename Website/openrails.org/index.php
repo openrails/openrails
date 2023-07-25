@@ -76,14 +76,18 @@
           </div>
           <div style="background-color: #ffffcc; margin: 0 -5px; padding: 0 5px;">
             <p>
+              <strong>Jul 2023</strong>
+              Train Simulations publishes new <a href="https://www.trainsimulations.net/sp-shasta">Southern Pacific Shasta</a> route.
+            </p>
+          </div>
+          <div style="background-color: #ffffee; margin: 0 -5px; padding: 0 5px;">
+            <p>
               <strong>Jan 2023</strong>
               <a href="https://github.com/cpvirtual/OR_CPV.git">Portugal '79</a> has been published. 
             </p>
             <p>
               New commercial route <a href="http://www.hsb-simulator.com/">HSB Simulator</a> published. 
             </p>
-            </div>
-          <div style="background-color: #ffffee; margin: 0 -5px; padding: 0 5px;">
             <p>
               <strong>Nov 2022</strong>
               <a href="http://openrails.org/discover/version-1-5/">Version 1.5.1</a> is now available for immediate download <a href="http://openrails.org/download/program/">here</a>.
@@ -96,14 +100,6 @@
               <strong>Oct 2021</strong>
               Support for <a href="https://reshade.me/">ReShade</a>
             </p>          
-            <p>
-              <strong>Oct 2021</strong>
-              Map window for timetabled trains
-            </p>
-            <p>
-              <strong>Nov 2020</strong>
-              Wagons can now be braked individually as on the oldest railways. This can be experienced in 2 scenarios - <a href="https://www.coalstonewcastle.com.au/physics/stock/#rainhill">Stephenson's Rocket at Rainhill Trials</a> and <a href="https://www.coalstonewcastle.com.au/physics/stock/#select">Langley Vale Timber Tramway</a>. 
-            </p>
           </div>
         </div>
         <div class="col-md-4 divider">
