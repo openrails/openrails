@@ -296,16 +296,15 @@ Special Rows
   
   Large timetables can require many paths, and loading those paths can take 
   considerable time (several minutes). To reduce this loading time, the paths 
-  can be stored in a processed, binary format. This format is the same as used 
-  in the 'save' command. Note that the binary path information cannot be 
-  directly accessed by the user, either for reading or for writing. When 
-  ``/binary`` is set, the program will check if a binary path exists. If so, it 
-  will read that path. If not, it will read the 'normal' path, and will then 
-  store this as binary for future use. Binary paths are stored in a subdirectory 
-  named ``OpenRails`` which must be created in the Paths directory of the route.
+  can be stored in files in a processed, binary format. When 
+  ``/binary`` is set, the program will check if a binary path file exists. 
+  If so, it will read that path. If not, it will read the 'normal' path, and will then 
+  store this as a binary path file for future use.
 
   Note: If a path or the route is edited, then the binary data will be out of date.
   If so, it is deleted and re-created automatically when the user starts the route.
+  These files are stored in the same 
+  folder as Saves - see :ref:`Folders used by Open Rails <appendices-folders_used>`.
 
 - ``#consist`` row 
   

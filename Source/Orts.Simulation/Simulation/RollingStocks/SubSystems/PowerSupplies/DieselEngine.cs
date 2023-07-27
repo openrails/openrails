@@ -109,7 +109,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             DEList.Add(new DieselEngine(Locomotive));
 
                             DEList[i].Parse(stf);
-                            DEList[i].Initialize();
 
                             // sets flag to indicate that a diesel eng prime mover code block has been defined by user, otherwise OR will define one through the next code section using "MSTS" values
                             DEList[i].DieselEngineConfigured = true;
@@ -119,7 +118,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         {
                             STFException.TraceWarning(stf, "Diesel engine model has some errors - loading MSTS format");
                             DEList[i].InitFromMSTS();
-                            DEList[i].Initialize();
                         }
                     }
                     break;
@@ -993,14 +991,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Initialize()
         {
-            if (!Simulator.Settings.NoDieselEngineStart && !Locomotive.gearSaved)
+            if (!Simulator.Settings.NoDieselEngineStart)
             {
                 RealRPM = IdleRPM;
                 State = DieselEngineState.Running;
-            }
-            else if (Locomotive.gearSaved)
-            {
-                State = (DieselEngineState)Locomotive.dieselEngineRestoreState;
             }
 
             RPMRange = MaxRPM - IdleRPM;
@@ -1018,16 +1012,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void InitializeMoving()
         {
-            if (!Simulator.Settings.NoDieselEngineStart && !Locomotive.gearSaved)
+            RealRPM = IdleRPM;
+            State = DieselEngineState.Running;
+            if (ThrottleRPMTab != null)
             {
-                RealRPM = IdleRPM;
-                State = DieselEngineState.Running;
+                DemandedRPM = ThrottleRPMTab[Locomotive.ThrottlePercent];
+                DemandedRPM = MathHelper.Clamp(DemandedRPM, IdleRPM, MaxRPM);  // Clamp throttle setting within bounds
+                RealRPM = DemandedRPM;
             }
-            else if (Locomotive.gearSaved)
-            {
-                State = (DieselEngineState)Locomotive.dieselEngineRestoreState;
-            }
-
             GearBox?.InitializeMoving();
         }
 
@@ -1594,20 +1586,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Restore(BinaryReader inf)
         {
-            Locomotive.dieselEngineRestoreState = inf.ReadInt32();
-            State = (DieselEngineState)Locomotive.dieselEngineRestoreState;
+            State = (DieselEngineState)inf.ReadInt32();
             RealRPM = inf.ReadSingle();
             OutputPowerW = inf.ReadSingle();
             DieselTemperatureDeg = inf.ReadSingle();
             GovernorEnabled = inf.ReadBoolean();
-
-            Locomotive.gearSaved = inf.ReadBoolean();  // read boolean which indicates gear data was saved
-
-            if (Locomotive.gearSaved)
-            {
-                GearBox = new GearBox(this);
-                GearBox.Restore(inf);
-            }
+            GearBox?.Restore(inf);
         }
 
         public void Save(BinaryWriter outf)
@@ -1617,16 +1601,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             outf.Write(OutputPowerW);
             outf.Write(DieselTemperatureDeg);
             outf.Write(GovernorEnabled);
-
-            if (GearBox != null)
-            {
-                outf.Write(true);
-                GearBox.Save(outf);
-            }
-            else
-            {
-                outf.Write(false);
-            }
+            GearBox?.Save(outf);
         }
 
         /// <summary>
