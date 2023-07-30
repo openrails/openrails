@@ -549,6 +549,8 @@ namespace ORTS.Common
         public static string psi = Catalog.GetString("psi");
         public static string inhg = Catalog.GetString("inHg");
         public static string kgfpcm2 = Catalog.GetString("kgf/cm²");
+        public static string lps = Catalog.GetString("L/s");
+        public static string cfm = Catalog.GetString("cfm");
         public static string kg = Catalog.GetString("kg");
         public static string t = Catalog.GetString("t");
         public static string tonUK = Catalog.GetString("t-uk");
@@ -812,6 +814,12 @@ namespace ORTS.Common
             }
 
             return String.Format(CultureInfo.CurrentCulture, format, pressureOut);
+        }
+
+        public static string FormatAirFlow(float flowM3pS, bool isMetric)
+        {
+            var flow = isMetric ? flowM3pS * 1000.0f : flowM3pS * 35.3147f * 60.0f;
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", flow, isMetric ? lps : cfm);
         }
 
         /// <summary>

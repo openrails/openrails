@@ -1175,11 +1175,11 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat((data < 0 ? "???" : " ") + "\t");
 
             // BP
-            var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("EOT"));
+            var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("Flow"));
             status.AppendFormat("{0:F0}\t", brakeInfoValue);
-
-            // Flow.
-            // TODO:The BP air flow that feeds the brake tube is not yet modeled in Open Rails.
+            // Air flow meter
+            brakeInfoValue = brakeValue(Simulator.Catalog.GetString("Flow"), Simulator.Catalog.GetString("EOT"));
+            status.AppendFormat("{0:F0}\t", brakeInfoValue);
 
             // Remote
             if (dataDpu)
@@ -1277,6 +1277,7 @@ namespace Orts.Simulation.RollingStocks
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Throttle"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Load"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("BP"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Flow"));
             if (!dpuFull)
             {
                 labels.AppendFormat("{0}", Simulator.Catalog.GetString("Remote"));

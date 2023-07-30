@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Microsoft.Xna.Framework;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
@@ -409,23 +410,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
         }
 
-        static void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
+        static void IncreasePressure(ref float pressureBar, float targetBar, float rateBarpS, float elapsedSeconds)
         {
-            if (pressurePSI < targetPSI)
+            if (pressureBar < targetBar)
             {
-                pressurePSI += ratePSIpS * elapsedSeconds;
-                if (pressurePSI > targetPSI)
-                    pressurePSI = targetPSI;
+                float dp = rateBarpS * elapsedSeconds;
+                if (targetBar - pressureBar < 0.5f) // Slow down increase when nearing target to simulate chokes in brake valve
+                    dp *= Math.Min((targetBar - pressureBar) / 0.5f + 0.1f, 1.0f);
+                pressureBar += dp;
+                if (pressureBar > targetBar)
+                    pressureBar = targetBar;
             }
         }
 
-        static void DecreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
+        static void DecreasePressure(ref float pressureBar, float targetBar, float rateBarpS, float elapsedSeconds)
         {
-            if (pressurePSI > targetPSI)
+            if (pressureBar > targetBar)
             {
-                pressurePSI -= ratePSIpS * elapsedSeconds;
-                if (pressurePSI < targetPSI)
-                    pressurePSI = targetPSI;
+                float dp = rateBarpS * elapsedSeconds;
+                if (pressureBar - targetBar < 0.5f) // Slow down decrease when nearing target to simulate chokes in brake valve
+                    dp *= Math.Min((pressureBar - targetBar) / 0.5f + 0.1f, 1.0f);
+                pressureBar -= dp;
+                if (pressureBar < targetBar)
+                    pressureBar = targetBar;
             }
         }
     }

@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -636,6 +637,8 @@ namespace Orts.Viewer3D.Popups
                       .Replace(Viewer.Catalog.GetString("kgf/cm²"), string.Empty)
                       .Replace(Viewer.Catalog.GetString("kPa"), string.Empty)
                       .Replace(Viewer.Catalog.GetString("psi"), string.Empty)
+                      .Replace(Viewer.Catalog.GetString("cfm"), string.Empty)
+                      .Replace(Viewer.Catalog.GetString("L/s"), string.Empty)
                       .Replace(Viewer.Catalog.GetString("lib./pal."), string.Empty)//cs locales
                       .Replace(Viewer.Catalog.GetString("pal.rtuti"), string.Empty)
                       .ToString();
@@ -840,34 +843,53 @@ namespace Orts.Viewer3D.Popups
                     LastCol = brakeInfoValue,
                 });
 
-                if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
+                int endIndex;
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("Flow")))
                 {
-                    int indexOffset = Viewer.Catalog.GetString("EOT").Length + 1; 
-                    if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
-                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index);
-                    else
-                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
+                    endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("Flow"));
+                }
+                else if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
+                {
+                    endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT"));
+                }
+                else
+                {
+                    endIndex = trainBrakeStatus.Length;
+                }
 
-                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) - index).TrimEnd();
-                    AddLabel(new ListLabel
-                    {
-                        LastCol = brakeInfoValue,
-                    });
-                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) + indexOffset;
-                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimStart();
+                if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
+                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index);
+                else
+                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
+
+                brakeInfoValue = trainBrakeStatus.Substring(index, endIndex - index).TrimEnd();
+                AddLabel(new ListLabel
+                {
+                    LastCol = brakeInfoValue,
+                });
+                
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("Flow")))
+                {
+                    index = endIndex;
+
+                    if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
+                        endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT"));
+                    else
+                        endIndex = trainBrakeStatus.Length;
+
+                    brakeInfoValue = trainBrakeStatus.Substring(index, endIndex - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
                         LastCol = brakeInfoValue,
                     });
                 }
-                else
-                {
-                    if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
-                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index);
-                    else
-                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
 
-                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimEnd();
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
+                {
+                    int indexOffset = Viewer.Catalog.GetString("EOT").Length + 1;
+
+                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) + indexOffset;
+                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimStart();
                     AddLabel(new ListLabel
                     {
                         LastCol = brakeInfoValue,
