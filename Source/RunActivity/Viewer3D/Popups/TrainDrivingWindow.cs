@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 
 namespace Orts.Viewer3D.Popups
 {
