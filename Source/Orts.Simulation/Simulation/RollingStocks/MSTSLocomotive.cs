@@ -974,6 +974,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(awsmonitor":
                 case "engine(overspeedmonitor": VigilanceMonitor = true; TrainControlSystem.Parse(lowercasetoken, stf); break;
                 case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
+                case "engine(ortsairbrakemainresvolume":
                 case "engine(airbrakesmainresvolume": MainResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakemaxmainrespipepressure": MaximumMainReservoirPipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -1007,10 +1008,15 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(ortstractioncharacteristics": TractiveForceCurves = new InterpolatorDiesel2D(stf, true); break;
                 case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new InterpolatorDiesel2D(stf, false); break;
                 case "engine(ortscontinuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortssanderspeedeffectupto":
                 case "engine(orts(ortssanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(ortsemergencycausespowerdown":
                 case "engine(orts(ortsemergencycausespowerdown": EmergencyCausesPowerDown = stf.ReadBoolBlock(false); break;
+                case "engine(ortsemergencycausesthrottledown":
                 case "engine(orts(ortsemergencycausesthrottledown": EmergencyCausesThrottleDown = stf.ReadBoolBlock(false); break;
+                case "engine(ortsemergencyengageshorn":
                 case "engine(orts(ortsemergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
+                case "engine(ortswheelslipcausesthrottledown":
                 case "engine(orts(ortswheelslipcausesthrottledown": WheelslipCausesThrottleDown = stf.ReadBoolBlock(false); break;
                 case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
