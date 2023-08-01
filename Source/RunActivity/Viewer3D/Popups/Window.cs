@@ -45,7 +45,11 @@ namespace Orts.Viewer3D.Popups
         VertexBuffer WindowVertexBuffer;
         IndexBuffer WindowIndexBuffer;
 
-        readonly bool DoNotDisplayWindow;
+        public bool DoNotDisplayWindow // true for a NotInFocus window
+        {
+            get;
+            private set;
+        }
 
         public Window(WindowManager owner, int width, int height, string caption)
         {
