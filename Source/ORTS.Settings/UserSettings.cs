@@ -317,6 +317,12 @@ namespace ORTS.Settings
         public bool AdhesionProportionalToWeather { get; set; }
         [Default(false)]
         public bool NoForcedRedAtStationStops { get; set; }
+        [Default(100)]
+        public int PrecipitationBoxHeight { get; set; }
+        [Default(500)]
+        public int PrecipitationBoxWidth { get; set; }
+        [Default(500)]
+        public int PrecipitationBoxLength { get; set; }
         [Default(false)]
         public bool CorrectQuestionableBrakingParams { get; set; }
         [Default(false)]

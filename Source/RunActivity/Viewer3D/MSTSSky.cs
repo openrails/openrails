@@ -150,7 +150,7 @@ namespace Orts.Viewer3D
                     mstsskymoonPhase = 3; // Moon dog only occurs in winter
                 // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
                 //mstsskyovercastFactor = MSTSSkyViewer.World.WeatherControl.overcastFactor;
-                mstsskyfogDistance = MSTSSkyViewer.Simulator.Weather.VisibilityM;
+                mstsskyfogDistance = MSTSSkyViewer.Simulator.Weather.FogDistance;
             }
 
             MPManager manager = MPManager.Instance();
@@ -585,7 +585,8 @@ namespace Orts.Viewer3D
             MSTSSkyShader.MoonScale = MSTSSkyConstants.skyRadius / 20;
             MSTSSkyShader.Overcast = Viewer.World.MSTSSky.mstsskyovercastFactor;
             MSTSSkyShader.SetFog(Viewer.World.MSTSSky.mstsskyfogDistance, ref SharedMaterialManager.FogColor);
-            MSTSSkyShader.CloudScalePosition = Viewer.World.WeatherControl.CloudScalePosition;
+            MSTSSkyShader.WindSpeed = Viewer.World.MSTSSky.mstsskywindSpeed;
+            MSTSSkyShader.WindDirection = Viewer.World.MSTSSky.mstsskywindDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 
             for (var i = 0; i < 5; i++)
                 graphicsDevice.SamplerStates[i] = SamplerState.LinearWrap;

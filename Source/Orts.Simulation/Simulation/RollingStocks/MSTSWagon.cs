@@ -145,6 +145,11 @@ namespace Orts.Simulation.RollingStocks
         float TenderWagonMaxCoalMassKG;
         float TenderWagonMaxWaterMassKG;
 
+        // Wind Impacts
+        float WagonDirectionDeg;
+        float WagonResultantWindComponentDeg;
+        float WagonWindResultantSpeedMpS;
+
         protected float FrictionC1; // MSTS Friction parameters
         protected float FrictionE1; // MSTS Friction parameters
         protected float FrictionV2; // MSTS Friction parameters
@@ -2987,129 +2992,130 @@ namespace Orts.Simulation.RollingStocks
             // Lateral resistance - due to wheel flange being pushed against rail due to side wind.
             // Calculation based upon information provided in AREA 1942 Proceedings - https://archive.org/details/proceedingsofann431942amer - pg 56
 
-            // Only calculate wind resistance if option selected in options menu, and not in a tunnel, and speed is sufficient for wind effects (>5mph)
-            if (!CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue && AbsSpeedMpS > 2.2352)
+            if (!CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue && AbsSpeedMpS > 2.2352) // Only calculate wind resistance if option selected in options menu, and not in a tunnel, and speed is sufficient for wind effects (>5mph)
             {
+
                 // Wagon Direction
-                var directionRad = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
-                var directionDeg = MathHelper.ToDegrees(directionRad);
+                float direction = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
+                WagonDirectionDeg = MathHelper.ToDegrees((float)direction);
 
                 // If car is flipped, then the car's direction will be reversed by 180 compared to the rest of the train, and thus for calculation purposes only, 
                 // it is necessary to reverse the "assumed" direction of the car back again. This shouldn't impact the visual appearance of the car.
                 if (Flipped)
                 {
-                    // Reverse direction of car
-                    directionDeg += 180.0f;
-
-                    // If this results in an angle greater then 360, then convert it back to an angle between 0 & 360.
-                    if (directionDeg > 360)
-                        directionDeg -= 360;
+                    WagonDirectionDeg += 180.0f; // Reverse direction of car
+                    if (WagonDirectionDeg > 360) // If this results in an angle greater then 360, then convert it back to an angle between 0 & 360.
+                    {
+                        WagonDirectionDeg -= 360;
+                    }
                 }                   
 
                 // If a westerly direction (ie -ve) convert to an angle between 0 and 360
-                if (directionDeg < 0)
-                    directionDeg += 360;
+                if (WagonDirectionDeg < 0)
+                    WagonDirectionDeg += 360;
+
+                float TrainSpeedMpS = Math.Abs(SpeedMpS);
                 
                 // Find angle between wind and direction of train
-                var resultantWindComponentDeg = 0.0f;
-                if (Train.PhysicsWindDirectionDeg > directionDeg)
-                    resultantWindComponentDeg = Train.PhysicsWindDirectionDeg - directionDeg;
-                else if (directionDeg > Train.PhysicsWindDirectionDeg)
-                    resultantWindComponentDeg = directionDeg - Train.PhysicsWindDirectionDeg;
+                if (Train.PhysicsWindDirectionDeg > WagonDirectionDeg)
+                    WagonResultantWindComponentDeg = Train.PhysicsWindDirectionDeg - WagonDirectionDeg;
+                else if (WagonDirectionDeg > Train.PhysicsWindDirectionDeg)
+                    WagonResultantWindComponentDeg = WagonDirectionDeg - Train.PhysicsWindDirectionDeg;
+                else
+                    WagonResultantWindComponentDeg = 0.0f;
 
                 // Correct wind direction if it is greater then 360 deg, then correct to a value less then 360
-                if (Math.Abs(resultantWindComponentDeg) > 360)
-                    resultantWindComponentDeg -= 360.0f;
+                if (Math.Abs(WagonResultantWindComponentDeg) > 360)
+                    WagonResultantWindComponentDeg = WagonResultantWindComponentDeg - 360.0f;
 
                 // Wind angle should be kept between 0 and 180 the formulas do not cope with angles > 180. If angle > 180, denotes wind of "other" side of train
-                if (resultantWindComponentDeg > 180)
-                    resultantWindComponentDeg = 360 - resultantWindComponentDeg;
+                if (WagonResultantWindComponentDeg > 180)
+                    WagonResultantWindComponentDeg = 360 - WagonResultantWindComponentDeg;
 
-                var resultantWindComponentRad = MathHelper.ToRadians(resultantWindComponentDeg);
+                float ResultantWindComponentRad = MathHelper.ToRadians(WagonResultantWindComponentDeg);
 
                 // Find the resultand wind vector for the combination of wind and train speed
-                var windResultantSpeedMpS = (float)Math.Sqrt(AbsSpeedMpS * AbsSpeedMpS + Train.PhysicsWindSpeedMpS * Train.PhysicsWindSpeedMpS + 2.0f * AbsSpeedMpS * Train.PhysicsWindSpeedMpS * (float)Math.Cos(resultantWindComponentRad));
+                WagonWindResultantSpeedMpS = (float)Math.Sqrt(TrainSpeedMpS * TrainSpeedMpS + Train.PhysicsWindSpeedMpS * Train.PhysicsWindSpeedMpS + 2.0f * TrainSpeedMpS * Train.PhysicsWindSpeedMpS * (float)Math.Cos(ResultantWindComponentRad));
 
                 // Calculate Drag Resistance
                 // The drag resistance will be the difference between the STILL firction calculated using the standard Davies equation, 
                 // and that produced using the wind resultant speed (combination of wind speed and train speed)
-                var tempStillDragResistanceForceN = AbsSpeedMpS * AbsSpeedMpS * DavisCNSSpMM;
-                var tempCombinedDragResistanceForceN = windResultantSpeedMpS * windResultantSpeedMpS * DavisCNSSpMM; // R3 of Davis formula taking into account wind
-                float windDragResistanceForceN;
+                float TempStillDragResistanceForceN = AbsSpeedMpS * AbsSpeedMpS * DavisCNSSpMM;
+                float TempCombinedDragResistanceForceN = WagonWindResultantSpeedMpS * WagonWindResultantSpeedMpS * DavisCNSSpMM; // R3 of Davis formula taking into account wind
+                float WindDragResistanceForceN = 0.0f;
 
                 // Find the difference between the Still and combined resistances
                 // This difference will be added or subtracted from the overall friction force depending upon the estimated wind direction.
-                if (tempCombinedDragResistanceForceN > tempStillDragResistanceForceN)
-                {
                 // Wind typically headon to train - increase resistance - +ve differential
-                    windDragResistanceForceN = tempCombinedDragResistanceForceN - tempStillDragResistanceForceN;
-                }
-                else
+                if (TempCombinedDragResistanceForceN > TempStillDragResistanceForceN)
                 {
-                    // Wind typically following train - reduce resistance - -ve differential
-                    windDragResistanceForceN = tempStillDragResistanceForceN - tempCombinedDragResistanceForceN;
-                    windDragResistanceForceN *= -1.0f;  // Convert to negative number to allow subtraction from ForceN
+                    WindDragResistanceForceN = TempCombinedDragResistanceForceN - TempStillDragResistanceForceN;
+                }
+                else // wind typically following train - reduce resistance - -ve differential
+                {
+                    WindDragResistanceForceN = TempStillDragResistanceForceN - TempCombinedDragResistanceForceN;
+                    WindDragResistanceForceN *= -1.0f;  // Convert to negative number to allow subtraction from ForceN
                 }
 
                 // Calculate Lateral Resistance
 
                 // Calculate lateral resistance due to wind
                 // Resistance is due to the wheel flanges being pushed further onto rails when a cross wind is experienced by a train
-                var a = Train.PhysicsWindSpeedMpS / AbsSpeedMpS;
-                var c = (float)Math.Sqrt((1 + (a * a) + 2.0f * a * Math.Cos(resultantWindComponentRad)));
-                var windConstant = 8.25f;
-                var speedMpH = Me.ToMi(pS.TopH(AbsSpeedMpS));
+                float A = Train.PhysicsWindSpeedMpS / AbsSpeedMpS;
+                float C = (float)Math.Sqrt((1 + (A * A) + 2.0f * A * Math.Cos(ResultantWindComponentRad)));
+                float WindConstant = 8.25f;
+                float TrainSpeedMpH = Me.ToMi(pS.TopH(AbsSpeedMpS));
+                float WindSpeedMpH = Me.ToMi(pS.TopH(Train.PhysicsWindSpeedMpS));
 
-                var wagonFrontalAreaFt2 = Me2.ToFt2(WagonFrontalAreaM2);
+                float WagonFrontalAreaFt2 = Me2.ToFt2(WagonFrontalAreaM2);
 
-                LateralWindForceN = N.FromLbf(windConstant * a * (float)Math.Sin(resultantWindComponentRad) * DavisDragConstant * wagonFrontalAreaFt2 * speedMpH * speedMpH * c);
+                LateralWindForceN = N.FromLbf(WindConstant * A * (float)Math.Sin(ResultantWindComponentRad) * DavisDragConstant * WagonFrontalAreaFt2 * TrainSpeedMpH * TrainSpeedMpH * C);
 
-                var lateralWindResistanceForceN = N.FromLbf(windConstant * a * (float)Math.Sin(resultantWindComponentRad) * DavisDragConstant * wagonFrontalAreaFt2 * speedMpH * speedMpH * c * Train.WagonCoefficientFriction);
+                float LateralWindResistanceForceN = N.FromLbf(WindConstant * A * (float)Math.Sin(ResultantWindComponentRad) * DavisDragConstant * WagonFrontalAreaFt2 * TrainSpeedMpH * TrainSpeedMpH * C * Train.WagonCoefficientFriction);
 
                 // if this car is a locomotive, but not the lead one then recalculate the resistance with lower C value as drag will not be as high on trailing locomotives
                 if (WagonType == WagonTypes.Engine && Train.LeadLocomotive != this)
                 {
-                    lateralWindResistanceForceN *= TrailLocoResistanceFactor;
+                    LateralWindResistanceForceN *= TrailLocoResistanceFactor;
                 }
 
                 // Test to identify whether a tender is attached to the leading engine, if not then the resistance should also be derated as for the locomotive
-                var isLeadTender = false;
+                bool IsLeadTender = false;
                 if (WagonType == WagonTypes.Tender)
                 {
-                    var prevCarLead = false;
+                    bool PrevCarLead = false;
                     foreach (var car in Train.Cars)
                     {
                         // If this car is a tender and the previous car is the lead locomotive then set the flag so that resistance will be reduced
-                        if (car == this && prevCarLead)
+                        if (car == this && PrevCarLead)
                         {
-                            isLeadTender = true;
+                            IsLeadTender = true;
                             break;  // If the tender has been identified then break out of the loop, otherwise keep going until whole train is done.
                         }
-
                         // Identify whether car is a lead locomotive or not. This is kept for when the next iteration (next car) is checked.
                         if (Train.LeadLocomotive == car)
                         {
-                            prevCarLead = true;
+                            PrevCarLead = true;
                         }
                         else
                         {
-                            prevCarLead = false;
+                            PrevCarLead = false;
                         }
                     }
 
                     // If tender is coupled to a trailing locomotive then reduce resistance
-                    if (!isLeadTender)
+                    if (!IsLeadTender)
                     {
-                        lateralWindResistanceForceN *= TrailLocoResistanceFactor;
+                        LateralWindResistanceForceN *= TrailLocoResistanceFactor;
                     }
                 }
-
-                WindForceN = lateralWindResistanceForceN + windDragResistanceForceN;
+                WindForceN = LateralWindResistanceForceN + WindDragResistanceForceN;
             }
             else
             {
                 WindForceN = 0.0f; // Set to zero if wind resistance is not to be calculated
             }
+
         }
 
         private void UpdateTenderLoad()

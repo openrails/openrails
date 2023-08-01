@@ -131,6 +131,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxSpeedMpS = 1e3f;
         public float UnloadingSpeedMpS;
         public float MainResPressurePSI = 130;
+        public float BrakePipeFlowM3pS;
         public float MaximumMainReservoirPipePressurePSI;
         public bool CompressorIsOn;
         public bool CompressorIsMechanical = false;
@@ -145,6 +146,9 @@ namespace Orts.Simulation.RollingStocks
         public bool CabRadioOn;
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
+
+        public float FilteredBrakePipeFlowM3pS;
+        public IIRFilter AFMFilter;
 
         // Water trough filling
         public bool HasWaterScoop = false; // indicates whether loco + tender have a water scoop or not
@@ -417,7 +421,7 @@ namespace Orts.Simulation.RollingStocks
         protected const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
         protected const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
 
-public List<CabView> CabViewList = new List<CabView>();
+        public List<CabView> CabViewList = new List<CabView>();
         public CabView3D CabView3D;
 
         public MSTSNotchController SteamHeatController = new MSTSNotchController(0, 1, 0.1f);
@@ -482,6 +486,7 @@ public List<CabView> CabViewList = new List<CabView>();
             LocomotiveAxles.Add(new Axle());
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1f), 0.001f);
+            AFMFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 1.0f);
 
             TrainBrakeController = new ScriptedBrakeController(this);
             EngineBrakeController = new ScriptedBrakeController(this);
@@ -3095,7 +3100,7 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 var fogBaseFrictionCoefficientFactor = 1.0f;
                 var pricBaseFrictionCoefficientFactor = 1.0f;
-                float pric = Simulator.Weather.PrecipitationIntensityPPSPM2 * 1000;
+                float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
                 // precipitation will calculate a base coefficient value between 60% (light rain) and 90% (heavy rain) - this will be a factor that is used to adjust the base value 
                 // assume linear value between upper and lower precipitation values. Limits are set in the weather module, ie Rain = 0.01ppm (10) and Snow = 0.005ppm (5)
                 float precGrad = (0.2f - 0) / (10f - 5f);
@@ -3111,7 +3116,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
 
                 // Adjust adhesion for impact of fog - default = 20000m = 20km
-                float fog = Simulator.Weather.VisibilityM;
+                float fog = Simulator.Weather.FogDistance;
                 if (fog < 20000) // as fog thickens then decrease adhesion
                 {
                     fogBaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.6f), 1.0f); // If fog is less then 2km then it will impact friction, decrease adhesion to 60% (same as light rain transition)
@@ -5416,6 +5421,25 @@ public List<CabView> CabViewList = new List<CabView>();
                 case CABViewControlTypes.ORTS_OVERCHARGE:
                     {
                         data = (TrainBrakeController == null || !TrainBrakeController.OverchargeButtonPressed) ? 0 : 1;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_AIR_FLOW_METER:
+                    {
+                        switch (cvc.Units)
+                        {
+                            case CABViewControlUnits.CUBIC_FT_MIN:
+                                data = this.FilteredBrakePipeFlowM3pS * 35.3147f * 60.0f;
+                                break;
+
+                            case CABViewControlUnits.LITRES_S:
+                                data = this.FilteredBrakePipeFlowM3pS * 1000.0f;
+                                break;
+
+                            default:
+                                data = this.FilteredBrakePipeFlowM3pS;
+                                break;
+
+                        }
                         break;
                     }
                 case CABViewControlTypes.FRICTION_BRAKING:

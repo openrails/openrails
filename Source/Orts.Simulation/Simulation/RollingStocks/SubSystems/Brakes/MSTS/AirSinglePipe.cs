@@ -33,6 +33,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
     public class AirSinglePipe : MSTSBrakeSystem
     {
         protected TrainCar Car;
+        readonly static float OneAtmospherePSI = 14.696f;
         protected float HandbrakePercent;
         protected float CylPressurePSI = 64;
         public float AutoCylPressurePSI { get; protected set; } = 64;
@@ -180,9 +181,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         // Get Brake information for train
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
+            var loco = Car as MSTSLocomotive;
             var s = $" {Simulator.Catalog.GetString("EQ")} {FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.PSI, units[BrakeSystemComponent.EqualizingReservoir], true)}"
                 + $" {Simulator.Catalog.GetString("BC")} {FormatStrings.FormatPressure(Car.Train.HUDWagonBrakeCylinderPSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true)}"
-                + $" {Simulator.Catalog.GetString("BP")} {FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true)}";
+                + $" {Simulator.Catalog.GetString("BP")} {FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true)}"
+                + $" {Simulator.Catalog.GetString("Flow")} {FormatStrings.FormatAirFlow(loco.FilteredBrakePipeFlowM3pS, loco.IsMetric)}";
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
                 s += $" {Simulator.Catalog.GetString("EOT")} {lastCarBrakeSystem.GetStatus(units)}";
             if (HandbrakePercent > 0)
@@ -1096,6 +1099,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             var lead = trainCar as MSTSLocomotive;
             train.FindLeadLocomotives(out int first, out int last);
 
+            float tempBrakePipeFlow = 0.0f; // Flow calculation will assume 0 flow unless calculated otherwise
+
             // Propagate brake line (1) data if pressure gradient disabled
             if (lead != null && lead.BrakePipeChargingRatePSIorInHgpS >= 1000)
             {   // pressure gradient disabled
@@ -1103,6 +1108,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     var dp1 = train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
                     lead.MainResPressurePSI -= dp1 * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3;
+
+                    tempBrakePipeFlow = (dp1 * lead.BrakeSystem.BrakePipeVolumeM3) / (OneAtmospherePSI * elapsedClockSeconds); // Instantaneous flow rate from MR to BP
                 }
                 foreach (TrainCar car in train.Cars)
                 {
@@ -1111,6 +1118,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     if (car.BrakeSystem.TwoPipes)
                         car.BrakeSystem.BrakeLine2PressurePSI = Math.Min(lead.MainResPressurePSI, lead.MaximumMainReservoirPipePressurePSI);
                 }
+
+                lead.BrakePipeFlowM3pS = tempBrakePipeFlow;
+                lead.FilteredBrakePipeFlowM3pS = lead.AFMFilter.Filter(lead.BrakePipeFlowM3pS, elapsedClockSeconds); // Actual flow rate displayed by air flow meter
             }
             else
             {   // approximate pressure gradient in train pipe line1
@@ -1123,6 +1133,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     if (lead != null)
                     {
+                        tempBrakePipeFlow = 0.0f;
+
                         // Allow for leaking train air brakepipe
                         if (lead.BrakeSystem.BrakeLine1PressurePSI - trainPipeLeakLossPSI > 0 && lead.TrainBrakePipeLeakPSIorInHgpS != 0) // if train brake pipe has pressure in it, ensure result will not be negative if loss is subtracted
                         {
@@ -1142,8 +1154,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 }
                                 float PressureDiffEqualToPipePSI = trainPipeTimeVariationS * chargingRatePSIpS; // default condition - if EQ Res is higher then Brake Pipe Pressure
 
-                                if (train.EqualReservoirPressurePSIorInHg < lead.BrakeSystem.BrakeLine1PressurePSI + 1)
-                                    PressureDiffEqualToPipePSI *= MathHelper.Clamp(train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI, 0.1f, 1.0f); // Reduce recharge rate if near EQ pressure to prevent air pulsing
+                                if (train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI < 5.0f) // Reduce recharge rate if near EQ to simulate feed valve behavior
+                                    PressureDiffEqualToPipePSI *= Math.Min((float)Math.Sqrt((train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI) / 5.0f), 1.0f);
+                                if (lead.MainResPressurePSI - train.EqualReservoirPressurePSIorInHg < 15.0f) // Reduce recharge rate if near MR pressure as per reality
+                                    PressureDiffEqualToPipePSI *= Math.Min((lead.MainResPressurePSI - train.EqualReservoirPressurePSIorInHg) / 15.0f, 1.0f);
 
                                 if (lead.BrakeSystem.BrakeLine1PressurePSI + PressureDiffEqualToPipePSI > train.EqualReservoirPressurePSIorInHg)
                                     PressureDiffEqualToPipePSI = train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
@@ -1159,6 +1173,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 {
                                     lead.BrakeSystem.BrakeLine1PressurePSI += PressureDiffEqualToPipePSI;
                                     lead.MainResPressurePSI -= PressureDiffEqualToPipePSI * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3;
+
+                                    tempBrakePipeFlow = (PressureDiffEqualToPipePSI * lead.BrakeSystem.BrakePipeVolumeM3) / (OneAtmospherePSI * trainPipeTimeVariationS); // Instantaneous flow rate from MR to BP
                                 }
                             }
                             // reduce pressure in lead brake line if brake pipe pressure is above equalising pressure - apply brakes
@@ -1167,13 +1183,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 float serviceVariationFactor = Math.Min(trainPipeTimeVariationS / serviceTimeFactor, 0.95f);
                                 float pressureDiffPSI = serviceVariationFactor * lead.BrakeSystem.BrakeLine1PressurePSI;
 
-                                if (train.EqualReservoirPressurePSIorInHg > lead.BrakeSystem.BrakeLine1PressurePSI - 1)
-                                    pressureDiffPSI *= MathHelper.Clamp(lead.BrakeSystem.BrakeLine1PressurePSI - train.EqualReservoirPressurePSIorInHg, 0.1f, 1.0f); // Reduce exhausting rate if near EQ pressure to prevent air pulsing
+                                if (train.EqualReservoirPressurePSIorInHg > lead.BrakeSystem.BrakeLine1PressurePSI - 5.0f) // Reduce exhausting rate if near EQ pressure to simulate feed valve
+                                    pressureDiffPSI *= Math.Min((float)Math.Sqrt((lead.BrakeSystem.BrakeLine1PressurePSI - train.EqualReservoirPressurePSIorInHg) / 5.0f), 1.0f);
                                 if (lead.BrakeSystem.BrakeLine1PressurePSI - pressureDiffPSI < train.EqualReservoirPressurePSIorInHg)
                                     pressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI - train.EqualReservoirPressurePSIorInHg;
                                 lead.BrakeSystem.BrakeLine1PressurePSI -= pressureDiffPSI;
                             }
                         }
+
+                        // Finish updating air flow meter
+                        lead.BrakePipeFlowM3pS = tempBrakePipeFlow;
+                        lead.FilteredBrakePipeFlowM3pS = lead.AFMFilter.Filter(lead.BrakePipeFlowM3pS, trainPipeTimeVariationS); // Actual flow rate displayed by air flow meter
 
                         train.LeadPipePressurePSI = lead.BrakeSystem.BrakeLine1PressurePSI;  // Keep a record of current train pipe pressure in lead locomotive
                     }
