@@ -172,9 +172,11 @@ namespace Orts.Viewer3D.Popups
         {
             foreach (var window in Windows)
                 if (!window.DoNotDisplayWindow)
+                {
                     // This if is added to not do the save in case of the out of focus window
                     // See Source\RunActivity\Viewer3D\Popups\OutOfFocusWindow.cs
                     window.Save(outf);
+                }
         }
 
         [CallOnThread("Render")]
@@ -182,9 +184,11 @@ namespace Orts.Viewer3D.Popups
         {
             foreach (var window in Windows)
                 if (!window.DoNotDisplayWindow)
+                {
                     // This if is added to not do the restore in case of the out of focus window
                     // See Source\RunActivity\Viewer3D\Popups\OutOfFocusWindow.cs
                     window.Restore(inf);
+                }
         }
 
 		[CallOnThread("Updater")]
