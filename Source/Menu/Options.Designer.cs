@@ -169,8 +169,6 @@
             this.pathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bindingSourceContent = new System.Windows.Forms.BindingSource(this.components);
             this.tabPageSystem = new System.Windows.Forms.TabPage();
-            this.checkOutOfFocus = new System.Windows.Forms.CheckBox();
-            this.pbOutOfFocus = new System.Windows.Forms.PictureBox();
             this.pbPerformanceTuner = new System.Windows.Forms.PictureBox();
             this.labelPerformanceTunerTarget = new System.Windows.Forms.Label();
             this.numericPerformanceTunerTarget = new System.Windows.Forms.NumericUpDown();
@@ -179,8 +177,8 @@
             this.labelWebServerPort = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
-            this.comboControlConfirmations = new System.Windows.Forms.ComboBox();
             this.labelControlConfirmations = new System.Windows.Forms.Label();
+            this.comboControlConfirmations = new System.Windows.Forms.ComboBox();
             this.pbWindowGlass = new System.Windows.Forms.PictureBox();
             this.checkWindowGlass = new System.Windows.Forms.CheckBox();
             this.comboWindowSize = new System.Windows.Forms.ComboBox();
@@ -285,7 +283,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
             this.tabPageSystem.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbOutOfFocus)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPerformanceTuner)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWebServerPort)).BeginInit();
@@ -2091,8 +2088,6 @@
             // 
             // tabPageSystem
             // 
-            this.tabPageSystem.Controls.Add(this.checkOutOfFocus);
-            this.tabPageSystem.Controls.Add(this.pbOutOfFocus);
             this.tabPageSystem.Controls.Add(this.pbPerformanceTuner);
             this.tabPageSystem.Controls.Add(this.labelPerformanceTunerTarget);
             this.tabPageSystem.Controls.Add(this.numericPerformanceTunerTarget);
@@ -2122,29 +2117,6 @@
             this.tabPageSystem.Text = "System";
             this.tabPageSystem.UseVisualStyleBackColor = true;
             // 
-            // checkOutOfFocus
-            // 
-            this.checkOutOfFocus.Location = new System.Drawing.Point(35, 202);
-            this.checkOutOfFocus.Name = "checkOutOfFocus";
-            this.checkOutOfFocus.Size = new System.Drawing.Size(285, 17);
-            this.checkOutOfFocus.TabIndex = 4;
-            this.checkOutOfFocus.Text = "Notify out-of-focus";
-            this.checkOutOfFocus.UseVisualStyleBackColor = true;
-            this.checkOutOfFocus.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.checkOutOfFocus.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // pbOutOfFocus
-            // 
-            this.pbOutOfFocus.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbOutOfFocus.Location = new System.Drawing.Point(11, 202);
-            this.pbOutOfFocus.Name = "pbOutOfFocus";
-            this.pbOutOfFocus.Size = new System.Drawing.Size(18, 18);
-            this.pbOutOfFocus.TabIndex = 46;
-            this.pbOutOfFocus.TabStop = false;
-            this.pbOutOfFocus.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbOutOfFocus.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbOutOfFocus.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
             // pbPerformanceTuner
             // 
             this.pbPerformanceTuner.Image = global::ORTS.Properties.Resources.info_18;
@@ -2163,7 +2135,7 @@
             this.labelPerformanceTunerTarget.Margin = new System.Windows.Forms.Padding(3);
             this.labelPerformanceTunerTarget.Name = "labelPerformanceTunerTarget";
             this.labelPerformanceTunerTarget.Size = new System.Drawing.Size(200, 13);
-            this.labelPerformanceTunerTarget.TabIndex = 10;
+            this.labelPerformanceTunerTarget.TabIndex = 44;
             this.labelPerformanceTunerTarget.Text = "Target frame rate";
             this.labelPerformanceTunerTarget.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.labelPerformanceTunerTarget.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
@@ -2189,7 +2161,7 @@
             0});
             this.numericPerformanceTunerTarget.Name = "numericPerformanceTunerTarget";
             this.numericPerformanceTunerTarget.Size = new System.Drawing.Size(54, 20);
-            this.numericPerformanceTunerTarget.TabIndex = 9;
+            this.numericPerformanceTunerTarget.TabIndex = 43;
             this.toolTip1.SetToolTip(this.numericPerformanceTunerTarget, "Distance to see mountains");
             this.numericPerformanceTunerTarget.Value = new decimal(new int[] {
             60,
@@ -2202,7 +2174,7 @@
             this.checkPerformanceTuner.Location = new System.Drawing.Point(35, 329);
             this.checkPerformanceTuner.Name = "checkPerformanceTuner";
             this.checkPerformanceTuner.Size = new System.Drawing.Size(285, 17);
-            this.checkPerformanceTuner.TabIndex = 8;
+            this.checkPerformanceTuner.TabIndex = 42;
             this.checkPerformanceTuner.Text = "Automatically tune settings to keep performance level";
             this.checkPerformanceTuner.UseVisualStyleBackColor = true;
             this.checkPerformanceTuner.Click += new System.EventHandler(this.checkPerformanceTuner_Click);
@@ -2246,7 +2218,7 @@
             0});
             this.numericWebServerPort.Name = "numericWebServerPort";
             this.numericWebServerPort.Size = new System.Drawing.Size(70, 20);
-            this.numericWebServerPort.TabIndex = 7;
+            this.numericWebServerPort.TabIndex = 39;
             this.numericWebServerPort.Value = new decimal(new int[] {
             1025,
             0,
@@ -2272,7 +2244,7 @@
             this.comboControlConfirmations.Location = new System.Drawing.Point(35, 265);
             this.comboControlConfirmations.Name = "comboControlConfirmations";
             this.comboControlConfirmations.Size = new System.Drawing.Size(121, 21);
-            this.comboControlConfirmations.TabIndex = 6;
+            this.comboControlConfirmations.TabIndex = 37;
             this.comboControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.comboControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
@@ -2280,7 +2252,7 @@
             // 
             this.labelControlConfirmations.Location = new System.Drawing.Point(161, 265);
             this.labelControlConfirmations.Margin = new System.Windows.Forms.Padding(3);
-            this.labelControlConfirmations.Name = "labelControlConfirmations";
+            this.labelControlConfirmations.Name = "labelControlConfirmation";
             this.labelControlConfirmations.Size = new System.Drawing.Size(200, 21);
             this.labelControlConfirmations.TabIndex = 37;
             this.labelControlConfirmations.Text = "Messages suppressed       ";
@@ -2304,7 +2276,7 @@
             this.checkWindowGlass.Location = new System.Drawing.Point(35, 233);
             this.checkWindowGlass.Name = "checkWindowGlass";
             this.checkWindowGlass.Size = new System.Drawing.Size(285, 17);
-            this.checkWindowGlass.TabIndex = 5;
+            this.checkWindowGlass.TabIndex = 35;
             this.checkWindowGlass.Text = "Use glass for in-game windows";
             this.checkWindowGlass.UseVisualStyleBackColor = true;
             this.checkWindowGlass.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
@@ -2329,19 +2301,19 @@
             "1920x1200",
             "2560x1440",
             "3840x2160"});
-            this.comboWindowSize.Location = new System.Drawing.Point(164, 166);
+            this.comboWindowSize.Location = new System.Drawing.Point(54, 192);
             this.comboWindowSize.Name = "comboWindowSize";
             this.comboWindowSize.Size = new System.Drawing.Size(121, 21);
-            this.comboWindowSize.TabIndex = 3;
+            this.comboWindowSize.TabIndex = 33;
             this.comboWindowSize.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.comboWindowSize.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // labelWindowSize
             // 
-            this.labelWindowSize.Location = new System.Drawing.Point(291, 169);
+            this.labelWindowSize.Location = new System.Drawing.Point(181, 195);
             this.labelWindowSize.Margin = new System.Windows.Forms.Padding(3);
             this.labelWindowSize.Name = "labelWindowSize";
-            this.labelWindowSize.Size = new System.Drawing.Size(305, 13);
+            this.labelWindowSize.Size = new System.Drawing.Size(400, 13);
             this.labelWindowSize.TabIndex = 34;
             this.labelWindowSize.Text = "Window size (choose or specify WIDTHxHEIGHT)";
             this.labelWindowSize.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
@@ -2364,7 +2336,7 @@
             this.checkWindowed.Location = new System.Drawing.Point(35, 168);
             this.checkWindowed.Name = "checkWindowed";
             this.checkWindowed.Size = new System.Drawing.Size(285, 17);
-            this.checkWindowed.TabIndex = 2;
+            this.checkWindowed.TabIndex = 31;
             this.checkWindowed.Text = "Windowed";
             this.checkWindowed.UseVisualStyleBackColor = true;
             this.checkWindowed.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
@@ -2412,7 +2384,7 @@
             this.comboLanguage.Location = new System.Drawing.Point(35, 9);
             this.comboLanguage.Name = "comboLanguage";
             this.comboLanguage.Size = new System.Drawing.Size(121, 21);
-            this.comboLanguage.TabIndex = 0;
+            this.comboLanguage.TabIndex = 26;
             this.comboLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.comboLanguage.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
@@ -2422,7 +2394,7 @@
             this.labelUpdateMode.Margin = new System.Windows.Forms.Padding(3);
             this.labelUpdateMode.Name = "labelUpdateMode";
             this.labelUpdateMode.Size = new System.Drawing.Size(285, 13);
-            this.labelUpdateMode.TabIndex = 1;
+            this.labelUpdateMode.TabIndex = 0;
             this.labelUpdateMode.Text = "Update mode:";
             this.labelUpdateMode.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.labelUpdateMode.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
@@ -2920,7 +2892,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).EndInit();
             this.tabPageSystem.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pbOutOfFocus)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPerformanceTuner)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWebServerPort)).EndInit();
@@ -3137,7 +3108,5 @@
         private System.Windows.Forms.PictureBox pbModelInstancing;
         private System.Windows.Forms.Label labelDefaultDetail;
         private System.Windows.Forms.PictureBox pbViewingFOV;
-        private System.Windows.Forms.CheckBox checkOutOfFocus;
-        private System.Windows.Forms.PictureBox pbOutOfFocus;
     }
 }
