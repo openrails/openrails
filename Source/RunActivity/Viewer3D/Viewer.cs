@@ -504,7 +504,9 @@ namespace Orts.Viewer3D
             TrainListWindow = new TrainListWindow(WindowManager);
             TTDetachWindow = new TTDetachWindow(WindowManager);
             EOTListWindow = new EOTListWindow(WindowManager);
-            if (Settings.OutOfFocus)
+            if (Settings.SuppressConfirmations < (int)ConfirmLevel.Error)
+                // confirm level Error might be set to suppressed when taking a movie
+                // do not show the out of focus red square in that case
                 OutOfFocusWindow = new OutOfFocusWindow(WindowManager);
             WindowManager.Initialize();
 
@@ -859,7 +861,9 @@ namespace Orts.Viewer3D
             // TODO: This is not correct. The ActivityWindow's PrepareFrame is already called by the WindowManager!
             if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
 
-            if (Settings.OutOfFocus)
+            if (Settings.SuppressConfirmations < (int)ConfirmLevel.Error)
+                // confirm level Error might be set to suppressed when taking a movie
+                // do not show the out of focus red square in that case 
                 OutOfFocusWindow.Visible = !this.Game.IsActive;
 
             WindowManager.PrepareFrame(frame, elapsedTime);

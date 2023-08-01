@@ -303,7 +303,6 @@ namespace ORTS
 
             checkWindowed.Checked = !Settings.FullScreen;
             comboWindowSize.Text = Settings.WindowSize;
-            checkOutOfFocus.Checked = Settings.OutOfFocus;
             checkWindowGlass.Checked = Settings.WindowGlass;
 
             // keep values in line with enum Orts.Simulation.ConfirmLevel
@@ -508,7 +507,6 @@ namespace ORTS
                     UpdateManager.SetChannel((string)control.Tag);
             Settings.FullScreen = !checkWindowed.Checked;
             Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
-            Settings.OutOfFocus = checkOutOfFocus.Checked;
             Settings.WindowGlass = checkWindowGlass.Checked;
             Settings.SuppressConfirmations = comboControlConfirmations.SelectedIndex;
             Settings.WebServerPort = (int)numericWebServerPort.Value;
@@ -892,7 +890,6 @@ namespace ORTS
                 (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
                 (pbUpdateMode, new Control[] { labelUpdateMode }),
                 (pbWindowed, new Control[] { checkWindowed, labelWindowSize, comboWindowSize }),
-                (pbOutOfFocus, new[] { checkOutOfFocus }),
                 (pbWindowGlass, new[] { checkWindowGlass }),
                 (pbControlConfirmations, new Control[] { labelControlConfirmations, comboControlConfirmations }),
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
@@ -1038,10 +1035,6 @@ namespace ORTS
                 {
                     pbWindowed,
                     baseUrl + "/options.html#windowed"
-                },
-                {
-                    pbOutOfFocus,
-                    baseUrl + "/options.html#out-of-focus"
                 },
                 {
                     pbWindowGlass,
