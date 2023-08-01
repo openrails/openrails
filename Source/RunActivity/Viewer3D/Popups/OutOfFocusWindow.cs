@@ -16,6 +16,13 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+/*
+ * This out of focus window is a somewhat strange Window
+ * When the main window is out of focus (so not receving any keystrokes)
+ *     it is surrounded by a red square to notify the user
+ * The red square is the only functionality, so no save, no move, no resize etc.
+ */
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
