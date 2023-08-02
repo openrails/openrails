@@ -2018,6 +2018,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
                     AntiSlip = true; // Always set AI trains to AntiSlip
                     SimpleAdhesion();   // Simple adhesion model used for AI trains
+                    AdvancedAdhesionModel = false;
                     if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
                     WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
                     break;
