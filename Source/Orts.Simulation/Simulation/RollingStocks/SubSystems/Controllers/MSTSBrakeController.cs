@@ -415,7 +415,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             {
                 float dp = rateBarpS * elapsedSeconds;
                 if (targetBar - pressureBar < 0.5f) // Slow down increase when nearing target to simulate chokes in brake valve
-                    dp *= Math.Min((targetBar - pressureBar) / 0.5f + 0.1f, 1.0f);
+                    dp *= Math.Min(((targetBar - pressureBar) / 0.5f) + 0.1f, 1.0f);
                 pressureBar += dp;
                 if (pressureBar > targetBar)
                     pressureBar = targetBar;
@@ -428,7 +428,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             {
                 float dp = rateBarpS * elapsedSeconds;
                 if (pressureBar - targetBar < 0.5f) // Slow down decrease when nearing target to simulate chokes in brake valve
-                    dp *= Math.Min((pressureBar - targetBar) / 0.5f + 0.1f, 1.0f);
+                    dp *= Math.Min(((pressureBar - targetBar) / 0.5f) + 0.1f, 1.0f);
                 pressureBar -= dp;
                 if (pressureBar < targetBar)
                     pressureBar = targetBar;
