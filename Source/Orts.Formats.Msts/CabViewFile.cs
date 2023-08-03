@@ -334,7 +334,8 @@ namespace Orts.Formats.Msts
         YARDS,
 
         CUBIC_FT_MIN,
-        LITRES_S
+        LITRES_S,
+        LITERS_S
     }
 
     public enum DiscreteStates
