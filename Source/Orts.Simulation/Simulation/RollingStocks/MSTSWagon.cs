@@ -1444,6 +1444,7 @@ namespace Orts.Simulation.RollingStocks
                     stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortscurtius_kniffler":
                 case "wagon(ortsadhesion(ortscurtius_kniffler":
                     //e.g. Wagon ( ORTSAdhesion ( ORTSCurtius_Kniffler ( 7.5 44 0.161 0.7 ) ) )
                     stf.MustMatch("(");
@@ -1453,11 +1454,13 @@ namespace Orts.Simulation.RollingStocks
                     AdhesionK = stf.ReadFloat(STFReader.UNITS.None, 0.7f); if (AdhesionK <= 0) AdhesionK = 0.7f;
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortsslipwarningthreshold":
                 case "wagon(ortsadhesion(ortsslipwarningthreshold":
                     stf.MustMatch("(");
                     SlipWarningThresholdPercent = stf.ReadFloat(STFReader.UNITS.None, 70.0f); if (SlipWarningThresholdPercent <= 0) SlipWarningThresholdPercent = 70.0f;
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(wheelset":
                 case "wagon(ortsadhesion(wheelset":
                     LocomotiveAxles.Parse(lowercasetoken, stf);
                     break;
