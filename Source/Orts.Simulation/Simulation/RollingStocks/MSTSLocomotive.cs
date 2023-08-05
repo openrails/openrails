@@ -5429,6 +5429,7 @@ namespace Orts.Simulation.RollingStocks
                                 data = this.FilteredBrakePipeFlowM3pS * 1000.0f;
                                 break;
 
+                            case CABViewControlUnits.CUBIC_M_S:
                             default:
                                 data = this.FilteredBrakePipeFlowM3pS;
                                 break;
