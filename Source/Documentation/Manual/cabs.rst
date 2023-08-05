@@ -706,8 +706,8 @@ Here is an example implementation of ORTS_AIR_FLOW_METER as an analog dial::
 			DirIncrease ( 0 )
 		)
 
-Applicable user-defined units are CUBIC_FT_MIN and LITRES_S. Cubic meters per second will be
-used if no units are specified.
+Applicable user-defined units are CUBIC_FT_MIN, LITRES_S, and CUBIC_M_S. Cubic meters per
+second will be used if no units are specified.
 
 
 Animated 2D Wipers
