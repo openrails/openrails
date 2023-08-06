@@ -5196,20 +5196,9 @@ namespace Orts.Simulation.RollingStocks
                     float reciprocatingInertiaAngleFactor = 0;
                     float connectRodInertiaAngleFactor = 0;
 
-                    // Calculate the "angle variation factors" for the Inertia
-                    // Account for the position of the crosshead position. In other words it depends upon whether the Rods and Reciporating gear is above or below the axle.
-                    if (crankAngleRad > 0 && crankAngleRad < Math.PI)
-                    {
-                        // forward stroke
-                        reciprocatingInertiaAngleFactor = (cos + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Cos(2 * crankAngleRad)));
-                        connectRodInertiaAngleFactor = (cos + ((CrankRadiusFt * RodCoGFt) / (ConnectRodLengthFt * ConnectRodLengthFt)) * (float)Math.Cos(2 * crankAngleRad));
-                    }
-                    else
-                    {   
-                        // reverse stroke
-                        reciprocatingInertiaAngleFactor = (cos - ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Cos(2 * crankAngleRad)));
-                        connectRodInertiaAngleFactor = (cos - ((CrankRadiusFt * RodCoGFt) / (ConnectRodLengthFt * ConnectRodLengthFt)) * (float)Math.Cos(2 * crankAngleRad));
-                    }
+                    // Calculate the "angle variation factors" for the Inertia                        
+                    reciprocatingInertiaAngleFactor = (cos + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Cos(2 * crankAngleRad)));
+                    connectRodInertiaAngleFactor = (cos + ((CrankRadiusFt * RodCoGFt) / (ConnectRodLengthFt * ConnectRodLengthFt)) * (float)Math.Cos(2 * crankAngleRad));
 
                     // Calculate the speed factor to allow for variation in speed
                     // Adjust the above factor to allow for the speed of rotation on the parts - based upon Eq 8 (pg 21)
