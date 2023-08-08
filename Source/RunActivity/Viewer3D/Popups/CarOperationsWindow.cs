@@ -58,9 +58,9 @@ namespace Orts.Viewer3D.Popups
 
             string buttonHandbrakeText = "";
             if ((trainCar as MSTSWagon).GetTrainHandbrakeStatus())
-                buttonHandbrakeText = Viewer.Catalog.GetString("Toggle Handbrake to off");
+                buttonHandbrakeText = Viewer.Catalog.GetString("Unset Handbrake");
             else
-                buttonHandbrakeText = Viewer.Catalog.GetString("Toggle Handbrake to set");
+                buttonHandbrakeText = Viewer.Catalog.GetString("Set Handbrake");
             vbox.Add(buttonHandbrake = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonHandbrakeText, LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
@@ -75,9 +75,9 @@ namespace Orts.Viewer3D.Popups
 
             string buttonToggleBrakeHoseText = "";
             if (brakeSystem.FrontBrakeHoseConnected)
-                buttonToggleBrakeHoseText = Viewer.Catalog.GetString("Toggle Brake Hose to unconnected");
+                buttonToggleBrakeHoseText = Viewer.Catalog.GetString("Disconnect Brake Hose");
             else
-                buttonToggleBrakeHoseText = Viewer.Catalog.GetString("Toggle Brake Hose to connected");
+                buttonToggleBrakeHoseText = Viewer.Catalog.GetString("Connect Brake Hose");
             vbox.Add(buttonToggleBrakeHose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonToggleBrakeHoseText, LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
