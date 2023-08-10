@@ -2079,10 +2079,23 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-                // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
+                // References:
+
+               // i) The modern locomotive by  Clarence Edgar Allen – 1912 – pg 82 - https://archive.org/details/modernlocomotive00allerich
+
+               //  ii)	Resistance to Traffic of Railway Rolling Stock by P.N.Astakhov – Moscow 1966 – pg 112
+               //  http://scbist.com/scb/uploaded/1_astahov_p_n_soprotivlenie_dvizheniyu_zheleznodorozhnogo_podv.pdf
+
+                // The CurveForce is a combination of these two components so that resistance will vary with stock characteristics and speed.
+                // These formulas are a mix of imperial and metric expressions so these will be retained and converted to a common UoM in Newtons once calculations are complete.
+
+                // Base Curve Resistance (from refernce i)) = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
                 // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
 
-                CurveForceN = MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
+                CurveForceN = N.FromLbf(Kg.ToLb(MassKG) * Train.WagonCoefficientFriction * (Me.ToFt(TrackGaugeM) + Me.ToFt(RigidWheelBaseM)) / (2.0f * Me.ToFt(CurrentCurveRadius)));
+
+
+
                 float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
                 CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
                 CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
