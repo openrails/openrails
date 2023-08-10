@@ -5236,6 +5236,13 @@ namespace Orts.Simulation.RollingStocks
                     // To convert the force at the crank to the force at wheel tread = Crank Force * Cylinder Stroke / Diameter of Drive Wheel (inches) - internal friction
                     // should be deducted from this as well.
                     float tangentialWheelTreadForceLbf = tangentialCrankWheelForceLbf * Me.ToIn(CylinderStrokeM) / Me.ToIn(DrvWheelDiaM);
+
+                    if (throttle <= 0)
+                    {
+                        tangentialWheelTreadForceLbf = 0; // force wheel force to zero if throttle - problem seems to only happen at higher speeds,
+                                                          // so could be a decrease in sampling points as the wheels rotate faster.
+                    }
+
                     DisplayTangentialWheelTreadForceLbf += tangentialWheelTreadForceLbf;
                     TractiveForceN += N.FromLbf(Math.Max(tangentialWheelTreadForceLbf, -1000));
 
