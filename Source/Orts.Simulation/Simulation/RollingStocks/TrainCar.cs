@@ -2094,11 +2094,14 @@ namespace Orts.Simulation.RollingStocks
 
                 CurveForceN = N.FromLbf(Kg.ToLb(MassKG) * Train.WagonCoefficientFriction * (Me.ToFt(TrackGaugeM) + Me.ToFt(RigidWheelBaseM)) / (2.0f * Me.ToFt(CurrentCurveRadius)));
 
+                var tempCurveFriction = Kg.ToLb(MassKG) * Train.WagonCoefficientFriction * (Me.ToFt(TrackGaugeM) + Me.ToFt(RigidWheelBaseM)) / (2.0f * Me.ToFt(CurrentCurveRadius));
 
+ //               if (CurrentCurveRadius > 0)
+ //                   Trace.TraceInformation("Curve Friction - CarID {0}  Friction {1} Weight {2} WagonFriction {3} Gauge {4} WheelBase {5} CurveRadius {6}", CarID, tempCurveFriction, Kg.ToLb(MassKG), Train.WagonCoefficientFriction, Me.ToFt(TrackGaugeM), Me.ToFt(RigidWheelBaseM), Me.ToFt(CurrentCurveRadius));
 
-                float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
-                CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
-                CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
+               // float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
+               //  CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
+              //   CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
             }
             else
             {
