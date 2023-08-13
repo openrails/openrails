@@ -914,6 +914,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     float dp = elapsedClockSeconds * RelayValveApplicationRatePSIpS;
                     if (dp > demandedPressurePSI - CylPressurePSI)
                         dp = demandedPressurePSI - CylPressurePSI;
+                    if (MaxCylPressurePSI < CylPressurePSI + dp)
+                        dp = MaxCylPressurePSI - CylPressurePSI;
                     
                     // TODO: Implement a brake reservoir which keeps some air available in case of main reservoir leakage
                     // Currently we drain from the main reservoir directly
@@ -930,8 +932,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + CylVolumeM3 / BrakePipeVolumeM3);
                         BrakeLine2PressurePSI -= dp * CylVolumeM3 / BrakePipeVolumeM3;
                     }
-                    if (MaxCylPressurePSI < CylPressurePSI + dp)
-                        dp = MaxCylPressurePSI - CylPressurePSI;
                     CylPressurePSI += dp;
                 }
                 else if (demandedPressurePSI < CylPressurePSI)
