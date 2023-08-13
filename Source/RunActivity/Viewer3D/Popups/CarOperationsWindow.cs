@@ -39,17 +39,24 @@ namespace Orts.Viewer3D.Popups
         }
 
         public CarOperationsWindow(WindowManager owner)
-            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 19, Window.DecorationSize.Y + owner.TextFontDefault.Height * 11 + ControlLayout.SeparatorSize * 10, Viewer.Catalog.GetString("Car Operation Menu"))
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 20, Window.DecorationSize.Y + owner.TextFontDefault.Height * 12 + ControlLayout.SeparatorSize * 11, Viewer.Catalog.GetString("Car Operation Menu"))
         {
             Viewer = owner.Viewer;
         }
 
         protected override ControlLayout Layout(ControlLayout layout)
         {
-            Label ID, buttonHandbrake, buttonTogglePower, buttonToggleMU, buttonToggleBatterySwitch, buttonToggleElectricTrainSupplyCable, buttonToggleBrakeHose, buttonToggleAngleCockA, buttonToggleAngleCockB, buttonToggleBleedOffValve, buttonClose;
+            Label ID, buttonHandbrake, buttonTogglePower, buttonToggleMU, buttonToggleBatterySwitch, buttonToggleElectricTrainSupplyCable, buttonToggleFrontBrakeHose, buttonToggleRearBrakeHose, buttonToggleAngleCockA, buttonToggleAngleCockB, buttonToggleBleedOffValve, buttonClose;
 
             TrainCar trainCar = Viewer.PlayerTrain.Cars[CarPosition];
             BrakeSystem brakeSystem = (trainCar as MSTSWagon).BrakeSystem;
+
+            BrakeSystem rearBrakeSystem = null;
+            if (CarPosition + 1 < Viewer.PlayerTrain.Cars.Count)
+            {
+                TrainCar rearTrainCar = Viewer.PlayerTrain.Cars[CarPosition + 1];
+                rearBrakeSystem = (rearTrainCar as MSTSWagon).BrakeSystem;
+            }
 
             var vbox = base.Layout(layout).AddLayoutVertical();
             vbox.Add(ID = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Car ID") + "  " + (CarPosition >= Viewer.PlayerTrain.Cars.Count? " " :Viewer.PlayerTrain.Cars[CarPosition].CarID), LabelAlignment.Center));
@@ -73,12 +80,20 @@ namespace Orts.Viewer3D.Popups
             vbox.Add(buttonToggleElectricTrainSupplyCable = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle Electric Train Supply Connection"), LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
-            string buttonToggleBrakeHoseText = "";
+            string buttonToggleFronBrakeHoseText = "";
             if (brakeSystem.FrontBrakeHoseConnected)
-                buttonToggleBrakeHoseText = Viewer.Catalog.GetString("Disconnect Brake Hose");
+                buttonToggleFronBrakeHoseText = Viewer.Catalog.GetString("Disconnect Front Brake Hose");
             else
-                buttonToggleBrakeHoseText = Viewer.Catalog.GetString("Connect Brake Hose");
-            vbox.Add(buttonToggleBrakeHose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonToggleBrakeHoseText, LabelAlignment.Center));
+                buttonToggleFronBrakeHoseText = Viewer.Catalog.GetString("Connect Front Brake Hose");
+            vbox.Add(buttonToggleFrontBrakeHose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonToggleFronBrakeHoseText, LabelAlignment.Center));
+            vbox.AddHorizontalSeparator();
+
+            string buttonToggleRearBrakeHoseText = "";
+            if (((CarPosition + 1) < Viewer.PlayerTrain.Cars.Count) && (rearBrakeSystem.FrontBrakeHoseConnected))
+                buttonToggleRearBrakeHoseText = Viewer.Catalog.GetString("Disconnect Rear Brake Hose");
+            else
+                buttonToggleRearBrakeHoseText = Viewer.Catalog.GetString("Connect Rear Brake Hose");
+            vbox.Add(buttonToggleRearBrakeHose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonToggleRearBrakeHoseText, LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
             string buttonToggleAngleCockAText = "";
@@ -117,9 +132,13 @@ namespace Orts.Viewer3D.Popups
             buttonToggleElectricTrainSupplyCable.Click += new Action<Control, Point>(buttonToggleElectricTrainSupplyCable_Click);
 
             if (CarPosition > 0)
-                buttonToggleBrakeHose.Click += new Action<Control, Point>(buttonToggleBrakeHose_Click);
+                buttonToggleFrontBrakeHose.Click += new Action<Control, Point>(buttonToggleFrontBrakeHose_Click);
             else
-                buttonToggleBrakeHose.Color = Color.Gray;
+                buttonToggleFrontBrakeHose.Color = Color.Gray;
+            if (CarPosition < (Viewer.PlayerTrain.Cars.Count - 1))
+                buttonToggleRearBrakeHose.Click += new Action<Control, Point>(buttonToggleRearBrakeHose_Click);
+            else
+                buttonToggleRearBrakeHose.Color = Color.Gray;
 
             buttonToggleAngleCockA.Click += new Action<Control, Point>(buttonToggleAngleCockA_Click);
             buttonToggleAngleCockB.Click += new Action<Control, Point>(buttonToggleAngleCockB_Click);
@@ -218,13 +237,22 @@ namespace Orts.Viewer3D.Popups
             }
         }
 
-        void buttonToggleBrakeHose_Click(Control arg1, Point arg2)
+        void buttonToggleFrontBrakeHose_Click(Control arg1, Point arg2)
         {
             new WagonBrakeHoseConnectCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
             if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected)
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Front brake hose connected"));
             else
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Front brake hose disconnected"));
+        }
+
+        void buttonToggleRearBrakeHose_Click(Control arg1, Point arg2)
+        {
+            new WagonBrakeHoseConnectCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition + 1] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition + 1] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
+            if ((Viewer.PlayerTrain.Cars[CarPosition + 1] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected)
+                Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Rear brake hose connected"));
+            else
+                Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Rear brake hose disconnected"));
         }
 
         void buttonToggleAngleCockA_Click(Control arg1, Point arg2)
