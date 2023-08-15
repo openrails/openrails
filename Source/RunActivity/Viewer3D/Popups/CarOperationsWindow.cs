@@ -50,6 +50,8 @@ namespace Orts.Viewer3D.Popups
 
             TrainCar trainCar = Viewer.PlayerTrain.Cars[CarPosition];
             BrakeSystem brakeSystem = (trainCar as MSTSWagon).BrakeSystem;
+            MSTSLocomotive locomotive = trainCar as MSTSLocomotive;
+            MSTSWagon wagon = trainCar as MSTSWagon;
 
             BrakeSystem rearBrakeSystem = null;
             if (CarPosition + 1 < Viewer.PlayerTrain.Cars.Count)
@@ -58,11 +60,14 @@ namespace Orts.Viewer3D.Popups
                 rearBrakeSystem = (rearTrainCar as MSTSWagon).BrakeSystem;
             }
 
+            bool isElectricDieselLocomotive = (Viewer.PlayerTrain.Cars[CarPosition] is MSTSElectricLocomotive) || (Viewer.PlayerTrain.Cars[CarPosition] is MSTSDieselLocomotive);
+ 
             var vbox = base.Layout(layout).AddLayoutVertical();
-            vbox.Add(ID = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Car ID") + "  " + (CarPosition >= Viewer.PlayerTrain.Cars.Count? " " :Viewer.PlayerTrain.Cars[CarPosition].CarID), LabelAlignment.Center));
+            vbox.Add(ID = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Car ID") + "  " + (CarPosition >= Viewer.PlayerTrain.Cars.Count ? " " : Viewer.PlayerTrain.Cars[CarPosition].CarID), LabelAlignment.Center));
             ID.Color = Color.Red;
             vbox.AddHorizontalSeparator();
 
+            // Handbrake
             string buttonHandbrakeText = "";
             if ((trainCar as MSTSWagon).GetTrainHandbrakeStatus())
                 buttonHandbrakeText = Viewer.Catalog.GetString("Unset Handbrake");
@@ -71,15 +76,38 @@ namespace Orts.Viewer3D.Popups
             vbox.Add(buttonHandbrake = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonHandbrakeText, LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
-            vbox.Add(buttonTogglePower = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle Power"), LabelAlignment.Center));
-            vbox.AddHorizontalSeparator();
-            vbox.Add(buttonToggleMU = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle MU Connection"), LabelAlignment.Center));
-            vbox.AddHorizontalSeparator();
-            vbox.Add(buttonToggleBatterySwitch = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle Battery Switch"), LabelAlignment.Center));
-            vbox.AddHorizontalSeparator();
-            vbox.Add(buttonToggleElectricTrainSupplyCable = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle Electric Train Supply Connection"), LabelAlignment.Center));
+            // Power Supply
+            if (locomotive != null)
+                if (locomotive.LocomotivePowerSupply.MainPowerSupplyOn)
+                    vbox.Add(buttonTogglePower = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Power Off"), LabelAlignment.Center));
+                else
+                    vbox.Add(buttonTogglePower = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Power On"), LabelAlignment.Center));
+            else
+                vbox.Add(buttonTogglePower = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Power On"), LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
+            // MU Connection
+            if ((locomotive != null) && (locomotive.RemoteControlGroup >= 0))
+                vbox.Add(buttonToggleMU = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Disconnect MU Connection"), LabelAlignment.Center));
+            else
+                vbox.Add(buttonToggleMU = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Connect MU Connection"), LabelAlignment.Center));
+            vbox.AddHorizontalSeparator();
+
+            // Battery Switch
+            if ((wagon != null) && (wagon.PowerSupply is IPowerSupply) && (wagon.PowerSupply.BatterySwitch.On))
+                vbox.Add(buttonToggleBatterySwitch = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Battery Switch Off"), LabelAlignment.Center));
+            else
+                vbox.Add(buttonToggleBatterySwitch = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Battery Switch On"), LabelAlignment.Center));
+            vbox.AddHorizontalSeparator();
+
+            // Electric Train Supply Connection
+            if ((wagon.PowerSupply != null) && wagon.PowerSupply.FrontElectricTrainSupplyCableConnected)
+                vbox.Add(buttonToggleElectricTrainSupplyCable = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Disonnect Electric Train Supply"), LabelAlignment.Center));
+            else
+                vbox.Add(buttonToggleElectricTrainSupplyCable = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Connect Electric Train Supply"), LabelAlignment.Center));
+            vbox.AddHorizontalSeparator();
+
+            // Front Brake Hose
             string buttonToggleFronBrakeHoseText = "";
             if (brakeSystem.FrontBrakeHoseConnected)
                 buttonToggleFronBrakeHoseText = Viewer.Catalog.GetString("Disconnect Front Brake Hose");
@@ -88,6 +116,7 @@ namespace Orts.Viewer3D.Popups
             vbox.Add(buttonToggleFrontBrakeHose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonToggleFronBrakeHoseText, LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
+            // Rear Brake Hose
             string buttonToggleRearBrakeHoseText = "";
             if (((CarPosition + 1) < Viewer.PlayerTrain.Cars.Count) && (rearBrakeSystem.FrontBrakeHoseConnected))
                 buttonToggleRearBrakeHoseText = Viewer.Catalog.GetString("Disconnect Rear Brake Hose");
@@ -96,6 +125,7 @@ namespace Orts.Viewer3D.Popups
             vbox.Add(buttonToggleRearBrakeHose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonToggleRearBrakeHoseText, LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
+            // Front Angle Cock
             string buttonToggleAngleCockAText = "";
             if (brakeSystem.AngleCockAOpen)
                 buttonToggleAngleCockAText = Viewer.Catalog.GetString("Close Front Angle Cock");
@@ -104,6 +134,7 @@ namespace Orts.Viewer3D.Popups
             vbox.Add(buttonToggleAngleCockA = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonToggleAngleCockAText, LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
+            // Rear Angle Cock
             string buttonToggleAngleCockBText = "";
             if (brakeSystem.AngleCockBOpen)
                 buttonToggleAngleCockBText = Viewer.Catalog.GetString("Close Rear Angle Cock");
@@ -112,6 +143,7 @@ namespace Orts.Viewer3D.Popups
             vbox.Add(buttonToggleAngleCockB = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonToggleAngleCockBText, LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
+            // Bleed Off Valve
             string buttonToggleBleedOffValveAText = "";
             if (brakeSystem.BleedOffValveOpen)
                 buttonToggleBleedOffValveAText = Viewer.Catalog.GetString("Close Bleed Off Valve");
@@ -120,29 +152,63 @@ namespace Orts.Viewer3D.Popups
             vbox.Add(buttonToggleBleedOffValve = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, buttonToggleBleedOffValveAText, LabelAlignment.Center));
             vbox.AddHorizontalSeparator();
 
+            // Close button
             vbox.Add(buttonClose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Close window"), LabelAlignment.Center));
 
+            // add click controls
+
+            // Handbrake
             if ((trainCar as MSTSWagon).HandBrakePresent)
                 buttonHandbrake.Click += new Action<Control, Point>(buttonHandbrake_Click);
             else
                 buttonHandbrake.Color = Color.Gray;
-            buttonTogglePower.Click += new Action<Control, Point>(buttonTogglePower_Click);
-            buttonToggleMU.Click += new Action<Control, Point>(buttonToggleMU_Click);
-            buttonToggleBatterySwitch.Click += new Action<Control, Point>(buttonToggleBatterySwitch_Click);
-            buttonToggleElectricTrainSupplyCable.Click += new Action<Control, Point>(buttonToggleElectricTrainSupplyCable_Click);
 
+            // Power Supply
+            if (isElectricDieselLocomotive)
+                buttonTogglePower.Click += new Action<Control, Point>(buttonTogglePower_Click);
+            else
+                buttonTogglePower.Color = Color.Gray;
+
+            // MU Connection
+            if (isElectricDieselLocomotive)
+                buttonToggleMU.Click += new Action<Control, Point>(buttonToggleMU_Click);
+            else
+                buttonToggleMU.Color = Color.Gray;
+
+            // Battery Switch
+            if ((wagon != null) && (wagon.PowerSupply is IPowerSupply))
+                buttonToggleBatterySwitch.Click += new Action<Control, Point>(buttonToggleBatterySwitch_Click);
+            else
+                buttonToggleBatterySwitch.Color = Color.Gray;
+
+            // Electric Train Supply Connection
+            if ((wagon != null) && (wagon.PowerSupply != null))
+                buttonToggleElectricTrainSupplyCable.Click += new Action<Control, Point>(buttonToggleElectricTrainSupplyCable_Click);
+            else
+                buttonToggleElectricTrainSupplyCable.Color = Color.Gray;
+
+            // Front Brake Hose
             if (CarPosition > 0)
                 buttonToggleFrontBrakeHose.Click += new Action<Control, Point>(buttonToggleFrontBrakeHose_Click);
             else
                 buttonToggleFrontBrakeHose.Color = Color.Gray;
+
+            // Rear Brake Hose
             if (CarPosition < (Viewer.PlayerTrain.Cars.Count - 1))
                 buttonToggleRearBrakeHose.Click += new Action<Control, Point>(buttonToggleRearBrakeHose_Click);
             else
                 buttonToggleRearBrakeHose.Color = Color.Gray;
 
+            // Front Angle Cock
             buttonToggleAngleCockA.Click += new Action<Control, Point>(buttonToggleAngleCockA_Click);
+
+            // Rear Angle Cock
             buttonToggleAngleCockB.Click += new Action<Control, Point>(buttonToggleAngleCockB_Click);
+
+            // Bleed Off Valve
             buttonToggleBleedOffValve.Click += new Action<Control, Point>(buttonToggleBleedOffValve_Click);
+
+            // Close button
             buttonClose.Click += new Action<Control, Point>(buttonClose_Click);
 
             return vbox;
