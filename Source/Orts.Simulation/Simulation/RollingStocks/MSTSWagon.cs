@@ -1477,7 +1477,6 @@ namespace Orts.Simulation.RollingStocks
                     SlipWarningThresholdPercent = stf.ReadFloat(STFReader.UNITS.None, 70.0f); if (SlipWarningThresholdPercent <= 0) SlipWarningThresholdPercent = 70.0f;
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(wheelset":
                 case "wagon(ortsadhesion(wheelset":
                     LocomotiveAxles.Parse(lowercasetoken, stf);
                     break;
