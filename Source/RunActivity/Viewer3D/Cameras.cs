@@ -1759,6 +1759,12 @@ namespace Orts.Viewer3D
             XRadians = StartViewPointRotationXRadians;
             YRadians = StartViewPointRotationYRadians;
         }
+
+        public void SwitchSideCameraCar(TrainCar car)
+        {
+            attachedLocation.X = -attachedLocation.X;
+            RotationYRadians = -RotationYRadians;
+        }
     }
 
     public class PassengerCamera : InsideThreeDimCamera
@@ -1815,12 +1821,6 @@ namespace Orts.Viewer3D
                 new CameraChangePassengerViewPointCommand(Viewer.Log);
         }
         
-        public void SwitchSideCameraCar(TrainCar car)
-        {
-            attachedLocation.X = -attachedLocation.X;
-            RotationYRadians = -RotationYRadians;
-        }
-
         public void ChangePassengerViewPoint(TrainCar car)
         {
             ActViewPoint++;
@@ -1925,6 +1925,20 @@ namespace Orts.Viewer3D
                 var elevationAtCameraTarget = Viewer.Tiles.GetElevation(attachedCar.WorldPosition.WorldLocation);
                 return attachedCar.WorldPosition.Location.Y + TerrainAltitudeMargin < elevationAtCameraTarget || attachedCar.CarTunnelData.LengthMOfTunnelAheadFront > 0;
             }
+        }
+
+        public override void HandleUserInput(ElapsedTime elapsedTime)
+        {
+            base.HandleUserInput(elapsedTime);
+            if (UserInput.IsPressed(UserCommand.CameraChange3DCabViewPoint))
+                new CameraChange3DCabViewPointCommand(Viewer.Log);
+        }
+
+        public void Change3DCabViewPoint(TrainCar car)
+        {
+            ActViewPoint++;
+            if (ActViewPoint >= car.CabViewpoints.Count) ActViewPoint = 0;
+            SetCameraCar(car);
         }
     }
 

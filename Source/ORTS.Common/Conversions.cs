@@ -550,6 +550,7 @@ namespace ORTS.Common
         public static string inhg = Catalog.GetString("inHg");
         public static string kgfpcm2 = Catalog.GetString("kgf/cm²");
         public static string lps = Catalog.GetString("L/s");
+        public static string lpm = Catalog.GetString("L/min");
         public static string cfm = Catalog.GetString("cfm");
         public static string kg = Catalog.GetString("kg");
         public static string t = Catalog.GetString("t");

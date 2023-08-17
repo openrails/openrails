@@ -706,7 +706,7 @@ Here is an example implementation of ORTS_AIR_FLOW_METER as an analog dial::
 			DirIncrease ( 0 )
 		)
 
-Applicable user-defined units are CUBIC_FT_MIN, LITRES_S, and CUBIC_M_S. Cubic meters per
+Applicable user-defined units are CUBIC_FT_MIN, LITERS_S, LITERS_MIN, and CUBIC_M_S. Cubic meters per
 second will be used if no units are specified.
 
 
@@ -1187,6 +1187,40 @@ Development Rules
         RotationLimit ( 40 60 0 )
         StartDirection ( 12 0 0 )
     )
+
+- If also a rear cab is present, a second ``ORTS3DCab`` has to be added, 
+  as follows::
+
+     ORTS3DCab(
+        ORTS3DCabFile ( Cab.s )
+        ORTS3DCabHeadPos ( 0.9 2.4 5.2 )
+        RotationLimit ( 40 60 0 )
+        StartDirection ( 12 180 0 )
+    )
+
+- Alternate 3D cab viewpoints may be added, as in the example here below::
+
+      ORTSAlternate3DCabViewPoints
+                         (
+        ORTSAlternate3DCabViewPoint(
+           ORTS3DCabFile ( Cab.s )
+           ORTS3DCabHeadPos ( 0.9 2.4 5.2 )
+           RotationLimit ( 40 60 0 )
+           StartDirection ( 12 0 0 )
+                        )
+        ORTSAlternate3DCabViewPoint(
+          ORTS3DCabFile ( Cab.s )
+          ORTS3DCabHeadPos ( -0.8 2.4 5.2 )
+          RotationLimit ( 40 60 0 )
+          StartDirection ( 12 30 0 )
+                        )
+                        )
+
+
+-  To switch between alternate cab viewpoints ``Ctrl-Shift-1`` must be pressed.
+   If there aren't alternate viewpoints defined, and if there is no rear cab, 
+   pressing ``Ctrl-Shift-1`` toggles between the base viewpoint and a symmetrical 
+   one on the longitudinal axis.
 
 .. index::
    single: EXTERNALWIPERS
