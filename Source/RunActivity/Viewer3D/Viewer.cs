@@ -121,7 +121,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Camera #1, 3D cab. Swaps with <see cref="CabCamera"/> with Alt+1.
         /// </summary>
-        private readonly ThreeDimCabCamera ThreeDimCabCamera;
+        public readonly ThreeDimCabCamera ThreeDimCabCamera;
         public HeadOutCamera HeadOutForwardCamera { get; private set; } // Camera 1+Up
         public HeadOutCamera HeadOutBackCamera { get; private set; } // Camera 2+Down
         public TrackingCamera FrontCamera { get; private set; } // Camera 2

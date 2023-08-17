@@ -1510,6 +1510,13 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortsalternate3dcabviewpoints": // accepted only if there is already a 3D cabview
+                    if (Cab3DShapeFileName != null)
+                    {
+                        ParseAlternate3DCabViewPoints(stf);
+                    }
+                    else stf.SkipRestOfBlock();
+                    break;
                 default:
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);
@@ -1747,6 +1754,15 @@ namespace Orts.Simulation.RollingStocks
             stf.MustMatch("(");
             stf.ParseBlock(new[] {
                 new STFReader.TokenProcessor("ortsalternatepassengerviewpoint", ()=>{ ParseWagonInside(stf); }),
+            });
+        }
+
+        // parses additional 3Dcab viewpoints, if any
+        protected void ParseAlternate3DCabViewPoints(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new[] {
+                new STFReader.TokenProcessor("ortsalternate3dcabviewpoint", ()=>{ Parse3DCab(stf); }),
             });
         }
 
