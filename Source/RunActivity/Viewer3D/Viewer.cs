@@ -1294,9 +1294,10 @@ namespace Orts.Viewer3D
             //}
 
             //in the dispatcher window, when one clicks a train and "See in Game", will jump to see that train
-            if (Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true)
+            if ((Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true) || (Program.DebugViewerBeta != null && Program.DebugViewerBeta.ClickedTrain == true))
             {
                 Program.DebugViewer.ClickedTrain = false;
+                Program.DebugViewerBeta.ClickedTrain = false;
                 if (SelectedTrain != Program.DebugViewer.PickedTrain)
                 {
                     SelectedTrain = Program.DebugViewer.PickedTrain;

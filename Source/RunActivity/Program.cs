@@ -62,6 +62,7 @@ namespace Orts
             path = Path.Combine(path, (Environment.Is64BitProcess) ? "X64" : "X86");
             NativeMethods.SetDllDirectory(path);
 
+            Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
             var game = new Game(settings);
