@@ -805,7 +805,7 @@ namespace Orts.Viewer3D
                 if (carIndex < Viewer.SelectedTrain.Cars.Count)
                     attachedCar = Viewer.SelectedTrain.Cars[carIndex];
                 else if (Viewer.SelectedTrain.Cars.Count > 0)
-                    attachedCar = Viewer.SelectedTrain.Cars[Viewer.SelectedTrain.Cars.Count - 1];
+                    attachedCar = Viewer.SelectedTrain.Cars[Viewer.SelectedTrain.Cars.Count -1];
             }
             attachedLocation.X = inf.ReadSingle();
             attachedLocation.Y = inf.ReadSingle();
@@ -1251,7 +1251,7 @@ namespace Orts.Viewer3D
             {
                 var ZIncrM = -BrowseSpeedMpS * elapsedTime.ClockSeconds;
                 ZDistanceM += ZIncrM;
-                if (-ZDistanceM >= attachedCar.Train.Length - (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f)
+                if (-ZDistanceM >= attachedCar.Train.Length - (trainCars.First().CarLengthM  + trainCars.Last().CarLengthM) * 0.5f)
                 {
                     ZIncrM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f - (ZDistanceM - ZIncrM);
                     ZDistanceM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f;
@@ -1286,7 +1286,7 @@ namespace Orts.Viewer3D
             else browsedTraveller.Move(elapsedTime.ClockSeconds * attachedCar.Train.SpeedMpS);
         }
 
-        protected void ComputeCarOffsets(TrackingCamera camera)
+        protected void ComputeCarOffsets( TrackingCamera camera)
         {
             var trainCars = camera.GetCameraCars();
             camera.HighWagonOffsetLimit = trainCars.First().CarLengthM * 0.5f;
@@ -1387,7 +1387,7 @@ namespace Orts.Viewer3D
                 HighWagonOffsetLimit += attachedCar.CarLengthM;
                 ZDistanceM = LowWagonOffsetLimit + attachedCar.CarLengthM * 0.5f;
             }
-            //           LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
+ //           LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
         }
 
         public override void PreviousCar()
@@ -1404,7 +1404,7 @@ namespace Orts.Viewer3D
                 LowWagonOffsetLimit -= attachedCar.CarLengthM;
                 ZDistanceM = LowWagonOffsetLimit + attachedCar.CarLengthM * 0.5f;
             }
-            //           LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
+ //           LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
         }
 
         public override void FirstCar()
@@ -1416,7 +1416,7 @@ namespace Orts.Viewer3D
             ZDistanceM = 0;
             HighWagonOffsetLimit = attachedCar.CarLengthM * 0.5f;
             LowWagonOffsetLimit = -attachedCar.CarLengthM * 0.5f;
-            //            LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
+//            LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
         }
 
         public override void LastCar()
@@ -1429,7 +1429,7 @@ namespace Orts.Viewer3D
             ZDistanceM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f;
             LowWagonOffsetLimit = -attachedCar.Train.Length + trainCars.First().CarLengthM * 0.5f;
             HighWagonOffsetLimit = LowWagonOffsetLimit + attachedCar.CarLengthM;
-            //            LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
+//            LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
         }
 
         public void ToggleBrowseBackwards()
@@ -1439,7 +1439,7 @@ namespace Orts.Viewer3D
             {
                 if (!BrowseMode)
                 {
-                    //                    LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
+//                    LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
                     browsedTraveller = new Traveller(attachedCar.Train.FrontTDBTraveller);
                     browsedTraveller.Move(-attachedCar.CarLengthM * 0.5f + ZDistanceM);
                     BrowseDistance = attachedCar.CarLengthM * 0.5f;
@@ -1456,18 +1456,18 @@ namespace Orts.Viewer3D
             {
                 if (!BrowseMode)
                 {
-                    //                    LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
+//                    LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
                     browsedTraveller = new Traveller(attachedCar.Train.RearTDBTraveller);
                     var trainCars = GetCameraCars();
                     browsedTraveller.Move((attachedCar.CarLengthM - trainCars.First().CarLengthM - trainCars.Last().CarLengthM) * 0.5f + attachedCar.Train.Length + ZDistanceM);
                     BrowseDistance = attachedCar.CarLengthM * 0.5f;
                     BrowseMode = true;
                 }
-            }
+            }          
             BrowseBackwards = false;
         }
     }
-
+    
     public abstract class NonTrackingCamera : AttachedCamera
     {
         public NonTrackingCamera(Viewer viewer)
@@ -1792,7 +1792,7 @@ namespace Orts.Viewer3D
             }
         }
 
-        protected void ResetViewPoint(TrainCar car)
+        protected void ResetViewPoint (TrainCar car)
         {
             prevcar = car.CarID;
             prevViewPoint = ActViewPoint;
@@ -1813,7 +1813,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.CameraChangePassengerViewPoint))
                 new CameraChangePassengerViewPointCommand(Viewer.Log);
         }
-
+        
         public void SwitchSideCameraCar(TrainCar car)
         {
             attachedLocation.X = -attachedLocation.X;
@@ -1977,7 +1977,7 @@ namespace Orts.Viewer3D
     {
         private readonly SavingProperty<bool> LetterboxProperty;
         protected int[] sideLocation = new int[2];
-        public int SideLocation { get { return attachedCar == null ? sideLocation[0] : (attachedCar as MSTSLocomotive).UsingRearCab ? sideLocation[1] : sideLocation[0]; } }
+        public int SideLocation { get { return attachedCar == null? sideLocation[0] : (attachedCar as MSTSLocomotive).UsingRearCab ? sideLocation[1] : sideLocation[0]; } }
 
         public override Styles Style { get { return Styles.Cab; } }
         // Cab camera is only possible on the player train.
@@ -2045,13 +2045,13 @@ namespace Orts.Viewer3D
             else if (Viewer.CabExceedsDisplayHorizontally <= 0)
             {
                 // We must modify FOV to get correct lookout
-                FieldOfView = MathHelper.ToDegrees((float)(2 * Math.Atan((float)Viewer.DisplaySize.Y / Viewer.DisplaySize.X / Viewer.CabTextureInverseRatio * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)))));
-                RotationRatio = (float)(0.962314f * 2 * Math.Tan(MathHelper.ToRadians(FieldOfView / 2)) / Viewer.DisplaySize.Y);
+                    FieldOfView = MathHelper.ToDegrees((float)(2 * Math.Atan((float)Viewer.DisplaySize.Y / Viewer.DisplaySize.X / Viewer.CabTextureInverseRatio * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)))));
+                    RotationRatio = (float)(0.962314f * 2 * Math.Tan(MathHelper.ToRadians(FieldOfView / 2)) / Viewer.DisplaySize.Y);
             }
             else if (Viewer.CabExceedsDisplayHorizontally > 0)
             {
-                var halfFOVHorizontalRadians = (float)(Math.Atan((float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2))));
-                RotationRatioHorizontal = (float)(0.962314f * 2 * Viewer.DisplaySize.X / Viewer.DisplaySize.Y * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)) / Viewer.DisplaySize.X);
+                    var halfFOVHorizontalRadians = (float)(Math.Atan((float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2))));
+                    RotationRatioHorizontal = (float)(0.962314f * 2 * Viewer.DisplaySize.X / Viewer.DisplaySize.Y * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)) / Viewer.DisplaySize.X);
             }
             InitialiseRotation(attachedCar);
             ScreenChanged();
@@ -2151,7 +2151,7 @@ namespace Orts.Viewer3D
         /// and pans the image left/right to reveal details at the sides of the cab.
         /// The external view also moves sidewards by a similar amount.
         /// </summary>
-        void ScrollRight(bool right, float speed)
+        void ScrollRight (bool right, float speed)
         {
             int min = 0;
             int max = Viewer.CabWidthPixels - Viewer.DisplaySize.X - 2 * Viewer.CabXLetterboxPixels; // -ve value
@@ -2326,7 +2326,7 @@ namespace Orts.Viewer3D
         public override void Update(ElapsedTime elapsedTime)
         {
             bool trainForwards;
-            var train = PrepUpdate(out trainForwards);
+            var train = PrepUpdate( out trainForwards);
 
             // Train is close enough if the last car we used is part of the same train and still close enough.
             var trainClose = (LastCheckCar != null) && (LastCheckCar.Train == train) && (WorldLocation.GetDistance2D(LastCheckCar.WorldPosition.WorldLocation, cameraLocation).Length() < MaximumDistance);
@@ -2361,7 +2361,7 @@ namespace Orts.Viewer3D
             UpdateListener();
         }
 
-        protected Train PrepUpdate(out bool trainForwards)
+        protected Train PrepUpdate (out bool trainForwards)
         {
             var train = attachedCar.Train;
 
@@ -2381,7 +2381,7 @@ namespace Orts.Viewer3D
         }
 
 
-        protected WorldLocation GoToNewLocation(ref Traveller tdb, Train train, bool trainForwards)
+        protected WorldLocation GoToNewLocation ( ref Traveller tdb, Train train, bool trainForwards)
         {
             tdb.Move(MaximumDistance * 0.75f);
             var newLocation = tdb.WorldLocation;
@@ -2691,7 +2691,7 @@ namespace Orts.Viewer3D
                 {
                     tdb = trainForwards ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward); // return to standard
                     newLocation = GoToNewLocation(ref tdb, train, trainForwards);
-                }
+                 }
 
                 if (newLocation != WorldLocation.None && !trainClose)
                 {

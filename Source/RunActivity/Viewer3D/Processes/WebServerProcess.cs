@@ -18,17 +18,17 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Net.Sockets;
-using System.Threading;
-using System.Windows.Forms;
 using EmbedIO.Net;
-using Orts.Processes;
+using System.Threading;
 using Orts.Viewer3D.WebServices;
 using ORTS.Common;
+using Orts.Processes;
+using System.IO;
+using System.Windows.Forms;
 using CancellationTokenSource = System.Threading.CancellationTokenSource;
+using System.Net.Sockets;
+using System.Diagnostics;
+using System;
 
 namespace Orts.Viewer3D.Processes
 {
@@ -71,7 +71,7 @@ namespace Orts.Viewer3D.Processes
                 using (EmbedIO.WebServer server = WebServer.CreateWebServer($"http://*:{Game.Settings.WebServerPort}", myWebContentPath))
                     server.RunAsync(StopServer.Token).Wait();
             }
-            catch (AggregateException ex)
+            catch(AggregateException ex)
             {
                 if (ex.InnerException is SocketException)
                 {

@@ -50,20 +50,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             switch (lowercasetoken)
             {
-                case "wagon(ortsdoors(closingdelay":
-                    {
-                        float delayS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0f);
-                        LeftDoor.ClosingDelayS = delayS;
-                        RightDoor.ClosingDelayS = delayS;
-                        break;
-                    }
-                case "wagon(ortsdoors(openingdelay":
-                    {
-                        float delayS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0f);
-                        LeftDoor.OpeningDelayS = delayS;
-                        RightDoor.OpeningDelayS = delayS;
-                        break;
-                    }
+                case "wagon(ortsdoors(closingdelay": 
+                {
+                    float delayS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0f);
+                    LeftDoor.ClosingDelayS = delayS;
+                    RightDoor.ClosingDelayS = delayS;
+                    break;
+                }
+                case "wagon(ortsdoors(openingdelay": 
+                {
+                    float delayS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0f);
+                    LeftDoor.OpeningDelayS = delayS;
+                    RightDoor.OpeningDelayS = delayS;
+                    break;
+                }
             }
         }
 
@@ -106,7 +106,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public static DoorSide FlippedDoorSide(DoorSide trainSide)
         {
-            switch (trainSide)
+            switch(trainSide)
             {
                 case DoorSide.Left:
                     return DoorSide.Right;
@@ -119,7 +119,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
     }
     public class Door : ISubSystem<Door>
     {
-
+        
         // Parameters
         public float OpeningDelayS { get; set; } = 0f;
         public float ClosingDelayS { get; set; } = 0f;
@@ -130,9 +130,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public readonly DoorSide Side;
         protected Timer OpeningTimer;
         protected Timer ClosingTimer;
-
+        
         public DoorState State { get; protected set; } = DoorState.Closed;
-        public bool Locked { get; protected set; }
+        public bool Locked {get; protected set; }
 
         public Door(MSTSWagon wagon, DoorSide side)
         {
@@ -180,7 +180,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public virtual void Update(float elapsedClockSeconds)
         {
-            switch (State)
+            switch(State)
             {
                 case DoorState.Opening:
                     if (!OpeningTimer.Started) OpeningTimer.Start();

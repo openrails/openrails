@@ -17,40 +17,40 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using ORTS.Common;
+using System;
 
 namespace Orts.Viewer3D.Popups
 {
-    public class CompassWindow : Window
-    {
-        PopupCompass Compass;
-        Label Latitude;
-        Label Longitude;
+	public class CompassWindow : Window
+	{
+		PopupCompass Compass;
+		Label Latitude;
+		Label Longitude;
 
-        public CompassWindow(WindowManager owner)
-            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 15, Window.DecorationSize.Y + owner.TextFontDefault.Height * 4, Viewer.Catalog.GetString("Compass"))
-        {
-        }
+		public CompassWindow(WindowManager owner)
+			: base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 15, Window.DecorationSize.Y + owner.TextFontDefault.Height * 4, Viewer.Catalog.GetString("Compass"))
+		{
+		}
 
-        protected override ControlLayout Layout(ControlLayout layout)
-        {
-            var vbox = base.Layout(layout).AddLayoutVertical();
-            vbox.Add(Compass = new PopupCompass(vbox.RemainingWidth, vbox.RemainingHeight - vbox.TextHeight));
-            {
-                var hbox = vbox.AddLayoutHorizontalLineOfText();
-                var w = hbox.RemainingWidth / 9;
-                hbox.Add(new Label(1 * w, hbox.RemainingHeight, Viewer.Catalog.GetString("Lat:"), LabelAlignment.Right));
-                hbox.Add(Latitude = new Label(3 * w, hbox.RemainingHeight, "000.000000", LabelAlignment.Right));
-                hbox.AddSpace(w, hbox.RemainingHeight);
-                hbox.Add(new Label(1 * w, hbox.RemainingHeight, Viewer.Catalog.GetString("Lon:"), LabelAlignment.Right));
-                hbox.Add(Longitude = new Label(3 * w, hbox.RemainingHeight, "000.000000", LabelAlignment.Right));
-            }
-            return vbox;
-        }
+		protected override ControlLayout Layout(ControlLayout layout)
+		{
+			var vbox = base.Layout(layout).AddLayoutVertical();
+			vbox.Add(Compass = new PopupCompass(vbox.RemainingWidth, vbox.RemainingHeight - vbox.TextHeight));
+			{
+				var hbox = vbox.AddLayoutHorizontalLineOfText();
+				var w = hbox.RemainingWidth / 9;
+				hbox.Add(new Label(1 * w, hbox.RemainingHeight, Viewer.Catalog.GetString("Lat:"), LabelAlignment.Right));
+				hbox.Add(Latitude = new Label(3 * w, hbox.RemainingHeight, "000.000000", LabelAlignment.Right));
+				hbox.AddSpace(w, hbox.RemainingHeight);
+				hbox.Add(new Label(1 * w, hbox.RemainingHeight, Viewer.Catalog.GetString("Lon:"), LabelAlignment.Right));
+				hbox.Add(Longitude = new Label(3 * w, hbox.RemainingHeight, "000.000000", LabelAlignment.Right));
+			}
+			return vbox;
+		}
 
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
@@ -70,20 +70,20 @@ namespace Orts.Viewer3D.Popups
                 Latitude.Text = MathHelper.ToDegrees((float)latitude).ToString("F6");
                 Longitude.Text = MathHelper.ToDegrees((float)longitude).ToString("F6");
             }
-        }
-    }
+		}
+	}
 
-    public class PopupCompass : Control
-    {
-        static Texture2D CompassTexture;
-        static int[] HeadingHalfWidths;
+	public class PopupCompass : Control
+	{
+		static Texture2D CompassTexture;
+		static int[] HeadingHalfWidths;
         WindowTextFont Font;
-        public float Heading;
+		public float Heading;
 
-        public PopupCompass(int width, int height)
-            : base(0, 0, width, height)
-        {
-        }
+		public PopupCompass(int width, int height)
+			: base(0, 0, width, height)
+		{
+		}
 
         public override void Initialize(WindowManager windowManager)
         {
@@ -126,5 +126,5 @@ namespace Orts.Viewer3D.Popups
             }
             spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + Position.Width / 2, offset.Y + Position.Bottom - height, 1, height), Color.White);
         }
-    }
+	}
 }

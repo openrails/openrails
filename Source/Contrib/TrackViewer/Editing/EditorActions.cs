@@ -15,8 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using Orts.Formats.Msts;
@@ -47,7 +50,7 @@ namespace ORTS.TrackViewer.Editing
         protected TrainpathNode ActiveNode { get; private set; }
         /// <summary>The currently active location on a track node on which the action of (some) subclasses will act</summary>
         protected TrainpathVectorNode ActiveTrackLocation { get; private set; }
-
+        
         /// <summary>x-location of the mouse</summary>
         protected int MouseX { get; set; }
         /// <summary>y-location of the mouse</summary>
@@ -91,7 +94,7 @@ namespace ORTS.TrackViewer.Editing
 
             ModificationTools = new ModificationTools();
         }
-
+        
         /// <summary>
         /// Set the state of the item in the menu (depending on whether the action can be executed or not.
         /// </summary>
@@ -166,7 +169,7 @@ namespace ORTS.TrackViewer.Editing
         }
     }
     #endregion
-
+    
     #region AddStart
     /// <summary>
     /// Subclass to implement the action: Add Start Node 
@@ -194,7 +197,7 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>Returns the net amount of main nodes added.</summary>
-        protected override int NetMainNodesAdded()
+       protected override int NetMainNodesAdded()
         {
             return ModificationTools.NetNodesAdded + 1; // first node is not counted automatically
         }
@@ -424,7 +427,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="nodeToEdit">(Wait) node for which you want to edit the metadata.</param>
         protected void EditWaitMetaData(TrainpathVectorNode nodeToEdit)
         {
-            if (nodeToEdit.WaitTimeS == 0)
+            if (nodeToEdit.WaitTimeS == 0 )
             {
                 nodeToEdit.WaitTimeS = 602; // some initial value: 10 minutes, 2 seconds
             }
@@ -553,7 +556,7 @@ namespace ORTS.TrackViewer.Editing
         protected bool CanTakeOtherExit(bool addPassingPath)
         {
             TrainpathJunctionNode activeNodeAsJunction = ActiveNode as TrainpathJunctionNode;
-
+            
             return
                 CanTakeOtherExitBasic(activeNodeAsJunction) &&
                 CanReconnectOtherExit(activeNodeAsJunction, addPassingPath);
@@ -598,7 +601,7 @@ namespace ORTS.TrackViewer.Editing
             else
             {
                 // if there is no siding path, we can just reconnect either a new main or a siding path:
-                if (!ActiveNode.HasSidingPath) return true;
+                if (!ActiveNode.HasSidingPath) return true; 
                 // We already have a siding path, so we cannot add another
                 if (addPassingPath) return false;
 
@@ -660,7 +663,7 @@ namespace ORTS.TrackViewer.Editing
             int junctionsToCheck = maxNumberNodesToCheckForReconnect;
             while (junctionsToCheck > 0)
             {
-                int nextJunctionIndex = TrackExtensions.GetNextJunctionIndex(junctionIndex, TvnIndex);
+                int nextJunctionIndex = TrackExtensions.GetNextJunctionIndex(junctionIndex, TvnIndex); 
                 foreach (TrainpathJunctionNode reconnectNode in reconnectNodes)
                 {
                     if (reconnectNode.JunctionIndex == nextJunctionIndex)
@@ -687,7 +690,7 @@ namespace ORTS.TrackViewer.Editing
             }
             return null;
         }
-
+      
     }
     #endregion
 
@@ -712,7 +715,7 @@ namespace ORTS.TrackViewer.Editing
         protected override void ExecuteAction()
         {
             TrainpathJunctionNode activeNodeAsJunction = ActiveNode as TrainpathJunctionNode;
-
+            
             if (ReconnectNode == null)
             {   //really take other exit and discard rest of path
                 activeNodeAsJunction.NextMainTvnIndex = NewTvnIndex;
@@ -796,7 +799,7 @@ namespace ORTS.TrackViewer.Editing
             if (!CanTakeOtherExitBasic(activeNodeAsJunction)) return false;
             if (ActiveNode.HasSidingPath) return false;
             if (activeNodeAsJunction.IsSimpleSidingStart()) return false;
-
+            
             //The idea was that if a normal passing path is possible, then there is no need for a complex passing path
             //However, if you want to connect not to the default recnnect node, we do need this
             //if (CanReconnectOtherExit(activeNodeAsJunction, true)) return false;
@@ -844,7 +847,7 @@ namespace ORTS.TrackViewer.Editing
         }
     }
     #endregion
-
+    
     #region RemovePassingPath
     /// <summary>
     /// Subclass to implement the action: Remove as passing path
@@ -867,12 +870,12 @@ namespace ORTS.TrackViewer.Editing
             TrainpathNode mainNode = ActiveNode;
             mainNode.NodeType = TrainpathNodeType.Other; // this was SidingStart
             mainNode.NextSidingNode = null;
-
+            
             if (!mainNode.HasSidingPath)
             {   // only a broken stub created by StartPassingPath
                 return;
             }
-
+            
             //make sure the main path does no longer show it has a siding path.
             while (mainNode.NodeType != TrainpathNodeType.SidingEnd)
             {
@@ -955,8 +958,8 @@ namespace ORTS.TrackViewer.Editing
             if (ActiveNode.NodeType == TrainpathNodeType.Start) return false;
             if (ActiveNode.NextMainNode == null) return false;
             if (ActiveNode.IsBroken) return false;
-            if (ActiveNode.NodeType == TrainpathNodeType.SidingEnd) return false;
-
+            if (ActiveNode.NodeType == TrainpathNodeType.SidingEnd) return false; 
+            
             if (ActiveNode.HasSidingPath)
             {
                 // a siding start itself should still be fine.
@@ -964,7 +967,7 @@ namespace ORTS.TrackViewer.Editing
             }
             return true;
 
-
+          
         }
 
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
@@ -976,12 +979,12 @@ namespace ORTS.TrackViewer.Editing
 
             TrainpathNode lastEditableNode = ActiveNode.PrevNode;
             ActiveNode.PrevNode = null;
-
+            
             lastEditableNode.NextMainNode = null;
         }
     }
     #endregion
-
+  
     #region AutoFixBrokenNodes
     /// <summary>
     /// Subclass to implement the action: Auto-fix broken nodes
@@ -1190,8 +1193,7 @@ namespace ORTS.TrackViewer.Editing
         /// This action can only be done if there is a passing path stub, that is, a start of a passing path
         /// that contains only a single siding node that is broken and not reconnected.
         /// </summary>
-        void FindPassingPathStub()
-        {
+        void FindPassingPathStub() {
             sidingStartNode = null;
             autoConnectTools.ResetDisallowedJunctions();
 
@@ -1200,7 +1202,7 @@ namespace ORTS.TrackViewer.Editing
             while (mainNode != null)
             {
                 TrainpathJunctionNode mainNodeAsJunction = mainNode as TrainpathJunctionNode;
-
+                    
                 if (mainNodeAsJunction != null)
                 {
                     if (mainNode.NodeType == TrainpathNodeType.SidingStart)
@@ -1238,7 +1240,7 @@ namespace ORTS.TrackViewer.Editing
             TrainpathNode sidingEnd = ActiveNode;
 
             sidingStartNode.NextSidingNode.SetNonBroken();
-
+            
             sidingStartNode.NodeType = TrainpathNodeType.SidingStart;
             sidingEnd.NodeType = TrainpathNodeType.SidingEnd;
 
@@ -1280,14 +1282,13 @@ namespace ORTS.TrackViewer.Editing
         protected override bool CanExecuteAction()
         {
             if (Trainpath.FirstNode == null) return false;
-            if (ActiveNode.IsBroken) return false;
+            if (ActiveNode.IsBroken) return false; 
             if (ActiveNode.NextMainNode != null) return false;
             if (ActiveNode.NextSidingNode == null) return false;
             if (ActiveNode.NextSidingNode.NodeType == TrainpathNodeType.SidingEnd) return false; // not enough room to take other exit.
 
             TrainpathJunctionNode activeNodeAsJunction = (ActiveNode as TrainpathJunctionNode);
-            if ((activeNodeAsJunction == null) || (!activeNodeAsJunction.IsFacingPoint))
-            {
+            if ((activeNodeAsJunction == null) || (!activeNodeAsJunction.IsFacingPoint) ) {
                 return false;
             }
 
@@ -1296,7 +1297,7 @@ namespace ORTS.TrackViewer.Editing
 
             if (!FindDisAllowedJunctionIndexes()) return false;
             int newNextTvnIndex = activeNodeAsJunction.OtherExitTvnIndex();
-            return autoConnectTools.FindConnection(ActiveNode, sidingEndNode, newNextTvnIndex);
+            return autoConnectTools.FindConnection(ActiveNode,sidingEndNode, newNextTvnIndex);
         }
 
         /// <summary>
@@ -1385,7 +1386,7 @@ namespace ORTS.TrackViewer.Editing
     public abstract class EditorActionMouseDrag : EditorAction
     {
         /// <summary>Constructor</summary>
-        protected EditorActionMouseDrag(string header, string pngFileName) : base(header, pngFileName) { }
+        protected EditorActionMouseDrag(string header, string pngFileName) : base(header, pngFileName) {}
 
         /// <summary>
         /// Dragging has commenced. Perform initialization actions
@@ -1454,7 +1455,7 @@ namespace ORTS.TrackViewer.Editing
 
     }
     #endregion
-
+  
     #region MouseDragVectorNode
     /// <summary>
     /// Subclass to implement the actions related to mouse dragging.
@@ -1476,7 +1477,7 @@ namespace ORTS.TrackViewer.Editing
             if (ActiveNode.IsBroken) return false;
             nodeBeingDragged = ActiveNode as TrainpathVectorNode;
             if (nodeBeingDragged == null) return false;
-
+            
             switch (ActiveNode.NodeType)
             {
                 case TrainpathNodeType.Start:
@@ -1484,10 +1485,10 @@ namespace ORTS.TrackViewer.Editing
                 case TrainpathNodeType.Stop:
                 case TrainpathNodeType.Reverse:
                     return true;
-                default:
+                default: 
                     return false;
             }
-
+            
         }
 
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
@@ -1501,15 +1502,15 @@ namespace ORTS.TrackViewer.Editing
         /// Note that undo/redo is already taken care of.
         /// </summary>
         protected override void InitDragging()
-        {
+        {          
             switch (ActiveNode.NodeType)
             {
-                case TrainpathNodeType.Start: FindDraggingLimitsStart(); break;
-                case TrainpathNodeType.End: FindDraggingLimitsEnd(); break;
-                case TrainpathNodeType.Stop: FindDraggingLimitsStop(); break;
+                case TrainpathNodeType.Start:   FindDraggingLimitsStart(); break;
+                case TrainpathNodeType.End:     FindDraggingLimitsEnd(); break;
+                case TrainpathNodeType.Stop:    FindDraggingLimitsStop(); break;
                 case TrainpathNodeType.Reverse: FindDraggingLimitsReverse(); break;
                 default: break;
-            }
+            }   
         }
 
         /// <summary>
@@ -1518,13 +1519,13 @@ namespace ORTS.TrackViewer.Editing
         protected override bool SucceededDragging()
         {
 
-            if ((nodeBeingDragged.TvnIndex == ActiveTrackLocation.TvnIndex)
+            if ( (nodeBeingDragged.TvnIndex == ActiveTrackLocation.TvnIndex)
               && (ActiveTrackLocation.Location != WorldLocation.None)
               && (ActiveTrackLocation.IsBetween(dragLimitNode1, dragLimitNode2)))
             {
-                nodeBeingDragged.Location = ActiveTrackLocation.Location;
+                nodeBeingDragged.Location                = ActiveTrackLocation.Location;
                 nodeBeingDragged.TrackVectorSectionIndex = ActiveTrackLocation.TrackVectorSectionIndex;
-                nodeBeingDragged.TrackSectionOffset = ActiveTrackLocation.TrackSectionOffset;
+                nodeBeingDragged.TrackSectionOffset      = ActiveTrackLocation.TrackSectionOffset;
 
                 return true;
             }
@@ -1546,7 +1547,7 @@ namespace ORTS.TrackViewer.Editing
                 dragLimitNode2 = nodeBeingDragged.NextMainNode;
             }
         }
-
+        
         void FindDraggingLimitsEnd()
         {
             dragLimitNode1 = nodeBeingDragged.PrevNode;
@@ -1563,7 +1564,7 @@ namespace ORTS.TrackViewer.Editing
             {   // we now need to find which of the next and previous nodes is closest to the reverse point
                 TrainpathVectorNode prevVectorNode = nodeBeingDragged.PrevNode as TrainpathVectorNode;
                 TrainpathVectorNode nextVectorNode = nodeBeingDragged.NextMainNode as TrainpathVectorNode;
-
+                    
                 if (prevVectorNode == null)
                 {   // prev is a junction node. Then either the next node is a vector node, or it is the same junction. Just take it
                     dragLimitNode1 = nodeBeingDragged.NextMainNode;
@@ -1574,8 +1575,7 @@ namespace ORTS.TrackViewer.Editing
                 }
                 else
                 {   // both are vector nodes.
-                    if (prevVectorNode.IsBetween(nextVectorNode, nodeBeingDragged))
-                    {
+                    if (prevVectorNode.IsBetween(nextVectorNode,nodeBeingDragged)) {
                         dragLimitNode1 = nodeBeingDragged.PrevNode;
                     }
                     else
@@ -1629,7 +1629,7 @@ namespace ORTS.TrackViewer.Editing
         private ContinuousAutoConnecting autoConnectReverse;
         private TrainpathVectorNode nodeBeingDragged;               // link to a possibly possibly temporary node that is being dragged.
         private int netNodesDeleted;
-
+        
         //private DebugWindow debugWindow;
         /// <summary>Constructor</summary>
         public EditorActionMouseDragAutoConnect()
@@ -1830,7 +1830,7 @@ namespace ORTS.TrackViewer.Editing
 
             if (connectionIsGood)
             {
-                PrepareNodeCountUpdate(autoConnectReverse.ReconnectTrainpathNode, nodeBeingDragged, 0);
+                PrepareNodeCountUpdate(autoConnectReverse.ReconnectTrainpathNode, nodeBeingDragged, 0);                
                 autoConnectReverse.CreateFoundConnection(ModificationTools, true); // note: reverse is not yet done, compare 'normal connection'
             }
 
@@ -1877,7 +1877,7 @@ namespace ORTS.TrackViewer.Editing
         // * Passing paths.
     }
     #endregion
-
+  
     #region NonInteractiveActions
     /// <summary>
     /// Subclass to implement the 'action': add Missing ambiguity nodes. This is not an interactive action, but still and edit to the path.
@@ -1894,7 +1894,7 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
-        protected override void ExecuteAction() { }
+        protected override void ExecuteAction() {}
 
         /// <summary>
         /// Add additional main nodes (to the end of the current path)

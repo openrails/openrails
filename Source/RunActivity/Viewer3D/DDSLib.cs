@@ -56,9 +56,9 @@
 //coment this if you want to save color textures as ABGR.
 #define COLOR_SAVE_TO_ARGB 
 
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.IO;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Orts.Viewer3D
 {

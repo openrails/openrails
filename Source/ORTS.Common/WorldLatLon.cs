@@ -29,8 +29,8 @@
 //    Rick Grout
 //   
 
-using System;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace Orts.Common
 {

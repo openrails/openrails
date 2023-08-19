@@ -17,11 +17,13 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -37,7 +39,7 @@ namespace Orts.Viewer3D.Popups
 
         DetachInfo reqDetach = null;
         TTTrain reqTrain;
-
+        
         public TTDetachWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + WindowImageSizeWidth, Window.DecorationSize.Y + owner.TextFontDefault.Height * WindowImageSizeHeightFactor + ControlLayout.SeparatorSize * 2, Viewer.Catalog.GetString("Timetable Detach Menu"))
         {
@@ -93,7 +95,7 @@ namespace Orts.Viewer3D.Popups
                         }
                         else
                         {
-                            formedTrain = String.Concat(Viewer.Catalog.GetString("static consist"), " : ", reqDetach.DetachFormedTrainName);
+                            formedTrain = String.Concat(Viewer.Catalog.GetString("static consist"), " : ",reqDetach.DetachFormedTrainName);
                         }
                     }
 

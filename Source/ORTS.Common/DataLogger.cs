@@ -15,8 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.IO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace ORTS.Common
 {
@@ -53,8 +56,8 @@ namespace ORTS.Common
         public void End()
         {
             Cache.AppendLine();
-            if (Cache.Length >= CacheSize)
-                Flush();
+			if (Cache.Length >= CacheSize)
+				Flush();
             FirstItem = true;
         }
 

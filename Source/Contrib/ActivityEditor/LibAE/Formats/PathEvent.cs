@@ -22,10 +22,21 @@
 /// 
 
 using System;
-using System.Drawing;
+using System.Windows;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Reflection;
+using Microsoft.Xna.Framework;
+using MSTS;
+using ORTS;
+using LibAE;
+
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Orts.Formats.OR;
 using ORTS.Common;
 
@@ -41,7 +52,7 @@ namespace LibAE.Formats
         ACTIVITY_STOP = 2,
         ACTIVITY_WAIT = 3
     };
-    #endregion
+#endregion
 
     #region PathEventItem
 
@@ -92,7 +103,7 @@ namespace LibAE.Formats
             typeItem = (int)TypeEvent.ACTIVITY_START;
             st = a.GetManifestResourceStream("LibAE.Icon.Start.ico");
             StartIcon = new System.Drawing.Icon(st);
-
+ 
         }
 
         public void setNameStart(int info)
@@ -127,7 +138,7 @@ namespace LibAE.Formats
             Assembly a = Assembly.GetExecutingAssembly();
 
             typeItem = (int)TypeEvent.ACTIVITY_STOP;
-            st = a.GetManifestResourceStream("LibAE.Icon.Stop.ico");
+           st = a.GetManifestResourceStream("LibAE.Icon.Stop.ico");
             StopIcon = new System.Drawing.Icon(st);
 
         }

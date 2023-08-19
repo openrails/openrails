@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Orts.Formats.Msts;
@@ -72,7 +73,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             ControllerId = other.ControllerId;
             CanControlTrainBrake = other.CanControlTrainBrake;
         }
-
+  
 
         public void Save(BinaryWriter outf)
         {
@@ -102,7 +103,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public void Parse(STFReader stf)
         {
             stf.MustMatch("(");
-            stf.ParseBlock(new[] {
+            stf.ParseBlock(new [] {
                 new STFReader.TokenProcessor("positions", () => {
                     stf.MustMatch("(");
                     stf.ParseBlock(new [] {
@@ -814,7 +815,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Enum.TryParse(positionType, true, out Type);
                 if (!Enum.TryParse(positionFlag, true, out Flag))
                 {
-                    switch (positionFlag.ToLower())
+                    switch(positionFlag.ToLower())
                     {
                         case "cruisecontrol.needincreaseafteranybrake":
                             Flag = ControllerPositionFlag.CCNeedIncreaseAfterAnyBrake;

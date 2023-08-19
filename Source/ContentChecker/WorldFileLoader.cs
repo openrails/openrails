@@ -15,6 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+
 using Orts.Formats.Msts;
 
 namespace ContentChecker
@@ -31,7 +37,7 @@ namespace ContentChecker
         /// <param name="file">The file that needs to be loaded</param>
         public override void TryLoading(string file)
         {
-            var wf = new WorldFile(file);
+            var wf = new WorldFile(file); 
         }
     }
 }

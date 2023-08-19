@@ -21,7 +21,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     public class SeriesMotor : ElectricMotor
     {
         float armatureResistanceOhms;
-        public float ArmatureResistanceOhms
+        public float ArmatureResistanceOhms 
         {
             set
             {
@@ -163,7 +163,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             else
             {
                 fieldCurrentA = 0.0f;
-            }
+            }          
 
             UpdateField();
 

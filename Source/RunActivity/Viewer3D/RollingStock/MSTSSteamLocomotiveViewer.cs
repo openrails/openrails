@@ -21,7 +21,9 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Orts.Common;
+using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using ORTS.Common;
 using ORTS.Common.Input;
 
@@ -151,18 +153,18 @@ namespace Orts.Viewer3D.RollingStock
         {
             SteamLocomotive.StartReverseDecrease(null);
         }
-
+        
         /// <summary>
         /// Overrides the base method as steam locomotives have only rudimentary gear boxes. 
         /// </summary>
         protected override void StartGearBoxIncrease()
         {
             SteamLocomotive.SteamStartGearBoxIncrease();
-        }
-
+        }        
+                
         protected override void StopGearBoxIncrease()
         {
-            SteamLocomotive.SteamStopGearBoxIncrease();
+           SteamLocomotive.SteamStopGearBoxIncrease();
         }
 
         protected override void StartGearBoxDecrease()
@@ -174,7 +176,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             SteamLocomotive.SteamStopGearBoxDecrease();
         }
-
+                
 
         public override void InitializeUserInputCommands()
         {
@@ -266,7 +268,7 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var drawer in Cylinders)
                 drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders1SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
 
-            foreach (var drawer in Cylinders2)
+             foreach (var drawer in Cylinders2)
                 drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders2SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
 
             foreach (var drawer in Cylinders11)
@@ -307,16 +309,16 @@ namespace Orts.Viewer3D.RollingStock
 
             foreach (var drawer in Blowdown)
                 drawer.SetOutput(car.BlowdownSteamVelocityMpS, car.BlowdownSteamVolumeM3pS, car.BlowdownParticleDurationS);
-
+            
             // TODO: Drainpipe - Not used in either MSTS or OR - currently disabled by zero values set in SteamLocomotive file
-            foreach (var drawer in Drainpipe)
+             foreach (var drawer in Drainpipe)
                 drawer.SetOutput(car.DrainpipeSteamVelocityMpS, car.DrainpipeSteamVolumeM3pS, car.DrainpipeParticleDurationS);
 
-            foreach (var drawer in Injectors1)
+             foreach (var drawer in Injectors1)
                 drawer.SetOutput(car.Injector1SteamVelocityMpS, car.Injector1SteamVolumeM3pS, car.Injector1ParticleDurationS);
 
-            foreach (var drawer in Injectors2)
-                drawer.SetOutput(car.Injector2SteamVelocityMpS, car.Injector2SteamVolumeM3pS, car.Injector2ParticleDurationS);
+             foreach (var drawer in Injectors2)
+                 drawer.SetOutput(car.Injector2SteamVelocityMpS, car.Injector2SteamVolumeM3pS, car.Injector2ParticleDurationS);
 
             foreach (var drawer in SmallEjector)
                 drawer.SetOutput(car.SmallEjectorSteamVelocityMpS, car.SmallEjectorSteamVolumeM3pS, car.SmallEjectorParticleDurationS);
@@ -325,14 +327,14 @@ namespace Orts.Viewer3D.RollingStock
                 drawer.SetOutput(car.LargeEjectorSteamVelocityMpS, car.LargeEjectorSteamVolumeM3pS, car.LargeEjectorParticleDurationS);
 
             foreach (var drawer in Compressor)
-                drawer.SetOutput(car.CompressorSteamVelocityMpS, car.CompressorSteamVolumeM3pS, car.CompressorParticleDurationS);
+                drawer.SetOutput(car.CompressorSteamVelocityMpS, car.CompressorSteamVolumeM3pS, car.CompressorParticleDurationS );
 
             foreach (var drawer in Generator)
                 drawer.SetOutput(car.GeneratorSteamVelocityMpS, car.GeneratorSteamVolumeM3pS, car.GeneratorParticleDurationS);
-
+            
             foreach (var drawer in SafetyValves)
                 drawer.SetOutput(car.SafetyValvesSteamVelocityMpS, car.SafetyValvesSteamVolumeM3pS, car.SafetyValvesParticleDurationS);
-
+            
             foreach (var drawer in Stack)
             {
                 Color_Value = car.SmokeColor.SmoothedValue;

@@ -19,6 +19,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace ORTS.Common
 {
@@ -135,9 +136,9 @@ namespace ORTS.Common
             {
                 case FilterTypes.Butterworth:
                     ComputeButterworth(
-                        Order = order,
-                        CutoffFrequencyRadpS = cutoffFrequency,
-                        SamplingPeriod_s = samplingPeriod);
+                        Order                   = order,
+                        CutoffFrequencyRadpS    = cutoffFrequency,
+                        SamplingPeriod_s        = samplingPeriod);
                     break;
                 default:
                     throw new NotImplementedException("Other filter types are not implemented yet.");
@@ -166,7 +167,7 @@ namespace ORTS.Common
         {
             set
             {
-                if (NCoef <= 0)
+                if(NCoef <= 0)
                     NCoef = value.Count - 1;
                 x = new ArrayList();
                 y = new ArrayList();
@@ -196,7 +197,7 @@ namespace ORTS.Common
         {
             set
             {
-                if (NCoef <= 0)
+                if(NCoef <= 0)
                     NCoef = value.Count - 1;
                 x = new ArrayList();
                 y = new ArrayList();
@@ -264,10 +265,10 @@ namespace ORTS.Common
 
         public enum FilterTypes
         {
-            Exponential = 0,
-            Chebychev = 1,
-            Butterworth = 2,
-            Bessel = 3
+            Exponential     = 0,
+            Chebychev       = 1,
+            Butterworth     = 2,
+            Bessel          = 3
         }
 
         public FilterTypes FilterType { set; get; }
@@ -307,7 +308,7 @@ namespace ORTS.Common
             if (samplingPeriod <= 0.0f)
                 return 0.0f;
 
-            switch (FilterType)
+            switch(FilterType)
             {
                 case FilterTypes.Butterworth:
                     if ((1 / (samplingPeriod) < RadToHz(cuttoffFreqRadpS)))
@@ -354,7 +355,7 @@ namespace ORTS.Common
         /// <param name="initValue">Initial value</param>
         public void Reset(float initValue)
         {
-            for (float t = 0; t < (10.0f * cuttoffFreqRadpS); t += 0.1f)
+            for (float t = 0; t < (10.0f*cuttoffFreqRadpS); t += 0.1f)
             {
                 Filter(initValue, 0.1f);
             }
@@ -436,7 +437,7 @@ namespace ORTS.Common
                     break;
                 default:
                     throw new NotImplementedException("Filter order higher than 1 is not supported yet");
-
+                    
             }
         }
 
@@ -479,11 +480,9 @@ namespace ORTS.Common
         Queue<float> Buffer;
 
         int size;
-        public int Size
-        {
-            get { if (Buffer != null) return Buffer.Count; else return 0; }
-            set { if (value > 0) size = value; else size = 1; Initialize(); }
-        }
+        public int Size { get { if (Buffer != null) return Buffer.Count; else return 0; } 
+                          set { if(value > 0) size = value; else size = 1; Initialize(); }
+                        }
 
         public void Initialize(float value)
         {

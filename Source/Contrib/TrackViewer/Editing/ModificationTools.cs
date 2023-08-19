@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Orts.Simulation;
 
 namespace ORTS.TrackViewer.Editing
@@ -30,7 +34,7 @@ namespace ORTS.TrackViewer.Editing
         #region node counting
         /// <summary>Keeps cound of the net amount of nodes that have been added</summary>
         public int NetNodesAdded { get; private set; }
-
+        
         /// <summary>
         /// Reset the amount of nodes added
         /// </summary>
@@ -138,7 +142,7 @@ namespace ORTS.TrackViewer.Editing
             newNode.SetFacingPoint();
             newNode.DetermineOrientation(lastNode, nextTvnIndex);
 
-            NetNodesAdded++;
+            NetNodesAdded ++ ;
             return newNode;
         }
 
@@ -170,7 +174,7 @@ namespace ORTS.TrackViewer.Editing
                 lastNode.NextSidingNode = newNode;
             }
 
-            NetNodesAdded++;
+            NetNodesAdded ++;
             return newNode;
         }
 
@@ -302,10 +306,10 @@ namespace ORTS.TrackViewer.Editing
         {
             //Check if we need to add an disambiguity node
             TrainpathJunctionNode currentNodeAsJunction = currentNode as TrainpathJunctionNode;
-            if ((currentNodeAsJunction != null)
+            if (   (currentNodeAsJunction != null) 
                 && (currentNode.NextMainNode != null)
                 && (currentNode.NextMainNode is TrainpathJunctionNode)
-                && (currentNodeAsJunction.IsSimpleSidingStart())
+                && (currentNodeAsJunction.IsSimpleSidingStart()) 
                 )
             {
                 TrainpathVectorNode halfwayNode = CreateHalfWayNode(currentNodeAsJunction, currentNodeAsJunction.NextMainTvnIndex);
@@ -381,7 +385,7 @@ namespace ORTS.TrackViewer.Editing
 
             //in case the first node of the second path is a vector, make sure that its next tvn index is copied
             if (firstNodeSecondPathAsVector != null)
-            {
+            {   
                 if (isMainPath)
                 {
                     lastNodeFirstPath.NextMainTvnIndex = firstNodeSecondPathAsVector.TvnIndex;

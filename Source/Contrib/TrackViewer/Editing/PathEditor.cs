@@ -16,14 +16,17 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using System.Collections.Generic;
+using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
+using System.Text;
+using ORTS.TrackViewer.Drawing;
+
 using Orts.Formats.Msts;
 using ORTS.Common;
-using ORTS.TrackViewer.Drawing;
+using System.Windows.Controls;
+using System.Windows;
 
 namespace ORTS.TrackViewer.Editing
 {
@@ -53,9 +56,8 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>The current path that we are editing</summary>
         public Trainpath CurrentTrainPath { get; private set; }
         /// <summary>Editing is active or not</summary>
-        public bool EditingIsActive
-        {
-            get { return _editingIsActive; }
+        public bool EditingIsActive { 
+            get {return _editingIsActive;}
             set { _editingIsActive = value; OnActiveOrPathChanged(); }
         }
 
@@ -86,7 +88,7 @@ namespace ORTS.TrackViewer.Editing
         DrawTrackDB drawTrackDB; // We need to know what has been drawn, especially to get track closest to mouse
         TrackDB trackDB;
         TrackSectionsFile tsectionDat;
-
+        
         DrawPath drawPath;      // drawing of the path itself
 
         TrainpathNode activeNode;           // active Node (if present) for which actions can be performed
@@ -100,7 +102,7 @@ namespace ORTS.TrackViewer.Editing
         Separator separatorActiveTrack;
         Separator separatorBroken;
 
-        const int practicalInfinityInt = int.MaxValue / 2; // large, but not close to overflow
+        const int practicalInfinityInt = int.MaxValue/2; // large, but not close to overflow
         int numberToDraw = practicalInfinityInt; // number of nodes to draw, start with all
         int maxNodesToAdd;  // if at end of path, how many nodes do we allow to be added
 
@@ -162,7 +164,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="routeData">The route information that contains track data base and track section data</param>
         /// <param name="drawTrackDB">The drawn tracks to know about where the mouse is</param>/// <param name="pathsDirectory">The directory where paths will be stored</param>
         public PathEditor(RouteData routeData, DrawTrackDB drawTrackDB, string pathsDirectory)
-            : this(routeData, drawTrackDB)
+            :this(routeData, drawTrackDB)
         {
             CurrentTrainPath = new Trainpath(trackDB, tsectionDat);
             FileName = CurrentTrainPath.PathId + ".pat";
@@ -178,7 +180,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="drawTrackDB">The drawn tracks to know about where the mouse is</param>
         /// <param name="path">Path to the .pat file</param>
         public PathEditor(RouteData routeData, DrawTrackDB drawTrackDB, ORTS.Menu.Path path)
-            : this(routeData, drawTrackDB)
+            :this(routeData, drawTrackDB)
         {
             FileName = path.FilePath.Split('\\').Last();
             CurrentTrainPath = new Trainpath(trackDB, tsectionDat, path.FilePath);
@@ -272,8 +274,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Create the context menu from previously defined items.
         /// </summary>
-        private void CreateContextMenu()
-        {
+        private void CreateContextMenu() {
 
             contextMenu = new ContextMenu();
             separatorActiveNode = new Separator();
@@ -291,7 +292,7 @@ namespace ORTS.TrackViewer.Editing
                 contextMenu.Items.Add(action.ActionMenuItem);
             }
             contextMenu.Items.Add(separatorActiveNode);
-
+            
 
             foreach (EditorAction action in editorActionsActiveTrack)
             {
@@ -304,7 +305,7 @@ namespace ORTS.TrackViewer.Editing
                 contextMenu.Items.Add(action.ActionMenuItem);
             }
             contextMenu.Items.Add(separatorBroken);
-
+            
             foreach (EditorAction action in editorActionsOthers)
             {
                 contextMenu.Items.Add(action.ActionMenuItem);
@@ -312,7 +313,7 @@ namespace ORTS.TrackViewer.Editing
 
             contextMenu.Closed += new RoutedEventHandler(ContextMenu_Closed);
         }
-
+       
         /// <summary>
         /// Popup the context menu at the given location. Also disable updates related to mouse movement while menu is open.
         /// </summary>
@@ -356,7 +357,7 @@ namespace ORTS.TrackViewer.Editing
                 someOtherActionIsPossible = someOtherActionIsPossible || actionCanBeExecuted;
             }
 
-            noActionPossibleMenuItem.Visibility =
+            noActionPossibleMenuItem.Visibility = 
                 (someNodeActionIsPossible || someTrackActionIsPossible || someOtherActionIsPossible)
                 ? Visibility.Collapsed : Visibility.Visible;
 
@@ -511,8 +512,8 @@ namespace ORTS.TrackViewer.Editing
         public void Draw(DrawArea drawArea)
         {
             DrawnPathData drawnPathData = new DrawnPathData();
-
-            int numberDrawn = drawPath.Draw(drawArea, CurrentTrainPath.FirstNode, CurrentTrainPath.FirstNodeOfTail, numberToDraw,
+            
+            int numberDrawn = drawPath.Draw(drawArea, CurrentTrainPath.FirstNode, CurrentTrainPath.FirstNodeOfTail, numberToDraw, 
                 drawnPathData);
 
             if (numberDrawn < numberToDraw)
@@ -610,7 +611,7 @@ namespace ORTS.TrackViewer.Editing
             activeTrackLocation.TrackSectionOffset = distance;
             activeTrackLocation.Location = location;
 
-            if ((CurrentTrainPath.FirstNode != null) && (activeMouseDragAction == null))
+            if ( (CurrentTrainPath.FirstNode != null) && (activeMouseDragAction == null) ) 
             {   //Only in case this is not the first path.
                 TrainpathNode prevNode = FindPrevNodeOfActiveTrack(drawnPathData, tni_int);
                 if (prevNode == null || prevNode.HasSidingPath)
@@ -755,15 +756,13 @@ namespace ORTS.TrackViewer.Editing
             // We have a current path and a new path.
             // First check if the new path is usable
             TrainpathNode newStart = newPath.FirstNode;
-            if (newPath.FirstNode == null || newPath.FirstNode.NextMainNode == null)
-            {
+            if (newPath.FirstNode == null || newPath.FirstNode.NextMainNode == null) {
                 MessageBox.Show(TrackViewer.catalog.GetString("The selected path contains no or only 1 node. The current path was not extended."));
                 return;
             }
 
             TrainpathNode lastNode = CurrentTrainPath.FirstNode;
-            while (lastNode.NextMainNode != null)
-            {
+            while (lastNode.NextMainNode != null) {
                 lastNode = lastNode.NextMainNode;
             }
             if (CurrentTrainPath.HasEnd)
@@ -835,7 +834,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="popupY">The screen y-location of where the edit metadata popup needs to be placed</param>
         public void ReversePath(int popupX, int popupY)
         {
-            if (!CanReverse()) return;
+            if (! CanReverse()) return;
             CurrentTrainPath.StoreCurrentPath();
             CurrentTrainPath.ReversePath();
             EditMetaData(popupX, popupY);
@@ -890,8 +889,7 @@ namespace ORTS.TrackViewer.Editing
                     actionFixInvalid.DoAction();
                     brokenNodes = CurrentTrainPath.GetBrokenNodes();
                 }
-                else
-                {
+                else {
                     fixSucceeded = false;
                     nodeToTry++;
                 }

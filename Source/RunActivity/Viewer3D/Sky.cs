@@ -22,9 +22,9 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
+using ORTS.Common;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Processes;
-using ORTS.Common;
 
 namespace Orts.Viewer3D
 {

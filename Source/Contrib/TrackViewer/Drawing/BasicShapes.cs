@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Windows.Media.Imaging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -34,11 +35,11 @@ namespace ORTS.TrackViewer.Drawing
     static class BasicShapes
     {
         private static SpriteBatch spriteBatch;
-
+        
         //size of a identifying feature in the texture (in pixels), so we can scale as needed
         private static Dictionary<string, float> textureScales = new Dictionary<string, float>();
         private static Dictionary<string, Vector2> textureOffsets = new Dictionary<string, Vector2>();
-        private static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
+        private static Dictionary<string,Texture2D> textures = new Dictionary<string,Texture2D>();
 
         private static FontManager fontManager;
 
@@ -50,14 +51,14 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="contentPath">The full directory name where content like .png files can be found</param>
         public static void LoadContent(GraphicsDevice graphicsDevice, SpriteBatch spriteBatchIn, string contentPath)
         {
-            spriteBatch = spriteBatchIn;
+            spriteBatch = spriteBatchIn; 
             textures["blankPixel"] = new Texture2D(graphicsDevice, 1, 1);
             textures["blankPixel"].SetData(new[] { Color.White });
 
             int diameter = 64; // Needs to be power of two for mipmapping
             textures["circle"] = CreateCircleTexture(graphicsDevice, diameter);
             textureScales["circle"] = diameter;
-            textureOffsets["circle"] = new Vector2(diameter / 2, diameter / 2);
+            textureOffsets["circle"] = new Vector2(diameter/2, diameter/2);
 
             textures["disc"] = CreateDiscTexture(graphicsDevice, diameter);
             textureScales["disc"] = diameter;
@@ -72,13 +73,13 @@ namespace ORTS.TrackViewer.Drawing
             textureOffsets["crossedRing"] = new Vector2(diameter / 2, diameter / 2);
 
 
-            LoadAndHighlightTexture(graphicsDevice, contentPath, "signal", "Signal", 29, 18);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "signal", "Signal",29, 18);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "hazard", "Hazard");
 
-            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathNormal", "pathNormal", 31, 31);
-            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathStart", "pathStart", 31, 31);
-            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathEnd", "pathEnd", 31, 31);
-            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathWait", "pathWait", 31, 31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathNormal", "pathNormal",31,31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathStart", "pathStart",31,31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathEnd", "pathEnd",31,31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathWait", "pathWait",31,31);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathReverse", "pathReverse", 31, 31);
             //LoadAndHighlightTexture(graphicsDevice, contentPath, "pathSiding", "pathSiding", 31, 31);
 
@@ -88,7 +89,7 @@ namespace ORTS.TrackViewer.Drawing
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pickup", "Pickup");
             LoadAndHighlightTexture(graphicsDevice, contentPath, "platform", "Platform", 31, 37);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "sound", "Sound");
-            LoadAndHighlightTexture(graphicsDevice, contentPath, "playerTrain", "steamTrain", 31, 31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "playerTrain", "steamTrain",31,31);
 
             PrepareArcDrawing();
             fontManager = FontManager.Instance;
@@ -104,11 +105,11 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="fileName">the name of the file (without extension)</param>
         private static void LoadAndHighlightTexture(GraphicsDevice graphicsDevice, string contentPath, string textureName, string fileName)
         {
-            LoadAndHighlightTexture(graphicsDevice, contentPath, textureName, fileName, 0, 0);
+            LoadAndHighlightTexture( graphicsDevice, contentPath, textureName, fileName, 0, 0);
         }
         private static void LoadAndHighlightTexture(GraphicsDevice graphicsDevice, string contentPath, string textureName, string fileName, int offsetX, int offsetY)
         {
-            string fullFileName = System.IO.Path.Combine(contentPath, fileName + ".png");
+            string fullFileName = System.IO.Path.Combine(contentPath, fileName +".png");
             Texture2D tempTexture;
             try
             {
@@ -152,7 +153,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <returns>The white texture</returns>
         private static Texture2D CreateCircleTexture(GraphicsDevice graphicsDevice, int outerRadius)
         {
-            int radius = (outerRadius - 2) / 2; // So circle doesn't go out of bounds
+            int radius = (outerRadius - 2)/2; // So circle doesn't go out of bounds
             Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, mipmap: false, SurfaceFormat.Color);
 
             Color[] data = new Color[outerRadius * outerRadius];
@@ -209,7 +210,7 @@ namespace ORTS.TrackViewer.Drawing
             texture.SetData(data);
             return texture;
         }
-
+        
         /// <summary>
         /// private method to create a texture2D containing a ring (circle with thick border)
         /// </summary>
@@ -230,7 +231,7 @@ namespace ORTS.TrackViewer.Drawing
                 {
                     int i = (x + radius) * outerRadius + (y + radius);
                     int r2 = x * x + y * y;
-                    if (r2 <= radius * radius && r2 > innerRadius * innerRadius)
+                    if (r2 <= radius * radius &&  r2 > innerRadius * innerRadius)
                     {
                         data[i] = Color.White;
                     }
@@ -282,7 +283,7 @@ namespace ORTS.TrackViewer.Drawing
                             data[i] = Color.White;
                         }
                     }
-
+                    
                 }
             }
 
@@ -337,13 +338,13 @@ namespace ORTS.TrackViewer.Drawing
             float angle = (float)Math.Atan2(point2.Y - point1.Y, point2.X - point1.X);
             float cosAngle = (float)Math.Cos(angle);
             float sinAngle = (float)Math.Sin(angle);
-
+            
             float length = Vector2.Distance(point1, point2);
-
+            
             int pixelsPerSegment = 10; // this is a target value. We will always start and end with a segment.
-            int nsegments = 1 + (int)Math.Floor(length / (2 * pixelsPerSegment));
+            int nsegments = 1 + (int) Math.Floor(length / (2 * pixelsPerSegment));
             float lengthPerSegment = length / (2 * nsegments - 1);
-            Vector2 segmentOffset = 2 * lengthPerSegment * new Vector2(cosAngle, sinAngle);
+            Vector2 segmentOffset = 2*lengthPerSegment * new Vector2(cosAngle, sinAngle);
 
             for (int i = 0; i < nsegments; i++)
             {
@@ -363,8 +364,8 @@ namespace ORTS.TrackViewer.Drawing
         public static void DrawLine(float width, Color color, Vector2 point, float length, float angle)
         {
             // offset to compensate for the width of the line
-            Vector2 offset = new Vector2(width * (float)Math.Sin(angle) / 2, -width * (float)Math.Cos(angle) / 2);
-            spriteBatch.Draw(textures["blankPixel"], point + offset, null, color,
+            Vector2 offset = new Vector2(width * (float) Math.Sin(angle)/2, -width * (float)Math.Cos(angle)/2);
+            spriteBatch.Draw(textures["blankPixel"], point+offset, null, color,
                        angle, Vector2.Zero, new Vector2(length, width),
                        SpriteEffects.None, 0);
         }
@@ -384,14 +385,14 @@ namespace ORTS.TrackViewer.Drawing
             // Positive arcDegree means curving to the left, negative arcDegree means curving to the right
             int sign = (arcDegrees > 0) ? -1 : 1;
             arcDegrees = Math.Abs(arcDegrees);
-
+            
             // We will draw an arc as a succession of straight lines. We do this in a way that reduces the amount
             // of goniometric calculations needed.
             // The idea is to start to find the center of the circle. The direction from center to origin is
             // 90 degrees different from angle
             Vector2 centerToPointDirection = sign * new Vector2(-(float)Math.Sin(angle), (float)Math.Cos(angle)); // unit vector
             Vector2 center = point - radius * centerToPointDirection; ;
-
+            
             // To determine the amount of straight lines we need to calculate we first 
             // determine then lenght of the arc, and divide that by the maximum we allow;
             // All angles go in steps of minAngleDegree
@@ -400,12 +401,12 @@ namespace ORTS.TrackViewer.Drawing
             // Here alpha is the angle drawn for a single arc-segment. Approximately error ~ radius * alpha^2/8.
             // The amount of pixels in the line is about L ~ radius * alpha => L ~ sqrt(8 * radius * error). 
             // We found that for thight curves, error can not be larger than half a pixel (otherwise it becomes visible)
-            maxStraightPixels = (float)Math.Sqrt(4 * radius);
+            maxStraightPixels = (float)Math.Sqrt(4*radius);   
             float numberStraightLines = (float)Math.Ceiling(arcLength / maxStraightPixels);
             // amount of minAngleDegrees we need to cover: 
-            int arcStepsRemaining = (int)(Math.Round(arcDegrees / minAngleDegree));
+            int arcStepsRemaining = (int) (Math.Round(arcDegrees/minAngleDegree)); 
             // amount of minAngleDegrees we cover per straight line:
-            int arcStepsPerLine = (int)(Math.Ceiling(arcDegrees / (minAngleDegree * numberStraightLines)));
+            int arcStepsPerLine = (int) (Math.Ceiling(arcDegrees/(minAngleDegree*numberStraightLines)));
 
             // Add offset in angles
             if (arcDegreesOffset != 0f)
@@ -421,9 +422,9 @@ namespace ORTS.TrackViewer.Drawing
             while (arcStepsRemaining > 0)
             {
                 int arcSteps = Math.Min(arcStepsRemaining, arcStepsPerLine); //angle steps we cover in this line
-                point = center + centerToPointDirection * (radius - sign * width / 2);  // correct for width of line
+                point = center + centerToPointDirection * (radius-sign*width/2);  // correct for width of line
                 float length = radius * arcSteps * minAngleRad + 1; // the +1 to prevent white lines in between arc sections
-
+                
                 spriteBatch.Draw(textures["blankPixel"], point, null, color,
                        angle, Vector2.Zero, new Vector2(length, width),
                        SpriteEffects.None, 0);
@@ -436,8 +437,8 @@ namespace ORTS.TrackViewer.Drawing
                     angle -= sign * arcSteps * minAngleRad;
                     //Rotate the centerToPointDirection, and calculate new point
                     centerToPointDirection = new Vector2(
-                             cosTable[arcSteps] * centerToPointDirection.X + sign * sinTable[arcSteps] * centerToPointDirection.Y,
-                       -sign * sinTable[arcSteps] * centerToPointDirection.X + cosTable[arcSteps] * centerToPointDirection.Y
+                             cosTable[arcSteps] * centerToPointDirection.X + sign*sinTable[arcSteps] * centerToPointDirection.Y,
+                       -sign*sinTable[arcSteps] * centerToPointDirection.X +      cosTable[arcSteps] * centerToPointDirection.Y
                         );
                 }
             }
@@ -507,17 +508,17 @@ namespace ORTS.TrackViewer.Drawing
         private static void PrepareArcDrawing()
         {
             minAngleRad = MathHelper.ToRadians(minAngleDegree);
-            arcTableSize = (int)(Math.Ceiling(maxAngleDegree / minAngleDegree) + 1);
+            arcTableSize = (int)(Math.Ceiling(maxAngleDegree/minAngleDegree)+1);
             cosTable = new float[arcTableSize];
             sinTable = new float[arcTableSize];
             for (int i = 0; i < arcTableSize; i++)
             {
-                cosTable[i] = (float)Math.Cos(i * minAngleRad);
-                sinTable[i] = (float)Math.Sin(i * minAngleRad);
+                cosTable[i] = (float) Math.Cos(i * minAngleRad);
+                sinTable[i] = (float) Math.Sin(i * minAngleRad);
             }
         }
 
-
+        
         private static float minAngleDegree = 0.1f; // we do not care for angles smaller than 0.1 degrees
         private static float maxAngleDegree = 90; // allows for drawing up to 90 degree arcs
         private static float maxStraightPixels; // Maximum amount of pixels in a straight line part of an arc
@@ -544,19 +545,19 @@ namespace ORTS.TrackViewer.Drawing
         private int defaultFontSize;
         /// <summary>Fontsize to be used for exanding text</summary>
         private int expandingFontSize;
-
+        
         /// <summary>The text manager that supports the font(s)</summary>
         private WindowTextManager textManager;
 
         /// <summary>List of fonts</summary>
         private Dictionary<int, WindowTextFont> fonts;
-
+        
         /// <summary>
         /// Constructor, private so only called during class initialization
         /// </summary>
         private FontManager()
         {
-            fontSizes = new int[] { 10, 11, 12, 13, 14, 16, 18, 20 };
+            fontSizes = new int[] {10,11,12,13,14,16,18,20};
             defaultFontSize = 10;
             expandingFontSize = defaultFontSize;
 

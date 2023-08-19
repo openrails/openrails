@@ -43,7 +43,7 @@ namespace Orts.Viewer3D
         public static float mstsskyTilev;
         public static float mstscloudTileu;
         public static float mstscloudTilev;
-
+        
     }
     #endregion
 
@@ -115,7 +115,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // Adjust dome position so the bottom edge is not visible
+             // Adjust dome position so the bottom edge is not visible
             Vector3 ViewerXNAPosition = new Vector3(MSTSSkyViewer.Camera.Location.X, MSTSSkyViewer.Camera.Location.Y - 100, -MSTSSkyViewer.Camera.Location.Z);
             Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);
 
@@ -249,7 +249,7 @@ namespace Orts.Viewer3D
         private static int mstsskySides = MSTSSkyConstants.skySides;
         public int mstscloudDomeRadiusDiff = 600;
         // skyLevels: Used for iterating vertically through the "levels" of the hemisphere polygon
-        private static int mstsskyLevels = MSTSSkyConstants.skyLevels;
+        private static int mstsskyLevels =  MSTSSkyConstants.skyLevels;
         private static float mstsskytextureu = MSTSSkyConstants.mstsskyTileu;
         private static float mstsskytexturev = MSTSSkyConstants.mstsskyTilev;
         private static float mstscloudtextureu = MSTSSkyConstants.mstscloudTileu;
@@ -340,9 +340,9 @@ namespace Orts.Viewer3D
 
                     // UV coordinates - top overlay
                     float uvRadius;
-                    uvRadius = (0.5f - (float)(0.5f * (i - 1)) / mstsskyLevels);
+                    uvRadius = (0.5f - (float)(0.5f * (i - 1)) / mstsskyLevels );
                     float uv_u = tile_u * (0.5f - ((float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius));
-                    float uv_v = tile_v * (0.5f - ((float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius));
+                    float uv_v = tile_v * (0.5f - ((float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius ));
 
                     // Store the position, texture coordinates and normal (normalized position vector) for the current vertex
                     vertexList[vertexIndex].Position = new Vector3(x, y, z);
@@ -354,7 +354,7 @@ namespace Orts.Viewer3D
             // Single vertex at zenith
             vertexList[vertexIndex].Position = new Vector3(0, radius, 0);
             vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(0.5f * tile_u, 0.5f * tile_v); // (top overlay)
+            vertexList[vertexIndex].TextureCoordinate = new Vector2(0.5f * tile_u, 0.5f *tile_v); // (top overlay)
         }
 
         /// <summary>
@@ -481,7 +481,7 @@ namespace Orts.Viewer3D
         private Matrix XNAMoonMatrix;
         IEnumerator<EffectPass> ShaderPassesSky;
         IEnumerator<EffectPass> ShaderPassesMoon;
-        List<IEnumerator<EffectPass>> ShaderPassesClouds = new List<IEnumerator<EffectPass>>();
+        List<IEnumerator<EffectPass>>ShaderPassesClouds = new List<IEnumerator<EffectPass>>();
         private float mstsskytexturex;
         private float mstsskytexturey;
         private float mstscloudtexturex;
@@ -491,13 +491,13 @@ namespace Orts.Viewer3D
             : base(viewer, null)
         {
             MSTSSkyShader = Viewer.MaterialManager.SkyShader;
-
+            
             //// TODO: This should happen on the loader thread. 
             if (viewer.ENVFile.SkyLayers != null)
             {
                 var mstsskytexture = Viewer.ENVFile.SkyLayers.ToArray();
                 int count = Viewer.ENVFile.SkyLayers.Count;
-
+                
 
                 string[] mstsSkyTexture = new string[Viewer.ENVFile.SkyLayers.Count];
 
@@ -505,14 +505,14 @@ namespace Orts.Viewer3D
                 {
                     mstsSkyTexture[i] = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskytexture[i].TextureName.ToString();
                     MSTSSkyTexture.Add(Orts.Formats.Msts.AceFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
-                    if (i == 0)
+                    if( i == 0 )
                     {
                         MSTSDayTexture = MSTSSkyTexture[i];
                         mstsskytexturex = mstsskytexture[i].TileX;
                         mstsskytexturey = mstsskytexture[i].TileY;
 
                     }
-                    else if (mstsskytexture[i].FadeInBeginTime != null)
+                    else if(mstsskytexture[i].FadeInBeginTime != null)
                     {
                         MSTSSkyStarTexture = MSTSSkyTexture[i];
                         mstsskytexturex = mstsskytexture[i].TileX;

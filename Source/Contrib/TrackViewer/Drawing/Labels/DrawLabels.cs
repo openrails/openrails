@@ -14,11 +14,15 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
-using System.IO;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Newtonsoft.Json;
+
 using ORTS.Common;
 
 namespace ORTS.TrackViewer.Drawing.Labels
@@ -84,7 +88,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
                     DrawLabel(label);
                 }
                 float distanceSquared = WorldLocation.GetDistanceSquared2D(label.WorldLocation, drawArea.MouseLocation);
-                if (distanceSquared < closestDistanceSquared)
+                if (distanceSquared < closestDistanceSquared )
                 {
                     closestDistanceSquared = distanceSquared;
                     closestToMouseLabel = label;
@@ -103,7 +107,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
         /// <param name="label">The lable to draw</param>
         private void DrawLabel(StorableLabel label)
         {
-            drawArea.DrawExpandingString(label.WorldLocation, label.LabelText, 0, -fontHeight / 2);
+            drawArea.DrawExpandingString(label.WorldLocation, label.LabelText, 0, -fontHeight/2);
         }
 
         #endregion
@@ -116,7 +120,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
         /// <param name="mouseY">Current Y-location of the mouse to determine popu location</param>
         internal void AddLabel(int mouseX, int mouseY)
         {
-            var labelInputPopup = new EditLabel("<label>", mouseX, mouseY,
+            var labelInputPopup = new EditLabel("<label>", mouseX, mouseY, 
                 (newLabelText) => labels.Add(drawArea.MouseLocation, newLabelText),
                 allowDelete: false);
             TrackViewer.Localize(labelInputPopup);
@@ -190,8 +194,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
         /// Ask the user for a filename to be used for saving
         /// </summary>
         /// <returns>Either the filename or empty when cancelled by the user</returns>
-        private string GetSaveFileName()
-        {
+        private string GetSaveFileName() {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 OverwritePrompt = true,
@@ -237,8 +240,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
         /// Ask the user for a filename to be used for loading
         /// </summary>
         /// <returns>Either the filename or empty when cancelled by the user</returns>
-        private string GetLoadFileName()
-        {
+        private string GetLoadFileName() {
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 FileName = "labels.json",
@@ -264,7 +266,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
                 MessageBox.Show(TrackViewer.catalog.GetString("The .json file could not be read properly."));
                 return;
             }
-
+            
             bool itemsWereRemoved = labelsNew.Sanitize();
             int itemsLeft = labelsNew.Labels.Count();
             string message = string.Empty;
@@ -318,8 +320,8 @@ namespace ORTS.TrackViewer.Drawing.Labels
             //The new location is then 'original' + 'current' - 'start'.
             draggingStartLocation.NormalizeTo(drawArea.MouseLocation.TileX, drawArea.MouseLocation.TileZ);
             WorldLocation shiftedLocation = new WorldLocation(
-                draggingLabelToReplace.WorldLocation.TileX + drawArea.MouseLocation.TileX - draggingStartLocation.TileX,
-                draggingLabelToReplace.WorldLocation.TileZ + drawArea.MouseLocation.TileZ - draggingStartLocation.TileZ,
+                draggingLabelToReplace.WorldLocation.TileX      + drawArea.MouseLocation.TileX      - draggingStartLocation.TileX,
+                draggingLabelToReplace.WorldLocation.TileZ      + drawArea.MouseLocation.TileZ      - draggingStartLocation.TileZ,
                 draggingLabelToReplace.WorldLocation.Location.X + drawArea.MouseLocation.Location.X - draggingStartLocation.Location.X,
                 0,
                 draggingLabelToReplace.WorldLocation.Location.Z + drawArea.MouseLocation.Location.Z - draggingStartLocation.Location.Z

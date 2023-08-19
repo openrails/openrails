@@ -17,13 +17,22 @@
 
 // This file is the responsibility of the 3D & Environment Team.
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ORTS.Common;
+using ORTS.Common.Input;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using System.Linq;
-using Microsoft.Xna.Framework;
+using System.Text;
+
+using System.Threading;
+using System.IO;
 using Orts.MultiPlayer;
-using ORTS.Common;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -110,7 +119,7 @@ namespace Orts.Viewer3D.Popups
         {
             base.Initialize();
             // Reset window size
-            if (!Owner.Viewer.Simulator.TimetableMode)
+            if(!Owner.Viewer.Simulator.TimetableMode)
                 UpdateWindowSize();
         }
 
@@ -179,7 +188,7 @@ namespace Orts.Viewer3D.Popups
         void FontToBold_Click(Control arg1, Point arg2)
         {
             FontChanged = true;
-            FontToBold = !FontToBold;
+            FontToBold = !FontToBold; 
             UpdateWindowSize();
         }
 

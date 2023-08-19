@@ -17,6 +17,9 @@
 
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Globalization;
 using GNU.Gettext;
 
@@ -60,28 +63,27 @@ namespace ORTS.Common
     /// <summary>
     /// Distance conversions from and to metres
     /// </summary>
-    public static class Me
-    {   // Not M to avoid conflict with MSTSMath.M, but note that MSTSMath.M will be gone in future.
+    public static class Me {   // Not M to avoid conflict with MSTSMath.M, but note that MSTSMath.M will be gone in future.
         /// <summary>Convert (statute or land) miles to metres</summary>
-        public static float FromMi(float miles) { return miles * 1609.344f; }
+        public static float FromMi(float miles)  { return miles  * 1609.344f; }
         /// <summary>Convert metres to (statute or land) miles</summary>
-        public static float ToMi(float metres) { return metres * (1.0f / 1609.344f); }
+        public static float ToMi(float metres)   { return metres * (1.0f / 1609.344f); }
         /// <summary>Convert kilometres to metres</summary>
         public static float FromKiloM(float miles) { return miles * 1000f; }
         /// <summary>Convert metres to kilometres</summary>
         public static float ToKiloM(float metres) { return metres * (1.0f / 1000f); }
         /// <summary>Convert yards to metres</summary>
-        public static float FromYd(float yards) { return yards * 0.9144f; }
+        public static float FromYd(float yards)  { return yards  * 0.9144f; }
         /// <summary>Convert metres to yards</summary>
-        public static float ToYd(float metres) { return metres * (1.0f / 0.9144f); }
+        public static float ToYd(float metres)   { return metres * (1.0f / 0.9144f); }
         /// <summary>Convert feet to metres</summary>
-        public static float FromFt(float feet) { return feet * 0.3048f; }
+        public static float FromFt(float feet)   { return feet   * 0.3048f; }
         /// <summary>Convert metres to feet</summary>
-        public static float ToFt(float metres) { return metres * (1.0f / 0.3048f); }
+        public static float ToFt(float metres)   { return metres *(1.0f/ 0.3048f); }
         /// <summary>Convert inches to metres</summary>
         public static float FromIn(float inches) { return inches * 0.0254f; }
         /// <summary>Convert metres to inches</summary>
-        public static float ToIn(float metres) { return metres * (1.0f / 0.0254f); }
+        public static float ToIn(float metres)   { return metres * (1.0f / 0.0254f); }
 
         /// <summary>
         /// Convert from metres into kilometres or miles, depending on the flag isMetric
@@ -110,11 +112,11 @@ namespace ORTS.Common
     public static class Me2
     {
         /// <summary>Convert from feet squared to metres squared</summary>
-        public static float FromFt2(float feet2) { return feet2 * 0.092903f; }
+        public static float FromFt2(float feet2) { return feet2   * 0.092903f; }
         /// <summary>Convert from metres squared to feet squared</summary>
         public static float ToFt2(float metres2) { return metres2 * (1.0f / 0.092903f); }
         /// <summary>Convert from inches squared to metres squared</summary>
-        public static float FromIn2(float feet2) { return feet2 * (1.0f / 1550.0031f); }
+        public static float FromIn2(float feet2) { return feet2   * (1.0f / 1550.0031f); }
         /// <summary>Convert from metres squared to inches squared</summary>
         public static float ToIn2(float metres2) { return metres2 * 1550.0031f; }
     }
@@ -125,13 +127,13 @@ namespace ORTS.Common
     public static class Me3
     {
         /// <summary>Convert from cubic feet to cubic metres</summary>
-        public static float FromFt3(float feet3) { return feet3 * (1.0f / 35.3146665722f); }
+        public static float FromFt3(float feet3) { return feet3   * (1.0f / 35.3146665722f); }
         /// <summary>Convert from cubic metres to cubic feet</summary>
         public static float ToFt3(float metres3) { return metres3 * 35.3146665722f; }
         /// <summary>Convert from cubic inches to cubic metres</summary>
         public static float FromIn3(float inches3) { return inches3 * (1.0f / 61023.7441f); }
         /// <summary>Convert from cubic metres to cubic inches</summary>
-        public static float ToIn3(float metres3) { return metres3 * 61023.7441f; }
+        public static float ToIn3(float metres3)   { return metres3 * 61023.7441f; }
     }
 
     /// <summary>
@@ -140,13 +142,13 @@ namespace ORTS.Common
 	public static class MpS
     {
         /// <summary>Convert miles/hour to metres/second</summary>
-        public static float FromMpH(float milesPerHour) { return milesPerHour * (1.0f / 2.23693629f); }
+        public static float FromMpH(float milesPerHour)     { return milesPerHour   * (1.0f / 2.23693629f); }
         /// <summary>Convert metres/second to miles/hour</summary>
-        public static float ToMpH(float metrePerSecond) { return metrePerSecond * 2.23693629f; }
+        public static float ToMpH(float metrePerSecond)     { return metrePerSecond * 2.23693629f; }
         /// <summary>Convert kilometre/hour to metres/second</summary>
         public static float FromKpH(float kilometrePerHour) { return kilometrePerHour * (1.0f / 3.600f); }
         /// <summary>Convert metres/second to kilometres/hour</summary>
-        public static float ToKpH(float metrePerSecond) { return metrePerSecond * 3.600f; }
+        public static float ToKpH(float metrePerSecond)     { return metrePerSecond   * 3.600f; }
 
         /// <summary>
         /// Convert from metres/second to kilometres/hour or miles/hour, depending on value of isMetric
@@ -175,19 +177,19 @@ namespace ORTS.Common
     public static class Kg
     {
         /// <summary>Convert from pounds (lb) to kilograms</summary>
-        public static float FromLb(float lb) { return lb * (1.0f / 2.20462f); }
+        public static float FromLb(float lb)     { return lb * (1.0f / 2.20462f); }
         /// <summary>Convert from kilograms to pounds (lb)</summary>
-        public static float ToLb(float kg) { return kg * 2.20462f; }
+        public static float ToLb(float kg)       { return kg * 2.20462f; }
         /// <summary>Convert from US Tons to kilograms</summary>
         public static float FromTUS(float tonsUS) { return tonsUS * 907.1847f; }
         /// <summary>Convert from kilograms to US Tons</summary>
-        public static float ToTUS(float kg) { return kg * (1.0f / 907.1847f); }
+        public static float ToTUS(float kg)       { return kg     * (1.0f / 907.1847f); }
         /// <summary>Convert from UK Tons to kilograms</summary>
         public static float FromTUK(float tonsUK) { return tonsUK * 1016.047f; }
         /// <summary>Convert from kilograms to UK Tons</summary>
-        public static float ToTUK(float kg) { return kg * (1.0f / 1016.047f); }
+        public static float ToTUK(float kg)       { return kg     * (1.0f / 1016.047f); }
         /// <summary>Convert from kilogram to metric tonnes</summary>
-        public static float ToTonne(float kg) { return kg * (1.0f / 1000.0f); }
+        public static float ToTonne(float kg)      { return kg    * (1.0f / 1000.0f); }
         /// <summary>Convert from metrix tonnes to kilogram</summary>
         public static float FromTonne(float tonne) { return tonne * 1000.0f; }
     }
@@ -198,7 +200,7 @@ namespace ORTS.Common
     public static class N
     {
         /// <summary>Convert from pound-force to Newtons</summary>
-        public static float FromLbf(float lbf) { return lbf * (1.0f / 0.224808943871f); }
+        public static float FromLbf(float lbf)  { return lbf    * (1.0f / 0.224808943871f); }
         /// <summary>Convert from Newtons to Pound-force</summary>
         public static float ToLbf(float newton) { return newton * 0.224808943871f; }
     }
@@ -209,7 +211,7 @@ namespace ORTS.Common
     public static class KgpS
     {
         /// <summary>Convert from pound/hour to kilograms/second</summary>
-        public static float FromLbpH(float poundsPerHour) { return poundsPerHour * (1.0f / 7936.64144f); }
+        public static float FromLbpH(float poundsPerHour)    { return poundsPerHour      * (1.0f / 7936.64144f); }
         /// <summary>Convert from kilograms/second to pounds/hour</summary>
         public static float ToLbpH(float kilogramsPerSecond) { return kilogramsPerSecond * 7936.64144f; }
     }
@@ -233,11 +235,11 @@ namespace ORTS.Common
         /// <summary>Convert from kiloWatts to Watts</summary>
         public static float FromKW(float kiloWatts) { return kiloWatts * 1000f; }
         /// <summary>Convert from Watts to kileWatts</summary>
-        public static float ToKW(float watts) { return watts * (1.0f / 1000f); }
+        public static float ToKW(float watts)       { return watts     * (1.0f / 1000f); }
         /// <summary>Convert from HorsePower to Watts</summary>
         public static float FromHp(float horsePowers) { return horsePowers * 745.699872f; }
         /// <summary>Convert from Watts to HorsePower</summary>
-        public static float ToHp(float watts) { return watts * (1.0f / 745.699872f); }
+        public static float ToHp(float watts)         { return watts       * (1.0f / 745.699872f); }
         /// <summary>Convert from BoilerHorsePower to Watts</summary>
         public static float FromBhp(float horsePowers) { return horsePowers * 9809.5f; }
         /// <summary>Convert from Watts to BoilerHorsePower</summary>
@@ -245,7 +247,7 @@ namespace ORTS.Common
         /// <summary>Convert from British Thermal Unit (BTU) per second to watts</summary>
         public static float FromBTUpS(float btuPerSecond) { return btuPerSecond * 1055.05585f; }
         /// <summary>Convert from Watts to British Thermal Unit (BTU) per second</summary>
-        public static float ToBTUpS(float watts) { return watts * (1.0f / 1055.05585f); }
+        public static float ToBTUpS(float watts)          { return watts        * (1.0f / 1055.05585f); }
     }
 
     /// <summary>
@@ -690,7 +692,7 @@ namespace ORTS.Common
             }
             else
             {
-                return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", Kg.ToLb(massKg), lb);
+                return String.Format(CultureInfo.CurrentCulture,"{0:F0} {1}", Kg.ToLb(massKg), lb);
             }
         }
 

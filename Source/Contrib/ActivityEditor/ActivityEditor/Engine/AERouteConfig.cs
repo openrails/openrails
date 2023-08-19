@@ -22,9 +22,18 @@
 
 
 using System;
+using System.IO;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using LibAE;
+using LibAE.Formats;
 using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
+using ORTS;
 using Orts.Formats.OR;
 
 namespace ActivityEditor.Engine
@@ -42,7 +51,7 @@ namespace ActivityEditor.Engine
         //  MSTS data
         public TrackNode[] nodes { get { return simulator.nodes; } set { } }
         AEConfig Parent;
-
+                
         public TrackSectionsFile TSectionDat { get { return Viewer.Simulator.TSectionDat; } protected set { } }
         public Viewer2D Viewer { get { return Parent.Viewer; } protected set { } }
         public PseudoSim simulator { get { return Viewer.Simulator; } protected set { } }

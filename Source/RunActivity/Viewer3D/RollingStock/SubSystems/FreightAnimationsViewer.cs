@@ -15,11 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using ORTS.Common;
+using System.Collections.Generic;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems
 {
@@ -58,7 +58,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
             {
                 foreach (var lodControl in FreightShape.SharedShape.LodControls)
                 {
-                    if (lodControl.DistanceLevels.Length > 0)
+                    if ( lodControl.DistanceLevels.Length > 0)
                     {
                         foreach (var distanceLevel in lodControl.DistanceLevels)
                         {

@@ -17,11 +17,6 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -29,6 +24,11 @@ using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using static Orts.Viewer3D.RollingStock.SubSystems.DistributedPowerInterface;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems
@@ -172,7 +172,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                 sUnits = sUnits.Replace('/', '_');
                 CABViewControlUnits.TryParse(sUnits, out LoadUnits);
             }
-            DPITable = new DPITable(FullTable, LoadUnits, fullScreen: true, dpi: dpi, (control as CVCScreen).Rotation);
+            DPITable = new DPITable(FullTable, LoadUnits, fullScreen:true, dpi:dpi, (control as CVCScreen).Rotation);
             AddToLayout(DPITable, new Point(0, 0));
         }
     }
@@ -258,13 +258,13 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                 if (r.DrawAsInteger) DrawIntRectangle(spriteBatch, drawPosition, r.X, r.Y, r.Width, r.Height, r.Color);
                 else DrawRectangle(spriteBatch, drawPosition, r.X, r.Y, r.Width, r.Height, r.Color);
             }
-            foreach (var text in Texts)
+            foreach(var text in Texts)
             {
                 int x = drawPosition.X + (int)Math.Round(text.Position.X * Scale);
                 int y = drawPosition.Y + (int)Math.Round(text.Position.Y * Scale);
                 text.Draw(spriteBatch, new Point(x, y));
             }
-            foreach (var tex in Textures)
+            foreach(var tex in Textures)
             {
                 DrawSymbol(spriteBatch, tex.Texture, drawPosition, tex.Position.Y, tex.Position.Y);
             }
@@ -297,7 +297,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         {
             spriteBatch.Draw(texture, new Vector2(origin.X + x * Scale, origin.Y + y * Scale), null, Color.White, 0, Vector2.Zero, Scale * DPI.MipMapScale, SpriteEffects.None, 0);
         }
-        public WindowTextFont GetFont(float size, bool bold = false)
+        public WindowTextFont GetFont(float size, bool bold=false)
         {
             return DPI.Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(size), bold ? System.Drawing.FontStyle.Bold : System.Drawing.FontStyle.Regular);
         }
@@ -326,7 +326,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         {
             if (!Visible) return;
             base.PrepareFrame(status);
-            foreach (var area in SubAreas)
+            foreach(var area in SubAreas)
             {
                 area.PrepareFrame(status);
             }
@@ -335,7 +335,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         {
             if (!Visible) return;
             base.Draw(spriteBatch, drawPosition);
-            foreach (var area in SubAreas)
+            foreach(var area in SubAreas)
             {
                 if (area.Visible) area.Draw(spriteBatch, new Point((int)Math.Round(drawPosition.X + area.Position.X * Scale), (int)Math.Round(drawPosition.Y + area.Position.Y * Scale)));
             }
@@ -393,7 +393,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
 
         public readonly string[] FirstColumn = { "ID", "Throttle", "Load", "BP", "Flow", "Remote", "ER", "BC", "MR" };
 
-        public DPITable(bool fullTable, CABViewControlUnits loadUnits, bool fullScreen, DistributedPowerInterface dpi, float drawRotation) : base(dpi, 640, fullTable ? 230 : 162)
+        public DPITable(bool fullTable, CABViewControlUnits loadUnits, bool fullScreen, DistributedPowerInterface dpi, float drawRotation) : base(dpi, 640,  fullTable? 230 : 162)
         {
             DPI = dpi;
             FullScreen = fullScreen;
@@ -417,7 +417,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
 
         public override void ScaleChanged()
         {
-            //            base.ScaleChanged();
+//            base.ScaleChanged();
             SetFont();
         }
         void SetFont()
@@ -497,7 +497,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                     }
 
                     dieselLocomotivesCount = k;// only leaders loco group
-                    var nRows = Math.Min(FullTable ? NumberOfRowsFull : NumberOfRowsPartial, dieselLocoHeader.Count());
+                    var nRows = Math.Min (FullTable ? NumberOfRowsFull : NumberOfRowsPartial, dieselLocoHeader.Count());
 
                     for (i = 0; i < nRows; i++)
                     {
@@ -509,7 +509,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                             TableText[i, j + 1].Font = TableTextFont;
                             TableText[i, j + 1].Text = (colorFirstColEndsWith == Color.White) ? text : text.Substring(0, text.Length - 3); ;
                             TableText[i, j + 1].Color = colorFirstColEndsWith;
-                            TableSymbol[i, j + 1].Font = TableSymbolFont;
+                            TableSymbol[i, j + 1].Font = TableSymbolFont; 
                             TableSymbol[i, j + 1].Text = (tempStatus[j, i] != null && tempStatus[j, i].Contains("|")) ? Fence : " ";
                         }
                         TableText[i, 0].Font = TableTextFont;
@@ -851,14 +851,14 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                             // Add a leading space
                             tX = 0.875f;
                             tY = 0.125f;
-                            leadingSpaces++;
+                            leadingSpaces++ ;
                         }
                         else if (iChar == 2 && param.Length < 3)
                         {
                             // Add a further leading space
                             tX = 0.875f;
                             tY = 0.125f;
-                            leadingSpaces++;
+                            leadingSpaces++ ;
                         }
                         else if (iChar < param.Length + 1 + leadingSpaces && param.Length != 0)
                         {

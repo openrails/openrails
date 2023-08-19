@@ -1,8 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 
 namespace ORTS.TrackViewer.Editing.Charts
 {
@@ -25,7 +33,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         public PathChartWindow()
         {
             InitializeComponent();
-
+            
             chartCanvasses = new Dictionary<string, Canvas> {
                 {"height", HeightCanvas},
                 {"grade", GradeCanvas},
@@ -68,8 +76,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             {
                 ISubChart subChart;
                 subCharts.TryGetValue(chartName, out subChart);
-                if (subChart != null)
-                {
+                if (subChart != null) {
                     subChart.Draw(zoomRatioStart, zoomRatioStop, chartCanvasses[chartName], legendCanvasses[chartName]);
                 }
             }
@@ -137,7 +144,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         }
 
         private bool mouseIsMoving = false;
-        private double realXatMouse = 0;
+        private double realXatMouse=0;
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton != MouseButtonState.Pressed)

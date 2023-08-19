@@ -15,15 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
+using Orts.Simulation.AIs;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Orts.Formats.Msts;
-using Orts.Simulation.AIs;
-using ORTS.Common;
 
 namespace Orts.Simulation
 {
@@ -292,7 +292,7 @@ namespace Orts.Simulation
                     {
                         throw new MissingTrackNodeException();
                     }
-
+                    
                 }
 
                 // Figure out which end of the track node is closest and use that.

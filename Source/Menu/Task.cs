@@ -22,6 +22,7 @@
 //#define DEBUG_BACKGROUND_TASKS
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 

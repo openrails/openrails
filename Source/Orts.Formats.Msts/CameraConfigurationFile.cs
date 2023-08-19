@@ -19,7 +19,10 @@
 // This class reads the config file into a list of camera objects
 
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 
@@ -66,12 +69,12 @@ namespace Orts.Formats.Msts
         public string CamControl;
         public Vector3 CameraOffset = new Vector3();
         public Vector3 Direction = new Vector3();
-        public float Fov = 55f;
-        public float ZClip = 0.1f;
-        public int WagonNum = -1;
+	    public float Fov = 55f;
+	    public float ZClip =0.1f;
+	    public int WagonNum =-1;
         public Vector3 ObjectOffset = new Vector3();
         public Vector3 RotationLimit = new Vector3();
-        public string Description = "";
+	    public string Description ="";
 
     }
 

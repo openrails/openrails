@@ -15,11 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Formats.Msts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Orts.Formats.Msts;
+using System.Text;
 
 namespace ORTS.ContentManager.Models
 {
@@ -38,12 +39,11 @@ namespace ORTS.ContentManager.Models
                 Name = file.Name;
 
                 Cars = from car in file.Train.TrainCfg.WagonList
-                       select new Car(car);
+                           select new Car(car);
             }
         }
 
-        public enum Direction
-        {
+        public enum Direction{
             Forwards,
             Backwards,
         }

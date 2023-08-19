@@ -1,6 +1,13 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
 using System.Windows.Forms;
+using System.Diagnostics;
+using LibAE.Formats;
 using Orts.Formats.OR;
 
 namespace ActivityEditor.Route_Metadata
@@ -17,7 +24,7 @@ namespace ActivityEditor.Route_Metadata
             tablePaths.SuspendLayout();
             StationName.Text = station.nameStation;
             ClearTable();
-
+            
             int cntPath = this.tablePaths.RowCount;
             foreach (var pointArea in item.stationArea)
             {
@@ -42,7 +49,7 @@ namespace ActivityEditor.Route_Metadata
                 {
                     foreach (var possibility in destinPoint.Value)
                     {
-                        AddPathData(originPoint.Key, possibility.Value);
+                        AddPathData(originPoint.Key, possibility.Value); 
                     }
                 }
             }
@@ -122,15 +129,15 @@ namespace ActivityEditor.Route_Metadata
             double yard = Math.Round(path.Platform, 1);
             Label platformLength = new Label() { Text = yard.ToString(), Anchor = AnchorStyles.Left, AutoSize = true };
             this.tablePaths.Controls.Add(platformLength, 2, cntRows);
-            yard = Math.Round(path.Siding, 1);
-            Label sidingLength = new Label() { Text = yard.ToString(), Anchor = AnchorStyles.Left, AutoSize = true };
+            yard = Math.Round (path.Siding,1);
+            Label sidingLength = new Label(){ Text = yard.ToString(), Anchor = AnchorStyles.Left, AutoSize = true };
             this.tablePaths.Controls.Add(sidingLength, 3, cntRows);
 
             Label nbrPlatform = new Label() { Text = path.NbrPlatform.ToString(), Anchor = AnchorStyles.Left, AutoSize = true };
             this.tablePaths.Controls.Add(nbrPlatform, 4, cntRows);
             Label nbrSiding = new Label() { Text = path.NbrSiding.ToString(), Anchor = AnchorStyles.Left, AutoSize = true };
             this.tablePaths.Controls.Add(nbrSiding, 5, cntRows);
-            Label passingYardLength = new Label() { Text = passingYard.ToString(), Anchor = AnchorStyles.Left, AutoSize = true };
+            Label passingYardLength = new Label(){ Text = passingYard.ToString(), Anchor = AnchorStyles.Left, AutoSize = true };
             this.tablePaths.Controls.Add(passingYardLength, 6, cntRows);
             CinBoth = new Label() { Text = "--", Anchor = AnchorStyles.Left, AutoSize = true };
             cntRows++;

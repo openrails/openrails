@@ -38,9 +38,12 @@
 // done at a higher level, currently.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Windows.Forms;
+using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework.Graphics;
+using System.Windows.Forms;
 
 namespace ContentChecker
 {
@@ -67,7 +70,7 @@ namespace ContentChecker
         /// <summary> The number of files that were actually loaded </summary>
         public int FilesLoaded { get; protected set; }
         /// <summary> The number of files that were not loaded but skipped </summary>
-        public int FilesSkipped { get; protected set; }
+        public int FilesSkipped {get; protected set;}
 
         /// <summary> The action to take when an additonal file has been identified. This is intended to be set externally </summary>
         protected Action<string, Loader> AddAdditionalFileAction { get; set; }

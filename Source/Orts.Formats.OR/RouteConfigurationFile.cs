@@ -15,12 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using Newtonsoft.Json;
 using Orts.Formats.Msts;
 using ORTS.Common;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 
 namespace Orts.Formats.OR
 {
@@ -220,47 +220,47 @@ namespace Orts.Formats.OR
             fileName += ".cfg.json";
             //try
             //{
-            // TODO: This code is BROKEN. It loads and saves file formats with internal type information included, which causes breakages if the types are moved. This is not acceptable for public, shared data.
-            //JsonSerializer serializer = new JsonSerializer();
-            //using (StreamReader sr = new StreamReader(fileName))
-            //{
-            //    ORRouteConfig orRouteConfig = JsonConvert.DeserializeObject<ORRouteConfig>((string)sr.ReadToEnd(), new JsonSerializerSettings
-            //    {
-            //        PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-            //        TypeNameHandling = TypeNameHandling.Auto
-            //    });
-            //    p = orRouteConfig;
-
-            //    foreach (var item in p.routeItems)
-            //    {
-            //        p.AllItems.Add(item);
-            //        item.alignEdition(interfaceType, null);
-            //        if (item.GetType() == typeof(StationItem))
-            //        {
-            //            if (((StationItem)item).stationArea.Count > 0)
-            //            {
-            //                foreach (var item2 in ((StationItem)item).stationArea)
-            //                {
-            //                    ((StationAreaItem)item2).alignEdition(interfaceType, item);
-            //                }
-            //                ((StationItem)item).areaCompleted = true;
-            //            }
-            //        }
-            //        else if (item.GetType() == typeof(AEBufferItem))
-            //        {
-            //        }
-            //    }
-            //    //orRouteConfig.ReduceItems();
-            //}
-            //
+                // TODO: This code is BROKEN. It loads and saves file formats with internal type information included, which causes breakages if the types are moved. This is not acceptable for public, shared data.
+                //JsonSerializer serializer = new JsonSerializer();
+                //using (StreamReader sr = new StreamReader(fileName))
+                //{
+                //    ORRouteConfig orRouteConfig = JsonConvert.DeserializeObject<ORRouteConfig>((string)sr.ReadToEnd(), new JsonSerializerSettings
+                //    {
+                //        PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                //        TypeNameHandling = TypeNameHandling.Auto
+                //    });
+                //    p = orRouteConfig;
+                    
+                //    foreach (var item in p.routeItems)
+                //    {
+                //        p.AllItems.Add(item);
+                //        item.alignEdition(interfaceType, null);
+                //        if (item.GetType() == typeof(StationItem))
+                //        {
+                //            if (((StationItem)item).stationArea.Count > 0)
+                //            {
+                //                foreach (var item2 in ((StationItem)item).stationArea)
+                //                {
+                //                    ((StationAreaItem)item2).alignEdition(interfaceType, item);
+                //                }
+                //                ((StationItem)item).areaCompleted = true;
+                //            }
+                //        }
+                //        else if (item.GetType() == typeof(AEBufferItem))
+                //        {
+                //        }
+                //    }
+                //    //orRouteConfig.ReduceItems();
+                //}
+                //
             //}
             //catch (IOException)
             //{
-            p = new ORRouteConfig();
-            p.FileName = Path.GetFileName(fileName);
-            p.RoutePath = Path.GetDirectoryName(fileName);
-            p.RouteName = "";
-            p.toSave = true;
+                p = new ORRouteConfig();
+                p.FileName = Path.GetFileName(fileName);
+                p.RoutePath = Path.GetDirectoryName(fileName);
+                p.RouteName = "";
+                p.toSave = true;
 
             //}
             return p;
@@ -435,7 +435,7 @@ namespace Orts.Formats.OR
             currentProgFolder = Path.GetDirectoryName(currentProgFolder);
             string completeFileName = Path.Combine(currentProgFolder, "Open Rails");
             if (!Directory.Exists(completeFileName)) Directory.CreateDirectory(completeFileName);
-            completeFileName = Path.Combine(completeFileName, "ORConfig.json");
+            completeFileName = Path.Combine (completeFileName, "ORConfig.json");
             ORConfig loaded = DeserializeJSON(completeFileName);
             return loaded;
         }

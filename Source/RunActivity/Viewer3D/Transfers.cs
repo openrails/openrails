@@ -17,13 +17,13 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Viewer3D.Common;
 using ORTS.Common;
+using System;
+using System.Collections.Generic;
 
 namespace Orts.Viewer3D
 {
@@ -154,8 +154,7 @@ namespace Orts.Viewer3D
             : base(viewer, textureName)
         {
             Texture = Viewer.TextureManager.Get(textureName, true);
-            TransferSamplerState = new SamplerState
-            {
+            TransferSamplerState = new SamplerState {
                 AddressU = TextureAddressMode.Clamp,
                 AddressV = TextureAddressMode.Clamp,
                 Filter = TextureFilter.Anisotropic,

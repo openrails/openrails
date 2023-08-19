@@ -38,23 +38,23 @@ namespace Orts.Viewer3D.Popups
             Label buttonQuit, buttonSave, buttonContinue;
             var vbox = base.Layout(layout).AddLayoutVertical();
             var heightForLabels = 10;
-            if (!Orts.MultiPlayer.MPManager.IsMultiPlayer())
-                heightForLabels = (vbox.RemainingHeight - 2 * ControlLayout.SeparatorSize) / 3;
-            else heightForLabels = (vbox.RemainingHeight - 2 * ControlLayout.SeparatorSize) / 2;
+			if (!Orts.MultiPlayer.MPManager.IsMultiPlayer())
+				heightForLabels = (vbox.RemainingHeight - 2 * ControlLayout.SeparatorSize) / 3;
+			else heightForLabels = (vbox.RemainingHeight - 2 * ControlLayout.SeparatorSize) / 2;
             var spacing = (heightForLabels - Owner.TextFontDefault.Height) / 2;
             vbox.AddSpace(0, spacing);
             vbox.Add(buttonQuit = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetStringFmt("Quit {1} ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommand.GameQuit], Application.ProductName), LabelAlignment.Center));
             vbox.AddSpace(0, spacing);
             vbox.AddHorizontalSeparator();
-            if (!Orts.MultiPlayer.MPManager.IsMultiPlayer())
-            {
+			if (!Orts.MultiPlayer.MPManager.IsMultiPlayer())
+			{
                 buttonSave = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetStringFmt("Save your game ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommand.GameSave]), LabelAlignment.Center);
-                vbox.AddSpace(0, spacing);
-                vbox.Add(buttonSave);
-                vbox.AddSpace(0, spacing);
-                vbox.AddHorizontalSeparator();
-                buttonSave.Click += new Action<Control, Point>(buttonSave_Click);
-            }
+				vbox.AddSpace(0, spacing);
+				vbox.Add(buttonSave);
+				vbox.AddSpace(0, spacing);
+				vbox.AddHorizontalSeparator();
+				buttonSave.Click += new Action<Control, Point>(buttonSave_Click);
+			}
             vbox.AddSpace(0, spacing);
             vbox.Add(buttonContinue = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetStringFmt("Continue playing ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommand.GamePauseMenu]), LabelAlignment.Center));
             buttonQuit.Click += new Action<Control, Point>(buttonQuit_Click);
@@ -75,8 +75,7 @@ namespace Orts.Viewer3D.Popups
         void buttonContinue_Click(Control arg1, Point arg2)
         {
             Visible = Owner.Viewer.Simulator.Paused = false;
-            if (Owner.Viewer.Log.PauseState == ReplayPauseState.During)
-            {
+            if( Owner.Viewer.Log.PauseState == ReplayPauseState.During ) {
                 Owner.Viewer.Log.PauseState = ReplayPauseState.Done;
             }
             Owner.Viewer.ResumeReplaying();

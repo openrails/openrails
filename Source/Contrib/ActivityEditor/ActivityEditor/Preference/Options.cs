@@ -1,8 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
 using System.Windows.Forms;
+using LibAE.Formats;
 using ActivityEditor.ActionProperties;
 using Orts.Formats.OR;
 
@@ -22,7 +27,7 @@ namespace ActivityEditor.Preference
             this.MSTSPath.Text = Program.aePreference.MSTSPath;
             this.AEPath.Text = Program.aePreference.AEPath;
             ListRoutePaths.DataSource = Program.aePreference.RoutePaths;
-            routePaths = new List<string>();
+            routePaths = new List<string> ();
             this.showTiles.Checked = Program.aePreference.ShowTiles;
             this.snapTrack.Checked = Program.aePreference.ShowSnapLine;
             this.SnapInfo.Checked = Program.aePreference.ShowSnapInfo;
@@ -32,7 +37,7 @@ namespace ActivityEditor.Preference
             this.ListAvailable.DataSource = Program.aePreference.AvailableActions;
             this.ListUsed.DataSource = Program.aePreference.UsedActions;
         }
-
+        
         private void DrawOnTab(object sender, DrawItemEventArgs e)
         {
             Font font;
@@ -46,9 +51,9 @@ namespace ActivityEditor.Preference
                 font = new Font(e.Font, e.Font.Style);
                 back_brush = new SolidBrush(Color.DimGray);
                 fore_brush = new SolidBrush(Color.White);
-                bounds = new Rectangle(bounds.X + (this.tabControl1.Padding.X / 2),
-                    bounds.Y + this.tabControl1.Padding.Y,
-                    bounds.Width - this.tabControl1.Padding.X,
+                bounds = new Rectangle(bounds.X + (this.tabControl1.Padding.X / 2), 
+                    bounds.Y + this.tabControl1.Padding.Y, 
+                    bounds.Width - this.tabControl1.Padding.X, 
                     bounds.Height - (this.tabControl1.Padding.Y * 2));
             }
             else
@@ -127,7 +132,7 @@ namespace ActivityEditor.Preference
             }
         }
 
-        private void configureRoutePath()
+        private void configureRoutePath ()
         {
             if (Program.aePreference.RoutePaths.Count <= 0)
             {
@@ -150,7 +155,7 @@ namespace ActivityEditor.Preference
         {
             this.snapCircle.Enabled = ShowSnap.Checked;
             this.snapCircleLabel.Enabled = ShowSnap.Checked;
-            this.snapCircle.Value = Program.aePreference.getSnapCircle() > 0 ? Program.aePreference.getSnapCircle() : 2;
+            this.snapCircle.Value = Program.aePreference.getSnapCircle()>0?Program.aePreference.getSnapCircle():2;
             Program.aePreference.ShowSnapCircle = ShowSnap.Checked;
         }
 
@@ -196,7 +201,7 @@ namespace ActivityEditor.Preference
         private void optionOK_click(object sender, EventArgs e)
         {
             Close();
-            Program.aePreference.ShowAllSignal = this.checkBox1.Checked;
+            Program.aePreference.ShowAllSignal = this.checkBox1.Checked ;
             Program.aePreference.ShowSnapCircle = this.ShowSnap.Checked;
             Program.aePreference.ShowPlSiLabel = this.ShowLabelPlat.Checked;
             Program.aePreference.MSTSPath = this.MSTSPath.Text;

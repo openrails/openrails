@@ -109,7 +109,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 if (ScriptName != null)
                 {
-                    switch (ScriptName)
+                    switch(ScriptName)
                     {
                         case "Automatic":
                             Script = new AutomaticCircuitBreaker() as CircuitBreaker;

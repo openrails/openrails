@@ -15,10 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Orts.Formats.Msts;
+using System.Linq;
+using System.IO;
 using Path = System.IO.Path;
+
+using Orts.Formats.Msts;
 
 namespace ContentChecker
 {
@@ -98,8 +102,8 @@ namespace ContentChecker
             basePath = null;
             Stack<string> subDirectories = new Stack<string>();
             string directory = Path.GetDirectoryName(file);
-            var root = Path.GetPathRoot(file);
-            while (directory.Length > root.Length)
+            var root=Path.GetPathRoot(file);
+            while (directory.Length > root.Length )
             {
                 string subdDirectoryName = Path.GetFileName(directory);
                 if (subdDirectoryName.ToLowerInvariant().Equals("routes"))

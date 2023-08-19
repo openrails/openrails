@@ -19,14 +19,14 @@
 
 #define WINDOWTEXT_SPRITEBATCH
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using ORTS.Common;
 using Font = System.Drawing.Font;
 using FontStyle = System.Drawing.FontStyle;
 using GraphicsUnit = System.Drawing.GraphicsUnit;
@@ -149,7 +149,7 @@ namespace Orts.Viewer3D.Popups
             OutlineSize = outlineSize;
             Characters = new CharacterGroup(Font, OutlineSize);
             if (Viewer3D.Viewer.Catalog != null)
-                EnsureCharacterData(Viewer3D.Viewer.Catalog.GetString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \",.-+|!$%&/()=?;:'_[]"));
+            EnsureCharacterData(Viewer3D.Viewer.Catalog.GetString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \",.-+|!$%&/()=?;:'_[]"));
         }
 
         /// <summary>

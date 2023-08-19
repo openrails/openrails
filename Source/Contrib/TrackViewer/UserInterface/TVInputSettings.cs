@@ -21,6 +21,17 @@
 // Here all possible key commands are defined (enumerated) as well as linked to a specific key or key combination.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.Win32;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 using ORTS.Settings;
 
@@ -155,7 +166,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// Array of commands that have been defined and for which a key-combination can and should be defined below
         /// </summary>
         public static UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(TVUserCommands)).Length];
-
+        
         //static readonly string[] KeyboardLayout = new[] {
         //    "[01 ]   [3B ][3C ][3D ][3E ]   [3F ][40 ][41 ][42 ]   [43 ][44 ][57 ][58 ]   [37 ][46 ][11D]",
         //    "                                                                                            ",
@@ -172,20 +183,20 @@ namespace ORTS.TrackViewer.UserInterface
         public static void SetDefaults()
         {
             Commands[(int)TVUserCommands.ReloadRoute] = new ORTS.Settings.UserCommandKeyInput(0x13, ORTS.Settings.KeyModifiers.Control);
-            Commands[(int)TVUserCommands.ZoomIn] = new ORTS.Settings.UserCommandKeyInput(0x0D);
-            Commands[(int)TVUserCommands.ZoomOut] = new ORTS.Settings.UserCommandKeyInput(0x0C);
+            Commands[(int)TVUserCommands.ZoomIn]     = new ORTS.Settings.UserCommandKeyInput(0x0D);
+            Commands[(int)TVUserCommands.ZoomOut]    = new ORTS.Settings.UserCommandKeyInput(0x0C);
             Commands[(int)TVUserCommands.ZoomInSlow] = new ORTS.Settings.UserCommandKeyInput(0x0D, ORTS.Settings.KeyModifiers.Shift);
-            Commands[(int)TVUserCommands.ZoomOutSlow] = new ORTS.Settings.UserCommandKeyInput(0x0C, ORTS.Settings.KeyModifiers.Shift);
-            Commands[(int)TVUserCommands.ZoomReset] = new ORTS.Settings.UserCommandKeyInput(0x13);
+            Commands[(int)TVUserCommands.ZoomOutSlow]= new ORTS.Settings.UserCommandKeyInput(0x0C, ORTS.Settings.KeyModifiers.Shift);
+            Commands[(int)TVUserCommands.ZoomReset]  = new ORTS.Settings.UserCommandKeyInput(0x13);
             Commands[(int)TVUserCommands.ZoomToTile] = new ORTS.Settings.UserCommandKeyInput(0x2C);
-            Commands[(int)TVUserCommands.ShiftLeft] = new ORTS.Settings.UserCommandKeyInput(0x4B);
+            Commands[(int)TVUserCommands.ShiftLeft]  = new ORTS.Settings.UserCommandKeyInput(0x4B);
             Commands[(int)TVUserCommands.ShiftRight] = new ORTS.Settings.UserCommandKeyInput(0x4D);
-            Commands[(int)TVUserCommands.ShiftUp] = new ORTS.Settings.UserCommandKeyInput(0x48);
-            Commands[(int)TVUserCommands.ShiftDown] = new ORTS.Settings.UserCommandKeyInput(0x50);
+            Commands[(int)TVUserCommands.ShiftUp]    = new ORTS.Settings.UserCommandKeyInput(0x48);
+            Commands[(int)TVUserCommands.ShiftDown]  = new ORTS.Settings.UserCommandKeyInput(0x50);
             Commands[(int)TVUserCommands.ShiftToPathLocation] = new ORTS.Settings.UserCommandKeyInput(0x2E);
             Commands[(int)TVUserCommands.ShiftToMouseLocation] = new ORTS.Settings.UserCommandKeyInput(0x2E, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleZoomAroundMouse] = new ORTS.Settings.UserCommandKeyInput(0x32);
-
+            
             Commands[(int)TVUserCommands.ToggleShowSpeedLimits] = new ORTS.Settings.UserCommandKeyInput(0x3F);
             Commands[(int)TVUserCommands.ToggleShowMilePosts] = new ORTS.Settings.UserCommandKeyInput(0x3F, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleShowTerrain] = new ORTS.Settings.UserCommandKeyInput(0x40);
@@ -208,9 +219,9 @@ namespace ORTS.TrackViewer.UserInterface
             Commands[(int)TVUserCommands.PlaceEndPoint] = new ORTS.Settings.UserCommandKeyInput(0x12);
             Commands[(int)TVUserCommands.PlaceWaitPoint] = new ORTS.Settings.UserCommandKeyInput(0x11);
 
-            Commands[(int)TVUserCommands.AddLabel] = new ORTS.Settings.UserCommandKeyInput(0x26);
-            Commands[(int)TVUserCommands.Quit] = new ORTS.Settings.UserCommandKeyInput(0x10);
-            Commands[(int)TVUserCommands.Debug] = new ORTS.Settings.UserCommandKeyInput(0x34);
+            Commands[(int)TVUserCommands.AddLabel]   = new ORTS.Settings.UserCommandKeyInput(0x26);
+            Commands[(int)TVUserCommands.Quit]       = new ORTS.Settings.UserCommandKeyInput(0x10);
+            Commands[(int)TVUserCommands.Debug]      = new ORTS.Settings.UserCommandKeyInput(0x34);
             Commands[(int)TVUserCommands.DebugDumpKeymap] = new ORTS.Settings.UserCommandKeyInput(0x3B, ORTS.Settings.KeyModifiers.Alt);
 
             Commands[(int)TVUserCommands.MouseZoomSlow] = new UserCommandModifierInput(Settings.KeyModifiers.Shift);

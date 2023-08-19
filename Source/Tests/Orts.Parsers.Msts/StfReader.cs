@@ -15,14 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Microsoft.Xna.Framework;
+using Orts.Parsers.Msts;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Xna.Framework;
-using Orts.Parsers.Msts;
 using Xunit;
 
 #region Integration tests (all tests from original reader)
@@ -754,7 +754,7 @@ namespace Tests.Orts.Parsers.Msts.StfException
 
 }
 namespace Tests.Orts.Parsers.Msts.StfReader
-{
+{   
     // NEW_READER compilation flag is set for those tests that can be performed (compiled) only for the new STFReader, 
     // but not on the old reader. The new reader should also pass all tests that compile on the old reader.
     // This means in this file NEW_READER flag adds a number of tests, but it should also work if the flag is not set.
@@ -1441,7 +1441,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
             var reader = Create.Reader("Comment(a)" + someFollowingToken);
             Assert.Equal(someFollowingToken, reader.ReadItem());
         }
-
+        
         [Fact]
         public static void DontWarnOnMissingBlockAfterComment()
         {
@@ -2223,8 +2223,8 @@ namespace Tests.Orts.Parsers.Msts.StfReader
     public class OnReadingBoolBlockShould
     {
         static readonly bool SOMEDEFAULT = false;
-        static readonly bool[] SOMEDEFAULTS1 = new bool[] { false, true, false, true, true, true, true };
-        static readonly string[] STRINGDEFAULTS1 = new string[] { "false", "true", "0", "1", "1.1", "-2.9e3", "non" };
+        static readonly bool[] SOMEDEFAULTS1 = new bool[] { false, true, false, true, true, true, true  };
+        static readonly string[] STRINGDEFAULTS1 = new string[] { "false", "true", "0", "1", "1.1", "-2.9e3", "non"  };
 
         [Fact]
         public static void OnEofWarnAndReturnDefault()
@@ -2250,16 +2250,16 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         [Fact]
         public static void ReturnStringValueInBlock()
         {
-            string[] inputValues = { "true", "false" };
-            bool[] expectedValues = { true, false };
+            string[] inputValues = {"true", "false"};
+            bool[] expectedValues = {true, false};
             StfTokenReaderCommon.ReturnValueInBlock<bool>(expectedValues, inputValues, reader => reader.ReadBoolBlock(false));
         }
 
         [Fact]
         public static void ReturnIntValueInBlock()
         {
-            string[] inputValues = { "0", "1", "-2" };
-            bool[] expectedValues = { false, true, true };
+            string[] inputValues = {"0", "1", "-2"};
+            bool[] expectedValues = {false, true, true};
             StfTokenReaderCommon.ReturnValueInBlock<bool>(expectedValues, inputValues, reader => reader.ReadBoolBlock(false));
         }
 
@@ -2269,9 +2269,9 @@ namespace Tests.Orts.Parsers.Msts.StfReader
             bool[] expectedValues;
             string[] inputValues = { "0.1", "1.1", "something", "()" };
             bool expectedValue = false;
-            expectedValues = new bool[] { expectedValue, expectedValue, expectedValue, expectedValue };
+            expectedValues = new bool[]{ expectedValue, expectedValue, expectedValue, expectedValue};
             StfTokenReaderCommon.ReturnValueInBlock<bool>(expectedValues, inputValues, reader => reader.ReadBoolBlock(expectedValue));
-
+            
             expectedValue = true;
             expectedValues = new bool[] { expectedValue, expectedValue, expectedValue, expectedValue };
             StfTokenReaderCommon.ReturnValueInBlock<bool>(expectedValues, inputValues, reader => reader.ReadBoolBlock(expectedValue));
@@ -2318,7 +2318,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
             var reader = Create.Reader(inputString);
             foreach (string testValue in testValues)
             {
-                bool result = !expectedResult;
+                bool result = ! expectedResult;
                 result = reader.ReadBoolBlock(expectedResult);
                 Assert.Equal(expectedResult, result);
             }

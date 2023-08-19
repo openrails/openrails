@@ -17,11 +17,11 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using Orts.Simulation.RollingStocks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Orts.Simulation.RollingStocks;
 
 namespace Orts.Viewer3D
 {
@@ -160,7 +160,7 @@ namespace Orts.Viewer3D
         {
             return (bufferID != 0 && BufferIDs.Any(value => bufferID == value));
         }
-
+        
         public bool isLast(int soundSourceID)
         {
             if (_isSingle)
@@ -249,7 +249,7 @@ namespace Orts.Viewer3D
                 }
             if (bid == -1)
                 return false;
-
+            
             int len = (int)(CheckFactor * pitch);
             if (BufferLens[bid] < len)
                 return true;
@@ -995,7 +995,7 @@ namespace Orts.Viewer3D
                     for (int i = 1; i < 5; i++)
                     {
 
-                        prev = SoundQueue[(QueueHeader - i) % QUEUELENGHT];
+                       prev = SoundQueue[(QueueHeader - i) % QUEUELENGHT];
 
                         prevMode = prev.PlayMode;
 
@@ -1107,7 +1107,7 @@ namespace Orts.Viewer3D
             if (h >= QueueTail)
             {
                 int i;
-                for (i = h - 1; i >= QueueTail; i--)
+                for (i = h-1; i >= QueueTail; i--)
                 {
                     SoundQueue[i % QUEUELENGHT].PlayState = PlayState.NOP;
                 }
@@ -1151,7 +1151,7 @@ namespace Orts.Viewer3D
         public void Stop()
         {
             OpenAL.alSourceStop(SoundSourceID);
-            OpenAL.alSourcei(SoundSourceID, OpenAL.AL_BUFFER, OpenAL.AL_NONE);
+            OpenAL.alSourcei(SoundSourceID, OpenAL.AL_BUFFER, OpenAL.AL_NONE); 
             SkipProcessed();
             isPlaying = false;
         }
@@ -1236,7 +1236,7 @@ namespace Orts.Viewer3D
 
             if (SoundQueue[QueueTail % QUEUELENGHT].PlayState != PlayState.NOP)
             {
-                retval[3] = String.Format("{0} {1}{2}",
+                retval[3] = String.Format("{0} {1}{2}", 
                     SoundQueue[QueueTail % QUEUELENGHT].PlayState,
                     SoundQueue[QueueTail % QUEUELENGHT].PlayMode,
                     SoundQueue[QueueTail % QUEUELENGHT].SoftLoopPoints && SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.LoopRelease ? "Soft" : "");

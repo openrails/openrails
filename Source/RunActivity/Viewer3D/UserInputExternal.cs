@@ -15,8 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using Orts.Formats.Msts;
+using Orts.Simulation.RollingStocks;
+using ORTS.Common;
 using ORTS.Common.Input;
 
 namespace Orts.Viewer3D
@@ -26,12 +29,12 @@ namespace Orts.Viewer3D
     /// </summary>
     public class ExternalDeviceState
     {
-        public Dictionary<(CabViewControlType, int), ExternalDeviceCabControl> CabControls;
+        public Dictionary<(CabViewControlType,int), ExternalDeviceCabControl> CabControls;
         public Dictionary<UserCommand, ExternalDeviceButton> Commands;
         public ExternalDeviceState()
         {
             Commands = new Dictionary<UserCommand, ExternalDeviceButton>();
-            CabControls = new Dictionary<(CabViewControlType, int), ExternalDeviceCabControl>();
+            CabControls = new Dictionary<(CabViewControlType,int), ExternalDeviceCabControl>();
         }
 
         public virtual void Handled()
@@ -47,19 +50,19 @@ namespace Orts.Viewer3D
         }
 
         public bool IsPressed(UserCommand command)
-        {
+		{
             return Commands.TryGetValue(command, out var button) && button.IsPressed;
-        }
+		}
 
-        public bool IsReleased(UserCommand command)
-        {
+		public bool IsReleased(UserCommand command)
+		{
             return Commands.TryGetValue(command, out var button) && button.IsReleased;
-        }
+		}
 
-        public bool IsDown(UserCommand command)
-        {
+		public bool IsDown(UserCommand command)
+		{
             return Commands.TryGetValue(command, out var button) && button.IsDown;
-        }
+		}
     }
     public class ExternalDeviceButton
     {

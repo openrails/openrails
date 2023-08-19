@@ -17,8 +17,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Text;
+using System.IO;
 using System.Windows.Forms;
 
 namespace ORTS.TrackViewer.Editing
@@ -89,15 +90,15 @@ namespace ORTS.TrackViewer.Editing
             List<string> cancelReasons = new List<string>();
             if (!trainpath.HasEnd) cancelReasons.Add(TrackViewer.catalog.GetString("* The path does not have a well-defined end-point"));
             //if (trainpath.IsBroken) cancelReasons.Add(TrackViewer.catalog.GetString("* The path has broken nodes or links"));
-            if (trainpath.FirstNodeOfTail != null) cancelReasons.Add(TrackViewer.catalog.GetString("* The path has a stored and not-yet reconnected tail"));
-
+            if (trainpath.FirstNodeOfTail!=null) cancelReasons.Add(TrackViewer.catalog.GetString("* The path has a stored and not-yet reconnected tail"));
+            
             if (cancelReasons.Count == 0) return false;
 
             string message = TrackViewer.catalog.GetString("The current path is not finished:") + "\n";
             message += String.Join("\n", cancelReasons.ToArray());
             message += "\n" + TrackViewer.catalog.GetString("Do you want to continue?");
 
-            DialogResult dialogResult = MessageBox.Show(message,
+            DialogResult dialogResult = MessageBox.Show(message, 
                         TrackViewer.catalog.GetString("Trackviewer Path Editor"), MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
             return (dialogResult == DialogResult.Cancel);
 
@@ -142,7 +143,7 @@ namespace ORTS.TrackViewer.Editing
         {
             trackPDPs = new List<string>();
             trpathnodes = new List<string>();
-            pdpOfJunction = new Dictionary<int, int>();
+            pdpOfJunction = new Dictionary<int,int>();
 
             uint nextMainIndex = 1;
             TrainpathNode currentMainNode = trainpath.FirstNode;
@@ -153,7 +154,7 @@ namespace ORTS.TrackViewer.Editing
                 if (currentMainNode.NextSidingNode == null)
                 {
                     AddNode(currentMainNode, nextMainIndex, nonext);
-                }
+                }              
                 else
                 {
                     // This is a siding start.
@@ -182,7 +183,7 @@ namespace ORTS.TrackViewer.Editing
                         extraMainNodes++;
                         tempMainNode = tempMainNode.NextMainNode; // It should exist, if not path editor itself is broken.
                     }
-
+                    
 
                     if (extraSidingNodes == 0)
                     {
@@ -199,14 +200,14 @@ namespace ORTS.TrackViewer.Editing
                         currentSidingNode = currentMainNode.NextSidingNode;
                         while (currentSidingNode.NextSidingNode.NextSidingNode != null)
                         {
-                            nextSidingIndex++;
+                            nextSidingIndex++; 
                             AddNode(currentSidingNode, nonext, nextSidingIndex);
                             currentSidingNode = currentSidingNode.NextSidingNode;
                         }
 
                         // Write the final siding node, linking to main path again.
                         AddNode(currentSidingNode, nonext, nextMainIndex + extraMainNodes);
-
+                        
                     }
                 }
                 nextMainIndex++;
@@ -228,7 +229,7 @@ namespace ORTS.TrackViewer.Editing
             int pdpIndex;
             string trackPDPstart = String.Format(System.Globalization.CultureInfo.InvariantCulture,
                 "\tTrackPDP ( {0,6:D} {1,6:D} {2,9} {3,9:F3} {4,9:F3}",
-                node.Location.TileX, node.Location.TileZ,
+                node.Location.TileX, node.Location.TileZ, 
                 node.Location.Location.X.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")),
                 node.Location.Location.Y.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")),
                 node.Location.Location.Z.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")));
@@ -263,7 +264,7 @@ namespace ORTS.TrackViewer.Editing
                         "{0} {1} {2} )", trackPDPstart, 1, 1));
                 }
             }
-
+            
             trpathnodes.Add(String.Format(System.Globalization.CultureInfo.InvariantCulture,
                 "\t\tTrPathNode ( {0} {1} {2} {3} )",
                     node.FlagsToString(), nextMainIndex, nextSidingIndex, pdpIndex));
@@ -289,19 +290,18 @@ namespace ORTS.TrackViewer.Editing
             file.WriteLine(")");
             file.WriteLine("TrackPath (");
             file.WriteLine("\tTrPathName ( \"" + trainpath.PathId + "\" )");
-
+         
             // How to format hex? "{0:X8}" is not working for me. Neither is {0:X08}.
             // Fortunately, {0:X} will use 8 characters anyway. Maybe because it knows the length from the number of bits in the number
             string flagsString = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:X}", trainpath.PathFlags);
-            file.WriteLine("\tTrPathFlags ( " + flagsString + " )");
-
+            file.WriteLine("\tTrPathFlags ( " + flagsString + " )"); 
+            
             file.WriteLine("\tName ( \"" + trainpath.PathName + "\" )");
-            file.WriteLine("\tTrPathStart ( \"" + trainpath.PathStart + "\" )");
+            file.WriteLine("\tTrPathStart ( \""  + trainpath.PathStart + "\" )");
             file.WriteLine("\tTrPathEnd ( \"" + trainpath.PathEnd + "\" )");
-            file.Write("\tTrPathNodes ( ");
+            file.Write    ("\tTrPathNodes ( ");
             file.WriteLine(trpathnodes.Count());
-            foreach (string line in trpathnodes)
-            {
+            foreach (string line in trpathnodes) {
                 file.WriteLine(line);
             }
             file.WriteLine("\t)");

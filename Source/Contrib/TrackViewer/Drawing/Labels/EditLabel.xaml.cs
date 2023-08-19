@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 
@@ -67,7 +70,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
         {
             this.Close();
         }
-
+        
         /// <summary>
         /// Delete the label
         /// </summary>
@@ -78,7 +81,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
             this.Close();
             callback(null);
         }
-
+        
         /// <summary>
         /// Handle an enter/return press on the textbox. If return is pressed, just do the same as the save button.
         /// </summary>

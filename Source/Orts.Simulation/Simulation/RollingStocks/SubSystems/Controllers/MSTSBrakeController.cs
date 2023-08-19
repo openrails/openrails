@@ -27,7 +27,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
      * has specific methods to update brake status.
      * 
      */
-    public class MSTSBrakeController : BrakeController
+    public class MSTSBrakeController: BrakeController
     {
         public MSTSNotchController NotchController;
 
@@ -164,7 +164,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         case ControllerState.FullServ:
                             epState = x;
                             EnforceMinimalReduction = true;
-                            DecreasePressure(ref pressureBar, MaxPressureBar() - FullServReductionBar(), ApplyRateBarpS(), elapsedClockSeconds);
+                            DecreasePressure(ref pressureBar, MaxPressureBar()-FullServReductionBar(), ApplyRateBarpS(), elapsedClockSeconds);
                             break;
                         case ControllerState.Lap:
                             // Lap position applies min service reduction when first selected, and previous contoller position was Running, then no change in pressure occurs 
@@ -250,7 +250,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 pressureBar = (MaxPressureBar() - FullServReductionBar()) * CurrentValue();
             }
             else
-            {
+            {                
                 float x = NotchController.GetNotchFraction();
                 switch (notch.Type)
                 {
@@ -267,11 +267,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         break;
                     case ControllerState.Apply:
                     case ControllerState.FullServ:
-                        IncreasePressure(ref pressureBar, MaxPressureBar() - FullServReductionBar(), x * ApplyRateBarpS(), elapsedClockSeconds);
+                        IncreasePressure(ref pressureBar, MaxPressureBar() - FullServReductionBar(), x*ApplyRateBarpS(), elapsedClockSeconds);
                         break;
                     case ControllerState.ManualBraking:
                     case ControllerState.VacContServ:
-                        // Continuous service positions for vacuum brakes - allows brake to be adjusted up and down continuously between the ON and OFF position
+                    // Continuous service positions for vacuum brakes - allows brake to be adjusted up and down continuously between the ON and OFF position
                         pressureBar = (1 - x) * MaxPressureBar();
                         break;
                     case ControllerState.BrakeNotch:

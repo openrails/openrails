@@ -54,17 +54,17 @@
 //         *)
 
 //        RouteID = "RouteID", "(", Text, ")" ;  (* file name *)
-
+			
 //        Name = "Name", "(", Text, ")" ;
-
+			
 //        Description = "Description", "(", Text, ")" ;
 
 //        Briefing = "Briefing", "(", ParagraphText, ")" ;
-
+			
 //            ParagraphText = Text, *( "+", Text ) ;
-
+			
 //        CompleteActivity = "CompleteActivity", "(", Integer, ")" ;	(* 1 for true (to be checked) *)
-
+			
 //        Type = "Type", "(", Integer, ")" ;	(* 0 (default) for ??? (to be checked) *)
 
 //        Mode = "Mode", "(", Integer, ")" ;	(* 2 (default) for ??? (to be checked) *)
@@ -84,25 +84,25 @@
 //        Difficulty = "Difficulty", "(", Integer, ")" ;	(* Easy=0 (default), Medium, Hard *)
 
 //        Animals = "Animals", "(", Integer, ")" ;	(* 0-100 for % (default is 100) *)
-
+			
 //        Workers = "Workers", "(", Integer, ")" ;	(* 0-100 for % (default is 0) *)
-
+			
 //        FuelWater = "FuelWater", "(", Integer, ")";	(* 0-100 for % (default is 100) *)
-
+			
 //        FuelCoal = "FuelCoal", "(", Integer, ")";	(* 0-100 for % (default is 100) *)
-
+			
 //        FuelDiesel = "FuelDiesel", "(", Integer, ")";	(* 0-100 for % (default is 100) *)
 
 //    Tr_Activity_File = "Tr_Activity_File", 
 //        "(", *[ Player_Service_Definition | NextServiceUID | NextActivityObjectUID
 //        | Traffic_Definition | Events | ActivityObjects | ActivityFailedSignals | PlatformNumPassengersWaiting | ActivityRestrictedSpeedZones ] ")" ;
-
+		
 //        Player_Service_Definition = "Player_Service_Definition",	(* Text is linked to PathID somehow. *)
 //            "(", Text, [ Player_Traffic_Definition | UiD | *Player_Service_Item ], ")" ;    (* Code suggests just one Player_Traffic_Definition *)
-
+			
 //                Player_Traffic_Definition = "Player_Traffic_Definition", 
 //                    "(", Integer, *( Player_Traffic_Item ), ")" ;
-
+					
 //                    Player_Traffic_Item =	(* Note lack of separator between Player_Traffic_Items. 
 //                                               For simplicity, parser creates a new object whenever PlatformStartID is parsed. *)
 //                        *[ "ArrivalTime", "(", Integer, ")"
@@ -110,7 +110,7 @@
 //                         | "SkipCount", "(", Integer, ")"
 //                         | "DistanceDownPath", "(", Float, ")" ],
 //                        "PlatformStartID", "(", Integer, ")" ;
-
+				
 //                UiD = "UiD", "(", Integer, ")" ;
 
 //                Player_Service_Item =	(* Note lack of separator between Player_Service_Items *)
@@ -119,13 +119,13 @@
 //                     | "SkipCount", "(", Integer, ")"
 //                     | "DistanceDownPath", "(", Float, ")" ],
 //                    "PlatformStartID", "(", Integer, ")" ;
-
+				
 //        NextServiceUID = "NextServiceUID", "(", Integer, ")" ;
 
 //        NextActivityObjectUID = "NextActivityObjectUID", "(", Integer, ")" ;
-
+			
 //        Traffic_Definition = "Traffic_Definition", "(", Text, *Service_Definition, ")" ;
-
+			
 //            Service_Definition = "Service_Definition",
 //                "(", Text, Integer, UiD, *Player_Service_Item, ")" ;  (* Integer is time in seconds *)
 
@@ -135,34 +135,34 @@
 //            EventCategoryLocation = "EventCategoryLocation", 
 //                "(", *[ EventTypeLocation | ID | Activation_Level | Outcomes
 //                | Name | Location | TriggerOnStop ], ")" ;  (* ID and Name defined above *)	
-
+				
 //                EventTypeLocation = "EventTypeLocation", "(", ")" ;
-
+				
 //                ID = "ID", "(", Integer, ")" ;
-
+				
 //                Activation_Level = "Activation_Level", "(", Integer, ")" ;
-
+					
 //                Outcomes = "Outcomes",
 //                    "(", *[ ActivitySuccess | ActivityFail | ActivateEvent | RestoreActLevel | DecActLevel | IncActLevel | DisplayMessage ], ")" ;
-
+				
 //                    ActivitySuccess = "ActivitySuccess", "(", ")" ;   (* No text parameter *)
-
+						
 //                    ActivityFail = "ActivityFail", "(", Text, ")" ;
-
+						
 //                    ActivateEvent = "ActivateEvent", "(", Integer, ")" ;
 
 //                    RestoreActLevel = "RestoreActLevel", "(", Integer, ")" ;
 
 //                    DecActLevel = "DecActLevel", "(", Integer, ")" ;
-
+						
 //                    IncActLevel = "IncActLevel", "(", Integer, ")" ;  (* Some MSTS samples have more than a single IncActLevel *)
-
+						
 //                    DisplayMessage = "DisplayMessage", "(", Text, ")" ;
-
+						
 //                Location = "Location", "(", 5*Integer, ")" ;
-
+					
 //                TriggerOnStop = "TriggerOnStop", "(", Integer, ")" ;  (* 0 for ?? *)
-
+					
 //                TextToDisplayOnCompletionIfTriggered = "TextToDisplayOnCompletionIfTriggered", "(", ParagraphText, ")" ;
 
 //                TextToDisplayOnCompletionIfNotTriggered = "TextToDisplayOnCompletionIfNotTriggered", "(", ParagraphText, ")" ;
@@ -180,41 +180,41 @@
 //                    EventTypeAllStops = "EventTypeAllStops", "(", ")" ;
 
 //                    EventTypeAssembleTrain = "EventTypeAssembleTrain", "(", ")" ;
-
+					
 //                    EventTypeAssembleTrainAtLocation = "EventTypeAssembleTrainAtLocation", "(", ")" ;
-
+					
 //                    EventTypeDropOffWagonsAtLocation = "EventTypeDropOffWagonsAtLocation", "(", ")" ;
-
+					
 //                    EventTypePickUpPassengers = "EventTypePickUpPassengers", "(", ")" ;
 
 //                    EventTypePickUpWagons = "EventTypePickUpWagons", "(", ")" ;
-
+					
 //                    EventTypeReachSpeed = "EventTypeReachSpeed", "(", ")" ;
 
 //                Reversable_Event = [ "Reversable_Event" | "Reversible_Event" ],  (* Reversable is not listed at www.learnersdictionary.com *) 
 //                    "(", ")" ;
-
+					
 //                SidingItem =  "(", Integer, ")" ;
 
 //                Wagon_List = "Wagon_List", "(", *WagonListItem, ")" ;
-
+					
 //                    WagonListItem = (* Description omitted from PickUpWagons and sometimes from DropOffWagonsAtLocation *)
 //                        UiD, SidingItem, [ "Description", "(", Text, ")" ] ;  (" MSTS uses SidingItem inside the Wagon_List and also at the same level *)
-
+						
 //                StationStop = 
-
+				
 //                Speed = "(", Integer, ")" ;
-
+					
 //            EventCategoryTime = "EventCategoryTime", "(",  (* single instance of each alternative *)
 //                [ EventTypeTime | ID | Activation_Level | Outcomes | TextToDisplayOnCompletionIfTriggered 
 //                | TextToDisplayOnCompletionIfNotTriggered | Name | Time ], ")" ;  (* Outcomes may have empty parameters *)
-
+				
 //                EventTypeTime = "EventTypeTime", "(", ")" ;
 
 //                Time = "Time", "(", Integer, ")" ;
-
+					
 //        ActivityObjects	= "ActivityObjects", "(", *ActivityObject, ")" ;
-
+			
 //            ActivityObject = "ActivityObject", 
 //                "(", *[ ObjectType | Train_Config | Direction | ID | Tile ], ")" ;  (* ID defined above *)
 
@@ -225,13 +225,13 @@
 
 //                    TrainCfg = "TrainCfg", 
 //                        "(", [ Name | Serial | MaxVelocity | NextWagonUID | Durability | Wagon | Engine ], ")" ;
-
+						
 //                        Serial = "Serial", "(", Integer, ")" ;
-
+						
 //                        MaxVelocity = "MaxVelocity", "(", 2*Float, ")" ;
-
+						
 //                        NextWagonUID = "NextWagonUID", "(", Integer, ")" ;
-
+						
 //                        Durability = "Durability", "(", Float, ")" ;
 
 //                        Wagon = "Wagon", 
@@ -240,35 +240,37 @@
 //                            WagonData = "WagonData", "(", 2*Text, ")" ;
 
 //                        Engine = "Engine", "(", *[ UiD | EngineData ], ")" ;  (* UiD defined above *)
-
+						
 //                            EngineData = "EngineData", 
 //                                "(", 2*Text, ")" ;
-
+							
 //                Direction = "Direction", "(", Integer, ")" ;  (* 0 for ??, 1 for ?? *)
 
 //                Tile = "Tile", "(", 2*Integer, 2*Float, ")" ;
-
+		
 //        ActivityFailedSignals = "ActivityFailedSignals", "(", *ActivityFailedSignal, ")" ;
-
+		
 //            ActivityFailedSignal = "ActivityFailedSignal", "(", Integer, ")" ;
-
+		
 //        PlatformNumPassengersWaiting = "PlatformNumPassengersWaiting", "(", *PlatformData, ")" ;
-
+		
 //            PlatformData = "PlatformData", "(", 2*Integer, ")" ;
-
+		
 //        ActivityRestrictedSpeedZones = "ActivityRestrictedSpeedZones", "(", *ActivityRestrictedSpeedZone, ")" ;
-
+			
 //            ActivityRestrictedSpeedZone = "ActivityRestrictedSpeedZone",
 //                "(", StartPosition, EndPosition, ")" ;
 
 //                StartPosition = "StartPosition, "(", 4*Integer, ")" ;
-
+				
 //                EndPosition = "EndPosition", "(", 4*Integer, ")" ;
 
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.IO;
 using Orts.Parsers.Msts; // For class S (seconds)
 using ORTS.Common;
@@ -278,8 +280,7 @@ namespace Orts.Formats.Msts
     public enum SeasonType { Spring = 0, Summer, Autumn, Winter }
     public enum WeatherType { Clear = 0, Snow, Rain }
     public enum Difficulty { Easy = 0, Medium, Hard }
-    public enum EventType
-    {
+    public enum EventType {
         AllStops = 0, AssembleTrain, AssembleTrainAtLocation, DropOffWagonsAtLocation, PickUpPassengers,
         PickUpWagons, ReachSpeed
     }
@@ -302,24 +303,19 @@ namespace Orts.Formats.Msts
     /// Parse and *.act file.
     /// Naming for classes matches the terms in the *.act file.
     /// </summary>
-    public class ActivityFile
-    {
+    public class ActivityFile {
         public Tr_Activity Tr_Activity;
 
-        public ActivityFile(string filenamewithpath)
-        {
+        public ActivityFile(string filenamewithpath) {
             Read(filenamewithpath, false);
         }
 
-        public ActivityFile(string filenamewithpath, bool headerOnly)
-        {
+        public ActivityFile(string filenamewithpath, bool headerOnly) {
             Read(filenamewithpath, headerOnly);
         }
 
-        public void Read(string filenamewithpath, bool headerOnly)
-        {
-            using (STFReader stf = new STFReader(filenamewithpath, false))
-            {
+        public void Read(string filenamewithpath, bool headerOnly) {
+            using (STFReader stf = new STFReader(filenamewithpath, false)) {
                 stf.ParseFile(() => headerOnly && (Tr_Activity != null) && (Tr_Activity.Tr_Activity_Header != null), new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("tr_activity", ()=>{ Tr_Activity = new Tr_Activity(stf, headerOnly); }),
                 });
@@ -348,14 +344,12 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class Tr_Activity
-    {
+    public class Tr_Activity {
         public int Serial = 1;
         public Tr_Activity_Header Tr_Activity_Header;
         public Tr_Activity_File Tr_Activity_File;
 
-        public Tr_Activity(STFReader stf, bool headerOnly)
-        {
+        public Tr_Activity(STFReader stf, bool headerOnly) {
             stf.MustMatch("(");
             stf.ParseBlock(() => headerOnly && (Tr_Activity_Header != null), new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("tr_activity_file", ()=>{ Tr_Activity_File = new Tr_Activity_File(stf); }),
@@ -386,8 +380,7 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class Tr_Activity_Header
-    {
+    public class Tr_Activity_Header {
         public string RouteID;
         public string Name;					// AE Display Name
         public string Description = " ";
@@ -409,8 +402,7 @@ namespace Orts.Formats.Msts
         public int FuelDiesel = 100;	// percent
         public string LoadStationsPopulationFile;
 
-        public Tr_Activity_Header(STFReader stf)
-        {
+        public Tr_Activity_Header(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("routeid", ()=>{ RouteID = stf.ReadStringBlock(null); }),
@@ -424,7 +416,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("season", ()=>{ Season = (SeasonType)stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("weather", ()=>{ Weather = (WeatherType)stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("pathid", ()=>{ PathID = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("startingspeed", ()=>{ StartingSpeed = (int)stf.ReadFloatBlock(STFReader.UNITS.Speed, (float)StartingSpeed); }),
+                new STFReader.TokenProcessor("startingspeed", ()=>{ StartingSpeed = (int)stf.ReadFloatBlock(STFReader.UNITS.Speed, (float)StartingSpeed); }),                
                 new STFReader.TokenProcessor("duration", ()=>{ Duration = new Duration(stf); }),
                 new STFReader.TokenProcessor("difficulty", ()=>{ Difficulty = (Difficulty)stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("animals", ()=>{ Animals = stf.ReadIntBlock(Animals); }),
@@ -442,21 +434,18 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class StartTime
-    {
+    public class StartTime {
         public int Hour;
         public int Minute;
         public int Second;
 
-        public StartTime(int h, int m, int s)
-        {
+        public StartTime(int h, int m, int s) {
             Hour = h;
             Minute = m;
             Second = s;
         }
 
-        public StartTime(STFReader stf)
-        {
+        public StartTime(STFReader stf) {
             stf.MustMatch("(");
             Hour = stf.ReadInt(null);
             Minute = stf.ReadInt(null);
@@ -464,27 +453,23 @@ namespace Orts.Formats.Msts
             stf.MustMatch(")");
         }
 
-        public String FormattedStartTime()
-        {
+        public String FormattedStartTime() {
             return Hour.ToString("00") + ":" + Minute.ToString("00") + ":" + Second.ToString("00");
         }
     }
 
-    public class Duration
-    {
+    public class Duration {
         int Hour;
         int Minute;
         int Second;
 
-        public Duration(int h, int m)
-        {
+        public Duration(int h, int m) {
             Hour = h;
             Minute = m;
             Second = 0;
         }
 
-        public Duration(STFReader stf)
-        {
+        public Duration(STFReader stf) {
             stf.MustMatch("(");
             Hour = stf.ReadInt(null);
             Minute = stf.ReadInt(null);
@@ -493,10 +478,10 @@ namespace Orts.Formats.Msts
 
         public int ActivityDuration()
         {
-            return Hour * 3600 + Minute * 60 + Second; // Convert time to seconds
+            return Hour* 3600 + Minute* 60 + Second; // Convert time to seconds
         }
 
-        public String FormattedDurationTime()
+    public String FormattedDurationTime()
         {
             return Hour.ToString("00") + ":" + Minute.ToString("00");
         }
@@ -508,8 +493,7 @@ namespace Orts.Formats.Msts
 
     }
 
-    public class Tr_Activity_File
-    {
+    public class Tr_Activity_File {
         public Player_Service_Definition Player_Service_Definition;
         public int NextServiceUID = 1;
         public int NextActivityObjectUID = 32786;
@@ -523,8 +507,7 @@ namespace Orts.Formats.Msts
         public LevelCrossingHornPattern AILevelCrossingHornPattern { get; private set; } = LevelCrossingHornPattern.Single;
 
 
-        public Tr_Activity_File(STFReader stf)
-        {
+        public Tr_Activity_File(STFReader stf) {
             stf.MustMatch("(");
             var parser = new List<STFReader.TokenProcessor> {
                 new STFReader.TokenProcessor("player_service_definition",()=>{ Player_Service_Definition = new Player_Service_Definition(stf); }),
@@ -581,13 +564,11 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class Player_Service_Definition
-    {
+    public class Player_Service_Definition {
         public string Name;
         public Player_Traffic_Definition Player_Traffic_Definition;
 
-        public Player_Service_Definition(STFReader stf)
-        {
+        public Player_Service_Definition(STFReader stf) {
             stf.MustMatch("(");
             Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -602,13 +583,11 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class Player_Traffic_Definition
-    {
+    public class Player_Traffic_Definition {
         public int Time;
         public List<Player_Traffic_Item> Player_Traffic_List = new List<Player_Traffic_Item>();
 
-        public Player_Traffic_Definition(STFReader stf)
-        {
+        public Player_Traffic_Definition(STFReader stf) {
             DateTime baseDT = new DateTime();
             DateTime arrivalTime = new DateTime();
             DateTime departTime = new DateTime();
@@ -624,7 +603,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("departtime", ()=>{ departTime = baseDT.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.Time, null)); }),
                 new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("distancedownpath", ()=>{ distanceDownPath = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(null);
+                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(null); 
                     Player_Traffic_List.Add(new Player_Traffic_Item(arrivalTime, departTime, skipCount, distanceDownPath, platformStartID)); }),
             });
         }
@@ -635,15 +614,13 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class Player_Traffic_Item
-    {
+    public class Player_Traffic_Item {
         public DateTime ArrivalTime;
         public DateTime DepartTime;
         public float DistanceDownPath;
         public int PlatformStartID;
 
-        public Player_Traffic_Item(DateTime arrivalTime, DateTime departTime, int skipCount, float distanceDownPath, int platformStartID)
-        {
+        public Player_Traffic_Item(DateTime arrivalTime, DateTime departTime, int skipCount, float distanceDownPath, int platformStartID) {
             ArrivalTime = arrivalTime;
             DepartTime = departTime;
             DistanceDownPath = distanceDownPath;
@@ -651,8 +628,7 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class Service_Definition
-    {
+    public class Service_Definition {
         public string Name;
         public int Time;
         public int UiD;
@@ -662,8 +638,7 @@ namespace Orts.Formats.Msts
         float distanceDownPath = new float();
         int platformStartID;
 
-        public Service_Definition(STFReader stf)
-        {
+        public Service_Definition(STFReader stf) {
             stf.MustMatch("(");
             Name = stf.ReadString();
             Time = (int)stf.ReadFloat(STFReader.UNITS.Time, null);
@@ -675,7 +650,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("efficiency", ()=>{ efficiency = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
                 new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("distancedownpath", ()=>{ distanceDownPath = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(null);
+                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(null); 
                     ServiceList.Add(new Service_Item(efficiency, skipCount, distanceDownPath, platformStartID)); }),
             });
         }
@@ -702,7 +677,7 @@ namespace Orts.Formats.Msts
         /// <\summary>
         /// 
 
-        public Service_Definition()
+        public Service_Definition ()
         { }
 
         //================================================================================================//
@@ -717,9 +692,9 @@ namespace Orts.Formats.Msts
             {
                 outf.Write(-1);
             }
-            else
+            else          
             {
-                outf.Write(ServiceList.Count);
+                outf.Write (ServiceList.Count);
                 foreach (Service_Item thisServiceItem in ServiceList)
                 {
                     outf.Write(thisServiceItem.Efficiency);
@@ -727,7 +702,7 @@ namespace Orts.Formats.Msts
                 }
             }
         }
-    }
+     }
 
     public class Service_Item
     {
@@ -736,8 +711,7 @@ namespace Orts.Formats.Msts
         public float DistanceDownPath = new float();
         public int PlatformStartID;
 
-        public Service_Item(float efficiency, int skipCount, float distanceDownPath, int platformStartID)
-        {
+        public Service_Item(float efficiency, int skipCount, float distanceDownPath, int platformStartID) {
             Efficiency = efficiency;
             SkipCount = skipCount;
             DistanceDownPath = distanceDownPath;
@@ -748,14 +722,12 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Parses Service_Definition objects and saves them in ServiceDefinitionList.
     /// </summary>
-    public class Traffic_Definition
-    {
+    public class Traffic_Definition {
         public string Name;
         public TrafficFile TrafficFile;
         public List<Service_Definition> ServiceDefinitionList = new List<Service_Definition>();
 
-        public Traffic_Definition(STFReader stf)
-        {
+        public Traffic_Definition(STFReader stf) {
             stf.MustMatch("(");
             Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -770,12 +742,10 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Parses Event objects and saves them in EventList.
     /// </summary>
-    public class Events
-    {
+    public class Events {
         public List<Event> EventList = new List<Event>();
 
-        public Events(STFReader stf)
-        {
+        public Events(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("eventcategorylocation", ()=>{ EventList.Add(new EventCategoryLocation(stf)); }),
@@ -784,7 +754,7 @@ namespace Orts.Formats.Msts
             });
         }
 
-        public void InsertORSpecificData(STFReader stf)
+        public void InsertORSpecificData (STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -818,7 +788,7 @@ namespace Orts.Formats.Msts
                     wrongEventID = !TestMatch(Category, origEvent);
                     if (!wrongEventID)
                     {
-                        origEvent.AddOrModifyEvent(stf, Path.GetDirectoryName(stf.FileName));
+                       origEvent.AddOrModifyEvent(stf, Path.GetDirectoryName(stf.FileName));
                     }
                     else
                     {
@@ -855,8 +825,7 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// The 3 types of event are inherited from the abstract Event class.
     /// </summary>
-    public abstract class Event
-    {
+    public abstract class Event {
         public int ID;
         public string Name;
         public int Activation_Level;
@@ -871,12 +840,11 @@ namespace Orts.Formats.Msts
         public string TrainService = "";
         public int TrainStartingTime = -1;
 
-        public virtual void AddOrModifyEvent(STFReader stf, string fileName)
+        public virtual void AddOrModifyEvent (STFReader stf, string fileName)
         { }
     }
 
-    public class EventCategoryLocation : Event
-    {
+    public class EventCategoryLocation : Event {
         public bool TriggerOnStop;  // Value assumed if property not found.
         public int TileX;
         public int TileZ;
@@ -884,18 +852,17 @@ namespace Orts.Formats.Msts
         public float Z;
         public float RadiusM;
 
-        public EventCategoryLocation(STFReader stf)
-        {
+        public EventCategoryLocation(STFReader stf) {
             stf.MustMatch("(");
             AddOrModifyEvent(stf, stf.FileName);
-        }
+                }
 
-        public override void AddOrModifyEvent(STFReader stf, string fileName)
+        public override void AddOrModifyEvent (STFReader stf, string fileName)
         {
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("eventtypelocation", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); }),
                 new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("ortstriggeringtrain", ()=>{ ParseTrain(stf); }),
+                new STFReader.TokenProcessor("ortstriggeringtrain", ()=>{ ParseTrain(stf); }), 
                 new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("outcomes", ()=>
                 {
@@ -951,16 +918,14 @@ namespace Orts.Formats.Msts
     /// Parses all types of action events.
     /// Save type of action event in Type. MSTS syntax isn't fully hierarchical, so using inheritance here instead of Type would be awkward. 
     /// </summary>
-    public class EventCategoryAction : Event
-    {
+    public class EventCategoryAction : Event {
         public EventType Type;
         public WagonList WagonList;
         public Nullable<uint> SidingId;  // May be specified inside the Wagon_List instead. Nullable as can't use -1 to indicate not set.
         public float SpeedMpS;
         //private const float MilespHourToMeterpSecond = 0.44704f;
 
-        public EventCategoryAction(STFReader stf)
-        {
+        public EventCategoryAction(STFReader stf) {
             stf.MustMatch("(");
             AddOrModifyEvent(stf, stf.FileName);
         }
@@ -1015,21 +980,19 @@ namespace Orts.Formats.Msts
     }
 
 
-    public class WagonList
-    {
+    public class WagonList {
         public List<WorkOrderWagon> WorkOrderWagonList = new List<WorkOrderWagon>();
         Nullable<uint> uID;        // Nullable as can't use -1 to indicate not set.  
         Nullable<uint> sidingId;   // May be specified outside the Wagon_List instead.
         string description = "";   // Value assumed if property not found.
 
-        public WagonList(STFReader stf, EventType eventType)
-        {
+        public WagonList(STFReader stf, EventType eventType) {
             stf.MustMatch("(");
             // "Drop Off" Wagon_List sometimes lacks a Description attribute, so we create the wagon _before_ description
             // is parsed. Bad practice, but not very dangerous as each Description usually repeats the same data.
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("uid", ()=>{ uID = stf.ReadUIntBlock(null); }),
-                new STFReader.TokenProcessor("sidingitem", ()=>{ sidingId = stf.ReadUIntBlock(null);
+                new STFReader.TokenProcessor("sidingitem", ()=>{ sidingId = stf.ReadUIntBlock(null); 
                     WorkOrderWagonList.Add(new WorkOrderWagon(uID.Value, sidingId.Value, description));}),
                 new STFReader.TokenProcessor("description", ()=>{ description = stf.ReadStringBlock(""); }),
             });
@@ -1040,26 +1003,22 @@ namespace Orts.Formats.Msts
     /// Parses a wagon from the WagonList.
     /// Do not confuse with older class Wagon below, which parses TrainCfg from the *.con file.
     /// </summary>
-    public class WorkOrderWagon
-    {
+    public class WorkOrderWagon {
         public Nullable<uint> UID;        // Nullable as can't use -1 to indicate not set.  
         public Nullable<uint> SidingId;   // May be specified outside the Wagon_List.
         public string Description = "";   // Value assumed if property not found.
 
-        public WorkOrderWagon(uint uId, uint sidingId, string description)
-        {
+        public WorkOrderWagon(uint uId, uint sidingId, string description) {
             UID = uId;
             SidingId = sidingId;
             Description = description;
         }
     }
 
-    public class EventCategoryTime : Event
-    {  // E.g. Hisatsu route and Short Passenger Run shrtpass.act
+    public class EventCategoryTime : Event {  // E.g. Hisatsu route and Short Passenger Run shrtpass.act
         public int Time;
 
-        public EventCategoryTime(STFReader stf)
-        {
+        public EventCategoryTime(STFReader stf) {
             stf.MustMatch("(");
             AddOrModifyEvent(stf, stf.FileName);
         }
@@ -1102,8 +1061,7 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class Outcomes
-    {
+    public class Outcomes {
         public bool ActivitySuccess;
         public string ActivityFail;
         // MSTS Activity Editor limits model to 4 outcomes of any type. We use lists so there is no restriction.
@@ -1112,18 +1070,17 @@ namespace Orts.Formats.Msts
         public List<int> DecActLevelList = new List<int>();
         public List<int> IncActLevelList = new List<int>();
         public string DisplayMessage;
-        //       public string WaitingTrainToRestart;
+ //       public string WaitingTrainToRestart;
         public RestartWaitingTrain RestartWaitingTrain;
         public ORTSWeatherChange ORTSWeatherChange;
         public ActivitySound ActivitySound;
 
-        public Outcomes(STFReader stf, string fileName)
-        {
+        public Outcomes(STFReader stf, string fileName) {
             CreateOrModifyOutcomes(stf, fileName);
         }
 
         public void CreateOrModifyOutcomes(STFReader stf, string fileName)
-        {
+        { 
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("activitysuccess", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); ActivitySuccess = true; }),
@@ -1149,7 +1106,7 @@ namespace Orts.Formats.Msts
         public int DelayToRestart;
         public int MatchingWPDelay;
 
-        public RestartWaitingTrain(STFReader stf)
+        public RestartWaitingTrain (STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -1186,10 +1143,10 @@ namespace Orts.Formats.Msts
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("ortsovercast", ()=>
                 {
-                    stf.MustMatch("(");
+                    stf.MustMatch("(");                    
                     ORTSOvercast = stf.ReadFloat(0, -1);
                     ORTSOvercastTransitionTimeS = stf.ReadInt(-1);
-                    stf.MustMatch(")");
+                    stf.MustMatch(")");                
                 }),
                 new STFReader.TokenProcessor("ortsfog", ()=>
                 {
@@ -1263,8 +1220,7 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Parses ActivityObject objects and saves them in ActivityObjectList.
     /// </summary>
-    public class ActivityObjects
-    {
+    public class ActivityObjects {
         public List<ActivityObject> ActivityObjectList = new List<ActivityObject>();
 
         //public new ActivityObject this[int i]
@@ -1273,8 +1229,7 @@ namespace Orts.Formats.Msts
         //    set { base[i] = value; }
         //}
 
-        public ActivityObjects(STFReader stf)
-        {
+        public ActivityObjects(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("activityobject", ()=>{ ActivityObjectList.Add(new ActivityObject(stf)); }),
@@ -1282,8 +1237,7 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class ActivityObject
-    {
+    public class ActivityObject {
         public Train_Config Train_Config;
         public int Direction;
         public int ID;
@@ -1292,8 +1246,7 @@ namespace Orts.Formats.Msts
         public float X;
         public float Z;
 
-        public ActivityObject(STFReader stf)
-        {
+        public ActivityObject(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("objecttype", ()=>{ stf.MustMatch("("); stf.MustMatch("WagonsList"); stf.MustMatch(")"); }),
@@ -1312,12 +1265,10 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class Train_Config
-    {
+    public class Train_Config {
         public TrainCfg TrainCfg;
 
-        public Train_Config(STFReader stf)
-        {
+        public Train_Config(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("traincfg", ()=>{ TrainCfg = new TrainCfg(stf); }),
@@ -1326,13 +1277,11 @@ namespace Orts.Formats.Msts
     }
 
 
-    public class MaxVelocity
-    {
+    public class MaxVelocity {
         public float A;
         public float B = 0.001f;
 
-        public MaxVelocity(STFReader stf)
-        {
+        public MaxVelocity(STFReader stf) {
             stf.MustMatch("(");
             A = stf.ReadFloat(STFReader.UNITS.Speed, null);
             B = stf.ReadFloat(STFReader.UNITS.Speed, null);
@@ -1340,8 +1289,7 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class TrainCfg
-    {
+    public class TrainCfg {
         public string Name = "Loose consist.";
         int Serial = 1;
         public MaxVelocity MaxVelocity;
@@ -1351,8 +1299,7 @@ namespace Orts.Formats.Msts
 
         public List<Wagon> WagonList = new List<Wagon>();
 
-        public TrainCfg(STFReader stf)
-        {
+        public TrainCfg(STFReader stf) {
             stf.MustMatch("(");
             Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -1369,8 +1316,7 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class Wagon
-    {
+    public class Wagon {
         public string Folder;
         public string Name;
         public int UiD;
@@ -1379,8 +1325,7 @@ namespace Orts.Formats.Msts
         public bool Flip;
         public List<LoadData> LoadDataList;
 
-        public Wagon(STFReader stf)
-        {
+        public Wagon(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("uid", ()=>{ UiD = stf.ReadIntBlock(null); }),
@@ -1410,13 +1355,10 @@ namespace Orts.Formats.Msts
             });
         }
 
-        public string GetName(uint uId, List<Wagon> wagonList)
-        {
-            foreach (var item in wagonList)
-            {
+        public string GetName(uint uId, List<Wagon> wagonList) {
+            foreach (var item in wagonList) {
                 var wagon = item as Wagon;
-                if (wagon.UiD == uId)
-                {
+                if (wagon.UiD == uId) {
                     return wagon.Name;
                 }
             }
@@ -1424,12 +1366,10 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class PlatformNumPassengersWaiting
-    {  // For use, see file EUROPE1\ACTIVITIES\aftstorm.act
+    public class PlatformNumPassengersWaiting {  // For use, see file EUROPE1\ACTIVITIES\aftstorm.act
         public List<PlatformData> PlatformDataList = new List<PlatformData>();
 
-        public PlatformNumPassengersWaiting(STFReader stf)
-        {
+        public PlatformNumPassengersWaiting(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("platformdata", ()=>{ PlatformDataList.Add(new PlatformData(stf)); }),
@@ -1437,19 +1377,16 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class PlatformData
-    { // e.g. "PlatformData ( 41 20 )" 
+    public class PlatformData { // e.g. "PlatformData ( 41 20 )" 
         public int Id;
         public int PassengerCount;
 
-        public PlatformData(int id, int passengerCount)
-        {
+        public PlatformData(int id, int passengerCount) {
             Id = id;
             PassengerCount = passengerCount;
         }
 
-        public PlatformData(STFReader stf)
-        {
+        public PlatformData(STFReader stf) {
             stf.MustMatch("(");
             Id = stf.ReadInt(null);
             PassengerCount = stf.ReadInt(null);
@@ -1457,11 +1394,9 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class ActivityFailedSignals
-    { // e.g. ActivityFailedSignals ( ActivityFailedSignal ( 50 ) )
+    public class ActivityFailedSignals { // e.g. ActivityFailedSignals ( ActivityFailedSignal ( 50 ) )
         public List<int> FailedSignalList = new List<int>();
-        public ActivityFailedSignals(STFReader stf)
-        {
+        public ActivityFailedSignals(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("activityfailedsignal", ()=>{ FailedSignalList.Add(stf.ReadIntBlock(null)); }),
@@ -1469,12 +1404,10 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class ActivityRestrictedSpeedZones
-    {  // For use, see file EUROPE1\ACTIVITIES\aftstorm.act
+    public class ActivityRestrictedSpeedZones {  // For use, see file EUROPE1\ACTIVITIES\aftstorm.act
         public List<ActivityRestrictedSpeedZone> ActivityRestrictedSpeedZoneList = new List<ActivityRestrictedSpeedZone>();
 
-        public ActivityRestrictedSpeedZones(STFReader stf)
-        {
+        public ActivityRestrictedSpeedZones(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("activityrestrictedspeedzone", ()=>{ ActivityRestrictedSpeedZoneList.Add(new ActivityRestrictedSpeedZone(stf)); }),
@@ -1482,13 +1415,11 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class ActivityRestrictedSpeedZone
-    {
+    public class ActivityRestrictedSpeedZone {
         public Position StartPosition;
         public Position EndPosition;
 
-        public ActivityRestrictedSpeedZone(STFReader stf)
-        {
+        public ActivityRestrictedSpeedZone(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("startposition", ()=>{ StartPosition = new Position(stf); }),
@@ -1497,24 +1428,21 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class Position
-    {
+    public class Position {
         public int TileX;
         public int TileZ;
         public float X;
         public float Z;
         public float Y;
 
-        public Position(int tileX, int tileZ, int x, int z)
-        {
+        public Position(int tileX, int tileZ, int x, int z) {
             TileX = tileX;
             TileZ = tileZ;
             X = x;
             Z = z;
         }
 
-        public Position(STFReader stf)
-        {
+        public Position(STFReader stf) {
             stf.MustMatch("(");
             TileX = stf.ReadInt(null);
             TileZ = stf.ReadInt(null);

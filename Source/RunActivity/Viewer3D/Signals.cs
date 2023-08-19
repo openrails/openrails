@@ -655,11 +655,11 @@ namespace Orts.Viewer3D
             GlowIntensityNight = glowNight;
 
             var verticies = new[] {
-                new VertexPositionColorTexture(new Vector3(-radius, +radius, 0), color, new Vector2(u1, v0)),
-                new VertexPositionColorTexture(new Vector3(+radius, +radius, 0), color, new Vector2(u0, v0)),
-                new VertexPositionColorTexture(new Vector3(-radius, -radius, 0), color, new Vector2(u1, v1)),
-                new VertexPositionColorTexture(new Vector3(+radius, -radius, 0), color, new Vector2(u0, v1)),
-            };
+				new VertexPositionColorTexture(new Vector3(-radius, +radius, 0), color, new Vector2(u1, v0)),
+				new VertexPositionColorTexture(new Vector3(+radius, +radius, 0), color, new Vector2(u0, v0)),
+				new VertexPositionColorTexture(new Vector3(-radius, -radius, 0), color, new Vector2(u1, v1)),
+				new VertexPositionColorTexture(new Vector3(+radius, -radius, 0), color, new Vector2(u0, v1)),
+			};
 
             VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColorTexture), verticies.Length, BufferUsage.WriteOnly);
             VertexBuffer.SetData(verticies);

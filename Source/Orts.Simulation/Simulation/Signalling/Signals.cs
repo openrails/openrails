@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
@@ -243,7 +244,7 @@ namespace Orts.Simulation.Signalling
                                 Trace.TraceInformation("Signal " + thisSignal.thisRef +
                                     " ; TC : " + thisSignal.TCReference +
                                     " ; NextTC : " + thisSignal.TCNextTC +
-                                    " ; TN : " + thisSignal.trackNode +
+                                    " ; TN : " + thisSignal.trackNode + 
                                     " ; TDB (0) : " + thisSignal.SignalHeads[0].TDBIndex);
                             }
 
@@ -483,7 +484,7 @@ namespace Orts.Simulation.Signalling
                     {
                         SpeedPostWorldList.Add(new SpeedPostWorldObject(speedPostObj));
                         int thisSpeedPostId = SpeedPostWorldList.Count() - 1;
-                        foreach (TrItemId trItemId in speedPostObj.trItemIDList)
+                        foreach(TrItemId trItemId in speedPostObj.trItemIDList)
                         {
                             if (!SpeedPostRefList.ContainsKey(trItemId.dbID))
                             {
@@ -870,7 +871,7 @@ namespace Orts.Simulation.Signalling
         /// ScanSection : This method checks a section in the TDB for signals or speedposts
         /// </summary>
         private void ScanSection(TrItem[] TrItems, TrackNode[] trackNodes, int index,
-                               TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile, Dictionary<int, int> platformList, List<Milepost> milepostList)
+                               TrackSectionsFile tsectiondat, TrackDatabaseFile tdbfile, Dictionary<int, int> platformList, List <Milepost> milepostList)
         {
             int lastSignal = -1;                // Index to last signal found in path; -1 if none
             int lastMilepost = -1;                // Index to last milepost found in path; -1 if none
@@ -949,7 +950,7 @@ namespace Orts.Simulation.Signalling
                     }
                 }
             }
-        }
+        } 
 
         /// <summary>
         /// Merge Heads
@@ -1098,7 +1099,7 @@ namespace Orts.Simulation.Signalling
             milepost.TrItemId = (uint)TDBRef;
             milepost.MilepostValue = speedItem.SpeedInd;
             MilepostList.Add(milepost);
-
+ 
 #if DEBUG_PRINT
             File.AppendAllText(@"C:\temp\speedpost.txt",
                 string.Format("\nMilepost placed : at : {0} {1}:{2} {3}. String: {4}\n",
@@ -1164,7 +1165,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
         }
-
+        
         private void InitializeSignals()
         {
             foreach (SignalObject signal in SignalObjects)
@@ -2112,7 +2113,7 @@ namespace Orts.Simulation.Signalling
                 if (speedItem.SigObj >= 0)
                 {
                     if (!speedItem.IsMilePost)
-                    {
+                    { 
                         SignalObject thisSpeedpost = SignalObjects[speedItem.SigObj];
                         float speedpostDistance = thisSpeedpost.DistanceTo(TDBTrav);
                         if (thisSpeedpost.direction == 1)
@@ -3433,7 +3434,7 @@ namespace Orts.Simulation.Signalling
             }
 
             // if not cleared to max distance or looped, determine reason
-            if (!furthestRouteCleared && lastRouteIndex > 0 && routePart[lastRouteIndex].TCSectionIndex >= 0 && endAuthority != Train.END_AUTHORITY.LOOP)
+            if (!furthestRouteCleared && lastRouteIndex > 0 && routePart[lastRouteIndex].TCSectionIndex >= 0  && endAuthority != Train.END_AUTHORITY.LOOP)
             {
 
                 thisElement = routePart[lastRouteIndex];

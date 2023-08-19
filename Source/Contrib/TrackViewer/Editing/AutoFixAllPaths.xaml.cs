@@ -16,12 +16,14 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using ORTS.Menu;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Text;
+
 using ORTS.TrackViewer.Drawing;
+using ORTS.Menu;
 
 namespace ORTS.TrackViewer.Editing
 {
@@ -34,12 +36,12 @@ namespace ORTS.TrackViewer.Editing
         DrawTrackDB drawTrackDB;
 
         Dictionary<string, List<string>> pathsThatAre = new Dictionary<string, List<string>>
-        {
-            ["UnmodifiedFine"] = new List<string>(),
-            ["UnmodifiedBroken"] = new List<string>(),
-            ["ModifiedFine"] = new List<string>(),
-            ["ModifiedBroken"] = new List<string>(),
-        };
+            {
+                ["UnmodifiedFine"] = new List<string>(),
+                ["UnmodifiedBroken"] = new List<string>(),
+                ["ModifiedFine"] = new List<string>(),
+                ["ModifiedBroken"] = new List<string>(),
+            };
         List<PathEditor> modifiedPaths;
 
         /// <summary>
@@ -58,7 +60,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="Paths">The list of paths that are availabel and that need to be checked and possibly fixed</param>
         /// <param name="callback">Callback that will be called showing the current processing that is being done</param>
-        public void FixallAndShowResults(Collection<Path> Paths, Action<string> callback)
+        public void FixallAndShowResults(Collection<Path> Paths, Action<string> callback )
         {
             _Fixall(Paths, callback);
             _ShowResults();
@@ -186,7 +188,7 @@ namespace ORTS.TrackViewer.Editing
             if (String.IsNullOrEmpty(fullFilePath)) return;
 
             System.IO.StreamWriter file = new System.IO.StreamWriter(fullFilePath, false, System.Text.Encoding.Unicode);
-            string[] statusses = { "ModifiedBroken", "ModifiedFine", "UnmodifiedBroken", "UnmodifiedFine" };
+            string[] statusses = { "ModifiedBroken", "ModifiedFine", "UnmodifiedBroken", "UnmodifiedFine"};
             foreach (string status in statusses)
             {
                 file.WriteLine("");

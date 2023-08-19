@@ -15,11 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Common;
+using Orts.Parsers.Msts;
+using Orts.Simulation.Physics;
+using ORTS.Common;
+using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Orts.Parsers.Msts;
-using ORTS.Common;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
@@ -98,7 +102,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // Changes brake type if tender fitted with steam brakes
-            if (Car.WagonType == MSTSWagon.WagonTypes.Tender)
+            if (Car.WagonType == MSTSWagon.WagonTypes.Tender) 
             {
                 var wagonid = Car as MSTSWagon;
                 // Find the associated steam locomotive for this tender
@@ -151,7 +155,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             BrakeForceFraction = ManualBrakingCurrentFraction / ManualMaxBrakeValue;
-
+          
             // If car is a locomotive or tender, then process engine brake
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender) // Engine brake
             {
@@ -167,7 +171,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         EngineBrakeDesiredFraction = EngineBrakeSettingValue * ManualMaxBrakeValue;
                     }
-
+              
 
                     if (EngineBrakingCurrentFraction < EngineBrakeDesiredFraction)
                     {
@@ -202,7 +206,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
             }
 
-            float f;
+                float f;
             if (!Car.BrakesStuck)
             {
                 f = Car.MaxBrakeForceN * Math.Min(BrakeForceFraction, 1);

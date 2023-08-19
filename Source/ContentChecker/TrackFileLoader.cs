@@ -17,9 +17,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using Orts.Formats.Msts;
 using Path = System.IO.Path;
+
+using Orts.Formats.Msts;
 
 namespace ContentChecker
 {
@@ -72,21 +74,19 @@ namespace ContentChecker
 
         void AddAdditionalSMS(string smsFileName)
         {
-            if (smsFileName == null) { return; }
+            if (smsFileName == null) { return;  }
             string smsInRoute = Path.Combine(Path.Combine(routePath, "SOUND"), smsFileName);
             if (File.Exists(smsInRoute))
             {
                 AddAdditionalFileAction.Invoke(smsInRoute, new SmsLoader());
             }
-            else
-            {
+            else {
                 string smsInBase = Path.Combine(Path.Combine(basePath, "SOUND"), smsFileName);
                 AddAdditionalFileAction.Invoke(smsInBase, new SmsLoader());
             }
         }
 
-        protected override void AddAllFiles()
-        {
+        protected override void AddAllFiles() {
             AddMainFiles();
             AddAllActivities();
             AddAllTiles();

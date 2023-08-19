@@ -15,7 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -48,16 +53,16 @@ namespace Orts.Formats.Msts
         }
     }
 
-    /// <summary>
-    /// Represents the hiearchical structure of the SMS File
-    /// </summary>
-    public class SoundManagmentFile
-    {
-        public Tr_SMS Tr_SMS;
+	/// <summary>
+	/// Represents the hiearchical structure of the SMS File
+	/// </summary>
+	public class SoundManagmentFile
+	{
+		public Tr_SMS Tr_SMS;
 
-        public SoundManagmentFile(string filePath)
-        {
-            ReadFile(filePath);
+		public SoundManagmentFile( string filePath )
+		{
+            ReadFile(filePath);  
         }
 
         private void ReadFile(string filePath)
@@ -68,12 +73,12 @@ namespace Orts.Formats.Msts
                 });
         }
 
-    } // class SMSFile
+	} // class SMSFile
 
     public class Tr_SMS
     {
         public List<ScalabiltyGroup> ScalabiltyGroups = new List<ScalabiltyGroup>();
-
+        
         public Tr_SMS(STFReader stf)
         {
             stf.MustMatch("(");
@@ -134,14 +139,14 @@ namespace Orts.Formats.Msts
 
     }
 
-    public class Deactivation : Activation
+    public class Deactivation: Activation
     {
-        public Deactivation(STFReader stf) : base(stf)
+        public Deactivation(STFReader stf): base(stf)
         {
         }
 
         // for precompiled sound sources for activity sound
-        public Deactivation() : base()
+        public Deactivation(): base()
         { }
     }
 
@@ -225,10 +230,10 @@ namespace Orts.Formats.Msts
                     {
                         CurvePoints[i].X = stf.ReadFloat(STFReader.UNITS.None, null);
                         if (Control == Controls.DistanceControlled)
-                        {
-                            if (CurvePoints[i].X >= 0) CurvePoints[i].X *= CurvePoints[i].X;
-                            else CurvePoints[i].X *= -CurvePoints[i].X;
-                        }
+						{
+							if (CurvePoints[i].X >= 0) CurvePoints[i].X *= CurvePoints[i].X;
+							else CurvePoints[i].X *= -CurvePoints[i].X;
+						}
                         CurvePoints[i].Y = stf.ReadFloat(STFReader.UNITS.None, null);
                     }
                     stf.SkipRestOfBlock();
@@ -237,7 +242,7 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class FrequencyCurve : VolumeCurve
+    public class FrequencyCurve: VolumeCurve
     {
         public FrequencyCurve(STFReader stf)
             : base(stf)
@@ -275,13 +280,13 @@ namespace Orts.Formats.Msts
         {
             switch (lowertoken)
             {
-                case "playoneshot":
+                case "playoneshot": 
                 case "startloop":
-                case "releaselooprelease":
+                case "releaselooprelease": 
                 case "startlooprelease":
-                case "releaseloopreleasewithjump":
-                case "disabletrigger":
-                case "enabletrigger":
+                case "releaseloopreleasewithjump": 
+                case "disabletrigger": 
+                case "enabletrigger": 
                 case "setstreamvolume":
                     ++playcommandcount;
                     if (playcommandcount > 1)
@@ -295,11 +300,11 @@ namespace Orts.Formats.Msts
             {
                 case "playoneshot": SoundCommand = new PlayOneShot(f); break;
                 case "startloop": SoundCommand = new StartLoop(f); break;
-                case "releaselooprelease": SoundCommand = new ReleaseLoopRelease(f); break;
-                case "startlooprelease": SoundCommand = new StartLoopRelease(f); break;
-                case "releaseloopreleasewithjump": SoundCommand = new ReleaseLoopReleaseWithJump(f); break;
-                case "disabletrigger": SoundCommand = new DisableTrigger(f); break;
-                case "enabletrigger": SoundCommand = new EnableTrigger(f); break;
+                case "releaselooprelease":  SoundCommand = new ReleaseLoopRelease(f); break; 
+                case "startlooprelease":  SoundCommand = new StartLoopRelease( f ); break; 
+                case "releaseloopreleasewithjump": SoundCommand = new ReleaseLoopReleaseWithJump( f ); break; 
+                case "disabletrigger": SoundCommand = new DisableTrigger( f); break; 
+                case "enabletrigger": SoundCommand = new EnableTrigger( f); break;
                 case "setstreamvolume": SoundCommand = new SetStreamVolume(f); break;
                 case "(": f.SkipRestOfBlock(); break;
             }
@@ -333,10 +338,8 @@ namespace Orts.Formats.Msts
 
     public class Variable_Trigger : Trigger
     {
-        public enum Events
-        {
-            Speed_Inc_Past, Speed_Dec_Past, Distance_Inc_Past, Distance_Dec_Past,
-            Variable1_Inc_Past, Variable1_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past
+        public enum Events { Speed_Inc_Past, Speed_Dec_Past, Distance_Inc_Past, Distance_Dec_Past,
+        Variable1_Inc_Past, Variable1_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past
         };
 
         public Events Event;
@@ -378,7 +381,7 @@ namespace Orts.Formats.Msts
                 case "curveforce_dec_past": Event = Events.CurveForce_Dec_Past; break;
             }
 
-
+           
 
             while (!f.EndOfBlock())
                 ParsePlayCommand(f, f.ReadString().ToLower());
@@ -485,7 +488,7 @@ namespace Orts.Formats.Msts
         }
     }
 
-    public class SoundPlayCommand : SoundCommand
+    public class SoundPlayCommand: SoundCommand
     {
         public string[] Files;
         public SelectionMethods SelectionMethod = SelectionMethods.SequentialSelection;
@@ -493,7 +496,7 @@ namespace Orts.Formats.Msts
 
     public class PlayOneShot : SoundPlayCommand
     {
-
+        
         public PlayOneShot(STFReader f)
         {
             f.MustMatch("(");
@@ -535,7 +538,7 @@ namespace Orts.Formats.Msts
 
     public class StartLoop : PlayOneShot
     {
-        public StartLoop(STFReader f) : base(f)
+        public StartLoop( STFReader f ): base(f)
         {
         }
     }

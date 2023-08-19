@@ -17,15 +17,15 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using Orts.Simulation;
+using Orts.Simulation.RollingStocks;
+using Orts.Viewer3D.RollingStock;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Orts.Simulation;
-using Orts.Simulation.RollingStocks;
-using Orts.Viewer3D.RollingStock;
-using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
@@ -67,27 +67,27 @@ namespace Orts.Viewer3D
                     if (cancellation.IsCancellationRequested)
                         break;
                     try
-                    {
-                        if (cars.ContainsKey(car))
-                            newCars.Add(car, cars[car]);
-                        else
-                            newCars.Add(car, LoadCar(car));
-                    }
-                    catch (Exception error)
+					{
+						if (cars.ContainsKey(car))
+							newCars.Add(car, cars[car]);
+						else
+							newCars.Add(car, LoadCar(car));
+					}
+					catch (Exception error) 
                     {
                         Trace.WriteLine(new FileLoadException(car.WagFilePath, error));
                     }
                 }
                 Cars = newCars;
-                //for those cars not visible now, will unload them (to remove attached sound)
-                foreach (var car in cars)
-                {
-                    if (!visibleCars.Contains(car.Key))
-                    {
-                        car.Value.Unload();
-                    }
-                }
-            }
+				//for those cars not visible now, will unload them (to remove attached sound)
+				foreach (var car in cars)
+				{
+					if (!visibleCars.Contains(car.Key))
+					{
+						car.Value.Unload();
+					}
+				}
+			}
 
             // Ensure the player locomotive has a cab view loaded and anything else they need.
             cars = Cars;

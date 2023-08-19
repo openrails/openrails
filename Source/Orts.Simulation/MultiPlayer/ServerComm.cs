@@ -23,55 +23,55 @@ using System.Threading;
 namespace Orts.MultiPlayer
 {
     public class ServerComm
-    {
-        private TcpListener tcpListener;
-        private Thread listenThread;
-        private Server Server;
-        private int count = 0;
-        public void Stop()
-        {
-            tcpListener.Stop();
-            listenThread.Abort();
-            foreach (OnlinePlayer p in Server.Players)
-            {
-                p.thread.Abort();
-            }
-        }
+	{
+		private TcpListener tcpListener;
+		private Thread listenThread;
+		private Server Server;
+		private int count = 0;
+		public void Stop()
+		{
+			tcpListener.Stop();
+			listenThread.Abort();
+			foreach (OnlinePlayer p in Server.Players)
+			{
+				p.thread.Abort();
+			}
+		}
 
-        public ServerComm(Server s, int port)
-        {
-            Server = s;
-            this.tcpListener = new TcpListener(IPAddress.Any, port);
-            this.listenThread = new Thread(new ThreadStart(ListenForClients));
+		public ServerComm(Server s, int port)
+		{
+			Server = s;
+			this.tcpListener = new TcpListener(IPAddress.Any, port);
+			this.listenThread = new Thread(new ThreadStart(ListenForClients));
             this.listenThread.Name = "Multiplayer Server";
-            this.listenThread.Start();
-        }
+			this.listenThread.Start();
+		}
 
-        private void ListenForClients()
-        {
-            this.tcpListener.Start();
+		private void ListenForClients()
+		{
+			this.tcpListener.Start();
 
-            while (true)
-            {
-                TcpClient client = null;
-                try
-                {
-                    //blocks until a client has connected to the server
-                    client = this.tcpListener.AcceptTcpClient();
-                }
-                catch (Exception) { break; }
-                count++;
-                OnlinePlayer player = new OnlinePlayer(client, Server);
-                Server.Players.Add(player);
-                System.Console.WriteLine("New Player Joined");
+			while (true)
+			{
+				TcpClient client = null;
+				try
+				{
+					//blocks until a client has connected to the server
+					client = this.tcpListener.AcceptTcpClient();
+				}
+				catch (Exception) { break; }
+				count++;
+				OnlinePlayer player = new OnlinePlayer(client, Server);
+				Server.Players.Add(player);
+				System.Console.WriteLine("New Player Joined");
 
-                //create a thread to handle communication
-                //with connected client
-                Thread clientThread = new Thread(new ParameterizedThreadStart(player.Receive));
-                clientThread.Name = "Multiplayer Server-Client";// +count;
-                player.thread = clientThread;
-                clientThread.Start(client);
-            }
-        }
-    }
+				//create a thread to handle communication
+				//with connected client
+				Thread clientThread = new Thread(new ParameterizedThreadStart(player.Receive));
+				clientThread.Name = "Multiplayer Server-Client";// +count;
+				player.thread = clientThread;
+				clientThread.Start(client);
+			}
+		}
+	}
 }

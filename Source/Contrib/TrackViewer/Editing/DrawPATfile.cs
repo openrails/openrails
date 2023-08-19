@@ -15,7 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 using Orts.Formats.Msts;
 using ORTS.Common;
@@ -43,7 +45,7 @@ namespace ORTS.TrackViewer.Editing
 
         /// <summary>Number of nodes that will be drawn. Start with a few</summary>
         private int numberToDraw = int.MaxValue / 2; // large, but not close to overflow
-
+        
         /// <summary>Index of the last main node that has been drawn</summary>
         private int currentMainNodeIndex;
 
@@ -58,7 +60,7 @@ namespace ORTS.TrackViewer.Editing
         /// Constructor
         /// </summary>
         /// <param name="path">Contains the information (mainly filepath) needed for loading the .pat file</param>
-        public DrawPATfile(ORTS.Menu.Path path)
+        public DrawPATfile (ORTS.Menu.Path path)
         {
             FileName = path.FilePath.Split('\\').Last();
             patFile = new PathFile(path.FilePath);
@@ -70,7 +72,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="drawArea">Area to draw upon</param>
         public void Draw(DrawArea drawArea)
         {
-
+            
             //draw actual path
             currentMainNodeIndex = 0; // starting point
             int currentSidingNodeIndex = -1; // we start without siding path
@@ -96,11 +98,11 @@ namespace ORTS.TrackViewer.Editing
 
                 TrPathNode curMainNode = patFile.TrPathNodes[currentMainNodeIndex];
                 WorldLocation curMainLoc = GetPdpLocation(patFile.TrackPDPs[(int)curMainNode.fromPDP]);
-
+                
                 // from this main line point to the next siding node.
                 // If there is a next siding node, we also reset the currentSidingNodeIndex
                 // but probably it is not allowed to have siding
-                int nextSidingNodeIndex = (int)curMainNode.nextSidingNode;
+                int nextSidingNodeIndex = (int)curMainNode.nextSidingNode;             
                 if (nextSidingNodeIndex >= 0)
                 {
                     // draw the start of a siding path
@@ -112,7 +114,7 @@ namespace ORTS.TrackViewer.Editing
                 }
 
                 // From this main line point to the next
-                int nextMainNodeIndex = (int)curMainNode.nextMainNode;
+                int nextMainNodeIndex = (int)curMainNode.nextMainNode; 
                 if (nextMainNodeIndex >= 0)
                 {
                     TrPathNode nextNode = patFile.TrPathNodes[nextMainNodeIndex];
@@ -122,7 +124,7 @@ namespace ORTS.TrackViewer.Editing
                     currentMainNodeIndex = nextMainNodeIndex;
                 }
             }
-
+ 
         }
 
         /// <summary>
@@ -140,7 +142,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void ExtendPath()
         {
-            int maxNumber = patFile.TrPathNodes.Count - 1;
+            int maxNumber = patFile.TrPathNodes.Count-1;
             if (++numberToDraw > maxNumber) numberToDraw = maxNumber;
         }
 

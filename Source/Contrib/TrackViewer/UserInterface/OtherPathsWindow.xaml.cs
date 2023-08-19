@@ -1,6 +1,16 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 using ORTS.TrackViewer.Drawing;
 
 namespace ORTS.TrackViewer.UserInterface
@@ -75,7 +85,7 @@ namespace ORTS.TrackViewer.UserInterface
                     if (backgroundColor == null)
                     {
                         checkBox.IsChecked = false;
-                        checkBox.Foreground = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
+                        checkBox.Foreground = new SolidColorBrush(Color.FromArgb(255,0,0,0));
                     }
                     else
                     {

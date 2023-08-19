@@ -15,17 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Microsoft.Xna.Framework;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using ORTS.Common;
 using ORTS.Common.Input;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.Xna.Framework;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -284,7 +284,7 @@ namespace Orts.Viewer3D.Popups
             var vbox = base.Layout(layout).AddLayoutVertical();
             if (labels.Count > 0)
             {
-                var colWidth = labels.Max(x => x.FirstColWidth) + (normalTextMode ? 15 : 20);
+                var colWidth = labels.Max(x => x.FirstColWidth) + (normalTextMode? 15: 20);
                 var TimeHboxPositionY = 0;
 
                 // search wider
@@ -522,7 +522,7 @@ namespace Orts.Viewer3D.Popups
                     {
                         var tempFirstCol = firstCol.Substring(0, firstCol.Length - 3);
                         firstColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(tempFirstCol.TrimEnd())
-                            : !normalTextMode ? Owner.TextFontMonoSpacedBold.MeasureString(tempFirstCol.TrimEnd())
+                            : !normalTextMode? Owner.TextFontMonoSpacedBold.MeasureString(tempFirstCol.TrimEnd())
                             : Owner.TextFontDefault.MeasureString(tempFirstCol.TrimEnd());
                     }
                     else
@@ -842,7 +842,7 @@ namespace Orts.Viewer3D.Popups
 
                 if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
                 {
-                    int indexOffset = Viewer.Catalog.GetString("EOT").Length + 1;
+                    int indexOffset = Viewer.Catalog.GetString("EOT").Length + 1; 
                     if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
                         index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index);
                     else

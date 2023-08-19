@@ -17,8 +17,9 @@
 
 using System;
 using System.Collections.Generic;
-using Orts.Parsers.Msts;
 using ORTS.Common;
+using Orts.Parsers.Msts;
+using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
@@ -99,7 +100,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI;
                     HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
                 }
-
+                
                 base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
 
                 if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
@@ -113,12 +114,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     AutoCylPressurePSI += dp;
                 }
             }
-
+            
         }
 
         public override void Parse(string lowercasetoken, STFReader stf)
         {
-            switch (lowercasetoken)
+            switch(lowercasetoken)
             {
                 case "wagon(ortsepbrakecontrolsbrakepipe":
                     EPBrakeControlsBrakePipe = stf.ReadBoolBlock(false);

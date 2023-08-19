@@ -17,28 +17,26 @@
 
 // This file is the responsibility of the 3D & Environment Team.
 
+using Orts.Simulation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using Orts.Simulation;
 
 namespace Orts.Common
 {
     /// <summary>
     /// User may specify an automatic pause in the replay at a time measured from the end of the replay.
     /// </summary>
-    public enum ReplayPauseState
-    {
+    public enum ReplayPauseState {
         Before,
         Due,        // Set by CommandLog.Replay(), tested by Viewer.Update()
         During,
         Done
     };
 
-    public class CommandLog
-    {
+    public class CommandLog {
 
         public List<ICommand> CommandList = new List<ICommand>();
         public Simulator Simulator { get; set; }
@@ -54,8 +52,7 @@ namespace Orts.Common
         /// <summary>
         /// Preferred constructor.
         /// </summary>
-        public CommandLog(Simulator simulator)
-        {
+        public CommandLog(Simulator simulator) {
             Simulator = simulator;
         }
 
@@ -63,12 +60,11 @@ namespace Orts.Common
         /// When a command is created, it adds itself to the log.
         /// </summary>
         /// <param name="Command"></param>
-        public void CommandAdd(ICommand command)
-        {
+        public void CommandAdd( ICommand command ) {
             command.Time = Simulator.ClockTime; // Note time that command was issued
-            CommandList.Add(command);
+            CommandList.Add( command );
         }
-
+        
         /// <summary>
         /// Replays any commands that have become due.
         /// Issues commands from the replayCommandList at the same time that they were originally issued.
@@ -76,97 +72,74 @@ namespace Orts.Common
         /// Assumes replayCommandList is already sorted by time.
         /// </para>
         /// </summary>
-        public void Update(List<ICommand> replayCommandList)
-        {
+        public void Update( List<ICommand> replayCommandList ) {
             double elapsedTime = Simulator.ClockTime;
 
-            if (PauseState == ReplayPauseState.Before)
-            {
-                if (elapsedTime > ReplayEndsAt - Simulator.Settings.ReplayPauseBeforeEndS)
-                {
+            if( PauseState == ReplayPauseState.Before ) {
+                if( elapsedTime > ReplayEndsAt - Simulator.Settings.ReplayPauseBeforeEndS ) {
                     PauseState = ReplayPauseState.Due;  // For Viewer.Update() to detect and pause.
                 }
             }
 
-            if (replayCommandList.Count > 0)
-            {
+            if( replayCommandList.Count > 0 ) {
                 var c = replayCommandList[0];
                 // Without a small margin, an activity event can pause simulator just before the ResumeActicityCommand is due, 
                 // so resume never happens.
                 double margin = (Simulator.Paused) ? 0.5 : 0;   // margin of 0.5 seconds
-                if (elapsedTime >= c.Time - margin)
-                {
-                    if (c is PausedCommand)
-                    {
+                if( elapsedTime >= c.Time - margin ) {
+                    if( c is PausedCommand ) {
                         // Wait for the right duration and then action the command.
                         // ActivityCommands need dedicated code as the clock is no longer advancing.
-                        if (resumeTime == null)
-                        {
+                        if( resumeTime == null ) {
                             var resumeCommand = (PausedCommand)c;
-                            resumeTime = DateTime.Now.AddSeconds(resumeCommand.PauseDurationS);
-                        }
-                        else
-                        {
-                            if (DateTime.Now >= resumeTime)
-                            {
+                            resumeTime = DateTime.Now.AddSeconds(resumeCommand.PauseDurationS );
+                        } else {
+                            if( DateTime.Now >= resumeTime ) {
                                 resumeTime = null;  // cancel trigger
-                                ReplayCommand(elapsedTime, replayCommandList, c);
+                                ReplayCommand( elapsedTime, replayCommandList, c );
                             }
                         }
-                    }
-                    else
-                    {
+                    } else {
                         // When the player uses a camera command during replay, replay continues but any camera commands in the 
                         // replayCommandList are skipped until the player pauses and exit from the Quit Menu.
                         // This allows some editing of the camera during a replay.
-                        if (!(c is CameraCommand && CameraReplaySuspended))
-                        {
+                        if (!(c is CameraCommand && CameraReplaySuspended)) {
                             ReplayCommand(elapsedTime, replayCommandList, c);
                         }
                         completeTime = elapsedTime + completeDelayS;  // Postpone the time for "Replay complete" message
                     }
                 }
-            }
-            else
-            {
-                if (completeTime != 0 && elapsedTime > completeTime)
-                {
+            } else {
+                if( completeTime != 0 && elapsedTime > completeTime ) {
                     completeTime = 0;       // Reset trigger so this only happens once
                     ReplayComplete = true;  // Flag seen by Viewer3D which announces "Replay complete".
                 }
             }
         }
 
-        private void ReplayCommand(double elapsedTime, List<ICommand> replayCommandList, ICommand c)
-        {
+        private void ReplayCommand( double elapsedTime, List<ICommand> replayCommandList, ICommand c ) {
             c.Redo();                           // Action the command
-            CommandList.Add(c);               // Add to the log of commands
-            replayCommandList.RemoveAt(0);    // Remove it from the head of the replay list
+            CommandList.Add( c );               // Add to the log of commands
+            replayCommandList.RemoveAt( 0 );    // Remove it from the head of the replay list
         }
 
         /// <summary>
         /// Copies the command objects from the log into the file specified, first creating the file.
         /// </summary>
         /// <param name="filePath"></param>
-        public void SaveLog(string filePath)
-        {
+        public void SaveLog( string filePath ) {
             Stream stream = null;
-            try
-            {
-                stream = new FileStream(filePath, FileMode.Create);
+            try {
+                stream = new FileStream( filePath, FileMode.Create );
                 BinaryFormatter formatter = new BinaryFormatter();
                 // Re-sort based on time as tests show that some commands are deferred.
-                CommandList.Sort((x, y) => x.Time.CompareTo(y.Time));
-                formatter.Serialize(stream, CommandList);
-            }
-            catch (IOException)
-            {
+                CommandList.Sort( ( x, y ) => x.Time.CompareTo( y.Time ) );
+                formatter.Serialize( stream, CommandList );
+            } catch( IOException ) {
                 // Do nothing but warn, ignoring errors.
-                Trace.TraceWarning("SaveLog error writing command log " + filePath);
-            }
-            finally
-            {
-                if (stream != null)
+                Trace.TraceWarning( "SaveLog error writing command log " + filePath );
+            } finally {
+                if( stream != null )
                 {
                     stream.Close();
                     Trace.WriteLine("\nList of commands to replay saved");
@@ -178,30 +151,23 @@ namespace Orts.Common
         /// Copies the command objects from the file specified into the log, replacing the log's contents.
         /// </summary>
         /// <param name="fullFilePath"></param>
-        public void LoadLog(string filePath)
-        {
+        public void LoadLog( string filePath ) {
             Stream stream = null;
-            try
-            {
-                stream = new FileStream(filePath, FileMode.Open);
+            try {
+                stream = new FileStream( filePath, FileMode.Open );
                 BinaryFormatter formatter = new BinaryFormatter();
-                CommandList = (List<ICommand>)formatter.Deserialize(stream);
-            }
-            catch (IOException)
-            {
+                CommandList = (List<ICommand>)formatter.Deserialize( stream );
+            } catch( IOException ) {
                 // Do nothing but warn, ignoring errors.
-                Trace.TraceWarning("LoadLog error reading command log " + filePath);
-            }
-            finally
-            {
-                if (stream != null) { stream.Close(); }
+                Trace.TraceWarning( "LoadLog error reading command log " + filePath );
+            } finally {
+                if( stream != null ) { stream.Close(); }
             }
         }
 
-        public static void ReportReplayCommands(List<ICommand> list)
-        {
-            Trace.WriteLine("\nList of commands to replay:");
-            foreach (var c in list) { c.Report(); }
+        public static void ReportReplayCommands( List<ICommand> list ) {
+            Trace.WriteLine( "\nList of commands to replay:" );
+            foreach( var c in list ) { c.Report(); }
         }
     }
 }

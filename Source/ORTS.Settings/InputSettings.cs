@@ -15,6 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using GNU.Gettext;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using ORTS.Common;
+using ORTS.Common.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,11 +28,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using GNU.Gettext;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using ORTS.Common;
-using ORTS.Common.Input;
 
 namespace ORTS.Settings
 {

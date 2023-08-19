@@ -18,14 +18,14 @@
 // Uncomment this define to show a textual representation of the serialised Content items for debugging.
 //#define DEBUG_CONTENT_SERIALIZATION
 
+using Orts.Formats.Msts;
+using ORTS.ContentManager.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using Orts.Formats.Msts;
-using ORTS.ContentManager.Models;
 using Path = ORTS.ContentManager.Models.Path;
 
 namespace ORTS.ContentManager
@@ -39,8 +39,7 @@ namespace ORTS.ContentManager
             details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, content.Name);
             details.AppendFormat("Path:\t{1}{0}", Environment.NewLine, content.PathName);
 
-            try
-            {
+            try {
                 var stream = new MemoryStream();
                 var serializer = new BinaryFormatter();
                 serializer.Serialize(stream, content);

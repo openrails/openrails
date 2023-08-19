@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
 using Orts.Viewer3D.RollingStock;
+using System.Collections.Generic;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -55,15 +55,11 @@ namespace Orts.Viewer3D.WebServices
             foreach (var controlRenderer in viewer._CabRenderer.ControlMap.Values)
             {
                 controlValueList.Add(new ControlValue
-                {
-                    TypeName = controlRenderer.GetControlType().ToString()
-                    ,
-                    MinValue = controlRenderer.Control.MinValue
-                    ,
-                    MaxValue = controlRenderer.Control.MaxValue
-                    ,
-                    RangeFraction = controlRenderer.GetRangeFraction()
-                });
+                    { TypeName = controlRenderer.GetControlType().ToString()
+                    , MinValue = controlRenderer.Control.MinValue
+                    , MaxValue = controlRenderer.Control.MaxValue
+                    , RangeFraction = controlRenderer.GetRangeFraction()
+                    });
             }
             return controlValueList;
         }

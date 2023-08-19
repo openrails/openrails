@@ -173,10 +173,10 @@ namespace Orts.Viewer3D
         public static bool IsMouseMoved { get { return MouseState.X != LastMouseState.X || MouseState.Y != LastMouseState.Y; } }
         public static int MouseMoveX { get { return MouseState.X - LastMouseState.X; } }
         public static int MouseMoveY { get { return MouseState.Y - LastMouseState.Y; } }
-        public static bool MouseMovedUp { get { return MouseState.Y < LastMouseState.Y; } }
-        public static bool MouseMovedDown { get { return MouseState.Y > LastMouseState.Y; } }
-        public static bool MouseMovedLeft { get { return MouseState.X < LastMouseState.X; } }
-        public static bool MouseMovedRight { get { return MouseState.X > LastMouseState.X; } }
+        public static bool MouseMovedUp {  get { return MouseState.Y < LastMouseState.Y; } }
+        public static bool MouseMovedDown {  get { return MouseState.Y > LastMouseState.Y; } }
+        public static bool MouseMovedLeft {  get { return MouseState.X < LastMouseState.X; } }
+        public static bool MouseMovedRight {  get { return MouseState.X > LastMouseState.X; } }
         public static int MouseX { get { return MouseState.X; } }
         public static int MouseY { get { return MouseState.Y; } }
 

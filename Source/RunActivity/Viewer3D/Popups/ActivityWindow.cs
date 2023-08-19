@@ -17,11 +17,12 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation;
 using ORTS.Common;
+using System;
+using System.Linq;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -148,7 +149,7 @@ namespace Orts.Viewer3D.Popups
             if (Owner.Viewer.Simulator.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.On);
             ResumeMenu();
         }
-
+        
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
             base.PrepareFrame(elapsedTime, updateFull);
@@ -213,7 +214,7 @@ namespace Orts.Viewer3D.Popups
                                         PopupTime = DateTime.Now;
                                         Visible = Owner.Viewer.HelpWindow.ActivityUpdated = true;
                                     }
-                                }
+                                }                              
                             }
                             else
                             {

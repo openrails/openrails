@@ -16,6 +16,8 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Microsoft.Xna.Framework;
+using System;
+using System.Diagnostics;
 
 namespace Orts.Simulation
 {
@@ -36,18 +38,18 @@ namespace Orts.Simulation
 
         // Overcast factor: 0.0 = almost no clouds; 0.1 = wispy clouds; 1.0 = total overcast.
         public float OvercastFactor;
-
+        
         // Pricipitation intensity in particles per second per meter^2 (PPSPM2).
         public float PricipitationIntensityPPSPM2;
-
+        
         // Fog/visibility distance. Ranges from 10m (can't see anything), 5km (medium), 20km (clear) to 100km (clear arctic).
         public float FogDistance;
-
+        
         // Precipitation liquidity; =1 for rain, =0 for snow; intermediate values possible with dynamic weather;
         public float PrecipitationLiquidity;
         public float CalculatedWindDirection;
         public Vector2 WindSpeedMpS = new Vector2();
-        public float WindSpeed { get { return WindSpeedMpS.Length(); } }
+        public float WindSpeed {get { return WindSpeedMpS.Length(); } }
         //        public float WindDirection { get { return (float)Math.Atan2(WindSpeedMpS.X, WindSpeedMpS.Y); } }
         public float WindDirection { get { return CalculatedWindDirection; } }
     }

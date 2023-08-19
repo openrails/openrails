@@ -68,9 +68,8 @@ namespace ContentChecker
         /// <param name="args">The command line arguments that need to be checked for an iption</param>
         /// <param name="optionNames">The list of option names that need to be found</param>
         /// <returns>true if one of the optionNames is given</returns>
-        static bool OptionsContain(string[] args, IEnumerable<string> optionNames)
-        {
-            return optionNames.Any((option) => args.Contains(option, StringComparer.OrdinalIgnoreCase));
+        static bool OptionsContain(string[] args, IEnumerable<string> optionNames) {
+            return optionNames.Any((option) => args.Contains(option, StringComparer.OrdinalIgnoreCase) );
         }
 
         /// <summary>
@@ -196,8 +195,7 @@ namespace ContentChecker
             {
                 LoadAllFlat();
             }
-            else
-            {
+            else {
                 LoadWithAdditional(additionType);
             }
 
@@ -320,7 +318,7 @@ namespace ContentChecker
             int minimumBuffer = BUFFERMARGIN + Console.CursorTop;
             if (Console.BufferHeight < minimumBuffer)
             {
-                Console.SetBufferSize(Console.BufferWidth, minimumBuffer + BUFFEREXTENSION);
+                Console.SetBufferSize(Console.BufferWidth, minimumBuffer + BUFFEREXTENSION );
             }
 
         }

@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using ORTS.Common;
+using System;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -59,7 +60,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public virtual void Update(float timeSpan)
         {
-            temperatureK = tempIntegrator.Integrate(timeSpan, (temperatureK) => 1.0f / (SpecificHeatCapacityJ_kg_C * WeightKg) * ((powerLossesW - CoolingPowerW) / (ThermalCoeffJ_m2sC * SurfaceM) - temperatureK));
+            temperatureK = tempIntegrator.Integrate(timeSpan, (temperatureK) => 1.0f/(SpecificHeatCapacityJ_kg_C * WeightKg)*((powerLossesW - CoolingPowerW) / (ThermalCoeffJ_m2sC * SurfaceM) - temperatureK));
         }
 
         public virtual void Reset()

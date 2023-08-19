@@ -21,16 +21,25 @@
 /// 
 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using ActivityEditor.Engine;
+using ActivityEditor.Preference;
 using LibAE;
+using LibAE.Formats;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
+using Orts.Parsers.Msts;
+using ORTS;
 using ORTS.Common;
 using ORTS.Settings;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
+using System.Xml.Serialization;
 
 namespace ActivityEditor
 {
@@ -147,7 +156,7 @@ namespace ActivityEditor
                         {
                             foundBuffer = new AEBufferItem((TrackNode)currNode);
                             mstsItems.buffers.Add(foundBuffer);
-                        }
+                       }
 #if SHOW_STOPWATCH
                         ts = stopWatch.Elapsed;
                         stopWatch.Reset();
@@ -202,11 +211,11 @@ namespace ActivityEditor
                             {
                                 TrackNode connectedNode = nodes[pin.Link];
                                 int direction = DrawUtility.getDirection(currNode, connectedNode);
-                                if (MSTSCoord.near(currNode.getMSTSCoord(direction), connectedNode.getMSTSCoord(direction)))
+                                if (MSTSCoord.near (currNode.getMSTSCoord(direction), connectedNode.getMSTSCoord(direction)))
                                     continue;
                                 AESegment aeSegment = new AESegment(currNode.getMSTSCoord(direction), connectedNode.getMSTSCoord(direction));
                                 TrackSegment lineSeg = new TrackSegment(aeSegment, currNode, 0, direction, TSectionDat);
-                                addTrItems(lineSeg, currNode);
+                                addTrItems (lineSeg, currNode);
                                 mstsItems.AddSegment(lineSeg);
                             }
 #if SHOW_STOPWATCH
@@ -250,7 +259,7 @@ namespace ActivityEditor
                 maxsize = 2000;
             ZoomFactor = (decimal)maxsize;
 #endif
-            #region AddItem
+#region AddItem
 
 
             Program.actEditor.DisplayStatusMessage("Init data for display...  Load MSTS Items...");
@@ -288,7 +297,7 @@ namespace ActivityEditor
             File.AppendAllText(@"C:\temp\stopwatch.txt", "Signals: " + elapsedTime + "\n");
             stopWatch.Stop();
 #endif
-            #endregion
+#endregion
         }
 
         public void AddSegments(TrackNode node)
@@ -307,7 +316,7 @@ namespace ActivityEditor
                 foreach (var idxTrItem in values)
                 {
                     if (!idxTrItem.Key)
-                        break;
+                            break;
                     foreach (var val in idxTrItem)
                     {
                         var item = TDB.TrackDB.TrItemTable[val.Value];

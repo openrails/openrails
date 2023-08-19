@@ -15,6 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
+using Orts.Simulation.AIs;
+using Orts.Simulation.Physics;
+using Orts.Simulation.Signalling;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,12 +28,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Orts.Formats.Msts;
-using Orts.Simulation.AIs;
-using Orts.Simulation.Physics;
-using Orts.Simulation.Signalling;
-using ORTS.Common;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation
@@ -101,7 +101,7 @@ namespace Orts.Simulation
 
                     foreach (var i in sd.Player_Traffic_Definition.Player_Traffic_List)
                     {
-                        if (i.PlatformStartID < Simulator.TDB.TrackDB.TrItemTable.Length && i.PlatformStartID >= 0 &&
+                        if (i.PlatformStartID < Simulator.TDB.TrackDB.TrItemTable.Length && i.PlatformStartID >= 0 && 
                             Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] is PlatformItem)
                             Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem;
                         else
@@ -519,18 +519,18 @@ namespace Orts.Simulation
             const float MaxDistanceOfWarningPost = 2000;
 
             for (int idxZone = 0; idxZone < zones.ActivityRestrictedSpeedZoneList.Count; idxZone++)
-            {
-                var worldPosition1 = new WorldPosition();
-                newSpeedPostItems[0] = new TempSpeedPostItem(routeFile,
+			{
+               var worldPosition1 = new WorldPosition();
+                newSpeedPostItems[0]   = new TempSpeedPostItem(routeFile,
                     zones.ActivityRestrictedSpeedZoneList[idxZone].StartPosition, true, worldPosition1, false);
                 var worldPosition2 = new WorldPosition();
                 newSpeedPostItems[1] = new TempSpeedPostItem(routeFile,
                     zones.ActivityRestrictedSpeedZoneList[idxZone].EndPosition, false, worldPosition2, false);
-
+			
                 // Add the speedposts to the track database. This will set the TrItemId's of all speedposts
-                trackDB.AddTrItems(newSpeedPostItems);
+            trackDB.AddTrItems(newSpeedPostItems);
 
-                // And now update the various (vector) tracknodes (this needs the TrItemIds.
+            // And now update the various (vector) tracknodes (this needs the TrItemIds.
                 var endOffset = AddItemIdToTrackNode(ref zones.ActivityRestrictedSpeedZoneList[idxZone].EndPosition,
                     tsectionDat, trackDB, newSpeedPostItems[1], out traveller);
                 var startOffset = AddItemIdToTrackNode(ref zones.ActivityRestrictedSpeedZoneList[idxZone].StartPosition,
@@ -554,15 +554,15 @@ namespace Orts.Simulation
                 {
                     FlipRestrSpeedPost((TempSpeedPostItem)speedWarningPostItem);
                 }
-                ComputeTablePosition((TempSpeedPostItem)newSpeedPostItems[0]);
+                ComputeTablePosition((TempSpeedPostItem)newSpeedPostItems[0]); 
                 TempSpeedPostItems.Add((TempSpeedPostItem)newSpeedPostItems[0]);
-                ComputeTablePosition((TempSpeedPostItem)newSpeedPostItems[1]);
+                ComputeTablePosition((TempSpeedPostItem)newSpeedPostItems[1]); 
                 TempSpeedPostItems.Add((TempSpeedPostItem)newSpeedPostItems[1]);
-                ComputeTablePosition((TempSpeedPostItem)speedWarningPostItem);
+                ComputeTablePosition((TempSpeedPostItem)speedWarningPostItem); 
                 TempSpeedPostItems.Add((TempSpeedPostItem)speedWarningPostItem);
             }
         }
-
+        
         /// <summary>
         /// Add a reference to a new TrItemId to the correct trackNode (which needs to be determined from the position)
         /// </summary>
@@ -848,7 +848,7 @@ namespace Orts.Simulation
             // The train is stopped.
             if (EventType == ActivityEventType.TrainStop)
             {
-                if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && IsAtStation(MyPlayerTrain) ||
+                if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && IsAtStation(MyPlayerTrain)  ||
                     MyPlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING && (MyPlayerTrain as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.STATION_STOP)
                 {
                     if (Simulator.TimetableMode || MyPlayerTrain.StationStops.Count == 0)
@@ -889,7 +889,7 @@ namespace Orts.Simulation
                     }
                     else
                     {
-                        // <CSComment> MSTS mode - player
+                    // <CSComment> MSTS mode - player
                         if (Simulator.GameTime < 2)
                         {
                             // If the simulation starts with a scheduled arrive in the past, assume the train arrived on time.
@@ -900,30 +900,30 @@ namespace Orts.Simulation
                         }
                         BoardingS = (double)MyPlayerTrain.StationStops[0].ComputeStationBoardingTime(Simulator.PlayerLocomotive.Train);
                         if (BoardingS > 0 || ((double)(SchDepart - SchArrive).TotalSeconds > 0 &&
-                            MyPlayerTrain.PassengerCarsNumber == 1 && MyPlayerTrain.Cars.Count > 10))
+                            MyPlayerTrain.PassengerCarsNumber == 1 && MyPlayerTrain.Cars.Count > 10 ))
                         {
-                            // accepted station stop because either freight train or passenger train or fake passenger train with passenger car on platform or fake passenger train
+                        // accepted station stop because either freight train or passenger train or fake passenger train with passenger car on platform or fake passenger train
                             // with Scheduled Depart > Scheduled Arrive
-                            // ActArrive is usually same as ClockTime
-                            BoardingEndS = Simulator.ClockTime + BoardingS;
+                                // ActArrive is usually same as ClockTime
+                                BoardingEndS = Simulator.ClockTime + BoardingS;
 
-                            if (ActArrive == null)
-                            {
-                                ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime));
+                                if (ActArrive == null)
+                                {
+                                    ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime));
+                                }
+
+                                arrived = true;
+                                // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
+                                double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
+                                                        - ActArrive).Value.TotalSeconds;
+                                BoardingEndS -= sinceActArriveS;
+                                double SchDepartS = SchDepart.Subtract(new DateTime()).TotalSeconds;
+                                BoardingEndS = CompareTimes.LatestTime((int)SchDepartS, (int)BoardingEndS);
+
                             }
-
-                            arrived = true;
-                            // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
-                            double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
-                                                    - ActArrive).Value.TotalSeconds;
-                            BoardingEndS -= sinceActArriveS;
-                            double SchDepartS = SchDepart.Subtract(new DateTime()).TotalSeconds;
-                            BoardingEndS = CompareTimes.LatestTime((int)SchDepartS, (int)BoardingEndS);
-
                         }
-                    }
-                    if (MyPlayerTrain.NextSignalObject[0] != null)
-                        distanceToNextSignal = MyPlayerTrain.NextSignalObject[0].DistanceTo(MyPlayerTrain.FrontTDBTraveller);
+                    if  (MyPlayerTrain.NextSignalObject[0] != null)
+                           distanceToNextSignal =  MyPlayerTrain.NextSignalObject[0].DistanceTo(MyPlayerTrain.FrontTDBTraveller);
 
                 }
             }
@@ -937,7 +937,7 @@ namespace Orts.Simulation
                     // Completeness depends on the elapsed waiting time
                     IsCompleted = maydepart;
                     if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                        MyPlayerTrain.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
+                       MyPlayerTrain.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
 
                     if (LogStationStops)
                     {
@@ -997,7 +997,7 @@ namespace Orts.Simulation
                     else if (!maydepart)
                     {
                         // check if signal ahead is cleared - if not, do not allow depart
-                        if (distanceToNextSignal >= 0 && distanceToNextSignal < 300 && MyPlayerTrain.NextSignalObject[0] != null &&
+                        if (distanceToNextSignal >= 0 && distanceToNextSignal< 300 && MyPlayerTrain.NextSignalObject[0] != null &&
                             MyPlayerTrain.NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP
                             && MyPlayerTrain.NextSignalObject[0].hasPermission != SignalObject.Permission.Granted)
                         {
@@ -1256,7 +1256,7 @@ namespace Orts.Simulation
             }
             return false;
         }
-
+     
     }
 
     public class EventCategoryActionWrapper : EventWrapper
@@ -1399,11 +1399,11 @@ namespace Orts.Simulation
                 if (trainItem.Cars.Count - nCars == (wagonIdList.Count == nWagonListCars ? wagonIdList.Count : nWagonListCars))
                 {
                     if (excludesWagons(trainItem, wagonIdList)) listsMatch = false;//all wagons dropped
-
+                    
                     if (listsMatch) return trainItem;
-
+                    
                 }
-
+               
             }
             return null;
         }

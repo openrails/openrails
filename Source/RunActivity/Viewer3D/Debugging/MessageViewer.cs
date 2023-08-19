@@ -32,13 +32,13 @@ namespace Orts.Viewer3D.Debugging
         {
             messages.Items.Clear();
         }
-
+        
         private void ComposeClick(object sender, EventArgs e)
         {
             MSG.Enabled = true;
             MultiPlayer.MPManager.Instance().ComposingText = true;
         }
-
+        
         private void ReplySelectedClick(object sender, EventArgs e)
         {
             string msg = MSG.Text
@@ -71,7 +71,7 @@ namespace Orts.Viewer3D.Debugging
                 MultiPlayer.MPManager.Instance().ComposingText = false;
             }
         }
-
+        
         public bool AddNewMessage(double _, string msg)
         {
             if (messages.Items.Count > 10)

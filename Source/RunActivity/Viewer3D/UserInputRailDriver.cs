@@ -105,12 +105,12 @@ namespace Orts.Viewer3D
                 return;
             State.SaveButtonData();
 
-            State.Direction.Value = Percentage(data[1], FullReversed, Neutral, FullForward) / 100; ;
+            State.Direction.Value = Percentage(data[1], FullReversed, Neutral, FullForward) / 100;;
             State.Throttle.Value = Percentage(data[2], ThrottleIdle, FullThrottle) / 100;
-            State.DynamicBrake.Value = Percentage(data[2], ThrottleIdle, DynamicBrakeSetup, DynamicBrake) / 100; ;
-            State.TrainBrake.Value = Percentage(data[3], AutoBrakeRelease, FullAutoBrake) / 100; ;
-            State.EngineBrake.Value = Percentage(data[4], IndependentBrakeRelease, IndependentBrakeFull) / 100; ;
-
+            State.DynamicBrake.Value = Percentage(data[2], ThrottleIdle, DynamicBrakeSetup, DynamicBrake) / 100;;
+            State.TrainBrake.Value = Percentage(data[3], AutoBrakeRelease, FullAutoBrake) / 100;;
+            State.EngineBrake.Value = Percentage(data[4], IndependentBrakeRelease, IndependentBrakeFull) / 100;;
+            
             float a = State.EngineBrake.Value;
             float calOff = (1 - a) * BailOffDisengagedRelease + a * BailOffDisengagedFull;
             float calOn = (1 - a) * BailOffEngagedRelease + a * BailOffEngagedFull;
@@ -138,7 +138,7 @@ namespace Orts.Viewer3D
             }
             State.Activation.Changed = false;
         }
-
+        
         /// <summary>
         /// Error callback
         /// </summary>
@@ -151,14 +151,14 @@ namespace Orts.Viewer3D
 
         static float Percentage(float x, float x0, float x100)
         {
-            float p = 100 * (x - x0) / (x100 - x0);
+            float p= 100 * (x - x0) / (x100 - x0);
             if (p < 5)
                 return 0;
             if (p > 95)
                 return 100;
             return p;
         }
-
+        
         static float Percentage(float x, float xminus100, float x0, float xplus100)
         {
             float p = 100 * (x - x0) / (xplus100 - x0);
@@ -202,7 +202,7 @@ namespace Orts.Viewer3D
             for (int i = 0; i < WriteBuffer.Length; i++)
                 WriteBuffer[i] = 0;
             WriteBuffer[1] = 133;
-            WriteBuffer[7] = (byte)(on ? 1 : 0);
+            WriteBuffer[7] = (byte) (on ? 1 : 0);
             Device.WriteData(WriteBuffer);
         }
 
@@ -221,7 +221,7 @@ namespace Orts.Viewer3D
             if (!Active || playerLoco == null || Device == null)
                 return;
             float speed = 10 * MpS.FromMpS(playerLoco.SpeedMpS, playerLoco.IsMetric);
-            int s = (int)(speed >= 0 ? speed + .5 : -speed + .5);
+            int s = (int) (speed >= 0 ? speed + .5 : -speed + .5);
             if (s != LEDSpeed)
             {
                 if (s < 100)
@@ -259,7 +259,7 @@ namespace Orts.Viewer3D
                     return;
                 }
             }
-            // TODO: This is... kinda weird and cool at the same time. STF parsing being used on RailDriver's calebration file. Probably should be a dedicated parser, though.
+			// TODO: This is... kinda weird and cool at the same time. STF parsing being used on RailDriver's calebration file. Probably should be a dedicated parser, though.
             STFReader reader = new STFReader(file, false);
             while (!reader.Eof)
             {
@@ -267,8 +267,8 @@ namespace Orts.Viewer3D
                 if (token == "Position")
                 {
                     string name = reader.ReadItem();
-                    int min = -1;
-                    int max = -1;
+                    int min= -1;
+                    int max= -1;
                     while (token != "}")
                     {
                         token = reader.ReadItem();
@@ -433,7 +433,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            string s = String.Format("{0} {1} {2} {3} {4}", Direction, Throttle, DynamicBrake, TrainBrake, EngineBrake);
+            string s= String.Format("{0} {1} {2} {3} {4}", Direction, Throttle, DynamicBrake, TrainBrake, EngineBrake);
             for (int i = 0; i < 6; i++)
                 s += " " + ButtonData[i];
             return s;

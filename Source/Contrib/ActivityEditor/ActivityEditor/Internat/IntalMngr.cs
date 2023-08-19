@@ -16,9 +16,15 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 //
+using System;
+using System.Collections.Generic;
+using System.Resources;
+using System.Threading;
 using System.Globalization;
 using System.Reflection;
-using System.Resources;
+using System.Linq;
+using System.Text;
+using ORTS;
 using ORTS.Settings;
 
 namespace ActivityEditor.Internat

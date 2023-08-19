@@ -15,7 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -52,7 +55,7 @@ namespace Orts.Formats.Msts
             stf.MustMatch("serial");
             Serial = stf.ReadIntBlock(null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("service_definition", ()=>{ TrafficItems.Add(new Traffic_Service_Definition(stf)); }),
+    	        new STFReader.TokenProcessor("service_definition", ()=>{ TrafficItems.Add(new Traffic_Service_Definition(stf)); }),
             });
         }
     }
@@ -86,7 +89,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("departtime", ()=>{ departTime = (int)stf.ReadFloatBlock(STFReader.UNITS.Time, null); }),
                 new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("distancedownpath", ()=>{ distanceDownPath = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(null);
+                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(null); 
                     TrafficDetails.Add(new Traffic_Traffic_Item(arrivalTime, departTime, skipCount, distanceDownPath, platformStartID));
                 }),
             });

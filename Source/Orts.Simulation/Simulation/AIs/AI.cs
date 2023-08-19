@@ -30,18 +30,19 @@
 // #define DEBUG_TRACEINFO
 //
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.Timetables;
+using Orts.Simulation.RollingStocks.SubSystems;
+using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Scripting.Api;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
 namespace Orts.Simulation.AIs
 {
@@ -173,8 +174,7 @@ namespace Orts.Simulation.AIs
                 }
 
                 // timetable mode trains
-                else
-                {
+                else {
                     TTTrain aiTrain = new TTTrain(Simulator, inf, this);
                     if (aiTrain.TrainType != Train.TRAINTYPE.PLAYER) // add to AITrains except when it is player train
                     {
@@ -623,7 +623,7 @@ namespace Orts.Simulation.AIs
                 Trace.TraceInformation("Player train started on time");
                 TTTrain playerTTTrain = playerTrain as TTTrain;
                 playerTTTrain.InitalizePlayerTrain();
-
+                
                 clockTime = Simulator.ClockTime = playerTTTrain.StartTime.Value;
             }
 
@@ -1372,7 +1372,7 @@ namespace Orts.Simulation.AIs
                 Trace.TraceInformation("Train : " + thisTrain.Name + " : missing start time, train not included");
                 return;
             }
-
+            
             if (this.Count == 0)
             {
                 this.AddFirst(thisTrain);

@@ -20,12 +20,6 @@
 //      Based on an idea by Dan Reynolds (HighAspect) - 2017-12-21
 // ===========================================================================================
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
@@ -34,8 +28,17 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Orts.Common;
 using Orts.Formats.Msts;
+using Orts.Simulation.Physics;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
+using ORTS.Settings;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using static Orts.Common.InfoApiMap;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -87,7 +90,7 @@ namespace Orts.Viewer3D.WebServices
                 }));
             }
         }
-
+        
         public static async Task<T> DeserializationCallback<T>(IHttpContext context)
         {
             using (var text = context.OpenRequestText())

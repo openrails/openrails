@@ -15,13 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using static Orts.Simulation.Physics.Train.TrainObjectItem;
 
 namespace Orts.Viewer3D.WebServices
@@ -522,7 +523,7 @@ namespace Orts.Viewer3D.WebServices
                 // Draw forward items
                 DrawTrackItems(labels, trainInfo.ObjectInfoForward, zeroObjectPointTop, distanceFactor, markerIntervalM, direction: TrainDirection.Forward, useMetric);
             }
-            if (trainInfo.direction != 0)
+            if (trainInfo.direction !=0)
             {
                 // Draw fixed distance indications
                 float markerIntervalM = DrawDistanceMarkers(labels, distanceFactor, zeroObjectPointBottom, numberOfMarkers: 4, direction: TrainDirection.Backward, useMetric);

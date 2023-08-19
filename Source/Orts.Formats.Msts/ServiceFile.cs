@@ -15,31 +15,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections;
+using System.IO;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
-    /// <summary>
-    /// Work with Service Files
-    /// </summary>
-    public class ServiceFile
-    {
-        public int Serial;
-        public string Name;
-        public string Train_Config;   // name of the consist file, no extension
-        public string PathID;  // name of the path file, no extension
-        public float MaxWheelAcceleration;
-        public float Efficiency;
-        public string TimeTableItem;
+	/// <summary>
+	/// Work with Service Files
+	/// </summary>
+	public class ServiceFile
+	{
+		public int Serial;
+		public string Name;
+		public string Train_Config;   // name of the consist file, no extension
+		public string PathID;  // name of the path file, no extension
+		public float MaxWheelAcceleration;
+		public float Efficiency;
+		public string TimeTableItem;
         public TimeTable TimeTable;
 
-        /// <summary>
-        /// Open a service file, 
-        /// filePath includes full path and extension
-        /// </summary>
-        /// <param name="filePath"></param>
-        public ServiceFile(string filePath)
-        {
+		/// <summary>
+		/// Open a service file, 
+		/// filePath includes full path and extension
+		/// </summary>
+		/// <param name="filePath"></param>
+		public ServiceFile( string filePath )
+		{
             using (STFReader stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("service_definition", ()=> { stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -60,13 +63,13 @@ namespace Orts.Formats.Msts
             Efficiency = 0.9f;
             TimeTable = new TimeTable();
         }
-    } // SRVFile
+	} // SRVFile
 
     public class TimeTable
     {
         public float InitialSpeed;
-
-        public TimeTable(STFReader stf)
+ 
+        public TimeTable (STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {

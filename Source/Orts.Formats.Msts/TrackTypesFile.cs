@@ -15,19 +15,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 
 
 namespace Orts.Formats.Msts
 {
 
-    // TODO - this is an incomplete parse of the cvf file.
-    public class TrackTypesFile : List<TrackTypesFile.TrackType>
-    {
-
+	// TODO - this is an incomplete parse of the cvf file.
+	public class TrackTypesFile: List<TrackTypesFile.TrackType>
+	{
+        
         public TrackTypesFile(string filePath)
-        {
+		{
             using (STFReader stf = new STFReader(filePath, false))
             {
                 var count = stf.ReadInt(null);
@@ -42,7 +46,7 @@ namespace Orts.Formats.Msts
                 if (count > 0)
                     STFException.TraceWarning(stf, count + " missing TrackType(s)");
             }
-        }
+		}
 
         public class TrackType
         {
@@ -60,6 +64,6 @@ namespace Orts.Formats.Msts
             }
         } // TrackType
 
-    } // class CVFFile
+	} // class CVFFile
 }
 

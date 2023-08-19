@@ -18,10 +18,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
+
+using ORTS.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
-using ORTS.Common;
 
 namespace ORTS.TrackViewer.Editing.Charts
 {
@@ -47,7 +49,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         public IDictionary<TrainpathNode, double> DistanceAlongPath;
         /// <summary>Is there actually a path loaded with one or more points</summary>
         [JsonIgnore]
-        public bool HasPath { get { return PathChartPoints != null && PathChartPoints.Count() > 0; } }
+        public bool HasPath { get { return PathChartPoints != null && PathChartPoints.Count() > 0;} }
 
         [JsonProperty("PathName")]
         private string PathName { get; set; }
@@ -114,7 +116,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                     lastDistance += relativePoint.DistanceAlongNextSection;
                     AddPoint(localPathChartPoints, absolutePoint);
                 }
-
+                
                 node = node.NextMainNode;
             }
 
@@ -162,8 +164,8 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// </summary>
         private void StoreAllMinMax()
         {
-            this.PointWithMaxima = new PathChartPoint(new PathChartPoint(this.MaxHeightM, this.MaxCurvature, this.MaxGradePercent / 100, 0), this.MaxDistanceAlongPath);
-            this.PointWithMinima = new PathChartPoint(new PathChartPoint(this.MinHeightM, this.MinCurvature, this.MinGradePercent / 100, 0), this.MinDistanceAlongPath);
+            this.PointWithMaxima = new PathChartPoint(new PathChartPoint(this.MaxHeightM, this.MaxCurvature, this.MaxGradePercent/100, 0), this.MaxDistanceAlongPath);
+            this.PointWithMinima = new PathChartPoint(new PathChartPoint(this.MinHeightM, this.MinCurvature, this.MinGradePercent/100, 0), this.MinDistanceAlongPath);
         }
         #endregion
 
@@ -214,7 +216,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             float sectionOffsetStop;
 
             DetermineSectionDetails(thisNode, nextNode, tn, out isForward, out tvsiStart, out sectionOffsetStart);
-            DetermineSectionDetails(nextNode, thisNode, tn, out isReverse, out tvsiStop, out sectionOffsetStop);
+            DetermineSectionDetails(nextNode, thisNode, tn, out isReverse, out tvsiStop,  out sectionOffsetStop);
 
             float height;
             if (isForward)
@@ -226,7 +228,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                     height = vectorNode.TrVectorSections[tvsi].Y;
                     AddPointAndTrackItems(newPoints, vectorNode, trackItemsInTracknode, isForward, height, tvsi, 0, sectionOffsetNext);
 
-                    sectionOffsetNext = SectionLengthAlongTrack(tn, tvsi - 1);
+                    sectionOffsetNext = SectionLengthAlongTrack(tn, tvsi-1);
                 }
 
                 //Also works in case this is the only point we are adding
@@ -240,7 +242,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                 for (int tvsi = tvsiStop; tvsi < tvsiStart; tvsi++)
                 {
                     // The height needs to come from the end of the section, so the where the next section starts. And we only know the height at the start.
-                    height = vectorNode.TrVectorSections[tvsi + 1].Y;
+                    height = vectorNode.TrVectorSections[tvsi+1].Y;
                     AddPointAndTrackItems(newPoints, vectorNode, trackItemsInTracknode, isForward, height, tvsi, sectionOffsetNext, SectionLengthAlongTrack(tn, tvsi));
 
                     sectionOffsetNext = 0;
@@ -351,7 +353,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                     }
                 }
             }
-
+            
             return curvature;
         }
 
@@ -389,7 +391,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                 sectionOffsetStart = currentNodeAsVector.TrackSectionOffset;
             }
         }
-
+        
         /// <summary>
         /// Determine the length of the section along the track.
         /// </summary>
@@ -441,7 +443,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <returns></returns>
         private int DetermineTrackVectorSection(TrainpathNode node, int tvn)
         { // It would be nice if we could separate this into different classes for vector and junction, but this would mean creating three additional classes for only a few methods
-            TrainpathVectorNode nodeAsVector = node as TrainpathVectorNode;
+            TrainpathVectorNode nodeAsVector =  node as TrainpathVectorNode;
             if (nodeAsVector != null)
             {
                 return nodeAsVector.TrackVectorSectionIndex;
@@ -449,12 +451,10 @@ namespace ORTS.TrackViewer.Editing.Charts
             else
             {
                 TrainpathJunctionNode currentNodeAsJunction = node as TrainpathJunctionNode;
-                if (currentNodeAsJunction.JunctionIndex == trackDB.TrackNodes[node.NextMainTvnIndex].JunctionIndexAtStart())
-                {
+                if (currentNodeAsJunction.JunctionIndex == trackDB.TrackNodes[node.NextMainTvnIndex].JunctionIndexAtStart()) {
                     return 0;
                 }
-                else
-                {
+                else{
                     return trackDB.TrackNodes[node.NextMainTvnIndex].TrVectorNode.TrVectorSections.Count() - 1;
                 }
             }
@@ -499,7 +499,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="node">The node describing where the location of the point is</param>
         public PathChartPoint(TrainpathNode node)
         {
-            HeightM = node.Location.Location.Y;
+            HeightM = node.Location.Location.Y; 
             DistanceAlongPath = 0;
             Curvature = 0;
             GradePercent = 0;
@@ -522,7 +522,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             HeightM = height;
             DistanceAlongPath = 0;
             Curvature = curvature;
-            GradePercent = grade * 100;
+            GradePercent = grade*100;
             DistanceAlongNextSection = distanceAlongSection;
             TrackItemText = itemText;
             TrackItemType = type;
@@ -629,7 +629,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                 {
                     var travellerAtItem = new Traveller(tsectionDat, trackDB.TrackNodes, tn,
                         trItem.TileX, trItem.TileZ, trItem.X, trItem.Z, Traveller.TravellerDirection.Forward);
-
+                    
                     if (travellerAtItem != null)
                     {
                         tracknodeItems.Add(new ChartableTrackItem(trItem, travellerAtItem));
@@ -679,7 +679,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         public float TrackVectorSectionOffset;
         /// <summary>The type of item</summary>
         public ChartableTrackItemType ItemType;
-
+        
         /// <summary>
         /// Constructor
         /// </summary>

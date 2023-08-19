@@ -17,13 +17,13 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation;
 using ORTS.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -75,7 +75,7 @@ namespace Orts.Viewer3D.Popups
                     {
                         var previousLocation = currentPosition.WorldLocation;
                         var remaining = currentPosition.MoveInSection(DisplaySegmentLength);
-                        if ((Math.Abs(remaining - DisplaySegmentLength) < Tolerance) && !currentPosition.NextVectorSection())
+                        if ((Math.Abs(remaining - DisplaySegmentLength ) < Tolerance) && !currentPosition.NextVectorSection())
                             break;
                         primitives.Add(new DispatcherLineSegment(previousLocation, currentPosition.WorldLocation, Color.LightBlue, 2));
                     }

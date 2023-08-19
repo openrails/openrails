@@ -20,8 +20,12 @@
 /// Updates : 
 /// 
 
+using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using MSTS;
 
 namespace LibAE
 {
@@ -83,14 +87,14 @@ namespace LibAE
             areaRoute.maxX = Utility.CalcBounds(areaRoute.maxX, ((x + 1f) * 2048f) + 1024f, true);
             areaRoute.maxY = Utility.CalcBounds(areaRoute.maxY, ((z + 1f) * 2048f) + 1024f, true);
 
-            areaRoute.setMinX(Utility.CalcBounds(areaRoute.getMinX(), (x * 2048f) - 1024f, false));
-            areaRoute.setMinY(Utility.CalcBounds(areaRoute.getMinY(), (z * 2048f) - 1024f, false));
+            areaRoute.setMinX(Utility.CalcBounds(areaRoute.getMinX(), (x * 2048f) -1024f, false));
+            areaRoute.setMinY(Utility.CalcBounds(areaRoute.getMinY(), (z * 2048f) -1024f, false));
         }
     }
 
     public static class Utility
     {
-
+        
         /// <summary>
         /// Given a value representing a limit, evaluate if the given value exceeds the current limit.
         /// If so, expand the limit.

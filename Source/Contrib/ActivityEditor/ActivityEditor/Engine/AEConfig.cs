@@ -22,13 +22,21 @@
 
 
 using System;
+using System.IO;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Linq;
+using System.Text;
 using System.Windows.Forms;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using ActivityEditor.Route_Metadata;
+using LibAE;
 using LibAE.Formats;
-using Orts.Formats.OR;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
+using ORTS;
 using ORTS.Common;
+using Orts.Formats.OR;
 
 namespace ActivityEditor.Engine
 {
@@ -47,7 +55,7 @@ namespace ActivityEditor.Engine
         public List<TagWidgetInfo> tagWidgetInfo;
         private TypeEditor typeConfig;
         // Properties
-
+        
         public AERouteConfig aeRouteConfig { get; set; }
         public Viewer2D Viewer { get; set; }
         public PseudoSim simulator { get { return Viewer.Simulator; } protected set { } }
@@ -217,7 +225,7 @@ namespace ActivityEditor.Engine
             tagGBList = new List<GroupBox>();
             stationWidgetInfo = new List<StationWidgetInfo>();
             stationGBList = new List<GroupBox>();
-
+            
             Viewer.actParent.SuspendLayout();
             //System.Drawing.Point current = activityAe.GetPanelPosition();
             foreach (var item in getORWidget())
@@ -228,8 +236,8 @@ namespace ActivityEditor.Engine
                     int cnt = rnd.Next(999999);
                     TagWidgetInfo newTagWidget = new TagWidgetInfo(Viewer, ((TagItem)item), cnt);
                     AddTagWidgetInfo(newTagWidget);
-
-
+                    
+                    
                 }
             }
 

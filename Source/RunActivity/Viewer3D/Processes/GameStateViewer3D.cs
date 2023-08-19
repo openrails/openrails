@@ -17,9 +17,9 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
 using Orts.MultiPlayer;
 using Orts.Viewer3D.Debugging;
+using System;
 
 namespace Orts.Viewer3D.Processes
 {
@@ -131,7 +131,7 @@ namespace Orts.Viewer3D.Processes
         internal override void Dispose()
         {
             Viewer.Terminate();
-            if (MPManager.Server != null)
+           if (MPManager.Server != null)
                 MPManager.Server.Stop();
             if (MPManager.Client != null)
                 MPManager.Client.Stop();

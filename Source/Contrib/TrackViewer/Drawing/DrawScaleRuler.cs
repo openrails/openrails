@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS.TrackViewer.Drawing
 {
@@ -60,7 +62,7 @@ namespace ORTS.TrackViewer.Drawing
             // here we define, a bit manually, which scales are supported.
             rulerDataMeters.Add(new RulerDatum(5, 100000, " 100km"));
             rulerDataMeters.Add(new RulerDatum(5, 50000, " 50km"));
-            rulerDataMeters.Add(new RulerDatum(4, 20000, " 20km"));
+            rulerDataMeters.Add(new RulerDatum(4, 20000, " 20km")); 
             rulerDataMeters.Add(new RulerDatum(5, 10000, " 10km"));
             rulerDataMeters.Add(new RulerDatum(5, 5000, " 5km"));
             rulerDataMeters.Add(new RulerDatum(4, 2000, " 2km"));
@@ -91,7 +93,7 @@ namespace ORTS.TrackViewer.Drawing
             rulerDataMiles.Add(new RulerDatum(5, 4.57f, " 5yd"));
             rulerDataMiles.Add(new RulerDatum(4, 1.82f, " 2yd"));
             rulerDataMiles.Add(new RulerDatum(5, 0.91f, " 1yd"));
-
+            
         }
 
         /// <summary>
@@ -103,7 +105,7 @@ namespace ORTS.TrackViewer.Drawing
         public void SetLocationAndSize(int xLowerLeft, int yLowerLeft, int fontHeight)
         {
             lowerLeftPoint = new Vector2(xLowerLeft, yLowerLeft);
-            halfFontHeight = (int)(fontHeight / 2);
+            halfFontHeight = (int)(fontHeight/2);
             maxPixelWidth = 11 * fontHeight;
         }
 
@@ -118,21 +120,20 @@ namespace ORTS.TrackViewer.Drawing
 
             List<RulerDatum> rulerData = (Properties.Settings.Default.useMilesNotMeters) ? rulerDataMiles : rulerDataMeters;
 
-
+              
             // to make sure we have something for all zoom levels 
             currentRuler = rulerData.Last();
-
+            
             foreach (RulerDatum rulerDatum in rulerData)
             {
-                int pixelWidth = (int)Math.Round(pixelsPerMeter * rulerDatum.value);
-                if (pixelWidth < maxPixelWidth)
-                {
+                int pixelWidth = (int) Math.Round(pixelsPerMeter * rulerDatum.value);
+                if ( pixelWidth < maxPixelWidth ) {
                     currentRuler = rulerDatum;
                     break;
                 }
             }
 
-            fullPixelWidth = (int)Math.Round(pixelsPerMeter * currentRuler.value);
+            fullPixelWidth = (int) Math.Round(pixelsPerMeter * currentRuler.value);
         }
 
         /// <summary>
@@ -150,7 +151,7 @@ namespace ORTS.TrackViewer.Drawing
 
             Vector2 lowerRightPoint = new Vector2(lowerLeftPoint.X + fullPixelWidth, lowerLeftPoint.Y);
             Vector2 bigMarker = new Vector2(0, -halfFontHeight);
-            Vector2 smallMarker = new Vector2(0, -(int)(halfFontHeight / 2));
+            Vector2 smallMarker = new Vector2(0, -(int)(halfFontHeight/2));
             Color color = DrawColors.colorsNormal.Text;
 
             BasicShapes.DrawLine(1, color, lowerLeftPoint, lowerRightPoint);

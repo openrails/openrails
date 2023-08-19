@@ -15,10 +15,10 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
 using ORTS.Scripting.Api.ETCS;
+using System.Collections.Generic;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
 {

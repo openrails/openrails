@@ -15,7 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 
@@ -37,7 +41,7 @@ namespace Orts.Formats.OR
                         else
                         {
                             stf.MustMatch("(");
-                            stf.MustMatch("ListName");
+                            stf.MustMatch("ListName"); 
                             listName = stf.ReadStringBlock(null);
                             var carSpawnerBlock = new CarSpawnerBlock(stf, shapePath, carSpawnerLists, listName);
                         }

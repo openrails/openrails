@@ -15,16 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Orts.Formats.Msts;
 using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using ORTS.Scripting.Api;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Orts.MultiPlayer
 {
@@ -338,10 +338,10 @@ namespace Orts.MultiPlayer
                     Train t = MPManager.FindPlayerTrain(l.userName);
                     if (t != null && l.trainCarPosition < t.Cars.Count && (Math.Abs(t.SpeedMpS) > 0.001 || Math.Abs(t.LastReportedSpeed) > 0))
                     {
-                        if (t.Cars[l.trainCarPosition] is MSTSDieselLocomotive)
-                        {
-                            exhaust.AddNewItem(l.userName, t, l.trainCarPosition);
-                        }
+                            if (t.Cars[l.trainCarPosition] is MSTSDieselLocomotive)
+                            {
+                                exhaust.AddNewItem(l.userName, t, l.trainCarPosition);
+                            }
                     }
                 }
             }
@@ -350,7 +350,7 @@ namespace Orts.MultiPlayer
         }
 
         // Save
-        public void Save(BinaryWriter outf)
+        public void Save (BinaryWriter outf)
         {
             outf.Write(Players.Count);
             foreach (var onlinePlayer in Players.Values)
@@ -360,7 +360,7 @@ namespace Orts.MultiPlayer
         }
 
         // Restore
-        public void Restore(BinaryReader inf)
+        public void Restore (BinaryReader inf)
         {
             var onlinePlayersCount = inf.ReadInt32();
             if (onlinePlayersCount > 0)

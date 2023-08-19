@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using ORTS.TrackViewer.UserInterface;
 
@@ -37,9 +38,9 @@ namespace ORTS.TrackViewer.Drawing
     static class DrawColors
     {
 
-        public static ColorScheme colorsNormal = new ColorScheme();
+        public static ColorScheme colorsNormal    = new ColorScheme();
         public static ColorScheme colorsHighlight = new ColorScheme(HighlightType.Highlight);
-        public static ColorScheme colorsHotlight = new ColorScheme(HighlightType.Hotlight);  // even more highlighting
+        public static ColorScheme colorsHotlight  = new ColorScheme(HighlightType.Hotlight);  // even more highlighting
         public static ColorScheme colorsRoads = new ColorScheme();
         public static ColorScheme colorsRoadsHighlight = new ColorScheme(HighlightType.Highlight);
         public static ColorScheme colorsRoadsHotlight = new ColorScheme(HighlightType.Hotlight);
@@ -52,7 +53,7 @@ namespace ORTS.TrackViewer.Drawing
         static ColorsGroupTrack roadTrackGroupColoured = new ColorsGroupTrack();
         static ColorsGroupTrack trackGroupTerrain = new ColorsGroupTrack();
         static ColorsGroupTrack roadTrackGroupTerrain = new ColorsGroupTrack();
-
+        
         static ColorsGroupBackground backgroundWithTilesGroup = new ColorsGroupBackground();
         static ColorsGroupBackground backgroundWithoutTilesGroup = new ColorsGroupBackground();
 
@@ -71,7 +72,7 @@ namespace ORTS.TrackViewer.Drawing
             SetShadedColors(preferenceChanger);
 
             SetColoursFromOptions(true, false, false); //just a default
-        }
+         }
 
         private static void SetPathColors(IPreferenceChanger preferenceChanger)
         {
@@ -82,7 +83,7 @@ namespace ORTS.TrackViewer.Drawing
             ColorWithHighlights brokenNode = new ColorWithHighlights(Color.Red, 40);
 
             ColorWithHighlights pathMain = new ColorWithHighlights(Color.Yellow, 20);
-            pathMain.MakeIntoUserPreference(preferenceChanger, "pathmain",
+            pathMain.MakeIntoUserPreference(preferenceChanger, "pathmain", 
                 TrackViewer.catalog.GetString("Select path color (main)"));
             ColorsGroupTrack pathMainGroup = new ColorsGroupTrack
             {
@@ -94,7 +95,7 @@ namespace ORTS.TrackViewer.Drawing
             colorsPathMain.TrackColors = pathMainGroup;
 
             ColorWithHighlights pathSiding = new ColorWithHighlights(Color.Orange, 20);
-            pathSiding.MakeIntoUserPreference(preferenceChanger, "pathsiding",
+            pathSiding.MakeIntoUserPreference(preferenceChanger, "pathsiding", 
                 TrackViewer.catalog.GetString("Select path color (siding)"));
             ColorsGroupTrack pathSidingGroup = new ColorsGroupTrack
             {
@@ -106,7 +107,7 @@ namespace ORTS.TrackViewer.Drawing
             colorsPathSiding.TrackColors = pathSidingGroup;
 
 
-
+            
         }
 
         private static void SetTrackColors(IPreferenceChanger preferenceChanger)
@@ -150,7 +151,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             ColorWithHighlights fixedBackgroundColor = new ColorWithHighlights(Color.White, 20);
             ColorWithHighlights changingBackgroundColor = new ColorWithHighlights(Color.PaleGreen, 20);
-            changingBackgroundColor.MakeIntoUserPreference(preferenceChanger, "background",
+            changingBackgroundColor.MakeIntoUserPreference(preferenceChanger, "background", 
                 TrackViewer.catalog.GetString("Select background color"));
             backgroundWithoutTilesGroup.Tile = changingBackgroundColor;
             backgroundWithoutTilesGroup.ClearWindow = changingBackgroundColor;
@@ -177,37 +178,37 @@ namespace ORTS.TrackViewer.Drawing
             ColorWithHighlights itemColor;
 
             itemColor = new ColorWithHighlights(Color.Black, 40);
-            itemColor.MakeIntoUserPreference(preferenceChanger, "text",
+            itemColor.MakeIntoUserPreference(preferenceChanger, "text", 
                 TrackViewer.catalog.GetString("Select item text color"));
             itemColors.Text = itemColor;
 
             itemColor = new ColorWithHighlights(Color.Blue, 120);
-            itemColor.MakeIntoUserPreference(preferenceChanger, "junction",
+            itemColor.MakeIntoUserPreference(preferenceChanger, "junction", 
                 TrackViewer.catalog.GetString("Select junction color"));
             itemColors.Junction = itemColor;
 
             itemColor = new ColorWithHighlights(Color.LimeGreen, 40);
-            itemColor.MakeIntoUserPreference(preferenceChanger, "endnode",
+            itemColor.MakeIntoUserPreference(preferenceChanger, "endnode", 
                 TrackViewer.catalog.GetString("Select endnode color"));
             itemColors.EndNode = itemColor;
 
             itemColor = new ColorWithHighlights(Color.Sienna, 40);
-            itemColor.MakeIntoUserPreference(preferenceChanger, "siding",
+            itemColor.MakeIntoUserPreference(preferenceChanger, "siding", 
                 TrackViewer.catalog.GetString("Select siding color"));
             itemColors.Siding = itemColor;
 
             itemColor = new ColorWithHighlights(Color.Gray, 40);
-            itemColor.MakeIntoUserPreference(preferenceChanger, "crossing",
+            itemColor.MakeIntoUserPreference(preferenceChanger, "crossing", 
                 TrackViewer.catalog.GetString("Select crossing color"));
             itemColors.Crossing = itemColor;
 
             itemColor = new ColorWithHighlights(Color.DarkGray, 40);
-            itemColor.MakeIntoUserPreference(preferenceChanger, "roadcrossing",
+            itemColor.MakeIntoUserPreference(preferenceChanger, "roadcrossing", 
                 TrackViewer.catalog.GetString("Select road crossing color"));
             itemColors.RoadCrossing = itemColor;
 
             itemColor = new ColorWithHighlights(Color.Purple, 40);
-            itemColor.MakeIntoUserPreference(preferenceChanger, "speedpost",
+            itemColor.MakeIntoUserPreference(preferenceChanger, "speedpost", 
                 TrackViewer.catalog.GetString("Select speedpost color"));
             itemColors.Speedpost = itemColor;
 
@@ -313,8 +314,7 @@ namespace ORTS.TrackViewer.Drawing
     #endregion
 
     #region ColorGroup classes
-    class ColorsGroupBasic
-    {
+    class ColorsGroupBasic {
         public ColorWithHighlights Junction { get; set; }
         public ColorWithHighlights EndNode { get; set; }
         public ColorWithHighlights Crossing { get; set; }
@@ -352,10 +352,10 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     class ColorScheme
     {
-        public ColorsGroupBasic TrackItemColors { get; set; }
+        public ColorsGroupBasic TrackItemColors {get; set;}
         public ColorsGroupBackground BackgroundColors { get; set; }
         public ColorsGroupTrack TrackColors { get; set; }
-
+        
         public Color Junction { get { return TrackItemColors.Junction.Colors[highlightType]; } }
         public Color EndNode { get { return TrackItemColors.EndNode.Colors[highlightType]; } }
         public Color Crossing { get { return TrackItemColors.Crossing.Colors[highlightType]; } }
@@ -373,12 +373,12 @@ namespace ORTS.TrackViewer.Drawing
         public Color TrackCurved { get { return TrackColors.TrackCurved.Colors[highlightType]; } }
         public Color BrokenPath { get { return TrackColors.BrokenPath.Colors[highlightType]; } }
         public Color BrokenNode { get { return TrackColors.BrokenNode.Colors[highlightType]; } }
-
+        
         public Color ClearWindow { get { return BackgroundColors.ClearWindow.Colors[highlightType]; } }
         public Color Tile { get { return BackgroundColors.Tile.Colors[highlightType]; } }
 
-        public Color None { get { return Color.White; } }
-
+        public Color None { get { return Color.White; } }       
+        
         private static Dictionary<HighlightType, string> nameExtensions = new Dictionary<HighlightType, string>
         {
             {HighlightType.Normal, ""},
@@ -423,7 +423,7 @@ namespace ORTS.TrackViewer.Drawing
         Highlight,
         Hotlight,
     }
-
+    
     /// <summary>
     /// Class to store not only a color but also its highlighted variants
     /// </summary>
@@ -432,8 +432,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// The current normal, highlight and hotlight colors.
         /// </summary>
-        public IDictionary<HighlightType, Color> Colors { get; private set; }
-
+        public IDictionary<HighlightType,Color> Colors { get; private set; }
+        
         //Some things we store to be used when color is changed using preference.
         private byte highlightDelta;
         private Color defaultColor;
@@ -507,7 +507,7 @@ namespace ORTS.TrackViewer.Drawing
             Colors[HighlightType.Hotlight] = hotlightColor;
         }
 
-        /// <summary>
+                /// <summary>
         /// Make this color with highlights changable via some preference changing mechanism
         /// </summary>
         /// <param name="preferenceChanger">The object that can change a preference</param>
@@ -531,7 +531,7 @@ namespace ORTS.TrackViewer.Drawing
             string defaultColorOption = defaultColorName + defaultOptionExtension;
             colorOptions.Insert(0, defaultColorOption);
 
-            var callBack = normalOnly ? new StringPreferenceDelegate(PreferenceChangedCallbackNormalOnly) : new StringPreferenceDelegate(PreferenceChangedCallback);
+            var callBack = normalOnly ? new StringPreferenceDelegate(PreferenceChangedCallbackNormalOnly): new StringPreferenceDelegate(PreferenceChangedCallback);
             preferenceChanger.AddStringPreference(name, description, colorOptions.ToArray(), defaultColorOption, callBack);
         }
 
@@ -573,7 +573,7 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="color">The color for which you want the name</param>
         private static string FindColorName(Color color)
-        {
+        {           
             //
             foreach (KeyValuePair<string, Color> entry in namedColors)
             {
@@ -647,7 +647,7 @@ namespace ORTS.TrackViewer.Drawing
             }
             else
             {
-                newvalue = 255 - ((255 - original) * (count + index + 1) / (2 * count));
+                newvalue = 255 - ((255-original) * (count + index + 1) / (2 * count));
             }
             return (byte)newvalue;
         }

@@ -17,14 +17,14 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
 using ORTS.Scripting.Api.ETCS;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
 {
@@ -54,7 +54,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
 
         List<TextMessage> MessageList;
         TextMessage? AcknowledgingMessage;
-        public MessageArea(DriverMachineInterface dmi) : base(Viewer.Catalog.GetString("Acknowledge"), true, null, 234, (dmi.IsSoftLayout ? 4 : 5) * RowHeight, dmi, false)
+        public MessageArea(DriverMachineInterface dmi) : base(Viewer.Catalog.GetString("Acknowledge"), true, null, 234, (dmi.IsSoftLayout ? 4 : 5)*RowHeight, dmi, false)
         {
             MaxTextLines = dmi.IsSoftLayout ? 4 : 5;
 
@@ -68,7 +68,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                     CurrentPage++;
                     SetMessages();
                 }
-            }, 46, Height / 2, dmi);
+            }, 46, Height/2, dmi);
             ButtonScrollDown = new DMIIconButton("NA_14.bmp", "NA_16.bmp", Viewer.Catalog.GetString("Scroll Down"), true, () =>
             {
                 if (CurrentPage > 0)
@@ -141,7 +141,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             var size = font.MeasureString(text) / Scale;
             if (size > 234 - 48)
             {
-                int split = text.LastIndexOf(' ', (int)((234 - 48) / size * text.Length));
+                int split = text.LastIndexOf(' ', (int)((234 - 48)/size*text.Length));
                 if (split == -1) split = (int)((234 - 48) / size * text.Length);
                 var remaining = GetRowSeparated(text.Substring(split + 1), isBold);
                 var arr = new string[remaining.Length + 1];

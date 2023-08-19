@@ -15,11 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.IO;
-using System.Linq;
 using Orts.Common;
 using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
+using System;
+using System.IO;
+using System.Linq;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
@@ -31,7 +32,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AlwaysOn,
             Manual
         }
-
+        
         // Parameters
         public ModeType Mode { get; protected set; } = ModeType.AlwaysOn;
         public float DelayS { get; protected set; } = 0f;
@@ -42,8 +43,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         protected Timer Timer;
         public bool CommandSwitch { get; protected set; } = false;
         public bool On { get; protected set; } = false;
-        public bool OtherCabInUse
-        {
+        public bool OtherCabInUse {
             get
             {
                 foreach (MSTSLocomotive locomotive in Locomotive.Train.Cars.OfType<MSTSLocomotive>())

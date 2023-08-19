@@ -17,11 +17,11 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using Orts.Processes;
+using ORTS.Common;
 using System;
 using System.Diagnostics;
 using System.Threading;
-using Orts.Processes;
-using ORTS.Common;
 using CancellationToken = ORTS.Common.CancellationToken;
 using CancellationTokenSource = ORTS.Common.CancellationTokenSource;
 

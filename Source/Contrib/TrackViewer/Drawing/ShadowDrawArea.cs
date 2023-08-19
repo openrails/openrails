@@ -16,6 +16,10 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -64,7 +68,7 @@ namespace ORTS.TrackViewer.Drawing
     ///         Also in the Game.Draw, but before spriteBatch.begin:    yourShadowDrawArea.DrawShadowTextures(DrawSomething, background color);
     ///
     ///</summary>
-    public class ShadowDrawArea : DrawArea, IDisposable
+    public class ShadowDrawArea: DrawArea, IDisposable
     {
         #region private Fields
         int blockW; // Width  of single block in pixels
@@ -76,7 +80,7 @@ namespace ORTS.TrackViewer.Drawing
         double shadowOffsetZ;   // lower-left location (in real world coordinates) of the combined texture
 
         // fields related to when and what we are re-drawing
-        bool needToRedraw = true;
+        bool needToRedraw      = true;
         bool needToRedrawLater = true;
         bool[] needToDrawRectangle; // Array of booleans describing which of the rectangles still need to be redrawn
         int nextRectangleToDraw; // integer from 0 to Nblocks-1, describing which of the subblocks will be drawn
@@ -109,8 +113,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Constructor. Just calling the base constructor
         /// </summary>
-        public ShadowDrawArea(DrawScaleRuler drawScaleRuler)
-            : base(drawScaleRuler)
+        public ShadowDrawArea(DrawScaleRuler drawScaleRuler) 
+            :base(drawScaleRuler)
         {
             shadowDrawArea = new ShadowDrawArea();
         }
@@ -121,7 +125,7 @@ namespace ORTS.TrackViewer.Drawing
         /// Therefore, it is a shadowDrawArea, but we will not use any of its additional functionality.
         /// Hence also private
         /// </summary>
-        ShadowDrawArea() : base(null) { }
+        ShadowDrawArea(): base(null){}
 
         /// <summary>
         /// Sets the screen size on which we can draw (in pixels). 
@@ -170,7 +174,7 @@ namespace ORTS.TrackViewer.Drawing
         private void SetRendertargetSizes()
         {
             if (graphicsDevice == null) { return; }
-
+            
             blockW = (AreaW * Nsampling + Ninner - 1) / Ninner; // in case areaW*Nsampling is not a multiple of Ninner this
             blockH = (AreaH * Nsampling + Ninner - 1) / Ninner; // makes sure block size at least covers all of area, to prevent constant redrawing
 
@@ -198,7 +202,7 @@ namespace ORTS.TrackViewer.Drawing
                     shadowMapsSingle[i].Dispose();
                 }
                 shadowRenderTargetSingle[i] = new RenderTarget2D(graphicsDevice, 1 * blockW, 1 * blockH, false, SurfaceFormat.Color,
-                    DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents);
+                    DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents); 
                 shadowMapsSingle[i] = new Texture2D(graphicsDevice, 1, 1);
             }
         }
@@ -223,7 +227,7 @@ namespace ORTS.TrackViewer.Drawing
                 orderIndex++;
             }
 
-            for (int iRing = Nrings - 1; iRing >= 0; iRing--)   // work from the inside out.
+            for (int iRing = Nrings-1; iRing >= 0; iRing--)   // work from the inside out.
             {
                 int Nside = Nouter - 1 - 2 * iRing;  // The amount of blocks - 1 in a side, for the given ring. Alwasy Nouter - 1 for last ring!
                 //left side
@@ -339,19 +343,19 @@ namespace ORTS.TrackViewer.Drawing
             double ShiftLimitInBlocks = (Nborder > 1) ? Nborder - 1 : 0.5;
             double shiftLimitX = ShiftLimitInBlocks * blockW / shadowScale;
             double shiftLimitZ = ShiftLimitInBlocks * blockH / shadowScale;
-            if (OffsetX < shadowOffsetX + shiftLimitX) { ShiftBlocks(ShiftDirection.Right); }
-            if (OffsetZ < shadowOffsetZ + shiftLimitZ) { ShiftBlocks(ShiftDirection.Up); }
+            if (OffsetX              < shadowOffsetX               + shiftLimitX) { ShiftBlocks(ShiftDirection.Right); }
+            if (OffsetZ              < shadowOffsetZ               + shiftLimitZ) { ShiftBlocks(ShiftDirection.Up); }
             if (OffsetX + insetRealW > shadowOffsetX + shadowRealW - shiftLimitX) { ShiftBlocks(ShiftDirection.Left); }
             if (OffsetZ + insetRealH > shadowOffsetZ + shadowRealH - shiftLimitZ) { ShiftBlocks(ShiftDirection.Down); }
-
-            //double ringW = Nborder * blockW / shadowScale;
-            //double ringH = Nborder * blockH / shadowScale;
-            ////we will redraw later in case we are close, we do not want to do this too much though
-            //if (offsetX < shadowOffsetX + 0.2 * ringW) { needToRedrawLater = true; }
-            //if (offsetZ < shadowOffsetZ + 0.2 * ringH) { needToRedrawLater = true; }
-            //if (offsetX + insetRealW > shadowOffsetX + shadowRealW - 0.2 * ringW) { needToRedrawLater = true; }
-            //if (offsetZ + insetRealH > shadowOffsetZ + shadowRealH - 0.2 * ringW) { needToRedrawLater = true; }
-
+            
+                //double ringW = Nborder * blockW / shadowScale;
+                //double ringH = Nborder * blockH / shadowScale;
+                ////we will redraw later in case we are close, we do not want to do this too much though
+                //if (offsetX < shadowOffsetX + 0.2 * ringW) { needToRedrawLater = true; }
+                //if (offsetZ < shadowOffsetZ + 0.2 * ringH) { needToRedrawLater = true; }
+                //if (offsetX + insetRealW > shadowOffsetX + shadowRealW - 0.2 * ringW) { needToRedrawLater = true; }
+                //if (offsetZ + insetRealH > shadowOffsetZ + shadowRealH - 0.2 * ringW) { needToRedrawLater = true; }
+            
         }
 
         /// <summary>
@@ -373,22 +377,20 @@ namespace ORTS.TrackViewer.Drawing
         private void SetNextRectangleToDraw(bool recheck)
         {
             if (recheck) { nextRectangleToDraw = -1; }
-            do
-            {
-                nextRectangleToDraw++;
+            do {
+                nextRectangleToDraw ++;
             } while (nextRectangleToDraw < Nsubblocks && !needToDrawRectangle[nextRectangleToDraw]);
         }
 
-        enum ShiftDirection { Left, Right, Up, Down };
+        enum ShiftDirection {Left, Right, Up, Down};
 
         /// <summary>
         /// Instead of redrawing a lot of subblocks, we will just move most of the blocks by one block to any direction
         /// and only mark a single column or row for redrawing.
         /// </summary>
         /// <param name="direction">The direction to shift</param>
-        private void ShiftBlocks(ShiftDirection direction)
-        {
-
+        private void ShiftBlocks(ShiftDirection direction) {
+                 
             switch (direction)
             {
                 case ShiftDirection.Right:
@@ -427,7 +429,7 @@ namespace ORTS.TrackViewer.Drawing
         /// The real world location is so far left, that we can discard the right-most column of blocks and add a new column on the left
         /// </summary>
         private void ShiftSubBlocksRight()
-        {
+        {    
             for (int row = 0; row < Nouter; row++)
             {
                 RenderTarget2D tempTarget = shadowRenderTargetSingle[orderFromLocation[Nouter - 1][row]];
@@ -439,7 +441,7 @@ namespace ORTS.TrackViewer.Drawing
                 shadowRenderTargetSingle[orderFromLocation[0][row]] = tempTarget;
                 needToDrawRectangle[orderFromLocation[0][row]] = true;
             }
-        }
+       }
 
         /// <summary>
         /// The real world location is so far right, that we can discard the right-most column of blocks and add a new column on the right
@@ -544,11 +546,10 @@ namespace ORTS.TrackViewer.Drawing
 
                 needToDrawRectangle[nextRectangleToDraw] = false;
             }
-            catch
-            {
+            catch {
                 graphicsDevice.SetRenderTarget(null); // return control to main render target
             }
-            graphicsDevice.SetRenderTarget(null);
+            graphicsDevice.SetRenderTarget(null); 
         }
 
         /// <summary>
@@ -568,14 +569,13 @@ namespace ORTS.TrackViewer.Drawing
                 for (int i = 0; i < Nsubblocks; i++)
                 {
                     Vector2 position = new Vector2(xOrder[i] * blockW, (Nouter - 1 - zOrder[i]) * blockH);
-                    spriteBatch.Draw(shadowMapsSingle[i], position, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+                    spriteBatch.Draw(shadowMapsSingle[i], position, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);            
                 }
                 spriteBatch.End();
                 graphicsDevice.SetRenderTarget(null);
                 shadowMapCombined = shadowRenderTargetCombined;
             }
-            catch
-            {
+            catch {
                 graphicsDevice.SetRenderTarget(null); // return control to main render target
             }
         }
@@ -607,12 +607,12 @@ namespace ORTS.TrackViewer.Drawing
             float scaleRatio = (float)(Scale / shadowScale);
             Vector2 scaleAsVector = new Vector2(scaleRatio);
             Microsoft.Xna.Framework.Rectangle? sourceRectangle = new Microsoft.Xna.Framework.Rectangle(
-                Convert.ToInt32(shadowScale * (OffsetX - shadowOffsetX)),
+                Convert.ToInt32(                  shadowScale * (                OffsetX - shadowOffsetX)),
                 Convert.ToInt32(blockH * Nouter - shadowScale * (AreaH / Scale + OffsetZ - shadowOffsetZ)),
                 Convert.ToInt32(AreaW * shadowScale / Scale),
                 Convert.ToInt32(AreaH * shadowScale / Scale));
 
-
+  
             Vector2 position = new Vector2(AreaOffsetX, AreaOffsetY);
             Vector2 origin = Vector2.Zero;
 

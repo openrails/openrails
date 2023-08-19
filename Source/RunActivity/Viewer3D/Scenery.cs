@@ -42,17 +42,17 @@
  * 
  */
 
+using Microsoft.Xna.Framework;
+using Orts.Formats.Msts;
+using Orts.Formats.OR;
+using ORTS.Common;
+using Orts.Simulation.RollingStocks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Xna.Framework;
-using Orts.Formats.Msts;
-using Orts.Formats.OR;
-using Orts.Simulation.RollingStocks;
-using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
@@ -384,7 +384,7 @@ namespace Orts.Viewer3D
                             else
                             {
                                 var found = false;
-                                foreach (var movingTable in Program.Simulator.MovingTables)
+                                foreach (var movingTable in Program.Simulator.            MovingTables)
                                 {
                                     if (worldObject.UID == movingTable.UID && WFileName == movingTable.WFile)
                                     {
@@ -504,7 +504,7 @@ namespace Orts.Viewer3D
                             sceneryObjects.Add(new ContainerHandlingItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
                         }
                         else
-                            sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
+                        sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
                         PickupList.Add((PickupObj)worldObject);
                     }
                     else // It's some other type of object - not one of the above.

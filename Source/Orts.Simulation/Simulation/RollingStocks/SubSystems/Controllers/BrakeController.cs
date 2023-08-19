@@ -15,12 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Parsers.Msts;
+using Orts.Simulation.AIs;
+using ORTS.Common;
+using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Orts.Parsers.Msts;
-using ORTS.Common;
-using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 {
@@ -253,7 +254,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     break;
 
                 case "engine(trainbrakescontrollermaxreleaserate":
-                case "engine(enginebrakescontrollermaxreleaserate":
+                case "engine(enginebrakescontrollermaxreleaserate":    
                     ReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
                     break;
 
@@ -440,7 +441,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             SignalEvent(BrakeControllerEvent.StartIncrease, target);
         }
 
-        public void StartDecrease(float? target, bool toZero = false)
+        public void StartDecrease(float? target , bool toZero = false)
         {
             if (toZero) SignalEvent(BrakeControllerEvent.StartDecreaseToZero, target);
             else SignalEvent(BrakeControllerEvent.StartDecrease, target);

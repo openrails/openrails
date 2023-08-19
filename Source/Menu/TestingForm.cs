@@ -18,10 +18,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
@@ -62,8 +64,8 @@ namespace ORTS
 
         readonly MainForm MainForm;
         readonly UserSettings Settings;
-        readonly string SummaryFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
-        readonly string LogFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingLog.txt");
+		readonly string SummaryFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
+		readonly string LogFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingLog.txt");
 
         public TestingForm(MainForm mainForm, UserSettings settings)
         {

@@ -25,8 +25,10 @@
 // The last TrPathNode is marked with a 4294967295 ( -1L or 0xFFFFFFFF) in its next field.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using Orts.Parsers.Msts;
 
 
@@ -37,47 +39,47 @@ namespace Orts.Formats.Msts
     [Flags]
     public enum PathFlags
     {
-        NotPlayerPath = 0x20,
+        NotPlayerPath = 0x20,  
     }
 
-    /// <summary>
-    /// Paths for both player train as well as AI trains.
+	/// <summary>
+	/// Paths for both player train as well as AI trains.
     /// This class reads and stores the MSTS .pat file. Because of the format of the .pat file 
     /// it is easier to have an intermediate format that just contains the data of the .pat file
     /// and create the wanted data scructure from that.
     /// It is the intention that it is only used for
     ///     * ORTS main menu
     ///     * postprocessing by TrainPath.
-    /// </summary>
-    // Typical simple .PATfile (the example helps to understand the code below)
-    /*
-        SIMISA@@@@@@@@@@JINX0P0t______
+	/// </summary>
+// Typical simple .PATfile (the example helps to understand the code below)
+/*
+    SIMISA@@@@@@@@@@JINX0P0t______
 
-    Serial ( 1 )
-    TrackPDPs (
-        TrackPDP ( -12557 14761 -6.1249 1173.74 72.5884 2 0 )
-        TrackPDP ( -12557 14761 -204.363 1173.74 976.083 2 0 )
-        TrackPDP ( -12557 14762 -287.228 1173.74 -971.75 2 0 )
-        TrackPDP ( -12558 14763 278.107 1155.51 -941.416 2 0 )
-        TrackPDP ( -12557 14761 -49.6355 1173.74 -164.577 1 1 )
-        TrackPDP ( -12558 14763 245.63 1139.65 -387.96 1 1 )
-    )
-    TrackPath (
-        TrPathName ( EsxPincal )
-        Name ( "Essex - Pinnacle" )
-        TrPathStart ( Essex )
-        TrPathEnd ( Pinnacle )
-        TrPathNodes ( 6
-            TrPathNode ( 00000000 1 4294967295 4 )
-            TrPathNode ( 00000000 2 4294967295 0 )
-            TrPathNode ( 00000000 3 4294967295 1 )
-            TrPathNode ( 00000000 4 4294967295 2 )
-            TrPathNode ( 00000000 5 4294967295 3 )
-            TrPathNode ( 00000000 4294967295 4294967295 5 )
-        )
+Serial ( 1 )
+TrackPDPs (
+	TrackPDP ( -12557 14761 -6.1249 1173.74 72.5884 2 0 )
+	TrackPDP ( -12557 14761 -204.363 1173.74 976.083 2 0 )
+	TrackPDP ( -12557 14762 -287.228 1173.74 -971.75 2 0 )
+	TrackPDP ( -12558 14763 278.107 1155.51 -941.416 2 0 )
+	TrackPDP ( -12557 14761 -49.6355 1173.74 -164.577 1 1 )
+	TrackPDP ( -12558 14763 245.63 1139.65 -387.96 1 1 )
+)
+TrackPath (
+	TrPathName ( EsxPincal )
+	Name ( "Essex - Pinnacle" )
+	TrPathStart ( Essex )
+	TrPathEnd ( Pinnacle )
+	TrPathNodes ( 6
+		TrPathNode ( 00000000 1 4294967295 4 )
+		TrPathNode ( 00000000 2 4294967295 0 )
+		TrPathNode ( 00000000 3 4294967295 1 )
+		TrPathNode ( 00000000 4 4294967295 2 )
+		TrPathNode ( 00000000 5 4294967295 3 )
+		TrPathNode ( 00000000 4294967295 4294967295 5 )
+	)
 
-    )
-    */
+)
+*/
     // TrackPDP format is : TrackPDP ( tileX tileZ x y z flag1 flag2)
     //      Precise meaning of flag1 and flag2 is unknown. 
     //          2 0 seems to be junction
@@ -110,8 +112,8 @@ namespace Orts.Formats.Msts
     //      2 0         8       (e.g. Shiatsu, not clear why). It does not seem to be 'other exit'
     //  
 
-
-    public class PathFile
+    
+	public class PathFile
     {
         #region Fields
 
@@ -160,11 +162,11 @@ namespace Orts.Formats.Msts
                         new STFReader.TokenProcessor("trackpdp", ()=>{ trackPDPs.Add(new TrackPDP(stf)); }),
                     });}),
                     new STFReader.TokenProcessor("trackpath", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("trpathname", ()=>{ PathID = stf.ReadStringBlock(null); }),
+						new STFReader.TokenProcessor("trpathname", ()=>{ PathID = stf.ReadStringBlock(null); }),
                         new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
-                        new STFReader.TokenProcessor("trpathflags", ()=>{ Flags = (PathFlags)stf.ReadHexBlock(null); }),
-                        new STFReader.TokenProcessor("trpathstart", ()=>{ Start = stf.ReadStringBlock(null); }),
-                        new STFReader.TokenProcessor("trpathend", ()=>{ End = stf.ReadStringBlock(null); }),
+						new STFReader.TokenProcessor("trpathflags", ()=>{ Flags = (PathFlags)stf.ReadHexBlock(null); }),
+						new STFReader.TokenProcessor("trpathstart", ()=>{ Start = stf.ReadStringBlock(null); }),
+						new STFReader.TokenProcessor("trpathend", ()=>{ End = stf.ReadStringBlock(null); }),
                         new STFReader.TokenProcessor("trpathnodes", ()=>{
                             stf.MustMatch("(");
                             var count = stf.ReadInt(null);
@@ -192,15 +194,15 @@ namespace Orts.Formats.Msts
         {
             return this.Name;
         }
-    }
+	}
 
     // for explanation of TrackPDP, see class PATfile
-    public class TrackPDP
-    {
+	public class TrackPDP
+	{
         //We are not using WorldLocation to keep MSTS file parsing independent of other parts of the code
         public int TileX;
         public int TileZ;
-        public float X, Y, Z;
+        public float X,Y,Z;
         public int junctionFlag, invalidFlag;
 
         #region Properties
@@ -210,7 +212,7 @@ namespace Orts.Formats.Msts
         #endregion
 
         public TrackPDP(STFReader stf)
-        {
+		{
             stf.MustMatch("(");
             TileX = stf.ReadInt(null);
             TileZ = stf.ReadInt(null);
@@ -232,16 +234,16 @@ namespace Orts.Formats.Msts
             junctionFlag = 0;
             invalidFlag = 0;
         }
-    }
+	}
 
     // for an explanation, see class PATfile 
     public class TrPathNode
     {
-        public uint pathFlags, nextMainNode, nextSidingNode, fromPDP;
-
+        public uint pathFlags,nextMainNode,nextSidingNode,fromPDP;
+        
         // Note, pathFlags is a complicated beast, which is not fully understood, see AIPath.cs
 
-        public bool HasNextMainNode { get { return (nextMainNode != 0xffffffff); } }
+        public bool HasNextMainNode   { get { return (nextMainNode   != 0xffffffff); } }
         public bool HasNextSidingNode { get { return (nextSidingNode != 0xffffffff); } }
 
         public TrPathNode(STFReader stf)
@@ -254,7 +256,7 @@ namespace Orts.Formats.Msts
             stf.SkipRestOfBlock();
         }
 
-        public TrPathNode(uint flags, uint nextNode, uint nextSiding, uint pdp)
+        public TrPathNode (uint flags, uint nextNode, uint nextSiding, uint pdp)
         {
             pathFlags = flags;
             nextMainNode = nextNode;

@@ -19,6 +19,7 @@
 
 using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using ORTS.Common;
@@ -79,7 +80,7 @@ namespace Orts.Viewer3D.Popups
                 foreach (var thisTrain in Owner.Viewer.Simulator.AI.AITrains)
                 {
                     if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.PLAYER
-                        && !(thisTrain.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !thisTrain.IncorporatingTrain.IsPathless))
+                        && ! (thisTrain.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !thisTrain.IncorporatingTrain.IsPathless))
                     {
                         var line = scrollbox.AddLayoutHorizontalLineOfText();
                         TrainLabel number, name, viewed;
@@ -126,7 +127,7 @@ namespace Orts.Viewer3D.Popups
                             }
                             number.Color = Color.Yellow;
                             name.Color = Color.Yellow;
-                        }
+                         }
                     }
                 }
             }
@@ -178,7 +179,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Simulator.TrainSwitcher.ClickedTrainFromList = true;
 
             }
-            if (PickedTrainFromList != null && (PickedTrainFromList == Viewer.SelectedTrain || (PickedTrainFromList.TrainType == Train.TRAINTYPE.AI_INCORPORATED &&
+            if (PickedTrainFromList != null && (PickedTrainFromList == Viewer.SelectedTrain || (PickedTrainFromList.TrainType == Train.TRAINTYPE.AI_INCORPORATED && 
                 (PickedTrainFromList as AITrain).IncorporatingTrain.IsPathless && (PickedTrainFromList as AITrain).IncorporatingTrain == Viewer.SelectedTrain)) && !PickedTrainFromList.IsActualPlayerTrain &&
                 Viewer.Simulator.IsAutopilotMode && PickedTrainFromList.IsPlayable)
             {
@@ -197,4 +198,4 @@ namespace Orts.Viewer3D.Popups
             }
         }
     }
-}
+ }

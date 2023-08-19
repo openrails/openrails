@@ -15,8 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 using System.IO;
+using Microsoft.Xna.Framework;
 using Orts.Parsers.OR;
 
 namespace Orts.Formats.OR
@@ -270,7 +275,7 @@ namespace Orts.Formats.OR
 
         protected override bool TryParse(JsonReader item)
         {
-            if (base.TryParse(item)) return true;
+        if (base.TryParse(item)) return true;
             switch (item.Path)
             {
                 case "FogVisibility": FogVisibilityM = item.AsFloat(FogVisibilityM); break;

@@ -16,14 +16,25 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
+using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation.Signalling;
+using Orts.Simulation.Timetables;
+using ORTS.Common;
 using ORTS.Scripting.Api;
+using ORTS.Settings;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
@@ -36,7 +47,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
     public class FullEOTPaths : List<string>
     {
-        public FullEOTPaths(string eotPath)
+         public FullEOTPaths (string eotPath)
         {
             var directories = Directory.GetDirectories(eotPath);
             foreach (var directory in directories)
@@ -257,7 +268,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 EOTState = EOTstate.ArmedTwoWay;
         }
 
-        public void EmergencyBrake(bool toState)
+        public void EmergencyBrake (bool toState)
         {
             if (EOTState == EOTstate.ArmedTwoWay)
             {

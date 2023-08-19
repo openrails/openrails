@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Orts.Formats.Msts;
 
 namespace ORTS.TrackViewer.Editing
@@ -45,7 +49,7 @@ namespace ORTS.TrackViewer.Editing
         {
             trackNodes = trackNodesIn;
             tsectionDat = tsectionDatIn;
-
+            
             mainRouteIndex = new uint[trackNodes.Length];
             sidingRouteIndex = new uint[trackNodes.Length];
             for (int tni = 0; tni < trackNodes.Length; tni++)
@@ -63,7 +67,7 @@ namespace ORTS.TrackViewer.Editing
                 }
                 catch (System.IO.InvalidDataException exception)
                 {
-                    exception.ToString();
+                    exception.ToString(); 
                 }
 
                 mainRouteIndex[tni] = tn.Inpins + mainRoute;
@@ -92,7 +96,7 @@ namespace ORTS.TrackViewer.Editing
 
         /// <summary>Return the tracknode corresponding the given index</summary>
         public static TrackNode TrackNode(int tvnIndex) { return trackNodes[tvnIndex]; }
-
+       
         /// <summary>
         /// Get the index of the junction node at the other side of the linking track vector node.
         /// This uses only the track database, no trainpath nodes.
@@ -130,8 +134,7 @@ namespace ORTS.TrackViewer.Editing
             if (junctionIndex <= 0) return 0; // something wrong in database
 
             TrackNode junctionTrackNode = trackNodes[junctionIndex];
-            if (junctionTrackNode == null)
-            {
+            if (junctionTrackNode == null) {
                 return 0;
             }
 
@@ -145,7 +148,7 @@ namespace ORTS.TrackViewer.Editing
             }
             return junctionTrackNode.TrailingTvn();
         }
-
+        
     }
 
 }

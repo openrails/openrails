@@ -29,11 +29,11 @@
 //    #direction : Up or Down
 //
 
+using GNU.Gettext;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using GNU.Gettext;
 
 namespace Orts.Formats.OR
 {

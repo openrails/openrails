@@ -52,7 +52,7 @@ namespace ORTS.TrackViewer
                                     "This error may be due to bad data or a bug. ",
                                     Application.ProductName, errorSummary),
                                     Application.ProductName, MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
-
+                            
                     }
                     trackViewer.Exit();
                 }

@@ -17,15 +17,18 @@
 
 // This file is the responsibility of the 3D & Environment Team.
 
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Simulation.Physics;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks;
-using ORTS.Common;
+using System.Text;
 using ORTS.Common.Input;
+using Microsoft.Xna.Framework;
+using System.IO;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -38,7 +41,7 @@ namespace Orts.Viewer3D.Popups
         int LastColLenght = 0;
         int LastColOverFlow = 0;
         int LastPlayerTrainCars;
-        int dpiOffset = 0;
+        int dpiOffset= 0;
 
         public bool normalTextMode = true;// Standard text
         public bool normalVerticalMode = true;// vertical window size
@@ -155,7 +158,7 @@ namespace Orts.Viewer3D.Popups
         public TrainDpuWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 10, Window.DecorationSize.Y + owner.TextFontDefault.Height * 10, Viewer.Catalog.GetString("Train Dpu Info"))
         {
-            WindowHeightMin = Location.Height / 2;
+            WindowHeightMin = Location.Height/2;
             WindowHeightMax = Location.Height + owner.TextFontDefault.Height * 20;
             WindowWidthMin = Location.Width;
             WindowWidthMax = Location.Width + owner.TextFontDefault.Height * 20;
@@ -264,11 +267,11 @@ namespace Orts.Viewer3D.Popups
 
                                 if (SymbolCol[i].Contains(Symbols.Fence))
                                 {
-                                    hbox.Add(indicator = new Label(-(TextSize / 2), 0, TextSize, hbox.RemainingHeight, Symbols.Fence, LabelAlignment.Left));
+                                    hbox.Add(indicator = new Label(-(TextSize/2), 0, TextSize, hbox.RemainingHeight, Symbols.Fence, LabelAlignment.Left));
                                     indicator.Color = Color.Green;
 
                                     // Apply color to LastCol
-                                    var lastCol = LastCol[i].Replace("|", " ");
+                                    var lastCol = LastCol[i].Replace("|"," ");
                                     hbox.Add(indicator = new Label(lastWidth, hbox.RemainingHeight, lastCol, locoGroups ? LabelAlignment.Center : LabelAlignment.Left));//center
                                     indicator.Color = colorFirstColEndsWith == Color.White ? colorLastColEndsWith : colorFirstColEndsWith;
                                 }
@@ -287,8 +290,8 @@ namespace Orts.Viewer3D.Popups
                                             hbox.Add(indicator = new Label(-(TextSize / 2), 0, TextSize, hbox.RemainingHeight, SymbolCol[i], LabelAlignment.Left));
                                             indicator.Color = colorSymbolCol;
                                         }
-                                        hbox.Add(indicator = new Label(lastWidth, hbox.RemainingHeight, LastCol[i], locoGroups ? LabelAlignment.Center : LabelAlignment.Left));
-                                        indicator.Color = colorLastColEndsWith;
+                                            hbox.Add(indicator = new Label(lastWidth, hbox.RemainingHeight, LastCol[i], locoGroups ? LabelAlignment.Center : LabelAlignment.Left));
+                                            indicator.Color = colorLastColEndsWith;
                                     }
                                 }
                             }
@@ -365,9 +368,9 @@ namespace Orts.Viewer3D.Popups
                 FirstColLenght = labels.Max(x => x.FirstColWidth);
 
                 var lastColLenght = 0;
-                foreach (var data in labels.Where(x => x.LastColWidth != null && x.LastColWidth.Count > 0))
+                foreach ( var data in labels.Where(x=> x.LastColWidth!=null && x.LastColWidth.Count > 0 ))
                 {
-                    lastColLenght = data.LastColWidth.Max(x => x) + TextSize / 2;
+                    lastColLenght = data.LastColWidth.Max(x => x) + TextSize/2;
                     LastColLenght = lastColLenght > LastColLenght ? lastColLenght : LastColLenght;
                 }
 
@@ -379,10 +382,10 @@ namespace Orts.Viewer3D.Popups
                     : (Owner.TextFontDefault.Height + 2) * (rowCount + 1);
                 var desiredWidth = FirstColLenght + (LastColLenght * (dieselLocomotivesCount + 1));// interval between firstcol and lastcol
                 var normalMode = normalTextMode && normalVerticalMode;
-                var newHeight = desiredHeight < WindowHeightMin ? desiredHeight + Owner.TextFontDefault.Height * 2
-                    : (int)MathHelper.Clamp(desiredHeight, (normalMode ? WindowHeightMin : 100), WindowHeightMax);
+                var newHeight = desiredHeight < WindowHeightMin? desiredHeight + Owner.TextFontDefault.Height * 2
+                    : (int)MathHelper.Clamp(desiredHeight, ( normalMode? WindowHeightMin : 100 ), WindowHeightMax);
 
-                var newWidth = (int)MathHelper.Clamp(desiredWidth, (normalTextMode ? WindowWidthMin : 100), WindowWidthMax + (Owner.Viewer.DisplaySize.X / 2));
+                var newWidth = (int)MathHelper.Clamp(desiredWidth, (normalTextMode ? WindowWidthMin : 100), WindowWidthMax + (Owner.Viewer.DisplaySize.X/2));
 
                 // Move the dialog up if we're expanding it, or down if not; this keeps the center in the same place.
                 var newTop = Location.Y + (Location.Height - newHeight) / 2;
@@ -481,7 +484,7 @@ namespace Orts.Viewer3D.Popups
 
                     if (label.LastCol != null)
                     {
-                        foreach (string data in label.LastCol)
+                        foreach(string data in label.LastCol)
                         {
                             if (data != null)
                             {
@@ -503,7 +506,7 @@ namespace Orts.Viewer3D.Popups
                 }
 
                 //Set a minimum value for LastColWidth to avoid overlap between time value and clickable symbol
-                if (labels.Count == 1)//&& lastColWidth.Count > 0)
+                if (labels.Count == 1 )//&& lastColWidth.Count > 0)
                 {
                     lastColWidth.Add(labels[0].LastColWidth[0] + (TextSize * 3) + dpiOffset * 10);// time value + clickable symbol
                 }
@@ -646,7 +649,7 @@ namespace Orts.Viewer3D.Popups
                 {
                     var dieselLoco = MSTSDieselLocomotive.GetDpuHeader(normalVerticalMode, numberOfDieselLocomotives, maxNumberOfEngines).Replace("\t", "");
                     string[] dieselLocoHeader = dieselLoco.Split('\n');
-                    string[,] tempStatus = new string[numberOfDieselLocomotives, dieselLocoHeader.Length];
+                    string[,] tempStatus = new string[numberOfDieselLocomotives,dieselLocoHeader.Length];
                     var k = 0;
                     var dpUnitId = 0;
                     var dpUId = -1;

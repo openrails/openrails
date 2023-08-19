@@ -15,6 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
+using ORTS.Common;
+using ORTS.Settings;
+using ORTS.Updater;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -24,11 +29,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
-using ORTS.Common;
-using ORTS.Settings;
-using ORTS.Updater;
 
 namespace Updater
 {

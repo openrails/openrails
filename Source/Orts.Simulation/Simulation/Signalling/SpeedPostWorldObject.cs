@@ -1,5 +1,5 @@
-﻿using System.IO;
-using Orts.Formats.Msts;
+﻿using Orts.Formats.Msts;
+using System.IO;
 
 namespace Orts.Simulation.Signalling
 {

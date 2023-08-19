@@ -45,45 +45,45 @@ namespace Orts.Viewer3D.Popups
 
         static readonly Dictionary<Train.END_AUTHORITY, string> AuthorityLabels = new Dictionary<Train.END_AUTHORITY, string>
         {
-            { Train.END_AUTHORITY.END_OF_TRACK, "End Trck" },
-            { Train.END_AUTHORITY.END_OF_PATH, "End Path" },
-            { Train.END_AUTHORITY.RESERVED_SWITCH, "Switch" },
+			{ Train.END_AUTHORITY.END_OF_TRACK, "End Trck" },
+			{ Train.END_AUTHORITY.END_OF_PATH, "End Path" },
+			{ Train.END_AUTHORITY.RESERVED_SWITCH, "Switch" },
             { Train.END_AUTHORITY.LOOP, "Loop" },
-            { Train.END_AUTHORITY.TRAIN_AHEAD, "TrainAhd" },
-            { Train.END_AUTHORITY.MAX_DISTANCE, "Max Dist" },
-            { Train.END_AUTHORITY.NO_PATH_RESERVED, "No Path" },
+			{ Train.END_AUTHORITY.TRAIN_AHEAD, "TrainAhd" },
+			{ Train.END_AUTHORITY.MAX_DISTANCE, "Max Dist" },
+			{ Train.END_AUTHORITY.NO_PATH_RESERVED, "No Path" },
             { Train.END_AUTHORITY.SIGNAL, "Signal" },
             { Train.END_AUTHORITY.END_OF_AUTHORITY, "End Auth" },
-        };
+		};
 
         static readonly Dictionary<Train.OUTOFCONTROL, string> OutOfControlLabels = new Dictionary<Train.OUTOFCONTROL, string>
         {
-            { Train.OUTOFCONTROL.SPAD, "SPAD" },
-            { Train.OUTOFCONTROL.SPAD_REAR, "SPAD-Rear" },
+			{ Train.OUTOFCONTROL.SPAD, "SPAD" },
+			{ Train.OUTOFCONTROL.SPAD_REAR, "SPAD-Rear" },
             { Train.OUTOFCONTROL.MISALIGNED_SWITCH, "Misalg Sw" },
-            { Train.OUTOFCONTROL.OUT_OF_AUTHORITY, "Off Auth" },
-            { Train.OUTOFCONTROL.OUT_OF_PATH, "Off Path" },
-            { Train.OUTOFCONTROL.SLIPPED_INTO_PATH, "Splipped" },
-            { Train.OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK, "Slipped" },
-            { Train.OUTOFCONTROL.OUT_OF_TRACK, "Off Track" },
+			{ Train.OUTOFCONTROL.OUT_OF_AUTHORITY, "Off Auth" },
+			{ Train.OUTOFCONTROL.OUT_OF_PATH, "Off Path" },
+			{ Train.OUTOFCONTROL.SLIPPED_INTO_PATH, "Splipped" },
+			{ Train.OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK, "Slipped" },
+			{ Train.OUTOFCONTROL.OUT_OF_TRACK, "Off Track" },
             { Train.OUTOFCONTROL.SLIPPED_INTO_TURNTABLE, "Slip Turn" },
-            { Train.OUTOFCONTROL.UNDEFINED, "Undefined" },
-        };
+			{ Train.OUTOFCONTROL.UNDEFINED, "Undefined" },
+		};
 
         public TrackMonitorWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 10, Window.DecorationSize.Y + owner.TextFontDefault.Height * (5 + TrackMonitorHeightInLinesOfText) + ControlLayout.SeparatorSize * 3, Viewer.Catalog.GetString("Track Monitor"))
         {
-            ControlModeLabels = new Dictionary<Train.TRAIN_CONTROL, string>
+            ControlModeLabels = new Dictionary<Train.TRAIN_CONTROL, string> 
             {
-                { Train.TRAIN_CONTROL.AUTO_SIGNAL , Viewer.Catalog.GetString("Auto Signal") },
-                { Train.TRAIN_CONTROL.AUTO_NODE, Viewer.Catalog.GetString("Node") },
-                { Train.TRAIN_CONTROL.MANUAL, Viewer.Catalog.GetString("Manual") },
+			    { Train.TRAIN_CONTROL.AUTO_SIGNAL , Viewer.Catalog.GetString("Auto Signal") },
+			    { Train.TRAIN_CONTROL.AUTO_NODE, Viewer.Catalog.GetString("Node") },
+			    { Train.TRAIN_CONTROL.MANUAL, Viewer.Catalog.GetString("Manual") },
                 { Train.TRAIN_CONTROL.EXPLORER, Viewer.Catalog.GetString("Explorer") },
-                { Train.TRAIN_CONTROL.OUT_OF_CONTROL, Viewer.Catalog.GetString("OutOfControl : ") },
+			    { Train.TRAIN_CONTROL.OUT_OF_CONTROL, Viewer.Catalog.GetString("OutOfControl : ") },
                 { Train.TRAIN_CONTROL.INACTIVE, Viewer.Catalog.GetString("Inactive") },
                 { Train.TRAIN_CONTROL.TURNTABLE, Viewer.Catalog.GetString("Turntable") },
-                { Train.TRAIN_CONTROL.UNDEFINED, Viewer.Catalog.GetString("Unknown") },
-            };
+			    { Train.TRAIN_CONTROL.UNDEFINED, Viewer.Catalog.GetString("Unknown") },
+		    };
         }
 
         public override void TabAction() => Monitor.CycleMode();
@@ -430,7 +430,7 @@ namespace Orts.Viewer3D.Popups
             {
                 istrackColorRed = true;
                 DbfEvalIniOverSpeedTimeS = Orts.MultiPlayer.MPManager.Simulator.ClockTime;
-            }
+            }            
 
             if (istrackColorRed && trackColor != Color.Red)//Debrief Eval
             {
@@ -735,7 +735,7 @@ namespace Orts.Viewer3D.Popups
                 }
             }
             // reverse display of signals to have correct superposition
-            for (int iItems = itemList.Count - 1; iItems >= 0; iItems--)
+            for (int iItems = itemList.Count-1 ; iItems >=0; iItems--)
             {
                 var thisItem = itemList[iItems];
                 switch (thisItem.ItemType)
@@ -864,7 +864,7 @@ namespace Orts.Viewer3D.Popups
                     break;
             }
             var displayItem = SignalMarkers[aspect];
-
+ 
             var displayRequired = false;
             var itemLocation = 0;
             var itemOffset = 0;

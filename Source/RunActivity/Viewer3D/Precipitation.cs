@@ -17,15 +17,16 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
+using Orts.Simulation;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Simulation;
-using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
@@ -84,7 +85,7 @@ namespace Orts.Viewer3D
             // Added random Wind.X value for rain and snow.
             // Max value used by randWind.Next is max value - 1.
             Wind.X = Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? Viewer.Random.Next(2, 6) : Viewer.Random.Next(15, 21);
-
+                                    
             var gameTime = (float)Viewer.Simulator.GameTime;
             Pricipitation.Initialize(Viewer.Simulator.WeatherType, Wind);
             // Camera is null during first initialisation.
@@ -301,7 +302,7 @@ namespace Orts.Viewer3D
         public void DynamicUpdate(WeatherControl weatherControl, Weather weather, Viewer viewer, ref Vector3 wind)
         {
             if (weather.PrecipitationLiquidity == 0 || weather.PrecipitationLiquidity == 1) return;
-            ParticleDuration = ParticleBoxHeightM / ((RainVelocityMpS - SnowVelocityMpS) * weather.PrecipitationLiquidity + SnowVelocityMpS) / ParticleVelocityFactor;
+            ParticleDuration = ParticleBoxHeightM / ((RainVelocityMpS-SnowVelocityMpS) *  weather.PrecipitationLiquidity + SnowVelocityMpS)/ ParticleVelocityFactor;
             wind.X = 18 * weather.PrecipitationLiquidity + 2;
             ParticleDirection = wind;
         }
@@ -505,7 +506,7 @@ namespace Orts.Viewer3D
             SnowTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Snowflake.png"));
             DynamicPrecipitationTexture[0] = SnowTexture;
             DynamicPrecipitationTexture[11] = RainTexture;
-            for (int i = 1; i <= 10; i++)
+            for (int i = 1; i<=10; i++)
             {
                 var path = "Raindrop" + i.ToString() + ".png";
                 DynamicPrecipitationTexture[11 - i] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, path));

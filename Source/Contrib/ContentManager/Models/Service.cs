@@ -15,13 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Formats.Msts;
+using Orts.Parsers.OR;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Orts.Formats.Msts;
-using Orts.Parsers.OR;
 
 namespace ORTS.ContentManager.Models
 {
@@ -103,7 +103,7 @@ namespace ORTS.ContentManager.Models
                     }
                 }
                 ID = serviceColumn.ToString();
-                var timeRE = new Regex(@"^(\d\d):(\d\d)(?:-(\d\d):(\d\d))?");
+                    var timeRE = new Regex(@"^(\d\d):(\d\d)(?:-(\d\d):(\d\d))?");
                 var startTimeMatch = timeRE.Match(file.Strings[startRow][serviceColumn]);
                 if (startTimeMatch.Success)
                 {

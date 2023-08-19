@@ -27,6 +27,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Common;
+using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Viewer3D.RollingStock.SubSystems;
@@ -106,7 +107,7 @@ namespace Orts.Viewer3D.RollingStock
         public MSTSWagonViewer(Viewer viewer, MSTSWagon car)
             : base(viewer, car)
         {
-
+            
             string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
             string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
 
@@ -141,7 +142,7 @@ namespace Orts.Viewer3D.RollingStock
                 // Exhaust for HEP/Power Generator
                 if (emitter.Key.ToLowerInvariant() == "wagongeneratorfx")
                     WagonGenerator.AddRange(emitter.Value);
-
+                
                 foreach (var drawer in WagonGenerator)
                 {
                     drawer.Initialize(dieselTexture);
@@ -244,7 +245,7 @@ namespace Orts.Viewer3D.RollingStock
             // This insection initialises the MSTS style freight animation - can either be for a coal load, which will adjust with usage, or a static animation, such as additional shape.
             if (car.FreightShapeFileName != null)
             {
-
+                
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
 
@@ -706,7 +707,7 @@ namespace Orts.Viewer3D.RollingStock
 
         private void UpdateAnimation(RenderFrame frame, ElapsedTime elapsedTime)
         {
-
+                        
             float distanceTravelledM = 0.0f; // Distance travelled by non-driven wheels
             float distanceTravelledDrivenM = 0.0f;  // Distance travelled by driven wheels
             float AnimationWheelRadiusM = MSTSWagon.WheelRadiusM; // Radius of non driven wheels
@@ -755,16 +756,16 @@ namespace Orts.Viewer3D.RollingStock
 
             // Wheel rotation (animation) - for non-drive wheels in steam locomotives and all wheels in other stock
             if (WheelPartIndexes.Count > 0)
-            {
+             {
                 var wheelCircumferenceM = MathHelper.TwoPi * AnimationWheelRadiusM;
                 var rotationalDistanceR = MathHelper.TwoPi * distanceTravelledM / wheelCircumferenceM;  // in radians
                 WheelRotationR = MathHelper.WrapAngle(WheelRotationR - rotationalDistanceR);
                 var wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
                 foreach (var iMatrix in WheelPartIndexes)
-                {
+                 {
                     TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
-                }
-            }
+                 }
+              }
 
 #if DEBUG_WHEEL_ANIMATION
 
@@ -809,8 +810,8 @@ namespace Orts.Viewer3D.RollingStock
                 FreightShape.Location.TileX = Car.WorldPosition.TileX;
                 FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
 
-                bool SteamAnimShape = false;
-                float FuelControllerLevel = 0.0f;
+                    bool SteamAnimShape = false;
+                    float FuelControllerLevel = 0.0f;
 
                 // For coal load variation on locomotives determine the current fuel level - and whether locomotive is a tender or tank type locomotive.
                 if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon is MSTSSteamLocomotive)
@@ -833,24 +834,24 @@ namespace Orts.Viewer3D.RollingStock
                         {
                             FuelControllerLevel = NonTenderSteamLocomotive.FuelController.CurrentValue;
                             SteamAnimShape = true;
-                        }
+                        } 
                     }
                 }
 
-                // Set height of FAs - if relevant conditions met, use default position co-ords defined above
-                if (FreightShape.XNAMatrices.Length > 0)
-                {
-                    // For tender coal load animation 
-                    if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM && SteamAnimShape)
+                    // Set height of FAs - if relevant conditions met, use default position co-ords defined above
+                    if (FreightShape.XNAMatrices.Length > 0)
                     {
-                        FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimMinLevelM + FuelControllerLevel * (MSTSWagon.FreightAnimMaxLevelM - MSTSWagon.FreightAnimMinLevelM);
+                        // For tender coal load animation 
+                        if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM && SteamAnimShape)
+                        {
+                            FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimMinLevelM + FuelControllerLevel * (MSTSWagon.FreightAnimMaxLevelM - MSTSWagon.FreightAnimMinLevelM);
+                        }
+                        // reproducing MSTS strange behavior; used to display loco crew when attached to tender
+                        else if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender) 
+                        {
+                            FreightShape.Location.XNAMatrix.M42 += MSTSWagon.FreightAnimMaxLevelM;
+                        }
                     }
-                    // reproducing MSTS strange behavior; used to display loco crew when attached to tender
-                    else if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender)
-                    {
-                        FreightShape.Location.XNAMatrix.M42 += MSTSWagon.FreightAnimMaxLevelM;
-                    }
-                }
                 // Display Animation Shape                    
                 FreightShape.PrepareFrame(frame, elapsedTime);
             }
@@ -935,7 +936,7 @@ namespace Orts.Viewer3D.RollingStock
             if (FrontCouplerShape != null && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
             {
                 // Get the movement that would be needed to locate the coupler on the car if they were pointing in the default direction.
-                var displacement = Car.FrontCoupler.Size;
+                var displacement =  Car.FrontCoupler.Size;
                 displacement.Z += (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM - Car.WagonFrontCouplerCurveExtM;
 
                 if (Car.CarAhead != null) // Display animated coupler if there is a car infront of this car
@@ -1186,7 +1187,7 @@ namespace Orts.Viewer3D.RollingStock
             // ToDO - For some reason aligning the coupler with a flipped car introduces a small error in the coupler position such that the couplers between a normal and flipped 
             // car will not align correctly.
             // To correct this "somewhat" a test has been introduced to align coupler location with the previous car. See code above in front coupler.
-
+            
             // Place the coupler in the centre of the car
             var p = new WorldPosition(car.WorldPosition);
             couplerShape.Location.Location = new Vector3(p.Location.X, p.Location.Y, p.Location.Z);
@@ -1231,7 +1232,7 @@ namespace Orts.Viewer3D.RollingStock
             var mRotation = Matrix.CreateRotationY(angle);
 
             // Rotate the coupler to align with the calculated angle direction
-            couplerShape.Location.XNAMatrix = mRotation * couplerShape.Location.XNAMatrix;
+            couplerShape.Location.XNAMatrix = mRotation* couplerShape.Location.XNAMatrix;
 
         }
 
@@ -1255,12 +1256,12 @@ namespace Orts.Viewer3D.RollingStock
 
         }
 
-        /// <summary>
-        /// Rotate the coupler to align with the direction (attitude) of the car.
-        /// </summary>
-        /// <param name="car"></param>
-        /// <param name="couplerShape"></param>
-        private void AlignCouplerWithCar(TrainCar car, AnimatedShape couplerShape)
+    /// <summary>
+    /// Rotate the coupler to align with the direction (attitude) of the car.
+    /// </summary>
+    /// <param name="car"></param>
+    /// <param name="couplerShape"></param>
+    private void AlignCouplerWithCar(TrainCar car, AnimatedShape couplerShape)
         {
 
             var p = new WorldPosition(car.WorldPosition);

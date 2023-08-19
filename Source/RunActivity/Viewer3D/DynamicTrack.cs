@@ -17,13 +17,6 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Xml;
-using System.Xml.Schema;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -31,6 +24,13 @@ using Orts.Parsers.Msts;
 using Orts.Simulation;
 using Orts.Viewer3D.Common;
 using ORTS.Common;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Xml;
+using System.Xml.Schema;
 
 namespace Orts.Viewer3D
 {
@@ -102,7 +102,7 @@ namespace Orts.Viewer3D
                 {   // Both heading and translation change 
                     // nextRoot is found by moving from Point-of-Curve (PC) to
                     // center (O)to Point-of-Tangent (PT).
-                    float radius = subsection.trackSections[0].param2 * Math.Sign(-subsection.trackSections[0].param1); // meters
+                    float radius = subsection.trackSections[0].param2*Math.Sign(-subsection.trackSections[0].param1); // meters
                     Vector3 left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
                     Matrix rot = Matrix.CreateRotationY(-length); // Heading change (rotation about O)
                     // Shared method returns displacement from present world position and, by reference,

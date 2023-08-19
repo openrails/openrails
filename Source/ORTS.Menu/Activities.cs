@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using GNU.Gettext;
 using Orts.Formats.Msts;
+using ORTS.Settings;
 
 namespace ORTS.Menu
 {

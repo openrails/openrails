@@ -4,10 +4,10 @@ using LibAE.Formats;
 
 namespace AEWizard
 {
-    /// <summary>
-    /// Represents a single page within a wizard dialog.
-    /// </summary>
-    public class ActivityDescr : SinglePage
+	/// <summary>
+	/// Represents a single page within a wizard dialog.
+	/// </summary>
+	public class ActivityDescr : SinglePage
     {
         private FlowLayoutPanel panel1;
         private TextBox textBox1;
@@ -20,7 +20,7 @@ namespace AEWizard
 
         public String RoutePath;
         public ActivityInfo activityInfo { get; set; }
-        // ==================================================================
+       // ==================================================================
         // Public Constructors
         // ==================================================================
 
@@ -29,11 +29,11 @@ namespace AEWizard
         /// class.
         /// </summary>
         public ActivityDescr()
-        {
+		{
             // Required for Windows Form Designer support
             InitializeComponent();
-
-        }
+            
+		}
 
         public void completePage()
         {
@@ -43,13 +43,13 @@ namespace AEWizard
         // ==================================================================
         // Protected Properties
         // ==================================================================
-
-
-
+        
+        
+        
         // ==================================================================
         // Private Methods
         // ==================================================================
-
+        
         #region Windows Form Designer generated code
         /// <summary>
         /// Required method for Designer support - do not modify
@@ -158,13 +158,13 @@ namespace AEWizard
             this.ResumeLayout(false);
 
         }
-        #endregion
+		#endregion
 
 
         // ==================================================================
         // Protected Internal Methods
         // ==================================================================
-
+        
         /// <summary>
         /// Called when the page is no longer the active page.
         /// </summary>
@@ -198,7 +198,7 @@ namespace AEWizard
             // Activate the page
             return true;
         }
-
+        
         /// <summary>
         /// Called when the user clicks the Back button in a wizard.
         /// </summary>
@@ -220,7 +220,7 @@ namespace AEWizard
 
             return WizardForm.NextPage;
         }
-
+        
         /// <summary>
         /// Called when the user clicks the Finish button in a wizard.
         /// </summary>
@@ -240,7 +240,7 @@ namespace AEWizard
                 return false;
             return true;
         }
-
+        
         /// <summary>
         /// Called when the user clicks the Next button in a wizard.
         /// </summary>

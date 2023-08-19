@@ -16,7 +16,10 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 
 // <Comment> This file parses only the shape names for temporary speed restrictions; the other shape names are not needed
@@ -24,15 +27,15 @@ using Orts.Parsers.Msts;
 namespace Orts.Formats.Msts
 {
 
-    public class SpeedpostDatFile
-    {
-        public string[] TempSpeedShapeNames = new string[3];
+	public class SpeedpostDatFile
+	{
+		public string [] TempSpeedShapeNames = new string[3];
 
-        public SpeedpostDatFile(string filePath, string shapePath)
-        {
-            using (STFReader stf = new STFReader(filePath, false))
-            {
-                stf.ParseBlock(new STFReader.TokenProcessor[] {
+		public SpeedpostDatFile(string filePath, string shapePath)
+		{
+			using (STFReader stf = new STFReader(filePath, false))
+			{
+				stf.ParseBlock(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("speed_warning_sign_shape", ()=>
                          {
                             var dataItem = stf.ReadStringBlock(null);
@@ -73,8 +76,8 @@ namespace Orts.Formats.Msts
                          }
                          ),
                 });
-            }
-        }
+			}
+		}
 
     } // class SpeedpostDatFile
 }

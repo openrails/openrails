@@ -17,9 +17,6 @@
 
 // This file is the responsibility of the 3D & Environment Team.
 
-using System;
-using System.Diagnostics;   // Used by Trace.Warnings
-using System.IO;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
@@ -27,6 +24,9 @@ using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
+using System;
+using System.Diagnostics;   // Used by Trace.Warnings
+using System.IO;
 
 namespace Orts.Common
 {
@@ -178,103 +178,85 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public sealed class SaveCommand : Command
-    {
+    public sealed class SaveCommand : Command {
         public string FileStem;
 
-        public SaveCommand(CommandLog log, string fileStem)
-            : base(log)
-        {
+        public SaveCommand( CommandLog log, string fileStem ) 
+            : base( log ){
             this.FileStem = fileStem;
             Redo();
         }
 
-        public override void Redo()
-        {
+        public override void Redo() {
             // Redo does nothing as SaveCommand is just a marker and saves the fileStem but is not used during replay to redo the save.
             // Report();
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return base.ToString() + " to file \"" + FileStem + ".replay\"";
         }
     }
 
     // Direction
     [Serializable()]
-    public sealed class ReverserCommand : BooleanCommand
-    {
+    public sealed class ReverserCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
-        public ReverserCommand(CommandLog log, bool toState)
-            : base(log, toState)
-        {
+        public ReverserCommand( CommandLog log, bool toState ) 
+            : base( log, toState ) {
             Redo();
         }
 
-        public override void Redo()
-        {
-            if (ToState)
-            {
-                Receiver.StartReverseIncrease(null);
-            }
-            else
-            {
-                Receiver.StartReverseDecrease(null);
+        public override void Redo() {
+            if( ToState ) {
+                Receiver.StartReverseIncrease( null );
+            } else {
+                Receiver.StartReverseDecrease( null );
             }
             // Report();
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return base.ToString() + " - " + (ToState ? "step forward" : "step back");
         }
     }
 
     [Serializable()]
-    public sealed class ContinuousReverserCommand : ContinuousCommand
-    {
+    public sealed class ContinuousReverserCommand : ContinuousCommand {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
-        public ContinuousReverserCommand(CommandLog log, bool toState, float? target, double startTime)
-            : base(log, toState, target, startTime)
-        {
+        public ContinuousReverserCommand( CommandLog log, bool toState, float? target, double startTime ) 
+            : base( log, toState, target, startTime ) {
             Redo();
         }
 
-        public override void Redo()
-        {
+        public override void Redo() {
             if (Receiver == null) return;
-            Receiver.ReverserChangeTo(ToState, Target);
+            Receiver.ReverserChangeTo( ToState, Target );
             // Report();
         }
     }
 
     // Power : Raise/lower pantograph
     [Serializable()]
-    public sealed class PantographCommand : BooleanCommand
-    {
+    public sealed class PantographCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
         private int item;
 
-        public PantographCommand(CommandLog log, int item, bool toState)
-            : base(log, toState)
-        {
+        public PantographCommand( CommandLog log, int item, bool toState ) 
+            : base( log, toState ) {
             this.item = item;
             Redo();
         }
 
-        public override void Redo()
-        {
+        public override void Redo() {
             if (Receiver != null && Receiver.Train != null)
             {
                 Receiver.Train.SignalEvent((ToState ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), item);
             }
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return base.ToString() + " - " + (ToState ? "raise" : "lower") + ", item = " + item.ToString();
         }
     }
@@ -1162,7 +1144,7 @@ namespace Orts.Common
                         Receiver.SignalEvent(Event.LightSwitchToggle);
                         break;
                 }
-
+                
             }
             else
             {

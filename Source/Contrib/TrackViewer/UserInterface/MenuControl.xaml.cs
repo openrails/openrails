@@ -169,8 +169,7 @@ namespace ORTS.TrackViewer.UserInterface
         void UpdateMenuSettings()
         {
             menuShowPATfile.IsEnabled = !menuEnableEditing.IsChecked;
-            if (!menuShowPATfile.IsEnabled)
-            {
+            if (!menuShowPATfile.IsEnabled) {
                 menuShowPATfile.IsChecked = false;
             }
             if (!menuShowSignals.IsChecked)
@@ -413,7 +412,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// </summary>
         public void PopulateStations()
         {
-
+            
             if (trackViewer.DrawTrackDB == null) return;
             if (trackViewer.DrawTrackDB.StationLocations == null) return;
             List<string> stations = trackViewer.DrawTrackDB.StationLocations.Keys.OrderBy(a => a.ToString()).ToList();
@@ -421,7 +420,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuStationCombobox.ItemsSource = stations;
             menuStationCombobox.SelectedItem = menuStationCombobox.Items.GetItemAt(0).ToString();
         }
-
+        
         /// <summary>
         /// Update the menu to make sure all the platforms are listed
         /// </summary>
@@ -485,7 +484,7 @@ namespace ORTS.TrackViewer.UserInterface
             if (menuStationCombobox.Items.Count > 0)
             {
                 menuStationCombobox.SelectedItem = menuStationCombobox.Items.GetItemAt(0).ToString();
-            }
+            } 
             if (menuPlatformCombobox.Items.Count > 0)
             {
                 menuPlatformCombobox.SelectedItem = menuPlatformCombobox.Items.GetItemAt(0).ToString();
@@ -758,7 +757,7 @@ namespace ORTS.TrackViewer.UserInterface
             }
             UpdateMenuSettings();
         }
-
+        
         /// <summary>
         /// Toggle whether the speedlimits are shown
         /// </summary>
@@ -1085,7 +1084,7 @@ namespace ORTS.TrackViewer.UserInterface
         public void PopulateLanguages()
         {
             comboBoxLanguage.ItemsSource = trackViewer.LanguageManager.Languages;
-            comboBoxLanguage.SelectedValue = LanguageManager.CurrentLanguageCode;
+            comboBoxLanguage.SelectedValue = LanguageManager.CurrentLanguageCode; 
         }
 
         private void ComboBoxLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1196,7 +1195,7 @@ namespace ORTS.TrackViewer.UserInterface
     /// <summary>
     /// Dictionary that supports saving to stored user settings.
     /// </summary>
-    class SaveableSettingsDictionary : Dictionary<string, string>
+    class SaveableSettingsDictionary : Dictionary<string,string>
     {
         /// <summary>
         /// Constructor. Also loads the values from stored settings.
@@ -1245,7 +1244,7 @@ namespace ORTS.TrackViewer.UserInterface
         private static StringCollection ToStringCollection(Dictionary<string, string> dictionary)
         {
             StringCollection result = new StringCollection();
-            foreach (KeyValuePair<string, string> kvp in dictionary)
+            foreach (KeyValuePair<string,string> kvp in dictionary)
             {
                 result.Add(kvp.Key);
                 result.Add(kvp.Value);

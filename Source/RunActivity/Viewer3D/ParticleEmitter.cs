@@ -20,12 +20,14 @@
 // Enable this define to debug the inputs to the particle emitters from other parts of the program.
 //#define DEBUG_EMITTER_INPUT
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Orts.Viewer3D
 {
@@ -209,7 +211,7 @@ namespace Orts.Viewer3D
 
         Viewer viewer;
         GraphicsDevice graphicsDevice;
-
+        
         static float windDisplacementX;
         static float windDisplacementZ;
 
@@ -472,7 +474,7 @@ namespace Orts.Viewer3D
             if (Viewer.Settings.UseMSTSEnv == false)
                 shader.LightVector = Viewer.World.Sky.SolarDirection;
             else
-                shader.LightVector = Viewer.World.MSTSSky.mstsskysolarDirection;
+                shader.LightVector = Viewer.World.MSTSSky.mstsskysolarDirection; 
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;

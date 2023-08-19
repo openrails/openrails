@@ -15,13 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Microsoft.Xna.Framework;
+using Orts.Parsers.Msts;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.Xna.Framework;
-using Orts.Parsers.Msts;
-using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -61,7 +61,7 @@ namespace Orts.Formats.Msts
             }
         }
 
-        public void InsertORSpecificData(string filename, List<TokenID> allowedTokens)
+        public void InsertORSpecificData (string filename, List<TokenID> allowedTokens)
         {
             using (var sbr = SBR.Open(filename))
             {
@@ -176,7 +176,7 @@ namespace Orts.Formats.Msts
             }
         }
 
-        public void InsertORSpecificData(SBR block, string filename, List<TokenID> allowedTokens)
+        public void InsertORSpecificData (SBR block, string filename, List<TokenID> allowedTokens)
         {
             block.VerifyID(TokenID.Tr_Worldfile);
             while (!block.EndOfBlock())
@@ -227,7 +227,7 @@ namespace Orts.Formats.Msts
                                         }
                                     }
                                 }
-
+ 
                             }
                             subBlock.EndOfBlock();
                         }
@@ -333,14 +333,13 @@ namespace Orts.Formats.Msts
 
             ReadBlock(block);
         }
-
+            
         public override void AddOrModifyObj(SBR subBlock)
         {
             switch (subBlock.ID)
             {
                 case TokenID.SpeedRange: SpeedRange = new SpeedRangeItem(subBlock); break;
-                case TokenID.PickupType:
-                    PickupType = subBlock.ReadUInt();
+                case TokenID.PickupType: PickupType = subBlock.ReadUInt();
                     subBlock.Skip(); // Discard the 2nd value (0 or 1 but significance is not known)
                     break;
                 case TokenID.ORTSMaxStackedContainers: MaxStackedContainers = subBlock.ReadInt(); break;
@@ -464,7 +463,7 @@ namespace Orts.Formats.Msts
                             case TokenID.Position: Position = subBlock.ReadVector3(); break;
                             case TokenID.MaxStackedContainers: MaxStackedContainers = subBlock.ReadInt(); break;
                             case TokenID.Length: Length = subBlock.ReadFloat(); break;
-                            case TokenID.Flipped: subBlock.ReadInt(); Flipped = true; break;
+                            case TokenID.Flipped: subBlock.ReadInt();  Flipped = true; break;
                             default: subBlock.Skip(); break;
                         }
                     }
@@ -667,7 +666,7 @@ namespace Orts.Formats.Msts
         {
             StaticDetailLevel = detailLevel;
 
-            ReadBlock(block);
+            ReadBlock (block);
 
             IsYard = TreeTexture == null;
         }
@@ -776,8 +775,8 @@ namespace Orts.Formats.Msts
             ReadBlock(block);
 
         }
-        // TODO verify that we got all needed parameters otherwise null pointer failures will occur
-        // TODO, do this for all objects that iterate using a while loop
+            // TODO verify that we got all needed parameters otherwise null pointer failures will occur
+            // TODO, do this for all objects that iterate using a while loop
 
         public override void AddOrModifyObj(SBR subBlock)
         {
@@ -792,7 +791,7 @@ namespace Orts.Formats.Msts
                 case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
                 case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
                 case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
-                default: subBlock.Skip(); break;
+                default: subBlock.Skip(); break; 
             }
         }
 
@@ -879,28 +878,27 @@ namespace Orts.Formats.Msts
             ReadBlock(block);
         }
 
-        public override void AddOrModifyObj(SBR subBlock)
+    public override void AddOrModifyObj(SBR subBlock)
+    {
+        switch (subBlock.ID)
         {
-            switch (subBlock.ID)
-            {
-                case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-                case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock); break;
-                case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;
-                case TokenID.LevelCrData:
-                    levelCrData = new LevelCrData(subBlock);
-                    visible = (levelCrData.crData1 & 0x1) == 0;
-                    silent = !visible || (levelCrData.crData1 & 0x6) == 0x6;
-                    break;
-                case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock); break;
-                case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
-                case TokenID.FileName: FileName = subBlock.ReadString(); break;
-                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                case TokenID.ORTSSoundFileName: SoundFileName = subBlock.ReadString(); break;
-                default: subBlock.Skip(); break;
-            }
+            case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+            case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock); break;
+            case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;
+            case TokenID.LevelCrData: levelCrData = new LevelCrData(subBlock);
+                visible = (levelCrData.crData1 & 0x1) == 0;
+                silent = !visible || (levelCrData.crData1 & 0x6) == 0x6;
+                break;
+            case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock); break;
+            case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
+            case TokenID.FileName: FileName = subBlock.ReadString(); break;
+            case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+            case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+            case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+            case TokenID.ORTSSoundFileName: SoundFileName = subBlock.ReadString(); break;
+            default: subBlock.Skip(); break;
         }
+    }
 
         public class LevelCrParameters
         {
@@ -1004,10 +1002,10 @@ namespace Orts.Formats.Msts
             CarFrequency = 5.0f;
             CarAvSpeed = 20.0f;
 
-            ReadBlock(block);
+            ReadBlock (block);
         }
 
-        public override void AddOrModifyObj(SBR subBlock)
+        public override void AddOrModifyObj (SBR subBlock)
         {
             switch (subBlock.ID)
             {
@@ -1051,7 +1049,7 @@ namespace Orts.Formats.Msts
                 block.VerifyEndOfBlock();
             }
         }
-    }
+     }
 
     /// <summary>
     /// Super-class for similar track items SidingObj and PlatformObj.
@@ -1190,7 +1188,7 @@ namespace Orts.Formats.Msts
 
         public virtual void AddOrModifyObj(SBR subBlock)
         {
-
+            
         }
 
         public void ReadBlock(SBR block)

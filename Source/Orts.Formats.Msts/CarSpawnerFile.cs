@@ -16,8 +16,10 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 
 
@@ -91,17 +93,17 @@ namespace Orts.Formats.Msts
             dist = stf.ReadFloat(STFReader.UNITS.Distance, null);
             stf.SkipRestOfBlock();
         }
-    }
+    } 
 
-    public class CarSpawnerFile
-    {
-        public CarSpawnerFile(string filePath, string shapePath, List<CarSpawnerList> carSpawnerLists)
-        {
-            using (STFReader stf = new STFReader(filePath, false))
-            {
+	public class CarSpawnerFile
+	{
+		public CarSpawnerFile(string filePath, string shapePath, List<CarSpawnerList> carSpawnerLists)
+		{
+			using (STFReader stf = new STFReader(filePath, false))
+			{
                 var carSpawnerBlock = new CarSpawnerBlock(stf, shapePath, carSpawnerLists, "Default");
-            }
-        }
-    }
+			}
+		}
+	}
 }
 

@@ -17,21 +17,21 @@
 
 // This file is the responsibility of the 3D & Environment Team.
 
-using System;
 using Orts.Common;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
+using System;
 
 namespace Orts.Viewer3D
 {
     [Serializable()]
     public abstract class ActivityCommand : PausedCommand
-    {
+        {
         public static ActivityWindow Receiver { get; set; }
         string EventNameLabel;
 
-        public ActivityCommand(CommandLog log, string eventNameLabel, double pauseDurationS)
+        public ActivityCommand( CommandLog log, string eventNameLabel, double pauseDurationS )
             : base(log, pauseDurationS)
         {
             EventNameLabel = eventNameLabel;
@@ -61,7 +61,7 @@ namespace Orts.Viewer3D
         public override void Redo()
         {
             if (Receiver == null) return;
-            Receiver.ImmediateRefill();
+            Receiver.ImmediateRefill(); 
             // Report();
         }
     }
@@ -105,7 +105,7 @@ namespace Orts.Viewer3D
         {
             if (ToState)
             {
-                var finalReceiver = Receiver.Camera is ThreeDimCabCamera ?
+                var finalReceiver = Receiver.Camera  is ThreeDimCabCamera ?
                     (Receiver.PlayerLocomotiveViewer as MSTSLocomotiveViewer).ThreeDimentionCabRenderer :
                     (Receiver.PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer;
                 finalReceiver.ActiveScreen[display] = screen;
@@ -135,7 +135,7 @@ namespace Orts.Viewer3D
             Receiver.ChangeCab();
             // Report();
         }
-    }
+        }
 
     [Serializable()]
     public sealed class ToggleSwitchAheadCommand : Command
@@ -153,7 +153,7 @@ namespace Orts.Viewer3D
             Receiver.ToggleSwitchAhead();
             // Report();
         }
-    }
+        }
 
     [Serializable()]
     public sealed class ToggleSwitchBehindCommand : Command
@@ -171,14 +171,14 @@ namespace Orts.Viewer3D
             Receiver.ToggleSwitchBehind();
             // Report();
         }
-    }
+        }
 
     [Serializable()]
     public sealed class ToggleAnySwitchCommand : IndexCommand
-    {
+        {
         public static Viewer Receiver { get; set; }
 
-        public ToggleAnySwitchCommand(CommandLog log, int index)
+        public ToggleAnySwitchCommand( CommandLog log, int index )
             : base(log, index)
         {
             Redo();
@@ -197,7 +197,7 @@ namespace Orts.Viewer3D
         public static Viewer Receiver { get; set; }
         int CarPosition;    // 0 for head of train
 
-        public UncoupleCommand(CommandLog log, int carPosition)
+        public UncoupleCommand( CommandLog log, int carPosition ) 
             : base(log)
         {
             CarPosition = carPosition;
@@ -206,7 +206,7 @@ namespace Orts.Viewer3D
 
         public override void Redo()
         {
-            Receiver.UncoupleBehind(CarPosition);
+            Receiver.UncoupleBehind( CarPosition );
             // Report();
         }
 
@@ -237,7 +237,7 @@ namespace Orts.Viewer3D
     [Serializable()]
     public sealed class ResumeActivityCommand : ActivityCommand
     {
-        public ResumeActivityCommand(CommandLog log, string eventNameLabel, double pauseDurationS)
+        public ResumeActivityCommand( CommandLog log, string eventNameLabel, double pauseDurationS )
             : base(log, eventNameLabel, pauseDurationS)
         {
             Redo();
@@ -253,12 +253,12 @@ namespace Orts.Viewer3D
     [Serializable()]
     public sealed class CloseAndResumeActivityCommand : ActivityCommand
     {
-        public CloseAndResumeActivityCommand(CommandLog log, string eventNameLabel, double pauseDurationS)
+        public CloseAndResumeActivityCommand( CommandLog log, string eventNameLabel, double pauseDurationS )
             : base(log, eventNameLabel, pauseDurationS)
         {
             Redo();
         }
-
+    
         public override void Redo()
         {
             Receiver.CloseBox();
@@ -285,7 +285,7 @@ namespace Orts.Viewer3D
     [Serializable()]
     public sealed class QuitActivityCommand : ActivityCommand
     {
-        public QuitActivityCommand(CommandLog log, string eventNameLabel, double pauseDurationS)
+        public QuitActivityCommand( CommandLog log, string eventNameLabel, double pauseDurationS )
             : base(log, eventNameLabel, pauseDurationS)
         {
             Redo();
@@ -297,13 +297,13 @@ namespace Orts.Viewer3D
             // Report();
         }
     }
-
+    
     [Serializable()]
     public abstract class UseCameraCommand : CameraCommand
     {
         public static Viewer Receiver { get; set; }
 
-        public UseCameraCommand(CommandLog log)
+        public UseCameraCommand( CommandLog log )
             : base(log)
         {
         }
@@ -313,7 +313,7 @@ namespace Orts.Viewer3D
     public sealed class UseCabCameraCommand : UseCameraCommand
     {
 
-        public UseCabCameraCommand(CommandLog log)
+        public UseCabCameraCommand( CommandLog log ) 
             : base(log)
         {
             Redo();
@@ -322,24 +322,24 @@ namespace Orts.Viewer3D
         public override void Redo() => Receiver.ActivateCabCamera();
     }
 
-    [Serializable()]
-    public sealed class ToggleThreeDimensionalCabCameraCommand : UseCameraCommand
-    {
+	[Serializable()]
+	public sealed class ToggleThreeDimensionalCabCameraCommand : UseCameraCommand
+	{
 
-        public ToggleThreeDimensionalCabCameraCommand(CommandLog log)
-            : base(log)
-        {
-            Redo();
-        }
+		public ToggleThreeDimensionalCabCameraCommand(CommandLog log)
+			: base(log)
+		{
+			Redo();
+		}
 
         public override void Redo() => Receiver.ToggleCabCameraView();
-    }
-
-    [Serializable()]
+	}
+	
+	[Serializable()]
     public sealed class UseFrontCameraCommand : UseCameraCommand
     {
 
-        public UseFrontCameraCommand(CommandLog log)
+        public UseFrontCameraCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -356,7 +356,7 @@ namespace Orts.Viewer3D
     public sealed class UseBackCameraCommand : UseCameraCommand
     {
 
-        public UseBackCameraCommand(CommandLog log)
+        public UseBackCameraCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -373,7 +373,7 @@ namespace Orts.Viewer3D
     public sealed class UseHeadOutForwardCameraCommand : UseCameraCommand
     {
 
-        public UseHeadOutForwardCameraCommand(CommandLog log)
+        public UseHeadOutForwardCameraCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -409,7 +409,7 @@ namespace Orts.Viewer3D
             Receiver.FreeRoamCamera.Activate();
         }
     }
-
+    
     [Serializable()]
     public sealed class UsePreviousFreeRoamCameraCommand : UseCameraCommand
     {
@@ -425,12 +425,12 @@ namespace Orts.Viewer3D
             Receiver.ChangeToPreviousFreeRoamCamera();
         }
     }
-
+    
     [Serializable()]
     public sealed class UseHeadOutBackCameraCommand : UseCameraCommand
     {
 
-        public UseHeadOutBackCameraCommand(CommandLog log)
+        public UseHeadOutBackCameraCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -447,7 +447,7 @@ namespace Orts.Viewer3D
     public sealed class UseBrakemanCameraCommand : UseCameraCommand
     {
 
-        public UseBrakemanCameraCommand(CommandLog log)
+        public UseBrakemanCameraCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -464,7 +464,7 @@ namespace Orts.Viewer3D
     public sealed class UsePassengerCameraCommand : UseCameraCommand
     {
 
-        public UsePassengerCameraCommand(CommandLog log)
+        public UsePassengerCameraCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -481,7 +481,7 @@ namespace Orts.Viewer3D
     public sealed class UseTracksideCameraCommand : UseCameraCommand
     {
 
-        public UseTracksideCameraCommand(CommandLog log)
+        public UseTracksideCameraCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -517,7 +517,7 @@ namespace Orts.Viewer3D
         public static Viewer Receiver { get; set; }
         protected double EndTime;
 
-        public MoveCameraCommand(CommandLog log, double startTime, double endTime)
+        public MoveCameraCommand( CommandLog log, double startTime, double endTime )
             : base(log)
         {
             Time = startTime;
@@ -526,7 +526,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            return base.ToString() + " - " + String.Format("{0}", FormatStrings.FormatPreciseTime(EndTime));
+            return base.ToString() + " - " + String.Format( "{0}", FormatStrings.FormatPreciseTime( EndTime ) );
         }
     }
 
@@ -535,7 +535,7 @@ namespace Orts.Viewer3D
     {
         float RotationXRadians;
 
-        public CameraRotateUpDownCommand(CommandLog log, double startTime, double endTime, float rx)
+        public CameraRotateUpDownCommand( CommandLog log, double startTime, double endTime, float rx )
             : base(log, startTime, endTime)
         {
             RotationXRadians = rx;
@@ -555,7 +555,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(", {0}", RotationXRadians);
+            return base.ToString() + String.Format( ", {0}", RotationXRadians );
         }
     }
 
@@ -564,7 +564,7 @@ namespace Orts.Viewer3D
     {
         float RotationYRadians;
 
-        public CameraRotateLeftRightCommand(CommandLog log, double startTime, double endTime, float ry)
+        public CameraRotateLeftRightCommand( CommandLog log, double startTime, double endTime, float ry )
             : base(log, startTime, endTime)
         {
             RotationYRadians = ry;
@@ -584,7 +584,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(", {0}", RotationYRadians);
+            return base.ToString() + String.Format( ", {0}", RotationYRadians );
         }
     }
 
@@ -597,7 +597,7 @@ namespace Orts.Viewer3D
         float RotationXRadians;
         float RotationYRadians;
 
-        public CameraMouseRotateCommand(CommandLog log, double startTime, double endTime, float rx, float ry)
+        public CameraMouseRotateCommand( CommandLog log, double startTime, double endTime, float rx, float ry )
             : base(log, startTime, endTime)
         {
             RotationXRadians = rx;
@@ -619,7 +619,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(", {0} {1} {2}", EndTime, RotationXRadians, RotationYRadians);
+            return base.ToString() + String.Format( ", {0} {1} {2}", EndTime, RotationXRadians, RotationYRadians );
         }
     }
 
@@ -628,7 +628,7 @@ namespace Orts.Viewer3D
     {
         float XRadians;
 
-        public CameraXCommand(CommandLog log, double startTime, double endTime, float xr)
+        public CameraXCommand( CommandLog log, double startTime, double endTime, float xr )
             : base(log, startTime, endTime)
         {
             XRadians = xr;
@@ -648,7 +648,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(", {0}", XRadians);
+            return base.ToString() + String.Format( ", {0}", XRadians );
         }
     }
 
@@ -657,7 +657,7 @@ namespace Orts.Viewer3D
     {
         float YRadians;
 
-        public CameraYCommand(CommandLog log, double startTime, double endTime, float yr)
+        public CameraYCommand( CommandLog log, double startTime, double endTime, float yr )
             : base(log, startTime, endTime)
         {
             YRadians = yr;
@@ -677,7 +677,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(", {0}", YRadians);
+            return base.ToString() + String.Format( ", {0}", YRadians );
         }
     }
 
@@ -686,7 +686,7 @@ namespace Orts.Viewer3D
     {
         float ZRadians;
 
-        public CameraZCommand(CommandLog log, double startTime, double endTime, float zr)
+        public CameraZCommand( CommandLog log, double startTime, double endTime, float zr )
             : base(log, startTime, endTime)
         {
             ZRadians = zr;
@@ -705,45 +705,45 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(", {0}", ZRadians);
+            return base.ToString() + String.Format( ", {0}", ZRadians );
         }
     }
 
-    [Serializable()]
-    public sealed class CameraMoveXYZCommand : MoveCameraCommand
-    {
-        float X, Y, Z;
+	[Serializable()]
+	public sealed class CameraMoveXYZCommand : MoveCameraCommand
+	{
+		float X, Y, Z;
 
         public CameraMoveXYZCommand(CommandLog log, double startTime, double endTime, float xr, float yr, float zr)
-            : base(log, startTime, endTime)
-        {
-            X = xr; Y = yr; Z = zr;
-            Redo();
-        }
+			: base(log, startTime, endTime)
+		{
+			X = xr; Y = yr; Z = zr;
+			Redo();
+		}
 
-        public override void Redo()
-        {
-            if (Receiver.Camera is ThreeDimCabCamera)
-            {
-                var c = Receiver.Camera as ThreeDimCabCamera;
-                c.MoveCameraXYZ(X, Y, Z);
-                c.EndTime = EndTime;
-            }
-            // Report();
-        }
+		public override void Redo()
+		{
+			if (Receiver.Camera is ThreeDimCabCamera)
+			{
+				var c = Receiver.Camera as ThreeDimCabCamera;
+				c.MoveCameraXYZ(X, Y, Z);
+				c.EndTime = EndTime;
+			}
+			// Report();
+		}
 
-        public override string ToString()
-        {
-            return base.ToString() + String.Format(", {0}", X);
-        }
-    }
+		public override string ToString()
+		{
+			return base.ToString() + String.Format(", {0}", X);
+		}
+	}
 
-    [Serializable()]
+	[Serializable()]
     public sealed class TrackingCameraXCommand : MoveCameraCommand
     {
         float PositionXRadians;
 
-        public TrackingCameraXCommand(CommandLog log, double startTime, double endTime, float rx)
+        public TrackingCameraXCommand( CommandLog log, double startTime, double endTime, float rx )
             : base(log, startTime, endTime)
         {
             PositionXRadians = rx;
@@ -763,7 +763,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(", {0}", PositionXRadians);
+            return base.ToString() + String.Format( ", {0}", PositionXRadians );
         }
     }
 
@@ -772,7 +772,7 @@ namespace Orts.Viewer3D
     {
         float PositionYRadians;
 
-        public TrackingCameraYCommand(CommandLog log, double startTime, double endTime, float ry)
+        public TrackingCameraYCommand( CommandLog log, double startTime, double endTime, float ry )
             : base(log, startTime, endTime)
         {
             PositionYRadians = ry;
@@ -792,7 +792,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(", {0}", PositionYRadians);
+            return base.ToString() + String.Format( ", {0}", PositionYRadians );
         }
     }
 
@@ -801,7 +801,7 @@ namespace Orts.Viewer3D
     {
         float PositionDistanceMetres;
 
-        public TrackingCameraZCommand(CommandLog log, double startTime, double endTime, float d)
+        public TrackingCameraZCommand( CommandLog log, double startTime, double endTime, float d )
             : base(log, startTime, endTime)
         {
             PositionDistanceMetres = d;
@@ -821,7 +821,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(", {0}", PositionDistanceMetres);
+            return base.ToString() + String.Format( ", {0}", PositionDistanceMetres );
         }
     }
 
@@ -829,7 +829,7 @@ namespace Orts.Viewer3D
     public sealed class NextCarCommand : UseCameraCommand
     {
 
-        public NextCarCommand(CommandLog log)
+        public NextCarCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -850,7 +850,7 @@ namespace Orts.Viewer3D
     public sealed class PreviousCarCommand : UseCameraCommand
     {
 
-        public PreviousCarCommand(CommandLog log)
+        public PreviousCarCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -871,7 +871,7 @@ namespace Orts.Viewer3D
     public sealed class FirstCarCommand : UseCameraCommand
     {
 
-        public FirstCarCommand(CommandLog log)
+        public FirstCarCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -892,7 +892,7 @@ namespace Orts.Viewer3D
     public sealed class LastCarCommand : UseCameraCommand
     {
 
-        public LastCarCommand(CommandLog log)
+        public LastCarCommand( CommandLog log )
             : base(log)
         {
             Redo();
@@ -968,7 +968,7 @@ namespace Orts.Viewer3D
         }
     }
 
-    [Serializable()]
+   [Serializable()]
     public sealed class ToggleBrowseForwardsCommand : UseCameraCommand
     {
 
