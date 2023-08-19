@@ -159,7 +159,7 @@
             this.resLabel.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.resLabel.Location = new System.Drawing.Point(887, 35);
             this.resLabel.Name = "resLabel";
-            this.resLabel.Size = new System.Drawing.Size(19, 16);
+            this.resLabel.Size = new System.Drawing.Size(18, 16);
             this.resLabel.TabIndex = 8;
             this.resLabel.Text = "m";
             // 
@@ -477,7 +477,7 @@
             this.lblSimulationTimeText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblSimulationTimeText.Location = new System.Drawing.Point(5, 34);
             this.lblSimulationTimeText.Name = "lblSimulationTimeText";
-            this.lblSimulationTimeText.Size = new System.Drawing.Size(104, 16);
+            this.lblSimulationTimeText.Size = new System.Drawing.Size(103, 16);
             this.lblSimulationTimeText.TabIndex = 36;
             this.lblSimulationTimeText.Text = "Simulation Time";
             this.lblSimulationTimeText.Visible = false;
@@ -488,7 +488,7 @@
             this.lblSimulationTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblSimulationTime.Location = new System.Drawing.Point(115, 34);
             this.lblSimulationTime.Name = "lblSimulationTime";
-            this.lblSimulationTime.Size = new System.Drawing.Size(101, 16);
+            this.lblSimulationTime.Size = new System.Drawing.Size(100, 16);
             this.lblSimulationTime.TabIndex = 37;
             this.lblSimulationTime.Text = "SimulationTime";
             this.lblSimulationTime.Visible = false;
@@ -677,7 +677,7 @@
             // lblInstruction1
             // 
             this.lblInstruction1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblInstruction1.Location = new System.Drawing.Point(8, 672);
+            this.lblInstruction1.Location = new System.Drawing.Point(8, 709);
             this.lblInstruction1.Name = "lblInstruction1";
             this.lblInstruction1.Padding = new System.Windows.Forms.Padding(3);
             this.lblInstruction1.Size = new System.Drawing.Size(327, 22);
@@ -749,7 +749,7 @@
             // lblInstruction2
             // 
             this.lblInstruction2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblInstruction2.Location = new System.Drawing.Point(8, 693);
+            this.lblInstruction2.Location = new System.Drawing.Point(8, 730);
             this.lblInstruction2.Name = "lblInstruction2";
             this.lblInstruction2.Padding = new System.Windows.Forms.Padding(3);
             this.lblInstruction2.Size = new System.Drawing.Size(327, 21);
@@ -760,7 +760,7 @@
             // lblInstruction3
             // 
             this.lblInstruction3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblInstruction3.Location = new System.Drawing.Point(8, 714);
+            this.lblInstruction3.Location = new System.Drawing.Point(8, 751);
             this.lblInstruction3.Name = "lblInstruction3";
             this.lblInstruction3.Padding = new System.Windows.Forms.Padding(3);
             this.lblInstruction3.Size = new System.Drawing.Size(327, 21);
@@ -771,7 +771,7 @@
             // lblInstruction4
             // 
             this.lblInstruction4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblInstruction4.Location = new System.Drawing.Point(8, 735);
+            this.lblInstruction4.Location = new System.Drawing.Point(8, 772);
             this.lblInstruction4.Name = "lblInstruction4";
             this.lblInstruction4.Padding = new System.Windows.Forms.Padding(3);
             this.lblInstruction4.Size = new System.Drawing.Size(327, 21);
@@ -799,7 +799,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(923, 768);
+            this.ClientSize = new System.Drawing.Size(923, 749);
             this.Controls.Add(this.cbShowPlatforms);
             this.Controls.Add(this.lblInstruction4);
             this.Controls.Add(this.lblInstruction3);

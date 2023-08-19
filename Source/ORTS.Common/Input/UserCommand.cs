@@ -24,6 +24,7 @@
         [GetString("Game Change Cab")] GameChangeCab,
         [GetString("Game Request Control")] GameRequestControl,
         [GetString("Game Multi Player Dispatcher")] GameMultiPlayerDispatcher,
+        [GetString("Game Multi Player Dispatcher Beta")] GameMultiPlayerDispatcherBeta,
         [GetString("Game Multi Player Texting")] GameMultiPlayerTexting,
         [GetString("Game Switch Manual Mode")] GameSwitchManualMode,
         [GetString("Game Reset Out Of Control Mode")] GameResetOutOfControlMode,

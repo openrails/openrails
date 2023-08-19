@@ -192,6 +192,7 @@ namespace Orts.Viewer3D
         public Vector3 FarPoint { get; private set; }
 
         public bool DebugViewerEnabled { get; set; }
+        public bool DebugViewerBetaEnabled { get; set; }
         public bool SoundDebugFormEnabled { get; set; }
 
         public TRPFile TRP; // Track profile file
@@ -1170,6 +1171,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.GameResetOutOfControlMode)) new ResetOutOfControlModeCommand(Log);
 
             if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
+            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcherBeta)) { DebugViewerBetaEnabled = !DebugViewerBetaEnabled; return; }
             if (UserInput.IsPressed(UserCommand.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
 
             if (UserInput.IsPressed(UserCommand.CameraJumpSeeSwitch))
@@ -1306,9 +1308,10 @@ namespace Orts.Viewer3D
             //}
 
             //in the dispatcher window, when one clicks a train and "See in Game", will jump to see that train
-            if (Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true)
+            if ((Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true) || (Program.DebugViewerBeta != null && Program.DebugViewerBeta.ClickedTrain == true))
             {
                 Program.DebugViewer.ClickedTrain = false;
+                Program.DebugViewerBeta.ClickedTrain = false;
                 if (SelectedTrain != Program.DebugViewer.PickedTrain)
                 {
                     SelectedTrain = Program.DebugViewer.PickedTrain;

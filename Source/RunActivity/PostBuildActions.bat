@@ -1,3 +1,5 @@
+EXIT
+
 CD ..\..\
 IF EXIST "Program\Content\Web" RMDIR "Program\Content\Web" /S /Q
 IF NOT EXIST "Program\Content\Web" MKDIR "Program\Content\Web"
