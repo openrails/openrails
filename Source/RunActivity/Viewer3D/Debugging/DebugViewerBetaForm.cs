@@ -61,11 +61,11 @@ namespace Orts.Viewer3D.Debugging
         /// contains the last position of the mouse
         /// </summary>
         private System.Drawing.Point LastCursorPosition = new System.Drawing.Point();
-        public Pen redPen = new Pen(Color.Red);
-        public Pen greenPen = new Pen(Color.Green);
-        public Pen orangePen = new Pen(Color.Orange);
+        public Pen redPen = new Pen(Color.FromArgb(244, 67, 54));
+        public Pen greenPen = new Pen(Color.FromArgb(76, 175, 80));
+        public Pen orangePen = new Pen(Color.FromArgb(255, 235, 59));
         public Pen trainPen = new Pen(Color.DarkGreen);
-        public Pen pathPen = new Pen(Color.DeepPink);
+        public Pen pathPen = new Pen(Color.FromArgb(52, 152, 219));
         public Pen grayPen = new Pen(Color.Gray);
         public Pen PlatformPen = new Pen(Color.Blue);
         public Pen TrackPen = new Pen(Color.FromArgb(46, 64, 83));
@@ -140,6 +140,10 @@ namespace Orts.Viewer3D.Debugging
                 messagesPanel.Visible = true;
                 multiplayerSettingsPanel.Visible = true;
             }
+
+            float[] dashPattern = { 4, 2 };
+            ZoomTargetPen.DashPattern = dashPattern;
+            pathPen.DashPattern = dashPattern;
         }
 
         #region initData
@@ -391,11 +395,6 @@ namespace Orts.Viewer3D.Debugging
 
                 grayPen.Width = greenPen.Width = orangePen.Width = redPen.Width = penWidth;
                 pathPen.Width = penWidth * 2;
-
-                float[] dashPattern = { 4, 2 };
-                ZoomTargetPen.DashPattern = dashPattern;
-
-
 
                 var forwardDist = 100 / xScale; if (forwardDist < 5) forwardDist = 5;
 
@@ -967,9 +966,9 @@ namespace Orts.Viewer3D.Debugging
                 var scaledItem = new PointF() { X = x, Y = y };
 
                 if (sw.Item.TrJunctionNode.SelectedRoute == sw.main)
-                    g.FillEllipse(Brushes.Black, DispatchViewer.GetRect(scaledItem, width));
+                    g.FillEllipse(new SolidBrush(Color.FromArgb(93, 64, 55)), DispatchViewer.GetRect(scaledItem, width));
                 else
-                    g.FillEllipse(Brushes.Gray, DispatchViewer.GetRect(scaledItem, width));
+                    g.FillEllipse(new SolidBrush(Color.FromArgb(161, 136, 127)), DispatchViewer.GetRect(scaledItem, width));
 
                 sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
                 switchItemsDrawn.Add(sw);
@@ -994,19 +993,19 @@ namespace Orts.Viewer3D.Debugging
                 s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
                 if (s.Signal.isSignalNormal())
                 {
-                    var color = Brushes.Lime; // bright colour for readability
+                    var color = new SolidBrush(Color.FromArgb(76, 175, 80));
                     var pen = greenPen;
                     if (s.IsProceed == 0)
                     {
                     }
                     else if (s.IsProceed == 1)
                     {
-                        color = Brushes.Yellow; // bright colour for readbility
+                        color = new SolidBrush(Color.FromArgb(255, 235, 59));
                         pen = orangePen;
                     }
                     else
                     {
-                        color = Brushes.Red;
+                        color = new SolidBrush(Color.FromArgb(244, 67, 54));
                         pen = redPen;
                     }
                     g.FillEllipse(color, DispatchViewer.GetRect(scaledItem, width));
