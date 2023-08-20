@@ -1025,7 +1025,7 @@ namespace Orts.Viewer3D.Debugging
         {
             if (!showSignalStateCheckbox.Checked)
                 return;
-            
+
             var item = sw.Item as SignalItem;
             var trainNumber = sw.Signal?.enabledTrain?.Train?.Number;
             var trainString = (trainNumber == null) ? "" : $" train: {trainNumber}";
@@ -1041,7 +1041,7 @@ namespace Orts.Viewer3D.Debugging
                 if (scaledItem.Y >= 0f) // -1 indicates no free slot to draw label
                     g.DrawString(text, SignalFont, SignalBrush, scaledItem);
             }
-            
+
         }
 
         private void ShowSidingLabels(Graphics g)
@@ -1674,7 +1674,7 @@ namespace Orts.Viewer3D.Debugging
 
         private void UnHandleItemPick()
         {
-            //boxSetSignal.Visible = false;
+            setSignalMenu.Visible = false;
             setSwitchMenu.Visible = false;
         }
 
@@ -1684,25 +1684,16 @@ namespace Orts.Viewer3D.Debugging
                 return;
             setSwitchMenu.Visible = false;
             if (signalPickedItem == null) return;
-            var y = LastCursorPosition.Y;
-            if (LastCursorPosition.Y < 100) y = 100;
-            if (LastCursorPosition.Y > mapCanvas.Size.Height - 100) y = mapCanvas.Size.Height - 100;
 
-            /*if (boxSetSignal.Items.Count == 5)
-                boxSetSignal.Items.RemoveAt(4);
+            allowCallOnToolStripMenuItem.Enabled = false;
+            if (signalPickedItem.Signal.enabledTrain != null && signalPickedItem.Signal.CallOnEnabled && !signalPickedItem.Signal.CallOnManuallyAllowed)
+                allowCallOnToolStripMenuItem.Enabled = true;
 
-            if (signalPickedItem.Signal.enabledTrain != null && signalPickedItem.Signal.CallOnEnabled)
-            {
-                if (!signalPickedItem.Signal.CallOnManuallyAllowed)
-                    boxSetSignal.Items.Add("Allow call on");
-            }
-
-            boxSetSignal.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);
-            boxSetSignal.Enabled = true;
-            boxSetSignal.Focus();
-            boxSetSignal.SelectedIndex = -1;
-            boxSetSignal.Visible = true;
-            return;*/
+            setSignalMenu.Show(Cursor.Position);
+            setSignalMenu.Enabled = true;
+            setSignalMenu.Focus();
+            setSignalMenu.Visible = true;
+            return;
         }
 
         private void HandlePickedSwitch()
@@ -1710,13 +1701,106 @@ namespace Orts.Viewer3D.Debugging
             if (MPManager.IsClient() && !MPManager.Instance().AmAider)
                 return;//normal client not server
 
-            //boxSetSignal.Visible = false;
+            setSignalMenu.Visible = false;
             if (switchPickedItem == null) return;
             setSwitchMenu.Show(Cursor.Position);
             setSwitchMenu.Enabled = true;
             setSwitchMenu.Focus();
             setSwitchMenu.Visible = true;
             return;
+        }
+
+        private void setSignalMenu_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (signalPickedItem == null)
+            {
+                UnHandleItemPick();
+                return;
+            }
+
+            var signal = signalPickedItem.Signal;
+            var type = e.ClickedItem.Tag.ToString();
+
+            string[] signalAspects = { "system", "stop", "approach", "proceed" };
+            int numericSignalAspect = Array.IndexOf(signalAspects, "stop");
+
+            if (MPManager.Instance().AmAider)
+            {
+                MPManager.Notify(new MSGSignalChange(signal, numericSignalAspect).ToString());
+                UnHandleItemPick();
+                return;
+            }
+
+            switch (type)
+            {
+                case "system":
+                    signal.ClearHoldSignalDispatcher();
+                    break;
+
+                case "stop":
+                    signal.RequestHoldSignalDispatcher(true);
+                    break;
+
+                case "approach":
+                    signal.RequestApproachAspect();
+                    break;
+
+                case "proceed":
+                    signal.RequestLeastRestrictiveAspect();
+                    break;
+
+                case "callOn":
+                    signal.SetManualCallOn(true);
+                    break;
+            }
+
+            UnHandleItemPick();
+        }
+
+        private void setSwitchMenu_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (switchPickedItem == null)
+            {
+                UnHandleItemPick(); return;
+            }
+            var sw = switchPickedItem.Item.TrJunctionNode;
+            var type = e.ClickedItem.Tag.ToString();
+
+            // Aider can send message to the server for a switch
+            if (MPManager.IsMultiPlayer() && MPManager.Instance().AmAider)
+            {
+                var nextSwitchTrack = sw;
+                var Selected = 0;
+                switch (type)
+                {
+                    case "mainRoute":
+                        Selected = (int)switchPickedItem.main;
+                        break;
+                    case "sideRoute":
+                        Selected = 1 - (int)switchPickedItem.main;
+                        break;
+                }
+                // Aider selects and throws the switch, but need to confirm by the dispatcher
+                MPManager.Notify(new MSGSwitch(MPManager.GetUserName(),
+                    nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldId, Selected, true).ToString());
+                Program.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Switching Request Sent to the Server"));
+
+            }
+            else // Server throws the switch immediately
+            {
+                switch (type)
+                {
+                    case "mainRoute":
+                        Program.Simulator.Signals.RequestSetSwitch(sw.TN, (int)switchPickedItem.main);
+                        //sw.SelectedRoute = (int)switchPickedItem.main;
+                        break;
+                    case "sideRoute":
+                        Program.Simulator.Signals.RequestSetSwitch(sw.TN, 1 - (int)switchPickedItem.main);
+                        //sw.SelectedRoute = 1 - (int)switchPickedItem.main;
+                        break;
+                }
+            }
+            UnHandleItemPick();
         }
 
         private ItemWidget findItemFromMouse(int x, int y, int range)
@@ -1909,51 +1993,6 @@ namespace Orts.Viewer3D.Debugging
         }
 
 
-        private void setSwitchMenu_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
-        {
-            if (switchPickedItem == null)
-            {
-                UnHandleItemPick(); return;
-            }
-            var sw = switchPickedItem.Item.TrJunctionNode;
-            var type = e.ClickedItem.Tag.ToString();
-
-            // Aider can send message to the server for a switch
-            if (MPManager.IsMultiPlayer() && MPManager.Instance().AmAider)
-            {
-                var nextSwitchTrack = sw;
-                var Selected = 0;
-                switch (type)
-                {
-                    case "mainRoute":
-                        Selected = (int)switchPickedItem.main;
-                        break;
-                    case "sideRoute":
-                        Selected = 1 - (int)switchPickedItem.main;
-                        break;
-                }
-                // Aider selects and throws the switch, but need to confirm by the dispatcher
-                MPManager.Notify(new MSGSwitch(MPManager.GetUserName(),
-                    nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldId, Selected, true).ToString());
-                Program.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Switching Request Sent to the Server"));
-
-            }
-            else // Server throws the switch immediately
-            {
-                switch (type)
-                {
-                    case "mainRoute":
-                        Program.Simulator.Signals.RequestSetSwitch(sw.TN, (int)switchPickedItem.main);
-                        //sw.SelectedRoute = (int)switchPickedItem.main;
-                        break;
-                    case "sideRoute":
-                        Program.Simulator.Signals.RequestSetSwitch(sw.TN, 1 - (int)switchPickedItem.main);
-                        //sw.SelectedRoute = 1 - (int)switchPickedItem.main;
-                        break;
-                }
-            }
-            UnHandleItemPick();
-        }
 
         private void DispatchViewerBeta_FormClosing(object sender, FormClosingEventArgs e)
         {

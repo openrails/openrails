@@ -97,6 +97,14 @@
             this.setSwitchToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainRouteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sideRouteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setSignalMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.approachToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.proceedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.allowCallOnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playerRolePanel.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -116,6 +124,7 @@
             this.messageActionsMenu.SuspendLayout();
             this.playerActionsMenu.SuspendLayout();
             this.setSwitchMenu.SuspendLayout();
+            this.setSignalMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // playerRolePanel
@@ -850,7 +859,7 @@
             this.mainRouteToolStripMenuItem,
             this.sideRouteToolStripMenuItem});
             this.setSwitchMenu.Name = "contextMenuStrip1";
-            this.setSwitchMenu.Size = new System.Drawing.Size(181, 92);
+            this.setSwitchMenu.Size = new System.Drawing.Size(157, 70);
             this.setSwitchMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.setSwitchMenu_ItemClicked);
             // 
             // setSwitchToToolStripMenuItem
@@ -858,22 +867,90 @@
             this.setSwitchToToolStripMenuItem.Enabled = false;
             this.setSwitchToToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.setSwitchToToolStripMenuItem.Name = "setSwitchToToolStripMenuItem";
-            this.setSwitchToToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.setSwitchToToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.setSwitchToToolStripMenuItem.Text = "Set switch to...";
             // 
             // mainRouteToolStripMenuItem
             // 
             this.mainRouteToolStripMenuItem.Name = "mainRouteToolStripMenuItem";
-            this.mainRouteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mainRouteToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.mainRouteToolStripMenuItem.Tag = "mainRoute";
             this.mainRouteToolStripMenuItem.Text = "Main route";
             // 
             // sideRouteToolStripMenuItem
             // 
             this.sideRouteToolStripMenuItem.Name = "sideRouteToolStripMenuItem";
-            this.sideRouteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.sideRouteToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.sideRouteToolStripMenuItem.Tag = "sideRoute";
             this.sideRouteToolStripMenuItem.Text = "Side route";
+            // 
+            // setSignalMenu
+            // 
+            this.setSignalMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem1,
+            this.toolStripMenuItem2,
+            this.toolStripMenuItem3,
+            this.approachToolStripMenuItem,
+            this.proceedToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.allowCallOnToolStripMenuItem});
+            this.setSignalMenu.Name = "contextMenuStrip1";
+            this.setSignalMenu.Size = new System.Drawing.Size(191, 142);
+            this.setSignalMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.setSignalMenu_ItemClicked);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Enabled = false;
+            this.toolStripMenuItem1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(190, 22);
+            this.toolStripMenuItem1.Text = "Set signal aspect to...";
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(190, 22);
+            this.toolStripMenuItem2.Tag = "system";
+            this.toolStripMenuItem2.Text = "System controlled";
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(203)))), ((int)(((byte)(67)))), ((int)(((byte)(53)))));
+            this.toolStripMenuItem3.ForeColor = System.Drawing.Color.White;
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(190, 22);
+            this.toolStripMenuItem3.Tag = "stop";
+            this.toolStripMenuItem3.Text = "Stop";
+            // 
+            // approachToolStripMenuItem
+            // 
+            this.approachToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(241)))), ((int)(((byte)(196)))), ((int)(((byte)(15)))));
+            this.approachToolStripMenuItem.Name = "approachToolStripMenuItem";
+            this.approachToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.approachToolStripMenuItem.Tag = "approach";
+            this.approachToolStripMenuItem.Text = "Approach";
+            // 
+            // proceedToolStripMenuItem
+            // 
+            this.proceedToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(153)))), ((int)(((byte)(84)))));
+            this.proceedToolStripMenuItem.ForeColor = System.Drawing.Color.White;
+            this.proceedToolStripMenuItem.Name = "proceedToolStripMenuItem";
+            this.proceedToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.proceedToolStripMenuItem.Tag = "proceed";
+            this.proceedToolStripMenuItem.Text = "Proceed";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(187, 6);
+            // 
+            // allowCallOnToolStripMenuItem
+            // 
+            this.allowCallOnToolStripMenuItem.Enabled = false;
+            this.allowCallOnToolStripMenuItem.Name = "allowCallOnToolStripMenuItem";
+            this.allowCallOnToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.allowCallOnToolStripMenuItem.Tag = "callOn";
+            this.allowCallOnToolStripMenuItem.Text = "Allow call on";
             // 
             // DispatchViewerBeta
             // 
@@ -911,6 +988,7 @@
             this.messageActionsMenu.ResumeLayout(false);
             this.playerActionsMenu.ResumeLayout(false);
             this.setSwitchMenu.ResumeLayout(false);
+            this.setSignalMenu.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -980,6 +1058,14 @@
         private System.Windows.Forms.ToolStripMenuItem setSwitchToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mainRouteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sideRouteToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip setSignalMenu;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
+        private System.Windows.Forms.ToolStripMenuItem approachToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem proceedToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem allowCallOnToolStripMenuItem;
     }
 }
 
