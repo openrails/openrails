@@ -166,7 +166,6 @@ namespace Orts.Viewer3D.Debugging
 
                 if (currNode != null)
                 {
-
                     if (currNode.TrEndNode)
                     {
                         //buffers.Add(new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z));
@@ -191,8 +190,6 @@ namespace Orts.Viewer3D.Debugging
                                 dVector B = new dVector(connectedNode.UiD.TileX, connectedNode.UiD.X, connectedNode.UiD.TileZ, connectedNode.UiD.Z);
                                 segments.Add(new LineSegment(A, B, /*s.InterlockingTrack.IsOccupied*/ false, null));
                             }
-
-
                         }
                     }
                     else if (currNode.TrJunctionNode != null)
@@ -215,8 +212,8 @@ namespace Orts.Viewer3D.Debugging
             }
 
             var maxsize = maxX - minX > maxY - minY ? maxX - minX : maxY - minY;
-            // Take up to next 100
-            maxsize = (int)(maxsize / 100 + 1) * 100;
+            // Take up to next 500
+            maxsize = (int)(maxsize / 100 + 1) * 500;
             mapResolutionUpDown.Maximum = (decimal)maxsize;
             Inited = true;
 
@@ -1120,108 +1117,9 @@ namespace Orts.Viewer3D.Debugging
 
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-        private PointF DrawSiding(Graphics g, PointF scaledItem, SidingWidget s)
-        {
-            scaledItem.X = (s.Location.X - subX) * xScale;
-            scaledItem.Y = DetermineSidingLocation(scaledItem.X, mapCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
-            if (scaledItem.Y >= 0f) //if we need to draw the siding names
-            {
-                g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
-            }
-            return scaledItem;
-        }
-
-        private PointF DrawPlatform(Graphics g, PointF scaledItem, PlatformWidget s)
-        {
-            scaledItem.X = (s.Location.X - subX) * xScale;
-            scaledItem.Y = DetermineSidingLocation(scaledItem.X, mapCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
-            if (scaledItem.Y >= 0f) //if we need to draw the siding names
-            {
-                g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
-            }
-            return scaledItem;
-        }
-
         public Vector2[][] alignedTextY;
         public int[] alignedTextNum;
         public const int spacing = 12;
-        private void CleanVerticalCells()
-        {
-            if (alignedTextY == null || alignedTextY.Length != IM_Height / spacing) //first time to put text, or the text height has changed
-            {
-                alignedTextY = new Vector2[IM_Height / spacing][];
-                alignedTextNum = new int[IM_Height / spacing];
-                for (var i = 0; i < IM_Height / spacing; i++)
-                    alignedTextY[i] = new Vector2[4]; //each line has at most 4 sidings
-            }
-            for (var i = 0; i < IM_Height / spacing; i++)
-            {
-                alignedTextNum[i] = 0;
-            }
-        }
-
-        private float DetermineSidingLocation(float startX, float wantY, string name)
-        {
-            //out of drawing area
-            if (startX < -64 || startX > IM_Width || wantY < -spacing || wantY > IM_Height) return -1f;
-
-            int position = (int)(wantY / spacing);//the cell of the text it wants in
-            if (position > alignedTextY.Length) return wantY;//position is larger than the number of cells
-            var endX = startX + name.Length * trainFont.Size;
-            int desiredPosition = position;
-            while (position < alignedTextY.Length && position >= 0)
-            {
-                //if the line contains no text yet, put it there
-                if (alignedTextNum[position] == 0)
-                {
-                    alignedTextY[position][alignedTextNum[position]].X = startX;
-                    alignedTextY[position][alignedTextNum[position]].Y = endX;//add info for the text (i.e. start and end location)
-                    alignedTextNum[position]++;
-                    return position * spacing;
-                }
-
-                bool conflict = false;
-                //check if it is intersect any one in the cell
-                foreach (Vector2 v in alignedTextY[position])
-                {
-                    //check conflict with a text, v.x is the start of the text, v.y is the end of the text
-                    if ((startX > v.X && startX < v.Y) || (endX > v.X && endX < v.Y) || (v.X > startX && v.X < endX) || (v.Y > startX && v.Y < endX))
-                    {
-                        conflict = true;
-                        break;
-                    }
-                }
-                if (conflict == false) //no conflict
-                {
-                    if (alignedTextNum[position] >= alignedTextY[position].Length) return -1f;
-                    alignedTextY[position][alignedTextNum[position]].X = startX;
-                    alignedTextY[position][alignedTextNum[position]].Y = endX;//add info for the text (i.e. start and end location)
-                    alignedTextNum[position]++;
-                    return position * spacing;
-                }
-                position--;
-                //cannot move up, then try to move it down
-                if (position - desiredPosition < -1)
-                {
-                    position = desiredPosition + 2;
-                }
-                //could not find any position up or down, just return negative
-                if (position == desiredPosition) return -1f;
-            }
-            return position * spacing;
-        }
 
         const float SignalErrorDistance = 100;
         const float SignalWarningDistance = 500;
@@ -1991,16 +1889,12 @@ namespace Orts.Viewer3D.Debugging
             else { MPManager.BroadCast(new MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light").ToString()); }
         }
 
-
-
         private void DispatchViewerBeta_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Prevent the window from closing; instead, hide it
             e.Cancel = true;
             Viewer.DebugViewerBetaEnabled = false;
         }
-
-
     }
 
     #region SignalWidget
@@ -2314,5 +2208,4 @@ namespace Orts.Viewer3D.Debugging
                 + Math.Pow((v1.TileZ - v2.TileZ) * 2048 + v1.Z - v2.Z, 2);
         }
     }
-
 }
