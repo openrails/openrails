@@ -677,7 +677,7 @@
             // lblInstruction1
             // 
             this.lblInstruction1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblInstruction1.Location = new System.Drawing.Point(8, 709);
+            this.lblInstruction1.Location = new System.Drawing.Point(8, 717);
             this.lblInstruction1.Name = "lblInstruction1";
             this.lblInstruction1.Padding = new System.Windows.Forms.Padding(3);
             this.lblInstruction1.Size = new System.Drawing.Size(327, 22);
@@ -749,7 +749,7 @@
             // lblInstruction2
             // 
             this.lblInstruction2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblInstruction2.Location = new System.Drawing.Point(8, 730);
+            this.lblInstruction2.Location = new System.Drawing.Point(8, 738);
             this.lblInstruction2.Name = "lblInstruction2";
             this.lblInstruction2.Padding = new System.Windows.Forms.Padding(3);
             this.lblInstruction2.Size = new System.Drawing.Size(327, 21);
@@ -760,7 +760,7 @@
             // lblInstruction3
             // 
             this.lblInstruction3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblInstruction3.Location = new System.Drawing.Point(8, 751);
+            this.lblInstruction3.Location = new System.Drawing.Point(8, 759);
             this.lblInstruction3.Name = "lblInstruction3";
             this.lblInstruction3.Padding = new System.Windows.Forms.Padding(3);
             this.lblInstruction3.Size = new System.Drawing.Size(327, 21);
@@ -771,7 +771,7 @@
             // lblInstruction4
             // 
             this.lblInstruction4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblInstruction4.Location = new System.Drawing.Point(8, 772);
+            this.lblInstruction4.Location = new System.Drawing.Point(8, 780);
             this.lblInstruction4.Name = "lblInstruction4";
             this.lblInstruction4.Padding = new System.Windows.Forms.Padding(3);
             this.lblInstruction4.Size = new System.Drawing.Size(327, 21);

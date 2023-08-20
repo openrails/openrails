@@ -79,7 +79,7 @@
             this.seeTrainInGameButton = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.mapResolutionUpDown = new System.Windows.Forms.NumericUpDown();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.allowThrowingSwitchesCheckbox = new System.Windows.Forms.CheckBox();
             this.allowChangingSignalsCheckbox = new System.Windows.Forms.CheckBox();
             this.drawPathCheckbox = new System.Windows.Forms.CheckBox();
             this.playersPanel = new System.Windows.Forms.Panel();
@@ -93,6 +93,10 @@
             this.jumpToThisPlayerInGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.followToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.kickFromMultiplayerSessionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setSwitchMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.setSwitchToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mainRouteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sideRouteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playerRolePanel.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -111,6 +115,7 @@
             this.groupBox3.SuspendLayout();
             this.messageActionsMenu.SuspendLayout();
             this.playerActionsMenu.SuspendLayout();
+            this.setSwitchMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // playerRolePanel
@@ -605,7 +610,7 @@
             this.groupBox1.Controls.Add(this.seeTrainInGameButton);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.mapResolutionUpDown);
-            this.groupBox1.Controls.Add(this.checkBox3);
+            this.groupBox1.Controls.Add(this.allowThrowingSwitchesCheckbox);
             this.groupBox1.Controls.Add(this.allowChangingSignalsCheckbox);
             this.groupBox1.Controls.Add(this.drawPathCheckbox);
             this.groupBox1.Location = new System.Drawing.Point(10, 3);
@@ -688,21 +693,23 @@
             0});
             this.mapResolutionUpDown.ValueChanged += new System.EventHandler(this.mapResolutionUpDown_ValueChanged);
             // 
-            // checkBox3
+            // allowThrowingSwitchesCheckbox
             // 
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.Enabled = false;
-            this.checkBox3.Location = new System.Drawing.Point(7, 57);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(138, 17);
-            this.checkBox3.TabIndex = 2;
-            this.checkBox3.Text = "Allow throwing switches";
-            this.checkBox3.UseVisualStyleBackColor = true;
+            this.allowThrowingSwitchesCheckbox.AutoSize = true;
+            this.allowThrowingSwitchesCheckbox.Checked = true;
+            this.allowThrowingSwitchesCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.allowThrowingSwitchesCheckbox.Location = new System.Drawing.Point(7, 57);
+            this.allowThrowingSwitchesCheckbox.Name = "allowThrowingSwitchesCheckbox";
+            this.allowThrowingSwitchesCheckbox.Size = new System.Drawing.Size(138, 17);
+            this.allowThrowingSwitchesCheckbox.TabIndex = 2;
+            this.allowThrowingSwitchesCheckbox.Text = "Allow throwing switches";
+            this.allowThrowingSwitchesCheckbox.UseVisualStyleBackColor = true;
             // 
             // allowChangingSignalsCheckbox
             // 
             this.allowChangingSignalsCheckbox.AutoSize = true;
-            this.allowChangingSignalsCheckbox.Enabled = false;
+            this.allowChangingSignalsCheckbox.Checked = true;
+            this.allowChangingSignalsCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.allowChangingSignalsCheckbox.Location = new System.Drawing.Point(7, 38);
             this.allowChangingSignalsCheckbox.Name = "allowChangingSignalsCheckbox";
             this.allowChangingSignalsCheckbox.Size = new System.Drawing.Size(133, 17);
@@ -836,6 +843,38 @@
             this.kickFromMultiplayerSessionToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.kickFromMultiplayerSessionToolStripMenuItem.Text = "Kick from multiplayer session";
             // 
+            // setSwitchMenu
+            // 
+            this.setSwitchMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.setSwitchToToolStripMenuItem,
+            this.mainRouteToolStripMenuItem,
+            this.sideRouteToolStripMenuItem});
+            this.setSwitchMenu.Name = "contextMenuStrip1";
+            this.setSwitchMenu.Size = new System.Drawing.Size(181, 92);
+            this.setSwitchMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.setSwitchMenu_ItemClicked);
+            // 
+            // setSwitchToToolStripMenuItem
+            // 
+            this.setSwitchToToolStripMenuItem.Enabled = false;
+            this.setSwitchToToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.setSwitchToToolStripMenuItem.Name = "setSwitchToToolStripMenuItem";
+            this.setSwitchToToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.setSwitchToToolStripMenuItem.Text = "Set switch to...";
+            // 
+            // mainRouteToolStripMenuItem
+            // 
+            this.mainRouteToolStripMenuItem.Name = "mainRouteToolStripMenuItem";
+            this.mainRouteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mainRouteToolStripMenuItem.Tag = "mainRoute";
+            this.mainRouteToolStripMenuItem.Text = "Main route";
+            // 
+            // sideRouteToolStripMenuItem
+            // 
+            this.sideRouteToolStripMenuItem.Name = "sideRouteToolStripMenuItem";
+            this.sideRouteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.sideRouteToolStripMenuItem.Tag = "sideRoute";
+            this.sideRouteToolStripMenuItem.Text = "Side route";
+            // 
             // DispatchViewerBeta
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -871,6 +910,7 @@
             this.groupBox3.ResumeLayout(false);
             this.messageActionsMenu.ResumeLayout(false);
             this.playerActionsMenu.ResumeLayout(false);
+            this.setSwitchMenu.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -894,7 +934,7 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
         private System.Windows.Forms.Panel mapSettingsPanel;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.CheckBox checkBox3;
+        private System.Windows.Forms.CheckBox allowThrowingSwitchesCheckbox;
         private System.Windows.Forms.CheckBox allowChangingSignalsCheckbox;
         private System.Windows.Forms.CheckBox drawPathCheckbox;
         public System.Windows.Forms.Panel multiplayerSettingsPanel;
@@ -936,6 +976,10 @@
         private System.Windows.Forms.CheckBox showTrainStateCheckbox;
         private System.Windows.Forms.CheckBox showTrainLabelsCheckbox;
         private System.Windows.Forms.RadioButton showAllTrainsRadio;
+        private System.Windows.Forms.ContextMenuStrip setSwitchMenu;
+        private System.Windows.Forms.ToolStripMenuItem setSwitchToToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mainRouteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sideRouteToolStripMenuItem;
     }
 }
 
