@@ -1640,7 +1640,7 @@ namespace Orts.Viewer3D.Debugging
                 if (LastCursorPosition.X == e.X && LastCursorPosition.Y == e.Y)
                 {
                     var range = 5 * (int)xScale; if (range > 10) range = 10;
-                    /*var temp = findItemFromMouse(e.X, e.Y, range);
+                    var temp = findItemFromMouse(e.X, e.Y, range);
                     if (temp != null)
                     {
                         if (temp is SwitchWidget)
@@ -1662,7 +1662,7 @@ namespace Orts.Viewer3D.Debugging
                         signalPickedItem = null;
                         UnHandleItemPick();
                         PickedTrain = null;
-                    }*/
+                    }
                 }
 
             }
@@ -1670,6 +1670,151 @@ namespace Orts.Viewer3D.Debugging
             lblInstruction2.Visible = false;
             lblInstruction3.Visible = false;
             lblInstruction4.Visible = false;*/
+        }
+
+        private void UnHandleItemPick()
+        {
+            //boxSetSignal.Visible = false;
+            setSwitchMenu.Visible = false;
+        }
+
+        private void HandlePickedSignal()
+        {
+            if (MPManager.IsClient() && !MPManager.Instance().AmAider) // normal client not server or aider
+                return;
+            setSwitchMenu.Visible = false;
+            if (signalPickedItem == null) return;
+            var y = LastCursorPosition.Y;
+            if (LastCursorPosition.Y < 100) y = 100;
+            if (LastCursorPosition.Y > mapCanvas.Size.Height - 100) y = mapCanvas.Size.Height - 100;
+
+            /*if (boxSetSignal.Items.Count == 5)
+                boxSetSignal.Items.RemoveAt(4);
+
+            if (signalPickedItem.Signal.enabledTrain != null && signalPickedItem.Signal.CallOnEnabled)
+            {
+                if (!signalPickedItem.Signal.CallOnManuallyAllowed)
+                    boxSetSignal.Items.Add("Allow call on");
+            }
+
+            boxSetSignal.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);
+            boxSetSignal.Enabled = true;
+            boxSetSignal.Focus();
+            boxSetSignal.SelectedIndex = -1;
+            boxSetSignal.Visible = true;
+            return;*/
+        }
+
+        private void HandlePickedSwitch()
+        {
+            if (MPManager.IsClient() && !MPManager.Instance().AmAider)
+                return;//normal client not server
+
+            //boxSetSignal.Visible = false;
+            if (switchPickedItem == null) return;
+            setSwitchMenu.Show(Cursor.Position);
+            setSwitchMenu.Enabled = true;
+            setSwitchMenu.Focus();
+            setSwitchMenu.Visible = true;
+            return;
+        }
+
+        private ItemWidget findItemFromMouse(int x, int y, int range)
+        {
+            if (range < 5) range = 5;
+            double closest = float.NaN;
+            ItemWidget closestItem = null;
+            if (allowThrowingSwitchesCheckbox.Checked == true)
+            {
+                foreach (var item in switchItemsDrawn)
+                {
+                    //if out of range, continue
+                    if (item.Location2D.X < x - range || item.Location2D.X > x + range
+                       || item.Location2D.Y < y - range || item.Location2D.Y > y + range)
+                        continue;
+
+                    if (closestItem != null)
+                    {
+                        var dist = Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2) + Math.Pow(item.Location2D.Y - closestItem.Location2D.Y, 2);
+                        if (dist < closest)
+                        {
+                            closest = dist; closestItem = item;
+                        }
+                    }
+                    else closestItem = item;
+                }
+                if (closestItem != null)
+                {
+                    switchPickedTime = simulator.GameTime;
+                    return closestItem;
+                }
+            }
+            if (allowChangingSignalsCheckbox.Checked == true)
+            {
+                foreach (var item in signalItemsDrawn)
+                {
+                    //if out of range, continue
+                    if (item.Location2D.X < x - range || item.Location2D.X > x + range
+                       || item.Location2D.Y < y - range || item.Location2D.Y > y + range)
+                        continue;
+
+                    if (closestItem != null)
+                    {
+                        var dist = Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2) + Math.Pow(item.Location2D.Y - closestItem.Location2D.Y, 2);
+                        if (dist < closest)
+                        {
+                            closest = dist; closestItem = item;
+                        }
+                    }
+                    else closestItem = item;
+                }
+                if (closestItem != null)
+                {
+                    switchPickedTime = simulator.GameTime;
+                    return closestItem;
+                }
+            }
+
+            //now check for trains (first car only)
+            TrainCar firstCar;
+            PickedTrain = null; float tX, tY;
+            closest = 100f;
+
+            foreach (var t in Program.Simulator.Trains)
+            {
+                firstCar = null;
+                if (t.LeadLocomotive != null)
+                {
+                    worldPos = t.LeadLocomotive.WorldPosition;
+                    firstCar = t.LeadLocomotive;
+                }
+                else if (t.Cars != null && t.Cars.Count > 0)
+                {
+                    worldPos = t.Cars[0].WorldPosition;
+                    firstCar = t.Cars[0];
+
+                }
+                else
+                    continue;
+
+                worldPos = firstCar.WorldPosition;
+                tX = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
+                tY = mapCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
+                float xSpeedCorr = Math.Abs(t.SpeedMpS) * xScale * 1.5f;
+                float ySpeedCorr = Math.Abs(t.SpeedMpS) * yScale * 1.5f;
+
+                if (tX < x - range - xSpeedCorr || tX > x + range + xSpeedCorr || tY < y - range - ySpeedCorr || tY > y + range + ySpeedCorr)
+                    continue;
+                if (PickedTrain == null)
+                    PickedTrain = t;
+            }
+            //if a train is picked, will clear the avatar list selection
+            if (PickedTrain != null)
+            {
+                //AvatarView.SelectedItems.Clear();
+                return new TrainWidget(PickedTrain);
+            }
+            return null;
         }
 
         private void mapCanvas_MouseMove(object sender, MouseEventArgs e)
@@ -1761,6 +1906,53 @@ namespace Orts.Viewer3D.Debugging
             MPManager.Instance().CheckSpad = penaltyCheckbox.Checked;
             if (penaltyCheckbox.Checked == false) { MPManager.BroadCast(new MSGMessage("All", "OverSpeedOK", "OK to go overspeed and pass stop light").ToString()); }
             else { MPManager.BroadCast(new MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light").ToString()); }
+        }
+
+
+        private void setSwitchMenu_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (switchPickedItem == null)
+            {
+                UnHandleItemPick(); return;
+            }
+            var sw = switchPickedItem.Item.TrJunctionNode;
+            var type = e.ClickedItem.Tag.ToString();
+
+            // Aider can send message to the server for a switch
+            if (MPManager.IsMultiPlayer() && MPManager.Instance().AmAider)
+            {
+                var nextSwitchTrack = sw;
+                var Selected = 0;
+                switch (type)
+                {
+                    case "mainRoute":
+                        Selected = (int)switchPickedItem.main;
+                        break;
+                    case "sideRoute":
+                        Selected = 1 - (int)switchPickedItem.main;
+                        break;
+                }
+                // Aider selects and throws the switch, but need to confirm by the dispatcher
+                MPManager.Notify(new MSGSwitch(MPManager.GetUserName(),
+                    nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldId, Selected, true).ToString());
+                Program.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Switching Request Sent to the Server"));
+
+            }
+            else // Server throws the switch immediately
+            {
+                switch (type)
+                {
+                    case "mainRoute":
+                        Program.Simulator.Signals.RequestSetSwitch(sw.TN, (int)switchPickedItem.main);
+                        //sw.SelectedRoute = (int)switchPickedItem.main;
+                        break;
+                    case "sideRoute":
+                        Program.Simulator.Signals.RequestSetSwitch(sw.TN, 1 - (int)switchPickedItem.main);
+                        //sw.SelectedRoute = 1 - (int)switchPickedItem.main;
+                        break;
+                }
+            }
+            UnHandleItemPick();
         }
 
         private void DispatchViewerBeta_FormClosing(object sender, FormClosingEventArgs e)
