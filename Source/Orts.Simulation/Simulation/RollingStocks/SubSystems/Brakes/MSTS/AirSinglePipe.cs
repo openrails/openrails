@@ -670,7 +670,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 if (BrakeLine1PressurePSI - dpPipe < 0)
                 {
+                    // Prevent pipe pressure from going negative, also reset quick service to prevent runaway condition
                     dpPipe = BrakeLine1PressurePSI;
+                    QuickServiceActive = false;
                 }
 
                 if (TripleValveState != ValveState.Emergency && BrakeLine1PressurePSI < AuxResPressurePSI + 1)
@@ -694,7 +696,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AutoCylPressurePSI += dp;
                 BrakeLine1PressurePSI -= dpPipe;
 
-                if (QuickServiceActive && AutoCylPressurePSI > QuickServiceLimitPSI) // Reset quick service if brake cylinder is above limiting valve setting
+                // Reset quick service if brake cylinder is above limiting valve setting
+                // Also reset quick service if cylinders manage to equalize to prevent runaway condition
+                if (QuickServiceActive && (AutoCylPressurePSI > QuickServiceLimitPSI || AutoCylPressurePSI >= AuxResPressurePSI)) 
                     QuickServiceActive = false;
 
                 if (TripleValveState == ValveState.Emergency)
