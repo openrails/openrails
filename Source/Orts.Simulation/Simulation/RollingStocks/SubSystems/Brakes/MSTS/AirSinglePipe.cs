@@ -92,6 +92,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float prevBrakePipePressurePSI = 0f;
         protected float prevBrakePipePressurePSI_sound = 0f;
 
+        protected float BrakePipeChangePSIpS;
+        protected SmoothedData SmoothedBrakePipeChangePSIpS;
+
 
         /// <summary>
         /// EP brake holding valve. Needs to be closed (Lap) in case of brake application or holding.
@@ -114,6 +117,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // taking into account very short (fake) cars to prevent NaNs in brake line pressures
             BrakePipeVolumeM3 = (0.032f * 0.032f * (float)Math.PI / 4f) * Math.Max ( 5.0f, (1 + car.CarLengthM)); // Using DN32 (1-1/4") pipe
             DebugType = "1P";
+
+            SmoothedBrakePipeChangePSIpS = new SmoothedData(0.25f);
 
             // Force graduated releasable brakes. Workaround for MSTS with bugs preventing to set eng/wag files correctly for this.
             if (Car.Simulator.Settings.GraduatedRelease) (Car as MSTSWagon).BrakeValve = MSTSWagon.BrakeValveType.Distributor;
@@ -208,7 +213,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 string.Empty, // Spacer because the state above needs 2 columns.
                 (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
-                string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                string.Format("A{0} B{1}", AngleCockAOpenAmount >= 1 ? "+" : AngleCockAOpenAmount <= 0 ? "-" : "/", AngleCockBOpenAmount >= 1 ? "+" : AngleCockBOpenAmount <= 0 ? "-" : "/"),
                 BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
             };
 
@@ -333,7 +338,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write((int)TripleValveState);
             outf.Write(FrontBrakeHoseConnected);
             outf.Write(AngleCockAOpen);
+            outf.Write(AngleCockAOpenAmount);
             outf.Write(AngleCockBOpen);
+            outf.Write(AngleCockBOpenAmount);
             outf.Write(BleedOffValveOpen);
             outf.Write((int)HoldingValve);
             outf.Write(UniformChargingActive);
@@ -357,7 +364,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             TripleValveState = (ValveState)inf.ReadInt32();
             FrontBrakeHoseConnected = inf.ReadBoolean();
             AngleCockAOpen = inf.ReadBoolean();
+            AngleCockAOpenAmount = inf.ReadSingle();
             AngleCockBOpen = inf.ReadBoolean();
+            AngleCockBOpenAmount = inf.ReadSingle();
             BleedOffValveOpen = inf.ReadBoolean();
             HoldingValve = (ValveState)inf.ReadInt32();
             UniformChargingActive = inf.ReadBoolean();
@@ -385,6 +394,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 loco.MainResPressurePSI = loco.MaxMainResPressurePSI;
             }
+
+            SmoothedBrakePipeChangePSIpS.ForceSmoothValue(0);
         }
 
         public override void Initialize()
@@ -460,12 +471,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             var prevState = TripleValveState;
             var valveType = (Car as MSTSWagon).BrakeValve;
             bool disableGradient = !(Car.Train.LeadLocomotive is MSTSLocomotive) && Car.Train.TrainType != Orts.Simulation.Physics.Train.TRAINTYPE.STATIC;
+            // Small workaround to allow trains to more reliably go into emergency after uncoupling
+            bool emergencyTripped = (Car.Train.TrainType == Orts.Simulation.Physics.Train.TRAINTYPE.STATIC) ?
+                BrakeLine1PressurePSI <= EmergResPressurePSI * AuxCylVolumeRatio / (AuxCylVolumeRatio + 1) : Math.Max(-SmoothedBrakePipeChangePSIpS.SmoothedValue, 0) > EmergencyValveActuationRatePSIpS;
 
             if (valveType == MSTSWagon.BrakeValveType.Distributor)
             {
                 float applicationPSI = ControlResPressurePSI - BrakeLine1PressurePSI;
                 float targetPressurePSI = applicationPSI * AuxCylVolumeRatio;
-                if (!disableGradient && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
+                if (!disableGradient && EmergencyValveActuationRatePSIpS > 0 && emergencyTripped)
                 {
                     if (prevState == ValveState.Release) // If valve transitions from release to emergency, quick service activates
                     {
@@ -502,7 +516,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else if (valveType == MSTSWagon.BrakeValveType.TripleValve || valveType == MSTSWagon.BrakeValveType.DistributingValve)
             {
-                if (!disableGradient && EmergencyValveActuationRatePSIpS > 0 && (prevBrakePipePressurePSI - BrakeLine1PressurePSI) > Math.Max(elapsedClockSeconds, 0.0001f) * EmergencyValveActuationRatePSIpS)
+                if (!disableGradient && EmergencyValveActuationRatePSIpS > 0 && emergencyTripped)
                 {
                     if (prevState == ValveState.Release) // If valve transitions from release to emergency, quick service activates
                     {
@@ -552,10 +566,52 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             else EmergencyDumpStartTime = null;
         }
 
+        public void UpdateAngleCockState(bool AngleCockOpen, ref float AngleCockOpenAmount, ref float? AngleCockOpenTime)
+        {
+            float currentTime = (float)this.Car.Simulator.GameTime;
+
+            if (AngleCockOpen && AngleCockOpenAmount < 1.0f)
+            {
+                if (AngleCockOpenTime == null)
+                {
+                    AngleCockOpenTime = currentTime;
+                }
+                else if (currentTime - AngleCockOpenTime > AngleCockOpeningTime)
+                {
+                    // Finish opening anglecock at a faster rate once time has elapsed
+                    AngleCockOpenAmount = (currentTime - ((float)AngleCockOpenTime + AngleCockOpeningTime)) / 5 + 0.3f;
+
+                    if (AngleCockOpenAmount >= 1.0f)
+                    {
+                        AngleCockOpenAmount = 1.0f;
+                        AngleCockOpenTime = null;
+                    }
+                }
+                else
+                {
+                    // Gradually open anglecock toward 30% over 30 seconds
+                    AngleCockOpenAmount = 0.3f * (currentTime - (float)AngleCockOpenTime) / AngleCockOpeningTime;
+                }
+            }
+            else if (!AngleCockOpen && AngleCockOpenAmount > 0.0f)
+            {
+                AngleCockOpenAmount = 0.0f;
+                AngleCockOpenTime = null;
+            }
+        }
+
         public override void Update(float elapsedClockSeconds)
         {
             var valveType = (Car as MSTSWagon).BrakeValve;
             float threshold = valveType == MSTSWagon.BrakeValveType.Distributor ? Math.Max((ControlResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, 0) : 0;
+
+            BrakePipeChangePSIpS = (BrakeLine1PressurePSI - prevBrakePipePressurePSI) / Math.Max(elapsedClockSeconds, 0.0001f);
+            SmoothedBrakePipeChangePSIpS.Update(Math.Max(elapsedClockSeconds, 0.0001f), BrakePipeChangePSIpS);
+
+            // Update anglecock opening. Anglecocks set to gradually open over 30 seconds, but close instantly.
+            // Gradual opening prevents undesired emergency applications
+            UpdateAngleCockState(AngleCockAOpen, ref AngleCockAOpenAmount, ref AngleCockAOpenTime);
+            UpdateAngleCockState(AngleCockBOpen, ref AngleCockBOpenAmount, ref AngleCockBOpenTime);
 
             if (BleedOffValveOpen)
             {
@@ -596,7 +652,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 float dp = 0;
                 float dpPipe = 0;
-                float brakePipeChange = Math.Max(prevBrakePipePressurePSI - BrakeLine1PressurePSI, 0);
                 if (QuickServiceActive) // Quick service: Brake pipe pressure is locally reduced to speed up initial reduction
                 {
                     if (QuickServiceVentRatePSIpS > 0)
@@ -613,13 +668,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     if (AcceleratedApplicationFactor > 0) // Accelerated application: Air is vented from the brake pipe to speed up service applications
                     {
-                        dpPipe = Math.Min(brakePipeChange * AcceleratedApplicationFactor, elapsedClockSeconds * AcceleratedApplicationLimitPSIpS); // Amount of air vented is proportional to pressure reduction from external sources
+                        // Amount of air vented is proportional to pressure reduction from external sources
+                        dpPipe = MathHelper.Clamp(-SmoothedBrakePipeChangePSIpS.SmoothedValue * AcceleratedApplicationFactor, 0, AcceleratedApplicationLimitPSIpS) * elapsedClockSeconds;
                     }
                     dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                 }
                 if (BrakeLine1PressurePSI - dpPipe < 0)
                 {
+                    // Prevent pipe pressure from going negative, also reset quick service to prevent runaway condition
                     dpPipe = BrakeLine1PressurePSI;
+                    QuickServiceActive = false;
                 }
 
                 if (TripleValveState != ValveState.Emergency && BrakeLine1PressurePSI < AuxResPressurePSI + 1)
@@ -643,7 +701,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AutoCylPressurePSI += dp;
                 BrakeLine1PressurePSI -= dpPipe;
 
-                if (QuickServiceActive && AutoCylPressurePSI > QuickServiceLimitPSI) // Reset quick service if brake cylinder is above limiting valve setting
+                // Reset quick service if brake cylinder is above limiting valve setting
+                // Also reset quick service if cylinders manage to equalize to prevent runaway condition
+                if (QuickServiceActive && (AutoCylPressurePSI > QuickServiceLimitPSI || AutoCylPressurePSI >= AuxResPressurePSI)) 
                     QuickServiceActive = false;
 
                 if (TripleValveState == ValveState.Emergency)
@@ -1128,7 +1188,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 int nSteps = (int)(elapsedClockSeconds / brakePipeTimeFactorS + 1);
                 float trainPipeTimeVariationS = elapsedClockSeconds / nSteps;
                 float trainPipeLeakLossPSI = lead == null ? 0.0f : (trainPipeTimeVariationS * lead.TrainBrakePipeLeakPSIorInHgpS);
-                float serviceTimeFactor = lead != null ? lead.TrainBrakeController != null && lead.TrainBrakeController.EmergencyBraking ? lead.BrakeEmergencyTimeFactorPSIpS : lead.BrakeServiceTimeFactorPSIpS : 0;
+                float serviceTimeFactor = lead != null && lead.TrainBrakeController != null ? lead.BrakeServiceTimeFactorPSIpS : 0.001f;
+                float emergencyTimeFactor = lead != null && lead.TrainBrakeController != null ? lead.BrakeEmergencyTimeFactorPSIpS : 0.001f;
                 for (int i = 0; i < nSteps; i++)
                 {
                     if (lead != null)
@@ -1141,7 +1202,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             lead.BrakeSystem.BrakeLine1PressurePSI -= trainPipeLeakLossPSI;
                         }
 
-                        if (lead.TrainBrakeController.TrainBrakeControllerState != ControllerState.Neutral)
+                        // Emergency brake - vent brake pipe to 0 psi regardless of equalizing res pressure
+                        if (lead.TrainBrakeController.EmergencyBraking)
+                        {
+                            float emergencyVariationFactor = Math.Min(trainPipeTimeVariationS / emergencyTimeFactor, 0.95f);
+                            float pressureDiffPSI = emergencyVariationFactor * lead.BrakeSystem.BrakeLine1PressurePSI;
+
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI - pressureDiffPSI < 0)
+                                pressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI;
+                            lead.BrakeSystem.BrakeLine1PressurePSI -= pressureDiffPSI;
+                        }
+                        else if (lead.TrainBrakeController.TrainBrakeControllerState != ControllerState.Neutral)
                         {
                             // Charge train brake pipe - adjust main reservoir pressure, and lead brake pressure line to maintain brake pipe equal to equalising resevoir pressure - release brakes
                             if (lead.BrakeSystem.BrakeLine1PressurePSI < train.EqualReservoirPressurePSIorInHg)
@@ -1225,6 +1296,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 // The sign in the equation determines the direction of air flow.
                                 float trainPipePressureDiffPropagationPSI = pressureDiffPSI * Math.Min(trainPipeTimeVariationS / brakePipeTimeFactorS, 1);
 
+                                // Flow is restricted when either anglecock is not opened fully
+                                if (car.BrakeSystem.AngleCockAOpenAmount < 1 || prevCar.BrakeSystem.AngleCockBOpenAmount < 1)
+                                {
+                                    trainPipePressureDiffPropagationPSI *= MathHelper.Min((float)Math.Pow(car.BrakeSystem.AngleCockAOpenAmount * prevCar.BrakeSystem.AngleCockBOpenAmount, 2), 1.0f);
+
+                                }
+
                                 // Air flows from high pressure to low pressure, until pressure is equal in both cars.
                                 // Brake pipe volumes of both cars are taken into account, so pressure increase/decrease is proportional to relative volumes.
                                 // If TrainPipePressureDiffPropagationPSI equals to p1-p0 the equalization is achieved in one step.
@@ -1243,11 +1321,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         // Empty the brake pipe if the brake hose is not connected and angle cocks are open
                         if (!car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen)
                         {
-                            car.BrakeSystem.BrakeLine1PressurePSI = Math.Max(car.BrakeSystem.BrakeLine1PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
+                            float dp = car.BrakeSystem.BrakeLine1PressurePSI * trainPipeTimeVariationS / brakePipeTimeFactorS;
+
+                            if (car.BrakeSystem.AngleCockAOpenAmount < 1)
+                                dp *= MathHelper.Clamp((float)Math.Pow(car.BrakeSystem.AngleCockAOpenAmount, 2), 0.0f, 1.0f);
+
+                            if (car.BrakeSystem.BrakeLine1PressurePSI - dp < 0)
+                                dp = car.BrakeSystem.BrakeLine1PressurePSI;
+                            car.BrakeSystem.BrakeLine1PressurePSI -= dp;
                         }
                         if ((nextCar == null || !nextCar.BrakeSystem.FrontBrakeHoseConnected) && car.BrakeSystem.AngleCockBOpen)
                         {
-                            car.BrakeSystem.BrakeLine1PressurePSI = Math.Max(car.BrakeSystem.BrakeLine1PressurePSI * (1 - trainPipeTimeVariationS / brakePipeTimeFactorS), 0);
+                            float dp = car.BrakeSystem.BrakeLine1PressurePSI * trainPipeTimeVariationS / brakePipeTimeFactorS;
+
+                            if (car.BrakeSystem.AngleCockBOpenAmount < 1)
+                                dp *= MathHelper.Clamp((float)Math.Pow(car.BrakeSystem.AngleCockBOpenAmount, 2), 0.0f, 1.0f);
+
+                            if (car.BrakeSystem.BrakeLine1PressurePSI - dp < 0)
+                                dp = car.BrakeSystem.BrakeLine1PressurePSI;
+                            car.BrakeSystem.BrakeLine1PressurePSI -= dp;
                         }
                     }
 #if DEBUG_TRAIN_PIPE_LEAK
