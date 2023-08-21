@@ -1278,10 +1278,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                 }
             }
-            // Equalize main reservoir with train pipe for every locomotive
             foreach (TrainCar car in train.Cars)
             {
-                if (car is MSTSLocomotive loco && car.BrakeSystem.TwoPipes)
+                if (car is MSTSLocomotive loco)
+                {
+                    // Continue updating flowmeter on non-lead locomotives so it zeroes out eventually
+                    if (car != lead)
+                    {
+                        (car as MSTSLocomotive).BrakePipeFlowM3pS = 0;
+                        (car as MSTSLocomotive).FilteredBrakePipeFlowM3pS = (car as MSTSLocomotive).AFMFilter.Filter(0, elapsedClockSeconds);
+                    }    
+
+                    // Equalize main reservoir with MR pipe for every locomotive
+                    if (car.BrakeSystem.TwoPipes)
                 {
                     float volumeRatio = loco.BrakeSystem.BrakePipeVolumeM3 / loco.MainResVolumeM3;
                     float dp = Math.Min((loco.MainResPressurePSI - loco.BrakeSystem.BrakeLine2PressurePSI) / (1 + volumeRatio), loco.MaximumMainReservoirPipePressurePSI - loco.BrakeSystem.BrakeLine2PressurePSI);
@@ -1290,6 +1299,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     if (loco.MainResPressurePSI < 0) loco.MainResPressurePSI = 0;
                     if (loco.BrakeSystem.BrakeLine2PressurePSI < 0) loco.BrakeSystem.BrakeLine2PressurePSI = 0;
                 }
+            }
             }
 
             // Propagate engine brake pipe (3) data
