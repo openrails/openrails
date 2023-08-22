@@ -25,6 +25,8 @@ namespace Orts.Viewer3D.Debugging
         /// </summary>
         public readonly Simulator simulator;
         private MapDataProvider MapDataProvider;
+        private MapThemeProvider MapThemeProvider;
+        private ThemeStyle Theme;
         /// <summary>
         /// Used to periodically check if we should shift the view when the
         /// user is holding down a "shift view" button.
@@ -58,6 +60,7 @@ namespace Orts.Viewer3D.Debugging
         /// contains the last position of the mouse
         /// </summary>
         private System.Drawing.Point LastCursorPosition = new System.Drawing.Point();
+
         public Pen redPen = new Pen(Color.FromArgb(244, 67, 54));
         public Pen greenPen = new Pen(Color.FromArgb(76, 175, 80));
         public Pen orangePen = new Pen(Color.FromArgb(255, 235, 59));
@@ -67,6 +70,18 @@ namespace Orts.Viewer3D.Debugging
         public Pen PlatformPen = new Pen(Color.Blue);
         public Pen TrackPen = new Pen(Color.FromArgb(46, 64, 83));
         public Pen ZoomTargetPen = new Pen(Color.FromArgb(46, 64, 83));
+
+        public Font trainFont = new Font("Segoe UI Semibold", 10, FontStyle.Bold);
+        public Font sidingFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
+        public Font PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
+        public Font SignalFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
+        private SolidBrush trainBrush = new SolidBrush(Color.Red);
+        public SolidBrush sidingBrush = new SolidBrush(Color.Blue);
+        public SolidBrush PlatformBrush = new SolidBrush(Color.DarkBlue);
+        public SolidBrush SignalBrush = new SolidBrush(Color.DarkRed);
+        public SolidBrush InactiveTrainBrush = new SolidBrush(Color.DarkRed);
+        private Color MapCanvasColor = Color.White;
+
         // the train selected by leftclicking the mouse
         public Train PickedTrain;
         /// <summary>
@@ -81,16 +96,6 @@ namespace Orts.Viewer3D.Debugging
         public float maxY = float.MinValue;
 
         public int RedrawCount;
-        public Font trainFont = new Font("Segoe UI Semibold", 10, FontStyle.Bold);
-        public Font sidingFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-        public Font PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-        public Font SignalFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-        private SolidBrush trainBrush = new SolidBrush(Color.Red);
-        public SolidBrush sidingBrush = new SolidBrush(Color.Blue);
-        public SolidBrush PlatformBrush = new SolidBrush(Color.DarkBlue);
-        public SolidBrush SignalBrush = new SolidBrush(Color.DarkRed);
-        public SolidBrush InactiveTrainBrush = new SolidBrush(Color.DarkRed);
-
         private double lastUpdateTime;
 
         private bool MapCustomizationVisible = false;
@@ -106,6 +111,7 @@ namespace Orts.Viewer3D.Debugging
             this.simulator = simulator;
             Viewer = viewer;
             MapDataProvider = new MapDataProvider(this);
+            MapThemeProvider = new MapThemeProvider();
             nodes = simulator.TDB.TrackDB.TrackNodes;
 
             InitializeForm();
@@ -132,6 +138,8 @@ namespace Orts.Viewer3D.Debugging
         void InitializeForm()
         {
             MapDataProvider.SetControls();
+            MapThemeProvider.InitializeThemes();
+            Theme = MapThemeProvider.LightTheme;
 
             float[] dashPattern = { 4, 2 };
             ZoomTargetPen.DashPattern = dashPattern;
@@ -281,7 +289,7 @@ namespace Orts.Viewer3D.Debugging
             // If `PlayersList` hasn't changed since we've last checked, we should not clear/update
             // `playersView` to avoid flickering
             if (!PlayersListChanged) return;
-            
+
             playersView.Items.Clear();
             Console.Beep();
             foreach (var p in PlayersList)
@@ -389,7 +397,7 @@ namespace Orts.Viewer3D.Debugging
                     g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
 
                 subX = minX + ViewWindow.X; subY = minY + ViewWindow.Y;
-                g.Clear(Color.White);
+                g.Clear(MapCanvasColor);
 
                 xScale = mapCanvas.Width / ViewWindow.Width;
                 yScale = mapCanvas.Height / ViewWindow.Height;
@@ -1137,6 +1145,34 @@ namespace Orts.Viewer3D.Debugging
         }
         #endregion
 
+        #region themes
+        private void ApplyThemeRecursively(System.Windows.Forms.Control parent)
+        {
+            foreach (System.Windows.Forms.Control c in parent.Controls)
+            {
+                if (c is Button && c?.Tag?.ToString() != "mapCustomization")
+                {
+                    Button b = (Button)c;
+                    b.BackColor = Theme.BackColor;
+                    b.ForeColor = Theme.ForeColor;
+                    b.FlatStyle = Theme.FlatStyle;
+                }
+                else if (c is GroupBox || c is Panel)
+                {
+                    c.BackColor = Theme.PanelBackColor;
+                    c.ForeColor = Theme.ForeColor;
+                }
+                else
+                {
+                    c.BackColor = Theme.PanelBackColor;
+                    c.ForeColor = Theme.ForeColor;
+                }
+
+                ApplyThemeRecursively(c);
+            }
+        }
+        #endregion
+
         /// <summary>
         /// Generates a rectangle representing a dot being drawn.
         /// </summary>
@@ -1695,6 +1731,22 @@ namespace Orts.Viewer3D.Debugging
         private void DispatchViewerBeta_Resize(object sender, EventArgs e)
         {
             InitializeImage();
+        }
+
+        private void rotateThemesButton_Click(object sender, EventArgs e)
+        {
+            if (Theme == MapThemeProvider.LightTheme)
+            {
+                Theme = MapThemeProvider.DarkTheme;
+            }
+            else
+            {
+                Theme = MapThemeProvider.LightTheme;
+            }
+
+            ApplyThemeRecursively(this);
+            MapCanvasColor = Theme.MapCanvasColor;
+            TrackPen.Color = Theme.TrackColor;
         }
 
         private void DispatchViewerBeta_FormClosing(object sender, FormClosingEventArgs e)

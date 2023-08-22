@@ -327,6 +327,7 @@
             this.mapCustomizationButton.Name = "mapCustomizationButton";
             this.mapCustomizationButton.Size = new System.Drawing.Size(120, 23);
             this.mapCustomizationButton.TabIndex = 0;
+            this.mapCustomizationButton.Tag = "mapCustomization";
             this.mapCustomizationButton.Text = "Map customization";
             this.mapCustomizationButton.UseVisualStyleBackColor = true;
             this.mapCustomizationButton.Click += new System.EventHandler(this.mapCustomizationButton_Click);
@@ -470,13 +471,13 @@
             // rotateThemesButton
             // 
             this.rotateThemesButton.AutoSize = true;
-            this.rotateThemesButton.Enabled = false;
             this.rotateThemesButton.Location = new System.Drawing.Point(10, 52);
             this.rotateThemesButton.Name = "rotateThemesButton";
             this.rotateThemesButton.Size = new System.Drawing.Size(167, 23);
             this.rotateThemesButton.TabIndex = 8;
             this.rotateThemesButton.Text = "Rotate between themes";
             this.rotateThemesButton.UseVisualStyleBackColor = true;
+            this.rotateThemesButton.Click += new System.EventHandler(this.rotateThemesButton_Click);
             // 
             // showTimeCheckbox
             // 
@@ -859,7 +860,7 @@
             this.mainRouteToolStripMenuItem,
             this.sideRouteToolStripMenuItem});
             this.setSwitchMenu.Name = "contextMenuStrip1";
-            this.setSwitchMenu.Size = new System.Drawing.Size(181, 92);
+            this.setSwitchMenu.Size = new System.Drawing.Size(157, 70);
             this.setSwitchMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.setSwitchMenu_ItemClicked);
             // 
             // setSwitchToToolStripMenuItem
@@ -867,7 +868,7 @@
             this.setSwitchToToolStripMenuItem.Enabled = false;
             this.setSwitchToToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.setSwitchToToolStripMenuItem.Name = "setSwitchToToolStripMenuItem";
-            this.setSwitchToToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.setSwitchToToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.setSwitchToToolStripMenuItem.Text = "Set switch to...";
             // 
             // mainRouteToolStripMenuItem
@@ -875,7 +876,7 @@
             this.mainRouteToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(93)))), ((int)(((byte)(64)))), ((int)(((byte)(55)))));
             this.mainRouteToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.mainRouteToolStripMenuItem.Name = "mainRouteToolStripMenuItem";
-            this.mainRouteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mainRouteToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.mainRouteToolStripMenuItem.Tag = "mainRoute";
             this.mainRouteToolStripMenuItem.Text = "Main route";
             // 
@@ -883,7 +884,7 @@
             // 
             this.sideRouteToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(161)))), ((int)(((byte)(136)))), ((int)(((byte)(127)))));
             this.sideRouteToolStripMenuItem.Name = "sideRouteToolStripMenuItem";
-            this.sideRouteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.sideRouteToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.sideRouteToolStripMenuItem.Tag = "sideRoute";
             this.sideRouteToolStripMenuItem.Text = "Side route";
             // 
