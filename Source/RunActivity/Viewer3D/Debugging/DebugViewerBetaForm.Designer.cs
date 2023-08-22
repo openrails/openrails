@@ -859,7 +859,7 @@
             this.mainRouteToolStripMenuItem,
             this.sideRouteToolStripMenuItem});
             this.setSwitchMenu.Name = "contextMenuStrip1";
-            this.setSwitchMenu.Size = new System.Drawing.Size(157, 70);
+            this.setSwitchMenu.Size = new System.Drawing.Size(181, 92);
             this.setSwitchMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.setSwitchMenu_ItemClicked);
             // 
             // setSwitchToToolStripMenuItem
@@ -867,20 +867,23 @@
             this.setSwitchToToolStripMenuItem.Enabled = false;
             this.setSwitchToToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.setSwitchToToolStripMenuItem.Name = "setSwitchToToolStripMenuItem";
-            this.setSwitchToToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.setSwitchToToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.setSwitchToToolStripMenuItem.Text = "Set switch to...";
             // 
             // mainRouteToolStripMenuItem
             // 
+            this.mainRouteToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(93)))), ((int)(((byte)(64)))), ((int)(((byte)(55)))));
+            this.mainRouteToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.mainRouteToolStripMenuItem.Name = "mainRouteToolStripMenuItem";
-            this.mainRouteToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.mainRouteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.mainRouteToolStripMenuItem.Tag = "mainRoute";
             this.mainRouteToolStripMenuItem.Text = "Main route";
             // 
             // sideRouteToolStripMenuItem
             // 
+            this.sideRouteToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(161)))), ((int)(((byte)(136)))), ((int)(((byte)(127)))));
             this.sideRouteToolStripMenuItem.Name = "sideRouteToolStripMenuItem";
-            this.sideRouteToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.sideRouteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.sideRouteToolStripMenuItem.Tag = "sideRoute";
             this.sideRouteToolStripMenuItem.Text = "Side route";
             // 
