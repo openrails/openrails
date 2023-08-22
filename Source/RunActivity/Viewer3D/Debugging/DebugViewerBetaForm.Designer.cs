@@ -960,7 +960,7 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.MinimumSize = new System.Drawing.Size(600, 400);
             this.Name = "DispatchViewerBeta";
-            this.Text = "Dispatcher window";
+            this.Text = "Map window";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DispatchViewerBeta_FormClosing);
             this.Resize += new System.EventHandler(this.DispatchViewerBeta_Resize);
             this.playerRolePanel.ResumeLayout(false);
