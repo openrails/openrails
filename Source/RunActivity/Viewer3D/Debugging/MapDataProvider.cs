@@ -49,11 +49,17 @@ namespace Orts.Viewer3D.Debugging
         {
             var isMultiPlayer = MPManager.IsMultiPlayer();
 
+            if (isMultiPlayer)
+            {
+                F.playersPanel.Visible = true;
+            }
+
             if (isMultiPlayer && MPManager.IsServer())
             {
                 F.playerRolePanel.Visible = true;
                 F.messagesPanel.Visible = true;
                 F.multiplayerSettingsPanel.Visible = true;
+                //F.playersPanel.Visible = true;
             }
         }
 

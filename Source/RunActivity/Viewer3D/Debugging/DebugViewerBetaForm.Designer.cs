@@ -750,6 +750,7 @@
             this.playersPanel.Padding = new System.Windows.Forms.Padding(10, 0, 10, 10);
             this.playersPanel.Size = new System.Drawing.Size(200, 237);
             this.playersPanel.TabIndex = 2;
+            this.playersPanel.Visible = false;
             // 
             // groupBox3
             // 
@@ -770,7 +771,6 @@
             this.playersView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.playersView.Enabled = false;
             this.playersView.HideSelection = false;
             this.playersView.HoverSelection = true;
             this.playersView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
@@ -962,6 +962,7 @@
             this.Name = "DispatchViewerBeta";
             this.Text = "Dispatcher window";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DispatchViewerBeta_FormClosing);
+            this.Resize += new System.EventHandler(this.DispatchViewerBeta_Resize);
             this.playerRolePanel.ResumeLayout(false);
             this.playerRolePanel.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -1025,7 +1026,7 @@
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button centerOnMyTrainButton;
         private System.Windows.Forms.Button seeTrainInGameButton;
-        private System.Windows.Forms.Panel playersPanel;
+        public System.Windows.Forms.Panel playersPanel;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.ListView playersView;
         private System.Windows.Forms.ContextMenuStrip playerActionsMenu;
