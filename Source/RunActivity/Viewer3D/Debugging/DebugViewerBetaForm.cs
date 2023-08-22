@@ -25,15 +25,14 @@ namespace Orts.Viewer3D.Debugging
         /// </summary>
         public readonly Simulator simulator;
         private MapDataProvider MapDataProvider;
+        private MapThemeProvider MapThemeProvider;
+        private ThemeStyle Theme;
         /// <summary>
         /// Used to periodically check if we should shift the view when the
         /// user is holding down a "shift view" button.
         /// </summary>
         private Timer UITimer;
         public Viewer Viewer;
-
-        private int IM_Width;
-        private int IM_Height;
 
         /// <summary>
         /// True when the user is dragging the route view
@@ -61,6 +60,7 @@ namespace Orts.Viewer3D.Debugging
         /// contains the last position of the mouse
         /// </summary>
         private System.Drawing.Point LastCursorPosition = new System.Drawing.Point();
+
         public Pen redPen = new Pen(Color.FromArgb(244, 67, 54));
         public Pen greenPen = new Pen(Color.FromArgb(76, 175, 80));
         public Pen orangePen = new Pen(Color.FromArgb(255, 235, 59));
@@ -70,6 +70,18 @@ namespace Orts.Viewer3D.Debugging
         public Pen PlatformPen = new Pen(Color.Blue);
         public Pen TrackPen = new Pen(Color.FromArgb(46, 64, 83));
         public Pen ZoomTargetPen = new Pen(Color.FromArgb(46, 64, 83));
+
+        public Font trainFont = new Font("Segoe UI Semibold", 10, FontStyle.Bold);
+        public Font sidingFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
+        public Font PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
+        public Font SignalFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
+        private SolidBrush trainBrush = new SolidBrush(Color.Red);
+        public SolidBrush sidingBrush = new SolidBrush(Color.Blue);
+        public SolidBrush PlatformBrush = new SolidBrush(Color.DarkBlue);
+        public SolidBrush SignalBrush = new SolidBrush(Color.DarkRed);
+        public SolidBrush InactiveTrainBrush = new SolidBrush(Color.DarkRed);
+        private Color MapCanvasColor = Color.White;
+
         // the train selected by leftclicking the mouse
         public Train PickedTrain;
         /// <summary>
@@ -84,16 +96,6 @@ namespace Orts.Viewer3D.Debugging
         public float maxY = float.MinValue;
 
         public int RedrawCount;
-        public Font trainFont = new Font("Segoe UI Semibold", 10, FontStyle.Bold);
-        public Font sidingFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-        public Font PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-        public Font SignalFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-        private SolidBrush trainBrush = new SolidBrush(Color.Red);
-        public SolidBrush sidingBrush = new SolidBrush(Color.Blue);
-        public SolidBrush PlatformBrush = new SolidBrush(Color.DarkBlue);
-        public SolidBrush SignalBrush = new SolidBrush(Color.DarkRed);
-        public SolidBrush InactiveTrainBrush = new SolidBrush(Color.DarkRed);
-
         private double lastUpdateTime;
 
         private bool MapCustomizationVisible = false;
@@ -109,6 +111,7 @@ namespace Orts.Viewer3D.Debugging
             this.simulator = simulator;
             Viewer = viewer;
             MapDataProvider = new MapDataProvider(this);
+            MapThemeProvider = new MapThemeProvider();
             nodes = simulator.TDB.TrackDB.TrackNodes;
 
             InitializeForm();
@@ -134,12 +137,9 @@ namespace Orts.Viewer3D.Debugging
 
         void InitializeForm()
         {
-            if (MPManager.IsMultiPlayer() && MPManager.IsServer())
-            {
-                playerRolePanel.Visible = true;
-                messagesPanel.Visible = true;
-                multiplayerSettingsPanel.Visible = true;
-            }
+            MapDataProvider.SetControls();
+            MapThemeProvider.InitializeThemes();
+            Theme = MapThemeProvider.LightTheme;
 
             float[] dashPattern = { 4, 2 };
             ZoomTargetPen.DashPattern = dashPattern;
@@ -235,8 +235,6 @@ namespace Orts.Viewer3D.Debugging
         /// </summary>
         public void InitializeImage()
         {
-            /*mapCanvas.Width = IM_Width;
-            mapCanvas.Height = IM_Height;*/
 
             if (mapCanvas.Image != null)
             {
@@ -244,10 +242,74 @@ namespace Orts.Viewer3D.Debugging
             }
 
             mapCanvas.Image = new Bitmap(mapCanvas.Width, mapCanvas.Height);
-            /*imageList1 = new ImageList();
-            playersView.View = View.LargeIcon;
-            imageList1.ImageSize = new Size(64, 64);
-            playersView.LargeImageList = imageList1;*/
+        }
+        #endregion
+
+        #region playersList
+        List<string> PlayersList = new List<string>();
+
+        public void AddPlayer(string name)
+        {
+            PlayersList.Add(name);
+        }
+
+        // TODO: Colour code players based on their roles
+        // TODO: FUNCTION NOT WORKING CORRECTLY
+        public void CheckPlayers()
+        {
+            if (!MPManager.IsMultiPlayer() || MPManager.OnlineTrains == null || MPManager.OnlineTrains.Players == null) return;
+            var players = MPManager.OnlineTrains.Players;
+            var username = MPManager.GetUserName();
+            players = players.Concat(MPManager.Instance().lostPlayer).ToDictionary(x => x.Key, x => x.Value);
+
+            bool PlayersListChanged = false;
+
+            // Add myself
+            if (!PlayersList.Contains(username))
+            {
+                AddPlayer(username);
+                PlayersListChanged = true;
+            }
+
+            foreach (var p in players)
+            {
+                if (PlayersList.Contains(p.Key)) continue;
+                AddPlayer(p.Key);
+                PlayersListChanged = true;
+            }
+
+            // Remove players from `PlayersList` if they are no longer on the server
+            foreach (var p in PlayersList.ToList()) // https://stackoverflow.com/a/604843/
+            {
+                if (players.ContainsKey(p) || p == username) continue;
+                PlayersList.Remove(p);
+                PlayersListChanged = true;
+            }
+
+            // If `PlayersList` hasn't changed since we've last checked, we should not clear/update
+            // `playersView` to avoid flickering
+            if (!PlayersListChanged) return;
+
+            playersView.Items.Clear();
+            Console.Beep();
+            foreach (var p in PlayersList)
+            {
+                if (p == username)
+                    playersView.Items.Add(p);
+
+                if (MPManager.Instance().aiderList.Contains(p))
+                {
+                    playersView.Items.Add(p + " (Helper)");
+                }
+                else if (MPManager.Instance().lostPlayer.ContainsKey(p))
+                {
+                    playersView.Items.Add(p + " (Disconnected)");
+                }
+                else
+                {
+                    playersView.Items.Add(p);
+                }
+            }
         }
         #endregion
 
@@ -257,44 +319,6 @@ namespace Orts.Viewer3D.Debugging
         public float subX, subY;
         public float oldWidth;
         public float oldHeight;
-
-        //determine locations of buttons and boxes
-        void DetermineLocations()
-        {
-            IM_Width = mapCanvas.Width;
-            IM_Height = mapCanvas.Height;
-
-            if (mapCanvas.Image != null)
-            {
-                mapCanvas.Image.Dispose();
-            }
-
-            mapCanvas.Image = new Bitmap(mapCanvas.Width, mapCanvas.Height);
-            /*if (Height < 600 || Width < 800) return;
-            if (oldHeight != Height || oldWidth != label1.Left)//use the label "Res" as anchor point to determine the picture size
-            {
-                oldWidth = label1.Left; oldHeight = Height;
-                IM_Width = label1.Left - 20;
-                IM_Height = Height - mapCanvas.Top;
-                mapCanvas.Width = IM_Width;
-                mapCanvas.Height = Height - mapCanvas.Top - 40;
-                if (mapCanvas.Image != null)
-                {
-                    mapCanvas.Image.Dispose();
-                }
-
-                mapCanvas.Image = new Bitmap(mapCanvas.Width, mapCanvas.Height);
-
-                if (btnAssist.Left - 10 < composeMSG.Right)
-                {
-                    var size = composeMSG.Width;
-                    composeMSG.Left = msgAll.Left = msgSelected.Left = reply2Selected.Left = btnAssist.Left - 10 - size;
-                    MSG.Width = messages.Width = composeMSG.Left - 20;
-                    MSG.Width = messages.Width = composeMSG.Left - 20;
-                }
-                firstShow = true;
-            }*/
-        }
 
         /// <summary>
         /// Regenerates the 2D view. At the moment, examines the track network
@@ -308,8 +332,7 @@ namespace Orts.Viewer3D.Debugging
             if (showTimeCheckbox.Checked)
                 MapDataProvider.ShowSimulationTime();
 
-            if (mapCanvas.Image == null) InitializeImage();
-            DetermineLocations();
+            if (mapCanvas.Image == null || firstShow) InitializeImage();
 
             /*if (firstShow)
             {
@@ -365,6 +388,8 @@ namespace Orts.Viewer3D.Debugging
                 }
             }
 
+            CheckPlayers();
+
             using (Graphics g = Graphics.FromImage(mapCanvas.Image))
             {
                 // Optional anti-aliasing
@@ -372,7 +397,7 @@ namespace Orts.Viewer3D.Debugging
                     g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
 
                 subX = minX + ViewWindow.X; subY = minY + ViewWindow.Y;
-                g.Clear(Color.White);
+                g.Clear(MapCanvasColor);
 
                 xScale = mapCanvas.Width / ViewWindow.Width;
                 yScale = mapCanvas.Height / ViewWindow.Height;
@@ -428,220 +453,6 @@ namespace Orts.Viewer3D.Debugging
                 }
 
                 DrawZoomTarget(g);
-
-                /*
-                foreach (var line in segments)
-                {
-
-                    scaledA.X = (line.A.TileX * 2048 - subX + (float)line.A.X) * xScale; scaledA.Y = mapCanvas.Height - (line.A.TileZ * 2048 - subY + (float)line.A.Z) * yScale;
-                    scaledB.X = (line.B.TileX * 2048 - subX + (float)line.B.X) * xScale; scaledB.Y = mapCanvas.Height - (line.B.TileZ * 2048 - subY + (float)line.B.Z) * yScale;
-
-                    if ((scaledA.X < 0 && scaledB.X < 0) || (scaledA.X > mapCanvas.Width && scaledB.X > IM_Width) || (scaledA.Y > IM_Height && scaledB.Y > IM_Height) || (scaledA.Y < 0 && scaledB.Y < 0))
-                        continue;
-
-                    if (line.isCurved == true)
-                    {
-                        scaledC.X = ((float)line.C.X - subX) * xScale; scaledC.Y = mapCanvas.Height - ((float)line.C.Z - subY) * yScale;
-                        points[0] = scaledA; points[1] = scaledC; points[2] = scaledB;
-                        g.DrawCurve(p, points);
-                    }
-                    else
-                    {
-                        g.DrawLine(p, scaledA, scaledB);
-                    }
-                }
-
-                switchItemsDrawn.Clear();
-                signalItemsDrawn.Clear();
-                float x, y;
-                PointF scaledItem = new PointF(0f, 0f);
-                var width = 6f * p.Width; if (width > 15) width = 15;//not to make it too large
-                for (var i = 0; i < switches.Count; i++)
-                {
-                    SwitchWidget sw = switches[i];
-
-                    x = (sw.Location.X - subX) * xScale; y = mapCanvas.Height - (sw.Location.Y - subY) * yScale;
-
-                    if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
-
-                    scaledItem.X = x; scaledItem.Y = y;
-
-
-                    if (sw.Item.TrJunctionNode.SelectedRoute == sw.main) g.FillEllipse(Brushes.Black, GetRect(scaledItem, width));
-                    else g.FillEllipse(Brushes.Gray, GetRect(scaledItem, width));
-
-                    sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
-                    switchItemsDrawn.Add(sw);
-                }
-
-                foreach (var s in signals)
-                {
-                    if (float.IsNaN(s.Location.X) || float.IsNaN(s.Location.Y)) continue;
-                    x = (s.Location.X - subX) * xScale; y = mapCanvas.Height - (s.Location.Y - subY) * yScale;
-                    if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
-                    scaledItem.X = x; scaledItem.Y = y;
-                    s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
-                    if (s.Signal.isSignalNormal())//only show nor
-                    {
-                        var color = Brushes.Green;
-                        var pen = greenPen;
-                        if (s.IsProceed == 0)
-                        {
-                        }
-                        else if (s.IsProceed == 1)
-                        {
-                            color = Brushes.Orange;
-                            pen = orangePen;
-                        }
-                        else
-                        {
-                            color = Brushes.Red;
-                            pen = redPen;
-                        }
-                        g.FillEllipse(color, GetRect(scaledItem, width));
-                        signalItemsDrawn.Add(s);
-                        if (s.hasDir)
-                        {
-                            scaledB.X = (s.Dir.X - subX) * xScale; scaledB.Y = mapCanvas.Height - (s.Dir.Y - subY) * yScale;
-                            g.DrawLine(pen, scaledItem, scaledB);
-                        }
-                    }
-                }
-                */
-                /*if (true)
-                {
-                    CleanVerticalCells();//clean the drawing area for text of sidings and platforms
-                    foreach (var sw in sidings)
-                        scaledItem = DrawSiding(g, scaledItem, sw);
-                    foreach (var pw in platforms)
-                        scaledItem = DrawPlatform(g, scaledItem, pw);
-
-                    var margin = 30 * xScale;//margins to determine if we want to draw a train
-                    var margin2 = 5000 * xScale;
-
-                    //variable for drawing train path
-                    var mDist = 5000f; var pDist = 50; //segment length when draw path
-
-                    selectedTrainList.Clear();
-                    foreach (var t in simulator.Trains) selectedTrainList.Add(t);
-
-                    var redTrain = selectedTrainList.Count;
-
-                    //choosen trains will be drawn later using blue, so it will overlap on the red lines
-                    var chosen = playersView.SelectedItems;
-                    if (chosen.Count > 0)
-                    {
-                        for (var i = 0; i < chosen.Count; i++)
-                        {
-                            var name = chosen[i].Text.Split(' ')[0].Trim(); //filter out (H) in the text
-                            var train = MPManager.OnlineTrains.findTrain(name);
-                            if (train != null) { selectedTrainList.Remove(train); selectedTrainList.Add(train); redTrain--; }
-                            //if selected include myself, will show it as blue
-                            if (MPManager.GetUserName() == name && Program.Simulator.PlayerLocomotive != null)
-                            {
-                                selectedTrainList.Remove(Program.Simulator.PlayerLocomotive.Train); selectedTrainList.Add(Program.Simulator.PlayerLocomotive.Train);
-                                redTrain--;
-                            }
-
-                        }
-                    }
-
-                    //trains selected in the avatar view list will be drawn in blue, others will be drawn in red
-                    pathPen.Color = Color.Red;
-                    var drawRed = 0;
-                    int ValidTrain = selectedTrainList.Count();
-                    //add trains quit into the end, will draw them in gray
-                    var quitTrains = MPManager.Instance().lostPlayer.Values
-                        .Select((OnlinePlayer lost) => lost?.Train)
-                        .Where((Train t) => t != null)
-                        .Where((Train t) => !selectedTrainList.Contains(t));
-                    selectedTrainList.AddRange(quitTrains);
-                    foreach (Train t in selectedTrainList)
-                    {
-                        drawRed++;//how many red has been drawn
-                        if (drawRed > redTrain) pathPen.Color = Color.Blue; //more than the red should be drawn, thus draw in blue
-
-                        name = "";
-                        TrainCar firstCar = null;
-                        if (t.LeadLocomotive != null)
-                        {
-                            worldPos = t.LeadLocomotive.WorldPosition;
-                            name = t.GetTrainName(t.LeadLocomotive.CarID);
-                            firstCar = t.LeadLocomotive;
-                        }
-                        else if (t.Cars != null && t.Cars.Count > 0)
-                        {
-                            worldPos = t.Cars[0].WorldPosition;
-                            name = t.GetTrainName(t.Cars[0].CarID);
-                            if (t.TrainType == Train.TRAINTYPE.AI)
-                                name = t.Number.ToString() + ":" + t.Name;
-                            firstCar = t.Cars[0];
-                        }
-                        else continue;
-
-                        if (xScale < 0.3 || t.FrontTDBTraveller == null || t.RearTDBTraveller == null)
-                        {
-                            worldPos = firstCar.WorldPosition;
-                            scaledItem.X = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
-                            scaledItem.Y = mapCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
-                            if (scaledItem.X < -margin2 || scaledItem.X > IM_Width + margin2 || scaledItem.Y > IM_Height + margin2 || scaledItem.Y < -margin2) continue;
-                            if (drawRed > ValidTrain) g.FillRectangle(Brushes.Gray, GetRect(scaledItem, 15f));
-                            else
-                            {
-                                if (t == PickedTrain) g.FillRectangle(Brushes.Red, GetRect(scaledItem, 15f));
-                                else g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
-                                scaledItem.Y -= 25;
-                                DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
-                            }
-                            g.DrawString(name, trainFont, trainBrush, scaledItem);
-                            continue;
-                        }
-                        var loc = t.FrontTDBTraveller.WorldLocation;
-                        x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale; y = mapCanvas.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
-                        if (x < -margin2 || x > IM_Width + margin2 || y > IM_Height + margin2 || y < -margin2) continue;
-
-                        //train quit will not draw path, others will draw it
-                        if (drawRed <= ValidTrain) DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
-
-                        trainPen.Color = Color.DarkGreen;
-                        foreach (var car in t.Cars)
-                        {
-                            Traveller t1 = new Traveller(t.RearTDBTraveller);
-                            worldPos = car.WorldPosition;
-                            var dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
-                            if (dist > 0)
-                            {
-                                t1.Move(dist - 1 + car.CarLengthM / 2);
-                                x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = mapCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
-                                //x = (worldPos.TileX * 2048 + worldPos.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - minY - ViewWindow.Y) * yScale;
-                                if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
-
-                                scaledItem.X = x; scaledItem.Y = y;
-
-                                t1.Move(-car.CarLengthM);
-                                x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = mapCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
-                                if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
-
-                                scaledA.X = x; scaledA.Y = y;
-
-                                //if the train has quit, will draw in gray, if the train is selected by left click of the mouse, will draw it in red
-                                if (drawRed > ValidTrain) trainPen.Color = Color.Gray;
-                                else if (t == PickedTrain) trainPen.Color = Color.Red;
-                                g.DrawLine(trainPen, scaledA, scaledItem);
-                            }
-                        }
-                        worldPos = firstCar.WorldPosition;
-                        scaledItem.X = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
-                        scaledItem.Y = -25 + mapCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
-
-                        g.DrawString(name, trainFont, trainBrush, scaledItem);
-
-                    }
-                    if (switchPickedItemHandled)
-                        switchPickedItem = null;
-                    if (signalPickedItemHandled)
-                        signalPickedItem = null;
-                }*/
             }
 
             mapCanvas.Invalidate(); // Triggers a re-paint
@@ -1334,6 +1145,34 @@ namespace Orts.Viewer3D.Debugging
         }
         #endregion
 
+        #region themes
+        private void ApplyThemeRecursively(System.Windows.Forms.Control parent)
+        {
+            foreach (System.Windows.Forms.Control c in parent.Controls)
+            {
+                if (c is Button && c?.Tag?.ToString() != "mapCustomization")
+                {
+                    Button b = (Button)c;
+                    b.BackColor = Theme.BackColor;
+                    b.ForeColor = Theme.ForeColor;
+                    b.FlatStyle = Theme.FlatStyle;
+                }
+                else if (c is GroupBox || c is Panel)
+                {
+                    c.BackColor = Theme.PanelBackColor;
+                    c.ForeColor = Theme.ForeColor;
+                }
+                else
+                {
+                    c.BackColor = Theme.PanelBackColor;
+                    c.ForeColor = Theme.ForeColor;
+                }
+
+                ApplyThemeRecursively(c);
+            }
+        }
+        #endregion
+
         /// <summary>
         /// Generates a rectangle representing a dot being drawn.
         /// </summary>
@@ -1887,6 +1726,27 @@ namespace Orts.Viewer3D.Debugging
             MPManager.Instance().CheckSpad = penaltyCheckbox.Checked;
             if (penaltyCheckbox.Checked == false) { MPManager.BroadCast(new MSGMessage("All", "OverSpeedOK", "OK to go overspeed and pass stop light").ToString()); }
             else { MPManager.BroadCast(new MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light").ToString()); }
+        }
+
+        private void DispatchViewerBeta_Resize(object sender, EventArgs e)
+        {
+            InitializeImage();
+        }
+
+        private void rotateThemesButton_Click(object sender, EventArgs e)
+        {
+            if (Theme == MapThemeProvider.LightTheme)
+            {
+                Theme = MapThemeProvider.DarkTheme;
+            }
+            else
+            {
+                Theme = MapThemeProvider.LightTheme;
+            }
+
+            ApplyThemeRecursively(this);
+            MapCanvasColor = Theme.MapCanvasColor;
+            TrackPen.Color = Theme.TrackColor;
         }
 
         private void DispatchViewerBeta_FormClosing(object sender, FormClosingEventArgs e)

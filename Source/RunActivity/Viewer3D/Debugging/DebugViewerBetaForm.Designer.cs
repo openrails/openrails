@@ -327,6 +327,7 @@
             this.mapCustomizationButton.Name = "mapCustomizationButton";
             this.mapCustomizationButton.Size = new System.Drawing.Size(120, 23);
             this.mapCustomizationButton.TabIndex = 0;
+            this.mapCustomizationButton.Tag = "mapCustomization";
             this.mapCustomizationButton.Text = "Map customization";
             this.mapCustomizationButton.UseVisualStyleBackColor = true;
             this.mapCustomizationButton.Click += new System.EventHandler(this.mapCustomizationButton_Click);
@@ -470,13 +471,13 @@
             // rotateThemesButton
             // 
             this.rotateThemesButton.AutoSize = true;
-            this.rotateThemesButton.Enabled = false;
             this.rotateThemesButton.Location = new System.Drawing.Point(10, 52);
             this.rotateThemesButton.Name = "rotateThemesButton";
             this.rotateThemesButton.Size = new System.Drawing.Size(167, 23);
             this.rotateThemesButton.TabIndex = 8;
             this.rotateThemesButton.Text = "Rotate between themes";
             this.rotateThemesButton.UseVisualStyleBackColor = true;
+            this.rotateThemesButton.Click += new System.EventHandler(this.rotateThemesButton_Click);
             // 
             // showTimeCheckbox
             // 
@@ -750,6 +751,7 @@
             this.playersPanel.Padding = new System.Windows.Forms.Padding(10, 0, 10, 10);
             this.playersPanel.Size = new System.Drawing.Size(200, 237);
             this.playersPanel.TabIndex = 2;
+            this.playersPanel.Visible = false;
             // 
             // groupBox3
             // 
@@ -770,7 +772,6 @@
             this.playersView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.playersView.Enabled = false;
             this.playersView.HideSelection = false;
             this.playersView.HoverSelection = true;
             this.playersView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
@@ -872,6 +873,8 @@
             // 
             // mainRouteToolStripMenuItem
             // 
+            this.mainRouteToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(93)))), ((int)(((byte)(64)))), ((int)(((byte)(55)))));
+            this.mainRouteToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.mainRouteToolStripMenuItem.Name = "mainRouteToolStripMenuItem";
             this.mainRouteToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.mainRouteToolStripMenuItem.Tag = "mainRoute";
@@ -879,6 +882,7 @@
             // 
             // sideRouteToolStripMenuItem
             // 
+            this.sideRouteToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(161)))), ((int)(((byte)(136)))), ((int)(((byte)(127)))));
             this.sideRouteToolStripMenuItem.Name = "sideRouteToolStripMenuItem";
             this.sideRouteToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.sideRouteToolStripMenuItem.Tag = "sideRoute";
@@ -960,8 +964,9 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.MinimumSize = new System.Drawing.Size(600, 400);
             this.Name = "DispatchViewerBeta";
-            this.Text = "Dispatcher window";
+            this.Text = "Map window";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DispatchViewerBeta_FormClosing);
+            this.Resize += new System.EventHandler(this.DispatchViewerBeta_Resize);
             this.playerRolePanel.ResumeLayout(false);
             this.playerRolePanel.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -1025,7 +1030,7 @@
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button centerOnMyTrainButton;
         private System.Windows.Forms.Button seeTrainInGameButton;
-        private System.Windows.Forms.Panel playersPanel;
+        public System.Windows.Forms.Panel playersPanel;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.ListView playersView;
         private System.Windows.Forms.ContextMenuStrip playerActionsMenu;
