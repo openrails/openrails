@@ -61,6 +61,8 @@
         [GetString("Debug Precipitation Decrease")] DebugPrecipitationDecrease,
         [GetString("Debug Precipitation Liquidity Increase")] DebugPrecipitationLiquidityIncrease,
         [GetString("Debug Precipitation Liquidity Decrease")] DebugPrecipitationLiquidityDecrease,
+        [GetString("Debug Daylight Offset Increase")] DebugDaylightOffsetIncrease,
+        [GetString("Debug Daylight Offset Decrease")] DebugDaylightOffsetDecrease,
         [GetString("Debug Weather Change")] DebugWeatherChange,
         [GetString("Debug Clock Forwards")] DebugClockForwards,
         [GetString("Debug Clock Backwards")] DebugClockBackwards,
