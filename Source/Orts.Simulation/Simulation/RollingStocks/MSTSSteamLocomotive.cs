@@ -142,6 +142,8 @@ namespace Orts.Simulation.RollingStocks
         bool AIFireOverride = false; // Flag to show ai fire has has been overriden
         bool InjectorLockedOut = false; // Flag to lock injectors from changing within a fixed period of time
 
+        float DebugTimerS;
+
         // Aux Tender Parameters
         public bool AuxTenderMoveFlag = false; // Flag to indicate whether train has moved
         bool SteamIsAuxTenderCoupled = false;
@@ -2105,29 +2107,7 @@ namespace Orts.Simulation.RollingStocks
                 for (int i = 0; i < NumCylinders; i++)
                 {
 
-//                    Trace.TraceInformation("NumCyl - {0} i {1}", NumCylinders, i);
-                    
-                    // float realCrankAngleRad = (float)(LocomotiveAxle.AxlePositionRad + i * WheelCrankAngleDiffRad[i]);
-                    float realCrankAngleRad = (float)(LocomotiveAxles[0].AxlePositionRad);
-                    float normalisedCrankAngleRad = 0;
-
-                    realCrankAngleRad = (float)(MathHelper.WrapAngle(realCrankAngleRad));
-
-                    if (realCrankAngleRad < 0)
-                    {
-                        realCrankAngleRad = (float)(2.0f * Math.PI + realCrankAngleRad); // angle must be maintained in a +ve range, ie 0 - 360
-                    }
-
-                    // Normalise crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
-                    if (realCrankAngleRad >= WheelCrankAngleDiffRad[i])
-                    {
-                        normalisedCrankAngleRad = realCrankAngleRad - WheelCrankAngleDiffRad[i];
-                    }
-                    else
-                    {
-                        float diff = WheelCrankAngleDiffRad[i] - realCrankAngleRad;
-                        normalisedCrankAngleRad = (float)(2.0f * Math.PI - diff);
-                    }
+                    float normalisedCrankAngleRad = NormalisedCrankAngle(i);
 
                     // Exhaust crank angle
                     float exhaustCrankAngleRad = 0;
@@ -5085,7 +5065,7 @@ namespace Orts.Simulation.RollingStocks
 
                 for (int i = 0; i < NumCylinders; i++)
                 {
-                    float crankAngleRad = (float)(LocomotiveAxles[0].AxlePositionRad + i * WheelCrankAngleDiffRad[i]);
+                    float crankAngleRad = (float)(LocomotiveAxles[0].AxlePositionRad + WheelCrankAngleDiffRad[i]);
 
                     testCrankAngle = crankAngleRad;
 
@@ -5122,9 +5102,11 @@ namespace Orts.Simulation.RollingStocks
                         backwardCylinderPosition = crankCylinderPosition;
                     }
 
-/*
-                    Trace.TraceInformation("Cyl {0} Position {1} testcrankAng {2} crankAngle {3} CrankPosition {4} forwardCrankPosition {5} backwardCrankPosition {6}", i+1, LocomotiveAxle.AxlePositionRad, MathHelper.ToDegrees(testCrankAngle), MathHelper.ToDegrees(crankAngleRad), crankCylinderPosition, forwardCylinderPosition, backwardCylinderPosition);
-*/
+                    /*
+                                        Trace.TraceInformation("Cyl {0} Position {1} testcrankAng {2} crankAngle {3} CrankPosition {4} forwardCrankPosition {5} backwardCrankPosition {6}", i+1, LocomotiveAxle.AxlePositionRad, MathHelper.ToDegrees(testCrankAngle), MathHelper.ToDegrees(crankAngleRad), crankCylinderPosition, forwardCylinderPosition, backwardCylinderPosition);
+                    */
+
+                    float normalisedCrankAngleRad = NormalisedCrankAngle( i );
 
                     // Crank angles
                     float sin = (float)Math.Sin(crankAngleRad);
@@ -5212,7 +5194,7 @@ namespace Orts.Simulation.RollingStocks
                     float connectRodInertiaForcelbf = inertiaSpeedCorrectionFactor * connectRodInertiaAngleFactor * ConnectingRodWeightLb;
 
                     // Account for the position of the crosshead position. In other words it depends upon whether the Rods and Reciporating gear is above or below the axle.
-                    if (crankAngleRad > 0 && crankAngleRad < Math.PI)
+                    if (crankAngleRad > 0 && crankAngleRad < Math.PI && normalisedCrankAngleRad < Math.PI)
                     {
                         reciprocatingInertiaForcelbf *= -1;
                         connectRodInertiaForcelbf *= -1;
@@ -5237,14 +5219,20 @@ namespace Orts.Simulation.RollingStocks
                     // should be deducted from this as well.
                     float tangentialWheelTreadForceLbf = tangentialCrankWheelForceLbf * Me.ToIn(CylinderStrokeM) / Me.ToIn(DrvWheelDiaM);
 
-                    if (throttle <= 0)
+                    // Debug Adhesion problem
+/*                    if (SpeedMpS > 17.88 && SpeedMpS < 18.2 )
                     {
-                        tangentialWheelTreadForceLbf = 0; // force wheel force to zero if throttle - problem seems to only happen at higher speeds,
-                                                          // so could be a decrease in sampling points as the wheels rotate faster.
+                        Trace.TraceInformation("Adhesion Debug - Cyl {0} Time {1} Speed {2} WheelRpM {3} CrankAngle {4} TotalTangForce {5} TangForce {6} TotalInertiaForce {7} TotalTangInertiaForce {8} RecipForce {9} RecipANgleFactor {10}  RecipWeight {11} SpeedFactor {12}  RodForce {13} RodAngleFactor {14} ForwardCyLPos {15} BackCylPos {16}  CrankCylPos {17} NormCrankAngle {18}", i + 1, DebugTimerS, MpS.ToMpH(SpeedMpS), DrvWheelRevRpS * 60.0f, MathHelper.ToDegrees(crankAngleRad), tangentialWheelTreadForceLbf, tangentialForcelbf, totalInertiaForcelbf, totalTangentialInertiaForcelbf, reciprocatingInertiaForcelbf, reciprocatingInertiaAngleFactor, ReciprocatingWeightLb, inertiaSpeedCorrectionFactor, connectRodInertiaForcelbf, connectRodInertiaAngleFactor, forwardCylinderPosition, backwardCylinderPosition, crankCylinderPosition, normalisedCrankAngleRad);
+
+                        DebugTimerS += elapsedClockSeconds;
+
                     }
 
+                    */
+
+
                     DisplayTangentialWheelTreadForceLbf += tangentialWheelTreadForceLbf;
-                    TractiveForceN += N.FromLbf(Math.Max(tangentialWheelTreadForceLbf, -1000));
+                    TractiveForceN += N.FromLbf(tangentialWheelTreadForceLbf);
 
                     // ++++ Adhesive Force Calculation ++++++
                     // Calculation of components for use in wheel adhesive force calculation
@@ -5395,6 +5383,46 @@ namespace Orts.Simulation.RollingStocks
             ApplyDirectionToTractiveForce();
             
             LocomotiveAxles[0].DriveForceN = TractiveForceN;
+        }
+
+
+        /// <summary>
+        /// Normalise crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
+        /// </summary>
+        private float NormalisedCrankAngle( int cylinderNumber)
+        {
+            float realCrankAngleRad = (float)(LocomotiveAxles[0].AxlePositionRad);
+            float normalisedCrankAngleRad = 0;
+
+            realCrankAngleRad = (float)(MathHelper.WrapAngle(realCrankAngleRad));
+
+            if (realCrankAngleRad < 0)
+            {
+                realCrankAngleRad = (float)(2.0f * Math.PI + realCrankAngleRad); // angle must be maintained in a +ve range, ie 0 - 360
+            }
+
+            
+            if (cylinderNumber == 0) // initial cylinder
+            {
+                normalisedCrankAngleRad = realCrankAngleRad;
+            }
+            else
+            {
+                normalisedCrankAngleRad = realCrankAngleRad + WheelCrankAngleDiffRad[cylinderNumber];
+            }
+
+
+            if (normalisedCrankAngleRad > 2.0f * Math.PI)
+            {
+                normalisedCrankAngleRad -= (float)(2.0f * Math.PI);
+
+            }
+            return normalisedCrankAngleRad;
+
+
+            //    if (SpeedMpS > 0)
+            //    Trace.TraceInformation("Cylinder {0} CrankAngle {1} CrankDiff {2} RealCrank {3} NormalCrank {4}", i + 1, MathHelper.ToDegrees(crankAngleRad), MathHelper.ToDegrees(WheelCrankAngleDiffRad[i]), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad));
+
         }
 
 
