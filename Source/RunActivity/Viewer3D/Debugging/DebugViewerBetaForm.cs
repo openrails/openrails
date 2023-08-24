@@ -235,12 +235,11 @@ namespace Orts.Viewer3D.Debugging
         /// </summary>
         public void InitializeImage()
         {
+            // When minimizing the window, `mapCanvas.Width` gets reported as 0
+            // This crashes `System.Drawing.dll`, hence the check below
+            if (mapCanvas.Width <= 0 || mapCanvas.Height <= 0) return;
 
-            if (mapCanvas.Image != null)
-            {
-                mapCanvas.Image.Dispose();
-            }
-
+            mapCanvas.Image?.Dispose();
             mapCanvas.Image = new Bitmap(mapCanvas.Width, mapCanvas.Height);
         }
         #endregion
@@ -1747,6 +1746,7 @@ namespace Orts.Viewer3D.Debugging
             ApplyThemeRecursively(this);
             MapCanvasColor = Theme.MapCanvasColor;
             TrackPen.Color = Theme.TrackColor;
+            InitializeImage();
         }
 
         private void DispatchViewerBeta_FormClosing(object sender, FormClosingEventArgs e)
