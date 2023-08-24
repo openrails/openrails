@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
-using Orts.Formats.Msts;
 
 namespace Orts.Viewer3D.Debugging
 {

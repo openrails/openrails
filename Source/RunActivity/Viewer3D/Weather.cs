@@ -1,4 +1,4 @@
-// COPYRIGHT 2010, 2011, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -485,6 +485,15 @@ namespace Orts.Viewer3D
                     Weather.FogDistance = MathHelper.Clamp(Weather.FogDistance + elapsedTime.RealSeconds * Weather.FogDistance, 10, 100000);
                     if (dynamicWeather != null) dynamicWeather.ORTSFog = -1;
                     weatherChangeOn = false;
+                }
+
+                // Daylight offset is useful for debugging night running timetables; it ranges from -12h to +12h
+                if (UserInput.IsPressed(UserCommand.DebugDaylightOffsetIncrease) && Weather.DaylightOffset < 12) {
+                    Weather.DaylightOffset += 1;
+                }
+                if (UserInput.IsPressed(UserCommand.DebugDaylightOffsetDecrease) && Weather.DaylightOffset > -12)
+                {
+                    Weather.DaylightOffset -= 1;
                 }
 
                 UpdateWind(elapsedTime);
