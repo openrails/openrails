@@ -2570,7 +2570,7 @@ namespace Orts.Simulation.AIs
 
         public override bool CanRemove(Train thisTrain)
         {
-            return Processing && (currentMvmtState == AITrain.AI_MOVEMENT_STATE.STOPPED || currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
+            return (Processing && (currentMvmtState == AITrain.AI_MOVEMENT_STATE.STOPPED || currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION))
 || SignalReferenced == null;
         }
 
