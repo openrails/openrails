@@ -18,16 +18,11 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
-using Orts.Simulation;
 using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
-using ORTS.Common;
-using Color = System.Drawing.Color;
 
 namespace Orts.Viewer3D.Debugging
 {
@@ -97,7 +92,7 @@ namespace Orts.Viewer3D.Debugging
                         {
                             var oldSiding = F.sidings[oldSidingIndex];
                             var oldLocation = oldSiding.Location;
-                            var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+                            var newLocation = new PointF((item.TileX * 2048) + item.X, (item.TileZ * 2048) + item.Z);
 
                             // Because these are structs, not classes, compiler won't let you overwrite them.
                             // Instead create a single item which replaces the 2 platform items.
@@ -122,7 +117,7 @@ namespace Orts.Viewer3D.Debugging
                         {
                             var newPlatform = new PlatformWidget(item as PlatformItem)
                             {
-                                Extent1 = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z)
+                                Extent1 = new PointF((item.TileX * 2048) + item.X, (item.TileZ * 2048) + item.Z)
                             };
                             F.platforms.Add(newPlatform);
                         }
@@ -130,7 +125,7 @@ namespace Orts.Viewer3D.Debugging
                         {
                             var oldPlatform = F.platforms[oldPlatformIndex];
                             var oldLocation = oldPlatform.Location;
-                            var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+                            var newLocation = new PointF((item.TileX * 2048) + item.X, (item.TileZ * 2048) + item.Z);
 
                             // Because these are structs, not classes, compiler won't let you overwrite them.
                             // Instead create a single item which replaces the 2 platform items.
@@ -207,12 +202,11 @@ namespace Orts.Viewer3D.Debugging
 
         public bool IsActiveTrain(Simulation.AIs.AITrain t)
         {
-            if (t == null)
-                return false;
-            return (t.MovementState != Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC
+            return t != null
+&& ((t.MovementState != Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC
                         && !(t.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !t.IncorporatingTrain.IsPathless)
                     )
-                    || t.TrainType == Train.TRAINTYPE.PLAYER;
+                    || t.TrainType == Train.TRAINTYPE.PLAYER);
         }
 
         /*
@@ -255,7 +249,7 @@ namespace Orts.Viewer3D.Debugging
             const float noFreeSlotFound = -1f;
 
             var desiredPositionY = (int)(wantY / DispatchViewer.spacing);  // The positionY of the ideal row for the text.
-            var endX = startX + name.Length * F.trainFont.Size;
+            var endX = startX + (name.Length * F.trainFont.Size);
             //out of drawing area
             if (endX < 0)
                 return noFreeSlotFound;
@@ -274,7 +268,7 @@ namespace Orts.Viewer3D.Debugging
                 {
                     var v = F.alignedTextY[positionY][col];
                     //check conflict with a text, v.X is the start of the text, v.Y is the end of the text
-                    if ((endX >= v.X && startX <= v.Y))
+                    if (endX >= v.X && startX <= v.Y)
                     {
                         conflict = true;
                         break;
@@ -294,10 +288,7 @@ namespace Orts.Viewer3D.Debugging
                 else
                 {
                     // Check that row has an unused column in its fixed size array
-                    if (F.alignedTextNum[positionY] >= F.alignedTextY[positionY].Length)
-                        return noFreeSlotFound;
-
-                    return SaveLabelLocation(startX, endX, positionY);
+                    return F.alignedTextNum[positionY] >= F.alignedTextY[positionY].Length ? noFreeSlotFound : SaveLabelLocation(startX, endX, positionY);
                 }
             }
             return noFreeSlotFound;

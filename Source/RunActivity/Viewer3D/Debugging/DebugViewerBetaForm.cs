@@ -24,14 +24,14 @@ namespace Orts.Viewer3D.Debugging
         /// Reference to the main simulator object.
         /// </summary>
         public readonly Simulator simulator;
-        private MapDataProvider MapDataProvider;
-        private MapThemeProvider MapThemeProvider;
+        private readonly MapDataProvider MapDataProvider;
+        private readonly MapThemeProvider MapThemeProvider;
         private ThemeStyle Theme;
         /// <summary>
         /// Used to periodically check if we should shift the view when the
         /// user is holding down a "shift view" button.
         /// </summary>
-        private Timer UITimer;
+        private readonly Timer UITimer;
         public Viewer Viewer;
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Orts.Viewer3D.Debugging
         public float xScale = 1; // pixels / metre
         public float yScale = 1; // pixels / metre
 
-        string name = "";
+        readonly string name = "";
 
         public List<SwitchWidget> switchItemsDrawn;
         public List<SignalWidget> signalItemsDrawn;
@@ -53,7 +53,7 @@ namespace Orts.Viewer3D.Debugging
         public bool signalPickedItemHandled;
         public double signalPickedTime;
         public bool DrawPath = true; //draw train path
-        TrackNode[] nodes;
+        readonly TrackNode[] nodes;
 
         public List<Train> selectedTrainList;
         /// <summary>
@@ -75,7 +75,7 @@ namespace Orts.Viewer3D.Debugging
         public Font sidingFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
         public Font PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
         public Font SignalFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-        private SolidBrush trainBrush = new SolidBrush(Color.Red);
+        private readonly SolidBrush trainBrush = new SolidBrush(Color.Red);
         public SolidBrush sidingBrush = new SolidBrush(Color.Blue);
         public SolidBrush PlatformBrush = new SolidBrush(Color.DarkBlue);
         public SolidBrush SignalBrush = new SolidBrush(Color.DarkRed);
@@ -213,7 +213,7 @@ namespace Orts.Viewer3D.Debugging
 
             var maxsize = maxX - minX > maxY - minY ? maxX - minX : maxY - minY;
             // Take up to next 500
-            maxsize = (int)(maxsize / 100 + 1) * 500;
+            maxsize = (int)((maxsize / 100) + 1) * 500;
             mapResolutionUpDown.Maximum = (decimal)maxsize;
             Inited = true;
 
@@ -245,7 +245,7 @@ namespace Orts.Viewer3D.Debugging
         #endregion
 
         #region playersList
-        List<string> PlayersList = new List<string>();
+        readonly List<string> PlayersList = new List<string>();
 
         public void AddPlayer(string name)
         {
@@ -381,8 +381,8 @@ namespace Orts.Viewer3D.Debugging
                     pos = PickedTrain?.Cars?.FirstOrDefault()?.WorldPosition;
                 if (pos != null)
                 {
-                    var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
-                    ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
+                    var ploc = new PointF((pos.TileX * 2048) + pos.Location.X, (pos.TileZ * 2048) + pos.Location.Z);
+                    ViewWindow.X = ploc.X - minX - (ViewWindow.Width / 2); ViewWindow.Y = ploc.Y - minY - (ViewWindow.Width / 2);
                     firstShow = false;
                 }
             }
@@ -403,7 +403,7 @@ namespace Orts.Viewer3D.Debugging
                 xScale = yScale = Math.Max(xScale, yScale); // Make X and Y scales the same to maintain correct angles
 
                 // Set the default pen to represent 1 meter
-                var scale = (float)Math.Round((double)xScale);  // Round to nearest pixels/meter
+                var scale = (float)Math.Round(xScale);  // Round to nearest pixels/meter
                 var penWidth = (int)MathHelper.Clamp(scale, 1, 4);  // Keep 1 <= width <= 4 pixels
 
                 PointF[] points = new PointF[3];
@@ -477,8 +477,8 @@ namespace Orts.Viewer3D.Debugging
             PlatformPen.Width = width;
             foreach (var p in platforms)
             {
-                var scaledA = new PointF((p.Extent1.X - subX) * xScale, mapCanvas.Height - (p.Extent1.Y - subY) * yScale);
-                var scaledB = new PointF((p.Extent2.X - subX) * xScale, mapCanvas.Height - (p.Extent2.Y - subY) * yScale);
+                var scaledA = new PointF((p.Extent1.X - subX) * xScale, mapCanvas.Height - ((p.Extent1.Y - subY) * yScale));
+                var scaledB = new PointF((p.Extent2.X - subX) * xScale, mapCanvas.Height - ((p.Extent2.Y - subY) * yScale));
 
                 MapDataProvider.FixForBadData(width, ref scaledA, ref scaledB, p.Extent1, p.Extent2);
                 g.DrawLine(PlatformPen, scaledA, scaledB);
@@ -494,10 +494,10 @@ namespace Orts.Viewer3D.Debugging
             PointF scaledC = new PointF(0, 0);
             foreach (var line in segments)
             {
-                scaledA.X = (line.A.TileX * 2048 - subX + (float)line.A.X) * xScale;
-                scaledA.Y = mapCanvas.Height - (line.A.TileZ * 2048 - subY + (float)line.A.Z) * yScale;
-                scaledB.X = (line.B.TileX * 2048 - subX + (float)line.B.X) * xScale;
-                scaledB.Y = mapCanvas.Height - (line.B.TileZ * 2048 - subY + (float)line.B.Z) * yScale;
+                scaledA.X = ((line.A.TileX * 2048) - subX + (float)line.A.X) * xScale;
+                scaledA.Y = mapCanvas.Height - (((line.A.TileZ * 2048) - subY + (float)line.A.Z) * yScale);
+                scaledB.X = ((line.B.TileX * 2048) - subX + (float)line.B.X) * xScale;
+                scaledB.Y = mapCanvas.Height - (((line.B.TileZ * 2048) - subY + (float)line.B.Z) * yScale);
 
                 if ((scaledA.X < 0 && scaledB.X < 0)
                     || (scaledA.Y < 0 && scaledB.Y < 0))
@@ -505,7 +505,7 @@ namespace Orts.Viewer3D.Debugging
 
                 if (line.isCurved == true)
                 {
-                    scaledC.X = ((float)line.C.X - subX) * xScale; scaledC.Y = mapCanvas.Height - ((float)line.C.Z - subY) * yScale;
+                    scaledC.X = ((float)line.C.X - subX) * xScale; scaledC.Y = mapCanvas.Height - (((float)line.C.Z - subY) * yScale);
                     points[0] = scaledA; points[1] = scaledC; points[2] = scaledB;
                     g.DrawCurve(TrackPen, points);
                 }
@@ -566,8 +566,8 @@ namespace Orts.Viewer3D.Debugging
 
                 // Draw the path, then each car of the train, then maybe the name
                 var loc = train.FrontTDBTraveller.WorldLocation;
-                float x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale;
-                float y = mapCanvas.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
+                float x = ((loc.TileX * 2048) + loc.Location.X - subX) * xScale;
+                float y = mapCanvas.Height - (((loc.TileZ * 2048) + loc.Location.Z - subY) * yScale);
 
                 // If train out of view then skip it.
                 if (x < -margin2
@@ -594,9 +594,11 @@ namespace Orts.Viewer3D.Debugging
                     DrawCar(g, train, car, locoCar, margin, minTrainPx, drawEveryCar);
 
                 worldPos = locoCar.WorldPosition;
-                var scaledTrain = new PointF();
-                scaledTrain.X = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
-                scaledTrain.Y = -25 + mapCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
+                var scaledTrain = new PointF
+                {
+                    X = ((worldPos.TileX * 2048) - subX + worldPos.Location.X) * xScale,
+                    Y = -25 + mapCanvas.Height - (((worldPos.TileZ * 2048) - subY + worldPos.Location.Z) * yScale)
+                };
                 if (showTrainLabelsCheckbox.Checked)
                     DrawTrainLabels(g, train, trainName, locoCar, scaledTrain);
             }
@@ -619,9 +621,9 @@ namespace Orts.Viewer3D.Debugging
                 float y;
                 if (drawEveryCar)
                 {
-                    t.Move(dist + car.CarLengthM / 2); // Move along from centre of car to front of car
-                    x = (t.TileX * 2048 + t.Location.X - subX) * xScale;
-                    y = mapCanvas.Height - (t.TileZ * 2048 + t.Location.Z - subY) * yScale;
+                    t.Move(dist + (car.CarLengthM / 2)); // Move along from centre of car to front of car
+                    x = ((t.TileX * 2048) + t.Location.X - subX) * xScale;
+                    y = mapCanvas.Height - (((t.TileZ * 2048) + t.Location.Z - subY) * yScale);
 
                     // If car out of view then skip it.
                     if (x < -margin || y < -margin)
@@ -636,9 +638,9 @@ namespace Orts.Viewer3D.Debugging
                     if (car == train.Cars.First())
                     {
                         // Draw first half a train back from the front of the first car as abox
-                        t.Move(dist + car.CarLengthM / 2);
-                        x = (t.TileX * 2048 + t.Location.X - subX) * xScale;
-                        y = mapCanvas.Height - (t.TileZ * 2048 + t.Location.Z - subY) * yScale;
+                        t.Move(dist + (car.CarLengthM / 2));
+                        x = ((t.TileX * 2048) + t.Location.X - subX) * xScale;
+                        y = mapCanvas.Height - (((t.TileZ * 2048) + t.Location.Z - subY) * yScale);
 
                         // If car out of view then skip it.
                         if (x < -margin || y < -margin)
@@ -651,17 +653,17 @@ namespace Orts.Viewer3D.Debugging
                         // Draw half a train back from the rear of the first box
                         worldPos = train.Cars.First().WorldPosition;
                         dist = t.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
-                        t.Move(dist + train.Cars.First().CarLengthM / 2 - minTrainPx / xScale / 2);
-                        x = (t.TileX * 2048 + t.Location.X - subX) * xScale;
-                        y = mapCanvas.Height - (t.TileZ * 2048 + t.Location.Z - subY) * yScale;
+                        t.Move(dist + (train.Cars.First().CarLengthM / 2) - (minTrainPx / xScale / 2));
+                        x = ((t.TileX * 2048) + t.Location.X - subX) * xScale;
+                        y = mapCanvas.Height - (((t.TileZ * 2048) + t.Location.Z - subY) * yScale);
                         if (x < -margin || y < -margin)
                             return;
                         t.Move(-minTrainPx / xScale / 2);
                     }
                     scaledTrain.X = x; scaledTrain.Y = y;
                 }
-                x = (t.TileX * 2048 + t.Location.X - subX) * xScale;
-                y = mapCanvas.Height - (t.TileZ * 2048 + t.Location.Z - subY) * yScale;
+                x = ((t.TileX * 2048) + t.Location.X - subX) * xScale;
+                y = mapCanvas.Height - (((t.TileZ * 2048) + t.Location.Z - subY) * yScale);
 
                 // If car out of view then skip it.
                 if (x < -margin || y < -margin)
@@ -684,16 +686,11 @@ namespace Orts.Viewer3D.Debugging
             // inactive loco: RGB 153,128,0
             // active car: RGB 0,204,0
             // inactive car: RGB 0,153,0
-            if (MapDataProvider.IsActiveTrain(t as Simulation.AIs.AITrain))
-                if (car is MSTSLocomotive)
-                    trainPen.Color = (car == locoCar) ? Color.FromArgb(204, 170, 0) : Color.FromArgb(153, 128, 0);
-                else
-                    trainPen.Color = Color.FromArgb(0, 204, 0);
-            else
-                if (car is MSTSLocomotive)
-                trainPen.Color = Color.FromArgb(153, 128, 0);
-            else
-                trainPen.Color = Color.FromArgb(0, 153, 0);
+            trainPen.Color = MapDataProvider.IsActiveTrain(t as Simulation.AIs.AITrain)
+                ? car is MSTSLocomotive
+                    ? (car == locoCar) ? Color.FromArgb(204, 170, 0) : Color.FromArgb(153, 128, 0)
+                    : Color.FromArgb(0, 204, 0)
+                : car is MSTSLocomotive ? Color.FromArgb(153, 128, 0) : Color.FromArgb(0, 153, 0);
 
             // Draw player train with loco in red
             if (t.TrainType == Train.TRAINTYPE.PLAYER && car == locoCar)
@@ -703,8 +700,8 @@ namespace Orts.Viewer3D.Debugging
         private void DrawTrainLabels(Graphics g, Train t, string trainName, TrainCar firstCar, PointF scaledTrain)
         {
             WorldPosition worldPos = firstCar.WorldPosition;
-            scaledTrain.X = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
-            scaledTrain.Y = -25 + mapCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
+            scaledTrain.X = ((worldPos.TileX * 2048) - subX + worldPos.Location.X) * xScale;
+            scaledTrain.Y = -25 + mapCanvas.Height - (((worldPos.TileZ * 2048) - subY + worldPos.Location.Z) * yScale);
             if (showActiveTrainsRadio.Checked)
             {
                 if (t is Simulation.AIs.AITrain && MapDataProvider.IsActiveTrain(t as Simulation.AIs.AITrain))
@@ -720,8 +717,7 @@ namespace Orts.Viewer3D.Debugging
         {
             if (simulator.TimetableMode)
             {
-                var tTTrain = t as Simulation.Timetables.TTTrain;
-                if (tTTrain != null)
+                if (t is Simulation.Timetables.TTTrain tTTrain)
                 {
                     // Remove name of timetable, e.g.: ":SCE"
                     var lastPos = trainName.LastIndexOf(":");
@@ -766,7 +762,7 @@ namespace Orts.Viewer3D.Debugging
                 SwitchWidget sw = switches[i];
 
                 var x = (sw.Location.X - subX) * xScale;
-                var y = mapCanvas.Height - (sw.Location.Y - subY) * yScale;
+                var y = mapCanvas.Height - ((sw.Location.Y - subY) * yScale);
                 if (x < 0 || y < 0)
                     continue;
 
@@ -792,7 +788,7 @@ namespace Orts.Viewer3D.Debugging
                 if (float.IsNaN(s.Location.X) || float.IsNaN(s.Location.Y))
                     continue;
                 var x = (s.Location.X - subX) * xScale;
-                var y = mapCanvas.Height - (s.Location.Y - subY) * yScale;
+                var y = mapCanvas.Height - ((s.Location.Y - subY) * yScale);
                 if (x < 0 || y < 0)
                     continue;
 
@@ -819,7 +815,7 @@ namespace Orts.Viewer3D.Debugging
                     signalItemsDrawn.Add(s);
                     if (s.hasDir)
                     {
-                        scaledB.X = (s.Dir.X - subX) * xScale; scaledB.Y = mapCanvas.Height - (s.Dir.Y - subY) * yScale;
+                        scaledB.X = (s.Dir.X - subX) * xScale; scaledB.Y = mapCanvas.Height - ((s.Dir.Y - subY) * yScale);
                         g.DrawLine(pen, scaledItem, scaledB);
                     }
                     ShowSignalState(g, scaledItem, s);
@@ -843,7 +839,7 @@ namespace Orts.Viewer3D.Debugging
                 position.X += offset * 10;
                 position.Y += offset * 15;
                 var text = $"  {item?.SigObj} {signalHead.SignalTypeName} {signalHead.state} {trainString}";
-                scaledItem.Y = MapDataProvider.GetUnusedYLocation(scaledItem.X, mapCanvas.Height - (sw.Location.Y - subY) * yScale, text);
+                scaledItem.Y = MapDataProvider.GetUnusedYLocation(scaledItem.X, mapCanvas.Height - ((sw.Location.Y - subY) * yScale), text);
                 if (scaledItem.Y >= 0f) // -1 indicates no free slot to draw label
                     g.DrawString(text, SignalFont, SignalBrush, scaledItem);
             }
@@ -860,7 +856,7 @@ namespace Orts.Viewer3D.Debugging
                 var scaledItem = new PointF();
 
                 scaledItem.X = (s.Location.X - subX) * xScale;
-                scaledItem.Y = MapDataProvider.GetUnusedYLocation(scaledItem.X, mapCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
+                scaledItem.Y = MapDataProvider.GetUnusedYLocation(scaledItem.X, mapCanvas.Height - ((s.Location.Y - subY) * yScale), s.Name);
                 if (scaledItem.Y >= 0f) // -1 indicates no free slot to draw label
                     g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
             }
@@ -876,15 +872,15 @@ namespace Orts.Viewer3D.Debugging
             foreach (var p in platforms)
             {
                 var scaledItem = new PointF();
-                scaledItem.X = (p.Location.X - subX) * xScale + platformMarginPxX;
-                var yPixels = mapCanvas.Height - (p.Location.Y - subY) * yScale;
+                scaledItem.X = ((p.Location.X - subX) * xScale) + platformMarginPxX;
+                var yPixels = mapCanvas.Height - ((p.Location.Y - subY) * yScale);
 
                 // If track is close to horizontal, then start label search 1 row down to minimise overwriting platform line.
                 if (p.Extent1.X != p.Extent2.X
                     && Math.Abs((p.Extent1.Y - p.Extent2.Y) / (p.Extent1.X - p.Extent2.X)) < 0.1)
                     yPixels += DispatchViewer.spacing;
 
-                scaledItem.Y = MapDataProvider.GetUnusedYLocation(scaledItem.X, mapCanvas.Height - (p.Location.Y - subY) * yScale, p.Name);
+                scaledItem.Y = MapDataProvider.GetUnusedYLocation(scaledItem.X, mapCanvas.Height - ((p.Location.Y - subY) * yScale), p.Name);
                 if (scaledItem.Y >= 0f) // -1 indicates no free slot to draw label
                     g.DrawString(p.Name, PlatformFont, PlatformBrush, scaledItem);
             }
@@ -921,8 +917,8 @@ namespace Orts.Viewer3D.Debugging
                 return;
 
             const int size = 24;
-            var top = mapCanvas.Height / 2 - size / 2;
-            var left = mapCanvas.Width / 2 - size / 2;
+            var top = (mapCanvas.Height / 2) - (size / 2);
+            var left = (mapCanvas.Width / 2) - (size / 2);
             g.DrawRectangle(ZoomTargetPen, left, top, size, size);
 
         }
@@ -937,7 +933,7 @@ namespace Orts.Viewer3D.Debugging
         const float DisplaySegmentLength = 10;
         const float MaximumSectionDistance = 10000;
 
-        Dictionary<int, SignallingDebugWindow.TrackSectionCacheEntry> Cache = new Dictionary<int, SignallingDebugWindow.TrackSectionCacheEntry>();
+        readonly Dictionary<int, SignallingDebugWindow.TrackSectionCacheEntry> Cache = new Dictionary<int, SignallingDebugWindow.TrackSectionCacheEntry>();
         SignallingDebugWindow.TrackSectionCacheEntry GetCacheEntry(Traveller position)
         {
             SignallingDebugWindow.TrackSectionCacheEntry rv;
@@ -1034,8 +1030,7 @@ namespace Orts.Viewer3D.Debugging
                     if (objDistance < initialNodeOffset)
                         continue;
 
-                    var switchObj = obj as SignallingDebugWindow.TrackSectionSwitch;
-                    if (switchObj != null)
+                    if (obj is SignallingDebugWindow.TrackSectionSwitch switchObj)
                     {
                         for (var pin = switchObj.TrackNode.Inpins; pin < switchObj.TrackNode.Inpins + switchObj.TrackNode.Outpins; pin++)
                         {
@@ -1076,10 +1071,10 @@ namespace Orts.Viewer3D.Debugging
                         if (stepDistance + stepLength >= initialNodeOffset && stepDistance <= initialNodeOffset + DisplayDistance)
                         {
                             var currentLocation = currentPosition.WorldLocation;
-                            scaledA.X = (float)((previousLocation.TileX * WorldLocation.TileSize + previousLocation.Location.X - subX) * xScale);
-                            scaledA.Y = (float)(mapCanvas.Height - (previousLocation.TileZ * WorldLocation.TileSize + previousLocation.Location.Z - subY) * yScale);
-                            scaledB.X = (float)((currentLocation.TileX * WorldLocation.TileSize + currentLocation.Location.X - subX) * xScale);
-                            scaledB.Y = (float)(mapCanvas.Height - (currentPosition.TileZ * WorldLocation.TileSize + currentPosition.Location.Z - subY) * yScale); g.DrawLine(pathPen, scaledA, scaledB);
+                            scaledA.X = (float)(((previousLocation.TileX * WorldLocation.TileSize) + previousLocation.Location.X - subX) * xScale);
+                            scaledA.Y = (float)(mapCanvas.Height - (((previousLocation.TileZ * WorldLocation.TileSize) + previousLocation.Location.Z - subY) * yScale));
+                            scaledB.X = (float)(((currentLocation.TileX * WorldLocation.TileSize) + currentLocation.Location.X - subX) * xScale);
+                            scaledB.Y = (float)(mapCanvas.Height - (((currentPosition.TileZ * WorldLocation.TileSize) + currentPosition.Location.Z - subY) * yScale)); g.DrawLine(pathPen, scaledA, scaledB);
                         }
                     }
                     lastObjDistance = obj.Distance;
@@ -1108,8 +1103,7 @@ namespace Orts.Viewer3D.Debugging
                     if (objDistance < initialNodeOffset || objDistance > initialNodeOffset + DisplayDistance)
                         continue;
 
-                    var switchObj = obj as SignallingDebugWindow.TrackSectionSwitch;
-                    if (switchObj != null)
+                    if (obj is SignallingDebugWindow.TrackSectionSwitch switchObj)
                     {
                         for (var pin = switchObj.TrackNode.Inpins; pin < switchObj.TrackNode.Inpins + switchObj.TrackNode.Outpins; pin++)
                         {
@@ -1149,9 +1143,9 @@ namespace Orts.Viewer3D.Debugging
         {
             foreach (System.Windows.Forms.Control c in parent.Controls)
             {
-                if (c is Button && c?.Tag?.ToString() != "mapCustomization")
+                if (c is Button button && c?.Tag?.ToString() != "mapCustomization")
                 {
-                    Button b = (Button)c;
+                    Button b = button;
                     b.BackColor = Theme.BackColor;
                     b.ForeColor = Theme.ForeColor;
                     b.FlatStyle = Theme.FlatStyle;
@@ -1178,9 +1172,9 @@ namespace Orts.Viewer3D.Debugging
         /// <param name="p">Center point of the dot, in pixels.</param>
         /// <param name="size">Size of the dot's diameter, in pixels</param>
         /// <returns></returns>
-        static public RectangleF GetRect(PointF p, float size)
+        public static RectangleF GetRect(PointF p, float size)
         {
-            return new RectangleF(p.X - size / 2f, p.Y - size / 2f, size, size);
+            return new RectangleF(p.X - (size / 2f), p.Y - (size / 2f), size, size);
         }
 
         /// <summary>
@@ -1206,8 +1200,8 @@ namespace Orts.Viewer3D.Debugging
                 dVector A = new dVector(items[i].TileX, items[i].X, items[i].TileZ, items[i].Z);
                 dVector B = new dVector(items[i + 1].TileX, items[i + 1].X, items[i + 1].TileZ, items[i + 1].Z);
 
-                tempX1 = A.TileX * 2048 + A.X; tempX2 = B.TileX * 2048 + B.X;
-                tempZ1 = A.TileZ * 2048 + A.Z; tempZ2 = B.TileZ * 2048 + B.Z;
+                tempX1 = (A.TileX * 2048) + A.X; tempX2 = (B.TileX * 2048) + B.X;
+                tempZ1 = (A.TileZ * 2048) + A.Z; tempZ2 = (B.TileZ * 2048) + B.Z;
                 CalcBounds(ref maxX, tempX1, true);
                 CalcBounds(ref maxY, tempZ1, true);
                 CalcBounds(ref maxX, tempX2, true);
@@ -1278,13 +1272,13 @@ namespace Orts.Viewer3D.Debugging
         private void mapResolutionUpDown_ValueChanged(object sender, EventArgs e)
         {
             // Center point of the map viewport before the change in resolution
-            PointF center = new PointF(ViewWindow.X + ViewWindow.Width / 2f, ViewWindow.Y + ViewWindow.Height / 2f);
+            PointF center = new PointF(ViewWindow.X + (ViewWindow.Width / 2f), ViewWindow.Y + (ViewWindow.Height / 2f));
 
             float newSizeH = (float)mapResolutionUpDown.Value;
             float verticalByHorizontal = ViewWindow.Height / ViewWindow.Width;
             float newSizeV = newSizeH * verticalByHorizontal;
 
-            ViewWindow = new RectangleF(center.X - newSizeH / 2f, center.Y - newSizeV / 2f, newSizeH, newSizeV);
+            ViewWindow = new RectangleF(center.X - (newSizeH / 2f), center.Y - (newSizeV / 2f), newSizeH, newSizeV);
 
             GenerateView();
         }
@@ -1378,15 +1372,15 @@ namespace Orts.Viewer3D.Debugging
                     var temp = findItemFromMouse(e.X, e.Y, range);
                     if (temp != null)
                     {
-                        if (temp is SwitchWidget)
+                        if (temp is SwitchWidget widget)
                         {
-                            switchPickedItem = (SwitchWidget)temp;
+                            switchPickedItem = widget;
                             signalPickedItem = null;
                             HandlePickedSwitch();
                         }
-                        if (temp is SignalWidget)
+                        if (temp is SignalWidget widget1)
                         {
-                            signalPickedItem = (SignalWidget)temp;
+                            signalPickedItem = widget1;
                             switchPickedItem = null;
                             HandlePickedSignal();
                         }
@@ -1617,8 +1611,8 @@ namespace Orts.Viewer3D.Debugging
                     continue;
 
                 worldPos = firstCar.WorldPosition;
-                tX = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
-                tY = mapCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
+                tX = ((worldPos.TileX * 2048) - subX + worldPos.Location.X) * xScale;
+                tY = mapCanvas.Height - (((worldPos.TileZ * 2048) - subY + worldPos.Location.Z) * yScale);
                 float xSpeedCorr = Math.Abs(t.SpeedMpS) * xScale * 1.5f;
                 float ySpeedCorr = Math.Abs(t.SpeedMpS) * yScale * 1.5f;
 
@@ -1663,8 +1657,8 @@ namespace Orts.Viewer3D.Debugging
 
         private void CanvasMoveAndZoomInOut(int x, int y, decimal scale)
         {
-            int diffX = x - mapCanvas.Width / 2;
-            int diffY = y - mapCanvas.Height / 2;
+            int diffX = x - (mapCanvas.Width / 2);
+            int diffY = y - (mapCanvas.Height / 2);
             ViewWindow.Offset(diffX / xScale, -diffY / yScale);
             if (scale < mapResolutionUpDown.Minimum) scale = mapResolutionUpDown.Minimum;
             if (scale > mapResolutionUpDown.Maximum) scale = mapResolutionUpDown.Maximum;
@@ -1709,8 +1703,7 @@ namespace Orts.Viewer3D.Debugging
         public bool ClickedTrain;
         private void seeTrainInGameButton_Click(object sender, EventArgs e)
         {
-            if (PickedTrain != null) ClickedTrain = true;
-            else ClickedTrain = false;
+            ClickedTrain = PickedTrain != null;
         }
 
         private void centerOnMyTrainButton_Click(object sender, EventArgs e)
@@ -1734,14 +1727,7 @@ namespace Orts.Viewer3D.Debugging
 
         private void rotateThemesButton_Click(object sender, EventArgs e)
         {
-            if (Theme == MapThemeProvider.LightTheme)
-            {
-                Theme = MapThemeProvider.DarkTheme;
-            }
-            else
-            {
-                Theme = MapThemeProvider.LightTheme;
-            }
+            Theme = Theme == MapThemeProvider.LightTheme ? MapThemeProvider.DarkTheme : MapThemeProvider.LightTheme;
 
             ApplyThemeRecursively(this);
             MapCanvasColor = Theme.MapCanvasColor;
@@ -1810,8 +1796,8 @@ namespace Orts.Viewer3D.Debugging
             Item = item;
             Signal = signal;
             hasDir = false;
-            Location.X = item.TileX * 2048 + item.X;
-            Location.Y = item.TileZ * 2048 + item.Z;
+            Location.X = (item.TileX * 2048) + item.X;
+            Location.Y = (item.TileZ * 2048) + item.Z;
             var node = Program.Simulator.TDB.TrackDB.TrackNodes?[signal.trackNode];
             Vector2 v2;
             if (node?.TrVectorNode != null)
@@ -1819,14 +1805,14 @@ namespace Orts.Viewer3D.Debugging
                 var ts = node.TrVectorNode.TrVectorSections?.FirstOrDefault();
                 if (ts == null)
                     return;
-                v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z);
+                v2 = new Vector2((ts.TileX * 2048) + ts.X, (ts.TileZ * 2048) + ts.Z);
             }
             else if (node?.TrJunctionNode != null)
             {
                 var ts = node?.UiD;
                 if (ts == null)
                     return;
-                v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z);
+                v2 = new Vector2((ts.TileX * 2048) + ts.X, (ts.TileZ * 2048) + ts.Z);
             }
             else
             {
@@ -1867,16 +1853,9 @@ namespace Orts.Viewer3D.Debugging
             Item = item;
             var TS = Program.Simulator.TSectionDat.TrackShapes.Get(item.TrJunctionNode.ShapeIndex);  // TSECTION.DAT tells us which is the main route
 
-            if (TS != null)
-            {
-                main = TS.MainRoute;
-            }
-            else
-            {
-                main = 0;
-            }
+            main = TS != null ? TS.MainRoute : 0;
 
-            Location.X = Item.UiD.TileX * 2048 + Item.UiD.X; Location.Y = Item.UiD.TileZ * 2048 + Item.UiD.Z;
+            Location.X = (Item.UiD.TileX * 2048) + Item.UiD.X; Location.Y = (Item.UiD.TileZ * 2048) + Item.UiD.Z;
         }
     }
 
@@ -1896,7 +1875,7 @@ namespace Orts.Viewer3D.Debugging
         {
             Item = item;
 
-            Location.X = Item.UiD.TileX * 2048 + Item.UiD.X; Location.Y = Item.UiD.TileZ * 2048 + Item.UiD.Z;
+            Location.X = (Item.UiD.TileX * 2048) + Item.UiD.X; Location.Y = (Item.UiD.TileZ * 2048) + Item.UiD.Z;
         }
     }
     #endregion
@@ -1967,15 +1946,11 @@ namespace Orts.Viewer3D.Debugging
                     float diff = (float)(ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 360)));
                     if (diff < 3) return; //not need to worry, curve too small
                                           //curve = ts.SectionCurve;
-                    Vector3 v = new Vector3((float)((B.TileX - A.TileX) * 2048 + B.X - A.X), 0, (float)((B.TileZ - A.TileZ) * 2048 + B.Z - A.Z));
+                    Vector3 v = new Vector3((float)(((B.TileX - A.TileX) * 2048) + B.X - A.X), 0, (float)(((B.TileZ - A.TileZ) * 2048) + B.Z - A.Z));
                     isCurved = true;
                     Vector3 v2 = Vector3.Cross(Vector3.Up, v); v2.Normalize();
-                    v = v / 2; v.X += A.TileX * 2048 + (float)A.X; v.Z += A.TileZ * 2048 + (float)A.Z;
-                    if (ts.SectionCurve.Angle > 0)
-                    {
-                        v = v2 * -diff + v;
-                    }
-                    else v = v2 * diff + v;
+                    v /= 2; v.X += (A.TileX * 2048) + (float)A.X; v.Z += (A.TileZ * 2048) + (float)A.Z;
+                    v = ts.SectionCurve.Angle > 0 ? (v2 * -diff) + v : (v2 * diff) + v;
                     C = new dVector(0, v.X, 0, v.Z);
                 }
             }
@@ -2011,7 +1986,7 @@ namespace Orts.Viewer3D.Debugging
             LinkId = item.LinkedSidingId;
             Item = item;
             Name = item.ItemName;
-            Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+            Location = new PointF((item.TileX * 2048) + item.X, (item.TileZ * 2048) + item.Z);
         }
     }
     #endregion
@@ -2043,7 +2018,7 @@ namespace Orts.Viewer3D.Debugging
             Item = item;
             Name = item.ItemName;
             Station = item.Station;
-            Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+            Location = new PointF((item.TileX * 2048) + item.X, (item.TileZ * 2048) + item.Z);
             Extent1 = default;
             Extent2 = default;
         }
@@ -2062,10 +2037,10 @@ namespace Orts.Viewer3D.Debugging
             Z = z1;
         }
 
-        static public double DistanceSqr(dVector v1, dVector v2)
+        public static double DistanceSqr(dVector v1, dVector v2)
         {
-            return Math.Pow((v1.TileX - v2.TileX) * 2048 + v1.X - v2.X, 2)
-                + Math.Pow((v1.TileZ - v2.TileZ) * 2048 + v1.Z - v2.Z, 2);
+            return Math.Pow(((v1.TileX - v2.TileX) * 2048) + v1.X - v2.X, 2)
+                + Math.Pow(((v1.TileZ - v2.TileZ) * 2048) + v1.Z - v2.Z, 2);
         }
     }
 }
