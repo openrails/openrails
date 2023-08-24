@@ -797,9 +797,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // Manage emergency res charging
             if ((Car as MSTSWagon).EmergencyReservoirPresent)
             {
-                if (TripleValveState == ValveState.Release && EmergResPressurePSI > BrakeLine1PressurePSI && AutoCylPressurePSI > 5)
+                if (TripleValveState == ValveState.Release && EmergResPressurePSI > BrakeLine1PressurePSI)
                 {
-                    if (EmergResQuickRelease) // Quick release: Emergency res charges brake pipe during release
+                    if (EmergResQuickRelease && AutoCylPressurePSI > 5) // Quick release: Emergency res charges brake pipe during release
                     {
                         float dp = elapsedClockSeconds * EmergResChargingRatePSIpS;
                         if (EmergResPressurePSI - dp < BrakeLine1PressurePSI + dp * EmergBrakeLineVolumeRatio)
