@@ -1163,20 +1163,11 @@ namespace Orts.Simulation.AIs
                 {
                     if (!thisInfo.processed)
                     {
-                        bool process_req = true;
-
-                        if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
-                                        thisInfo.distance_to_train > DistanceToEndNodeAuthorityM[0])
-                        {
-                            process_req = false;
-                        }
-                        else
-                        {
-                            process_req = thisInfo.distance_to_train > signalApproachDistanceM ||
+                        var process_req = (ControlMode != TRAIN_CONTROL.AUTO_NODE ||
+                                        thisInfo.distance_to_train <= DistanceToEndNodeAuthorityM[0])
+&& (thisInfo.distance_to_train > signalApproachDistanceM ||
                                                              (MovementState == AI_MOVEMENT_STATE.RUNNING && SpeedMpS > setSpeed) ||
-                                                              MovementState == AI_MOVEMENT_STATE.ACCELERATING;
-                        }
-
+                                                              MovementState == AI_MOVEMENT_STATE.ACCELERATING);
                         if (process_req)
                         {
                             if (thisInfo.ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit)
@@ -1725,7 +1716,7 @@ namespace Orts.Simulation.AIs
                 else if (nextAspect == MstsSignalAspect.STOP)
                 {
                     // If stop but train is well away from signal allow to close; also if at end of path.
-                    if (DistanceToSignal.HasValue && DistanceToSignal.Value > 5 * signalApproachDistanceM ||
+                    if ((DistanceToSignal.HasValue && DistanceToSignal.Value > 5 * signalApproachDistanceM) ||
                         (TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1 == PresentPosition[0].RouteListIndex))
                     {
                         MovementState = AI_MOVEMENT_STATE.ACCELERATING;
@@ -3052,11 +3043,11 @@ namespace Orts.Simulation.AIs
                         {
                             var rearOrFront = ValidRoute[0][ValidRoute[0].Count - 1].Direction == 1 ? 0 : 1;
 
-                            if (OtherTrain.TrainType == TRAINTYPE.STATIC || (OtherTrain.PresentPosition[0].TCSectionIndex ==
+                            if (OtherTrain.TrainType == TRAINTYPE.STATIC || ((OtherTrain.PresentPosition[0].TCSectionIndex ==
                                 TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
                                 || OtherTrain.PresentPosition[1].TCSectionIndex ==
                                 TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex) &&
-                                (TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid || TCRoute.activeSubpath == TCRoute.TCRouteSubpaths.Count - 1)
+                                (TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid || TCRoute.activeSubpath == TCRoute.TCRouteSubpaths.Count - 1))
                                 || UncondAttach)
                             {
                                 attachToTrain = true;
@@ -6257,17 +6248,15 @@ namespace Orts.Simulation.AIs
                 StationStops[0].ActualArrival = -(int)(new DateTime().Add(TimeSpan.FromSeconds(0.0)) - ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).ActArrive).Value.TotalSeconds;
                 MovementState = AI_MOVEMENT_STATE.STATION_STOP;
             }
-            else if (this != Simulator.OriginalPlayerTrain && AtStation)
-            {
-                MovementState = AI_MOVEMENT_STATE.STATION_STOP;
-            }
             else
             {
-                MovementState = Math.Abs(SpeedMpS) <= 0.1f && ((AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
-                            (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION) || (nextActionInfo is AuxActionWPItem &&
-                                    MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION))
-                    ? AI_MOVEMENT_STATE.HANDLE_ACTION
-                    : AI_MOVEMENT_STATE.STOPPED;
+                MovementState = this != Simulator.OriginalPlayerTrain && AtStation
+                    ? AI_MOVEMENT_STATE.STATION_STOP
+                    : Math.Abs(SpeedMpS) <= 0.1f && ((AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
+                                            (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION) || (nextActionInfo is AuxActionWPItem &&
+                                                    MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION))
+                                    ? AI_MOVEMENT_STATE.HANDLE_ACTION
+                                    : AI_MOVEMENT_STATE.STOPPED;
             }
             success = true;
             return success;
@@ -6433,14 +6422,7 @@ namespace Orts.Simulation.AIs
                         }
 
                         // Set display text color
-                        if (remaining < 1)
-                        {
-                            DisplayColor = Color.LightGreen;
-                        }
-                        else
-                        {
-                            DisplayColor = remaining < 11 ? new Color(255, 255, 128) : Color.White;
-                        }
+                        DisplayColor = remaining < 1 ? Color.LightGreen : remaining < 11 ? new Color(255, 255, 128) : Color.White;
 
                         // Clear holding signal
                         if (remaining < (IsActualPlayerTrain ? 120 : 2) && remaining > 0 && StationStops[0].ExitSignal >= 0) // Within two minutes of departure and hold signal?
@@ -6645,10 +6627,9 @@ namespace Orts.Simulation.AIs
         /// <param name="outf"></param>
         public void Save(BinaryWriter outf)
         {
-            LevelCrossingHornPattern type;
-            if (this is AILevelCrossingSingleHorn)
-                type = LevelCrossingHornPattern.Single;
-            else type = this is AILevelCrossingAmericanHorn ? LevelCrossingHornPattern.US : throw new ArgumentException();
+            var type = this is AILevelCrossingSingleHorn
+                ? LevelCrossingHornPattern.Single
+                : this is AILevelCrossingAmericanHorn ? LevelCrossingHornPattern.US : throw new ArgumentException();
             outf.Write((int)type);
         }
 
