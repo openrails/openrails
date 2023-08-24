@@ -93,7 +93,7 @@ namespace Orts.Simulation.Timetables
                                     pools.Add(newPool.PoolName, newPool);
                                 }
                             }
-                            break
+                            break;
                         default:
                             if (!String.IsNullOrEmpty(poolInfo.Strings[lineindex][0]))
                             {
