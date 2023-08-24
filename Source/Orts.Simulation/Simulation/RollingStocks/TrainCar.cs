@@ -2094,19 +2094,12 @@ namespace Orts.Simulation.RollingStocks
 
                 var rBaseWagonN = N.FromLbf(Kg.ToLb(MassKG) * Train.WagonCoefficientFriction * (Me.ToFt(TrackGaugeM) + Me.ToFt(RigidWheelBaseM)) / (2.0f * Me.ToFt(CurrentCurveRadius)));
 
-                //                if (CurrentCurveRadius > 0)
-                //                    Trace.TraceInformation("Curve Friction - CarID {0}  Friction {1} Weight {2} WagonFriction {3} Gauge {4} WheelBase {5} CurveRadius {6}", CarID, rBaseWagonN, Kg.ToLb(MassKG), Train.WagonCoefficientFriction, Me.ToFt(TrackGaugeM), Me.ToFt(RigidWheelBaseM), Me.ToFt(CurrentCurveRadius));
-
                 // Speed Curve Resistance (from reference ii) - second term only) = ((Speed^2 / Curve Radius) - (Superelevation / Track Gauge) * Gravitational acceleration) * Constant
 
                 var speedConstant = 1.5f;
                 var MToMM = 1000;
                 var rspeedKgpTonne = speedConstant * Math.Abs((SpeedMpS * SpeedMpS / CurrentCurveRadius) - ((MToMM * SuperelevationM / MToMM * TrackGaugeM) * GravitationalAccelerationMpS2));
                 var rSpeedWagonN = GravitationalAccelerationMpS2 * (Kg.ToTonne(MassKG) * rspeedKgpTonne);
-
-//                if (CurrentCurveRadius > 0)
-//                    Trace.TraceInformation("Curve Friction Speed - CarID {0}  Weight {1} WagonFriction {2} Gauge {3} CurveRadius {4} SuperElevation {5} Gauge {6} rspeedKgpTonne {7} rSpeedWagonN {8} rBaseWagonN {9}", CarID, Kg.ToTonne(MassKG), Train.WagonCoefficientFriction, TrackGaugeM, CurrentCurveRadius, SuperelevationM, TrackGaugeM, rspeedKgpTonne, rSpeedWagonN, rBaseWagonN);
-
 
                 CurveForceN = rBaseWagonN + rSpeedWagonN;
             }
