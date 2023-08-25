@@ -34,31 +34,28 @@ namespace Orts.Viewer3D.Popups
         private readonly int Thickness = 3;
         private readonly Color Color = Color.Red;
 
-        private readonly int Width;
-        private readonly int Height;
-
         public OutOfFocusWindow(WindowManager owner) : base(owner)
         {
-            Line = new Texture2D(owner.Viewer.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+            Line = new Texture2D(Owner.Viewer.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             Line.SetData(new[] { Color });
-
-            Width = owner.Viewer.GraphicsDevice.Viewport.Width;
-            Height = owner.Viewer.GraphicsDevice.Viewport.Height;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            int width = Owner.Viewer.GraphicsDevice.Viewport.Width;
+            int height = Owner.Viewer.GraphicsDevice.Viewport.Height;
+
             // top
-            DrawLine(spriteBatch, 0, 0, Width, Thickness, 0);
+            DrawLine(spriteBatch, 0, 0, width, Thickness, 0);
 
             // bottom
-            DrawLine(spriteBatch, 0, Height - Thickness, Width, Thickness, 0);
+            DrawLine(spriteBatch, 0, height - Thickness, width, Thickness, 0);
 
             // left
-            DrawLine(spriteBatch, Thickness, Thickness, Height, Thickness, 90);
+            DrawLine(spriteBatch, Thickness, Thickness, height, Thickness, 90);
 
             // right
-            DrawLine(spriteBatch, Width, Thickness, Height, Thickness, 90);
+            DrawLine(spriteBatch, width, Thickness, height, Thickness, 90);
         }
 
         private void DrawLine(SpriteBatch spriteBatch, int X, int Y, int width, int height, int degrees)
